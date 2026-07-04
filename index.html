@@ -16,24 +16,28 @@
         tailwind.config = {
             darkMode: 'class',
             theme: { extend: { colors: { 
-                darkBg: '#0f172a', darkCard: '#1e293b', darkBorder: '#334155' 
+                /* PALETA INSPIRADA NO GOOGLE GEMINI */
+                darkBg: '#131314',      /* Fundo Preto Profundo */
+                darkCard: '#1e1e20',    /* Cartões e Janelas Flutuantes */
+                darkBorder: '#333537'   /* Bordas Sutis */
             }}}
         }
     </script>
     <style>
         body { transition: background-color 0.3s ease; }
-        .glass { backdrop-filter: blur(8px); }
+        .glass { backdrop-filter: blur(12px); }
         @media print {
             body { background: white !important; color: black !important; }
             .no-print { display: none !important; }
             .print-only { display: block !important; }
         }
+        /* CustomScroll elegante para combinar com o fundo escuro */
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 20px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #555; border-radius: 20px; }
     </style>
 </head>
-<body class="bg-gray-50 dark:bg-darkBg text-slate-900 dark:text-slate-100 min-h-screen">
+<body class="bg-gray-50 dark:bg-darkBg text-gray-900 dark:text-gray-100 min-h-screen">
     <div id="root"></div>
 
     <script type="text/babel">
@@ -197,23 +201,24 @@
             return (
                 <div>
                     <div className="flex flex-col min-h-screen no-print">
-                        <header className="sticky top-0 z-40 glass bg-white/80 dark:bg-darkBg/80 border-b border-gray-200 dark:border-darkBorder px-6 py-4 flex justify-between items-center shadow-sm">
+                        <header className="sticky top-0 z-40 glass bg-white/80 dark:bg-darkBg/90 border-b border-gray-200 dark:border-darkBorder px-6 py-4 flex justify-between items-center shadow-sm">
                             <div className="flex items-center gap-8">
                                 <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400 font-black text-xl tracking-tight">
                                     <i data-lucide="printer"></i> BERLIM
                                 </div>
                                 <nav className="hidden md:flex gap-6 font-medium text-sm text-gray-500 dark:text-gray-400 cursor-pointer">
-                                    <a onClick={() => setAbaAtual('producao')} className={`transition ${abaAtual === 'producao' ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 pb-1 font-bold' : 'hover:text-slate-900 dark:hover:text-white'}`}>Produção</a>
-                                    <a onClick={() => setAbaAtual('produtos')} className={`transition ${abaAtual === 'produtos' ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 pb-1 font-bold' : 'hover:text-slate-900 dark:hover:text-white'}`}>Produtos (Catálogo)</a>
-                                    <a onClick={() => setAbaAtual('clientes')} className={`transition ${abaAtual === 'clientes' ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 pb-1 font-bold' : 'hover:text-slate-900 dark:hover:text-white'}`}>Clientes</a>
+                                    <a onClick={() => setAbaAtual('producao')} className={`transition ${abaAtual === 'producao' ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 pb-1 font-bold' : 'hover:text-gray-900 dark:hover:text-white'}`}>Produção</a>
+                                    <a onClick={() => setAbaAtual('produtos')} className={`transition ${abaAtual === 'produtos' ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 pb-1 font-bold' : 'hover:text-gray-900 dark:hover:text-white'}`}>Produtos (Catálogo)</a>
+                                    <a onClick={() => setAbaAtual('clientes')} className={`transition ${abaAtual === 'clientes' ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 pb-1 font-bold' : 'hover:text-gray-900 dark:hover:text-white'}`}>Clientes</a>
                                 </nav>
                             </div>
                             <div className="flex items-center gap-4">
-                                <button onClick={toggleDarkMode} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition"><i data-lucide={darkMode ? "sun" : "moon"} className="w-5 h-5"></i></button>
+                                <button onClick={toggleDarkMode} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-darkCard transition"><i data-lucide={darkMode ? "sun" : "moon"} className="w-5 h-5 dark:text-gray-300"></i></button>
                                 <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm shadow-md">AD</div>
                             </div>
                         </header>
 
+                        {/* ================= TELAS ================= */}
                         {abaAtual === 'producao' && (
                             <main className="flex-1 p-6 max-w-[1600px] mx-auto w-full fade-in">
                                 <div className="flex justify-between items-center mb-8">
@@ -254,10 +259,10 @@
                                 </div>
                                 <div className="bg-white dark:bg-darkCard rounded-xl shadow-sm border border-gray-200 dark:border-darkBorder overflow-hidden">
                                     <table className="w-full text-left border-collapse">
-                                        <thead><tr className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 text-sm text-gray-500 dark:text-gray-400"><th className="p-4">Nº</th><th className="p-4">Nome</th><th className="p-4">Descrição Base</th><th className="p-4 text-right">Preço Base</th></tr></thead>
+                                        <thead><tr className="bg-gray-50 dark:bg-darkCard border-b border-gray-200 dark:border-darkBorder text-sm text-gray-500 dark:text-gray-400"><th className="p-4">Nº</th><th className="p-4">Nome</th><th className="p-4">Descrição Base</th><th className="p-4 text-right">Preço Base</th></tr></thead>
                                         <tbody>
                                             {produtos.map(p => (
-                                                <tr key={p.id} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50"><td className="p-4 font-bold text-blue-600">[{p.id}]</td><td className="p-4 font-semibold dark:text-white">{p.nome}</td><td className="p-4 text-sm text-gray-600 dark:text-gray-400">{p.texto_padrao}</td><td className="p-4 font-bold text-green-600 text-right">R$ {Number(p.preco_base).toFixed(2).replace('.', ',')}</td></tr>
+                                                <tr key={p.id} className="border-b border-gray-100 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-[#282a2c] transition"><td className="p-4 font-bold text-blue-600 dark:text-blue-400">[{p.id}]</td><td className="p-4 font-semibold dark:text-white">{p.nome}</td><td className="p-4 text-sm text-gray-600 dark:text-gray-400">{p.texto_padrao}</td><td className="p-4 font-bold text-green-600 dark:text-green-400 text-right">R$ {Number(p.preco_base).toFixed(2).replace('.', ',')}</td></tr>
                                             ))}
                                         </tbody>
                                     </table>
@@ -275,10 +280,10 @@
                                 </div>
                                 <div className="bg-white dark:bg-darkCard rounded-xl shadow-sm border border-gray-200 dark:border-darkBorder overflow-hidden">
                                     <table className="w-full text-left border-collapse">
-                                        <thead><tr className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 text-sm text-gray-500 dark:text-gray-400"><th className="p-4">Nome</th><th className="p-4">Telefone</th><th className="p-4">E-mail</th><th className="p-4">Observações</th></tr></thead>
+                                        <thead><tr className="bg-gray-50 dark:bg-darkCard border-b border-gray-200 dark:border-darkBorder text-sm text-gray-500 dark:text-gray-400"><th className="p-4">Nome</th><th className="p-4">Telefone</th><th className="p-4">E-mail</th><th className="p-4">Observações</th></tr></thead>
                                         <tbody>
                                             {clientes.map(c => (
-                                                <tr key={c.id} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50"><td className="p-4 font-bold dark:text-white">{c.nome}</td><td className="p-4 dark:text-gray-300">{c.telefone || '---'}</td><td className="p-4 dark:text-gray-300">{c.email || '---'}</td><td className="p-4 text-sm text-gray-500 dark:text-gray-400">{c.observacoes || '---'}</td></tr>
+                                                <tr key={c.id} className="border-b border-gray-100 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-[#282a2c] transition"><td className="p-4 font-bold dark:text-white">{c.nome}</td><td className="p-4 dark:text-gray-300">{c.telefone || '---'}</td><td className="p-4 dark:text-gray-300">{c.email || '---'}</td><td className="p-4 text-sm text-gray-500 dark:text-gray-400">{c.observacoes || '---'}</td></tr>
                                             ))}
                                         </tbody>
                                     </table>
@@ -289,10 +294,10 @@
 
                     {/* ================= MODAL: NOVA O.S. ================= */}
                     {modalAberto && (
-                        <div onClick={fecharModalOS} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 glass no-print transition-all cursor-pointer">
+                        <div onClick={fecharModalOS} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 dark:bg-black/60 glass no-print transition-all cursor-pointer">
                             <div onClick={(e) => e.stopPropagation()} className="bg-white dark:bg-darkCard w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden border border-gray-200 dark:border-darkBorder cursor-default">
-                                <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-blue-50 dark:bg-blue-900/20">
-                                    <h3 className="font-bold text-lg dark:text-white text-blue-800 dark:text-blue-300">Cadastrar Nova O.S.</h3>
+                                <div className="px-6 py-4 border-b border-gray-100 dark:border-darkBorder flex justify-between items-center bg-blue-50 dark:bg-[#181a1c]">
+                                    <h3 className="font-bold text-lg dark:text-white text-blue-800">Cadastrar Nova O.S.</h3>
                                     <button type="button" onClick={fecharModalOS} className="text-gray-400 hover:text-red-500 transition"><i data-lucide="x" className="w-5 h-5"></i></button>
                                 </div>
                                 <form onSubmit={salvarOS} className="p-6 flex flex-col gap-4">
@@ -317,22 +322,22 @@
                                                 }}
                                                 onFocus={() => setClienteDropdownAberto(true)}
                                                 onBlur={() => setTimeout(() => setClienteDropdownAberto(false), 200)}
-                                                className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-blue-500 transition dark:text-white shadow-sm" 
+                                                className="w-full bg-white dark:bg-darkBg border border-gray-200 dark:border-darkBorder rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-blue-500 transition dark:text-white shadow-sm" 
                                                 placeholder="Busque por nome ou telefone..." 
                                                 autoComplete="off"
                                             />
                                             <i data-lucide="chevron-down" className="absolute right-3 top-2.5 w-5 h-5 text-gray-400 pointer-events-none"></i>
                                             
                                             {clienteDropdownAberto && clientesFiltrados.length > 0 && (
-                                                <ul className="absolute z-[60] w-full mt-1 max-h-48 overflow-y-auto bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl custom-scrollbar">
+                                                <ul className="absolute z-[60] w-full mt-1 max-h-48 overflow-y-auto bg-white dark:bg-[#282a2c] border border-gray-200 dark:border-darkBorder rounded-lg shadow-xl custom-scrollbar">
                                                     {clientesFiltrados.map(c => (
                                                         <li key={c.id} onClick={() => {
                                                             setBuscaCliente(c.nome);
                                                             setNovoPedido({...novoPedido, cliente: c.nome});
                                                             setClienteDropdownAberto(false);
-                                                        }} className="px-4 py-2.5 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 cursor-pointer border-b border-gray-100 dark:border-gray-700/50 last:border-0 flex justify-between items-center transition">
+                                                        }} className="px-4 py-2.5 hover:bg-indigo-50 dark:hover:bg-[#333537] cursor-pointer border-b border-gray-100 dark:border-darkBorder last:border-0 flex justify-between items-center transition">
                                                             <span className="font-bold text-gray-800 dark:text-gray-200">{c.nome}</span>
-                                                            <span className="text-xs text-gray-500">{c.telefone}</span>
+                                                            <span className="text-xs text-gray-500 dark:text-gray-400">{c.telefone}</span>
                                                         </li>
                                                     ))}
                                                 </ul>
@@ -341,8 +346,8 @@
                                     </div>
 
                                     {/* DROPDOWN CUSTOMIZADO DE PRODUTOS */}
-                                    <div className="p-3 bg-yellow-50 dark:bg-yellow-900/10 border border-yellow-200 dark:border-yellow-700/30 rounded-lg">
-                                        <label className="block text-sm font-bold mb-1 text-yellow-800 dark:text-yellow-500 flex justify-between items-end">
+                                    <div className="p-3 bg-yellow-50 dark:bg-[#181a1c] border border-yellow-200 dark:border-darkBorder rounded-lg">
+                                        <label className="block text-sm font-bold mb-1 text-yellow-800 dark:text-gray-300 flex justify-between items-end">
                                             <span>1. Puxar Base do Catálogo</span>
                                             <button type="button" onClick={() => setModalProdutoAberto(true)} className="text-xs text-emerald-600 dark:text-emerald-500 hover:underline font-bold flex items-center gap-1">
                                                 <i data-lucide="plus-circle" className="w-3 h-3"></i> Adicionar Rápido
@@ -358,14 +363,14 @@
                                                 }}
                                                 onFocus={() => setProdutoDropdownAberto(true)}
                                                 onBlur={() => setTimeout(() => setProdutoDropdownAberto(false), 200)}
-                                                className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md px-3 py-2 outline-none focus:ring-2 focus:ring-yellow-500 transition dark:text-white text-sm shadow-sm"
+                                                className="w-full bg-white dark:bg-darkBg border border-gray-200 dark:border-darkBorder rounded-md px-3 py-2 outline-none focus:ring-2 focus:ring-yellow-500 transition dark:text-white text-sm shadow-sm"
                                                 placeholder="Busque por código ou nome..."
                                                 autoComplete="off"
                                             />
                                             <i data-lucide="chevron-down" className="absolute right-2 top-2 w-4 h-4 text-gray-400 pointer-events-none"></i>
                                             
                                             {produtoDropdownAberto && produtosFiltrados.length > 0 && (
-                                                <ul className="absolute z-[60] w-full mt-1 max-h-48 overflow-y-auto bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl custom-scrollbar">
+                                                <ul className="absolute z-[60] w-full mt-1 max-h-48 overflow-y-auto bg-white dark:bg-[#282a2c] border border-gray-200 dark:border-darkBorder rounded-lg shadow-xl custom-scrollbar">
                                                     {produtosFiltrados.map(p => (
                                                         <li key={p.id} onClick={() => {
                                                             setBuscaProduto(`[${p.id}] ${p.nome}`);
@@ -375,7 +380,7 @@
                                                                 valor_total: formatarMoeda((p.preco_base * 100).toFixed(0).toString())
                                                             });
                                                             setProdutoDropdownAberto(false);
-                                                        }} className="px-3 py-2 hover:bg-yellow-50 dark:hover:bg-yellow-900/30 cursor-pointer border-b border-gray-100 dark:border-gray-700/50 last:border-0 flex flex-col transition">
+                                                        }} className="px-3 py-2 hover:bg-yellow-50 dark:hover:bg-[#333537] cursor-pointer border-b border-gray-100 dark:border-darkBorder last:border-0 flex flex-col transition">
                                                             <div className="flex justify-between items-center">
                                                                 <span className="font-bold text-gray-800 dark:text-gray-200">[{p.id}] {p.nome}</span>
                                                                 <span className="text-xs font-bold text-green-600 dark:text-green-400">R$ {Number(p.preco_base).toFixed(2).replace('.', ',')}</span>
@@ -391,27 +396,27 @@
                                     {/* CAMPOS FINAIS */}
                                     <div>
                                         <label className="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300 flex justify-between">
-                                            <span>2. Descrição Final</span><span className="text-xs text-blue-500 font-normal flex items-center gap-1"><i data-lucide="edit-3" className="w-3 h-3"></i> (Pode editar)</span>
+                                            <span>2. Descrição Final</span><span className="text-xs text-blue-500 dark:text-blue-400 font-normal flex items-center gap-1"><i data-lucide="edit-3" className="w-3 h-3"></i> (Pode editar)</span>
                                         </label>
-                                        <textarea required rows="3" value={novoPedido.servico} onChange={e => setNovoPedido({...novoPedido, servico: e.target.value})} className="w-full bg-white dark:bg-gray-900 border border-blue-200 dark:border-blue-800/50 rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-blue-500 transition dark:text-white text-sm" placeholder="Adicione a quantidade, o tipo ou detalhes específicos..."></textarea>
+                                        <textarea required rows="3" value={novoPedido.servico} onChange={e => setNovoPedido({...novoPedido, servico: e.target.value})} className="w-full bg-white dark:bg-darkBg border border-blue-200 dark:border-darkBorder rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-blue-500 transition dark:text-white text-sm" placeholder="Adicione a quantidade, o tipo ou detalhes específicos..."></textarea>
                                     </div>
                                     
                                     <div>
                                         <label className="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300 flex justify-between">
-                                            <span>Valor Final (R$)</span><span className="text-xs text-blue-500 font-normal">(Pode editar)</span>
+                                            <span>Valor Final (R$)</span><span className="text-xs text-blue-500 dark:text-blue-400 font-normal">(Pode editar)</span>
                                         </label>
                                         <input 
                                             required 
                                             type="text" 
                                             value={novoPedido.valor_total} 
                                             onChange={e => setNovoPedido({...novoPedido, valor_total: formatarMoeda(e.target.value)})} 
-                                            className="w-1/2 bg-white dark:bg-gray-900 border border-blue-200 dark:border-blue-800/50 rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-blue-500 transition dark:text-white font-bold text-green-600 dark:text-green-400" 
+                                            className="w-1/2 bg-white dark:bg-darkBg border border-blue-200 dark:border-darkBorder rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-blue-500 transition dark:text-white font-bold text-green-600 dark:text-green-400" 
                                             placeholder="0,00" 
                                         />
                                     </div>
                                     
-                                    <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800 flex justify-end gap-3">
-                                        <button type="button" onClick={fecharModalOS} className="px-5 py-2 rounded-lg font-semibold text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition">Cancelar</button>
+                                    <div className="mt-4 pt-4 border-t border-gray-100 dark:border-darkBorder flex justify-end gap-3">
+                                        <button type="button" onClick={fecharModalOS} className="px-5 py-2 rounded-lg font-semibold text-gray-500 hover:bg-gray-100 dark:hover:bg-[#282a2c] transition">Cancelar</button>
                                         <button type="submit" disabled={salvandoOS} className="px-5 py-2 rounded-lg font-semibold bg-blue-600 hover:bg-blue-700 text-white shadow-md transition disabled:opacity-50 flex items-center gap-2">
                                             {salvandoOS ? 'Salvando...' : <><i data-lucide="check" className="w-4 h-4"></i> Salvar Pedido</>}
                                         </button>
@@ -423,27 +428,27 @@
 
                     {/* ================= MODAL: NOVO PRODUTO ================= */}
                     {modalProdutoAberto && (
-                        <div onClick={() => setModalProdutoAberto(false)} className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 glass no-print transition-all cursor-pointer">
+                        <div onClick={() => setModalProdutoAberto(false)} className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 dark:bg-black/60 glass no-print transition-all cursor-pointer">
                             <div onClick={(e) => e.stopPropagation()} className="bg-white dark:bg-darkCard w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden border border-gray-200 dark:border-darkBorder cursor-default">
-                                <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-emerald-50 dark:bg-emerald-900/20">
-                                    <h3 className="font-bold text-lg dark:text-white text-emerald-800 dark:text-emerald-300 flex items-center gap-2"><i data-lucide="box" className="w-5 h-5"></i> Adicionar ao Catálogo</h3>
+                                <div className="px-6 py-4 border-b border-gray-100 dark:border-darkBorder flex justify-between items-center bg-emerald-50 dark:bg-[#181a1c]">
+                                    <h3 className="font-bold text-lg dark:text-white text-emerald-800 dark:text-emerald-400 flex items-center gap-2"><i data-lucide="box" className="w-5 h-5"></i> Adicionar ao Catálogo</h3>
                                     <button type="button" onClick={() => setModalProdutoAberto(false)} className="text-gray-400 hover:text-red-500 transition"><i data-lucide="x" className="w-5 h-5"></i></button>
                                 </div>
                                 <form onSubmit={salvarProduto} className="p-6 flex flex-col gap-4">
-                                    <div><label className="block text-sm font-semibold mb-1">Nome do Produto</label><input required type="text" value={novoProduto.nome} onChange={e => setNovoProduto({...novoProduto, nome: e.target.value})} className="w-full bg-gray-50 dark:bg-gray-800 border rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-emerald-500" /></div>
-                                    <div><label className="block text-sm font-semibold mb-1">Texto / Descrição Base</label><textarea required rows="2" value={novoProduto.texto_padrao} onChange={e => setNovoProduto({...novoProduto, texto_padrao: e.target.value})} className="w-full bg-gray-50 dark:bg-gray-800 border rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-emerald-500"></textarea></div>
+                                    <div><label className="block text-sm font-semibold mb-1 dark:text-gray-300">Nome do Produto</label><input required type="text" value={novoProduto.nome} onChange={e => setNovoProduto({...novoProduto, nome: e.target.value})} className="w-full bg-gray-50 dark:bg-darkBg border border-gray-200 dark:border-darkBorder rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-emerald-500 dark:text-white" /></div>
+                                    <div><label className="block text-sm font-semibold mb-1 dark:text-gray-300">Texto / Descrição Base</label><textarea required rows="2" value={novoProduto.texto_padrao} onChange={e => setNovoProduto({...novoProduto, texto_padrao: e.target.value})} className="w-full bg-gray-50 dark:bg-darkBg border border-gray-200 dark:border-darkBorder rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-emerald-500 dark:text-white"></textarea></div>
                                     <div>
-                                        <label className="block text-sm font-semibold mb-1">Preço Base (R$)</label>
+                                        <label className="block text-sm font-semibold mb-1 dark:text-gray-300">Preço Base (R$)</label>
                                         <input 
                                             required 
                                             type="text" 
                                             value={novoProduto.preco_base} 
                                             onChange={e => setNovoProduto({...novoProduto, preco_base: formatarMoeda(e.target.value)})} 
-                                            className="w-1/2 bg-gray-50 dark:bg-gray-800 border rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-emerald-500" 
+                                            className="w-1/2 bg-gray-50 dark:bg-darkBg border border-gray-200 dark:border-darkBorder rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-emerald-500 dark:text-white" 
                                             placeholder="0,00" 
                                         />
                                     </div>
-                                    <div className="mt-4 pt-4 border-t flex justify-end gap-3"><button type="button" onClick={() => setModalProdutoAberto(false)} className="px-5 py-2 font-semibold text-gray-500">Cancelar</button><button type="submit" disabled={salvandoProduto} className="px-5 py-2 rounded-lg font-semibold bg-emerald-600 text-white">Salvar Produto</button></div>
+                                    <div className="mt-4 pt-4 border-t border-gray-100 dark:border-darkBorder flex justify-end gap-3"><button type="button" onClick={() => setModalProdutoAberto(false)} className="px-5 py-2 font-semibold text-gray-500 hover:bg-gray-100 dark:hover:bg-[#282a2c] rounded-lg">Cancelar</button><button type="submit" disabled={salvandoProduto} className="px-5 py-2 rounded-lg font-semibold bg-emerald-600 hover:bg-emerald-700 text-white shadow-md">Salvar Produto</button></div>
                                 </form>
                             </div>
                         </div>
@@ -451,38 +456,38 @@
 
                     {/* ================= MODAL: NOVO CLIENTE ================= */}
                     {modalClienteAberto && (
-                        <div onClick={() => setModalClienteAberto(false)} className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 glass no-print transition-all cursor-pointer">
+                        <div onClick={() => setModalClienteAberto(false)} className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 dark:bg-black/60 glass no-print transition-all cursor-pointer">
                             <div onClick={(e) => e.stopPropagation()} className="bg-white dark:bg-darkCard w-full max-w-md rounded-2xl shadow-2xl overflow-hidden border border-gray-200 dark:border-darkBorder cursor-default">
-                                <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-indigo-50 dark:bg-indigo-900/20">
-                                    <h3 className="font-bold text-lg dark:text-white text-indigo-800 dark:text-indigo-300 flex items-center gap-2"><i data-lucide="user-plus" className="w-5 h-5"></i> Cadastrar Cliente</h3>
+                                <div className="px-6 py-4 border-b border-gray-100 dark:border-darkBorder flex justify-between items-center bg-indigo-50 dark:bg-[#181a1c]">
+                                    <h3 className="font-bold text-lg dark:text-white text-indigo-800 dark:text-indigo-400 flex items-center gap-2"><i data-lucide="user-plus" className="w-5 h-5"></i> Cadastrar Cliente</h3>
                                     <button type="button" onClick={() => setModalClienteAberto(false)} className="text-gray-400 hover:text-red-500 transition"><i data-lucide="x" className="w-5 h-5"></i></button>
                                 </div>
                                 <form onSubmit={salvarCliente} className="p-6 flex flex-col gap-4">
                                     <div>
-                                        <label className="block text-sm font-semibold mb-1">Nome / Empresa *</label>
-                                        <input required type="text" value={novoCliente.nome} onChange={e => setNovoCliente({...novoCliente, nome: e.target.value})} className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Ex: Fibrion" />
+                                        <label className="block text-sm font-semibold mb-1 dark:text-gray-300">Nome / Empresa *</label>
+                                        <input required type="text" value={novoCliente.nome} onChange={e => setNovoCliente({...novoCliente, nome: e.target.value})} className="w-full bg-gray-50 dark:bg-darkBg border border-gray-200 dark:border-darkBorder rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white" placeholder="Ex: Fibrion" />
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div>
-                                            <label className="block text-sm font-semibold mb-1">Telefone / WhatsApp</label>
+                                            <label className="block text-sm font-semibold mb-1 dark:text-gray-300">Telefone / WhatsApp</label>
                                             <input 
                                                 type="text" 
                                                 value={novoCliente.telefone} 
                                                 onChange={e => setNovoCliente({...novoCliente, telefone: formatarTelefone(e.target.value)})} 
-                                                className="w-full bg-gray-50 dark:bg-gray-800 border rounded-lg px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500" 
+                                                className="w-full bg-gray-50 dark:bg-darkBg border border-gray-200 dark:border-darkBorder rounded-lg px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white" 
                                                 placeholder="(11) 90000-0000" 
                                             />
                                         </div>
-                                        <div><label className="block text-sm font-semibold mb-1">E-mail</label><input type="email" value={novoCliente.email} onChange={e => setNovoCliente({...novoCliente, email: e.target.value})} className="w-full bg-gray-50 dark:bg-gray-800 border rounded-lg px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500" placeholder="contato@..." /></div>
+                                        <div><label className="block text-sm font-semibold mb-1 dark:text-gray-300">E-mail</label><input type="email" value={novoCliente.email} onChange={e => setNovoCliente({...novoCliente, email: e.target.value})} className="w-full bg-gray-50 dark:bg-darkBg border border-gray-200 dark:border-darkBorder rounded-lg px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white" placeholder="contato@..." /></div>
                                     </div>
-                                    <div><label className="block text-sm font-semibold mb-1">Observações</label><textarea rows="2" value={novoCliente.observacoes} onChange={e => setNovoCliente({...novoCliente, observacoes: e.target.value})} className="w-full bg-gray-50 dark:bg-gray-800 border rounded-lg px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500"></textarea></div>
-                                    <div className="mt-2 pt-4 border-t flex justify-end gap-3"><button type="button" onClick={() => setModalClienteAberto(false)} className="px-5 py-2 font-semibold text-gray-500">Cancelar</button><button type="submit" disabled={salvandoCliente} className="px-5 py-2 rounded-lg font-semibold bg-indigo-600 text-white">Salvar Cliente</button></div>
+                                    <div><label className="block text-sm font-semibold mb-1 dark:text-gray-300">Observações</label><textarea rows="2" value={novoCliente.observacoes} onChange={e => setNovoCliente({...novoCliente, observacoes: e.target.value})} className="w-full bg-gray-50 dark:bg-darkBg border border-gray-200 dark:border-darkBorder rounded-lg px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white"></textarea></div>
+                                    <div className="mt-2 pt-4 border-t border-gray-100 dark:border-darkBorder flex justify-end gap-3"><button type="button" onClick={() => setModalClienteAberto(false)} className="px-5 py-2 font-semibold text-gray-500 hover:bg-gray-100 dark:hover:bg-[#282a2c] rounded-lg">Cancelar</button><button type="submit" disabled={salvandoCliente} className="px-5 py-2 rounded-lg font-semibold bg-indigo-600 hover:bg-indigo-700 text-white shadow-md">Salvar Cliente</button></div>
                                 </form>
                             </div>
                         </div>
                     )}
 
-                    {/* VISTA DE IMPRESSÃO */}
+                    {/* VISTA DE IMPRESSÃO DA O.S. */}
                     <div className="hidden print-only bg-white text-black p-8 font-sans max-w-2xl mx-auto">
                         {osParaImprimir && (
                             <div className="border-2 border-black p-6 rounded-xl">
@@ -514,8 +519,8 @@
                         </div>
                     </div>
                     <p className="text-gray-500 dark:text-gray-400 text-sm mb-4 line-clamp-2">{pedido.servico}</p>
-                    <div className="flex justify-between items-center mt-3 pt-3 border-t border-gray-100 dark:border-gray-700/50">
-                        <div className="flex items-center gap-1.5 text-xs font-medium text-gray-500 dark:text-gray-400"><i data-lucide="user" className="w-3.5 h-3.5"></i> {pedido.responsavel || 'Equipe'}</div>
+                    <div className="flex justify-between items-center mt-3 pt-3 border-t border-gray-100 dark:border-darkBorder">
+                        <div className="flex items-center gap-1.5 text-xs font-medium text-gray-500 dark:text-gray-400"><i data-lucide="user" className="w-3.5 h-3.5"></i> Equipe</div>
                         <span className="font-bold text-sm text-slate-700 dark:text-slate-200">R$ {Number(pedido.valor_total).toFixed(2).replace('.', ',')}</span>
                     </div>
                 </div>
