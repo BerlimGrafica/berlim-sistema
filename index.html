@@ -28,7 +28,7 @@
                         /* Sistema de Elevação Escala Cinzas Vercel */
                         darkBg: '#000000',         /* Level 0: Fundo de Tela Geral */
                         darkCard: '#0A0A0A',       /* Level 1: Corpo das Janelas e Modais */
-                        darkElevated: '#111111',   /* Level 2: Inputs, Cartões e Campos de Texto */
+                        darkElevated: '#111111',   /* Level 2: Inputs, Cartões e Carrinho */
                         darkHover: '#1A1A1A',      /* Level 3: Estados de Seleção e Hovers */
                         darkBorder: '#333333',     /* Linhas Finas de Divisão */
                         darkInput: '#000000'
@@ -86,6 +86,64 @@
             return v;
         };
 
+        // ==== INTELIGÊNCIA ARTIFICIAL DE DESCONSTRUÇÃO DE TEXTO ====
+        function desconstruirTextoServico(texto) {
+            if (!texto) return { itens: [], observacoes: '' };
+            
+            // Separa as observações gerais se existirem no padrão antigo
+            let partes = texto.split('\n\n[OBSERVAÇÕES GERAIS]\n');
+            let blocoItens = partes[0];
+            let obs = partes[1] || '';
+            
+            // Se o texto não começar com a marcação de itens '• ', trata tudo como observação livre (Compatibilidade reversa)
+            if (!blocoItens.startsWith('• ') && partes.length === 1) {
+                return { itens: [], observacoes: texto };
+            }
+            
+            let itensTraduzidos = [];
+            let blocosIndividuais = blocoItens.split('\n\n');
+            
+            for (let bloco of blocosIndividuais) {
+                if (!bloco.startsWith('• ')) {
+                    obs = obs ? obs + '\n' + bloco : bloco;
+                    continue;
+                }
+                
+                let linhas = bloco.split('\n');
+                if (linhas.length < 3) {
+                    obs = obs ? obs + '\n' + bloco : bloco;
+                    continue;
+                }
+                
+                // Extrai o Nome do produto
+                let nome = linhas[0].replace('• ', '').trim();
+                // Extrai a descrição técnica
+                let descricao = linhas[1].replace(/^  /, '').trim();
+                // Extrai a linha do valor bruto e do desconto percentual
+                let linhaValor = linhas[2].replace(/^  Valor: R\$ /, '').trim();
+                
+                let valor = linhaValor;
+                let desconto = '';
+                
+                // Captura se existia desconto salvo no padrão (-X%)
+                let matchDesconto = linhaValor.match(/\s\(-(\d+)%\)$/);
+                if (matchDesconto) {
+                    desconto = matchDesconto[1];
+                    valor = linhaValor.replace(matchDesconto[0], '').trim();
+                }
+                
+                itensTraduzidos.push({
+                    nome: nome,
+                    descricao: descricao,
+                    valor: valor,
+                    desconto: desconto,
+                    id_temp: Math.random() + Date.now()
+                });
+            }
+            
+            return { itens: itensTraduzidos, observacoes: obs };
+        }
+
         function App() {
             const [abaAtual, setAbaAtual] = useState('producao');
             const [pedidos, setPedidos] = useState([]);
@@ -94,13 +152,14 @@
             const [darkMode, setDarkMode] = useState(true); 
             const [isAdmin, setIsAdmin] = useState(false);
             
-            // Controle do Modal Mestre de O.S. (Novo e Edição Compartilham o mesmo)
+            // Janela Única de O.S. (Criação e Edição unificados)
             const [modalAberto, setModalAberto] = useState(false);
             const [salvandoOS, setSalvandoOS] = useState(false);
             const [osParaImprimir, setOsParaImprimir] = useState(null);
             const [pedidoEmEdicao, setPedidoEmEdicao] = useState(null); 
 
-            // Campos da esteira de adição de itens
+            // Estrutura Fixa do Carrinho Superior
+            const [itensPedido, setItensPedido] = useState([]);
             const [itemAtual, setItemAtual] = useState({ nome: '', descricao: '', valor: '', desconto: '' });
 
             const [buscaCliente, setBuscaCliente] = useState('');
@@ -110,7 +169,7 @@
 
             const [novoPedido, setNovoPedido] = useState({ cliente: '', servico: '', valor_total: '', status: 'Aguardando' });
             
-            // Modais de Cadastro de Apoio
+            // Cadastros Secundários
             const [modalProdutoAberto, setModalProdutoAberto] = useState(false);
             const [salvandoProduto, setSalvandoProduto] = useState(false);
             const [novoProduto, setNovoProduto] = useState({ id: null, nome: '', texto_padrao: '', preco_base: '' });
@@ -121,10 +180,9 @@
 
             useEffect(() => { carregarDados(); }, []);
 
-            // Renderizador de Ícones Seguro
             useEffect(() => { 
                 lucide.createIcons(); 
-            }, [abaAtual, modalAberto, modalProdutoAberto, modalClienteAberto, pedidos, produtos, clientes, buscaCliente, buscaProduto]); 
+            }, [abaAtual, modalAberto, modalProdutoAberto, modalClienteAberto, pedidos, produtos, clientes, buscaCliente, buscaProduto, itensPedido]); 
 
             async function carregarDados() {
                 const { data: listaPedidos } = await supabase.from('pedidos').select('*').order('id', { ascending: false });
@@ -146,25 +204,28 @@
                 setPedidoEmEdicao(null);
                 setBuscaCliente('');
                 setBuscaProduto('');
+                setItensPedido([]); 
                 setItemAtual({ nome: '', descricao: '', valor: '', desconto: '' });
                 setNovoPedido({ cliente: '', servico: '', valor_total: '', status: 'Aguardando' });
             }
 
-            // CARREGA OS DADOS EXISTENTES NA JANELA MESTRE PARA EDIÇÃO
+            // ATIVA A MÁGICA DE RECONSTRUÇÃO DO CARRINHO AO CLICAR EM EDITAR
             function abrirEdicao(pedido) {
+                const dadosDesconstruidos = desconstruirTextoServico(pedido.servico);
                 setPedidoEmEdicao(pedido);
                 setBuscaCliente(pedido.cliente);
+                setItensPedido(dadosDesconstruidos.itens); // Restaura os cards pretos fixos no topo
                 setNovoPedido({
                     cliente: pedido.cliente,
-                    servico: pedido.servico,
+                    servico: dadosDesconstruidos.observacoes,
                     status: pedido.status,
                     valor_total: formatarMoeda((pedido.valor_total * 100).toFixed(0).toString())
                 });
                 setModalAberto(true);
             }
 
-            // MOTOR DA CALCULADORA DE DESCONTO E INSERÇÃO DE TEXTO
-            const obterValorFinalItem = () => {
+            // OPERAÇÕES DO CARRINHO SUPERIOR
+            const obtenerValorFinalItem = () => {
                 const numOriginal = parseFloat(itemAtual.valor.replace(/\./g, '').replace(',', '.')) || 0;
                 const pctDesconto = parseFloat(itemAtual.desconto) || 0;
                 return numOriginal * (1 - pctDesconto / 100);
@@ -175,40 +236,65 @@
                 const valorFinalCalculadoNum = obterValorFinalItem();
                 const valorFinalCalculadoStr = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(valorFinalCalculadoNum);
                 
-                // Constrói a linha de texto formatada
-                const tagDesconto = itemAtual.desconto ? ' (-' + itemAtual.desconto + '%)' : '';
-                const tagNome = itemAtual.nome ? '• ' + itemAtual.nome + '\n  ' : '• ';
-                const blocoTextoItem = tagNome + itemAtual.descricao + '\n  Valor: R$ ' + valorFinalCalculadoStr + tagDesconto;
+                const novoItemEmpacotado = { 
+                    ...itemAtual, 
+                    valor_original: itemAtual.valor, 
+                    valor: valorFinalCalculadoStr, 
+                    id_temp: Math.random() + Date.now() 
+                };
+
+                const novosItens = [...itensPedido, novoItemEmpacotado];
+                setItensPedido(novosItens); // Mantém o item listado fixo no topo da janela
                 
-                // Injeta diretamente no campo de texto principal
-                const textoCompilado = novoPedido.servico ? novoPedido.servico + '\n\n' + blocoTextoItem : blocoTextoItem;
-                
-                // Soma matematicamente ao valor total atual da janela
-                const totalAtualExistente = parseFloat(novoPedido.valor_total.replace(/\./g, '').replace(',', '.')) || 0;
-                const novoTotalGeralCalculado = totalAtualExistente + valorFinalCalculadoNum;
-                
+                // Atualiza a soma matemática automática na caixa de valor total
+                let totalGeralOS = 0;
+                novosItens.forEach(i => { totalGeralOS += parseFloat(i.valor.replace(/\./g, '').replace(',', '.')) || 0; });
                 setNovoPedido({
                     ...novoPedido,
-                    servico: textoCompilado,
-                    valor_total: formatarMoeda((novoTotalGeralCalculado * 100).toFixed(0).toString())
+                    valor_total: formatarMoeda((totalGeralOS * 100).toFixed(0).toString())
                 });
                 
-                // Limpa a esteira de inserção para o próximo item
                 setItemAtual({ nome: '', descricao: '', valor: '', desconto: '' });
                 setBuscaProduto('');
             }
 
-            // FUNÇÃO SALVAR (IDENTIFICA SE DEVE CRIAR OU ATUALIZAR)
+            function removerItemDoCarrinho(id_temp) {
+                const novosItens = itensPedido.filter(i => i.id_temp !== id_temp);
+                setItensPedido(novosItens);
+                
+                let totalGeralOS = 0;
+                novosItens.forEach(i => { totalGeralOS += parseFloat(i.valor.replace(/\./g, '').replace(',', '.')) || 0; });
+                setNovoPedido({
+                    ...novoPedido,
+                    valor_total: formatarMoeda((totalGeralOS * 100).toFixed(0).toString())
+                });
+            }
+
+            // SALVA COMPILANDO OS ITENS DO CARRINHO PARA O FORMATO DE TEXTO DO BANCO
             async function salvarOS(e) {
                 e.preventDefault();
                 setSalvandoOS(true);
+                
+                let textoFinalServico = '';
+                if (itensPedido.length > 0) {
+                    const itensTextoArray = itensPedido.map(i => {
+                        const strDesconto = i.desconto ? ' (-' + i.desconto + '%)' : '';
+                        const strNome = i.nome ? '• ' + i.nome : '• Serviço Personalizado';
+                        return strNome + '\n  ' + i.descricao + '\n  Valor: R$ ' + i.valor + strDesconto;
+                    });
+                    const itensTextoString = itensTextoArray.join('\n\n');
+                    const obsGerais = novoPedido.servico ? '\n\n[OBSERVAÇÕES GERAIS]\n' + novoPedido.servico : '';
+                    textoFinalServico = itensTextoString + obsGerais;
+                } else {
+                    textoFinalServico = novoPedido.servico;
+                }
+
                 const valorNumericoFinal = parseFloat(novoPedido.valor_total.replace(/\./g, '').replace(',', '.')) || 0;
 
                 if (pedidoEmEdicao) {
-                    // MODO EDIÇÃO: Executa o UPDATE no mesmo ID
                     const { data, error } = await supabase.from('pedidos').update({
                         cliente: novoPedido.cliente,
-                        servico: novoPedido.servico,
+                        servico: textoFinalServico,
                         status: novoPedido.status,
                         valor_total: valorNumericoFinal
                     }).eq('id', pedidoEmEdicao.id).select();
@@ -218,10 +304,9 @@
                         fecharModalOS();
                     } else alert('Erro ao atualizar OS: ' + error.message);
                 } else {
-                    // MODO CRIAÇÃO: Executa o INSERT comum
                     const { data, error } = await supabase.from('pedidos').insert([{
                         cliente: novoPedido.cliente,
-                        servico: novoPedido.servico,
+                        servico: textoFinalServico,
                         status: novoPedido.status,
                         valor_total: valorNumericoFinal
                     }]).select();
@@ -234,7 +319,12 @@
                 setSalvandoOS(false);
             }
 
-            // PROCESSAMENTO DE SUB-CADASTROS
+            // PRODUTOS
+            function abrirEdicaoProduto(prod) {
+                setNovoProduto({ id: prod.id, nome: prod.nome, texto_padrao: prod.texto_padrao, preco_base: formatarMoeda((prod.preco_base * 100).toFixed(0).toString()) });
+                setModalProdutoAberto(true);
+            }
+
             async function salvarProduto(e) {
                 e.preventDefault();
                 setSalvandoProduto(true);
@@ -250,6 +340,12 @@
                     else alert('Falha ao salvar produto: ' + error.message);
                 }
                 setSalvandoProduto(false);
+            }
+
+            // CLIENTES
+            function abrirEdicaoCliente(cli) {
+                setNovoCliente({ id: cli.id, nome: cli.nome, telefone: cli.telefone, email: cli.email, observacoes: cli.observacoes });
+                setModalClienteAberto(true);
             }
 
             async function salvarCliente(e) {
@@ -276,15 +372,13 @@
 
             const clientesFiltrados = clientes.filter(c => c.nome.toLowerCase().includes(buscaCliente.toLowerCase()) || (c.telefone && c.telefone.includes(buscaCliente)));
             const produtosFiltrados = produtos.filter(p => p.nome.toLowerCase().includes(buscaProduto.toLowerCase()) || p.id.toString().includes(buscaProduto));
-            
-            // TRAVA DO MODAL: Bloqueia salvamento se a OS ativa estiver finalizada e não for Admin
             const isModalTrancado = (pedidoEmEdicao && pedidoEmEdicao.status === 'Finalizado' && !isAdmin);
 
             return (
                 <div>
                     <div className="flex flex-col min-h-screen no-print">
                         
-                        {/* ================= HEADER ================= */}
+                        {/* ================= HEADER VERCEL ================= */}
                         <header className="sticky top-0 z-40 bg-white dark:bg-darkBg border-b border-gray-200 dark:border-darkBorder px-6 py-3 flex justify-between items-center">
                             <div className="flex items-center gap-8">
                                 <div className="flex items-center gap-2 text-gray-900 dark:text-white font-bold text-lg tracking-tight">
@@ -304,7 +398,7 @@
                             </div>
                         </header>
 
-                        {/* ================= KANBAN (CARTÕES TRAVADOS DE CLIQUE) ================= */}
+                        {/* ================= KANBAN TRAVADO ================= */}
                         {abaAtual === 'producao' && (
                             <main className="flex-1 p-6 lg:p-10 max-w-[1800px] mx-auto w-full fade-in">
                                 <div className="flex justify-between items-center mb-8">
@@ -343,7 +437,7 @@
                             </main>
                         )}
 
-                        {/* ================= BAIXA DE NOTAS (CONTROLE DE BLOQUEIO DO ITEM CONCLUÍDO) ================= */}
+                        {/* ================= BAIXA DE NOTAS (BLOQUEADO CLIQUE DE CONCLUÍDOS) ================= */}
                         {abaAtual === 'baixa' && (
                             <main className="flex-1 p-6 lg:p-10 max-w-[1400px] mx-auto w-full fade-in">
                                 <div className="flex justify-between items-center mb-8">
@@ -355,11 +449,9 @@
                                         <tbody>
                                             {pedidos.map(p => {
                                                 const finalizado = p.status === 'Finalizado';
-                                                // Bloqueia o clique se estiver finalizado e não for Administrador ativo
                                                 const trancado = finalizado && !isAdmin;
                                                 return (
-                                                    <tr 
-                                                        key={p.id} 
+                                                    <tr key={p.id} 
                                                         onClick={() => { if (trancado) return; abrirEdicao(p); }} 
                                                         className={`border-b border-gray-100 dark:border-darkBorder transition 
                                                             ${trancado ? 'opacity-25 bg-[#050505] cursor-not-allowed' : 'cursor-pointer hover:bg-gray-50 dark:hover:bg-darkHover'}`}
@@ -432,7 +524,7 @@
                         )}
                     </div>
 
-                    {/* ================= MODAL MESTRE UNIFICADO (100% IDÊNTICO PARA CRIAÇÃO E EDIÇÃO) ================= */}
+                    {/* ================= JANELA DE O.S. UNIFICADA (100% IDÊNTICA NA CRIAÇÃO E EDIÇÃO) ================= */}
                     {modalAberto && (
                         <div onClick={fecharModalOS} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer">
                             <div onClick={(e) => e.stopPropagation()} className="bg-white dark:bg-darkCard w-full max-w-2xl rounded border border-gray-200 dark:border-darkBorder shadow-2xl flex flex-col max-h-[95vh] cursor-default">
@@ -449,7 +541,7 @@
                                 <form onSubmit={salvarOS} className="p-6 overflow-y-auto custom-scrollbar flex flex-col gap-6">
                                     {isModalTrancado && <div className="p-3 bg-red-950/20 border border-red-900/50 rounded text-xs text-red-400">Nota liquidada. Ative o Modo Admin no avatar para forçar modificações.</div>}
                                     
-                                    {/* SEÇÃO 1: CLIENTE + BOTÃO QUADRADO LATERAL */}
+                                    {/* SEÇÃO 1: CLIENTE COM BOTÃO QUADRADO LATERAL */}
                                     <div>
                                         <label className="block text-sm font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Cliente / Empresa</label>
                                         <div className="flex gap-2">
@@ -462,9 +554,9 @@
                                                     placeholder="Buscar cliente..." autoComplete="off" />
                                                 <i data-lucide="chevron-down" className="absolute right-3 top-2.5 w-4 h-4 text-gray-400 pointer-events-none"></i>
                                                 {clienteDropdownAberto && clientesFiltrados.length > 0 && (
-                                                    <ul className="absolute z-[60] w-full mt-1 max-h-48 overflow-y-auto bg-white dark:bg-[#1A1A1A] border border-gray-200 dark:border-darkBorder rounded shadow-xl custom-scrollbar">
+                                                    <ul className="absolute z-[60] w-full mt-1 max-h-48 overflow-y-auto bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded shadow-xl custom-scrollbar">
                                                         {clientesFiltrados.map(c => (
-                                                            <li key={c.id} onClick={() => { setBuscaCliente(c.nome); setNovoPedido({...novoPedido, cliente: c.nome}); setClienteDropdownAberto(false); }} className="px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-[#2A2A2A] cursor-pointer border-b border-gray-100 dark:border-darkBorder last:border-0 flex justify-between items-center transition">
+                                                            <li key={c.id} onClick={() => { setBuscaCliente(c.nome); setNovoPedido({...novoPedido, cliente: c.nome}); setClienteDropdownAberto(false); }} className="px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-darkHover cursor-pointer border-b border-gray-100 dark:border-darkBorder last:border-0 flex justify-between items-center transition">
                                                                 <span className="font-medium text-sm text-gray-800 dark:text-[#EDEDED]">{c.nome}</span><span className="text-xs text-gray-500">{c.telefone}</span>
                                                             </li>
                                                         ))}
@@ -477,9 +569,34 @@
                                         </div>
                                     </div>
 
-                                    {/* SEÇÃO 2: MOTOR CONFIGURADOR DE ITENS (DISPONÍVEL SEMPRE) */}
+                                    {/* SEÇÃO 2: O CARRINHO DE ITENS (FIXO NO TOPO - DISPONÍVEL SEMPRE!) */}
                                     <div>
-                                        <label className="block text-sm font-medium mb-3 text-gray-700 dark:text-[#EDEDED]">Calculadora e Gerador de Itens</label>
+                                        <label className="block text-sm font-medium mb-3 text-gray-700 dark:text-[#EDEDED]">Carrinho de Itens Cadastrados</label>
+                                        
+                                        {/* Listagem Fixa em Blocos que você gostou */}
+                                        {itensPedido.length > 0 ? (
+                                            <div className="mb-4 flex flex-col gap-2">
+                                                {itensPedido.map((item, index) => (
+                                                    <div key={item.id_temp} className="flex justify-between items-center p-3 bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded">
+                                                        <div className="flex flex-col">
+                                                            <span className="font-semibold text-sm dark:text-white">{index + 1}. {item.nome || 'Serviço Personalizado'}</span>
+                                                            <span className="text-xs text-gray-500 dark:text-[#A1A1AA] whitespace-pre-wrap mt-1">{item.descricao}</span>
+                                                        </div>
+                                                        <div className="flex items-center gap-4">
+                                                            <div className="text-right">
+                                                                <span className="font-semibold text-sm dark:text-white">R$ {item.valor}</span>
+                                                                {item.desconto && <span className="block text-[10px] text-brand font-medium">-{item.desconto}%</span>}
+                                                            </div>
+                                                            <button type="button" disabled={isModalTrancado} onClick={() => removerItemDoCarrinho(item.id_temp)} className="text-gray-400 hover:text-red-500 transition disabled:opacity-30"><i data-lucide="trash-2" className="w-4 h-4"></i></button>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <p className="text-xs text-gray-500 dark:text-gray-500 mb-4 italic">Nenhum item individual processado neste pedido.</p>
+                                        )}
+
+                                        {/* Box Configurador do Item */}
                                         <div className="p-4 border border-dashed border-gray-300 dark:border-darkBorder rounded bg-transparent">
                                             <div className="flex flex-col gap-3">
                                                 <div className="flex gap-2">
@@ -514,27 +631,27 @@
                                         </div>
                                     </div>
 
-                                    {/* CAMPO 3: DESCRIÇÃO GERAL DA O.S. (O TEXTO FICA COMPILADO E EDITÁVEL AQUI) */}
+                                    {/* CAMPO 3: DESCRIÇÃO GERAL DA O.S. (EDITÁVEL LIVRE) */}
                                     <div>
                                         <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-[#EDEDED]">
-                                            Ficha Detalhada dos Serviços (Edição Livre)
+                                            Ficha de Texto Completa (Edição Livre)
                                         </label>
-                                        <textarea required rows="8" value={novoPedido.servico} onChange={e => setNovoPedido({...novoPedido, servico: e.target.value})} disabled={isModalTrancado} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand transition dark:text-[#EDEDED] custom-scrollbar disabled:opacity-50" placeholder="Os itens gerados acima serão escritos aqui. Você pode alterar, apagar linhas ou complementar esse texto como desejar..."></textarea>
+                                        <textarea required rows="6" value={novoPedido.servico} onChange={e => setNovoPedido({...novoPedido, servico: e.target.value})} disabled={isLocked} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand transition dark:text-[#EDEDED] custom-scrollbar disabled:opacity-50" placeholder="As observações de entrega ou textos livres entram aqui..."></textarea>
                                     </div>
                                     
-                                    {/* RODAPÉ FINANCEIRO: VALOR TOTAL + DROPDOWN STATUS */}
+                                    {/* PAR GRÁFICO FINAL: VALOR TOTAL + DROPDOWN STATUS */}
                                     <div className="grid grid-cols-2 gap-4 border-t border-gray-100 dark:border-darkBorder pt-4">
                                         <div>
                                             <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-[#EDEDED]">Valor Total Geral</label>
                                             <div className="relative">
                                                 <span className="absolute left-3 top-2.5 font-bold text-sm dark:text-gray-400">R$</span>
-                                                <input required type="text" value={novoPedido.valor_total} onChange={e => setNovoPedido({...novoPedido, valor_total: formatarMoeda(e.target.value)})} disabled={isModalTrancado} className="w-full bg-white dark:bg-darkInput border border-gray-200 dark:border-darkBorder rounded pl-9 pr-3 py-2 text-sm outline-none focus:border-brand transition dark:text-white font-bold disabled:opacity-50" placeholder="0,00" />
+                                                <input required type="text" value={novoPedido.valor_total} onChange={e => setNovoPedido({...novoPedido, valor_total: formatarMoeda(e.target.value)})} disabled={isLocked} className="w-full bg-white dark:bg-darkInput border border-gray-200 dark:border-darkBorder rounded pl-9 pr-3 py-2 text-sm outline-none focus:border-brand transition dark:text-white font-bold disabled:opacity-50" placeholder="0,00" />
                                             </div>
                                         </div>
                                         <div>
                                             <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-[#EDEDED]">Status da Ordem</label>
                                             <div className="relative">
-                                                <select required value={novoPedido.status} onChange={e => setNovoPedido({...novoPedido, status: e.target.value})} disabled={isModalTrancado} className="w-full bg-white dark:bg-darkInput border border-gray-200 dark:border-darkBorder rounded px-3 py-2.5 text-sm outline-none focus:border-brand transition dark:text-white font-semibold cursor-pointer appearance-none disabled:opacity-50">
+                                                <select required value={novoPedido.status} onChange={e => setNovoPedido({...novoPedido, status: e.target.value})} disabled={isLocked} className="w-full bg-white dark:bg-darkInput border border-gray-200 dark:border-darkBorder rounded px-3 py-2.5 text-sm outline-none focus:border-brand transition dark:text-white font-semibold cursor-pointer appearance-none disabled:opacity-50">
                                                     <option value="Aguardando">Aguardando</option>
                                                     <option value="Produzir">Em Produção</option>
                                                     <option value="Acabamento">Acabamento</option>
@@ -549,7 +666,7 @@
                                 <div className="px-6 py-4 border-t border-gray-100 dark:border-darkBorder bg-gray-50 dark:bg-darkCard flex justify-end gap-3 shrink-0">
                                     <button type="button" onClick={fecharModalOS} className="px-4 py-2 rounded text-sm font-medium text-gray-600 dark:text-[#A1A1AA] hover:bg-gray-200 dark:hover:bg-darkHover transition">Cancelar</button>
                                     {!isModalTrancado && (
-                                        <button type="button" onClick={salvarOS} disabled={salvandoOS} className="px-6 py-2 rounded text-sm font-semibold bg-brand hover:bg-brandHover text-white shadow-sm transition disabled:opacity-50">
+                                        <button type="submit" onClick={salvarOS} disabled={salvandoOS} className="px-6 py-2 rounded text-sm font-semibold bg-brand hover:bg-brandHover text-white shadow-sm transition disabled:opacity-50">
                                             {salvandoOS ? 'Salvando...' : pedidoEmEdicao ? 'Atualizar Pedido' : 'Finalizar Pedido'}
                                         </button>
                                     )}
@@ -579,7 +696,7 @@
                                 <form onSubmit={salvarCliente} className="p-6 flex flex-col gap-4">
                                     <div><label className="block text-sm font-medium mb-1.5 dark:text-[#EDEDED]">Nome / Empresa *</label><input required type="text" value={novoCliente.nome} onChange={e => setNovoCliente({...novoCliente, nome: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" placeholder="Ex: Fibrion" /></div>
                                     <div className="grid grid-cols-2 gap-4"><div><label className="block text-sm font-medium mb-1.5 dark:text-[#EDEDED]">WhatsApp</label><input type="text" value={novoCliente.telefone} onChange={e => setNovoCliente({...novoCliente, telefone: formatarTelefone(e.target.value)})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" placeholder="(11) 90000-0000" /></div><div><label className="block text-sm font-medium mb-1.5 dark:text-[#EDEDED]">E-mail</label><input type="email" value={novoCliente.email} onChange={e => setNovoCliente({...novoCliente, email: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" placeholder="contato@..." /></div></div>
-                                    <div><label className="block text-sm font-medium mb-1.5 dark:text-[#EDEDED]">Observações</label><textarea rows="2" value={novoCliente.observacoes} onChange={e => setNovoCliente({...novoCliente, observacoes: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition"></textarea></div>
+                                    <div><label className="block text-sm font-medium mb-1.5 dark:text-[#EDEDED]">Observações</label><textarea rows="2" value={novoCliente.observacoes} onChange={e => setNovoCliente({...novoCliente, observacoes: e.target.value})} className="w-full bg-transparent border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand transition dark:text-[#EDEDED]"></textarea></div>
                                     <div className="mt-4 flex justify-end gap-3"><button type="button" onClick={() => setModalClienteAberto(false)} className="px-4 py-2 rounded text-sm font-medium text-gray-600 dark:text-[#A1A1AA] hover:bg-gray-100 dark:hover:bg-darkHover transition">Cancelar</button><button type="submit" disabled={salvandoCliente} className="px-5 py-2 rounded text-sm font-medium bg-white text-black hover:bg-gray-200 transition">Salvar</button></div>
                                 </form>
                             </div>
@@ -607,7 +724,6 @@
             );
         }
 
-        // Componente do Cartão (100% Estático e Protegido no Kanban)
         function Cartao({ pedido, onPrint }) {
             return (
                 <div className="bg-white dark:bg-darkCard p-4 rounded border border-gray-200 dark:border-darkBorder flex flex-col gap-3 group shadow-sm select-none">
