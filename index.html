@@ -1,14 +1,15 @@
 <!DOCTYPE html>
-<html lang="pt-BR" class="light">
+<!-- O class="dark" aqui faz o sistema já nascer no Modo Escuro por padrão -->
+<html lang="pt-BR" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Berlim Gráfica | Sistema</title>
     
-    <!-- Fonte Moderna: Inter -->
+    <!-- Fonte Moderna: Inter (Padrão Airtable/Google) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -23,11 +24,15 @@
             theme: { 
                 extend: { 
                     colors: { 
-                        brand: '#F37020',          /* O seu Laranja */
-                        brandHover: '#d9641c',     /* Laranja um pouco mais escuro para o Hover */
-                        darkBg: '#131314',      
-                        darkCard: '#1e1e20',    
-                        darkBorder: '#333537'   
+                        brand: '#F37020',          /* O Laranja Berlim */
+                        brandHover: '#d9641c',     
+                        
+                        /* Paleta Airtable Enterprise */
+                        darkBg: '#0A0A0A',         /* Fundo Absoluto */
+                        darkLane: '#111111',       /* Esteira do Kanban */
+                        darkCard: '#1A1A1A',       /* Cartões e Janelas flutuantes */
+                        darkBorder: '#2A2A2A',     /* Linhas de divisão ultra sutis */
+                        darkInput: '#0F0F0F'       /* Fundo das caixas de texto */
                     },
                     fontFamily: {
                         sans: ['Inter', 'sans-serif']
@@ -38,7 +43,7 @@
     </script>
     <style>
         body { transition: background-color 0.3s ease; font-family: 'Inter', sans-serif; }
-        .glass { backdrop-filter: blur(12px); }
+        .glass { backdrop-filter: blur(16px); }
         @media print {
             body { background: white !important; color: black !important; }
             .no-print { display: none !important; }
@@ -46,7 +51,8 @@
         }
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #555; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #444; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background-color: #666; }
     </style>
 </head>
 <body class="bg-gray-50 dark:bg-darkBg text-gray-900 dark:text-gray-100 min-h-screen">
@@ -60,6 +66,7 @@
             'sb_publishable_RSQ4odG0wxy8ZucJHu_WvQ_0JfM8jbh'
         );
 
+        // MÁSCARAS
         const formatarMoeda = (valor) => {
             if (!valor) return '';
             const numeroLimpo = valor.toString().replace(/\D/g, ''); 
@@ -81,7 +88,7 @@
             const [pedidos, setPedidos] = useState([]);
             const [produtos, setProdutos] = useState([]);
             const [clientes, setClientes] = useState([]);
-            const [darkMode, setDarkMode] = useState(false);
+            const [darkMode, setDarkMode] = useState(true); // O estado agora começa como True (Escuro)
             
             const [modalAberto, setModalAberto] = useState(false);
             const [salvandoOS, setSalvandoOS] = useState(false);
@@ -116,8 +123,12 @@
             }
 
             const toggleDarkMode = () => {
+                if (darkMode) {
+                    document.documentElement.classList.remove('dark');
+                } else {
+                    document.documentElement.classList.add('dark');
+                }
                 setDarkMode(!darkMode);
-                document.documentElement.classList.toggle('dark');
             };
 
             function fecharModalOS() {
@@ -178,68 +189,95 @@
             return (
                 <div>
                     <div className="flex flex-col min-h-screen no-print">
-                        <header className="sticky top-0 z-40 glass bg-white/80 dark:bg-darkBg/90 border-b border-gray-200 dark:border-darkBorder px-6 py-4 flex justify-between items-center shadow-sm">
-                            <div className="flex items-center gap-8">
+                        
+                        {/* ================= HEADER ================= */}
+                        <header className="sticky top-0 z-40 glass bg-white/80 dark:bg-darkBg/80 border-b border-gray-200 dark:border-darkBorder px-8 py-4 flex justify-between items-center">
+                            <div className="flex items-center gap-10">
                                 <div className="flex items-center gap-2 text-brand font-black text-xl tracking-tight">
                                     <i data-lucide="printer"></i> BERLIM
                                 </div>
-                                <nav className="hidden md:flex gap-6 font-medium text-sm text-gray-500 dark:text-gray-400 cursor-pointer">
-                                    <a onClick={() => setAbaAtual('producao')} className={`transition ${abaAtual === 'producao' ? 'text-brand border-b-2 border-brand pb-1 font-bold' : 'hover:text-gray-900 dark:hover:text-white'}`}>Produção</a>
-                                    <a onClick={() => setAbaAtual('produtos')} className={`transition ${abaAtual === 'produtos' ? 'text-brand border-b-2 border-brand pb-1 font-bold' : 'hover:text-gray-900 dark:hover:text-white'}`}>Produtos (Catálogo)</a>
-                                    <a onClick={() => setAbaAtual('clientes')} className={`transition ${abaAtual === 'clientes' ? 'text-brand border-b-2 border-brand pb-1 font-bold' : 'hover:text-gray-900 dark:hover:text-white'}`}>Clientes</a>
+                                <nav className="hidden md:flex gap-8 font-medium text-sm text-gray-500 dark:text-gray-400 cursor-pointer">
+                                    <a onClick={() => setAbaAtual('producao')} className={`transition ${abaAtual === 'producao' ? 'text-brand dark:text-white font-bold' : 'hover:text-gray-900 dark:hover:text-gray-200'}`}>Produção</a>
+                                    <a onClick={() => setAbaAtual('produtos')} className={`transition ${abaAtual === 'produtos' ? 'text-brand dark:text-white font-bold' : 'hover:text-gray-900 dark:hover:text-gray-200'}`}>Catálogo</a>
+                                    <a onClick={() => setAbaAtual('clientes')} className={`transition ${abaAtual === 'clientes' ? 'text-brand dark:text-white font-bold' : 'hover:text-gray-900 dark:hover:text-gray-200'}`}>Clientes</a>
                                 </nav>
                             </div>
-                            <div className="flex items-center gap-4">
-                                <button onClick={toggleDarkMode} className="p-2 rounded hover:bg-gray-100 dark:hover:bg-darkCard transition"><i data-lucide={darkMode ? "sun" : "moon"} className="w-5 h-5 dark:text-gray-300"></i></button>
-                                <div className="w-8 h-8 rounded-full bg-brand text-white flex items-center justify-center font-bold text-sm shadow-md">AD</div>
+                            <div className="flex items-center gap-5">
+                                <button onClick={toggleDarkMode} className="p-2 rounded hover:bg-gray-100 dark:hover:bg-darkCard transition text-gray-600 dark:text-gray-400"><i data-lucide={darkMode ? "sun" : "moon"} className="w-5 h-5"></i></button>
+                                <div className="w-8 h-8 rounded bg-brand text-white flex items-center justify-center font-bold text-sm shadow-md">AD</div>
                             </div>
                         </header>
 
+                        {/* ================= KANBAN (BASE AIRTABLE) ================= */}
                         {abaAtual === 'producao' && (
-                            <main className="flex-1 p-6 max-w-[1600px] mx-auto w-full fade-in">
+                            <main className="flex-1 p-8 max-w-[1800px] mx-auto w-full fade-in">
                                 <div className="flex justify-between items-center mb-8">
+                                    <h1 className="text-2xl font-bold dark:text-white tracking-tight">Painel de Produção</h1>
                                     <button onClick={() => setModalAberto(true)} className="bg-brand hover:bg-brandHover text-white px-5 py-2.5 rounded font-semibold flex items-center gap-2 shadow-sm transition transform hover:-translate-y-0.5">
                                         <i data-lucide="plus" className="w-4 h-4"></i> Nova O.S.
                                     </button>
                                 </div>
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
-                                    {/* Manti as cores de status originais apenas para as colunas do Kanban, pois indicam a etapa visualmente */}
-                                    <div className="flex flex-col gap-4">
-                                        <div className="flex items-center justify-between pb-2 border-b-2 border-orange-400">
-                                            <h2 className="font-bold flex items-center gap-2 dark:text-gray-200"><i data-lucide="clock" className="w-4 h-4 text-orange-500"></i> Aguardando</h2>
+                                
+                                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+                                    
+                                    {/* COLUNA: AGUARDANDO */}
+                                    <div className="flex flex-col bg-gray-100 dark:bg-darkLane rounded-md border border-gray-200 dark:border-darkBorder overflow-hidden">
+                                        <div className="p-4 border-b border-gray-200 dark:border-darkBorder border-t-2 border-t-orange-500 bg-gray-50/50 dark:bg-darkBg/50 flex justify-between items-center">
+                                            <h2 className="font-bold text-sm tracking-wide uppercase text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                                                <div className="w-2 h-2 rounded-full bg-orange-500"></div> Aguardando
+                                            </h2>
+                                            <span className="text-xs font-bold text-gray-500 dark:text-gray-500">{pedidos.filter(p => p.status === 'Aguardando').length}</span>
                                         </div>
-                                        {pedidos.filter(p => p.status === 'Aguardando').map(p => <Cartao key={p.id} pedido={p} onPrint={() => imprimirOS(p)} />)}
-                                    </div>
-                                    <div className="flex flex-col gap-4">
-                                        <div className="flex items-center justify-between pb-2 border-b-2 border-blue-500">
-                                            <h2 className="font-bold flex items-center gap-2 dark:text-gray-200"><i data-lucide="settings" className="w-4 h-4 text-blue-500"></i> Produzir</h2>
+                                        <div className="p-4 flex flex-col gap-3 min-h-[200px]">
+                                            {pedidos.filter(p => p.status === 'Aguardando').map(p => <Cartao key={p.id} pedido={p} onPrint={() => imprimirOS(p)} />)}
                                         </div>
-                                        {pedidos.filter(p => p.status === 'Produzir').map(p => <Cartao key={p.id} pedido={p} onPrint={() => imprimirOS(p)} />)}
                                     </div>
-                                    <div className="flex flex-col gap-4">
-                                        <div className="flex items-center justify-between pb-2 border-b-2 border-green-500">
-                                            <h2 className="font-bold flex items-center gap-2 dark:text-gray-200"><i data-lucide="package-check" className="w-4 h-4 text-green-500"></i> Acabamento</h2>
+
+                                    {/* COLUNA: PRODUZIR */}
+                                    <div className="flex flex-col bg-gray-100 dark:bg-darkLane rounded-md border border-gray-200 dark:border-darkBorder overflow-hidden">
+                                        <div className="p-4 border-b border-gray-200 dark:border-darkBorder border-t-2 border-t-blue-500 bg-gray-50/50 dark:bg-darkBg/50 flex justify-between items-center">
+                                            <h2 className="font-bold text-sm tracking-wide uppercase text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                                                <div className="w-2 h-2 rounded-full bg-blue-500"></div> Em Produção
+                                            </h2>
+                                            <span className="text-xs font-bold text-gray-500 dark:text-gray-500">{pedidos.filter(p => p.status === 'Produzir').length}</span>
                                         </div>
-                                        {pedidos.filter(p => p.status === 'Acabamento').map(p => <Cartao key={p.id} pedido={p} onPrint={() => imprimirOS(p)} />)}
+                                        <div className="p-4 flex flex-col gap-3 min-h-[200px]">
+                                            {pedidos.filter(p => p.status === 'Produzir').map(p => <Cartao key={p.id} pedido={p} onPrint={() => imprimirOS(p)} />)}
+                                        </div>
                                     </div>
+
+                                    {/* COLUNA: ACABAMENTO */}
+                                    <div className="flex flex-col bg-gray-100 dark:bg-darkLane rounded-md border border-gray-200 dark:border-darkBorder overflow-hidden">
+                                        <div className="p-4 border-b border-gray-200 dark:border-darkBorder border-t-2 border-t-emerald-500 bg-gray-50/50 dark:bg-darkBg/50 flex justify-between items-center">
+                                            <h2 className="font-bold text-sm tracking-wide uppercase text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                                                <div className="w-2 h-2 rounded-full bg-emerald-500"></div> Acabamento / Pronto
+                                            </h2>
+                                            <span className="text-xs font-bold text-gray-500 dark:text-gray-500">{pedidos.filter(p => p.status === 'Acabamento').length}</span>
+                                        </div>
+                                        <div className="p-4 flex flex-col gap-3 min-h-[200px]">
+                                            {pedidos.filter(p => p.status === 'Acabamento').map(p => <Cartao key={p.id} pedido={p} onPrint={() => imprimirOS(p)} />)}
+                                        </div>
+                                    </div>
+
                                 </div>
                             </main>
                         )}
 
+                        {/* ================= CATÁLOGO (BASE AIRTABLE GRID) ================= */}
                         {abaAtual === 'produtos' && (
-                            <main className="flex-1 p-6 max-w-[1200px] mx-auto w-full fade-in">
+                            <main className="flex-1 p-8 max-w-[1400px] mx-auto w-full fade-in">
                                 <div className="flex justify-between items-center mb-8">
-                                    <h1 className="text-2xl font-bold dark:text-white flex items-center gap-2"><i data-lucide="book-open" className="text-brand"></i> Catálogo de Produtos</h1>
+                                    <h1 className="text-2xl font-bold dark:text-white tracking-tight">Catálogo de Produtos</h1>
                                     <button onClick={() => setModalProdutoAberto(true)} className="bg-brand hover:bg-brandHover text-white px-5 py-2.5 rounded font-semibold flex items-center gap-2 shadow-sm transition">
                                         <i data-lucide="plus" className="w-4 h-4"></i> Novo Produto
                                     </button>
                                 </div>
-                                <div className="bg-white dark:bg-darkCard rounded-md shadow-sm border border-gray-200 dark:border-darkBorder overflow-hidden">
+                                <div className="bg-white dark:bg-darkCard rounded-md border border-gray-200 dark:border-darkBorder overflow-hidden">
                                     <table className="w-full text-left border-collapse">
-                                        <thead><tr className="bg-gray-50 dark:bg-darkBg border-b border-gray-200 dark:border-darkBorder text-sm text-gray-500 dark:text-gray-400"><th className="p-4">Nº</th><th className="p-4">Nome</th><th className="p-4">Descrição Base</th><th className="p-4 text-right">Preço Base</th></tr></thead>
+                                        <thead><tr className="bg-gray-50 dark:bg-darkLane border-b border-gray-200 dark:border-darkBorder text-xs uppercase tracking-wider font-bold text-gray-500 dark:text-gray-400"><th className="p-4 w-20 border-r border-gray-200 dark:border-darkBorder">ID</th><th className="p-4 w-1/4 border-r border-gray-200 dark:border-darkBorder">Nome do Produto</th><th className="p-4 border-r border-gray-200 dark:border-darkBorder">Descrição Base</th><th className="p-4 text-right">Preço Base</th></tr></thead>
                                         <tbody>
                                             {produtos.map(p => (
-                                                <tr key={p.id} className="border-b border-gray-100 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-[#282a2c] transition"><td className="p-4 font-bold text-brand">[{p.id}]</td><td className="p-4 font-semibold dark:text-white">{p.nome}</td><td className="p-4 text-sm text-gray-600 dark:text-gray-400">{p.texto_padrao}</td><td className="p-4 font-bold text-gray-800 dark:text-gray-200 text-right">R$ {Number(p.preco_base).toFixed(2).replace('.', ',')}</td></tr>
+                                                <tr key={p.id} className="border-b border-gray-100 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkLane transition group"><td className="p-4 text-sm font-semibold text-gray-500 border-r border-gray-100 dark:border-darkBorder">#{p.id}</td><td className="p-4 font-semibold text-gray-900 dark:text-white border-r border-gray-100 dark:border-darkBorder">{p.nome}</td><td className="p-4 text-sm text-gray-600 dark:text-gray-400 border-r border-gray-100 dark:border-darkBorder truncate max-w-xs">{p.texto_padrao}</td><td className="p-4 font-bold text-gray-800 dark:text-gray-200 text-right">R$ {Number(p.preco_base).toFixed(2).replace('.', ',')}</td></tr>
                                             ))}
                                         </tbody>
                                     </table>
@@ -247,20 +285,21 @@
                             </main>
                         )}
 
+                        {/* ================= CLIENTES (BASE AIRTABLE GRID) ================= */}
                         {abaAtual === 'clientes' && (
-                            <main className="flex-1 p-6 max-w-[1200px] mx-auto w-full fade-in">
+                            <main className="flex-1 p-8 max-w-[1400px] mx-auto w-full fade-in">
                                 <div className="flex justify-between items-center mb-8">
-                                    <h1 className="text-2xl font-bold dark:text-white flex items-center gap-2"><i data-lucide="users" className="text-brand"></i> Clientes</h1>
+                                    <h1 className="text-2xl font-bold dark:text-white tracking-tight">Banco de Clientes</h1>
                                     <button onClick={() => setModalClienteAberto(true)} className="bg-brand hover:bg-brandHover text-white px-5 py-2.5 rounded font-semibold flex items-center gap-2 shadow-sm transition">
                                         <i data-lucide="plus" className="w-4 h-4"></i> Novo Cliente
                                     </button>
                                 </div>
-                                <div className="bg-white dark:bg-darkCard rounded-md shadow-sm border border-gray-200 dark:border-darkBorder overflow-hidden">
+                                <div className="bg-white dark:bg-darkCard rounded-md border border-gray-200 dark:border-darkBorder overflow-hidden">
                                     <table className="w-full text-left border-collapse">
-                                        <thead><tr className="bg-gray-50 dark:bg-darkBg border-b border-gray-200 dark:border-darkBorder text-sm text-gray-500 dark:text-gray-400"><th className="p-4">Nome</th><th className="p-4">Telefone</th><th className="p-4">E-mail</th><th className="p-4">Observações</th></tr></thead>
+                                        <thead><tr className="bg-gray-50 dark:bg-darkLane border-b border-gray-200 dark:border-darkBorder text-xs uppercase tracking-wider font-bold text-gray-500 dark:text-gray-400"><th className="p-4 w-1/4 border-r border-gray-200 dark:border-darkBorder">Cliente / Empresa</th><th className="p-4 w-48 border-r border-gray-200 dark:border-darkBorder">WhatsApp</th><th className="p-4 w-1/4 border-r border-gray-200 dark:border-darkBorder">E-mail</th><th className="p-4">Observações</th></tr></thead>
                                         <tbody>
                                             {clientes.map(c => (
-                                                <tr key={c.id} className="border-b border-gray-100 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-[#282a2c] transition"><td className="p-4 font-bold dark:text-white">{c.nome}</td><td className="p-4 dark:text-gray-300">{c.telefone || '---'}</td><td className="p-4 dark:text-gray-300">{c.email || '---'}</td><td className="p-4 text-sm text-gray-500 dark:text-gray-400">{c.observacoes || '---'}</td></tr>
+                                                <tr key={c.id} className="border-b border-gray-100 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkLane transition group"><td className="p-4 font-semibold text-gray-900 dark:text-white border-r border-gray-100 dark:border-darkBorder">{c.nome}</td><td className="p-4 text-sm text-gray-600 dark:text-gray-300 border-r border-gray-100 dark:border-darkBorder">{c.telefone || '---'}</td><td className="p-4 text-sm text-gray-600 dark:text-gray-300 border-r border-gray-100 dark:border-darkBorder">{c.email || '---'}</td><td className="p-4 text-sm text-gray-500 dark:text-gray-500 truncate max-w-xs">{c.observacoes || '---'}</td></tr>
                                             ))}
                                         </tbody>
                                     </table>
@@ -269,127 +308,104 @@
                         )}
                     </div>
 
-                    {/* ================= MODAL: NOVA O.S. ================= */}
+                    {/* ================= MODAL PRINCIPAL: NOVA O.S. ================= */}
                     {modalAberto && (
-                        <div onClick={fecharModalOS} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 dark:bg-black/60 glass no-print transition-all cursor-pointer">
+                        <div onClick={fecharModalOS} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 dark:bg-black/70 glass no-print transition-all cursor-pointer">
                             <div onClick={(e) => e.stopPropagation()} className="bg-white dark:bg-darkCard w-full max-w-lg rounded-md shadow-2xl overflow-hidden border border-gray-200 dark:border-darkBorder cursor-default">
-                                <div className="px-6 py-4 border-b border-gray-100 dark:border-darkBorder flex justify-between items-center bg-gray-50 dark:bg-darkBg">
-                                    <h3 className="font-bold text-lg dark:text-white">Cadastrar Nova O.S.</h3>
+                                <div className="px-6 py-5 border-b border-gray-100 dark:border-darkBorder flex justify-between items-center bg-gray-50 dark:bg-darkBg">
+                                    <h3 className="font-bold text-lg dark:text-white tracking-tight">Criar Ordem de Serviço</h3>
                                     <button type="button" onClick={fecharModalOS} className="text-gray-400 hover:text-red-500 transition"><i data-lucide="x" className="w-5 h-5"></i></button>
                                 </div>
-                                <form onSubmit={salvarOS} className="p-6 flex flex-col gap-5">
+                                <form onSubmit={salvarOS} className="p-6 flex flex-col gap-6">
                                     
+                                    {/* CAMPO: CLIENTE COM BOTÃO RÁPIDO RESTAURADO E ELEGANTE */}
                                     <div>
-                                        <label className="block text-sm font-semibold mb-1.5 text-gray-700 dark:text-gray-300">Cliente / Empresa</label>
-                                        <div className="flex gap-2">
-                                            <div className="relative flex-1">
-                                                <input 
-                                                    required 
-                                                    type="text" 
-                                                    value={buscaCliente} 
-                                                    onChange={e => {
-                                                        setBuscaCliente(e.target.value);
-                                                        setNovoPedido({...novoPedido, cliente: e.target.value});
-                                                        setClienteDropdownAberto(true);
-                                                    }}
-                                                    onFocus={() => setClienteDropdownAberto(true)}
-                                                    onBlur={() => setTimeout(() => setClienteDropdownAberto(false), 200)}
-                                                    /* Outline/Ring sutil de 1px usando a cor brand */
-                                                    className="w-full bg-white dark:bg-darkBg border border-gray-200 dark:border-darkBorder rounded px-4 py-2 outline-none focus:border-brand focus:ring-1 focus:ring-brand transition dark:text-white shadow-sm" 
-                                                    placeholder="Busque por nome ou telefone..." 
-                                                    autoComplete="off"
-                                                />
-                                                <i data-lucide="chevron-down" className="absolute right-3 top-2.5 w-5 h-5 text-gray-400 pointer-events-none"></i>
-                                                
-                                                {clienteDropdownAberto && clientesFiltrados.length > 0 && (
-                                                    <ul className="absolute z-[60] w-full mt-1 max-h-48 overflow-y-auto bg-white dark:bg-[#282a2c] border border-gray-200 dark:border-darkBorder rounded shadow-xl custom-scrollbar">
-                                                        {clientesFiltrados.map(c => (
-                                                            <li key={c.id} onClick={() => {
-                                                                setBuscaCliente(c.nome);
-                                                                setNovoPedido({...novoPedido, cliente: c.nome});
-                                                                setClienteDropdownAberto(false);
-                                                            }} className="px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-[#333537] cursor-pointer border-b border-gray-100 dark:border-darkBorder last:border-0 flex justify-between items-center transition">
-                                                                <span className="font-bold text-gray-800 dark:text-gray-200">{c.nome}</span>
-                                                                <span className="text-xs text-gray-500 dark:text-gray-400">{c.telefone}</span>
-                                                            </li>
-                                                        ))}
-                                                    </ul>
-                                                )}
-                                            </div>
-                                            {/* Botão sutil de + */}
-                                            <button type="button" onClick={() => setModalClienteAberto(true)} className="px-3.5 py-2 bg-white dark:bg-darkBg border border-gray-200 dark:border-darkBorder rounded hover:bg-gray-50 dark:hover:bg-[#282a2c] transition flex items-center justify-center shadow-sm group" title="Cadastrar Novo Cliente">
-                                                <i data-lucide="plus" className="w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-brand transition"></i>
+                                        <div className="flex justify-between items-end mb-2">
+                                            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">Cliente / Empresa</label>
+                                            <button type="button" onClick={() => setModalClienteAberto(true)} className="text-xs font-semibold text-brand hover:text-brandHover transition flex items-center gap-1">
+                                                <i data-lucide="plus-circle" className="w-3.5 h-3.5"></i> Adicionar Rápido
                                             </button>
+                                        </div>
+                                        <div className="relative">
+                                            <input 
+                                                required type="text" value={buscaCliente} 
+                                                onChange={e => { setBuscaCliente(e.target.value); setNovoPedido({...novoPedido, cliente: e.target.value}); setClienteDropdownAberto(true); }}
+                                                onFocus={() => setClienteDropdownAberto(true)}
+                                                onBlur={() => setTimeout(() => setClienteDropdownAberto(false), 200)}
+                                                className="w-full bg-white dark:bg-darkInput border border-gray-200 dark:border-darkBorder rounded px-4 py-2.5 outline-none focus:border-brand focus:ring-1 focus:ring-brand transition dark:text-white shadow-sm" 
+                                                placeholder="Busque por nome ou telefone..." autoComplete="off"
+                                            />
+                                            <i data-lucide="chevron-down" className="absolute right-3 top-3 w-5 h-5 text-gray-400 pointer-events-none"></i>
+                                            
+                                            {clienteDropdownAberto && clientesFiltrados.length > 0 && (
+                                                <ul className="absolute z-[60] w-full mt-1 max-h-48 overflow-y-auto bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded shadow-xl custom-scrollbar">
+                                                    {clientesFiltrados.map(c => (
+                                                        <li key={c.id} onClick={() => { setBuscaCliente(c.nome); setNovoPedido({...novoPedido, cliente: c.nome}); setClienteDropdownAberto(false); }} className="px-4 py-3 hover:bg-gray-50 dark:hover:bg-darkLane cursor-pointer border-b border-gray-100 dark:border-darkBorder last:border-0 flex justify-between items-center transition">
+                                                            <span className="font-semibold text-gray-800 dark:text-gray-200">{c.nome}</span>
+                                                            <span className="text-xs text-gray-500 dark:text-gray-400">{c.telefone}</span>
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            )}
                                         </div>
                                     </div>
 
+                                    {/* CAMPO: PRODUTO COM BOTÃO RÁPIDO RESTAURADO E ELEGANTE */}
                                     <div>
-                                        <label className="block text-sm font-semibold mb-1.5 text-gray-700 dark:text-gray-300">Catálogo de Produtos</label>
-                                        <div className="flex gap-2">
-                                            <div className="relative flex-1">
-                                                <input 
-                                                    type="text"
-                                                    value={buscaProduto}
-                                                    onChange={e => {
-                                                        setBuscaProduto(e.target.value);
-                                                        setProdutoDropdownAberto(true);
-                                                    }}
-                                                    onFocus={() => setProdutoDropdownAberto(true)}
-                                                    onBlur={() => setTimeout(() => setProdutoDropdownAberto(false), 200)}
-                                                    className="w-full bg-white dark:bg-darkBg border border-gray-200 dark:border-darkBorder rounded px-4 py-2 outline-none focus:border-brand focus:ring-1 focus:ring-brand transition dark:text-white shadow-sm"
-                                                    placeholder="Busque por código ou nome do produto..."
-                                                    autoComplete="off"
-                                                />
-                                                <i data-lucide="chevron-down" className="absolute right-3 top-2.5 w-5 h-5 text-gray-400 pointer-events-none"></i>
-                                                
-                                                {produtoDropdownAberto && produtosFiltrados.length > 0 && (
-                                                    <ul className="absolute z-[60] w-full mt-1 max-h-48 overflow-y-auto bg-white dark:bg-[#282a2c] border border-gray-200 dark:border-darkBorder rounded shadow-xl custom-scrollbar">
-                                                        {produtosFiltrados.map(p => (
-                                                            <li key={p.id} onClick={() => {
-                                                                setBuscaProduto(`[${p.id}] ${p.nome}`);
-                                                                setNovoPedido({
-                                                                    ...novoPedido,
-                                                                    servico: p.texto_padrao,
-                                                                    valor_total: formatarMoeda((p.preco_base * 100).toFixed(0).toString())
-                                                                });
-                                                                setProdutoDropdownAberto(false);
-                                                            }} className="px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-[#333537] cursor-pointer border-b border-gray-100 dark:border-darkBorder last:border-0 flex flex-col transition">
-                                                                <div className="flex justify-between items-center">
-                                                                    <span className="font-bold text-gray-800 dark:text-gray-200">[{p.id}] {p.nome}</span>
-                                                                    <span className="text-xs font-bold text-gray-500 dark:text-gray-400">R$ {Number(p.preco_base).toFixed(2).replace('.', ',')}</span>
-                                                                </div>
-                                                                <span className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">{p.texto_padrao}</span>
-                                                            </li>
-                                                        ))}
-                                                    </ul>
-                                                )}
-                                            </div>
-                                            {/* Botão sutil de + */}
-                                            <button type="button" onClick={() => setModalProdutoAberto(true)} className="px-3.5 py-2 bg-white dark:bg-darkBg border border-gray-200 dark:border-darkBorder rounded hover:bg-gray-50 dark:hover:bg-[#282a2c] transition flex items-center justify-center shadow-sm group" title="Cadastrar Novo Produto">
-                                                <i data-lucide="plus" className="w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-brand transition"></i>
+                                        <div className="flex justify-between items-end mb-2">
+                                            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">Produto Base (Catálogo)</label>
+                                            <button type="button" onClick={() => setModalProdutoAberto(true)} className="text-xs font-semibold text-brand hover:text-brandHover transition flex items-center gap-1">
+                                                <i data-lucide="plus-circle" className="w-3.5 h-3.5"></i> Adicionar Rápido
                                             </button>
+                                        </div>
+                                        <div className="relative">
+                                            <input 
+                                                type="text" value={buscaProduto}
+                                                onChange={e => { setBuscaProduto(e.target.value); setProdutoDropdownAberto(true); }}
+                                                onFocus={() => setProdutoDropdownAberto(true)}
+                                                onBlur={() => setTimeout(() => setProdutoDropdownAberto(false), 200)}
+                                                className="w-full bg-white dark:bg-darkInput border border-gray-200 dark:border-darkBorder rounded px-4 py-2.5 outline-none focus:border-brand focus:ring-1 focus:ring-brand transition dark:text-white shadow-sm"
+                                                placeholder="Busque por código ou nome do produto..." autoComplete="off"
+                                            />
+                                            <i data-lucide="chevron-down" className="absolute right-3 top-3 w-5 h-5 text-gray-400 pointer-events-none"></i>
+                                            
+                                            {produtoDropdownAberto && produtosFiltrados.length > 0 && (
+                                                <ul className="absolute z-[60] w-full mt-1 max-h-48 overflow-y-auto bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded shadow-xl custom-scrollbar">
+                                                    {produtosFiltrados.map(p => (
+                                                        <li key={p.id} onClick={() => {
+                                                            setBuscaProduto(`${p.nome}`);
+                                                            setNovoPedido({ ...novoPedido, servico: p.texto_padrao, valor_total: formatarMoeda((p.preco_base * 100).toFixed(0).toString()) });
+                                                            setProdutoDropdownAberto(false);
+                                                        }} className="px-4 py-3 hover:bg-gray-50 dark:hover:bg-darkLane cursor-pointer border-b border-gray-100 dark:border-darkBorder last:border-0 flex flex-col transition">
+                                                            <div className="flex justify-between items-center">
+                                                                <span className="font-semibold text-gray-800 dark:text-gray-200">{p.nome}</span>
+                                                                <span className="text-xs font-bold text-brand">R$ {Number(p.preco_base).toFixed(2).replace('.', ',')}</span>
+                                                            </div>
+                                                            <span className="text-xs text-gray-500 dark:text-gray-500 truncate mt-1">{p.texto_padrao}</span>
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            )}
                                         </div>
                                     </div>
                                     
                                     <div>
-                                        <label className="block text-sm font-semibold mb-1.5 text-gray-700 dark:text-gray-300">Descrição Detalhada</label>
-                                        <textarea required rows="3" value={novoPedido.servico} onChange={e => setNovoPedido({...novoPedido, servico: e.target.value})} className="w-full bg-white dark:bg-darkBg border border-gray-200 dark:border-darkBorder rounded px-4 py-2 outline-none focus:border-brand focus:ring-1 focus:ring-brand transition dark:text-white text-sm shadow-sm" placeholder="O sistema não bloqueia este campo. Pode editar e adicionar informações extras à vontade..."></textarea>
+                                        <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">Descrição Detalhada</label>
+                                        <textarea required rows="3" value={novoPedido.servico} onChange={e => setNovoPedido({...novoPedido, servico: e.target.value})} className="w-full bg-white dark:bg-darkInput border border-gray-200 dark:border-darkBorder rounded px-4 py-3 outline-none focus:border-brand focus:ring-1 focus:ring-brand transition dark:text-white text-sm shadow-sm" placeholder="Especificações adicionais da O.S..."></textarea>
                                     </div>
                                     
                                     <div>
-                                        <label className="block text-sm font-semibold mb-1.5 text-gray-700 dark:text-gray-300">Valor Final (R$)</label>
+                                        <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">Valor Final (R$)</label>
                                         <input 
-                                            required 
-                                            type="text" 
-                                            value={novoPedido.valor_total} 
+                                            required type="text" value={novoPedido.valor_total} 
                                             onChange={e => setNovoPedido({...novoPedido, valor_total: formatarMoeda(e.target.value)})} 
-                                            className="w-full bg-white dark:bg-darkBg border border-gray-200 dark:border-darkBorder rounded px-4 py-2 outline-none focus:border-brand focus:ring-1 focus:ring-brand transition dark:text-white font-bold shadow-sm" 
+                                            className="w-full bg-white dark:bg-darkInput border border-gray-200 dark:border-darkBorder rounded px-4 py-2.5 outline-none focus:border-brand focus:ring-1 focus:ring-brand transition dark:text-white font-bold shadow-sm" 
                                             placeholder="0,00" 
                                         />
                                     </div>
                                     
-                                    <div className="mt-2 pt-5 border-t border-gray-100 dark:border-darkBorder flex justify-end gap-3">
-                                        <button type="button" onClick={fecharModalOS} className="px-5 py-2.5 rounded font-semibold text-gray-500 hover:bg-gray-100 dark:hover:bg-[#282a2c] transition">Cancelar</button>
+                                    <div className="mt-2 pt-6 border-t border-gray-100 dark:border-darkBorder flex justify-end gap-3">
+                                        <button type="button" onClick={fecharModalOS} className="px-5 py-2.5 rounded font-semibold text-gray-500 hover:bg-gray-100 dark:hover:bg-darkLane transition">Cancelar</button>
                                         <button type="submit" disabled={salvandoOS} className="px-6 py-2.5 rounded font-semibold bg-brand hover:bg-brandHover text-white shadow-sm transition disabled:opacity-50 flex items-center gap-2">
                                             {salvandoOS ? 'Salvando...' : 'Salvar Pedido'}
                                         </button>
@@ -399,61 +415,43 @@
                         </div>
                     )}
 
-                    {/* ================= MODAIS DE CADASTRO RÁPIDO (PRODUTOS / CLIENTES) ================= */}
+                    {/* ================= MODAL: NOVO PRODUTO ================= */}
                     {modalProdutoAberto && (
-                        <div onClick={() => setModalProdutoAberto(false)} className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 dark:bg-black/60 glass no-print transition-all cursor-pointer">
-                            <div onClick={(e) => e.stopPropagation()} className="bg-white dark:bg-darkCard w-full max-w-lg rounded-md shadow-2xl overflow-hidden border border-gray-200 dark:border-darkBorder cursor-default">
-                                <div className="px-6 py-4 border-b border-gray-100 dark:border-darkBorder flex justify-between items-center bg-gray-50 dark:bg-darkBg">
-                                    <h3 className="font-bold text-lg dark:text-white flex items-center gap-2">Adicionar ao Catálogo</h3>
+                        <div onClick={() => setModalProdutoAberto(false)} className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 dark:bg-black/70 glass no-print transition-all cursor-pointer">
+                            <div onClick={(e) => e.stopPropagation()} className="bg-white dark:bg-darkCard w-full max-w-md rounded-md shadow-2xl overflow-hidden border border-gray-200 dark:border-darkBorder cursor-default">
+                                <div className="px-6 py-5 border-b border-gray-100 dark:border-darkBorder flex justify-between items-center bg-gray-50 dark:bg-darkBg">
+                                    <h3 className="font-bold text-lg dark:text-white tracking-tight">Adicionar ao Catálogo</h3>
                                     <button type="button" onClick={() => setModalProdutoAberto(false)} className="text-gray-400 hover:text-red-500 transition"><i data-lucide="x" className="w-5 h-5"></i></button>
                                 </div>
-                                <form onSubmit={salvarProduto} className="p-6 flex flex-col gap-4">
-                                    <div><label className="block text-sm font-semibold mb-1.5 dark:text-gray-300">Nome do Produto</label><input required type="text" value={novoProduto.nome} onChange={e => setNovoProduto({...novoProduto, nome: e.target.value})} className="w-full bg-white dark:bg-darkBg border border-gray-200 dark:border-darkBorder rounded px-4 py-2 outline-none focus:border-brand focus:ring-1 focus:ring-brand dark:text-white shadow-sm transition" /></div>
-                                    <div><label className="block text-sm font-semibold mb-1.5 dark:text-gray-300">Texto / Descrição Base</label><textarea required rows="2" value={novoProduto.texto_padrao} onChange={e => setNovoProduto({...novoProduto, texto_padrao: e.target.value})} className="w-full bg-white dark:bg-darkBg border border-gray-200 dark:border-darkBorder rounded px-4 py-2 outline-none focus:border-brand focus:ring-1 focus:ring-brand dark:text-white shadow-sm transition"></textarea></div>
+                                <form onSubmit={salvarProduto} className="p-6 flex flex-col gap-5">
+                                    <div><label className="block text-sm font-semibold mb-2 dark:text-gray-300">Nome do Produto</label><input required type="text" value={novoProduto.nome} onChange={e => setNovoProduto({...novoProduto, nome: e.target.value})} className="w-full bg-white dark:bg-darkInput border border-gray-200 dark:border-darkBorder rounded px-4 py-2.5 outline-none focus:border-brand focus:ring-1 focus:ring-brand dark:text-white shadow-sm transition" /></div>
+                                    <div><label className="block text-sm font-semibold mb-2 dark:text-gray-300">Texto / Descrição Base</label><textarea required rows="2" value={novoProduto.texto_padrao} onChange={e => setNovoProduto({...novoProduto, texto_padrao: e.target.value})} className="w-full bg-white dark:bg-darkInput border border-gray-200 dark:border-darkBorder rounded px-4 py-2.5 outline-none focus:border-brand focus:ring-1 focus:ring-brand dark:text-white shadow-sm transition text-sm"></textarea></div>
                                     <div>
-                                        <label className="block text-sm font-semibold mb-1.5 dark:text-gray-300">Preço Base (R$)</label>
-                                        <input 
-                                            required 
-                                            type="text" 
-                                            value={novoProduto.preco_base} 
-                                            onChange={e => setNovoProduto({...novoProduto, preco_base: formatarMoeda(e.target.value)})} 
-                                            className="w-full bg-white dark:bg-darkBg border border-gray-200 dark:border-darkBorder rounded px-4 py-2 outline-none focus:border-brand focus:ring-1 focus:ring-brand dark:text-white shadow-sm transition" 
-                                            placeholder="0,00" 
-                                        />
+                                        <label className="block text-sm font-semibold mb-2 dark:text-gray-300">Preço Base (R$)</label>
+                                        <input required type="text" value={novoProduto.preco_base} onChange={e => setNovoProduto({...novoProduto, preco_base: formatarMoeda(e.target.value)})} className="w-full bg-white dark:bg-darkInput border border-gray-200 dark:border-darkBorder rounded px-4 py-2.5 outline-none focus:border-brand focus:ring-1 focus:ring-brand dark:text-white shadow-sm transition font-bold" placeholder="0,00" />
                                     </div>
-                                    <div className="mt-2 pt-5 border-t border-gray-100 dark:border-darkBorder flex justify-end gap-3"><button type="button" onClick={() => setModalProdutoAberto(false)} className="px-5 py-2.5 font-semibold text-gray-500 hover:bg-gray-100 dark:hover:bg-[#282a2c] rounded transition">Cancelar</button><button type="submit" disabled={salvandoProduto} className="px-6 py-2.5 rounded font-semibold bg-brand hover:bg-brandHover text-white shadow-sm transition">Salvar Produto</button></div>
+                                    <div className="mt-2 pt-6 border-t border-gray-100 dark:border-darkBorder flex justify-end gap-3"><button type="button" onClick={() => setModalProdutoAberto(false)} className="px-5 py-2.5 font-semibold text-gray-500 hover:bg-gray-100 dark:hover:bg-darkLane rounded transition">Cancelar</button><button type="submit" disabled={salvandoProduto} className="px-6 py-2.5 rounded font-semibold bg-brand hover:bg-brandHover text-white shadow-sm transition">Salvar Produto</button></div>
                                 </form>
                             </div>
                         </div>
                     )}
 
+                    {/* ================= MODAL: NOVO CLIENTE ================= */}
                     {modalClienteAberto && (
-                        <div onClick={() => setModalClienteAberto(false)} className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 dark:bg-black/60 glass no-print transition-all cursor-pointer">
+                        <div onClick={() => setModalClienteAberto(false)} className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 dark:bg-black/70 glass no-print transition-all cursor-pointer">
                             <div onClick={(e) => e.stopPropagation()} className="bg-white dark:bg-darkCard w-full max-w-md rounded-md shadow-2xl overflow-hidden border border-gray-200 dark:border-darkBorder cursor-default">
-                                <div className="px-6 py-4 border-b border-gray-100 dark:border-darkBorder flex justify-between items-center bg-gray-50 dark:bg-darkBg">
-                                    <h3 className="font-bold text-lg dark:text-white flex items-center gap-2">Cadastrar Cliente</h3>
+                                <div className="px-6 py-5 border-b border-gray-100 dark:border-darkBorder flex justify-between items-center bg-gray-50 dark:bg-darkBg">
+                                    <h3 className="font-bold text-lg dark:text-white tracking-tight">Cadastrar Cliente</h3>
                                     <button type="button" onClick={() => setModalClienteAberto(false)} className="text-gray-400 hover:text-red-500 transition"><i data-lucide="x" className="w-5 h-5"></i></button>
                                 </div>
-                                <form onSubmit={salvarCliente} className="p-6 flex flex-col gap-4">
-                                    <div>
-                                        <label className="block text-sm font-semibold mb-1.5 dark:text-gray-300">Nome / Empresa *</label>
-                                        <input required type="text" value={novoCliente.nome} onChange={e => setNovoCliente({...novoCliente, nome: e.target.value})} className="w-full bg-white dark:bg-darkBg border border-gray-200 dark:border-darkBorder rounded px-4 py-2 outline-none focus:border-brand focus:ring-1 focus:ring-brand dark:text-white shadow-sm transition" placeholder="Ex: Fibrion" />
-                                    </div>
+                                <form onSubmit={salvarCliente} className="p-6 flex flex-col gap-5">
+                                    <div><label className="block text-sm font-semibold mb-2 dark:text-gray-300">Nome / Empresa *</label><input required type="text" value={novoCliente.nome} onChange={e => setNovoCliente({...novoCliente, nome: e.target.value})} className="w-full bg-white dark:bg-darkInput border border-gray-200 dark:border-darkBorder rounded px-4 py-2.5 outline-none focus:border-brand focus:ring-1 focus:ring-brand dark:text-white shadow-sm transition" placeholder="Ex: Fibrion" /></div>
                                     <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <label className="block text-sm font-semibold mb-1.5 dark:text-gray-300">WhatsApp</label>
-                                            <input 
-                                                type="text" 
-                                                value={novoCliente.telefone} 
-                                                onChange={e => setNovoCliente({...novoCliente, telefone: formatarTelefone(e.target.value)})} 
-                                                className="w-full bg-white dark:bg-darkBg border border-gray-200 dark:border-darkBorder rounded px-4 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand dark:text-white shadow-sm transition" 
-                                                placeholder="(11) 90000-0000" 
-                                            />
-                                        </div>
-                                        <div><label className="block text-sm font-semibold mb-1.5 dark:text-gray-300">E-mail</label><input type="email" value={novoCliente.email} onChange={e => setNovoCliente({...novoCliente, email: e.target.value})} className="w-full bg-white dark:bg-darkBg border border-gray-200 dark:border-darkBorder rounded px-4 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand dark:text-white shadow-sm transition" placeholder="contato@..." /></div>
+                                        <div><label className="block text-sm font-semibold mb-2 dark:text-gray-300">WhatsApp</label><input type="text" value={novoCliente.telefone} onChange={e => setNovoCliente({...novoCliente, telefone: formatarTelefone(e.target.value)})} className="w-full bg-white dark:bg-darkInput border border-gray-200 dark:border-darkBorder rounded px-4 py-2.5 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand dark:text-white shadow-sm transition" placeholder="(11) 90000-0000" /></div>
+                                        <div><label className="block text-sm font-semibold mb-2 dark:text-gray-300">E-mail</label><input type="email" value={novoCliente.email} onChange={e => setNovoCliente({...novoCliente, email: e.target.value})} className="w-full bg-white dark:bg-darkInput border border-gray-200 dark:border-darkBorder rounded px-4 py-2.5 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand dark:text-white shadow-sm transition" placeholder="contato@..." /></div>
                                     </div>
-                                    <div><label className="block text-sm font-semibold mb-1.5 dark:text-gray-300">Observações</label><textarea rows="2" value={novoCliente.observacoes} onChange={e => setNovoCliente({...novoCliente, observacoes: e.target.value})} className="w-full bg-white dark:bg-darkBg border border-gray-200 dark:border-darkBorder rounded px-4 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand dark:text-white shadow-sm transition"></textarea></div>
-                                    <div className="mt-2 pt-5 border-t border-gray-100 dark:border-darkBorder flex justify-end gap-3"><button type="button" onClick={() => setModalClienteAberto(false)} className="px-5 py-2.5 font-semibold text-gray-500 hover:bg-gray-100 dark:hover:bg-[#282a2c] rounded transition">Cancelar</button><button type="submit" disabled={salvandoCliente} className="px-6 py-2.5 rounded font-semibold bg-brand hover:bg-brandHover text-white shadow-sm transition">Salvar Cliente</button></div>
+                                    <div><label className="block text-sm font-semibold mb-2 dark:text-gray-300">Observações</label><textarea rows="2" value={novoCliente.observacoes} onChange={e => setNovoCliente({...novoCliente, observacoes: e.target.value})} className="w-full bg-white dark:bg-darkInput border border-gray-200 dark:border-darkBorder rounded px-4 py-2.5 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand dark:text-white shadow-sm transition"></textarea></div>
+                                    <div className="mt-2 pt-6 border-t border-gray-100 dark:border-darkBorder flex justify-end gap-3"><button type="button" onClick={() => setModalClienteAberto(false)} className="px-5 py-2.5 font-semibold text-gray-500 hover:bg-gray-100 dark:hover:bg-darkLane transition rounded">Cancelar</button><button type="submit" disabled={salvandoCliente} className="px-6 py-2.5 rounded font-semibold bg-brand hover:bg-brandHover text-white shadow-sm transition">Salvar Cliente</button></div>
                                 </form>
                             </div>
                         </div>
@@ -483,16 +481,16 @@
 
         function Cartao({ pedido, onPrint }) {
             return (
-                <div className="bg-white dark:bg-darkCard p-4 rounded-md shadow-sm border border-gray-200 dark:border-darkBorder hover:shadow-md transition relative group">
-                    <div className="flex justify-between items-start mb-1">
-                        <h3 className="font-bold text-base">{pedido.cliente}</h3>
+                <div className="bg-white dark:bg-darkCard p-5 rounded-md shadow-sm border border-gray-200 dark:border-darkBorder hover:shadow-md transition relative group">
+                    <div className="flex justify-between items-start mb-2">
+                        <h3 className="font-bold text-base text-gray-900 dark:text-white leading-tight">{pedido.cliente}</h3>
                         <div className="flex gap-2">
                             <button onClick={onPrint} className="text-gray-400 hover:text-brand transition" title="Imprimir O.S."><i data-lucide="printer" className="w-4 h-4"></i></button>
                         </div>
                     </div>
-                    <p className="text-gray-500 dark:text-gray-400 text-sm mb-4 line-clamp-2">{pedido.servico}</p>
-                    <div className="flex justify-between items-center mt-3 pt-3 border-t border-gray-100 dark:border-darkBorder">
-                        <div className="flex items-center gap-1.5 text-xs font-medium text-gray-500 dark:text-gray-400"><i data-lucide="user" className="w-3.5 h-3.5"></i> Equipe</div>
+                    <p className="text-gray-500 dark:text-gray-400 text-sm mb-4 line-clamp-2 leading-relaxed">{pedido.servico}</p>
+                    <div className="flex justify-between items-center pt-3 border-t border-gray-100 dark:border-darkBorder">
+                        <div className="flex items-center gap-1.5 text-xs font-medium text-gray-500 dark:text-gray-500"><i data-lucide="user" className="w-3.5 h-3.5"></i> ID: #{pedido.id}</div>
                         <span className="font-bold text-sm text-gray-800 dark:text-gray-200">R$ {Number(pedido.valor_total).toFixed(2).replace('.', ',')}</span>
                     </div>
                 </div>
