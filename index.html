@@ -45,9 +45,10 @@
             const [abaAtual, setAbaAtual] = useState('producao');
             const [pedidos, setPedidos] = useState([]);
             const [produtos, setProdutos] = useState([]);
+            const [clientes, setClientes] = useState([]); // Nova gaveta de clientes
             const [darkMode, setDarkMode] = useState(false);
             
-            // Controle da Nova O.S.
+            // Controles de O.S.
             const [modalAberto, setModalAberto] = useState(false);
             const [salvandoOS, setSalvandoOS] = useState(false);
             const [osParaImprimir, setOsParaImprimir] = useState(null);
@@ -55,12 +56,15 @@
                 cliente: '', servico: '', valor_total: '', local_producao: 'Berlim', responsavel: '', status: 'Aguardando'
             });
 
-            // Controle do Novo Produto
+            // Controles de Produtos
             const [modalProdutoAberto, setModalProdutoAberto] = useState(false);
             const [salvandoProduto, setSalvandoProduto] = useState(false);
-            const [novoProduto, setNovoProduto] = useState({
-                nome: '', texto_padrao: '', preco_base: ''
-            });
+            const [novoProduto, setNovoProduto] = useState({ nome: '', texto_padrao: '', preco_base: '' });
+
+            // Controles de Clientes
+            const [modalClienteAberto, setModalClienteAberto] = useState(false);
+            const [salvandoCliente, setSalvandoCliente] = useState(false);
+            const [novoCliente, setNovoCliente] = useState({ nome: '', telefone: '', email: '', observacoes: '' });
 
             useEffect(() => {
                 carregarDados();
@@ -68,7 +72,7 @@
 
             useEffect(() => {
                 lucide.createIcons();
-            }, [pedidos, produtos, modalAberto, modalProdutoAberto, darkMode, abaAtual]);
+            }, [pedidos, produtos, clientes, modalAberto, modalProdutoAberto, modalClienteAberto, darkMode, abaAtual]);
 
             async function carregarDados() {
                 const { data: listaPedidos } = await supabase.from('pedidos').select('*').order('id', { ascending: true });
@@ -76,6 +80,9 @@
 
                 const { data: listaProdutos } = await supabase.from('produtos').select('*').order('id', { ascending: true });
                 if (listaProdutos) setProdutos(listaProdutos);
+
+                const { data: listaClientes } = await supabase.from('clientes').select('*').order('nome', { ascending: true });
+                if (listaClientes) setClientes(listaClientes);
             }
 
             const toggleDarkMode = () => {
@@ -83,11 +90,10 @@
                 document.documentElement.classList.toggle('dark');
             };
 
-            // ================= LÓGICA DE O.S. ================= //
+            // ================= O.S. ================= //
             function tratarSelecaoProduto(e) {
                 const produtoId = e.target.value;
                 if (!produtoId) return;
-
                 const prodSelecionado = produtos.find(p => p.id === parseInt(produtoId));
                 if (prodSelecionado) {
                     setNovoPedido({
@@ -101,12 +107,10 @@
             async function salvarOS(e) {
                 e.preventDefault();
                 setSalvandoOS(true);
-                
                 const pedidoFormatado = {
                     ...novoPedido,
                     valor_total: parseFloat(novoPedido.valor_total.replace(',', '.')) || 0
                 };
-
                 const { data, error } = await supabase.from('pedidos').insert([pedidoFormatado]).select();
                 if (!error && data) {
                     setPedidos([...pedidos, data[0]]);
@@ -124,26 +128,42 @@
                 setTimeout(() => window.print(), 100);
             }
 
-            // ================= LÓGICA DE PRODUTOS ================= //
+            // ================= PRODUTOS ================= //
             async function salvarProduto(e) {
                 e.preventDefault();
                 setSalvandoProduto(true);
-                
                 const produtoFormatado = {
                     ...novoProduto,
                     preco_base: parseFloat(novoProduto.preco_base.replace(',', '.')) || 0
                 };
-
                 const { data, error } = await supabase.from('produtos').insert([produtoFormatado]).select();
                 if (!error && data) {
                     setProdutos([...produtos, data[0]]);
                     setModalProdutoAberto(false);
                     setNovoProduto({ nome: '', texto_padrao: '', preco_base: '' });
                 } else {
-                    // Agora o sistema dedura exatamente qual foi o erro do banco de dados
                     alert('Falha ao salvar produto: ' + error.message);
                 }
                 setSalvandoProduto(false);
+            }
+
+            // ================= CLIENTES ================= //
+            async function salvarCliente(e) {
+                e.preventDefault();
+                setSalvandoCliente(true);
+                const { data, error } = await supabase.from('clientes').insert([novoCliente]).select();
+                if (!error && data) {
+                    // Adiciona na lista geral
+                    setClientes([...clientes, data[0]]);
+                    // Auto-seleciona o cliente recém-criado no formulário da O.S.
+                    setNovoPedido({...novoPedido, cliente: data[0].nome});
+                    // Fecha o modal e limpa
+                    setModalClienteAberto(false);
+                    setNovoCliente({ nome: '', telefone: '', email: '', observacoes: '' });
+                } else {
+                    alert('Falha ao salvar cliente: ' + error.message);
+                }
+                setSalvandoCliente(false);
             }
 
             return (
@@ -152,25 +172,21 @@
                         <header className="sticky top-0 z-40 glass bg-white/80 dark:bg-darkBg/80 border-b border-gray-200 dark:border-darkBorder px-6 py-4 flex justify-between items-center shadow-sm">
                             <div className="flex items-center gap-8">
                                 <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400 font-black text-xl tracking-tight">
-                                    <i data-lucide="printer"></i>
-                                    BERLIM
+                                    <i data-lucide="printer"></i> BERLIM
                                 </div>
                                 <nav className="hidden md:flex gap-6 font-medium text-sm text-gray-500 dark:text-gray-400 cursor-pointer">
                                     <a onClick={() => setAbaAtual('producao')} className={`transition ${abaAtual === 'producao' ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 pb-1 font-bold' : 'hover:text-slate-900 dark:hover:text-white'}`}>Produção</a>
-                                    <a onClick={() => setAbaAtual('produtos')} className={`transition ${abaAtual === 'produtos' ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 pb-1 font-bold' : 'hover:text-slate-900 dark:hover:text-white'}`}>Catálogo (Produtos)</a>
-                                    <a className="hover:text-slate-900 dark:hover:text-white transition">Clientes</a>
-                                    <a className="hover:text-slate-900 dark:hover:text-white transition">Configurações</a>
+                                    <a onClick={() => setAbaAtual('produtos')} className={`transition ${abaAtual === 'produtos' ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 pb-1 font-bold' : 'hover:text-slate-900 dark:hover:text-white'}`}>Catálogo</a>
+                                    <a onClick={() => setAbaAtual('clientes')} className={`transition ${abaAtual === 'clientes' ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 pb-1 font-bold' : 'hover:text-slate-900 dark:hover:text-white'}`}>Clientes</a>
                                 </nav>
                             </div>
                             <div className="flex items-center gap-4">
-                                <button onClick={toggleDarkMode} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition">
-                                    <i data-lucide={darkMode ? "sun" : "moon"} className="w-5 h-5"></i>
-                                </button>
+                                <button onClick={toggleDarkMode} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition"><i data-lucide={darkMode ? "sun" : "moon"} className="w-5 h-5"></i></button>
                                 <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm shadow-md">AD</div>
                             </div>
                         </header>
 
-                        {/* TELA DE PRODUÇÃO (KANBAN) */}
+                        {/* TELA: PRODUÇÃO (KANBAN) */}
                         {abaAtual === 'producao' && (
                             <main className="flex-1 p-6 max-w-[1600px] mx-auto w-full fade-in">
                                 <div className="flex justify-between items-center mb-8">
@@ -178,7 +194,6 @@
                                         <i data-lucide="plus" className="w-4 h-4"></i> Nova O.S.
                                     </button>
                                 </div>
-
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
                                     <div className="flex flex-col gap-4">
                                         <div className="flex items-center justify-between pb-2 border-b-2 border-orange-400">
@@ -202,41 +217,44 @@
                             </main>
                         )}
 
-                        {/* TELA DE CATÁLOGO (PRODUTOS) */}
+                        {/* TELA: CATÁLOGO */}
                         {abaAtual === 'produtos' && (
                             <main className="flex-1 p-6 max-w-[1200px] mx-auto w-full fade-in">
                                 <div className="flex justify-between items-center mb-8">
-                                    <h1 className="text-2xl font-bold dark:text-white flex items-center gap-2">
-                                        <i data-lucide="book-open" className="text-blue-500"></i> Catálogo de Produtos
-                                    </h1>
-                                    <button onClick={() => setModalProdutoAberto(true)} className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-lg font-semibold flex items-center gap-2 shadow-md transition transform hover:-translate-y-0.5">
+                                    <h1 className="text-2xl font-bold dark:text-white flex items-center gap-2"><i data-lucide="book-open" className="text-blue-500"></i> Catálogo</h1>
+                                    <button onClick={() => setModalProdutoAberto(true)} className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-lg font-semibold flex items-center gap-2 shadow-md">
                                         <i data-lucide="plus" className="w-4 h-4"></i> Novo Produto
                                     </button>
                                 </div>
-
                                 <div className="bg-white dark:bg-darkCard rounded-xl shadow-sm border border-gray-200 dark:border-darkBorder overflow-hidden">
                                     <table className="w-full text-left border-collapse">
-                                        <thead>
-                                            <tr className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 text-sm text-gray-500 dark:text-gray-400">
-                                                <th className="p-4 font-semibold w-24">Nº (ID)</th>
-                                                <th className="p-4 font-semibold w-1/4">Nome do Produto</th>
-                                                <th className="p-4 font-semibold">Texto / Descrição Padrão</th>
-                                                <th className="p-4 font-semibold text-right w-32">Preço Base</th>
-                                            </tr>
-                                        </thead>
+                                        <thead><tr className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 text-sm text-gray-500 dark:text-gray-400"><th className="p-4">Nº</th><th className="p-4">Nome</th><th className="p-4">Descrição Base</th><th className="p-4 text-right">Preço Base</th></tr></thead>
                                         <tbody>
-                                            {produtos.length === 0 ? (
-                                                <tr><td colSpan="4" className="p-8 text-center text-gray-500">Nenhum produto cadastrado.</td></tr>
-                                            ) : (
-                                                produtos.map(p => (
-                                                    <tr key={p.id} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition">
-                                                        <td className="p-4 font-bold text-blue-600 dark:text-blue-400">[{p.id}]</td>
-                                                        <td className="p-4 font-semibold dark:text-white">{p.nome}</td>
-                                                        <td className="p-4 text-sm text-gray-600 dark:text-gray-400">{p.texto_padrao}</td>
-                                                        <td className="p-4 font-bold text-green-600 dark:text-green-400 text-right">R$ {Number(p.preco_base).toFixed(2).replace('.', ',')}</td>
-                                                    </tr>
-                                                ))
-                                            )}
+                                            {produtos.map(p => (
+                                                <tr key={p.id} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50"><td className="p-4 font-bold text-blue-600">[{p.id}]</td><td className="p-4 font-semibold dark:text-white">{p.nome}</td><td className="p-4 text-sm text-gray-600 dark:text-gray-400">{p.texto_padrao}</td><td className="p-4 font-bold text-green-600 text-right">R$ {Number(p.preco_base).toFixed(2).replace('.', ',')}</td></tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </main>
+                        )}
+
+                        {/* TELA: CLIENTES */}
+                        {abaAtual === 'clientes' && (
+                            <main className="flex-1 p-6 max-w-[1200px] mx-auto w-full fade-in">
+                                <div className="flex justify-between items-center mb-8">
+                                    <h1 className="text-2xl font-bold dark:text-white flex items-center gap-2"><i data-lucide="users" className="text-blue-500"></i> Clientes</h1>
+                                    <button onClick={() => setModalClienteAberto(true)} className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-lg font-semibold flex items-center gap-2 shadow-md">
+                                        <i data-lucide="plus" className="w-4 h-4"></i> Novo Cliente
+                                    </button>
+                                </div>
+                                <div className="bg-white dark:bg-darkCard rounded-xl shadow-sm border border-gray-200 dark:border-darkBorder overflow-hidden">
+                                    <table className="w-full text-left border-collapse">
+                                        <thead><tr className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 text-sm text-gray-500 dark:text-gray-400"><th className="p-4">Nome</th><th className="p-4">Telefone</th><th className="p-4">E-mail</th><th className="p-4">Observações</th></tr></thead>
+                                        <tbody>
+                                            {clientes.map(c => (
+                                                <tr key={c.id} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50"><td className="p-4 font-bold dark:text-white">{c.nome}</td><td className="p-4 dark:text-gray-300">{c.telefone || '---'}</td><td className="p-4 dark:text-gray-300">{c.email || '---'}</td><td className="p-4 text-sm text-gray-500 dark:text-gray-400">{c.observacoes || '---'}</td></tr>
+                                            ))}
                                         </tbody>
                                     </table>
                                 </div>
@@ -244,7 +262,7 @@
                         )}
                     </div>
 
-                    {/* MODAIS (O.S. E PRODUTOS) */}
+                    {/* === MODAL: NOVA O.S. === */}
                     {modalAberto && (
                         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 glass no-print transition-all">
                             <div className="bg-white dark:bg-darkCard w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden border border-gray-200 dark:border-darkBorder">
@@ -253,10 +271,22 @@
                                     <button onClick={() => setModalAberto(false)} className="text-gray-400 hover:text-red-500 transition"><i data-lucide="x" className="w-5 h-5"></i></button>
                                 </div>
                                 <form onSubmit={salvarOS} className="p-6 flex flex-col gap-4">
+                                    
+                                    {/* SELETOR DE CLIENTE COM BOTÃO QUICK ADD */}
                                     <div>
-                                        <label className="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">Cliente / Empresa</label>
-                                        <input required type="text" value={novoPedido.cliente} onChange={e => setNovoPedido({...novoPedido, cliente: e.target.value})} className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-blue-500 transition dark:text-white" placeholder="Ex: Fibrion" />
+                                        <label className="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300 flex justify-between items-end">
+                                            <span>Cliente / Empresa</span>
+                                            <button type="button" onClick={() => setModalClienteAberto(true)} className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline font-bold flex items-center gap-1">
+                                                <i data-lucide="plus-circle" className="w-3 h-3"></i> Adicionar Rápido
+                                            </button>
+                                        </label>
+                                        <select required value={novoPedido.cliente} onChange={e => setNovoPedido({...novoPedido, cliente: e.target.value})} className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-blue-500 transition dark:text-white font-medium cursor-pointer">
+                                            <option value="">-- Selecione o Cliente --</option>
+                                            {clientes.map(c => <option key={c.id} value={c.nome}>{c.nome}</option>)}
+                                        </select>
                                     </div>
+
+                                    {/* SELETOR DE PRODUTOS */}
                                     <div className="p-3 bg-yellow-50 dark:bg-yellow-900/10 border border-yellow-200 dark:border-yellow-700/30 rounded-lg">
                                         <label className="block text-sm font-bold mb-1 text-yellow-800 dark:text-yellow-500">1. Puxar Base do Catálogo</label>
                                         <select onChange={tratarSelecaoProduto} className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md px-3 py-2 outline-none focus:ring-2 focus:ring-yellow-500 transition dark:text-white text-sm cursor-pointer shadow-sm">
@@ -264,6 +294,7 @@
                                             {produtos.map(p => <option key={p.id} value={p.id}>[{p.id}] {p.nome}</option>)}
                                         </select>
                                     </div>
+                                    
                                     <div>
                                         <label className="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300 flex justify-between">
                                             <span>2. Descrição Final</span><span className="text-xs text-blue-500 font-normal flex items-center gap-1"><i data-lucide="edit-3" className="w-3 h-3"></i> (Pode editar)</span>
@@ -293,30 +324,55 @@
                         </div>
                     )}
 
+                    {/* === MODAL: NOVO PRODUTO === */}
                     {modalProdutoAberto && (
-                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 glass no-print transition-all">
+                        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/40 glass no-print transition-all">
                             <div className="bg-white dark:bg-darkCard w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden border border-gray-200 dark:border-darkBorder">
                                 <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-emerald-50 dark:bg-emerald-900/20">
                                     <h3 className="font-bold text-lg dark:text-white text-emerald-800 dark:text-emerald-300">Adicionar ao Catálogo</h3>
                                     <button onClick={() => setModalProdutoAberto(false)} className="text-gray-400 hover:text-red-500 transition"><i data-lucide="x" className="w-5 h-5"></i></button>
                                 </div>
                                 <form onSubmit={salvarProduto} className="p-6 flex flex-col gap-4">
+                                    <div><label className="block text-sm font-semibold mb-1">Nome do Produto</label><input required type="text" value={novoProduto.nome} onChange={e => setNovoProduto({...novoProduto, nome: e.target.value})} className="w-full bg-gray-50 dark:bg-gray-800 border rounded-lg px-4 py-2" /></div>
+                                    <div><label className="block text-sm font-semibold mb-1">Texto / Descrição Base</label><textarea required rows="2" value={novoProduto.texto_padrao} onChange={e => setNovoProduto({...novoProduto, texto_padrao: e.target.value})} className="w-full bg-gray-50 dark:bg-gray-800 border rounded-lg px-4 py-2"></textarea></div>
+                                    <div><label className="block text-sm font-semibold mb-1">Preço Base (R$)</label><input required type="text" value={novoProduto.preco_base} onChange={e => setNovoProduto({...novoProduto, preco_base: e.target.value})} className="w-1/2 bg-gray-50 dark:bg-gray-800 border rounded-lg px-4 py-2" /></div>
+                                    <div className="mt-4 pt-4 border-t flex justify-end gap-3"><button type="button" onClick={() => setModalProdutoAberto(false)} className="px-5 py-2 font-semibold text-gray-500">Cancelar</button><button type="submit" disabled={salvandoProduto} className="px-5 py-2 rounded-lg font-semibold bg-emerald-600 text-white">Salvar Produto</button></div>
+                                </form>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* === MODAL: NOVO CLIENTE (QUICK ADD) === */}
+                    {modalClienteAberto && (
+                        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 glass no-print transition-all">
+                            <div className="bg-white dark:bg-darkCard w-full max-w-md rounded-2xl shadow-2xl overflow-hidden border border-gray-200 dark:border-darkBorder">
+                                <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-indigo-50 dark:bg-indigo-900/20">
+                                    <h3 className="font-bold text-lg dark:text-white text-indigo-800 dark:text-indigo-300 flex items-center gap-2"><i data-lucide="user-plus" className="w-5 h-5"></i> Cadastrar Cliente</h3>
+                                    <button onClick={() => setModalClienteAberto(false)} className="text-gray-400 hover:text-red-500 transition"><i data-lucide="x" className="w-5 h-5"></i></button>
+                                </div>
+                                <form onSubmit={salvarCliente} className="p-6 flex flex-col gap-4">
                                     <div>
-                                        <label className="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">Nome do Produto</label>
-                                        <input required type="text" value={novoProduto.nome} onChange={e => setNovoProduto({...novoProduto, nome: e.target.value})} className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-emerald-500 transition dark:text-white" placeholder="Ex: Panfleto A5" />
+                                        <label className="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">Nome / Empresa *</label>
+                                        <input required type="text" value={novoCliente.nome} onChange={e => setNovoCliente({...novoCliente, nome: e.target.value})} className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-indigo-500 transition dark:text-white" placeholder="Ex: Fibrion" />
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">Telefone / WhatsApp</label>
+                                            <input type="text" value={novoCliente.telefone} onChange={e => setNovoCliente({...novoCliente, telefone: e.target.value})} className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-indigo-500 transition dark:text-white text-sm" placeholder="(11) 90000-0000" />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">E-mail</label>
+                                            <input type="email" value={novoCliente.email} onChange={e => setNovoCliente({...novoCliente, email: e.target.value})} className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-indigo-500 transition dark:text-white text-sm" placeholder="contato@..." />
+                                        </div>
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">Texto / Descrição Base</label>
-                                        <textarea required rows="2" value={novoProduto.texto_padrao} onChange={e => setNovoProduto({...novoProduto, texto_padrao: e.target.value})} className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-emerald-500 transition dark:text-white text-sm" placeholder="O que o sistema deve digitar automaticamente?"></textarea>
+                                        <label className="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">Observações</label>
+                                        <textarea rows="2" value={novoCliente.observacoes} onChange={e => setNovoCliente({...novoCliente, observacoes: e.target.value})} className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-indigo-500 transition dark:text-white text-sm" placeholder="Detalhes de entrega, preferências, etc."></textarea>
                                     </div>
-                                    <div>
-                                        <label className="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">Preço Base (R$)</label>
-                                        <input required type="text" value={novoProduto.preco_base} onChange={e => setNovoProduto({...novoProduto, preco_base: e.target.value})} className="w-1/2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-emerald-500 transition dark:text-white" placeholder="0,00" />
-                                    </div>
-                                    <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800 flex justify-end gap-3">
-                                        <button type="button" onClick={() => setModalProdutoAberto(false)} className="px-5 py-2 rounded-lg font-semibold text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition">Cancelar</button>
-                                        <button type="submit" disabled={salvandoProduto} className="px-5 py-2 rounded-lg font-semibold bg-emerald-600 hover:bg-emerald-700 text-white shadow-md transition disabled:opacity-50">
-                                            {salvandoProduto ? 'Salvando...' : 'Adicionar Produto'}
+                                    <div className="mt-2 pt-4 border-t border-gray-100 dark:border-gray-800 flex justify-end gap-3">
+                                        <button type="button" onClick={() => setModalClienteAberto(false)} className="px-5 py-2 rounded-lg font-semibold text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition">Cancelar</button>
+                                        <button type="submit" disabled={salvandoCliente} className="px-5 py-2 rounded-lg font-semibold bg-indigo-600 hover:bg-indigo-700 text-white shadow-md transition disabled:opacity-50">
+                                            {salvandoCliente ? 'Salvando...' : 'Salvar Cliente'}
                                         </button>
                                     </div>
                                 </form>
@@ -324,7 +380,7 @@
                         </div>
                     )}
 
-                    {/* VISTA DE IMPRESSÃO DA O.S. */}
+                    {/* VISTA DE IMPRESSÃO DA O.S. (Oculta na tela, aparece no print) */}
                     <div className="hidden print-only bg-white text-black p-8 font-sans max-w-2xl mx-auto">
                         {osParaImprimir && (
                             <div className="border-2 border-black p-6 rounded-xl">
