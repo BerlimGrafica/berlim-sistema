@@ -28,7 +28,7 @@
             .no-print { display: none !important; }
             .print-only { display: block !important; }
         }
-        /* CustomScroll para a lista não ficar feia se tiver 100 clientes */
+        /* CustomScroll para a lista não ficar feia se tiver 100 itens */
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 20px; }
@@ -57,7 +57,6 @@
             const [salvandoOS, setSalvandoOS] = useState(false);
             const [osParaImprimir, setOsParaImprimir] = useState(null);
             
-            // Estados para os Selects Personalizados
             const [buscaCliente, setBuscaCliente] = useState('');
             const [clienteDropdownAberto, setClienteDropdownAberto] = useState(false);
             
@@ -83,7 +82,7 @@
 
             useEffect(() => {
                 lucide.createIcons();
-            }); // Atualiza ícones sempre que o React redesenhar a tela
+            }); 
 
             async function carregarDados() {
                 const { data: listaPedidos } = await supabase.from('pedidos').select('*').order('id', { ascending: true });
@@ -150,7 +149,6 @@
                 const { data, error } = await supabase.from('clientes').insert([novoCliente]).select();
                 if (!error && data) {
                     setClientes([...clientes, data[0]]);
-                    // Puxa pro formulário da O.S. automaticamente
                     setNovoPedido({...novoPedido, cliente: data[0].nome});
                     setBuscaCliente(data[0].nome);
                     setModalClienteAberto(false);
@@ -166,7 +164,6 @@
                 setTimeout(() => window.print(), 100);
             }
 
-            // Lógica de Filtro dos Menus Suspensos
             const clientesFiltrados = clientes.filter(c => 
                 c.nome.toLowerCase().includes(buscaCliente.toLowerCase()) || 
                 (c.telefone && c.telefone.includes(buscaCliente))
@@ -180,6 +177,7 @@
             return (
                 <div>
                     <div className="flex flex-col min-h-screen no-print">
+                        {/* HEADER PRINCIPAL */}
                         <header className="sticky top-0 z-40 glass bg-white/80 dark:bg-darkBg/80 border-b border-gray-200 dark:border-darkBorder px-6 py-4 flex justify-between items-center shadow-sm">
                             <div className="flex items-center gap-8">
                                 <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400 font-black text-xl tracking-tight">
@@ -197,7 +195,7 @@
                             </div>
                         </header>
 
-                        {/* ================= TELAS PRINCIPAIS ================= */}
+                        {}
                         {abaAtual === 'producao' && (
                             <main className="flex-1 p-6 max-w-[1600px] mx-auto w-full fade-in">
                                 <div className="flex justify-between items-center mb-8">
@@ -271,7 +269,7 @@
                         )}
                     </div>
 
-                    {/* ================= MODAL DE NOVA O.S. ================= */}
+                    {}
                     {modalAberto && (
                         <div onClick={fecharModalOS} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 glass no-print transition-all cursor-pointer">
                             <div onClick={(e) => e.stopPropagation()} className="bg-white dark:bg-darkCard w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden border border-gray-200 dark:border-darkBorder cursor-default">
@@ -354,7 +352,8 @@
                                                 <ul className="absolute z-[60] w-full mt-1 max-h-48 overflow-y-auto bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl custom-scrollbar">
                                                     {produtosFiltrados.map(p => (
                                                         <li key={p.id} onClick={() => {
-                                                            setBuscaProduto(''); // Reseta a caixa depois de puxar, igual mágica!
+                                                            // Agora a caixa não fica mais em branco. Mantém o código e nome!
+                                                            setBuscaProduto(`[${p.id}] ${p.nome}`);
                                                             setNovoPedido({
                                                                 ...novoPedido,
                                                                 servico: p.texto_padrao,
@@ -381,18 +380,15 @@
                                         </label>
                                         <textarea required rows="3" value={novoPedido.servico} onChange={e => setNovoPedido({...novoPedido, servico: e.target.value})} className="w-full bg-white dark:bg-gray-900 border border-blue-200 dark:border-blue-800/50 rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-blue-500 transition dark:text-white text-sm" placeholder="Adicione a quantidade, o tipo ou detalhes específicos..."></textarea>
                                     </div>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <label className="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300 flex justify-between">
-                                                <span>Valor Final (R$)</span><span className="text-xs text-blue-500 font-normal">(Pode editar)</span>
-                                            </label>
-                                            <input required type="text" value={novoPedido.valor_total} onChange={e => setNovoPedido({...novoPedido, valor_total: e.target.value})} className="w-full bg-white dark:bg-gray-900 border border-blue-200 dark:border-blue-800/50 rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-blue-500 transition dark:text-white font-bold text-green-600 dark:text-green-400" placeholder="0,00" />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">Responsável</label>
-                                            <input type="text" value={novoPedido.responsavel} onChange={e => setNovoPedido({...novoPedido, responsavel: e.target.value})} className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-blue-500 transition dark:text-white" placeholder="Nome" />
-                                        </div>
+                                    
+                                    {/* Removido o campo "Responsável" para ficar mais clean */}
+                                    <div>
+                                        <label className="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300 flex justify-between">
+                                            <span>Valor Final (R$)</span><span className="text-xs text-blue-500 font-normal">(Pode editar)</span>
+                                        </label>
+                                        <input required type="text" value={novoPedido.valor_total} onChange={e => setNovoPedido({...novoPedido, valor_total: e.target.value})} className="w-1/2 bg-white dark:bg-gray-900 border border-blue-200 dark:border-blue-800/50 rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-blue-500 transition dark:text-white font-bold text-green-600 dark:text-green-400" placeholder="0,00" />
                                     </div>
+                                    
                                     <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800 flex justify-end gap-3">
                                         <button type="button" onClick={fecharModalOS} className="px-5 py-2 rounded-lg font-semibold text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition">Cancelar</button>
                                         <button type="submit" disabled={salvandoOS} className="px-5 py-2 rounded-lg font-semibold bg-blue-600 hover:bg-blue-700 text-white shadow-md transition disabled:opacity-50 flex items-center gap-2">
@@ -404,7 +400,7 @@
                         </div>
                     )}
 
-                    {/* ================= MODAL: NOVO PRODUTO ================= */}
+                    {}
                     {modalProdutoAberto && (
                         <div onClick={() => setModalProdutoAberto(false)} className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 glass no-print transition-all cursor-pointer">
                             <div onClick={(e) => e.stopPropagation()} className="bg-white dark:bg-darkCard w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden border border-gray-200 dark:border-darkBorder cursor-default">
@@ -422,7 +418,7 @@
                         </div>
                     )}
 
-                    {/* ================= MODAL: NOVO CLIENTE ================= */}
+                    {}
                     {modalClienteAberto && (
                         <div onClick={() => setModalClienteAberto(false)} className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 glass no-print transition-all cursor-pointer">
                             <div onClick={(e) => e.stopPropagation()} className="bg-white dark:bg-darkCard w-full max-w-md rounded-2xl shadow-2xl overflow-hidden border border-gray-200 dark:border-darkBorder cursor-default">
@@ -431,7 +427,10 @@
                                     <button type="button" onClick={() => setModalClienteAberto(false)} className="text-gray-400 hover:text-red-500 transition"><i data-lucide="x" className="w-5 h-5"></i></button>
                                 </div>
                                 <form onSubmit={salvarCliente} className="p-6 flex flex-col gap-4">
-                                    <div><label className="block text-sm font-semibold mb-1">Nome / Empresa *</label><input required type="text" value={novoCliente.nome} onChange={e => setNovoCliente({...novoCliente, nome: e.target.value})} className="w-full bg-gray-50 dark:bg-gray-800 border rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Ex: Fibrion" /></div>
+                                    <div>
+                                        <label className="block text-sm font-semibold mb-1">Nome / Empresa *</label>
+                                        <input required type="text" value={novoCliente.nome} onChange={e => setNovoCliente({...novoCliente, nome: e.target.value})} className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Ex: Fibrion" />
+                                    </div>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div><label className="block text-sm font-semibold mb-1">Telefone / WhatsApp</label><input type="text" value={novoCliente.telefone} onChange={e => setNovoCliente({...novoCliente, telefone: e.target.value})} className="w-full bg-gray-50 dark:bg-gray-800 border rounded-lg px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500" placeholder="(11) 90000-0000" /></div>
                                         <div><label className="block text-sm font-semibold mb-1">E-mail</label><input type="email" value={novoCliente.email} onChange={e => setNovoCliente({...novoCliente, email: e.target.value})} className="w-full bg-gray-50 dark:bg-gray-800 border rounded-lg px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500" placeholder="contato@..." /></div>
@@ -443,7 +442,7 @@
                         </div>
                     )}
 
-                    {/* VISTA DE IMPRESSÃO */}
+                    {}
                     <div className="hidden print-only bg-white text-black p-8 font-sans max-w-2xl mx-auto">
                         {osParaImprimir && (
                             <div className="border-2 border-black p-6 rounded-xl">
