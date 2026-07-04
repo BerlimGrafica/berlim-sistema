@@ -28,7 +28,6 @@
             .no-print { display: none !important; }
             .print-only { display: block !important; }
         }
-        /* CustomScroll para a lista não ficar feia se tiver 100 itens */
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 20px; }
@@ -44,6 +43,27 @@
             'https://xbanoipgoleuahwbqksy.supabase.co',
             'sb_publishable_RSQ4odG0wxy8ZucJHu_WvQ_0JfM8jbh'
         );
+
+        // ==== FUNÇÕES DE MÁSCARA (FORMATAÇÃO) ====
+        const formatarMoeda = (valor) => {
+            if (!valor) return '';
+            const numeroLimpo = valor.toString().replace(/\D/g, ''); 
+            if (numeroLimpo === '') return '';
+            const valorFormatado = new Intl.NumberFormat('pt-BR', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(parseInt(numeroLimpo) / 100);
+            return valorFormatado;
+        };
+
+        const formatarTelefone = (valor) => {
+            if (!valor) return '';
+            let v = valor.replace(/\D/g, ''); 
+            if (v.length > 11) v = v.substring(0, 11); 
+            if (v.length > 2) v = `(${v.substring(0, 2)}) ${v.substring(2)}`;
+            if (v.length > 10) v = `${v.substring(0, 10)}-${v.substring(10)}`;
+            return v;
+        };
 
         function App() {
             const [abaAtual, setAbaAtual] = useState('producao');
@@ -112,7 +132,7 @@
                 setSalvandoOS(true);
                 const pedidoFormatado = {
                     ...novoPedido,
-                    valor_total: parseFloat(novoPedido.valor_total.replace(',', '.')) || 0
+                    valor_total: parseFloat(novoPedido.valor_total.replace(/\./g, '').replace(',', '.')) || 0
                 };
                 const { data, error } = await supabase.from('pedidos').insert([pedidoFormatado]).select();
                 if (!error && data) {
@@ -130,7 +150,7 @@
                 setSalvandoProduto(true);
                 const produtoFormatado = {
                     ...novoProduto,
-                    preco_base: parseFloat(novoProduto.preco_base.replace(',', '.')) || 0
+                    preco_base: parseFloat(novoProduto.preco_base.replace(/\./g, '').replace(',', '.')) || 0
                 };
                 const { data, error } = await supabase.from('produtos').insert([produtoFormatado]).select();
                 if (!error && data) {
@@ -177,7 +197,6 @@
             return (
                 <div>
                     <div className="flex flex-col min-h-screen no-print">
-                        {/* HEADER PRINCIPAL */}
                         <header className="sticky top-0 z-40 glass bg-white/80 dark:bg-darkBg/80 border-b border-gray-200 dark:border-darkBorder px-6 py-4 flex justify-between items-center shadow-sm">
                             <div className="flex items-center gap-8">
                                 <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400 font-black text-xl tracking-tight">
@@ -195,7 +214,6 @@
                             </div>
                         </header>
 
-                        {}
                         {abaAtual === 'producao' && (
                             <main className="flex-1 p-6 max-w-[1600px] mx-auto w-full fade-in">
                                 <div className="flex justify-between items-center mb-8">
@@ -216,274 +234,4 @@
                                         </div>
                                         {pedidos.filter(p => p.status === 'Produzir').map(p => <Cartao key={p.id} pedido={p} onPrint={() => imprimirOS(p)} />)}
                                     </div>
-                                    <div className="flex flex-col gap-4">
-                                        <div className="flex items-center justify-between pb-2 border-b-2 border-green-500">
-                                            <h2 className="font-bold flex items-center gap-2 dark:text-gray-200"><i data-lucide="package-check" className="w-4 h-4 text-green-500"></i> Acabamento</h2>
-                                        </div>
-                                        {pedidos.filter(p => p.status === 'Acabamento').map(p => <Cartao key={p.id} pedido={p} onPrint={() => imprimirOS(p)} />)}
-                                    </div>
-                                </div>
-                            </main>
-                        )}
-
-                        {abaAtual === 'produtos' && (
-                            <main className="flex-1 p-6 max-w-[1200px] mx-auto w-full fade-in">
-                                <div className="flex justify-between items-center mb-8">
-                                    <h1 className="text-2xl font-bold dark:text-white flex items-center gap-2"><i data-lucide="book-open" className="text-blue-500"></i> Catálogo de Produtos</h1>
-                                    <button onClick={() => setModalProdutoAberto(true)} className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-lg font-semibold flex items-center gap-2 shadow-md">
-                                        <i data-lucide="plus" className="w-4 h-4"></i> Novo Produto
-                                    </button>
-                                </div>
-                                <div className="bg-white dark:bg-darkCard rounded-xl shadow-sm border border-gray-200 dark:border-darkBorder overflow-hidden">
-                                    <table className="w-full text-left border-collapse">
-                                        <thead><tr className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 text-sm text-gray-500 dark:text-gray-400"><th className="p-4">Nº</th><th className="p-4">Nome</th><th className="p-4">Descrição Base</th><th className="p-4 text-right">Preço Base</th></tr></thead>
-                                        <tbody>
-                                            {produtos.map(p => (
-                                                <tr key={p.id} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50"><td className="p-4 font-bold text-blue-600">[{p.id}]</td><td className="p-4 font-semibold dark:text-white">{p.nome}</td><td className="p-4 text-sm text-gray-600 dark:text-gray-400">{p.texto_padrao}</td><td className="p-4 font-bold text-green-600 text-right">R$ {Number(p.preco_base).toFixed(2).replace('.', ',')}</td></tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </main>
-                        )}
-
-                        {abaAtual === 'clientes' && (
-                            <main className="flex-1 p-6 max-w-[1200px] mx-auto w-full fade-in">
-                                <div className="flex justify-between items-center mb-8">
-                                    <h1 className="text-2xl font-bold dark:text-white flex items-center gap-2"><i data-lucide="users" className="text-blue-500"></i> Clientes</h1>
-                                    <button onClick={() => setModalClienteAberto(true)} className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-lg font-semibold flex items-center gap-2 shadow-md">
-                                        <i data-lucide="plus" className="w-4 h-4"></i> Novo Cliente
-                                    </button>
-                                </div>
-                                <div className="bg-white dark:bg-darkCard rounded-xl shadow-sm border border-gray-200 dark:border-darkBorder overflow-hidden">
-                                    <table className="w-full text-left border-collapse">
-                                        <thead><tr className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 text-sm text-gray-500 dark:text-gray-400"><th className="p-4">Nome</th><th className="p-4">Telefone</th><th className="p-4">E-mail</th><th className="p-4">Observações</th></tr></thead>
-                                        <tbody>
-                                            {clientes.map(c => (
-                                                <tr key={c.id} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50"><td className="p-4 font-bold dark:text-white">{c.nome}</td><td className="p-4 dark:text-gray-300">{c.telefone || '---'}</td><td className="p-4 dark:text-gray-300">{c.email || '---'}</td><td className="p-4 text-sm text-gray-500 dark:text-gray-400">{c.observacoes || '---'}</td></tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </main>
-                        )}
-                    </div>
-
-                    {}
-                    {modalAberto && (
-                        <div onClick={fecharModalOS} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 glass no-print transition-all cursor-pointer">
-                            <div onClick={(e) => e.stopPropagation()} className="bg-white dark:bg-darkCard w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden border border-gray-200 dark:border-darkBorder cursor-default">
-                                <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-blue-50 dark:bg-blue-900/20">
-                                    <h3 className="font-bold text-lg dark:text-white text-blue-800 dark:text-blue-300">Cadastrar Nova O.S.</h3>
-                                    <button type="button" onClick={fecharModalOS} className="text-gray-400 hover:text-red-500 transition"><i data-lucide="x" className="w-5 h-5"></i></button>
-                                </div>
-                                <form onSubmit={salvarOS} className="p-6 flex flex-col gap-4">
-                                    
-                                    {/* DROPDOWN CUSTOMIZADO DE CLIENTES */}
-                                    <div>
-                                        <label className="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300 flex justify-between items-end">
-                                            <span>Cliente / Empresa</span>
-                                            <button type="button" onClick={() => setModalClienteAberto(true)} className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline font-bold flex items-center gap-1">
-                                                <i data-lucide="plus-circle" className="w-3 h-3"></i> Adicionar Rápido
-                                            </button>
-                                        </label>
-                                        <div className="relative">
-                                            <input 
-                                                required 
-                                                type="text" 
-                                                value={buscaCliente} 
-                                                onChange={e => {
-                                                    setBuscaCliente(e.target.value);
-                                                    setNovoPedido({...novoPedido, cliente: e.target.value});
-                                                    setClienteDropdownAberto(true);
-                                                }}
-                                                onFocus={() => setClienteDropdownAberto(true)}
-                                                onBlur={() => setTimeout(() => setClienteDropdownAberto(false), 200)}
-                                                className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-blue-500 transition dark:text-white shadow-sm" 
-                                                placeholder="Busque por nome ou telefone..." 
-                                                autoComplete="off"
-                                            />
-                                            <i data-lucide="chevron-down" className="absolute right-3 top-2.5 w-5 h-5 text-gray-400 pointer-events-none"></i>
-                                            
-                                            {/* A Lista Suspensa do Cliente */}
-                                            {clienteDropdownAberto && clientesFiltrados.length > 0 && (
-                                                <ul className="absolute z-[60] w-full mt-1 max-h-48 overflow-y-auto bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl custom-scrollbar">
-                                                    {clientesFiltrados.map(c => (
-                                                        <li key={c.id} onClick={() => {
-                                                            setBuscaCliente(c.nome);
-                                                            setNovoPedido({...novoPedido, cliente: c.nome});
-                                                            setClienteDropdownAberto(false);
-                                                        }} className="px-4 py-2.5 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 cursor-pointer border-b border-gray-100 dark:border-gray-700/50 last:border-0 flex justify-between items-center transition">
-                                                            <span className="font-bold text-gray-800 dark:text-gray-200">{c.nome}</span>
-                                                            <span className="text-xs text-gray-500">{c.telefone}</span>
-                                                        </li>
-                                                    ))}
-                                                </ul>
-                                            )}
-                                        </div>
-                                    </div>
-
-                                    {/* DROPDOWN CUSTOMIZADO DE PRODUTOS */}
-                                    <div className="p-3 bg-yellow-50 dark:bg-yellow-900/10 border border-yellow-200 dark:border-yellow-700/30 rounded-lg">
-                                        <label className="block text-sm font-bold mb-1 text-yellow-800 dark:text-yellow-500 flex justify-between items-end">
-                                            <span>1. Puxar Base do Catálogo</span>
-                                            <button type="button" onClick={() => setModalProdutoAberto(true)} className="text-xs text-emerald-600 dark:text-emerald-500 hover:underline font-bold flex items-center gap-1">
-                                                <i data-lucide="plus-circle" className="w-3 h-3"></i> Adicionar Rápido
-                                            </button>
-                                        </label>
-                                        <div className="relative">
-                                            <input 
-                                                type="text"
-                                                value={buscaProduto}
-                                                onChange={e => {
-                                                    setBuscaProduto(e.target.value);
-                                                    setProdutoDropdownAberto(true);
-                                                }}
-                                                onFocus={() => setProdutoDropdownAberto(true)}
-                                                onBlur={() => setTimeout(() => setProdutoDropdownAberto(false), 200)}
-                                                className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md px-3 py-2 outline-none focus:ring-2 focus:ring-yellow-500 transition dark:text-white text-sm shadow-sm"
-                                                placeholder="Busque por código ou nome..."
-                                                autoComplete="off"
-                                            />
-                                            <i data-lucide="chevron-down" className="absolute right-2 top-2 w-4 h-4 text-gray-400 pointer-events-none"></i>
-                                            
-                                            {/* A Lista Suspensa do Produto */}
-                                            {produtoDropdownAberto && produtosFiltrados.length > 0 && (
-                                                <ul className="absolute z-[60] w-full mt-1 max-h-48 overflow-y-auto bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl custom-scrollbar">
-                                                    {produtosFiltrados.map(p => (
-                                                        <li key={p.id} onClick={() => {
-                                                            // Agora a caixa não fica mais em branco. Mantém o código e nome!
-                                                            setBuscaProduto(`[${p.id}] ${p.nome}`);
-                                                            setNovoPedido({
-                                                                ...novoPedido,
-                                                                servico: p.texto_padrao,
-                                                                valor_total: Number(p.preco_base).toFixed(2).replace('.', ',')
-                                                            });
-                                                            setProdutoDropdownAberto(false);
-                                                        }} className="px-3 py-2 hover:bg-yellow-50 dark:hover:bg-yellow-900/30 cursor-pointer border-b border-gray-100 dark:border-gray-700/50 last:border-0 flex flex-col transition">
-                                                            <div className="flex justify-between items-center">
-                                                                <span className="font-bold text-gray-800 dark:text-gray-200">[{p.id}] {p.nome}</span>
-                                                                <span className="text-xs font-bold text-green-600 dark:text-green-400">R$ {Number(p.preco_base).toFixed(2).replace('.', ',')}</span>
-                                                            </div>
-                                                            <span className="text-xs text-gray-400 truncate mt-0.5">{p.texto_padrao}</span>
-                                                        </li>
-                                                    ))}
-                                                </ul>
-                                            )}
-                                        </div>
-                                    </div>
-                                    
-                                    {/* CAMPOS FINAIS */}
-                                    <div>
-                                        <label className="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300 flex justify-between">
-                                            <span>2. Descrição Final</span><span className="text-xs text-blue-500 font-normal flex items-center gap-1"><i data-lucide="edit-3" className="w-3 h-3"></i> (Pode editar)</span>
-                                        </label>
-                                        <textarea required rows="3" value={novoPedido.servico} onChange={e => setNovoPedido({...novoPedido, servico: e.target.value})} className="w-full bg-white dark:bg-gray-900 border border-blue-200 dark:border-blue-800/50 rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-blue-500 transition dark:text-white text-sm" placeholder="Adicione a quantidade, o tipo ou detalhes específicos..."></textarea>
-                                    </div>
-                                    
-                                    {/* Removido o campo "Responsável" para ficar mais clean */}
-                                    <div>
-                                        <label className="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300 flex justify-between">
-                                            <span>Valor Final (R$)</span><span className="text-xs text-blue-500 font-normal">(Pode editar)</span>
-                                        </label>
-                                        <input required type="text" value={novoPedido.valor_total} onChange={e => setNovoPedido({...novoPedido, valor_total: e.target.value})} className="w-1/2 bg-white dark:bg-gray-900 border border-blue-200 dark:border-blue-800/50 rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-blue-500 transition dark:text-white font-bold text-green-600 dark:text-green-400" placeholder="0,00" />
-                                    </div>
-                                    
-                                    <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800 flex justify-end gap-3">
-                                        <button type="button" onClick={fecharModalOS} className="px-5 py-2 rounded-lg font-semibold text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition">Cancelar</button>
-                                        <button type="submit" disabled={salvandoOS} className="px-5 py-2 rounded-lg font-semibold bg-blue-600 hover:bg-blue-700 text-white shadow-md transition disabled:opacity-50 flex items-center gap-2">
-                                            {salvandoOS ? 'Salvando...' : <><i data-lucide="check" className="w-4 h-4"></i> Salvar Pedido</>}
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    )}
-
-                    {}
-                    {modalProdutoAberto && (
-                        <div onClick={() => setModalProdutoAberto(false)} className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 glass no-print transition-all cursor-pointer">
-                            <div onClick={(e) => e.stopPropagation()} className="bg-white dark:bg-darkCard w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden border border-gray-200 dark:border-darkBorder cursor-default">
-                                <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-emerald-50 dark:bg-emerald-900/20">
-                                    <h3 className="font-bold text-lg dark:text-white text-emerald-800 dark:text-emerald-300 flex items-center gap-2"><i data-lucide="box" className="w-5 h-5"></i> Adicionar ao Catálogo</h3>
-                                    <button type="button" onClick={() => setModalProdutoAberto(false)} className="text-gray-400 hover:text-red-500 transition"><i data-lucide="x" className="w-5 h-5"></i></button>
-                                </div>
-                                <form onSubmit={salvarProduto} className="p-6 flex flex-col gap-4">
-                                    <div><label className="block text-sm font-semibold mb-1">Nome do Produto</label><input required type="text" value={novoProduto.nome} onChange={e => setNovoProduto({...novoProduto, nome: e.target.value})} className="w-full bg-gray-50 dark:bg-gray-800 border rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-emerald-500" /></div>
-                                    <div><label className="block text-sm font-semibold mb-1">Texto / Descrição Base</label><textarea required rows="2" value={novoProduto.texto_padrao} onChange={e => setNovoProduto({...novoProduto, texto_padrao: e.target.value})} className="w-full bg-gray-50 dark:bg-gray-800 border rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-emerald-500"></textarea></div>
-                                    <div><label className="block text-sm font-semibold mb-1">Preço Base (R$)</label><input required type="text" value={novoProduto.preco_base} onChange={e => setNovoProduto({...novoProduto, preco_base: e.target.value})} className="w-1/2 bg-gray-50 dark:bg-gray-800 border rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-emerald-500" placeholder="0,00" /></div>
-                                    <div className="mt-4 pt-4 border-t flex justify-end gap-3"><button type="button" onClick={() => setModalProdutoAberto(false)} className="px-5 py-2 font-semibold text-gray-500">Cancelar</button><button type="submit" disabled={salvandoProduto} className="px-5 py-2 rounded-lg font-semibold bg-emerald-600 text-white">Salvar Produto</button></div>
-                                </form>
-                            </div>
-                        </div>
-                    )}
-
-                    {}
-                    {modalClienteAberto && (
-                        <div onClick={() => setModalClienteAberto(false)} className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 glass no-print transition-all cursor-pointer">
-                            <div onClick={(e) => e.stopPropagation()} className="bg-white dark:bg-darkCard w-full max-w-md rounded-2xl shadow-2xl overflow-hidden border border-gray-200 dark:border-darkBorder cursor-default">
-                                <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-indigo-50 dark:bg-indigo-900/20">
-                                    <h3 className="font-bold text-lg dark:text-white text-indigo-800 dark:text-indigo-300 flex items-center gap-2"><i data-lucide="user-plus" className="w-5 h-5"></i> Cadastrar Cliente</h3>
-                                    <button type="button" onClick={() => setModalClienteAberto(false)} className="text-gray-400 hover:text-red-500 transition"><i data-lucide="x" className="w-5 h-5"></i></button>
-                                </div>
-                                <form onSubmit={salvarCliente} className="p-6 flex flex-col gap-4">
-                                    <div>
-                                        <label className="block text-sm font-semibold mb-1">Nome / Empresa *</label>
-                                        <input required type="text" value={novoCliente.nome} onChange={e => setNovoCliente({...novoCliente, nome: e.target.value})} className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Ex: Fibrion" />
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div><label className="block text-sm font-semibold mb-1">Telefone / WhatsApp</label><input type="text" value={novoCliente.telefone} onChange={e => setNovoCliente({...novoCliente, telefone: e.target.value})} className="w-full bg-gray-50 dark:bg-gray-800 border rounded-lg px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500" placeholder="(11) 90000-0000" /></div>
-                                        <div><label className="block text-sm font-semibold mb-1">E-mail</label><input type="email" value={novoCliente.email} onChange={e => setNovoCliente({...novoCliente, email: e.target.value})} className="w-full bg-gray-50 dark:bg-gray-800 border rounded-lg px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500" placeholder="contato@..." /></div>
-                                    </div>
-                                    <div><label className="block text-sm font-semibold mb-1">Observações</label><textarea rows="2" value={novoCliente.observacoes} onChange={e => setNovoCliente({...novoCliente, observacoes: e.target.value})} className="w-full bg-gray-50 dark:bg-gray-800 border rounded-lg px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500"></textarea></div>
-                                    <div className="mt-2 pt-4 border-t flex justify-end gap-3"><button type="button" onClick={() => setModalClienteAberto(false)} className="px-5 py-2 font-semibold text-gray-500">Cancelar</button><button type="submit" disabled={salvandoCliente} className="px-5 py-2 rounded-lg font-semibold bg-indigo-600 text-white">Salvar Cliente</button></div>
-                                </form>
-                            </div>
-                        </div>
-                    )}
-
-                    {}
-                    <div className="hidden print-only bg-white text-black p-8 font-sans max-w-2xl mx-auto">
-                        {osParaImprimir && (
-                            <div className="border-2 border-black p-6 rounded-xl">
-                                <div className="flex justify-between items-center border-b-2 border-black pb-4 mb-4">
-                                    <div><h1 className="text-2xl font-black uppercase">BERLIM GRÁFICA</h1><p className="text-sm font-bold mt-1">Ordem de Serviço Nº {osParaImprimir.id || '---'}</p></div>
-                                    <div className="text-right text-sm"><p>Data: {new Date().toLocaleDateString('pt-BR')}</p><p className="font-bold mt-1 uppercase">Local: {osParaImprimir.local_producao}</p></div>
-                                </div>
-                                <div className="mb-6"><p className="text-sm text-gray-600 uppercase mb-1">Cliente</p><p className="text-xl font-bold">{osParaImprimir.cliente}</p></div>
-                                <div className="mb-6"><p className="text-sm text-gray-600 uppercase mb-1">Descrição do Serviço</p><div className="border border-gray-300 p-4 rounded-lg bg-gray-50 min-h-[100px] whitespace-pre-wrap text-lg">{osParaImprimir.servico}</div></div>
-                                <div className="flex justify-between items-end border-t-2 border-black pt-4 mt-8">
-                                    <div><p className="text-sm text-gray-600 uppercase mb-1">Responsável</p><p className="font-bold">{osParaImprimir.responsavel || '---'}</p></div>
-                                    <div className="text-right"><p className="text-sm text-gray-600 uppercase mb-1">Valor Total</p><p className="text-2xl font-black">R$ {Number(osParaImprimir.valor_total).toFixed(2).replace('.', ',')}</p></div>
-                                </div>
-                                <div className="mt-12 pt-4 text-center border-t border-dashed border-gray-400 text-xs text-gray-500">Uso interno - Assinatura do cliente na retirada: _____________________________________</div>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            );
-        }
-
-        function Cartao({ pedido, onPrint }) {
-            return (
-                <div className="bg-white dark:bg-darkCard p-4 rounded-xl shadow-sm border border-gray-200 dark:border-darkBorder hover:shadow-md transition relative group">
-                    <div className="flex justify-between items-start mb-1">
-                        <h3 className="font-bold text-base">{pedido.cliente}</h3>
-                        <div className="flex gap-2">
-                            <button onClick={onPrint} className="text-gray-400 hover:text-blue-500 transition" title="Imprimir O.S."><i data-lucide="printer" className="w-4 h-4"></i></button>
-                        </div>
-                    </div>
-                    <p className="text-gray-500 dark:text-gray-400 text-sm mb-4 line-clamp-2">{pedido.servico}</p>
-                    <div className="flex justify-between items-center mt-3 pt-3 border-t border-gray-100 dark:border-gray-700/50">
-                        <div className="flex items-center gap-1.5 text-xs font-medium text-gray-500 dark:text-gray-400"><i data-lucide="user" className="w-3.5 h-3.5"></i> {pedido.responsavel || '---'}</div>
-                        <span className="font-bold text-sm text-slate-700 dark:text-slate-200">R$ {Number(pedido.valor_total).toFixed(2).replace('.', ',')}</span>
-                    </div>
-                </div>
-            );
-        }
-
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
-    </script>
-</body>
-</html>
+                                    <div className="flex flex-col gap
