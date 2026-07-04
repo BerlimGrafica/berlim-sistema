@@ -42,7 +42,7 @@
         );
 
         function App() {
-            const [abaAtual, setAbaAtual] = useState('producao'); // Controla a navegação
+            const [abaAtual, setAbaAtual] = useState('producao');
             const [pedidos, setPedidos] = useState([]);
             const [produtos, setProdutos] = useState([]);
             const [darkMode, setDarkMode] = useState(false);
@@ -55,11 +55,11 @@
                 cliente: '', servico: '', valor_total: '', local_producao: 'Berlim', responsavel: '', status: 'Aguardando'
             });
 
-            // Controle do Novo Produto
+            // Controle do Novo Produto (Sem o campo código!)
             const [modalProdutoAberto, setModalProdutoAberto] = useState(false);
             const [salvandoProduto, setSalvandoProduto] = useState(false);
             const [novoProduto, setNovoProduto] = useState({
-                codigo: '', nome: '', texto_padrao: '', preco_base: ''
+                nome: '', texto_padrao: '', preco_base: ''
             });
 
             useEffect(() => {
@@ -74,7 +74,7 @@
                 const { data: listaPedidos } = await supabase.from('pedidos').select('*').order('id', { ascending: true });
                 if (listaPedidos) setPedidos(listaPedidos);
 
-                const { data: listaProdutos } = await supabase.from('produtos').select('*').order('codigo', { ascending: true });
+                const { data: listaProdutos } = await supabase.from('produtos').select('*').order('id', { ascending: true });
                 if (listaProdutos) setProdutos(listaProdutos);
             }
 
@@ -90,7 +90,6 @@
 
                 const prodSelecionado = produtos.find(p => p.id === parseInt(produtoId));
                 if (prodSelecionado) {
-                    // Preenche automaticamente, MAS DEIXA EDITÁVEL
                     setNovoPedido({
                         ...novoPedido,
                         servico: prodSelecionado.texto_padrao,
@@ -113,7 +112,7 @@
                     setPedidos([...pedidos, data[0]]);
                     setModalAberto(false);
                     setNovoPedido({ cliente: '', servico: '', valor_total: '', local_producao: 'Berlim', responsavel: '', status: 'Aguardando' });
-                    setAbaAtual('producao'); // Volta pro painel
+                    setAbaAtual('producao');
                 } else {
                     alert('Erro ao salvar o pedido.');
                 }
@@ -132,6 +131,8 @@
                 
                 const produtoFormatado = {
                     ...novoProduto,
+                    // Gera um código fantasma baseado na data/hora apenas para o banco aceitar
+                    codigo: 'AUTO-' + Date.now(), 
                     preco_base: parseFloat(novoProduto.preco_base.replace(',', '.')) || 0
                 };
 
@@ -139,9 +140,9 @@
                 if (!error && data) {
                     setProdutos([...produtos, data[0]]);
                     setModalProdutoAberto(false);
-                    setNovoProduto({ codigo: '', nome: '', texto_padrao: '', preco_base: '' });
+                    setNovoProduto({ nome: '', texto_padrao: '', preco_base: '' });
                 } else {
-                    alert('Erro ao salvar. Verifique se o Código já existe.');
+                    alert('Erro ao salvar. Tente novamente.');
                 }
                 setSalvandoProduto(false);
             }
@@ -181,40 +182,23 @@
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
-                                    {/* Coluna: Aguardando */}
                                     <div className="flex flex-col gap-4">
                                         <div className="flex items-center justify-between pb-2 border-b-2 border-orange-400">
-                                            <h2 className="font-bold flex items-center gap-2 dark:text-gray-200">
-                                                <i data-lucide="clock" className="w-4 h-4 text-orange-500"></i> Aguardando
-                                            </h2>
+                                            <h2 className="font-bold flex items-center gap-2 dark:text-gray-200"><i data-lucide="clock" className="w-4 h-4 text-orange-500"></i> Aguardando</h2>
                                         </div>
-                                        {pedidos.filter(p => p.status === 'Aguardando').map(p => (
-                                            <Cartao key={p.id} pedido={p} onPrint={() => imprimirOS(p)} />
-                                        ))}
+                                        {pedidos.filter(p => p.status === 'Aguardando').map(p => <Cartao key={p.id} pedido={p} onPrint={() => imprimirOS(p)} />)}
                                     </div>
-
-                                    {/* Coluna: Produzir */}
                                     <div className="flex flex-col gap-4">
                                         <div className="flex items-center justify-between pb-2 border-b-2 border-blue-500">
-                                            <h2 className="font-bold flex items-center gap-2 dark:text-gray-200">
-                                                <i data-lucide="settings" className="w-4 h-4 text-blue-500"></i> Produzir
-                                            </h2>
+                                            <h2 className="font-bold flex items-center gap-2 dark:text-gray-200"><i data-lucide="settings" className="w-4 h-4 text-blue-500"></i> Produzir</h2>
                                         </div>
-                                        {pedidos.filter(p => p.status === 'Produzir').map(p => (
-                                            <Cartao key={p.id} pedido={p} onPrint={() => imprimirOS(p)} />
-                                        ))}
+                                        {pedidos.filter(p => p.status === 'Produzir').map(p => <Cartao key={p.id} pedido={p} onPrint={() => imprimirOS(p)} />)}
                                     </div>
-                                    
-                                    {/* Coluna: Acabamento */}
                                     <div className="flex flex-col gap-4">
                                         <div className="flex items-center justify-between pb-2 border-b-2 border-green-500">
-                                            <h2 className="font-bold flex items-center gap-2 dark:text-gray-200">
-                                                <i data-lucide="package-check" className="w-4 h-4 text-green-500"></i> Acabamento
-                                            </h2>
+                                            <h2 className="font-bold flex items-center gap-2 dark:text-gray-200"><i data-lucide="package-check" className="w-4 h-4 text-green-500"></i> Acabamento</h2>
                                         </div>
-                                        {pedidos.filter(p => p.status === 'Acabamento').map(p => (
-                                            <Cartao key={p.id} pedido={p} onPrint={() => imprimirOS(p)} />
-                                        ))}
+                                        {pedidos.filter(p => p.status === 'Acabamento').map(p => <Cartao key={p.id} pedido={p} onPrint={() => imprimirOS(p)} />)}
                                     </div>
                                 </div>
                             </main>
@@ -236,7 +220,7 @@
                                     <table className="w-full text-left border-collapse">
                                         <thead>
                                             <tr className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 text-sm text-gray-500 dark:text-gray-400">
-                                                <th className="p-4 font-semibold w-24">Cód.</th>
+                                                <th className="p-4 font-semibold w-24">Nº (ID)</th>
                                                 <th className="p-4 font-semibold w-1/4">Nome do Produto</th>
                                                 <th className="p-4 font-semibold">Texto / Descrição Padrão</th>
                                                 <th className="p-4 font-semibold text-right w-32">Preço Base</th>
@@ -248,7 +232,7 @@
                                             ) : (
                                                 produtos.map(p => (
                                                     <tr key={p.id} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition">
-                                                        <td className="p-4 font-bold text-gray-700 dark:text-gray-300">[{p.codigo}]</td>
+                                                        <td className="p-4 font-bold text-blue-600 dark:text-blue-400">[{p.id}]</td>
                                                         <td className="p-4 font-semibold dark:text-white">{p.nome}</td>
                                                         <td className="p-4 text-sm text-gray-600 dark:text-gray-400">{p.texto_padrao}</td>
                                                         <td className="p-4 font-bold text-green-600 dark:text-green-400 text-right">R$ {Number(p.preco_base).toFixed(2).replace('.', ',')}</td>
@@ -279,18 +263,16 @@
                                         <input required type="text" value={novoPedido.cliente} onChange={e => setNovoPedido({...novoPedido, cliente: e.target.value})} className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-blue-500 transition dark:text-white" placeholder="Ex: Fibrion" />
                                     </div>
 
-                                    {/* SELETOR DE PRODUTOS */}
                                     <div className="p-3 bg-yellow-50 dark:bg-yellow-900/10 border border-yellow-200 dark:border-yellow-700/30 rounded-lg">
                                         <label className="block text-sm font-bold mb-1 text-yellow-800 dark:text-yellow-500">1. Puxar Base do Catálogo</label>
                                         <select onChange={tratarSelecaoProduto} className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md px-3 py-2 outline-none focus:ring-2 focus:ring-yellow-500 transition dark:text-white text-sm cursor-pointer shadow-sm">
                                             <option value="">-- Selecione o produto para auto-preencher --</option>
                                             {produtos.map(p => (
-                                                <option key={p.id} value={p.id}>[{p.codigo}] {p.nome}</option>
+                                                <option key={p.id} value={p.id}>[{p.id}] {p.nome}</option>
                                             ))}
                                         </select>
                                     </div>
                                     
-                                    {/* CAMPOS EDITÁVEIS */}
                                     <div>
                                         <label className="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300 flex justify-between">
                                             <span>2. Descrição Final</span>
@@ -324,7 +306,7 @@
                         </div>
                     )}
 
-                    {/* MODAL DE CADASTRAR NOVO PRODUTO NO CATÁLOGO */}
+                    {/* MODAL DE CADASTRAR NOVO PRODUTO */}
                     {modalProdutoAberto && (
                         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 glass no-print transition-all">
                             <div className="bg-white dark:bg-darkCard w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden border border-gray-200 dark:border-darkBorder">
@@ -336,15 +318,9 @@
                                 </div>
                                 
                                 <form onSubmit={salvarProduto} className="p-6 flex flex-col gap-4">
-                                    <div className="grid grid-cols-3 gap-4">
-                                        <div className="col-span-1">
-                                            <label className="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">Código</label>
-                                            <input required type="text" value={novoProduto.codigo} onChange={e => setNovoProduto({...novoProduto, codigo: e.target.value})} className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-emerald-500 transition dark:text-white" placeholder="Ex: 105" />
-                                        </div>
-                                        <div className="col-span-2">
-                                            <label className="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">Nome do Produto</label>
-                                            <input required type="text" value={novoProduto.nome} onChange={e => setNovoProduto({...novoProduto, nome: e.target.value})} className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-emerald-500 transition dark:text-white" placeholder="Ex: Panfleto A5" />
-                                        </div>
+                                    <div>
+                                        <label className="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">Nome do Produto</label>
+                                        <input required type="text" value={novoProduto.nome} onChange={e => setNovoProduto({...novoProduto, nome: e.target.value})} className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-emerald-500 transition dark:text-white" placeholder="Ex: Panfleto A5" />
                                     </div>
 
                                     <div>
