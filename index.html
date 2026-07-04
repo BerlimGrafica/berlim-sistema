@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Berlim Gráfica | Produção</title>
     
+    <!-- Bibliotecas -->
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -23,6 +24,13 @@
     <style>
         body { transition: background-color 0.3s ease; }
         .glass { backdrop-filter: blur(8px); }
+        
+        /* Esconde tudo ao imprimir, exceto a área de impressão da OS */
+        @media print {
+            body { background: white !important; color: black !important; }
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+        }
     </style>
 </head>
 <body class="bg-gray-50 dark:bg-darkBg text-slate-900 dark:text-slate-100 min-h-screen">
@@ -31,7 +39,6 @@
     <script type="text/babel">
         const { useState, useEffect } = React;
 
-        // Conexão Direta com o Supabase
         const supabase = supabase.createClient(
             'https://xbanoipgoleuahwbqksy.supabase.co',
             'sb_publishable_RSQ4odG0wxy8ZucJHu_WvQ_0JfM8jbh'
@@ -40,126 +47,249 @@
         function App() {
             const [pedidos, setPedidos] = useState([]);
             const [darkMode, setDarkMode] = useState(false);
+            
+            // Estados do Formulário e Impressão
+            const [modalAberto, setModalAberto] = useState(false);
+            const [salvando, setSalvando] = useState(false);
+            const [osParaImprimir, setOsParaImprimir] = useState(null);
+            
+            const [novoPedido, setNovoPedido] = useState({
+                cliente: '', servico: '', valor_total: '', local_producao: 'Berlim', responsavel: '', status: 'Aguardando'
+            });
 
-            // Alterna entre o Modo Claro e Escuro
+            useEffect(() => {
+                carregarPedidos();
+            }, []);
+
+            useEffect(() => {
+                lucide.createIcons();
+            }, [pedidos, modalAberto, darkMode]);
+
+            async function carregarPedidos() {
+                const { data } = await supabase.from('pedidos').select('*').order('id', { ascending: true });
+                if (data) setPedidos(data);
+            }
+
             const toggleDarkMode = () => {
                 setDarkMode(!darkMode);
                 document.documentElement.classList.toggle('dark');
             };
 
-            // Busca os dados no Banco
-            useEffect(() => {
-                async function carregar() {
-                    const { data } = await supabase.from('pedidos').select('*').order('id', { ascending: true });
-                    if (data) setPedidos(data);
-                }
-                carregar();
+            // Função para Salvar Nova OS no Banco
+            async function salvarOS(e) {
+                e.preventDefault();
+                setSalvando(true);
                 
-                // Ativa os ícones modernos
-                setTimeout(() => lucide.createIcons(), 100);
-            }, []);
+                const pedidoFormatado = {
+                    ...novoPedido,
+                    valor_total: parseFloat(novoPedido.valor_total.replace(',', '.')) || 0
+                };
+
+                const { data, error } = await supabase.from('pedidos').insert([pedidoFormatado]).select();
+                
+                if (!error && data) {
+                    setPedidos([...pedidos, data[0]]);
+                    setModalAberto(false);
+                    // Limpa o formulário
+                    setNovoPedido({ cliente: '', servico: '', valor_total: '', local_producao: 'Berlim', responsavel: '', status: 'Aguardando' });
+                } else {
+                    alert('Erro ao salvar o pedido.');
+                }
+                setSalvando(false);
+            }
+
+            // Função para disparar a impressão
+            function imprimirOS(pedido) {
+                setOsParaImprimir(pedido);
+                // Dá um tempinho mínimo para o React desenhar a OS na tela antes de chamar a impressora
+                setTimeout(() => window.print(), 100);
+            }
 
             return (
-                <div className="flex flex-col min-h-screen">
-                    {/* Menu Superior Minimalista */}
-                    <header className="sticky top-0 z-50 glass bg-white/80 dark:bg-darkBg/80 border-b border-gray-200 dark:border-darkBorder px-6 py-4 flex justify-between items-center shadow-sm">
-                        <div className="flex items-center gap-8">
-                            <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400 font-black text-xl tracking-tight">
-                                <i data-lucide="printer"></i>
-                                BERLIM
-                            </div>
-                            <nav className="hidden md:flex gap-6 font-medium text-sm text-gray-500 dark:text-gray-400">
-                                <a href="#" className="text-slate-900 dark:text-white border-b-2 border-blue-600 pb-1">Produção</a>
-                                <a href="#" className="hover:text-slate-900 dark:hover:text-white transition">Clientes</a>
-                                <a href="#" className="hover:text-slate-900 dark:hover:text-white transition">Configurações</a>
-                            </nav>
-                        </div>
-                        <div className="flex items-center gap-4">
-                            <button onClick={toggleDarkMode} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition">
-                                {darkMode ? <i data-lucide="sun" className="w-5 h-5"></i> : <i data-lucide="moon" className="w-5 h-5"></i>}
-                            </button>
-                            <button className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition">
-                                <i data-lucide="bell" className="w-5 h-5"></i>
-                            </button>
-                            <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm shadow-md">
-                                AD
-                            </div>
-                        </div>
-                    </header>
-
-                    {/* Área Principal - Quadro Kanban */}
-                    <main className="flex-1 p-6 max-w-[1600px] mx-auto w-full">
-                        <div className="flex justify-between items-center mb-8">
-                            <button className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-semibold flex items-center gap-2 shadow-md transition transform hover:-translate-y-0.5">
-                                <i data-lucide="plus" className="w-4 h-4"></i>
-                                Nova O.S.
-                            </button>
-                            <div className="flex bg-white dark:bg-darkCard rounded-lg border border-gray-200 dark:border-darkBorder p-1 shadow-sm">
-                                <button className="px-4 py-1.5 bg-gray-100 dark:bg-gray-800 rounded-md text-sm font-semibold shadow-sm">Kanban</button>
-                                <button className="px-4 py-1.5 text-gray-500 text-sm font-medium hover:text-slate-900 dark:hover:text-white transition">Lista</button>
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
-                            {/* Coluna: Aguardando */}
-                            <div className="flex flex-col gap-4">
-                                <div className="flex items-center justify-between pb-2 border-b-2 border-orange-400">
-                                    <h2 className="font-bold flex items-center gap-2 dark:text-gray-200">
-                                        <i data-lucide="clock" className="w-4 h-4 text-orange-500"></i> Aguardando
-                                    </h2>
-                                    <span className="bg-gray-200 dark:bg-gray-800 text-xs px-2 py-1 rounded-full font-bold">
-                                        {pedidos.filter(p => p.status === 'Aguardando').length}
-                                    </span>
+                <div>
+                    {/* APLICAÇÃO PRINCIPAL (Fica oculta na impressão) */}
+                    <div className="flex flex-col min-h-screen no-print">
+                        {/* Menu Superior */}
+                        <header className="sticky top-0 z-40 glass bg-white/80 dark:bg-darkBg/80 border-b border-gray-200 dark:border-darkBorder px-6 py-4 flex justify-between items-center shadow-sm">
+                            <div className="flex items-center gap-8">
+                                <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400 font-black text-xl tracking-tight">
+                                    <i data-lucide="printer"></i>
+                                    BERLIM
                                 </div>
-                                {pedidos.filter(p => p.status === 'Aguardando').map(p => <Cartao key={p.id} pedido={p} />)}
+                                <nav className="hidden md:flex gap-6 font-medium text-sm text-gray-500 dark:text-gray-400">
+                                    <a href="#" className="text-slate-900 dark:text-white border-b-2 border-blue-600 pb-1">Produção</a>
+                                    <a href="#" className="hover:text-slate-900 dark:hover:text-white transition">Clientes</a>
+                                    <a href="#" className="hover:text-slate-900 dark:hover:text-white transition">Configurações</a>
+                                </nav>
                             </div>
-
-                            {/* Coluna: Produzir */}
-                            <div className="flex flex-col gap-4">
-                                <div className="flex items-center justify-between pb-2 border-b-2 border-blue-500">
-                                    <h2 className="font-bold flex items-center gap-2 dark:text-gray-200">
-                                        <i data-lucide="settings" className="w-4 h-4 text-blue-500"></i> Produzir
-                                    </h2>
-                                    <span className="bg-gray-200 dark:bg-gray-800 text-xs px-2 py-1 rounded-full font-bold">
-                                        {pedidos.filter(p => p.status === 'Produzir').length}
-                                    </span>
-                                </div>
-                                {pedidos.filter(p => p.status === 'Produzir').map(p => <Cartao key={p.id} pedido={p} />)}
-                            </div>
-
-                            {/* Coluna: Acabamento */}
-                            <div className="flex flex-col gap-4">
-                                <div className="flex items-center justify-between pb-2 border-b-2 border-green-500">
-                                    <h2 className="font-bold flex items-center gap-2 dark:text-gray-200">
-                                        <i data-lucide="package-check" className="w-4 h-4 text-green-500"></i> Acabamento
-                                    </h2>
-                                    <span className="bg-gray-200 dark:bg-gray-800 text-xs px-2 py-1 rounded-full font-bold">0</span>
-                                </div>
-                                <div className="border-2 border-dashed border-gray-200 dark:border-darkBorder rounded-xl h-32 flex items-center justify-center text-gray-400 text-sm font-medium">
-                                    Arraste para cá
+                            <div className="flex items-center gap-4">
+                                <button onClick={toggleDarkMode} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition">
+                                    <i data-lucide={darkMode ? "sun" : "moon"} className="w-5 h-5"></i>
+                                </button>
+                                <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm shadow-md">
+                                    AD
                                 </div>
                             </div>
+                        </header>
+
+                        {/* Kanban */}
+                        <main className="flex-1 p-6 max-w-[1600px] mx-auto w-full">
+                            <div className="flex justify-between items-center mb-8">
+                                <button onClick={() => setModalAberto(true)} className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-semibold flex items-center gap-2 shadow-md transition transform hover:-translate-y-0.5">
+                                    <i data-lucide="plus" className="w-4 h-4"></i>
+                                    Nova O.S.
+                                </button>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
+                                {/* Coluna: Aguardando */}
+                                <div className="flex flex-col gap-4">
+                                    <div className="flex items-center justify-between pb-2 border-b-2 border-orange-400">
+                                        <h2 className="font-bold flex items-center gap-2 dark:text-gray-200">
+                                            <i data-lucide="clock" className="w-4 h-4 text-orange-500"></i> Aguardando
+                                        </h2>
+                                    </div>
+                                    {pedidos.filter(p => p.status === 'Aguardando').map(p => (
+                                        <Cartao key={p.id} pedido={p} onPrint={() => imprimirOS(p)} />
+                                    ))}
+                                </div>
+
+                                {/* Coluna: Produzir */}
+                                <div className="flex flex-col gap-4">
+                                    <div className="flex items-center justify-between pb-2 border-b-2 border-blue-500">
+                                        <h2 className="font-bold flex items-center gap-2 dark:text-gray-200">
+                                            <i data-lucide="settings" className="w-4 h-4 text-blue-500"></i> Produzir
+                                        </h2>
+                                    </div>
+                                    {pedidos.filter(p => p.status === 'Produzir').map(p => (
+                                        <Cartao key={p.id} pedido={p} onPrint={() => imprimirOS(p)} />
+                                    ))}
+                                </div>
+                                
+                                {/* Coluna: Acabamento */}
+                                <div className="flex flex-col gap-4">
+                                    <div className="flex items-center justify-between pb-2 border-b-2 border-green-500">
+                                        <h2 className="font-bold flex items-center gap-2 dark:text-gray-200">
+                                            <i data-lucide="package-check" className="w-4 h-4 text-green-500"></i> Acabamento
+                                        </h2>
+                                    </div>
+                                    {pedidos.filter(p => p.status === 'Acabamento').map(p => (
+                                        <Cartao key={p.id} pedido={p} onPrint={() => imprimirOS(p)} />
+                                    ))}
+                                </div>
+                            </div>
+                        </main>
+                    </div>
+
+                    {/* MODAL DE NOVA O.S. (Efeito Vidro) */}
+                    {modalAberto && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 glass no-print transition-all">
+                            <div className="bg-white dark:bg-darkCard w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden border border-gray-200 dark:border-darkBorder">
+                                <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center">
+                                    <h3 className="font-bold text-lg dark:text-white">Cadastrar Nova O.S.</h3>
+                                    <button onClick={() => setModalAberto(false)} className="text-gray-400 hover:text-red-500 transition">
+                                        <i data-lucide="x" className="w-5 h-5"></i>
+                                    </button>
+                                </div>
+                                
+                                <form onSubmit={salvarOS} className="p-6 flex flex-col gap-4">
+                                    <div>
+                                        <label className="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">Cliente / Empresa</label>
+                                        <input required type="text" value={novoPedido.cliente} onChange={e => setNovoPedido({...novoPedido, cliente: e.target.value})} className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-blue-500 transition dark:text-white" placeholder="Ex: Fibrion" />
+                                    </div>
+                                    
+                                    <div>
+                                        <label className="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">Descrição do Serviço</label>
+                                        <textarea required rows="2" value={novoPedido.servico} onChange={e => setNovoPedido({...novoPedido, servico: e.target.value})} className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-blue-500 transition dark:text-white" placeholder="Ex: 500 Envelopes 24x34cm..."></textarea>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">Valor Total (R$)</label>
+                                            <input required type="text" value={novoPedido.valor_total} onChange={e => setNovoPedido({...novoPedido, valor_total: e.target.value})} className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-blue-500 transition dark:text-white" placeholder="0,00" />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">Responsável</label>
+                                            <input type="text" value={novoPedido.responsavel} onChange={e => setNovoPedido({...novoPedido, responsavel: e.target.value})} className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-blue-500 transition dark:text-white" placeholder="Nome" />
+                                        </div>
+                                    </div>
+
+                                    <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800 flex justify-end gap-3">
+                                        <button type="button" onClick={() => setModalAberto(false)} className="px-5 py-2 rounded-lg font-semibold text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition">Cancelar</button>
+                                        <button type="submit" disabled={salvando} className="px-5 py-2 rounded-lg font-semibold bg-blue-600 hover:bg-blue-700 text-white shadow-md transition disabled:opacity-50">
+                                            {salvando ? 'Salvando...' : 'Salvar Pedido'}
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
                         </div>
-                    </main>
+                    )}
+
+                    {/* VISTA DE IMPRESSÃO DA O.S. (Só aparece na hora de imprimir) */}
+                    <div className="hidden print-only bg-white text-black p-8 font-sans max-w-2xl mx-auto">
+                        {osParaImprimir && (
+                            <div className="border-2 border-black p-6 rounded-xl">
+                                <div className="flex justify-between items-center border-b-2 border-black pb-4 mb-4">
+                                    <div>
+                                        <h1 className="text-2xl font-black uppercase">BERLIM GRÁFICA</h1>
+                                        <p className="text-sm font-bold mt-1">Ordem de Serviço Nº {osParaImprimir.id || '---'}</p>
+                                    </div>
+                                    <div className="text-right text-sm">
+                                        <p>Data: {new Date().toLocaleDateString('pt-BR')}</p>
+                                        <p className="font-bold mt-1 uppercase">Local: {osParaImprimir.local_producao}</p>
+                                    </div>
+                                </div>
+                                
+                                <div className="mb-6">
+                                    <p className="text-sm text-gray-600 uppercase mb-1">Cliente</p>
+                                    <p className="text-xl font-bold">{osParaImprimir.cliente}</p>
+                                </div>
+
+                                <div className="mb-6">
+                                    <p className="text-sm text-gray-600 uppercase mb-1">Descrição do Serviço</p>
+                                    <div className="border border-gray-300 p-4 rounded-lg bg-gray-50 min-h-[100px] whitespace-pre-wrap text-lg">
+                                        {osParaImprimir.servico}
+                                    </div>
+                                </div>
+
+                                <div className="flex justify-between items-end border-t-2 border-black pt-4 mt-8">
+                                    <div>
+                                        <p className="text-sm text-gray-600 uppercase mb-1">Responsável</p>
+                                        <p className="font-bold">{osParaImprimir.responsavel || '---'}</p>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-sm text-gray-600 uppercase mb-1">Valor Total</p>
+                                        <p className="text-2xl font-black">R$ {Number(osParaImprimir.valor_total).toFixed(2).replace('.', ',')}</p>
+                                    </div>
+                                </div>
+                                
+                                <div className="mt-12 pt-4 text-center border-t border-dashed border-gray-400 text-xs text-gray-500">
+                                    Uso interno - Assinatura do cliente na retirada: _____________________________________
+                                </div>
+                            </div>
+                        )}
+                    </div>
                 </div>
             );
         }
 
-        // Componente Visual do Cartão de Pedido
-        function Cartao({ pedido }) {
+        // Componente do Cartão (agora com botão de imprimir)
+        function Cartao({ pedido, onPrint }) {
             return (
-                <div className="bg-white dark:bg-darkCard p-4 rounded-xl shadow-sm border border-gray-200 dark:border-darkBorder hover:shadow-md transition cursor-pointer relative group">
+                <div className="bg-white dark:bg-darkCard p-4 rounded-xl shadow-sm border border-gray-200 dark:border-darkBorder hover:shadow-md transition relative group">
                     <div className="flex justify-between items-start mb-1">
                         <h3 className="font-bold text-base">{pedido.cliente}</h3>
-                        <span className="text-[10px] font-bold uppercase tracking-wider bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-md text-gray-600 dark:text-gray-300">
-                            {pedido.local_producao}
-                        </span>
+                        <div className="flex gap-2">
+                            <button onClick={onPrint} className="text-gray-400 hover:text-blue-500 transition" title="Imprimir O.S.">
+                                <i data-lucide="printer" className="w-4 h-4"></i>
+                            </button>
+                        </div>
                     </div>
                     <p className="text-gray-500 dark:text-gray-400 text-sm mb-4 line-clamp-2">{pedido.servico}</p>
                     
                     <div className="flex justify-between items-center mt-3 pt-3 border-t border-gray-100 dark:border-gray-700/50">
                         <div className="flex items-center gap-1.5 text-xs font-medium text-gray-500 dark:text-gray-400">
-                            <i data-lucide="user" className="w-3.5 h-3.5"></i> {pedido.responsavel || 'Equipe'}
+                            <i data-lucide="user" className="w-3.5 h-3.5"></i> {pedido.responsavel || '---'}
                         </div>
                         <span className="font-bold text-sm text-slate-700 dark:text-slate-200">
                             R$ {Number(pedido.valor_total).toFixed(2).replace('.', ',')}
