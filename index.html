@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Berlim Gráfica | Sistema</title>
     
-    <!-- Tipografia Estilo Vercel (Montserrat) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -23,15 +22,15 @@
             theme: { 
                 extend: { 
                     colors: { 
-                        brand: '#F37020',          
+                        brand: '#F37020',          /* Laranja Oficial Berlim */
                         brandHover: '#d9641c',     
                         
-                        /* Sistema de Elevação Estilo Vercel */
-                        darkBg: '#000000',         
-                        darkCard: '#0A0A0A',       
-                        darkElevated: '#111111',   
-                        darkHover: '#1A1A1A',      
-                        darkBorder: '#333333',     
+                        /* Sistema de Elevação Escala Cinzas Vercel */
+                        darkBg: '#000000',         /* Level 0: Fundo de Tela Geral */
+                        darkCard: '#0A0A0A',       /* Level 1: Corpo das Janelas e Modais */
+                        darkElevated: '#111111',   /* Level 2: Inputs, Cartões e Campos de Texto */
+                        darkHover: '#1A1A1A',      /* Level 3: Estados de Seleção e Hovers */
+                        darkBorder: '#333333',     /* Linhas Finas de Divisão */
                         darkInput: '#000000'
                     },
                     fontFamily: {
@@ -70,6 +69,7 @@
             'sb_publishable_RSQ4odG0wxy8ZucJHu_WvQ_0JfM8jbh'
         );
 
+        // ==== FUNÇÕES DE FORMATAÇÃO ====
         const formatarMoeda = (valor) => {
             if (!valor) return '';
             const numeroLimpo = valor.toString().replace(/\D/g, ''); 
@@ -94,12 +94,13 @@
             const [darkMode, setDarkMode] = useState(true); 
             const [isAdmin, setIsAdmin] = useState(false);
             
+            // Controle do Modal Mestre de O.S. (Novo e Edição Compartilham o mesmo)
             const [modalAberto, setModalAberto] = useState(false);
             const [salvandoOS, setSalvandoOS] = useState(false);
             const [osParaImprimir, setOsParaImprimir] = useState(null);
             const [pedidoEmEdicao, setPedidoEmEdicao] = useState(null); 
 
-            const [itensPedido, setItensPedido] = useState([]);
+            // Campos da esteira de adição de itens
             const [itemAtual, setItemAtual] = useState({ nome: '', descricao: '', valor: '', desconto: '' });
 
             const [buscaCliente, setBuscaCliente] = useState('');
@@ -109,6 +110,7 @@
 
             const [novoPedido, setNovoPedido] = useState({ cliente: '', servico: '', valor_total: '', status: 'Aguardando' });
             
+            // Modais de Cadastro de Apoio
             const [modalProdutoAberto, setModalProdutoAberto] = useState(false);
             const [salvandoProduto, setSalvandoProduto] = useState(false);
             const [novoProduto, setNovoProduto] = useState({ id: null, nome: '', texto_padrao: '', preco_base: '' });
@@ -117,14 +119,12 @@
             const [salvandoCliente, setSalvandoCliente] = useState(false);
             const [novoCliente, setNovoCliente] = useState({ id: null, nome: '', telefone: '', email: '', observacoes: '' });
 
-            useEffect(() => { 
-                carregarDados(); 
-            }, []);
+            useEffect(() => { carregarDados(); }, []);
 
-            // Trava de atualização de ícones segura
+            // Renderizador de Ícones Seguro
             useEffect(() => { 
                 lucide.createIcons(); 
-            }, [abaAtual, modalAberto, modalProdutoAberto, modalClienteAberto, pedidos, produtos, clientes, itensPedido]); 
+            }, [abaAtual, modalAberto, modalProdutoAberto, modalClienteAberto, pedidos, produtos, clientes, buscaCliente, buscaProduto]); 
 
             async function carregarDados() {
                 const { data: listaPedidos } = await supabase.from('pedidos').select('*').order('id', { ascending: false });
@@ -146,11 +146,11 @@
                 setPedidoEmEdicao(null);
                 setBuscaCliente('');
                 setBuscaProduto('');
-                setItensPedido([]); 
                 setItemAtual({ nome: '', descricao: '', valor: '', desconto: '' });
                 setNovoPedido({ cliente: '', servico: '', valor_total: '', status: 'Aguardando' });
             }
 
+            // CARREGA OS DADOS EXISTENTES NA JANELA MESTRE PARA EDIÇÃO
             function abrirEdicao(pedido) {
                 setPedidoEmEdicao(pedido);
                 setBuscaCliente(pedido.cliente);
@@ -160,10 +160,10 @@
                     status: pedido.status,
                     valor_total: formatarMoeda((pedido.valor_total * 100).toFixed(0).toString())
                 });
-                setItensPedido([]); 
                 setModalAberto(true);
             }
 
+            // MOTOR DA CALCULADORA DE DESCONTO E INSERÇÃO DE TEXTO
             const obterValorFinalItem = () => {
                 const numOriginal = parseFloat(itemAtual.valor.replace(/\./g, '').replace(',', '.')) || 0;
                 const pctDesconto = parseFloat(itemAtual.desconto) || 0;
@@ -174,77 +174,67 @@
                 if (!itemAtual.descricao || !itemAtual.valor) return;
                 const valorFinalCalculadoNum = obterValorFinalItem();
                 const valorFinalCalculadoStr = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(valorFinalCalculadoNum);
-                const novoItemEmpacotado = { ...itemAtual, valor_original: itemAtual.valor, valor: valorFinalCalculadoStr, id_temp: Date.now() };
-
-                const novosItens = [...itensPedido, novoItemEmpacotado];
-                setItensPedido(novosItens);
                 
-                let totalGeralOS = 0;
-                novosItens.forEach(i => { totalGeralOS += parseFloat(i.valor.replace(/\./g, '').replace(',', '.')) || 0; });
-                setNovoPedido({...novoPedido, valor_total: formatarMoeda((totalGeralOS * 100).toFixed(0).toString())});
+                // Constrói a linha de texto formatada
+                const tagDesconto = itemAtual.desconto ? ' (-' + itemAtual.desconto + '%)' : '';
+                const tagNome = itemAtual.nome ? '• ' + itemAtual.nome + '\n  ' : '• ';
+                const blocoTextoItem = tagNome + itemAtual.descricao + '\n  Valor: R$ ' + valorFinalCalculadoStr + tagDesconto;
                 
+                // Injeta diretamente no campo de texto principal
+                const textoCompilado = novoPedido.servico ? novoPedido.servico + '\n\n' + blocoTextoItem : blocoTextoItem;
+                
+                // Soma matematicamente ao valor total atual da janela
+                const totalAtualExistente = parseFloat(novoPedido.valor_total.replace(/\./g, '').replace(',', '.')) || 0;
+                const novoTotalGeralCalculado = totalAtualExistente + valorFinalCalculadoNum;
+                
+                setNovoPedido({
+                    ...novoPedido,
+                    servico: textoCompilado,
+                    valor_total: formatarMoeda((novoTotalGeralCalculado * 100).toFixed(0).toString())
+                });
+                
+                // Limpa a esteira de inserção para o próximo item
                 setItemAtual({ nome: '', descricao: '', valor: '', desconto: '' });
                 setBuscaProduto('');
             }
 
-            function removerItemDoCarrinho(id_temp) {
-                const novosItens = itensPedido.filter(i => i.id_temp !== id_temp);
-                setItensPedido(novosItens);
-                let totalGeralOS = 0;
-                novosItens.forEach(i => { totalGeralOS += parseFloat(i.valor.replace(/\./g, '').replace(',', '.')) || 0; });
-                setNovoPedido({...novoPedido, valor_total: formatarMoeda((totalGeralOS * 100).toFixed(0).toString())});
-            }
-
+            // FUNÇÃO SALVAR (IDENTIFICA SE DEVE CRIAR OU ATUALIZAR)
             async function salvarOS(e) {
                 e.preventDefault();
                 setSalvandoOS(true);
-                
-                let textoFinalServico = novoPedido.servico;
-                if (!pedidoEmEdicao && itensPedido.length > 0) {
-                    const itensTextoArray = itensPedido.map(i => {
-                        const strDesconto = i.desconto ? ' (-' + i.desconto + '%)' : '';
-                        const strNome = i.nome || 'Serviço Personalizado';
-                        return '• ' + strNome + '\n  ' + i.descricao + '\n  Valor: R$ ' + i.valor + strDesconto;
-                    });
-                    const itensTextoString = itensTextoArray.join('\n\n');
-                    const obsGerais = novoPedido.servico ? '\n\n[OBSERVAÇÕES GERAIS]\n' + novoPedido.servico : '';
-                    textoFinalServico = itensTextoString + obsGerais;
-                }
-
-                const valorNumerico = parseFloat(novoPedido.valor_total.replace(/\./g, '').replace(',', '.')) || 0;
+                const valorNumericoFinal = parseFloat(novoPedido.valor_total.replace(/\./g, '').replace(',', '.')) || 0;
 
                 if (pedidoEmEdicao) {
+                    // MODO EDIÇÃO: Executa o UPDATE no mesmo ID
                     const { data, error } = await supabase.from('pedidos').update({
                         cliente: novoPedido.cliente,
                         servico: novoPedido.servico,
                         status: novoPedido.status,
-                        valor_total: valorNumerico
+                        valor_total: valorNumericoFinal
                     }).eq('id', pedidoEmEdicao.id).select();
 
                     if (!error && data) {
                         setPedidos(pedidos.map(p => p.id === data[0].id ? data[0] : p));
                         fecharModalOS();
-                    } else {
-                        alert('Erro ao atualizar OS: ' + error.message);
-                    }
+                    } else alert('Erro ao atualizar OS: ' + error.message);
                 } else {
-                    const pedidoFormatado = { cliente: novoPedido.cliente, servico: textoFinalServico, status: novoPedido.status, valor_total: valorNumerico };
-                    const { data, error } = await supabase.from('pedidos').insert([pedidoFormatado]).select();
+                    // MODO CRIAÇÃO: Executa o INSERT comum
+                    const { data, error } = await supabase.from('pedidos').insert([{
+                        cliente: novoPedido.cliente,
+                        servico: novoPedido.servico,
+                        status: novoPedido.status,
+                        valor_total: valorNumericoFinal
+                    }]).select();
+
                     if (!error && data) {
                         setPedidos([data[0], ...pedidos]);
                         fecharModalOS();
-                    } else {
-                        alert('Erro ao salvar OS: ' + error.message);
-                    }
+                    } else alert('Erro ao salvar OS: ' + error.message);
                 }
                 setSalvandoOS(false);
             }
 
-            function abrirEdicaoProduto(prod) {
-                setNovoProduto({ id: prod.id, nome: prod.nome, texto_padrao: prod.texto_padrao, preco_base: formatarMoeda((prod.preco_base * 100).toFixed(0).toString()) });
-                setModalProdutoAberto(true);
-            }
-
+            // PROCESSAMENTO DE SUB-CADASTROS
             async function salvarProduto(e) {
                 e.preventDefault();
                 setSalvandoProduto(true);
@@ -252,25 +242,14 @@
 
                 if (novoProduto.id) {
                     const { data, error } = await supabase.from('produtos').update(produtoFormatado).eq('id', novoProduto.id).select();
-                    if (!error && data) { 
-                        setProdutos(produtos.map(p => p.id === novoProduto.id ? data[0] : p)); 
-                        setModalProdutoAberto(false); 
-                        setNovoProduto({ id: null, nome: '', texto_padrao: '', preco_base: '' }); 
-                    } else alert('Falha ao atualizar produto: ' + error.message);
+                    if (!error && data) { setProdutos(produtos.map(p => p.id === novoProduto.id ? data[0] : p)); setModalProdutoAberto(false); setNovoProduto({ id: null, nome: '', texto_padrao: '', preco_base: '' }); } 
+                    else alert('Falha ao atualizar produto: ' + error.message);
                 } else {
                     const { data, error } = await supabase.from('produtos').insert([produtoFormatado]).select();
-                    if (!error && data) { 
-                        setProdutos([...produtos, data[0]]); 
-                        setModalProdutoAberto(false); 
-                        setNovoProduto({ id: null, nome: '', texto_padrao: '', preco_base: '' }); 
-                    } else alert('Falha ao salvar produto: ' + error.message);
+                    if (!error && data) { setProdutos([...produtos, data[0]]); setModalProdutoAberto(false); setNovoProduto({ id: null, nome: '', texto_padrao: '', preco_base: '' }); } 
+                    else alert('Falha ao salvar produto: ' + error.message);
                 }
                 setSalvandoProduto(false);
-            }
-
-            function abrirEdicaoCliente(cli) {
-                setNovoCliente({ id: cli.id, nome: cli.nome, telefone: cli.telefone, email: cli.email, observacoes: cli.observacoes });
-                setModalClienteAberto(true);
             }
 
             async function salvarCliente(e) {
@@ -280,20 +259,12 @@
 
                 if (novoCliente.id) {
                     const { data, error } = await supabase.from('clientes').update(clienteFormatado).eq('id', novoCliente.id).select();
-                    if (!error && data) { 
-                        setClientes(clientes.map(c => c.id === novoCliente.id ? data[0] : c)); 
-                        setModalClienteAberto(false); 
-                        setNovoCliente({ id: null, nome: '', telefone: '', email: '', observacoes: '' }); 
-                    } else alert('Falha ao atualizar cliente: ' + error.message);
+                    if (!error && data) { setClientes(clientes.map(c => c.id === novoCliente.id ? data[0] : c)); setModalClienteAberto(false); setNovoCliente({ id: null, nome: '', telefone: '', email: '', observacoes: '' }); } 
+                    else alert('Falha ao atualizar cliente: ' + error.message);
                 } else {
                     const { data, error } = await supabase.from('clientes').insert([clienteFormatado]).select();
-                    if (!error && data) { 
-                        setClientes([...clientes, data[0]]); 
-                        setNovoPedido({...novoPedido, cliente: data[0].nome}); 
-                        setBuscaCliente(data[0].nome); 
-                        setModalClienteAberto(false); 
-                        setNovoCliente({ id: null, nome: '', telefone: '', email: '', observacoes: '' }); 
-                    } else alert('Falha ao salvar cliente: ' + error.message);
+                    if (!error && data) { setClientes([...clientes, data[0]]); setNovoPedido({...novoPedido, cliente: data[0].nome}); setBuscaCliente(data[0].nome); setModalClienteAberto(false); setNovoCliente({ id: null, nome: '', telefone: '', email: '', observacoes: '' }); } 
+                    else alert('Falha ao salvar cliente: ' + error.message);
                 }
                 setSalvandoCliente(false);
             }
@@ -306,14 +277,14 @@
             const clientesFiltrados = clientes.filter(c => c.nome.toLowerCase().includes(buscaCliente.toLowerCase()) || (c.telefone && c.telefone.includes(buscaCliente)));
             const produtosFiltrados = produtos.filter(p => p.nome.toLowerCase().includes(buscaProduto.toLowerCase()) || p.id.toString().includes(buscaProduto));
             
-            // Segurança de sintaxe:
-            const isLocked = (pedidoEmEdicao && pedidoEmEdicao.status === 'Finalizado' && !isAdmin) ? true : false;
+            // TRAVA DO MODAL: Bloqueia salvamento se a OS ativa estiver finalizada e não for Admin
+            const isModalTrancado = (pedidoEmEdicao && pedidoEmEdicao.status === 'Finalizado' && !isAdmin);
 
             return (
                 <div>
                     <div className="flex flex-col min-h-screen no-print">
                         
-                        {/* HEADER */}
+                        {/* ================= HEADER ================= */}
                         <header className="sticky top-0 z-40 bg-white dark:bg-darkBg border-b border-gray-200 dark:border-darkBorder px-6 py-3 flex justify-between items-center">
                             <div className="flex items-center gap-8">
                                 <div className="flex items-center gap-2 text-gray-900 dark:text-white font-bold text-lg tracking-tight">
@@ -333,7 +304,7 @@
                             </div>
                         </header>
 
-                        {/* KANBAN */}
+                        {/* ================= KANBAN (CARTÕES TRAVADOS DE CLIQUE) ================= */}
                         {abaAtual === 'producao' && (
                             <main className="flex-1 p-6 lg:p-10 max-w-[1800px] mx-auto w-full fade-in">
                                 <div className="flex justify-between items-center mb-8">
@@ -372,7 +343,7 @@
                             </main>
                         )}
 
-                        {/* BAIXA DE NOTAS */}
+                        {/* ================= BAIXA DE NOTAS (CONTROLE DE BLOQUEIO DO ITEM CONCLUÍDO) ================= */}
                         {abaAtual === 'baixa' && (
                             <main className="flex-1 p-6 lg:p-10 max-w-[1400px] mx-auto w-full fade-in">
                                 <div className="flex justify-between items-center mb-8">
@@ -384,10 +355,22 @@
                                         <tbody>
                                             {pedidos.map(p => {
                                                 const finalizado = p.status === 'Finalizado';
+                                                // Bloqueia o clique se estiver finalizado e não for Administrador ativo
+                                                const trancado = finalizado && !isAdmin;
                                                 return (
-                                                    <tr key={p.id} onClick={() => abrirEdicao(p)} className={`border-b border-gray-100 dark:border-darkBorder transition cursor-pointer ${finalizado ? 'opacity-40 dark:bg-black hover:opacity-80' : 'hover:bg-gray-50 dark:hover:bg-darkHover'}`}>
-                                                        <td className="px-6 py-4 text-sm font-medium text-gray-500">#{p.id}</td>
-                                                        <td className={`px-6 py-4 font-semibold text-sm ${finalizado ? 'text-gray-500' : 'text-gray-900 dark:text-[#EDEDED]'}`}>{p.cliente}</td>
+                                                    <tr 
+                                                        key={p.id} 
+                                                        onClick={() => { if (trancado) return; abrirEdicao(p); }} 
+                                                        className={`border-b border-gray-100 dark:border-darkBorder transition 
+                                                            ${trancado ? 'opacity-25 bg-[#050505] cursor-not-allowed' : 'cursor-pointer hover:bg-gray-50 dark:hover:bg-darkHover'}`}
+                                                    >
+                                                        <td className="px-6 py-4 text-sm font-medium text-gray-500">
+                                                            <span className="flex items-center gap-1">
+                                                                {trancado && <i data-lucide="lock" className="w-3 h-3 text-red-500"></i>}
+                                                                #{p.id}
+                                                            </span>
+                                                        </td>
+                                                        <td className="px-6 py-4 font-semibold text-sm text-gray-900 dark:text-[#EDEDED]">{p.cliente}</td>
                                                         <td className="px-6 py-4 text-sm text-gray-600 dark:text-[#A1A1AA] truncate max-w-xs">{p.servico}</td>
                                                         <td className="px-6 py-4">
                                                             <span className={`px-2.5 py-1 text-[11px] font-medium rounded border 
@@ -398,7 +381,7 @@
                                                                 {p.status}
                                                             </span>
                                                         </td>
-                                                        <td className={`px-6 py-4 font-bold text-sm text-right ${finalizado ? 'text-gray-500' : 'text-gray-900 dark:text-[#EDEDED]'}`}>R$ {Number(p.valor_total).toFixed(2).replace('.', ',')}</td>
+                                                        <td className="px-6 py-4 font-bold text-sm text-right text-gray-900 dark:text-[#EDEDED]">R$ {Number(p.valor_total).toFixed(2).replace('.', ',')}</td>
                                                     </tr>
                                                 )
                                             })}
@@ -408,7 +391,7 @@
                             </main>
                         )}
 
-                        {/* CATÁLOGO */}
+                        {/* ================= CATÁLOGO ================= */}
                         {abaAtual === 'produtos' && (
                             <main className="flex-1 p-6 lg:p-10 max-w-[1200px] mx-auto w-full fade-in">
                                 <div className="flex justify-between items-center mb-8">
@@ -417,7 +400,7 @@
                                 </div>
                                 <div className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded overflow-hidden">
                                     <table className="w-full text-left border-collapse">
-                                        <thead><tr className="bg-gray-50 dark:bg-darkCard border-b border-gray-200 dark:border-darkBorder text-xs font-medium text-gray-500 dark:text-[#888888]"><th className="px-6 py-4">ID</th><th className="px-6 py-4">Nome do Produto</th><th className="px-6 py-4">Descrição Base</th><th className="px-6 py-4 text-right">Preço Base</th></tr></thead>
+                                        <thead><tr className="bg-gray-50 dark:bg-darkLane border-b border-gray-200 dark:border-darkBorder text-xs font-medium text-gray-500 dark:text-[#888888]"><th className="px-6 py-4">ID</th><th className="px-6 py-4">Nome do Produto</th><th className="px-6 py-4">Descrição Base</th><th className="px-6 py-4 text-right">Preço Base</th></tr></thead>
                                         <tbody>
                                             {produtos.map(p => (
                                                 <tr key={p.id} onClick={() => abrirEdicaoProduto(p)} className="border-b border-gray-100 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover transition cursor-pointer"><td className="px-6 py-4 text-sm font-medium text-gray-500">#{p.id}</td><td className="px-6 py-4 text-sm font-semibold dark:text-[#EDEDED]">{p.nome}</td><td className="px-6 py-4 text-sm text-gray-600 dark:text-[#A1A1AA] truncate max-w-xs">{p.texto_padrao}</td><td className="px-6 py-4 text-sm font-bold dark:text-[#EDEDED] text-right">R$ {Number(p.preco_base).toFixed(2).replace('.', ',')}</td></tr>
@@ -428,7 +411,7 @@
                             </main>
                         )}
 
-                        {/* CLIENTES */}
+                        {/* ================= CLIENTES ================= */}
                         {abaAtual === 'clientes' && (
                             <main className="flex-1 p-6 lg:p-10 max-w-[1200px] mx-auto w-full fade-in">
                                 <div className="flex justify-between items-center mb-8">
@@ -437,7 +420,7 @@
                                 </div>
                                 <div className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded overflow-hidden">
                                     <table className="w-full text-left border-collapse">
-                                        <thead><tr className="bg-gray-50 dark:bg-darkCard border-b border-gray-200 dark:border-darkBorder text-xs font-medium text-gray-500 dark:text-[#888888]"><th className="px-6 py-4">Cliente</th><th className="px-6 py-4">WhatsApp</th><th className="px-6 py-4">E-mail</th><th className="px-6 py-4">Observações</th></tr></thead>
+                                        <thead><tr className="bg-gray-50 dark:bg-darkLane border-b border-gray-200 dark:border-darkBorder text-xs font-medium text-gray-500 dark:text-[#888888]"><th className="px-6 py-4">Cliente</th><th className="px-6 py-4">WhatsApp</th><th className="px-6 py-4">E-mail</th><th className="px-6 py-4">Observações</th></tr></thead>
                                         <tbody>
                                             {clientes.map(c => (
                                                 <tr key={c.id} onClick={() => abrirEdicaoCliente(c)} className="border-b border-gray-100 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover transition cursor-pointer"><td className="px-6 py-4 text-sm font-semibold dark:text-[#EDEDED]">{c.nome}</td><td className="px-6 py-4 text-sm text-gray-600 dark:text-[#A1A1AA]">{c.telefone || '---'}</td><td className="px-6 py-4 text-sm text-gray-600 dark:text-[#A1A1AA]">{c.email || '---'}</td><td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-600 truncate max-w-xs">{c.observacoes || '---'}</td></tr>
@@ -449,7 +432,7 @@
                         )}
                     </div>
 
-                    {/* ================= MODAL UNIFICADO: O.S. (CRIAÇÃO OU EDIÇÃO) ================= */}
+                    {/* ================= MODAL MESTRE UNIFICADO (100% IDÊNTICO PARA CRIAÇÃO E EDIÇÃO) ================= */}
                     {modalAberto && (
                         <div onClick={fecharModalOS} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer">
                             <div onClick={(e) => e.stopPropagation()} className="bg-white dark:bg-darkCard w-full max-w-2xl rounded border border-gray-200 dark:border-darkBorder shadow-2xl flex flex-col max-h-[95vh] cursor-default">
@@ -458,133 +441,115 @@
                                         <h3 className="font-semibold text-xl dark:text-white tracking-tight">
                                             {pedidoEmEdicao ? 'Editar Ordem de Serviço #' + pedidoEmEdicao.id : 'Nova Ordem de Serviço'}
                                         </h3>
-                                        {isLocked && <span className="flex items-center gap-1 text-[11px] font-bold bg-red-950/20 text-red-400 border border-red-900/50 px-2 py-0.5 rounded"><i data-lucide="lock" className="w-3 h-3"></i> Trancado</span>}
+                                        {isModalTrancado && <span className="flex items-center gap-1 text-[11px] font-bold bg-red-950/20 text-red-400 border border-red-900/50 px-2 py-0.5 rounded"><i data-lucide="lock" className="w-3 h-3"></i> Trancado</span>}
                                     </div>
                                     <button type="button" onClick={fecharModalOS} className="text-gray-400 hover:text-gray-900 dark:hover:text-white transition"><i data-lucide="x" className="w-5 h-5"></i></button>
                                 </div>
                                 
                                 <form onSubmit={salvarOS} className="p-6 overflow-y-auto custom-scrollbar flex flex-col gap-6">
-                                    {isLocked && <div className="p-3 bg-red-950/20 border border-red-900/50 rounded text-xs text-red-400">Nota fiscal liquidada. Ative o Modo Admin no avatar para forçar modificações.</div>}
+                                    {isModalTrancado && <div className="p-3 bg-red-950/20 border border-red-900/50 rounded text-xs text-red-400">Nota liquidada. Ative o Modo Admin no avatar para forçar modificações.</div>}
                                     
+                                    {/* SEÇÃO 1: CLIENTE + BOTÃO QUADRADO LATERAL */}
                                     <div>
                                         <label className="block text-sm font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Cliente / Empresa</label>
                                         <div className="flex gap-2">
                                             <div className="relative flex-1">
                                                 <input required type="text" value={buscaCliente} 
-                                                    disabled={isLocked}
+                                                    disabled={isModalTrancado}
                                                     onChange={e => { setBuscaCliente(e.target.value); setNovoPedido({...novoPedido, cliente: e.target.value}); setClienteDropdownAberto(true); }}
-                                                    onFocus={() => { if(!isLocked) setClienteDropdownAberto(true); }} onBlur={() => setTimeout(() => setClienteDropdownAberto(false), 200)}
+                                                    onFocus={() => { if(!isModalTrancado) setClienteDropdownAberto(true); }} onBlur={() => setTimeout(() => setClienteDropdownAberto(false), 200)}
                                                     className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:focus:border-brand transition dark:text-[#EDEDED] disabled:opacity-50" 
                                                     placeholder="Buscar cliente..." autoComplete="off" />
                                                 <i data-lucide="chevron-down" className="absolute right-3 top-2.5 w-4 h-4 text-gray-400 pointer-events-none"></i>
                                                 {clienteDropdownAberto && clientesFiltrados.length > 0 && (
-                                                    <ul className="absolute z-[60] w-full mt-1 max-h-48 overflow-y-auto bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded shadow-xl custom-scrollbar">
+                                                    <ul className="absolute z-[60] w-full mt-1 max-h-48 overflow-y-auto bg-white dark:bg-[#1A1A1A] border border-gray-200 dark:border-darkBorder rounded shadow-xl custom-scrollbar">
                                                         {clientesFiltrados.map(c => (
-                                                            <li key={c.id} onClick={() => { setBuscaCliente(c.nome); setNovoPedido({...novoPedido, cliente: c.nome}); setClienteDropdownAberto(false); }} className="px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-darkHover cursor-pointer border-b border-gray-100 dark:border-darkBorder last:border-0 flex justify-between items-center transition">
+                                                            <li key={c.id} onClick={() => { setBuscaCliente(c.nome); setNovoPedido({...novoPedido, cliente: c.nome}); setClienteDropdownAberto(false); }} className="px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-[#2A2A2A] cursor-pointer border-b border-gray-100 dark:border-darkBorder last:border-0 flex justify-between items-center transition">
                                                                 <span className="font-medium text-sm text-gray-800 dark:text-[#EDEDED]">{c.nome}</span><span className="text-xs text-gray-500">{c.telefone}</span>
                                                             </li>
                                                         ))}
                                                     </ul>
                                                 )}
                                             </div>
-                                            <button type="button" onClick={() => { setNovoCliente({ id: null, nome: '', telefone: '', email: '', observacoes: '' }); setModalClienteAberto(true); }} disabled={isLocked} className="shrink-0 w-[38px] h-[38px] flex items-center justify-center bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded hover:bg-darkHover transition disabled:opacity-50" title="Novo Cliente">
+                                            <button type="button" onClick={() => { setNovoCliente({ id: null, nome: '', telefone: '', email: '', observacoes: '' }); setModalClienteAberto(true); }} disabled={isModalTrancado} className="shrink-0 w-[38px] h-[38px] flex items-center justify-center bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded hover:bg-darkHover transition disabled:opacity-50" title="Novo Cliente">
                                                 <i data-lucide="plus" className="w-4 h-4 text-brand"></i>
                                             </button>
                                         </div>
                                     </div>
 
-                                    {!pedidoEmEdicao && (
-                                        <div>
-                                            <label className="block text-sm font-medium mb-3 text-gray-700 dark:text-[#EDEDED]">Montar Ordem de Serviço</label>
-                                            {itensPedido.length > 0 && (
-                                                <div className="mb-4 flex flex-col gap-2">
-                                                    {itensPedido.map((item, index) => (
-                                                        <div key={item.id_temp} className="flex justify-between items-center p-3 bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded">
-                                                            <div className="flex flex-col">
-                                                                <span className="font-semibold text-sm dark:text-white">{index + 1}. {item.nome || 'Serviço'}</span>
-                                                                <span className="text-xs text-gray-500 dark:text-[#A1A1AA] whitespace-pre-wrap mt-1">{item.descricao}</span>
-                                                            </div>
-                                                            <div className="flex items-center gap-4">
-                                                                <div className="text-right">
-                                                                    <span className="font-semibold text-sm dark:text-white">R$ {item.valor}</span>
-                                                                    {item.desconto && <span className="block text-[10px] text-brand font-medium">-{item.desconto}%</span>}
-                                                                </div>
-                                                                <button type="button" onClick={() => removerItemDoCarrinho(item.id_temp)} className="text-gray-400 hover:text-red-500 transition"><i data-lucide="trash-2" className="w-4 h-4"></i></button>
-                                                            </div>
-                                                        </div>
-                                                    ))}
+                                    {/* SEÇÃO 2: MOTOR CONFIGURADOR DE ITENS (DISPONÍVEL SEMPRE) */}
+                                    <div>
+                                        <label className="block text-sm font-medium mb-3 text-gray-700 dark:text-[#EDEDED]">Calculadora e Gerador de Itens</label>
+                                        <div className="p-4 border border-dashed border-gray-300 dark:border-darkBorder rounded bg-transparent">
+                                            <div className="flex flex-col gap-3">
+                                                <div className="flex gap-2">
+                                                    <div className="relative flex-1">
+                                                        <input type="text" value={buscaProduto} disabled={isModalTrancado} onChange={e => { setBuscaProduto(e.target.value); setProdutoDropdownAberto(true); }}
+                                                            onFocus={() => { if(!isModalTrancado) setProdutoDropdownAberto(true); }} onBlur={() => setTimeout(() => setProdutoDropdownAberto(false), 200)}
+                                                            className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand transition dark:text-[#EDEDED] disabled:opacity-50" placeholder="Puxar item do catálogo (Opcional)..." autoComplete="off" />
+                                                        <i data-lucide="chevron-down" className="absolute right-3 top-2.5 w-4 h-4 text-gray-400 pointer-events-none"></i>
+                                                        {produtoDropdownAberto && produtosFiltrados.length > 0 && (
+                                                            <ul className="absolute z-[60] w-full mt-1 max-h-48 overflow-y-auto bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded shadow-xl custom-scrollbar">
+                                                                {produtosFiltrados.map(p => (
+                                                                    <li key={p.id} onClick={() => { setBuscaProduto(''); setItemAtual({ nome: p.nome, descricao: p.texto_padrao, valor: formatarMoeda((p.preco_base * 100).toFixed(0).toString()), desconto: '' }); setProdutoDropdownAberto(false); }} className="px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-darkHover cursor-pointer border-b border-gray-100 dark:border-darkBorder last:border-0 flex flex-col transition">
+                                                                        <div className="flex justify-between items-center"><span className="font-medium text-sm dark:text-[#EDEDED]">{p.nome}</span><span className="text-xs font-bold text-brand">R$ {Number(p.preco_base).toFixed(2).replace('.', ',')}</span></div>
+                                                                    </li>
+                                                                ))}
+                                                            </ul>
+                                                        )}
+                                                    </div>
+                                                    <button type="button" onClick={() => { setNovoProduto({ id: null, nome: '', texto_padrao: '', preco_base: '' }); setModalProdutoAberto(true); }} disabled={isModalTrancado} className="shrink-0 w-[38px] h-[38px] flex items-center justify-center bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded hover:bg-darkHover transition disabled:opacity-50" title="Novo Produto"><i data-lucide="plus" className="w-4 h-4 text-brand"></i></button>
                                                 </div>
-                                            )}
 
-                                            <div className="p-4 border border-dashed border-gray-300 dark:border-darkBorder rounded bg-transparent">
-                                                <div className="flex flex-col gap-3">
-                                                    <div className="flex gap-2">
-                                                        <div className="relative flex-1">
-                                                            <input type="text" value={buscaProduto} onChange={e => { setBuscaProduto(e.target.value); setProdutoDropdownAberto(true); }}
-                                                                onFocus={() => setProdutoDropdownAberto(true)} onBlur={() => setTimeout(() => setProdutoDropdownAberto(false), 200)}
-                                                                className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand transition dark:text-[#EDEDED]" placeholder="Puxar item do catálogo (Opcional)..." autoComplete="off" />
-                                                            <i data-lucide="chevron-down" className="absolute right-3 top-2.5 w-4 h-4 text-gray-400 pointer-events-none"></i>
-                                                            {produtoDropdownAberto && produtosFiltrados.length > 0 && (
-                                                                <ul className="absolute z-[60] w-full mt-1 max-h-48 overflow-y-auto bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded shadow-xl custom-scrollbar">
-                                                                    {produtosFiltrados.map(p => (
-                                                                        <li key={p.id} onClick={() => { setBuscaProduto(''); setItemAtual({ nome: p.nome, descricao: p.texto_padrao, valor: formatarMoeda((p.preco_base * 100).toFixed(0).toString()), desconto: '' }); setProdutoDropdownAberto(false); }} className="px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-darkHover cursor-pointer border-b border-gray-100 dark:border-darkBorder last:border-0 flex flex-col transition">
-                                                                            <div className="flex justify-between items-center"><span className="font-medium text-sm dark:text-[#EDEDED]">{p.nome}</span><span className="text-xs font-bold text-brand">R$ {Number(p.preco_base).toFixed(2).replace('.', ',')}</span></div>
-                                                                        </li>
-                                                                    ))}
-                                                                </ul>
-                                                            )}
-                                                        </div>
-                                                        <button type="button" onClick={() => { setNovoProduto({ id: null, nome: '', texto_padrao: '', preco_base: '' }); setModalProdutoAberto(true); }} className="shrink-0 w-[38px] h-[38px] flex items-center justify-center bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded hover:bg-darkHover transition" title="Novo Produto"><i data-lucide="plus" className="w-4 h-4 text-brand"></i></button>
+                                                <textarea rows="2" value={itemAtual.descricao} disabled={isModalTrancado} onChange={e => setItemAtual({...itemAtual, descricao: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand transition dark:text-[#EDEDED] disabled:opacity-50" placeholder="Descrição técnica do item (Ex: Qtd, formato, acabamento...)"></textarea>
+                                                <div className="grid grid-cols-3 gap-3">
+                                                    <div className="relative">
+                                                        <span className="absolute left-3 top-2.5 text-xs text-gray-400">R$</span>
+                                                        <input type="text" value={itemAtual.valor} disabled={isModalTrancado} onChange={e => setItemAtual({...itemAtual, valor: formatarMoeda(e.target.value)})} className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded pl-8 pr-3 py-2 text-xs outline-none focus:border-brand transition dark:text-[#EDEDED] font-medium disabled:opacity-50" placeholder="Bruto" />
                                                     </div>
-
-                                                    <textarea rows="2" value={itemAtual.descricao} onChange={e => setItemAtual({...itemAtual, descricao: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand transition dark:text-[#EDEDED]" placeholder="Descrição / Medidas / Detalhes do item..."></textarea>
-                                                    <div className="grid grid-cols-3 gap-3">
-                                                        <div className="relative">
-                                                            <span className="absolute left-3 top-2.5 text-xs text-gray-400">R$</span>
-                                                            <input type="text" value={itemAtual.valor} onChange={e => setItemAtual({...itemAtual, valor: formatarMoeda(e.target.value)})} className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded pl-8 pr-3 py-2 text-xs outline-none focus:border-brand transition dark:text-[#EDEDED] font-medium" placeholder="Bruto" />
-                                                        </div>
-                                                        <div><input type="text" value={itemAtual.desconto} onChange={e => { let val = e.target.value.replace(/\D/g, ''); if (parseFloat(val) > 100) val = '100'; setItemAtual({...itemAtual, desconto: val}); }} className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-xs outline-none focus:border-brand transition dark:text-[#EDEDED]" placeholder="Desc. %" /></div>
-                                                        <button type="button" onClick={adicionarItemAoCarrinho} disabled={!itemAtual.descricao || !itemAtual.valor} className="px-3 py-2 text-xs font-medium bg-white hover:bg-gray-200 text-black rounded transition disabled:opacity-50">+ Inserir</button>
-                                                    </div>
+                                                    <div><input type="text" value={itemAtual.desconto} disabled={isModalTrancado} onChange={e => { let val = e.target.value.replace(/\D/g, ''); if (parseFloat(val) > 100) val = '100'; setItemAtual({...itemAtual, desconto: val}); }} className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-xs outline-none focus:border-brand transition dark:text-[#EDEDED] disabled:opacity-50" placeholder="Desc. %" /></div>
+                                                    <button type="button" onClick={adicionarItemAoCarrinho} disabled={!itemAtual.descricao || !itemAtual.valor || isModalTrancado} className="px-3 py-2 text-xs font-medium bg-white hover:bg-gray-200 text-black rounded transition disabled:opacity-50">+ Inserir</button>
                                                 </div>
                                             </div>
                                         </div>
-                                    )}
+                                    </div>
 
+                                    {/* CAMPO 3: DESCRIÇÃO GERAL DA O.S. (O TEXTO FICA COMPILADO E EDITÁVEL AQUI) */}
                                     <div>
                                         <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-[#EDEDED]">
-                                            {pedidoEmEdicao ? 'Descrição Geral do Serviço (Edição Livre)' : 'Observações Gerais da O.S. (Opcional)'}
+                                            Ficha Detalhada dos Serviços (Edição Livre)
                                         </label>
-                                        <textarea required={pedidoEmEdicao ? true : false} rows={pedidoEmEdicao ? "8" : "2"} value={novoPedido.servico} onChange={e => setNovoPedido({...novoPedido, servico: e.target.value})} disabled={isLocked} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand transition dark:text-[#EDEDED] custom-scrollbar disabled:opacity-50" placeholder="Informações da nota..."></textarea>
+                                        <textarea required rows="8" value={novoPedido.servico} onChange={e => setNovoPedido({...novoPedido, servico: e.target.value})} disabled={isModalTrancado} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand transition dark:text-[#EDEDED] custom-scrollbar disabled:opacity-50" placeholder="Os itens gerados acima serão escritos aqui. Você pode alterar, apagar linhas ou complementar esse texto como desejar..."></textarea>
                                     </div>
                                     
+                                    {/* RODAPÉ FINANCEIRO: VALOR TOTAL + DROPDOWN STATUS */}
                                     <div className="grid grid-cols-2 gap-4 border-t border-gray-100 dark:border-darkBorder pt-4">
                                         <div>
                                             <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-[#EDEDED]">Valor Total Geral</label>
                                             <div className="relative">
                                                 <span className="absolute left-3 top-2.5 font-bold text-sm dark:text-gray-400">R$</span>
-                                                <input required type="text" value={novoPedido.valor_total} onChange={e => setNovoPedido({...novoPedido, valor_total: formatarMoeda(e.target.value)})} disabled={isLocked} className="w-full bg-white dark:bg-darkInput border border-gray-200 dark:border-darkBorder rounded pl-9 pr-3 py-2 text-sm outline-none focus:border-brand transition dark:text-white font-bold disabled:opacity-50" placeholder="0,00" />
+                                                <input required type="text" value={novoPedido.valor_total} onChange={e => setNovoPedido({...novoPedido, valor_total: formatarMoeda(e.target.value)})} disabled={isModalTrancado} className="w-full bg-white dark:bg-darkInput border border-gray-200 dark:border-darkBorder rounded pl-9 pr-3 py-2 text-sm outline-none focus:border-brand transition dark:text-white font-bold disabled:opacity-50" placeholder="0,00" />
                                             </div>
                                         </div>
                                         <div>
                                             <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-[#EDEDED]">Status da Ordem</label>
                                             <div className="relative">
-                                                <select required value={novoPedido.status} onChange={e => setNovoPedido({...novoPedido, status: e.target.value})} disabled={isLocked} className="w-full bg-white dark:bg-darkInput border border-gray-200 dark:border-darkBorder rounded px-3 py-2.5 text-sm outline-none focus:border-brand transition dark:text-white font-semibold cursor-pointer appearance-none disabled:opacity-50">
+                                                <select required value={novoPedido.status} onChange={e => setNovoPedido({...novoPedido, status: e.target.value})} disabled={isModalTrancado} className="w-full bg-white dark:bg-darkInput border border-gray-200 dark:border-darkBorder rounded px-3 py-2.5 text-sm outline-none focus:border-brand transition dark:text-white font-semibold cursor-pointer appearance-none disabled:opacity-50">
                                                     <option value="Aguardando">Aguardando</option>
                                                     <option value="Produzir">Em Produção</option>
                                                     <option value="Acabamento">Acabamento</option>
                                                     <option value="Finalizado">Finalizado / Baixa</option>
                                                 </select>
-                                                <i data-lucide="chevron-down" className="absolute right-3 top-2.5 w-4 h-4 text-gray-400 pointer-events-none"></i>
+                                                <i data-lucide="chevron-down" className="absolute right-3 top-3 w-4 h-4 text-gray-400 pointer-events-none"></i>
                                             </div>
                                         </div>
                                     </div>
 
                                 </form>
                                 <div className="px-6 py-4 border-t border-gray-100 dark:border-darkBorder bg-gray-50 dark:bg-darkCard flex justify-end gap-3 shrink-0">
-                                    <button type="button" onClick={fecharModalOS} className="px-4 py-2 rounded text-sm font-medium text-gray-600 dark:text-[#A1A1AA] hover:bg-gray-100 dark:hover:bg-darkHover transition">Cancelar</button>
-                                    {!isLocked && (
-                                        <button type="button" onClick={salvarOS} disabled={salvandoOS || (!pedidoEmEdicao && itensPedido.length === 0)} className="px-6 py-2 rounded text-sm font-semibold bg-brand hover:bg-brandHover text-white shadow-sm transition disabled:opacity-50">
+                                    <button type="button" onClick={fecharModalOS} className="px-4 py-2 rounded text-sm font-medium text-gray-600 dark:text-[#A1A1AA] hover:bg-gray-200 dark:hover:bg-darkHover transition">Cancelar</button>
+                                    {!isModalTrancado && (
+                                        <button type="button" onClick={salvarOS} disabled={salvandoOS} className="px-6 py-2 rounded text-sm font-semibold bg-brand hover:bg-brandHover text-white shadow-sm transition disabled:opacity-50">
                                             {salvandoOS ? 'Salvando...' : pedidoEmEdicao ? 'Atualizar Pedido' : 'Finalizar Pedido'}
                                         </button>
                                     )}
@@ -593,7 +558,7 @@
                         </div>
                     )}
 
-                    {/* MODAIS AUXILIARES */}
+                    {/* ================= MODAIS AUXILIARES: PRODUTOS / CLIENTES ================= */}
                     {modalProdutoAberto && (
                         <div onClick={() => setModalProdutoAberto(false)} className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer">
                             <div onClick={(e) => e.stopPropagation()} className="bg-white dark:bg-darkCard w-full max-w-md rounded shadow-2xl overflow-hidden border border-gray-200 dark:border-darkBorder cursor-default">
@@ -607,7 +572,6 @@
                             </div>
                         </div>
                     )}
-
                     {modalClienteAberto && (
                         <div onClick={() => setModalClienteAberto(false)} className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer">
                             <div onClick={(e) => e.stopPropagation()} className="bg-white dark:bg-darkCard w-full max-w-md rounded shadow-2xl overflow-hidden border border-gray-200 dark:border-darkBorder cursor-default">
@@ -643,6 +607,7 @@
             );
         }
 
+        // Componente do Cartão (100% Estático e Protegido no Kanban)
         function Cartao({ pedido, onPrint }) {
             return (
                 <div className="bg-white dark:bg-darkCard p-4 rounded border border-gray-200 dark:border-darkBorder flex flex-col gap-3 group shadow-sm select-none">
