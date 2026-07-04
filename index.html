@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Berlim Gráfica | Sistema</title>
     
+    <!-- Link da Fonte Geométrica e Moderna: Montserrat -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -21,13 +22,15 @@
             theme: { 
                 extend: { 
                     colors: { 
-                        brand: '#F37020',          
+                        brand: '#F37020',          /* Laranja Oficial Berlim */
                         brandHover: '#d9641c',     
-                        darkBg: '#000000',         
-                        darkCard: '#0A0A0A',       
-                        darkElevated: '#111111',   
-                        darkHover: '#1A1A1A',      
-                        darkBorder: '#333333',     
+                        
+                        /* Sistema de Elevação Escala Cinzas Vercel */
+                        darkBg: '#000000',         /* Level 0: Fundo de Tela Geral */
+                        darkCard: '#0A0A0A',       /* Level 1: Corpo das Janelas e Modais */
+                        darkElevated: '#111111',   /* Level 2: Inputs, Cartões e Carrinho */
+                        darkHover: '#1A1A1A',      /* Level 3: Estados de Seleção e Hovers */
+                        darkBorder: '#333333',     /* Linhas Finas de Divisão */
                         darkInput: '#000000'
                     },
                     fontFamily: {
@@ -53,6 +56,20 @@
         
         input[type=number]::-webkit-inner-spin-button, 
         input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+
+        /* ================= ESTILIZAÇÃO CUSTOMIZADA DE DATAS (VERCEL STYLE) ================= */
+        input[type="date"] {
+            position: relative;
+        }
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1) brightness(0.9);
+            cursor: pointer;
+            opacity: 0.5;
+            transition: opacity 0.2s ease;
+        }
+        input[type="date"]::-webkit-calendar-picker-indicator:hover {
+            opacity: 1;
+        }
     </style>
 </head>
 <body class="bg-white dark:bg-darkBg text-gray-900 dark:text-[#EDEDED] min-h-screen selection:bg-brand selection:text-white tracking-tight">
@@ -108,7 +125,7 @@
             return `${partes[2]}/${partes[1]}/${partes[0]}`;
         };
 
-        // ==== COMPONENTE: CALENDÁRIO CUSTOMIZADO VERCEL STYLE ====
+        // ==== COMPONENTE: CALENDÁRIO CUSTOMIZADO ====
         function CustomDatePicker({ value, onChange, placeholder, disabled, className }) {
             const [isOpen, setIsOpen] = useState(false);
             const [viewDate, setViewDate] = useState(new Date());
@@ -174,7 +191,6 @@
 
             return (
                 <div className="relative">
-                    {/* Campo Visual */}
                     <div 
                         onClick={() => !disabled && setIsOpen(!isOpen)} 
                         className={`flex justify-between items-center cursor-pointer select-none ${className} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
@@ -184,26 +200,17 @@
                         </span>
                         <Icon name="calendar" className="w-4 h-4 text-gray-400" />
                     </div>
-
-                    {/* Pop-up do Calendário */}
                     {isOpen && (
                         <div className="absolute top-full left-0 mt-2 z-[100] bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-lg shadow-2xl p-4 w-72">
-                            {/* Fechar ao clicar fora (Background invisível) */}
                             <div className="fixed inset-0 z-[-1]" onClick={(e) => { e.stopPropagation(); setIsOpen(false); }}></div>
-                            
-                            {/* Navegação do Mês */}
                             <div className="flex justify-between items-center mb-4">
                                 <button type="button" onClick={(e) => changeMonth(e, -1)} className="p-1 hover:bg-gray-100 dark:hover:bg-darkElevated rounded text-gray-500 dark:text-gray-400"><Icon name="chevron-left" /></button>
                                 <span className="font-semibold text-sm dark:text-white">{meses[viewDate.getMonth()]} de {viewDate.getFullYear()}</span>
                                 <button type="button" onClick={(e) => changeMonth(e, 1)} className="p-1 hover:bg-gray-100 dark:hover:bg-darkElevated rounded text-gray-500 dark:text-gray-400"><Icon name="chevron-right" /></button>
                             </div>
-
-                            {/* Dias da Semana */}
                             <div className="grid grid-cols-7 mb-2">
                                 {diasSemana.map(d => <div key={d} className="w-8 h-8 flex items-center justify-center text-[10px] font-bold text-gray-400">{d}</div>)}
                             </div>
-
-                            {/* Grid de Dias */}
                             <div className="grid grid-cols-7 gap-y-1">
                                 {renderDias()}
                             </div>
@@ -263,6 +270,7 @@
             const [darkMode, setDarkMode] = useState(true); 
             const [isAdmin, setIsAdmin] = useState(false);
             
+            // Filtros Histórico
             const [buscaHistoricoText, setBuscaHistoricoText] = useState('');
             const [dataFiltroInicio, setDataFiltroInicio] = useState('');
             const [dataFiltroFim, setDataFiltroFim] = useState('');
@@ -305,6 +313,14 @@
                 if (darkMode) { document.documentElement.classList.remove('dark'); } 
                 else { document.documentElement.classList.add('dark'); }
                 setDarkMode(!darkMode);
+            };
+
+            const handleAdminToggle = () => {
+                const novoEstado = !isAdmin;
+                setIsAdmin(novoEstado);
+                if (!novoEstado && abaAtual === 'produtos') {
+                    setAbaAtual('producao');
+                }
             };
 
             function fecharModalOS() {
@@ -491,13 +507,13 @@
                 return matchTermo && matchData;
             });
 
-            const isModalTrancado = (pedidoEmEdicao && pedidoEmEdicao.status === 'Finalizado' && !isAdmin);
+            const isModalTrancado = (pedidoEmEdicao && pedidoEmEdicao.status === 'Finalizado' && !isAdmin) ? true : false;
 
             return (
                 <div>
                     <div className="flex flex-col min-h-screen no-print">
                         
-                        {/* HEADER */}
+                        {/* ================= HEADER ================= */}
                         <header className="sticky top-0 z-40 bg-white dark:bg-darkBg border-b border-gray-200 dark:border-darkBorder px-6 py-3 flex justify-between items-center">
                             <div className="flex items-center gap-8">
                                 <div className="flex items-center gap-2 text-gray-900 dark:text-white font-bold text-lg tracking-tight">
@@ -509,7 +525,7 @@
                                 <nav className="hidden md:flex gap-6 font-medium text-sm text-gray-500 dark:text-[#888888] cursor-pointer">
                                     <a onClick={() => setAbaAtual('producao')} className={`transition ${abaAtual === 'producao' ? 'text-gray-900 dark:text-white font-semibold' : 'hover:text-gray-900 dark:hover:text-white'}`}>Produção</a>
                                     <a onClick={() => setAbaAtual('baixa')} className={`transition ${abaAtual === 'baixa' ? 'text-gray-900 dark:text-white font-semibold' : 'hover:text-gray-900 dark:hover:text-white'}`}>Baixa de Notas</a>
-                                    <a onClick={() => setAbaAtual('produtos')} className={`transition ${abaAtual === 'produtos' ? 'text-gray-900 dark:text-white font-semibold' : 'hover:text-gray-900 dark:hover:text-white'}`}>Catálogo</a>
+                                    {isAdmin && <a onClick={() => setAbaAtual('produtos')} className={`transition ${abaAtual === 'produtos' ? 'text-gray-900 dark:text-white font-semibold' : 'hover:text-gray-900 dark:hover:text-white'}`}>Catálogo</a>}
                                     <a onClick={() => setAbaAtual('clientes')} className={`transition ${abaAtual === 'clientes' ? 'text-gray-900 dark:text-white font-semibold' : 'hover:text-gray-900 dark:hover:text-white'}`}>Clientes</a>
                                 </nav>
                             </div>
@@ -517,11 +533,11 @@
                                 <button onClick={toggleDarkMode} className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-darkHover transition text-gray-600 dark:text-[#888888]">
                                     <Icon name={darkMode ? "sun" : "moon"} className="w-4 h-4" />
                                 </button>
-                                <div onClick={() => setIsAdmin(!isAdmin)} className={`w-7 h-7 rounded-full text-white flex items-center justify-center font-bold text-xs cursor-pointer transition ${isAdmin ? 'bg-red-600 ring-2 ring-red-500/30' : 'bg-brand'}`} title={isAdmin ? "Modo Admin Ativo" : "Admin"}>AD</div>
+                                <div onClick={handleAdminToggle} className={`w-7 h-7 rounded-full text-white flex items-center justify-center font-bold text-xs cursor-pointer transition ${isAdmin ? 'bg-red-600 ring-2 ring-red-500/30' : 'bg-brand'}`} title={isAdmin ? "Modo Admin Ativo" : "Admin"}>AD</div>
                             </div>
                         </header>
 
-                        {/* KANBAN */}
+                        {/* ================= KANBAN ================= */}
                         {abaAtual === 'producao' && (
                             <main className="flex-1 p-6 lg:p-10 max-w-[1800px] mx-auto w-full fade-in">
                                 <div className="flex justify-between items-center mb-8">
@@ -560,7 +576,7 @@
                             </main>
                         )}
 
-                        {/* BAIXA DE NOTAS */}
+                        {/* ================= BAIXA DE NOTAS (COM FILTRO) ================= */}
                         {abaAtual === 'baixa' && (
                             <main className="flex-1 p-6 lg:p-10 max-w-[1400px] mx-auto w-full fade-in">
                                 <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 mb-6 border-b border-gray-100 dark:border-darkBorder pb-6">
@@ -658,8 +674,8 @@
                             </main>
                         )}
 
-                        {/* CATÁLOGO E CLIENTES MANTIDOS */}
-                        {abaAtual === 'produtos' && (
+                        {/* ================= CATÁLOGO ================= */}
+                        {abaAtual === 'produtos' && isAdmin && (
                             <main className="flex-1 p-6 lg:p-10 max-w-[1200px] mx-auto w-full fade-in">
                                 <div className="flex justify-between items-center mb-8">
                                     <h1 className="text-3xl font-semibold dark:text-white tracking-tight">Catálogo</h1>
@@ -677,6 +693,8 @@
                                 </div>
                             </main>
                         )}
+
+                        {/* ================= CLIENTES ================= */}
                         {abaAtual === 'clientes' && (
                             <main className="flex-1 p-6 lg:p-10 max-w-[1200px] mx-auto w-full fade-in">
                                 <div className="flex justify-between items-center mb-8">
@@ -697,7 +715,7 @@
                         )}
                     </div>
 
-                    {/* ================= MODAL MESTRE O.S. (LARGURA EXTENDIDA COM COMPONENTE DE DATA) ================= */}
+                    {/* ================= MODAL MESTRE ================= */}
                     {modalAberto && (
                         <div onClick={fecharModalOS} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer">
                             <div onClick={(e) => e.stopPropagation()} className="bg-white dark:bg-darkCard w-full max-w-3xl rounded border border-gray-200 dark:border-darkBorder shadow-2xl flex flex-col max-h-[95vh] cursor-default">
@@ -811,12 +829,16 @@
                                                             </ul>
                                                         )}
                                                     </div>
-                                                    <button type="button" onClick={() => { setNovoProduto({ id: null, nome: '', texto_padrao: '', preco_base: '' }); setModalProdutoAberto(true); }} disabled={isModalTrancado} className="shrink-0 w-[38px] h-[38px] flex items-center justify-center bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded hover:bg-darkHover transition disabled:opacity-50" title="Novo Produto">
-                                                        <Icon name="plus" className="w-4 h-4 text-brand" />
-                                                    </button>
+                                                    
+                                                    {isAdmin && (
+                                                        <button type="button" onClick={() => { setNovoProduto({ id: null, nome: '', texto_padrao: '', preco_base: '' }); setModalProdutoAberto(true); }} disabled={isModalTrancado} className="shrink-0 w-[38px] h-[38px] flex items-center justify-center bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded hover:bg-darkHover transition disabled:opacity-50" title="Novo Produto">
+                                                            <Icon name="plus" className="w-4 h-4 text-brand" />
+                                                        </button>
+                                                    )}
+
                                                 </div>
 
-                                                <textarea rows="2" value={itemAtual.descricao} disabled={isModalTrancado} onChange={e => setItemAtual({...itemAtual, descricao: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand transition dark:text-[#EDEDED] disabled:opacity-50" placeholder="Especificações do item (Ex: Medida, formato, lona...)"></textarea>
+                                                <textarea rows="2" value={itemAtual.descricao} disabled={isModalTrancado} onChange={e => setItemAtual({...itemAtual, descricao: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand transition dark:text-[#EDEDED] disabled:opacity-50" placeholder="Especificações do item (Ex: Medida, quantidade, material...)"></textarea>
                                                 <div className="grid grid-cols-3 gap-3">
                                                     <div className="relative">
                                                         <span className="absolute left-3 top-2.5 text-xs text-gray-400">R$</span>
@@ -835,6 +857,7 @@
                                         </label>
                                         <textarea rows="4" value={novoPedido.servico} onChange={e => setNovoPedido({...novoPedido, servico: e.target.value})} disabled={isModalTrancado} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand transition dark:text-[#EDEDED] custom-scrollbar disabled:opacity-50" placeholder="Prazos de entrega, observações do financeiro ou complementos da O.S..."></textarea>
                                     </div>
+
                                 </form>
 
                                 <div className="px-6 py-5 border-t border-gray-100 dark:border-darkBorder bg-gray-50 dark:bg-darkCard flex justify-between items-center shrink-0">
@@ -859,7 +882,7 @@
                         </div>
                     )}
 
-                    {/* Modais de Produtos e Clientes Omitidos no texto mas inalterados */}
+                    {/* MODAIS AUXILIARES */}
                     {modalProdutoAberto && (
                         <div onClick={() => setModalProdutoAberto(false)} className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer">
                             <div onClick={(e) => e.stopPropagation()} className="bg-white dark:bg-darkCard w-full max-w-md rounded shadow-2xl overflow-hidden border border-gray-200 dark:border-darkBorder cursor-default">
@@ -880,23 +903,43 @@
                                 <form onSubmit={salvarCliente} className="p-6 flex flex-col gap-4">
                                     <div><label className="block text-sm font-medium mb-1.5 dark:text-[#EDEDED]">Nome / Empresa *</label><input required type="text" value={novoCliente.nome} onChange={e => setNovoCliente({...novoCliente, nome: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" placeholder="Ex: Fibrion" /></div>
                                     <div className="grid grid-cols-2 gap-4"><div><label className="block text-sm font-medium mb-1.5 dark:text-[#EDEDED]">WhatsApp</label><input type="text" value={novoCliente.telefone} onChange={e => setNovoCliente({...novoCliente, telefone: formatarTelefone(e.target.value)})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" placeholder="(11) 90000-0000" /></div><div><label className="block text-sm font-medium mb-1.5 dark:text-[#EDEDED]">E-mail</label><input type="email" value={novoCliente.email} onChange={e => setNovoCliente({...novoCliente, email: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" placeholder="contato@..." /></div></div>
-                                    <div><label className="block text-sm font-medium mb-1.5 dark:text-[#EDEDED]">Observações</label><textarea rows="2" value={novoCliente.observacoes} onChange={e => setNovoCliente({...novoCliente, observacoes: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand transition dark:text-[#EDEDED]"></textarea></div>
+                                    <div><label className="block text-sm font-medium mb-1.5 dark:text-[#EDEDED]">Observações</label><textarea rows="2" value={novoCliente.observacoes} onChange={e => setNovoCliente({...novoCliente, observacoes: e.target.value})} className="w-full bg-transparent border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand transition dark:text-[#EDEDED]"></textarea></div>
                                     <div className="mt-4 flex justify-end gap-3"><button type="button" onClick={() => setModalClienteAberto(false)} className="px-4 py-2 rounded text-sm font-medium text-gray-600 dark:text-[#A1A1AA] hover:bg-gray-100 dark:hover:bg-darkHover transition">Cancelar</button><button type="submit" disabled={salvandoCliente} className="px-5 py-2 rounded text-sm font-medium bg-white text-black hover:bg-gray-200 transition">Salvar</button></div>
                                 </form>
                             </div>
                         </div>
                     )}
 
+                    {/* VISTA DE IMPRESSÃO */}
+                    <div className="hidden print-only bg-white text-black p-8 font-sans max-w-2xl mx-auto">
+                        {osParaImprimir && (
+                            <div className="border-2 border-black p-6 rounded">
+                                <div className="flex justify-between items-center border-b-2 border-black pb-4 mb-4">
+                                    <div><h1 className="text-2xl font-black uppercase">BERLIM GRÁFICA</h1><p className="text-sm font-bold mt-1">Ordem de Serviço Nº {osParaImprimir.id}</p></div>
+                                    <div className="text-right text-sm"><p>Data: {formatarDataExibicao(osParaImprimir.data_pedido)}</p><p className="font-bold mt-1 uppercase">Local: Berlim</p></div>
+                                </div>
+                                <div className="mb-6"><p className="text-sm text-gray-600 uppercase mb-1">Cliente</p><p className="text-xl font-bold">{osParaImprimir.cliente}</p></div>
+                                <div className="mb-6"><p className="text-sm text-gray-600 uppercase mb-1">Descrição do Serviço</p><div className="border border-gray-300 p-4 rounded bg-gray-50 min-h-[100px] whitespace-pre-wrap text-sm leading-relaxed">{osParaImprimir.servico}</div></div>
+                                <div className="flex justify-between items-end border-t-2 border-black pt-4 mt-8">
+                                    <div className="text-right w-full"><p className="text-sm text-gray-600 uppercase mb-1">Valor Total</p><p className="text-2xl font-black">R$ {Number(osParaImprimir.valor_total).toFixed(2).replace('.', ',')}</p></div>
+                                </div>
+                                <div className="mt-12 pt-4 text-center border-t border-dashed border-gray-400 text-xs text-gray-500">Uso interno - Assinatura do cliente na retirada: _____________________________________</div>
+                            </div>
+                        )}
+                    </div>
                 </div>
             );
         }
 
+        // Cartão estático para o Kanban
         function Cartao({ pedido, onPrint }) {
             return (
                 <div className="bg-white dark:bg-darkCard p-4 rounded border border-gray-200 dark:border-darkBorder flex flex-col gap-3 group shadow-sm select-none">
                     <div className="flex justify-between items-start">
                         <h3 className="font-semibold text-sm text-gray-900 dark:text-[#EDEDED] leading-tight">{pedido.cliente}</h3>
-                        <button onClick={(e) => { e.stopPropagation(); onPrint(); }} className="text-gray-400 hover:text-gray-900 dark:hover:text-white transition opacity-0 group-hover:opacity-100" title="Imprimir O.S."><Icon name="printer" className="w-3.5 h-3.5" /></button>
+                        <button onClick={(e) => { e.stopPropagation(); onPrint(); }} className="text-gray-400 hover:text-gray-900 dark:hover:text-white transition opacity-0 group-hover:opacity-100" title="Imprimir O.S.">
+                            <Icon name="printer" className="w-3.5 h-3.5" />
+                        </button>
                     </div>
                     <p className="text-gray-500 dark:text-[#A1A1AA] text-xs line-clamp-3 leading-relaxed whitespace-pre-wrap">{pedido.servico}</p>
                     <div className="flex justify-between items-center pt-3 border-t border-gray-100 dark:border-darkBorder">
