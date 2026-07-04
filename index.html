@@ -16,10 +16,9 @@
         tailwind.config = {
             darkMode: 'class',
             theme: { extend: { colors: { 
-                /* PALETA INSPIRADA NO GOOGLE GEMINI */
-                darkBg: '#131314',      /* Fundo Preto Profundo */
-                darkCard: '#1e1e20',    /* Cartões e Janelas Flutuantes */
-                darkBorder: '#333537'   /* Bordas Sutis */
+                darkBg: '#131314',      
+                darkCard: '#1e1e20',    
+                darkBorder: '#333537'   
             }}}
         }
     </script>
@@ -31,7 +30,6 @@
             .no-print { display: none !important; }
             .print-only { display: block !important; }
         }
-        /* CustomScroll elegante para combinar com o fundo escuro */
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #555; border-radius: 20px; }
@@ -296,129 +294,126 @@
                     {modalAberto && (
                         <div onClick={fecharModalOS} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 dark:bg-black/60 glass no-print transition-all cursor-pointer">
                             <div onClick={(e) => e.stopPropagation()} className="bg-white dark:bg-darkCard w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden border border-gray-200 dark:border-darkBorder cursor-default">
-                                <div className="px-6 py-4 border-b border-gray-100 dark:border-darkBorder flex justify-between items-center bg-blue-50 dark:bg-[#181a1c]">
-                                    <h3 className="font-bold text-lg dark:text-white text-blue-800">Cadastrar Nova O.S.</h3>
+                                <div className="px-6 py-4 border-b border-gray-100 dark:border-darkBorder flex justify-between items-center bg-gray-50 dark:bg-darkBg">
+                                    <h3 className="font-bold text-lg dark:text-white">Cadastrar Nova O.S.</h3>
                                     <button type="button" onClick={fecharModalOS} className="text-gray-400 hover:text-red-500 transition"><i data-lucide="x" className="w-5 h-5"></i></button>
                                 </div>
-                                <form onSubmit={salvarOS} className="p-6 flex flex-col gap-4">
+                                <form onSubmit={salvarOS} className="p-6 flex flex-col gap-5">
                                     
-                                    {/* DROPDOWN CUSTOMIZADO DE CLIENTES */}
+                                    {/* CAMPO: CLIENTE */}
                                     <div>
-                                        <label className="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300 flex justify-between items-end">
-                                            <span>Cliente / Empresa</span>
-                                            <button type="button" onClick={() => setModalClienteAberto(true)} className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline font-bold flex items-center gap-1">
-                                                <i data-lucide="plus-circle" className="w-3 h-3"></i> Adicionar Rápido
+                                        <label className="block text-sm font-semibold mb-1.5 text-gray-700 dark:text-gray-300">Cliente / Empresa</label>
+                                        <div className="flex gap-2">
+                                            <div className="relative flex-1">
+                                                <input 
+                                                    required 
+                                                    type="text" 
+                                                    value={buscaCliente} 
+                                                    onChange={e => {
+                                                        setBuscaCliente(e.target.value);
+                                                        setNovoPedido({...novoPedido, cliente: e.target.value});
+                                                        setClienteDropdownAberto(true);
+                                                    }}
+                                                    onFocus={() => setClienteDropdownAberto(true)}
+                                                    onBlur={() => setTimeout(() => setClienteDropdownAberto(false), 200)}
+                                                    className="w-full bg-white dark:bg-darkBg border border-gray-200 dark:border-darkBorder rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-blue-500 transition dark:text-white shadow-sm" 
+                                                    placeholder="Busque por nome ou telefone..." 
+                                                    autoComplete="off"
+                                                />
+                                                <i data-lucide="chevron-down" className="absolute right-3 top-2.5 w-5 h-5 text-gray-400 pointer-events-none"></i>
+                                                
+                                                {clienteDropdownAberto && clientesFiltrados.length > 0 && (
+                                                    <ul className="absolute z-[60] w-full mt-1 max-h-48 overflow-y-auto bg-white dark:bg-[#282a2c] border border-gray-200 dark:border-darkBorder rounded-lg shadow-xl custom-scrollbar">
+                                                        {clientesFiltrados.map(c => (
+                                                            <li key={c.id} onClick={() => {
+                                                                setBuscaCliente(c.nome);
+                                                                setNovoPedido({...novoPedido, cliente: c.nome});
+                                                                setClienteDropdownAberto(false);
+                                                            }} className="px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-[#333537] cursor-pointer border-b border-gray-100 dark:border-darkBorder last:border-0 flex justify-between items-center transition">
+                                                                <span className="font-bold text-gray-800 dark:text-gray-200">{c.nome}</span>
+                                                                <span className="text-xs text-gray-500 dark:text-gray-400">{c.telefone}</span>
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                )}
+                                            </div>
+                                            <button type="button" onClick={() => setModalClienteAberto(true)} className="px-3.5 py-2 bg-white dark:bg-darkBg border border-gray-200 dark:border-darkBorder rounded-lg hover:bg-gray-50 dark:hover:bg-[#282a2c] transition flex items-center justify-center shadow-sm group" title="Cadastrar Novo Cliente">
+                                                <i data-lucide="user-plus" className="w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-indigo-500 transition"></i>
                                             </button>
-                                        </label>
-                                        <div className="relative">
-                                            <input 
-                                                required 
-                                                type="text" 
-                                                value={buscaCliente} 
-                                                onChange={e => {
-                                                    setBuscaCliente(e.target.value);
-                                                    setNovoPedido({...novoPedido, cliente: e.target.value});
-                                                    setClienteDropdownAberto(true);
-                                                }}
-                                                onFocus={() => setClienteDropdownAberto(true)}
-                                                onBlur={() => setTimeout(() => setClienteDropdownAberto(false), 200)}
-                                                className="w-full bg-white dark:bg-darkBg border border-gray-200 dark:border-darkBorder rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-blue-500 transition dark:text-white shadow-sm" 
-                                                placeholder="Busque por nome ou telefone..." 
-                                                autoComplete="off"
-                                            />
-                                            <i data-lucide="chevron-down" className="absolute right-3 top-2.5 w-5 h-5 text-gray-400 pointer-events-none"></i>
-                                            
-                                            {clienteDropdownAberto && clientesFiltrados.length > 0 && (
-                                                <ul className="absolute z-[60] w-full mt-1 max-h-48 overflow-y-auto bg-white dark:bg-[#282a2c] border border-gray-200 dark:border-darkBorder rounded-lg shadow-xl custom-scrollbar">
-                                                    {clientesFiltrados.map(c => (
-                                                        <li key={c.id} onClick={() => {
-                                                            setBuscaCliente(c.nome);
-                                                            setNovoPedido({...novoPedido, cliente: c.nome});
-                                                            setClienteDropdownAberto(false);
-                                                        }} className="px-4 py-2.5 hover:bg-indigo-50 dark:hover:bg-[#333537] cursor-pointer border-b border-gray-100 dark:border-darkBorder last:border-0 flex justify-between items-center transition">
-                                                            <span className="font-bold text-gray-800 dark:text-gray-200">{c.nome}</span>
-                                                            <span className="text-xs text-gray-500 dark:text-gray-400">{c.telefone}</span>
-                                                        </li>
-                                                    ))}
-                                                </ul>
-                                            )}
                                         </div>
                                     </div>
 
-                                    {/* DROPDOWN CUSTOMIZADO DE PRODUTOS */}
-                                    <div className="p-3 bg-yellow-50 dark:bg-[#181a1c] border border-yellow-200 dark:border-darkBorder rounded-lg">
-                                        <label className="block text-sm font-bold mb-1 text-yellow-800 dark:text-gray-300 flex justify-between items-end">
-                                            <span>1. Puxar Base do Catálogo</span>
-                                            <button type="button" onClick={() => setModalProdutoAberto(true)} className="text-xs text-emerald-600 dark:text-emerald-500 hover:underline font-bold flex items-center gap-1">
-                                                <i data-lucide="plus-circle" className="w-3 h-3"></i> Adicionar Rápido
+                                    {/* CAMPO: PRODUTOS */}
+                                    <div>
+                                        <label className="block text-sm font-semibold mb-1.5 text-gray-700 dark:text-gray-300">Catálogo de Produtos</label>
+                                        <div className="flex gap-2">
+                                            <div className="relative flex-1">
+                                                <input 
+                                                    type="text"
+                                                    value={buscaProduto}
+                                                    onChange={e => {
+                                                        setBuscaProduto(e.target.value);
+                                                        setProdutoDropdownAberto(true);
+                                                    }}
+                                                    onFocus={() => setProdutoDropdownAberto(true)}
+                                                    onBlur={() => setTimeout(() => setProdutoDropdownAberto(false), 200)}
+                                                    className="w-full bg-white dark:bg-darkBg border border-gray-200 dark:border-darkBorder rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-blue-500 transition dark:text-white shadow-sm"
+                                                    placeholder="Busque por código ou nome do produto..."
+                                                    autoComplete="off"
+                                                />
+                                                <i data-lucide="chevron-down" className="absolute right-3 top-2.5 w-5 h-5 text-gray-400 pointer-events-none"></i>
+                                                
+                                                {produtoDropdownAberto && produtosFiltrados.length > 0 && (
+                                                    <ul className="absolute z-[60] w-full mt-1 max-h-48 overflow-y-auto bg-white dark:bg-[#282a2c] border border-gray-200 dark:border-darkBorder rounded-lg shadow-xl custom-scrollbar">
+                                                        {produtosFiltrados.map(p => (
+                                                            <li key={p.id} onClick={() => {
+                                                                setBuscaProduto(`[${p.id}] ${p.nome}`);
+                                                                setNovoPedido({
+                                                                    ...novoPedido,
+                                                                    servico: p.texto_padrao,
+                                                                    valor_total: formatarMoeda((p.preco_base * 100).toFixed(0).toString())
+                                                                });
+                                                                setProdutoDropdownAberto(false);
+                                                            }} className="px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-[#333537] cursor-pointer border-b border-gray-100 dark:border-darkBorder last:border-0 flex flex-col transition">
+                                                                <div className="flex justify-between items-center">
+                                                                    <span className="font-bold text-gray-800 dark:text-gray-200">[{p.id}] {p.nome}</span>
+                                                                    <span className="text-xs font-bold text-green-600 dark:text-green-400">R$ {Number(p.preco_base).toFixed(2).replace('.', ',')}</span>
+                                                                </div>
+                                                                <span className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">{p.texto_padrao}</span>
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                )}
+                                            </div>
+                                            <button type="button" onClick={() => setModalProdutoAberto(true)} className="px-3.5 py-2 bg-white dark:bg-darkBg border border-gray-200 dark:border-darkBorder rounded-lg hover:bg-gray-50 dark:hover:bg-[#282a2c] transition flex items-center justify-center shadow-sm group" title="Cadastrar Novo Produto">
+                                                <i data-lucide="box" className="w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-emerald-500 transition"></i>
                                             </button>
-                                        </label>
-                                        <div className="relative">
-                                            <input 
-                                                type="text"
-                                                value={buscaProduto}
-                                                onChange={e => {
-                                                    setBuscaProduto(e.target.value);
-                                                    setProdutoDropdownAberto(true);
-                                                }}
-                                                onFocus={() => setProdutoDropdownAberto(true)}
-                                                onBlur={() => setTimeout(() => setProdutoDropdownAberto(false), 200)}
-                                                className="w-full bg-white dark:bg-darkBg border border-gray-200 dark:border-darkBorder rounded-md px-3 py-2 outline-none focus:ring-2 focus:ring-yellow-500 transition dark:text-white text-sm shadow-sm"
-                                                placeholder="Busque por código ou nome..."
-                                                autoComplete="off"
-                                            />
-                                            <i data-lucide="chevron-down" className="absolute right-2 top-2 w-4 h-4 text-gray-400 pointer-events-none"></i>
-                                            
-                                            {produtoDropdownAberto && produtosFiltrados.length > 0 && (
-                                                <ul className="absolute z-[60] w-full mt-1 max-h-48 overflow-y-auto bg-white dark:bg-[#282a2c] border border-gray-200 dark:border-darkBorder rounded-lg shadow-xl custom-scrollbar">
-                                                    {produtosFiltrados.map(p => (
-                                                        <li key={p.id} onClick={() => {
-                                                            setBuscaProduto(`[${p.id}] ${p.nome}`);
-                                                            setNovoPedido({
-                                                                ...novoPedido,
-                                                                servico: p.texto_padrao,
-                                                                valor_total: formatarMoeda((p.preco_base * 100).toFixed(0).toString())
-                                                            });
-                                                            setProdutoDropdownAberto(false);
-                                                        }} className="px-3 py-2 hover:bg-yellow-50 dark:hover:bg-[#333537] cursor-pointer border-b border-gray-100 dark:border-darkBorder last:border-0 flex flex-col transition">
-                                                            <div className="flex justify-between items-center">
-                                                                <span className="font-bold text-gray-800 dark:text-gray-200">[{p.id}] {p.nome}</span>
-                                                                <span className="text-xs font-bold text-green-600 dark:text-green-400">R$ {Number(p.preco_base).toFixed(2).replace('.', ',')}</span>
-                                                            </div>
-                                                            <span className="text-xs text-gray-400 truncate mt-0.5">{p.texto_padrao}</span>
-                                                        </li>
-                                                    ))}
-                                                </ul>
-                                            )}
                                         </div>
                                     </div>
                                     
-                                    {/* CAMPOS FINAIS */}
+                                    {/* CAMPO: DESCRIÇÃO */}
                                     <div>
-                                        <label className="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300 flex justify-between">
-                                            <span>2. Descrição Final</span><span className="text-xs text-blue-500 dark:text-blue-400 font-normal flex items-center gap-1"><i data-lucide="edit-3" className="w-3 h-3"></i> (Pode editar)</span>
-                                        </label>
-                                        <textarea required rows="3" value={novoPedido.servico} onChange={e => setNovoPedido({...novoPedido, servico: e.target.value})} className="w-full bg-white dark:bg-darkBg border border-blue-200 dark:border-darkBorder rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-blue-500 transition dark:text-white text-sm" placeholder="Adicione a quantidade, o tipo ou detalhes específicos..."></textarea>
+                                        <label className="block text-sm font-semibold mb-1.5 text-gray-700 dark:text-gray-300">Descrição Detalhada</label>
+                                        <textarea required rows="3" value={novoPedido.servico} onChange={e => setNovoPedido({...novoPedido, servico: e.target.value})} className="w-full bg-white dark:bg-darkBg border border-gray-200 dark:border-darkBorder rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-blue-500 transition dark:text-white text-sm shadow-sm" placeholder="Adicione a quantidade, o tipo ou detalhes específicos..."></textarea>
                                     </div>
                                     
+                                    {/* CAMPO: VALOR */}
                                     <div>
-                                        <label className="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300 flex justify-between">
-                                            <span>Valor Final (R$)</span><span className="text-xs text-blue-500 dark:text-blue-400 font-normal">(Pode editar)</span>
-                                        </label>
+                                        <label className="block text-sm font-semibold mb-1.5 text-gray-700 dark:text-gray-300">Valor Final (R$)</label>
                                         <input 
                                             required 
                                             type="text" 
                                             value={novoPedido.valor_total} 
                                             onChange={e => setNovoPedido({...novoPedido, valor_total: formatarMoeda(e.target.value)})} 
-                                            className="w-1/2 bg-white dark:bg-darkBg border border-blue-200 dark:border-darkBorder rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-blue-500 transition dark:text-white font-bold text-green-600 dark:text-green-400" 
+                                            className="w-full bg-white dark:bg-darkBg border border-gray-200 dark:border-darkBorder rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-blue-500 transition dark:text-white font-bold text-green-600 dark:text-green-400 shadow-sm" 
                                             placeholder="0,00" 
                                         />
                                     </div>
                                     
-                                    <div className="mt-4 pt-4 border-t border-gray-100 dark:border-darkBorder flex justify-end gap-3">
-                                        <button type="button" onClick={fecharModalOS} className="px-5 py-2 rounded-lg font-semibold text-gray-500 hover:bg-gray-100 dark:hover:bg-[#282a2c] transition">Cancelar</button>
-                                        <button type="submit" disabled={salvandoOS} className="px-5 py-2 rounded-lg font-semibold bg-blue-600 hover:bg-blue-700 text-white shadow-md transition disabled:opacity-50 flex items-center gap-2">
-                                            {salvandoOS ? 'Salvando...' : <><i data-lucide="check" className="w-4 h-4"></i> Salvar Pedido</>}
+                                    <div className="mt-2 pt-5 border-t border-gray-100 dark:border-darkBorder flex justify-end gap-3">
+                                        <button type="button" onClick={fecharModalOS} className="px-5 py-2.5 rounded-lg font-semibold text-gray-500 hover:bg-gray-100 dark:hover:bg-[#282a2c] transition">Cancelar</button>
+                                        <button type="submit" disabled={salvandoOS} className="px-6 py-2.5 rounded-lg font-semibold bg-blue-600 hover:bg-blue-700 text-white shadow-md transition disabled:opacity-50 flex items-center gap-2">
+                                            {salvandoOS ? 'Salvando...' : 'Salvar Pedido'}
                                         </button>
                                     </div>
                                 </form>
@@ -430,13 +425,13 @@
                     {modalProdutoAberto && (
                         <div onClick={() => setModalProdutoAberto(false)} className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 dark:bg-black/60 glass no-print transition-all cursor-pointer">
                             <div onClick={(e) => e.stopPropagation()} className="bg-white dark:bg-darkCard w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden border border-gray-200 dark:border-darkBorder cursor-default">
-                                <div className="px-6 py-4 border-b border-gray-100 dark:border-darkBorder flex justify-between items-center bg-emerald-50 dark:bg-[#181a1c]">
-                                    <h3 className="font-bold text-lg dark:text-white text-emerald-800 dark:text-emerald-400 flex items-center gap-2"><i data-lucide="box" className="w-5 h-5"></i> Adicionar ao Catálogo</h3>
+                                <div className="px-6 py-4 border-b border-gray-100 dark:border-darkBorder flex justify-between items-center bg-gray-50 dark:bg-darkBg">
+                                    <h3 className="font-bold text-lg dark:text-white flex items-center gap-2"><i data-lucide="box" className="w-5 h-5 text-emerald-500"></i> Adicionar ao Catálogo</h3>
                                     <button type="button" onClick={() => setModalProdutoAberto(false)} className="text-gray-400 hover:text-red-500 transition"><i data-lucide="x" className="w-5 h-5"></i></button>
                                 </div>
                                 <form onSubmit={salvarProduto} className="p-6 flex flex-col gap-4">
-                                    <div><label className="block text-sm font-semibold mb-1 dark:text-gray-300">Nome do Produto</label><input required type="text" value={novoProduto.nome} onChange={e => setNovoProduto({...novoProduto, nome: e.target.value})} className="w-full bg-gray-50 dark:bg-darkBg border border-gray-200 dark:border-darkBorder rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-emerald-500 dark:text-white" /></div>
-                                    <div><label className="block text-sm font-semibold mb-1 dark:text-gray-300">Texto / Descrição Base</label><textarea required rows="2" value={novoProduto.texto_padrao} onChange={e => setNovoProduto({...novoProduto, texto_padrao: e.target.value})} className="w-full bg-gray-50 dark:bg-darkBg border border-gray-200 dark:border-darkBorder rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-emerald-500 dark:text-white"></textarea></div>
+                                    <div><label className="block text-sm font-semibold mb-1 dark:text-gray-300">Nome do Produto</label><input required type="text" value={novoProduto.nome} onChange={e => setNovoProduto({...novoProduto, nome: e.target.value})} className="w-full bg-white dark:bg-darkBg border border-gray-200 dark:border-darkBorder rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-emerald-500 dark:text-white shadow-sm" /></div>
+                                    <div><label className="block text-sm font-semibold mb-1 dark:text-gray-300">Texto / Descrição Base</label><textarea required rows="2" value={novoProduto.texto_padrao} onChange={e => setNovoProduto({...novoProduto, texto_padrao: e.target.value})} className="w-full bg-white dark:bg-darkBg border border-gray-200 dark:border-darkBorder rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-emerald-500 dark:text-white shadow-sm"></textarea></div>
                                     <div>
                                         <label className="block text-sm font-semibold mb-1 dark:text-gray-300">Preço Base (R$)</label>
                                         <input 
@@ -444,11 +439,11 @@
                                             type="text" 
                                             value={novoProduto.preco_base} 
                                             onChange={e => setNovoProduto({...novoProduto, preco_base: formatarMoeda(e.target.value)})} 
-                                            className="w-1/2 bg-gray-50 dark:bg-darkBg border border-gray-200 dark:border-darkBorder rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-emerald-500 dark:text-white" 
+                                            className="w-full bg-white dark:bg-darkBg border border-gray-200 dark:border-darkBorder rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-emerald-500 dark:text-white font-bold text-emerald-500 shadow-sm" 
                                             placeholder="0,00" 
                                         />
                                     </div>
-                                    <div className="mt-4 pt-4 border-t border-gray-100 dark:border-darkBorder flex justify-end gap-3"><button type="button" onClick={() => setModalProdutoAberto(false)} className="px-5 py-2 font-semibold text-gray-500 hover:bg-gray-100 dark:hover:bg-[#282a2c] rounded-lg">Cancelar</button><button type="submit" disabled={salvandoProduto} className="px-5 py-2 rounded-lg font-semibold bg-emerald-600 hover:bg-emerald-700 text-white shadow-md">Salvar Produto</button></div>
+                                    <div className="mt-2 pt-5 border-t border-gray-100 dark:border-darkBorder flex justify-end gap-3"><button type="button" onClick={() => setModalProdutoAberto(false)} className="px-5 py-2.5 font-semibold text-gray-500 hover:bg-gray-100 dark:hover:bg-[#282a2c] rounded-lg transition">Cancelar</button><button type="submit" disabled={salvandoProduto} className="px-6 py-2.5 rounded-lg font-semibold bg-emerald-600 hover:bg-emerald-700 text-white shadow-md transition">Salvar Produto</button></div>
                                 </form>
                             </div>
                         </div>
@@ -458,14 +453,14 @@
                     {modalClienteAberto && (
                         <div onClick={() => setModalClienteAberto(false)} className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 dark:bg-black/60 glass no-print transition-all cursor-pointer">
                             <div onClick={(e) => e.stopPropagation()} className="bg-white dark:bg-darkCard w-full max-w-md rounded-2xl shadow-2xl overflow-hidden border border-gray-200 dark:border-darkBorder cursor-default">
-                                <div className="px-6 py-4 border-b border-gray-100 dark:border-darkBorder flex justify-between items-center bg-indigo-50 dark:bg-[#181a1c]">
-                                    <h3 className="font-bold text-lg dark:text-white text-indigo-800 dark:text-indigo-400 flex items-center gap-2"><i data-lucide="user-plus" className="w-5 h-5"></i> Cadastrar Cliente</h3>
+                                <div className="px-6 py-4 border-b border-gray-100 dark:border-darkBorder flex justify-between items-center bg-gray-50 dark:bg-darkBg">
+                                    <h3 className="font-bold text-lg dark:text-white flex items-center gap-2"><i data-lucide="user-plus" className="w-5 h-5 text-indigo-500"></i> Cadastrar Cliente</h3>
                                     <button type="button" onClick={() => setModalClienteAberto(false)} className="text-gray-400 hover:text-red-500 transition"><i data-lucide="x" className="w-5 h-5"></i></button>
                                 </div>
                                 <form onSubmit={salvarCliente} className="p-6 flex flex-col gap-4">
                                     <div>
                                         <label className="block text-sm font-semibold mb-1 dark:text-gray-300">Nome / Empresa *</label>
-                                        <input required type="text" value={novoCliente.nome} onChange={e => setNovoCliente({...novoCliente, nome: e.target.value})} className="w-full bg-gray-50 dark:bg-darkBg border border-gray-200 dark:border-darkBorder rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white" placeholder="Ex: Fibrion" />
+                                        <input required type="text" value={novoCliente.nome} onChange={e => setNovoCliente({...novoCliente, nome: e.target.value})} className="w-full bg-white dark:bg-darkBg border border-gray-200 dark:border-darkBorder rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white shadow-sm" placeholder="Ex: Fibrion" />
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div>
@@ -474,14 +469,14 @@
                                                 type="text" 
                                                 value={novoCliente.telefone} 
                                                 onChange={e => setNovoCliente({...novoCliente, telefone: formatarTelefone(e.target.value)})} 
-                                                className="w-full bg-gray-50 dark:bg-darkBg border border-gray-200 dark:border-darkBorder rounded-lg px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white" 
+                                                className="w-full bg-white dark:bg-darkBg border border-gray-200 dark:border-darkBorder rounded-lg px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white shadow-sm" 
                                                 placeholder="(11) 90000-0000" 
                                             />
                                         </div>
-                                        <div><label className="block text-sm font-semibold mb-1 dark:text-gray-300">E-mail</label><input type="email" value={novoCliente.email} onChange={e => setNovoCliente({...novoCliente, email: e.target.value})} className="w-full bg-gray-50 dark:bg-darkBg border border-gray-200 dark:border-darkBorder rounded-lg px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white" placeholder="contato@..." /></div>
+                                        <div><label className="block text-sm font-semibold mb-1 dark:text-gray-300">E-mail</label><input type="email" value={novoCliente.email} onChange={e => setNovoCliente({...novoCliente, email: e.target.value})} className="w-full bg-white dark:bg-darkBg border border-gray-200 dark:border-darkBorder rounded-lg px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white shadow-sm" placeholder="contato@..." /></div>
                                     </div>
-                                    <div><label className="block text-sm font-semibold mb-1 dark:text-gray-300">Observações</label><textarea rows="2" value={novoCliente.observacoes} onChange={e => setNovoCliente({...novoCliente, observacoes: e.target.value})} className="w-full bg-gray-50 dark:bg-darkBg border border-gray-200 dark:border-darkBorder rounded-lg px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white"></textarea></div>
-                                    <div className="mt-2 pt-4 border-t border-gray-100 dark:border-darkBorder flex justify-end gap-3"><button type="button" onClick={() => setModalClienteAberto(false)} className="px-5 py-2 font-semibold text-gray-500 hover:bg-gray-100 dark:hover:bg-[#282a2c] rounded-lg">Cancelar</button><button type="submit" disabled={salvandoCliente} className="px-5 py-2 rounded-lg font-semibold bg-indigo-600 hover:bg-indigo-700 text-white shadow-md">Salvar Cliente</button></div>
+                                    <div><label className="block text-sm font-semibold mb-1 dark:text-gray-300">Observações</label><textarea rows="2" value={novoCliente.observacoes} onChange={e => setNovoCliente({...novoCliente, observacoes: e.target.value})} className="w-full bg-white dark:bg-darkBg border border-gray-200 dark:border-darkBorder rounded-lg px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white shadow-sm"></textarea></div>
+                                    <div className="mt-2 pt-5 border-t border-gray-100 dark:border-darkBorder flex justify-end gap-3"><button type="button" onClick={() => setModalClienteAberto(false)} className="px-5 py-2.5 font-semibold text-gray-500 hover:bg-gray-100 dark:hover:bg-[#282a2c] transition rounded-lg">Cancelar</button><button type="submit" disabled={salvandoCliente} className="px-6 py-2.5 rounded-lg font-semibold bg-indigo-600 hover:bg-indigo-700 text-white shadow-md transition">Salvar Cliente</button></div>
                                 </form>
                             </div>
                         </div>
