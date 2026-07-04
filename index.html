@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Berlim Gráfica | Sistema</title>
     
-    <!-- Fonte Geométrica e Moderna: Montserrat -->
+    <!-- Tipografia Estilo Vercel (Montserrat) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -27,11 +27,11 @@
                         brandHover: '#d9641c',     
                         
                         /* Sistema de Elevação Estilo Vercel */
-                        darkBg: '#000000',         /* Level 0: Fundo Absoluto */
-                        darkCard: '#0A0A0A',       /* Level 1: Modais e Painéis */
-                        darkElevated: '#111111',   /* Level 2: Inputs, Cartões e Carrinho */
-                        darkHover: '#1A1A1A',      /* Level 3: Estados de Hover */
-                        darkBorder: '#333333',     /* Bordas Finas de 1px */
+                        darkBg: '#000000',         
+                        darkCard: '#0A0A0A',       
+                        darkElevated: '#111111',   
+                        darkHover: '#1A1A1A',      
+                        darkBorder: '#333333',     
                         darkInput: '#000000'
                     },
                     fontFamily: {
@@ -70,7 +70,6 @@
             'sb_publishable_RSQ4odG0wxy8ZucJHu_WvQ_0JfM8jbh'
         );
 
-        // ==== FUNÇÕES DE MÁSCARA ====
         const formatarMoeda = (valor) => {
             if (!valor) return '';
             const numeroLimpo = valor.toString().replace(/\D/g, ''); 
@@ -95,13 +94,11 @@
             const [darkMode, setDarkMode] = useState(true); 
             const [isAdmin, setIsAdmin] = useState(false);
             
-            // Controle da Janela Única de O.S. (Novo ou Edição)
             const [modalAberto, setModalAberto] = useState(false);
             const [salvandoOS, setSalvandoOS] = useState(false);
             const [osParaImprimir, setOsParaImprimir] = useState(null);
             const [pedidoEmEdicao, setPedidoEmEdicao] = useState(null); 
 
-            // Itens do Carrinho
             const [itensPedido, setItensPedido] = useState([]);
             const [itemAtual, setItemAtual] = useState({ nome: '', descricao: '', valor: '', desconto: '' });
 
@@ -112,7 +109,6 @@
 
             const [novoPedido, setNovoPedido] = useState({ cliente: '', servico: '', valor_total: '', status: 'Aguardando' });
             
-            // Modais de Cadastro / Edição
             const [modalProdutoAberto, setModalProdutoAberto] = useState(false);
             const [salvandoProduto, setSalvandoProduto] = useState(false);
             const [novoProduto, setNovoProduto] = useState({ id: null, nome: '', texto_padrao: '', preco_base: '' });
@@ -121,8 +117,14 @@
             const [salvandoCliente, setSalvandoCliente] = useState(false);
             const [novoCliente, setNovoCliente] = useState({ id: null, nome: '', telefone: '', email: '', observacoes: '' });
 
-            useEffect(() => { carregarDados(); }, []);
-            useEffect(() => { lucide.createIcons(); }); 
+            useEffect(() => { 
+                carregarDados(); 
+            }, []);
+
+            // Trava de atualização de ícones segura
+            useEffect(() => { 
+                lucide.createIcons(); 
+            }, [abaAtual, modalAberto, modalProdutoAberto, modalClienteAberto, pedidos, produtos, clientes, itensPedido]); 
 
             async function carregarDados() {
                 const { data: listaPedidos } = await supabase.from('pedidos').select('*').order('id', { ascending: false });
@@ -199,8 +201,14 @@
                 
                 let textoFinalServico = novoPedido.servico;
                 if (!pedidoEmEdicao && itensPedido.length > 0) {
-                    const itensTexto = itensPedido.map(i => `• ${i.nome || 'Serviço Personalizado'}\n  ${i.descricao}\n  Valor: R$ ${i.valor}${i.desconto ? ` (-${i.desconto}%)` : ''}`).join('\n\n');
-                    textoFinalServico = itensTexto + (novoPedido.servico ? `\n\n[OBSERVAÇÕES GERAIS]\n${novoPedido.servico}` : '');
+                    const itensTextoArray = itensPedido.map(i => {
+                        const strDesconto = i.desconto ? ' (-' + i.desconto + '%)' : '';
+                        const strNome = i.nome || 'Serviço Personalizado';
+                        return '• ' + strNome + '\n  ' + i.descricao + '\n  Valor: R$ ' + i.valor + strDesconto;
+                    });
+                    const itensTextoString = itensTextoArray.join('\n\n');
+                    const obsGerais = novoPedido.servico ? '\n\n[OBSERVAÇÕES GERAIS]\n' + novoPedido.servico : '';
+                    textoFinalServico = itensTextoString + obsGerais;
                 }
 
                 const valorNumerico = parseFloat(novoPedido.valor_total.replace(/\./g, '').replace(',', '.')) || 0;
@@ -216,19 +224,22 @@
                     if (!error && data) {
                         setPedidos(pedidos.map(p => p.id === data[0].id ? data[0] : p));
                         fecharModalOS();
-                    } else alert('Erro ao atualizar OS: ' + error.message);
+                    } else {
+                        alert('Erro ao atualizar OS: ' + error.message);
+                    }
                 } else {
                     const pedidoFormatado = { cliente: novoPedido.cliente, servico: textoFinalServico, status: novoPedido.status, valor_total: valorNumerico };
                     const { data, error } = await supabase.from('pedidos').insert([pedidoFormatado]).select();
                     if (!error && data) {
                         setPedidos([data[0], ...pedidos]);
                         fecharModalOS();
-                    } else alert('Erro ao salvar OS: ' + error.message);
+                    } else {
+                        alert('Erro ao salvar OS: ' + error.message);
+                    }
                 }
                 setSalvandoOS(false);
             }
 
-            // PRODUTOS
             function abrirEdicaoProduto(prod) {
                 setNovoProduto({ id: prod.id, nome: prod.nome, texto_padrao: prod.texto_padrao, preco_base: formatarMoeda((prod.preco_base * 100).toFixed(0).toString()) });
                 setModalProdutoAberto(true);
@@ -241,17 +252,22 @@
 
                 if (novoProduto.id) {
                     const { data, error } = await supabase.from('produtos').update(produtoFormatado).eq('id', novoProduto.id).select();
-                    if (!error && data) { setProdutos(produtos.map(p => p.id === novoProduto.id ? data[0] : p)); setModalProdutoAberto(false); setNovoProduto({ id: null, nome: '', texto_padrao: '', preco_base: '' }); } 
-                    else alert('Falha ao atualizar produto: ' + error.message);
+                    if (!error && data) { 
+                        setProdutos(produtos.map(p => p.id === novoProduto.id ? data[0] : p)); 
+                        setModalProdutoAberto(false); 
+                        setNovoProduto({ id: null, nome: '', texto_padrao: '', preco_base: '' }); 
+                    } else alert('Falha ao atualizar produto: ' + error.message);
                 } else {
                     const { data, error } = await supabase.from('produtos').insert([produtoFormatado]).select();
-                    if (!error && data) { setProdutos([...produtos, data[0]]); setModalProdutoAberto(false); setNovoProduto({ id: null, nome: '', texto_padrao: '', preco_base: '' }); } 
-                    else alert('Falha ao salvar produto: ' + error.message);
+                    if (!error && data) { 
+                        setProdutos([...produtos, data[0]]); 
+                        setModalProdutoAberto(false); 
+                        setNovoProduto({ id: null, nome: '', texto_padrao: '', preco_base: '' }); 
+                    } else alert('Falha ao salvar produto: ' + error.message);
                 }
                 setSalvandoProduto(false);
             }
 
-            // CLIENTES
             function abrirEdicaoCliente(cli) {
                 setNovoCliente({ id: cli.id, nome: cli.nome, telefone: cli.telefone, email: cli.email, observacoes: cli.observacoes });
                 setModalClienteAberto(true);
@@ -264,25 +280,40 @@
 
                 if (novoCliente.id) {
                     const { data, error } = await supabase.from('clientes').update(clienteFormatado).eq('id', novoCliente.id).select();
-                    if (!error && data) { setClientes(clientes.map(c => c.id === novoCliente.id ? data[0] : c)); setModalClienteAberto(false); setNovoCliente({ id: null, nome: '', telefone: '', email: '', observacoes: '' }); } 
-                    else alert('Falha ao atualizar cliente: ' + error.message);
+                    if (!error && data) { 
+                        setClientes(clientes.map(c => c.id === novoCliente.id ? data[0] : c)); 
+                        setModalClienteAberto(false); 
+                        setNovoCliente({ id: null, nome: '', telefone: '', email: '', observacoes: '' }); 
+                    } else alert('Falha ao atualizar cliente: ' + error.message);
                 } else {
                     const { data, error } = await supabase.from('clientes').insert([clienteFormatado]).select();
-                    if (!error && data) { setClientes([...clientes, data[0]]); setNovoPedido({...novoPedido, cliente: data[0].nome}); setBuscaCliente(data[0].nome); setModalClienteAberto(false); setNovoCliente({ id: null, nome: '', telefone: '', email: '', observacoes: '' }); } 
-                    else alert('Falha ao salvar cliente: ' + error.message);
+                    if (!error && data) { 
+                        setClientes([...clientes, data[0]]); 
+                        setNovoPedido({...novoPedido, cliente: data[0].nome}); 
+                        setBuscaCliente(data[0].nome); 
+                        setModalClienteAberto(false); 
+                        setNovoCliente({ id: null, nome: '', telefone: '', email: '', observacoes: '' }); 
+                    } else alert('Falha ao salvar cliente: ' + error.message);
                 }
                 setSalvandoCliente(false);
             }
 
+            function imprimirOS(pedido) {
+                setOsParaImprimir(pedido);
+                setTimeout(() => window.print(), 100);
+            }
+
             const clientesFiltrados = clientes.filter(c => c.nome.toLowerCase().includes(buscaCliente.toLowerCase()) || (c.telefone && c.telefone.includes(buscaCliente)));
             const produtosFiltrados = produtos.filter(p => p.nome.toLowerCase().includes(buscaProduto.toLowerCase()) || p.id.toString().includes(buscaProduto));
-            const isLocked = pedidoEmEdicao?.status === 'Finalizado' && !isAdmin;
+            
+            // Segurança de sintaxe:
+            const isLocked = (pedidoEmEdicao && pedidoEmEdicao.status === 'Finalizado' && !isAdmin) ? true : false;
 
             return (
                 <div>
                     <div className="flex flex-col min-h-screen no-print">
                         
-                        {/* ================= HEADER ================= */}
+                        {/* HEADER */}
                         <header className="sticky top-0 z-40 bg-white dark:bg-darkBg border-b border-gray-200 dark:border-darkBorder px-6 py-3 flex justify-between items-center">
                             <div className="flex items-center gap-8">
                                 <div className="flex items-center gap-2 text-gray-900 dark:text-white font-bold text-lg tracking-tight">
@@ -302,7 +333,7 @@
                             </div>
                         </header>
 
-                        {/* ================= KANBAN (CARTÕES TRAVADOS) ================= */}
+                        {/* KANBAN */}
                         {abaAtual === 'producao' && (
                             <main className="flex-1 p-6 lg:p-10 max-w-[1800px] mx-auto w-full fade-in">
                                 <div className="flex justify-between items-center mb-8">
@@ -341,7 +372,7 @@
                             </main>
                         )}
 
-                        {/* ================= BAIXA DE NOTAS (CENTRAL DE EDIÇÃO) ================= */}
+                        {/* BAIXA DE NOTAS */}
                         {abaAtual === 'baixa' && (
                             <main className="flex-1 p-6 lg:p-10 max-w-[1400px] mx-auto w-full fade-in">
                                 <div className="flex justify-between items-center mb-8">
@@ -377,7 +408,7 @@
                             </main>
                         )}
 
-                        {/* ================= CATÁLOGO (EDITÁVEL) ================= */}
+                        {/* CATÁLOGO */}
                         {abaAtual === 'produtos' && (
                             <main className="flex-1 p-6 lg:p-10 max-w-[1200px] mx-auto w-full fade-in">
                                 <div className="flex justify-between items-center mb-8">
@@ -397,7 +428,7 @@
                             </main>
                         )}
 
-                        {/* ================= CLIENTES (EDITÁVEL) ================= */}
+                        {/* CLIENTES */}
                         {abaAtual === 'clientes' && (
                             <main className="flex-1 p-6 lg:p-10 max-w-[1200px] mx-auto w-full fade-in">
                                 <div className="flex justify-between items-center mb-8">
@@ -418,14 +449,14 @@
                         )}
                     </div>
 
-                    {/* ================= A MESMA JANELA: CRIAÇÃO OU EDIÇÃO DE O.S. ================= */}
+                    {/* ================= MODAL UNIFICADO: O.S. (CRIAÇÃO OU EDIÇÃO) ================= */}
                     {modalAberto && (
                         <div onClick={fecharModalOS} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer">
                             <div onClick={(e) => e.stopPropagation()} className="bg-white dark:bg-darkCard w-full max-w-2xl rounded border border-gray-200 dark:border-darkBorder shadow-2xl flex flex-col max-h-[95vh] cursor-default">
                                 <div className="px-6 py-5 border-b border-gray-100 dark:border-darkBorder flex justify-between items-center bg-gray-50 dark:bg-darkCard">
                                     <div className="flex items-center gap-3">
                                         <h3 className="font-semibold text-xl dark:text-white tracking-tight">
-                                            {pedidoEmEdicao ? `Editar Ordem de Serviço #${pedidoEmEdicao.id}` : 'Nova Ordem de Serviço'}
+                                            {pedidoEmEdicao ? 'Editar Ordem de Serviço #' + pedidoEmEdicao.id : 'Nova Ordem de Serviço'}
                                         </h3>
                                         {isLocked && <span className="flex items-center gap-1 text-[11px] font-bold bg-red-950/20 text-red-400 border border-red-900/50 px-2 py-0.5 rounded"><i data-lucide="lock" className="w-3 h-3"></i> Trancado</span>}
                                     </div>
@@ -435,7 +466,6 @@
                                 <form onSubmit={salvarOS} className="p-6 overflow-y-auto custom-scrollbar flex flex-col gap-6">
                                     {isLocked && <div className="p-3 bg-red-950/20 border border-red-900/50 rounded text-xs text-red-400">Nota fiscal liquidada. Ative o Modo Admin no avatar para forçar modificações.</div>}
                                     
-                                    {/* CAMPO 1: CLIENTE COM BOTÃO MINIMALISTA RETO */}
                                     <div>
                                         <label className="block text-sm font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Cliente / Empresa</label>
                                         <div className="flex gap-2">
@@ -443,7 +473,7 @@
                                                 <input required type="text" value={buscaCliente} 
                                                     disabled={isLocked}
                                                     onChange={e => { setBuscaCliente(e.target.value); setNovoPedido({...novoPedido, cliente: e.target.value}); setClienteDropdownAberto(true); }}
-                                                    onFocus={() => !isLocked && setClienteDropdownAberto(true)} onBlur={() => setTimeout(() => setClienteDropdownAberto(false), 200)}
+                                                    onFocus={() => { if(!isLocked) setClienteDropdownAberto(true); }} onBlur={() => setTimeout(() => setClienteDropdownAberto(false), 200)}
                                                     className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:focus:border-brand transition dark:text-[#EDEDED] disabled:opacity-50" 
                                                     placeholder="Buscar cliente..." autoComplete="off" />
                                                 <i data-lucide="chevron-down" className="absolute right-3 top-2.5 w-4 h-4 text-gray-400 pointer-events-none"></i>
@@ -463,11 +493,9 @@
                                         </div>
                                     </div>
 
-                                    {/* SEÇÃO 2: CONFIGURAÇÃO DE ITENS (SÓ APARECE AO CRIAR NOVA OS) */}
                                     {!pedidoEmEdicao && (
                                         <div>
                                             <label className="block text-sm font-medium mb-3 text-gray-700 dark:text-[#EDEDED]">Montar Ordem de Serviço</label>
-                                            
                                             {itensPedido.length > 0 && (
                                                 <div className="mb-4 flex flex-col gap-2">
                                                     {itensPedido.map((item, index) => (
@@ -477,7 +505,10 @@
                                                                 <span className="text-xs text-gray-500 dark:text-[#A1A1AA] whitespace-pre-wrap mt-1">{item.descricao}</span>
                                                             </div>
                                                             <div className="flex items-center gap-4">
-                                                                <div className="text-right"><span className="font-semibold text-sm dark:text-white">R$ {item.valor}</span>{item.desconto && <span className="block text-[10px] text-brand font-medium">-{item.desconto}%</span>}</div>
+                                                                <div className="text-right">
+                                                                    <span className="font-semibold text-sm dark:text-white">R$ {item.valor}</span>
+                                                                    {item.desconto && <span className="block text-[10px] text-brand font-medium">-{item.desconto}%</span>}
+                                                                </div>
                                                                 <button type="button" onClick={() => removerItemDoCarrinho(item.id_temp)} className="text-gray-400 hover:text-red-500 transition"><i data-lucide="trash-2" className="w-4 h-4"></i></button>
                                                             </div>
                                                         </div>
@@ -520,15 +551,13 @@
                                         </div>
                                     )}
 
-                                    {/* CAMPO 3: DESCRIÇÃO DO SERVIÇO (CONTEÚDO PRINCIPAL) */}
                                     <div>
                                         <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-[#EDEDED]">
                                             {pedidoEmEdicao ? 'Descrição Geral do Serviço (Edição Livre)' : 'Observações Gerais da O.S. (Opcional)'}
                                         </label>
-                                        <textarea required={!!pedidoEmEdicao} rows={pedidoEmEdicao ? "8" : "2"} value={novoPedido.servico} onChange={e => setNovoPedido({...novoPedido, servico: e.target.value})} disabled={isLocked} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand transition dark:text-[#EDEDED] custom-scrollbar disabled:opacity-50" placeholder="Informações da nota..."></textarea>
+                                        <textarea required={pedidoEmEdicao ? true : false} rows={pedidoEmEdicao ? "8" : "2"} value={novoPedido.servico} onChange={e => setNovoPedido({...novoPedido, servico: e.target.value})} disabled={isLocked} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand transition dark:text-[#EDEDED] custom-scrollbar disabled:opacity-50" placeholder="Informações da nota..."></textarea>
                                     </div>
                                     
-                                    {/* PAR GRÁFICO FINAL: VALOR FINAL + DROPDOWN STATUS */}
                                     <div className="grid grid-cols-2 gap-4 border-t border-gray-100 dark:border-darkBorder pt-4">
                                         <div>
                                             <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-[#EDEDED]">Valor Total Geral</label>
@@ -551,11 +580,11 @@
                                         </div>
                                     </div>
 
-                                </div>
+                                </form>
                                 <div className="px-6 py-4 border-t border-gray-100 dark:border-darkBorder bg-gray-50 dark:bg-darkCard flex justify-end gap-3 shrink-0">
                                     <button type="button" onClick={fecharModalOS} className="px-4 py-2 rounded text-sm font-medium text-gray-600 dark:text-[#A1A1AA] hover:bg-gray-100 dark:hover:bg-darkHover transition">Cancelar</button>
                                     {!isLocked && (
-                                        <button type="submit" onClick={salvarOS} disabled={salvandoOS || (!pedidoEmEdicao && itensPedido.length === 0)} className="px-6 py-2 rounded text-sm font-semibold bg-brand hover:bg-brandHover text-white shadow-sm transition disabled:opacity-50">
+                                        <button type="button" onClick={salvarOS} disabled={salvandoOS || (!pedidoEmEdicao && itensPedido.length === 0)} className="px-6 py-2 rounded text-sm font-semibold bg-brand hover:bg-brandHover text-white shadow-sm transition disabled:opacity-50">
                                             {salvandoOS ? 'Salvando...' : pedidoEmEdicao ? 'Atualizar Pedido' : 'Finalizar Pedido'}
                                         </button>
                                     )}
@@ -564,7 +593,7 @@
                         </div>
                     )}
 
-                    {/* ================= MODAIS AUXILIARES: PRODUTOS / CLIENTES ================= */}
+                    {/* MODAIS AUXILIARES */}
                     {modalProdutoAberto && (
                         <div onClick={() => setModalProdutoAberto(false)} className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer">
                             <div onClick={(e) => e.stopPropagation()} className="bg-white dark:bg-darkCard w-full max-w-md rounded shadow-2xl overflow-hidden border border-gray-200 dark:border-darkBorder cursor-default">
@@ -578,6 +607,7 @@
                             </div>
                         </div>
                     )}
+
                     {modalClienteAberto && (
                         <div onClick={() => setModalClienteAberto(false)} className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer">
                             <div onClick={(e) => e.stopPropagation()} className="bg-white dark:bg-darkCard w-full max-w-md rounded shadow-2xl overflow-hidden border border-gray-200 dark:border-darkBorder cursor-default">
