@@ -21,15 +21,15 @@
             theme: { 
                 extend: { 
                     colors: { 
-                        brand: '#F37020',          
+                        brand: '#F37020',          /* Laranja Oficial Berlim */
                         brandHover: '#d9641c',     
                         
-                        /* Sistema de Elevação Vercel */
-                        darkBg: '#000000',         
-                        darkCard: '#0A0A0A',       
-                        darkElevated: '#111111',   
-                        darkHover: '#1A1A1A',      
-                        darkBorder: '#333333',     
+                        /* Sistema de Elevação Escala Cinzas Vercel */
+                        darkBg: '#000000',         /* Level 0: Fundo de Tela Geral */
+                        darkCard: '#0A0A0A',       /* Level 1: Corpo das Janelas e Modais */
+                        darkElevated: '#111111',   /* Level 2: Inputs, Cartões e Carrinho */
+                        darkHover: '#1A1A1A',      /* Level 3: Estados de Seleção e Hovers */
+                        darkBorder: '#333333',     /* Linhas Finas de Divisão */
                         darkInput: '#000000'
                     },
                     fontFamily: {
@@ -97,6 +97,8 @@
             return v;
         };
 
+        const obterDataAtual = () => new Date().toISOString().split('T')[0];
+
         function desconstruirTextoServico(texto) {
             if (!texto) return { itens: [], observacoes: '' };
             let partes = texto.split('\n\n[OBSERVAÇÕES GERAIS]\n');
@@ -123,15 +125,15 @@
                 
                 let nome = linhas[0].replace('• ', '').trim();
                 let descricao = linhas[1].replace(/^  /, '').trim();
-                let linhaValor = linhas[2].replace(/^  Valor: R\$ /, '').trim();
+                let AppValor = linhas[2].replace(/^  Valor: R\$ /, '').trim();
                 
-                let valor = linhaValor;
+                let valor = AppValor;
                 let desconto = '';
                 
-                let matchDesconto = linhaValor.match(/\s\(-(\d+)%\)$/);
+                let matchDesconto = AppValor.match(/\s\(-(\d+)%\)$/);
                 if (matchDesconto) {
                     desconto = matchDesconto[1];
-                    valor = linhaValor.replace(matchDesconto[0], '').trim();
+                    valor = AppValor.replace(matchDesconto[0], '').trim();
                 }
                 
                 itensTraduzidos.push({ nome: nome, descricao: descricao, valor: valor, desconto: desconto, id_temp: Math.random() + Date.now() });
@@ -160,7 +162,7 @@
             const [buscaProduto, setBuscaProduto] = useState('');
             const [produtoDropdownAberto, setProdutoDropdownAberto] = useState(false);
 
-            const [novoPedido, setNovoPedido] = useState({ cliente: '', servico: '', valor_total: '', status: 'Aguardando' });
+            const [novoPedido, setNovoPedido] = useState({ cliente: '', servico: '', valor_total: '', status: 'Aguardando', data_pedido: obterDataAtual() });
             
             const [modalProdutoAberto, setModalProdutoAberto] = useState(false);
             const [salvandoProduto, setSalvandoProduto] = useState(false);
@@ -194,7 +196,7 @@
                 setBuscaProduto('');
                 setItensPedido([]); 
                 setItemAtual({ nome: '', descricao: '', valor: '', desconto: '' });
-                setNovoPedido({ cliente: '', servico: '', valor_total: '', status: 'Aguardando' });
+                setNovoPedido({ cliente: '', servico: '', valor_total: '', status: 'Aguardando', data_pedido: obterDataAtual() });
             }
 
             function abrirEdicao(pedido) {
@@ -206,7 +208,8 @@
                     cliente: pedido.cliente,
                     servico: dadosDesconstruidos.observacoes,
                     status: pedido.status,
-                    valor_total: formatarMoeda((pedido.valor_total * 100).toFixed(0).toString())
+                    valor_total: formatarMoeda((pedido.valor_total * 100).toFixed(0).toString()),
+                    data_pedido: pedido.data_pedido || obterDataAtual()
                 });
                 setModalAberto(true);
             }
@@ -280,7 +283,8 @@
                         cliente: novoPedido.cliente,
                         servico: textoFinalServico,
                         status: novoPedido.status,
-                        valor_total: valorNumericoFinal
+                        valor_total: valorNumericoFinal,
+                        data_pedido: novoPedido.data_pedido
                     }).eq('id', pedidoEmEdicao.id).select();
 
                     if (!error && data) {
@@ -292,7 +296,8 @@
                         cliente: novoPedido.cliente,
                         servico: textoFinalServico,
                         status: novoPedido.status,
-                        valor_total: valorNumericoFinal
+                        valor_total: valorNumericoFinal,
+                        data_pedido: novoPedido.data_pedido
                     }]).select();
 
                     if (!error && data) {
@@ -354,7 +359,6 @@
 
             const clientesFiltrados = clientes.filter(c => c.nome.toLowerCase().includes(buscaCliente.toLowerCase()) || (c.telefone && c.telefone.includes(buscaCliente)));
             const produtosFiltrados = produtos.filter(p => p.nome.toLowerCase().includes(buscaProduto.toLowerCase()) || p.id.toString().includes(buscaProduto));
-            
             const isModalTrancado = (pedidoEmEdicao && pedidoEmEdicao.status === 'Finalizado' && !isAdmin) ? true : false;
 
             return (
@@ -385,7 +389,7 @@
                             </div>
                         </header>
 
-                        {/* ================= KANBAN (PRODUÇÃO) ================= */}
+                        {/* ================= KANBAN ================= */}
                         {abaAtual === 'producao' && (
                             <main className="flex-1 p-6 lg:p-10 max-w-[1800px] mx-auto w-full fade-in">
                                 <div className="flex justify-between items-center mb-8">
@@ -393,7 +397,6 @@
                                     <button onClick={() => { setPedidoEmEdicao(null); setModalAberto(true); }} className="bg-white dark:bg-white text-black px-4 py-2 text-sm rounded-md font-medium flex items-center gap-2 hover:bg-gray-200 transition">Nova O.S.</button>
                                 </div>
                                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-                                    {/* COLUNAS CORRIGIDAS: dark:bg-darkCard em vez de backgrounds estranhos */}
                                     <div className="flex flex-col bg-gray-50 dark:bg-darkCard rounded-xl border border-gray-200 dark:border-darkBorder overflow-hidden shadow-sm">
                                         <div className="p-4 border-b border-gray-200 dark:border-darkBorder border-t-2 border-t-orange-500 bg-white dark:bg-transparent flex justify-between items-center">
                                             <h2 className="font-bold text-sm tracking-wide text-gray-700 dark:text-[#EDEDED] flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-orange-500"></div> Aguardando</h2>
@@ -425,7 +428,7 @@
                             </main>
                         )}
 
-                        {/* ================= BAIXA DE NOTAS (TABELA) ================= */}
+                        {/* ================= HISTÓRICO DE BAIXAS ================= */}
                         {abaAtual === 'baixa' && (
                             <main className="flex-1 p-6 lg:p-10 max-w-[1400px] mx-auto w-full fade-in">
                                 <div className="flex justify-between items-center mb-8">
@@ -433,7 +436,6 @@
                                 </div>
                                 <div className="bg-white dark:bg-darkCard rounded border border-gray-200 dark:border-darkBorder overflow-hidden">
                                     <table className="w-full text-left border-collapse">
-                                        {/* CABEÇALHOS CORRIGIDOS PARA TEREM A MESMA COR DA TABELA */}
                                         <thead><tr className="border-b border-gray-200 dark:border-darkBorder text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider bg-transparent"><th className="px-6 py-5">OS Nº</th><th className="px-6 py-5">Cliente</th><th className="px-6 py-5">Serviço</th><th className="px-6 py-5">Status</th><th className="px-6 py-5 text-right">Valor Final</th></tr></thead>
                                         <tbody>
                                             {pedidos.map(p => {
@@ -472,7 +474,7 @@
                             </main>
                         )}
 
-                        {/* ================= CATÁLOGO (TABELA) ================= */}
+                        {/* ================= CATÁLOGO ================= */}
                         {abaAtual === 'produtos' && (
                             <main className="flex-1 p-6 lg:p-10 max-w-[1200px] mx-auto w-full fade-in">
                                 <div className="flex justify-between items-center mb-8">
@@ -492,12 +494,12 @@
                             </main>
                         )}
 
-                        {/* ================= CLIENTES (TABELA) ================= */}
+                        {/* ================= CLIENTES ================= */}
                         {abaAtual === 'clientes' && (
                             <main className="flex-1 p-6 lg:p-10 max-w-[1200px] mx-auto w-full fade-in">
                                 <div className="flex justify-between items-center mb-8">
                                     <h1 className="text-3xl font-semibold dark:text-white tracking-tight">Clientes</h1>
-                                    <button onClick={() => { setNovoCliente({ id: null, nome: '', telefone: '', email: '', observacoes: '' }); setModalClienteAberto(true); }} className="bg-white dark:bg-white text-black px-4 py-2 text-sm rounded-md font-medium hover:bg-gray-200 transition">Novo Cliente</button>
+                                    <button onClick={() => { setNovoCliente({ id: null, nome: '', telephone: '', email: '', observacoes: '' }); setModalClienteAberto(true); }} className="bg-white dark:bg-white text-black px-4 py-2 text-sm rounded-md font-medium hover:bg-gray-200 transition">Novo Cliente</button>
                                 </div>
                                 <div className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded overflow-hidden">
                                     <table className="w-full text-left border-collapse">
@@ -513,10 +515,10 @@
                         )}
                     </div>
 
-                    {/* ================= MODAL MESTRE UNIFICADO (NOVA O.S. / EDIÇÃO) ================= */}
+                    {/* ================= MODAL MESTRE UNIFICADO (LARGURA AMPLIADA max-w-3xl) ================= */}
                     {modalAberto && (
                         <div onClick={fecharModalOS} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer">
-                            <div onClick={(e) => e.stopPropagation()} className="bg-white dark:bg-darkCard w-full max-w-2xl rounded border border-gray-200 dark:border-darkBorder shadow-2xl flex flex-col max-h-[95vh] cursor-default">
+                            <div onClick={(e) => e.stopPropagation()} className="bg-white dark:bg-darkCard w-full max-w-3xl rounded border border-gray-200 dark:border-darkBorder shadow-2xl flex flex-col max-h-[95vh] cursor-default">
                                 <div className="px-6 py-5 border-b border-gray-100 dark:border-darkBorder flex justify-between items-center bg-gray-50 dark:bg-darkCard">
                                     <div className="flex items-center gap-3">
                                         <h3 className="font-semibold text-xl dark:text-white tracking-tight">
@@ -545,24 +547,24 @@
                                                     placeholder="Buscar cliente..." autoComplete="off" />
                                                 <Icon name="chevron-down" className="absolute right-3 top-3 w-4 h-4 text-gray-400 pointer-events-none" />
                                                 {clienteDropdownAberto && clientesFiltrados.length > 0 && (
-                                                    <ul className="absolute z-[60] w-full mt-1 max-h-48 overflow-y-auto bg-white dark:bg-[#1A1A1A] border border-gray-200 dark:border-darkBorder rounded shadow-xl custom-scrollbar">
+                                                    <ul className="absolute z-[60] w-full mt-1 max-h-48 overflow-y-auto bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded shadow-xl custom-scrollbar">
                                                         {clientesFiltrados.map(c => (
-                                                            <li key={c.id} onClick={() => { setBuscaCliente(c.nome); setNovoPedido({...novoPedido, cliente: c.nome}); setClienteDropdownAberto(false); }} className="px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-[#2A2A2A] cursor-pointer border-b border-gray-100 dark:border-darkBorder last:border-0 flex justify-between items-center transition">
+                                                            <li key={c.id} onClick={() => { setBuscaCliente(c.nome); setNovoPedido({...novoPedido, cliente: c.nome}); setClienteDropdownAberto(false); }} className="px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-darkHover cursor-pointer border-b border-gray-100 dark:border-darkBorder last:border-0 flex justify-between items-center transition">
                                                                 <span className="font-medium text-sm text-gray-800 dark:text-[#EDEDED]">{c.nome}</span><span className="text-xs text-gray-500">{c.telefone}</span>
                                                             </li>
                                                         ))}
                                                     </ul>
                                                 )}
                                             </div>
-                                            <button type="button" onClick={() => { setNovoCliente({ id: null, nome: '', telefone: '', email: '', observacoes: '' }); setModalClienteAberto(true); }} disabled={isModalTrancado} className="shrink-0 w-[38px] h-[38px] flex items-center justify-center bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded hover:bg-darkHover transition disabled:opacity-50" title="Novo Cliente">
+                                            <button type="button" onClick={() => { setNovoCliente({ id: null, nome: '', telephone: '', email: '', observacoes: '' }); setModalClienteAberto(true); }} disabled={isModalTrancado} className="shrink-0 w-[38px] h-[38px] flex items-center justify-center bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded hover:bg-darkHover transition disabled:opacity-50" title="Novo Cliente">
                                                 <Icon name="plus" className="w-4 h-4 text-brand" />
                                             </button>
                                         </div>
                                     </div>
 
-                                    {/* 2: CARRINHO DE ITENS */}
+                                    {/* 2: CARRINHO DE ITENS (FIXO NO TOPO) */}
                                     <div>
-                                        <label className="block text-sm font-medium mb-3 text-gray-700 dark:text-[#EDEDED]">Itens do Orçamento</label>
+                                        <label className="block text-sm font-medium mb-3 text-gray-700 dark:text-[#EDEDED]">Carrinho de Itens do Orçamento</label>
                                         
                                         {itensPedido.length > 0 ? (
                                             <div className="mb-4 flex flex-col gap-2">
@@ -598,9 +600,9 @@
                                                             className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand transition dark:text-[#EDEDED] disabled:opacity-50" placeholder="Puxar item do catálogo (Opcional)..." autoComplete="off" />
                                                         <Icon name="chevron-down" className="absolute right-3 top-3 w-4 h-4 text-gray-400 pointer-events-none" />
                                                         {produtoDropdownAberto && produtosFiltrados.length > 0 && (
-                                                            <ul className="absolute z-[60] w-full mt-1 max-h-48 overflow-y-auto bg-white dark:bg-[#1A1A1A] border border-gray-200 dark:border-darkBorder rounded shadow-xl custom-scrollbar">
+                                                            <ul className="absolute z-[60] w-full mt-1 max-h-48 overflow-y-auto bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded shadow-xl custom-scrollbar">
                                                                 {produtosFiltrados.map(p => (
-                                                                    <li key={p.id} onClick={() => { setBuscaProduto(''); setItemAtual({ nome: p.nome, descricao: p.texto_padrao, valor: formatarMoeda((p.preco_base * 100).toFixed(0).toString()), desconto: '' }); setProdutoDropdownAberto(false); }} className="px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-[#2A2A2A] cursor-pointer border-b border-gray-100 dark:border-darkBorder last:border-0 flex flex-col transition">
+                                                                    <li key={p.id} onClick={() => { setBuscaProduto(''); setItemAtual({ nome: p.nome, descricao: p.texto_padrao, valor: formatarMoeda((p.preco_base * 100).toFixed(0).toString()), desconto: '' }); setProdutoDropdownAberto(false); }} className="px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-darkHover cursor-pointer border-b border-gray-100 dark:border-darkBorder last:border-0 flex flex-col transition">
                                                                         <div className="flex justify-between items-center"><span className="font-medium text-sm dark:text-[#EDEDED]">{p.nome}</span><span className="text-xs font-bold text-brand">R$ {Number(p.preco_base).toFixed(2).replace('.', ',')}</span></div>
                                                                     </li>
                                                                 ))}
@@ -612,7 +614,7 @@
                                                     </button>
                                                 </div>
 
-                                                <textarea rows="2" value={itemAtual.descricao} disabled={isModalTrancado} onChange={e => setItemAtual({...itemAtual, descricao: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand transition dark:text-[#EDEDED] disabled:opacity-50" placeholder="Especificações do item (Ex: Medida, formato, lona...)"></textarea>
+                                                <textarea rows="2" value={itemAtual.descricao} disabled={isModalTrancado} onChange={e => setItemAtual({...itemAtual, descricao: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand transition dark:text-[#EDEDED] disabled:opacity-50" placeholder="Especificações do item (Ex: Medida, quantidade, lona...)"></textarea>
                                                 <div className="grid grid-cols-3 gap-3">
                                                     <div className="relative">
                                                         <span className="absolute left-3 top-2.5 text-xs text-gray-400">R$</span>
@@ -633,14 +635,18 @@
                                         <textarea rows="4" value={novoPedido.servico} onChange={e => setNovoPedido({...novoPedido, servico: e.target.value})} disabled={isModalTrancado} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand transition dark:text-[#EDEDED] custom-scrollbar disabled:opacity-50" placeholder="Prazos de entrega, observações do financeiro ou complementos da O.S..."></textarea>
                                     </div>
                                     
-                                    {/* 4: FINANCEIRO */}
+                                    {/* 4: CONFIGURAÇÕES DE DATA E STATUS */}
                                     <div className="grid grid-cols-2 gap-4 border-t border-gray-100 dark:border-darkBorder pt-4">
                                         <div>
-                                            <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-[#EDEDED]">Valor Total Geral</label>
-                                            <div className="relative">
-                                                <span className="absolute left-3 top-2.5 font-bold text-sm dark:text-gray-400">R$</span>
-                                                <input required type="text" value={novoPedido.valor_total} onChange={e => setNovoPedido({...novoPedido, valor_total: formatarMoeda(e.target.value)})} disabled={isModalTrancado} className="w-full bg-white dark:bg-darkInput border border-gray-200 dark:border-darkBorder rounded pl-9 pr-3 py-2 text-sm outline-none focus:border-brand transition dark:text-white font-bold disabled:opacity-50" placeholder="0,00" />
-                                            </div>
+                                            <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-[#EDEDED]">Data da O.S.</label>
+                                            <input 
+                                                required 
+                                                type="date" 
+                                                value={novoPedido.data_pedido} 
+                                                onChange={e => setNovoPedido({...novoPedido, data_pedido: e.target.value})} 
+                                                disabled={isModalTrancado} 
+                                                className="w-full bg-white dark:bg-darkInput border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand transition dark:text-white disabled:opacity-50" 
+                                            />
                                         </div>
                                         <div>
                                             <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-[#EDEDED]">Status da Ordem</label>
@@ -657,19 +663,41 @@
                                     </div>
 
                                 </form>
-                                <div className="px-6 py-4 border-t border-gray-100 dark:border-darkBorder bg-gray-50 dark:bg-darkCard flex justify-end gap-3 shrink-0">
-                                    <button type="button" onClick={fecharModalOS} className="px-4 py-2 rounded text-sm font-medium text-gray-600 dark:text-[#A1A1AA] hover:bg-gray-100 dark:hover:bg-darkHover transition">Cancelar</button>
-                                    {!isModalTrancado && (
-                                        <button type="button" onClick={salvarOS} disabled={salvandoOS} className="px-6 py-2 rounded text-sm font-semibold bg-brand hover:bg-brandHover text-white shadow-sm transition disabled:opacity-50">
-                                            {salvandoOS ? 'Salvando...' : pedidoEmEdicao ? 'Atualizar Pedido' : 'Finalizar Pedido'}
-                                        </button>
-                                    )}
+                                
+                                {/* ================= RODAPÉ REESTRUTURADO VERCEL STYLE ================= */}
+                                <div className="px-6 py-4 border-t border-gray-100 dark:border-darkBorder bg-gray-50 dark:bg-darkCard flex justify-between items-center shrink-0">
+                                    {/* Esquerda: Valor Total Realocado */}
+                                    <div className="flex items-center gap-3">
+                                        <span className="text-xs font-bold text-gray-500 dark:text-[#888888] uppercase tracking-wider">Total do Pedido:</span>
+                                        <div className="relative w-44">
+                                            <span className="absolute left-3 top-1.5 font-bold text-sm dark:text-gray-400">R$</span>
+                                            <input 
+                                                required 
+                                                type="text" 
+                                                value={novoPedido.valor_total} 
+                                                onChange={e => setNovoPedido({...novoPedido, valor_total: formatarMoeda(e.target.value)})} 
+                                                disabled={isModalTrancado} 
+                                                className="w-full bg-transparent border-none text-left pl-9 pr-0 py-1 font-bold text-lg dark:text-white disabled:opacity-50 outline-none" 
+                                                placeholder="0,00" 
+                                            />
+                                        </div>
+                                    </div>
+                                    
+                                    {/* Direita: Botões de Controle */}
+                                    <div className="flex gap-3">
+                                        <button type="button" onClick={fecharModalOS} className="px-4 py-2 rounded text-sm font-medium text-gray-600 dark:text-[#A1A1AA] hover:bg-gray-100 dark:hover:bg-darkHover transition">Cancelar</button>
+                                        {!isModalTrancado && (
+                                            <button type="submit" onClick={salvarOS} disabled={salvandoOS} className="px-6 py-2 rounded text-sm font-semibold bg-brand hover:bg-brandHover text-white shadow-sm transition disabled:opacity-50">
+                                                {salvandoOS ? 'Salvando...' : pedidoEmEdicao ? 'Atualizar Pedido' : 'Finalizar Pedido'}
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     )}
 
-                    {/* ================= MODAIS AUXILIARES (CATÁLOGO / CLIENTES) ================= */}
+                    {/* ================= MODAIS AUXILIARES ================= */}
                     {modalProdutoAberto && (
                         <div onClick={() => setModalProdutoAberto(false)} className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer">
                             <div onClick={(e) => e.stopPropagation()} className="bg-white dark:bg-darkCard w-full max-w-md rounded shadow-2xl overflow-hidden border border-gray-200 dark:border-darkBorder cursor-default">
@@ -689,15 +717,15 @@
                                 <div className="px-6 py-5 border-b border-gray-100 dark:border-darkBorder flex justify-between items-center bg-gray-50 dark:bg-darkCard"><h3 className="font-semibold text-lg dark:text-white tracking-tight">{novoCliente.id ? 'Editar Cliente' : 'Novo Cliente'}</h3><button type="button" onClick={() => setModalClienteAberto(false)} className="text-gray-400 hover:text-gray-900 dark:hover:text-white transition"><Icon name="x" className="w-5 h-5" /></button></div>
                                 <form onSubmit={salvarCliente} className="p-6 flex flex-col gap-4">
                                     <div><label className="block text-sm font-medium mb-1.5 dark:text-[#EDEDED]">Nome / Empresa *</label><input required type="text" value={novoCliente.nome} onChange={e => setNovoCliente({...novoCliente, nome: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" placeholder="Ex: Fibrion" /></div>
-                                    <div className="grid grid-cols-2 gap-4"><div><label className="block text-sm font-medium mb-1.5 dark:text-[#EDEDED]">WhatsApp</label><input type="text" value={novoCliente.telefone} onChange={e => setNovoCliente({...novoCliente, telefone: formatarTelefone(e.target.value)})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" placeholder="(11) 90000-0000" /></div><div><label className="block text-sm font-medium mb-1.5 dark:text-[#EDEDED]">E-mail</label><input type="email" value={novoCliente.email} onChange={e => setNovoCliente({...novoCliente, email: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" placeholder="contato@..." /></div></div>
-                                    <div><label className="block text-sm font-medium mb-1.5 dark:text-[#EDEDED]">Observações</label><textarea rows="2" value={novoCliente.observacoes} onChange={e => setNovoCliente({...novoCliente, observacoes: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition"></textarea></div>
+                                    <div className="grid grid-cols-2 gap-4"><div><label className="block text-sm font-medium mb-1.5 dark:text-[#EDEDED]">WhatsApp</label><input type="text" value={novoCliente.telefone} onChange={e => setNovoCliente({...novoCliente, telephone: formatarTelefone(e.target.value)})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" placeholder="(11) 90000-0000" /></div><div><label className="block text-sm font-medium mb-1.5 dark:text-[#EDEDED]">E-mail</label><input type="email" value={novoCliente.email} onChange={e => setNovoCliente({...novoCliente, email: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" placeholder="contato@..." /></div></div>
+                                    <div><label className="block text-sm font-medium mb-1.5 dark:text-[#EDEDED]">Observações</label><textarea rows="2" value={novoCliente.observacoes} onChange={e => setNovoCliente({...novoCliente, observacoes: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand transition dark:text-[#EDEDED]"></textarea></div>
                                     <div className="mt-4 flex justify-end gap-3"><button type="button" onClick={() => setModalClienteAberto(false)} className="px-4 py-2 rounded text-sm font-medium text-gray-600 dark:text-[#A1A1AA] hover:bg-gray-100 dark:hover:bg-darkHover transition">Cancelar</button><button type="submit" disabled={salvandoCliente} className="px-5 py-2 rounded text-sm font-medium bg-white text-black hover:bg-gray-200 transition">Salvar</button></div>
                                 </form>
                             </div>
                         </div>
                     )}
 
-                    {/* ================= VISTA DE IMPRESSÃO DA O.S. ================= */}
+                    {/* VISTA DE IMPRESSÃO */}
                     <div className="hidden print-only bg-white text-black p-8 font-sans max-w-2xl mx-auto">
                         {osParaImprimir && (
                             <div className="border-2 border-black p-6 rounded">
@@ -718,7 +746,7 @@
             );
         }
 
-        // Cartão estático para o Kanban
+        // Componente do Cartão (100% Estático e Protegido no Kanban)
         function Cartao({ pedido, onPrint }) {
             return (
                 <div className="bg-white dark:bg-darkCard p-4 rounded border border-gray-200 dark:border-darkBorder flex flex-col gap-3 group shadow-sm select-none">
