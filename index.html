@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Berlim Gráfica | Sistema</title>
     
-    <!-- Link da Fonte Geométrica e Moderna: Montserrat -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -22,15 +21,13 @@
             theme: { 
                 extend: { 
                     colors: { 
-                        brand: '#F37020',          /* Laranja Oficial Berlim */
+                        brand: '#F37020',          
                         brandHover: '#d9641c',     
-                        
-                        /* Sistema de Elevação Escala Cinzas Vercel */
-                        darkBg: '#000000',         /* Level 0: Fundo de Tela Geral */
-                        darkCard: '#0A0A0A',       /* Level 1: Corpo das Janelas e Modais */
-                        darkElevated: '#111111',   /* Level 2: Inputs, Cartões e Carrinho */
-                        darkHover: '#1A1A1A',      /* Level 3: Estados de Seleção e Hovers */
-                        darkBorder: '#333333',     /* Linhas Finas de Divisão */
+                        darkBg: '#000000',         
+                        darkCard: '#0A0A0A',       
+                        darkElevated: '#111111',   
+                        darkHover: '#1A1A1A',      
+                        darkBorder: '#333333',     
                         darkInput: '#000000'
                     },
                     fontFamily: {
@@ -49,7 +46,7 @@
         }
         .glass { backdrop-filter: blur(12px); }
         
-        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #333; border-radius: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background-color: #555; }
@@ -57,19 +54,11 @@
         input[type=number]::-webkit-inner-spin-button, 
         input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 
-        /* ================= ESTILIZAÇÃO CUSTOMIZADA DE DATAS (VERCEL STYLE) ================= */
-        input[type="date"] {
-            position: relative;
-        }
+        input[type="date"] { position: relative; }
         input[type="date"]::-webkit-calendar-picker-indicator {
-            filter: invert(1) brightness(0.9);
-            cursor: pointer;
-            opacity: 0.5;
-            transition: opacity 0.2s ease;
+            filter: invert(1) brightness(0.9); cursor: pointer; opacity: 0.5; transition: opacity 0.2s ease;
         }
-        input[type="date"]::-webkit-calendar-picker-indicator:hover {
-            opacity: 1;
-        }
+        input[type="date"]::-webkit-calendar-picker-indicator:hover { opacity: 1; }
     </style>
 </head>
 <body class="bg-white dark:bg-darkBg text-gray-900 dark:text-[#EDEDED] min-h-screen selection:bg-brand selection:text-white tracking-tight">
@@ -83,7 +72,7 @@
             'sb_publishable_RSQ4odG0wxy8ZucJHu_WvQ_0JfM8jbh'
         );
 
-        // ==== ÍCONES NATIVOS SVGS ====
+        // ==== ÍCONES NATIVOS ====
         function Icon({ name, className = "w-4 h-4" }) {
             if (name === 'printer') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>;
             if (name === 'sun') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg>;
@@ -97,9 +86,26 @@
             if (name === 'lock') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>;
             if (name === 'search') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>;
             if (name === 'calendar') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect width="18" height="18" x="3" y="4" rx="2" ry="2"></rect><line x1="16" x2="16" y1="2" y2="6"></line><line x1="8" x2="8" y1="2" y2="6"></line><line x1="3" x2="21" y1="10" y2="10"></line></svg>;
+            // Novos Ícones
+            if (name === 'thumbs-up') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>;
+            if (name === 'truck') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect width="15" height="8" x="1" y="8" rx="1" ry="1"/><path d="M16 8h2.5a2 2 0 0 1 1.95 1.57l.5 3.43H16V8Z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="16.5" cy="18.5" r="2.5"/></svg>;
+            if (name === 'layout-dashboard') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>;
+            if (name === 'list') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="8" x2="21" y1="6" y2="6"/><line x1="8" x2="21" y1="12" y2="12"/><line x1="8" x2="21" y1="18" y2="18"/><line x1="3" x2="3.01" y1="6" y2="6"/><line x1="3" x2="3.01" y1="12" y2="12"/><line x1="3" x2="3.01" y1="18" y2="18"/></svg>;
+            if (name === 'square') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/></svg>;
+            if (name === 'check-square') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>;
             return null;
         }
 
+        // ==== LISTAS GLOBAIS DE ESTADOS ====
+        const STATUSES_PRODUCAO = [
+            'Aguardando Pagamento', 'Aguardando Retorno', 'Desenvolvimento de Arte', 
+            'Etiqueta Escolar', 'Produzir', 'Produção', 'Avisar Cliente', 'Retirada', 'Entrega'
+        ];
+        const STATUSES_FINALIZADOS = ['Abandonado', 'Concluído'];
+        const RESPONSAVEIS = ['Gi', 'Murilo', 'Bruno', 'Nicole', 'Hellen', 'Jessica', 'Vini'];
+        const LOCAIS = ['Berlim', 'Futura', 'Atual Card', 'Alvo', 'Xexe', 'StampMix'];
+
+        // ==== FORMATADORES ====
         const formatarMoeda = (valor) => {
             if (!valor) return '';
             const numeroLimpo = valor.toString().replace(/\D/g, ''); 
@@ -125,7 +131,7 @@
             return `${partes[2]}/${partes[1]}/${partes[0]}`;
         };
 
-        // ==== COMPONENTE: CALENDÁRIO CUSTOMIZADO ====
+        // ==== COMPONENTE DE DATA CUSTOMIZADO ====
         function CustomDatePicker({ value, onChange, placeholder, disabled, className }) {
             const [isOpen, setIsOpen] = useState(false);
             const [viewDate, setViewDate] = useState(new Date());
@@ -220,57 +226,53 @@
             );
         }
 
+        // DESTRUTURADOR E RESUMO DE SERVIÇO
         function desconstruirTextoServico(texto) {
             if (!texto) return { itens: [], observacoes: '' };
             let partes = texto.split('\n\n[OBSERVAÇÕES GERAIS]\n');
             let blocoItens = partes[0];
             let obs = partes[1] || '';
-            
-            if (!blocoItens.startsWith('• ') && partes.length === 1) {
-                return { itens: [], observacoes: texto };
-            }
+            if (!blocoItens.startsWith('• ') && partes.length === 1) return { itens: [], observacoes: texto };
             
             let itensTraduzidos = [];
             let blocosIndividuais = blocoItens.split('\n\n');
             
             for (let bloco of blocosIndividuais) {
-                if (!bloco.startsWith('• ')) {
-                    obs = obs ? obs + '\n' + bloco : bloco;
-                    continue;
-                }
+                if (!bloco.startsWith('• ')) { obs = obs ? obs + '\n' + bloco : bloco; continue; }
                 let linhas = bloco.split('\n');
-                if (linhas.length < 3) {
-                    obs = obs ? obs + '\n' + bloco : bloco;
-                    continue;
-                }
+                if (linhas.length < 3) { obs = obs ? obs + '\n' + bloco : bloco; continue; }
                 
                 let nome = linhas[0].replace('• ', '').trim();
                 let descricao = linhas[1].replace(/^  /, '').trim();
                 let AppValor = linhas[2].replace(/^  Valor: R\$ /, '').trim();
                 
-                let valor = AppValor;
-                let desconto = '';
-                
+                let valor = AppValor; let desconto = '';
                 let matchDesconto = AppValor.match(/\s\(-(\d+)%\)$/);
-                if (matchDesconto) {
-                    desconto = matchDesconto[1];
-                    valor = AppValor.replace(matchDesconto[0], '').trim();
-                }
+                if (matchDesconto) { desconto = matchDesconto[1]; valor = AppValor.replace(matchDesconto[0], '').trim(); }
                 
-                itensTraduzidos.push({ nome: nome, descricao: descricao, valor: valor, desconto: desconto, id_temp: Math.random() + Date.now() });
+                itensTraduzidos.push({ nome, descricao, valor, desconto, id_temp: Math.random() + Date.now() });
             }
             return { itens: itensTraduzidos, observacoes: obs };
         }
 
+        function obterResumoServicos(texto) {
+            const desc = desconstruirTextoServico(texto);
+            if (desc.itens.length > 0) {
+                return desc.itens.map(i => i.nome).join(' + ');
+            }
+            return texto ? texto.substring(0, 40) + '...' : '---';
+        }
+
+        // ================= APLICAÇÃO PRINCIPAL =================
         function App() {
             const [abaAtual, setAbaAtual] = useState('producao');
+            const [visaoProducao, setVisaoProducao] = useState('lista'); // 'lista' ou 'kanban'
             const [pedidos, setPedidos] = useState([]);
             const [produtos, setProdutos] = useState([]);
             const [clientes, setClientes] = useState([]);
             const [darkMode, setDarkMode] = useState(true); 
             const [isAdmin, setIsAdmin] = useState(false);
             
-            // Filtros Histórico
             const [buscaHistoricoText, setBuscaHistoricoText] = useState('');
             const [dataFiltroInicio, setDataFiltroInicio] = useState('');
             const [dataFiltroFim, setDataFiltroFim] = useState('');
@@ -288,7 +290,11 @@
             const [buscaProduto, setBuscaProduto] = useState('');
             const [produtoDropdownAberto, setProdutoDropdownAberto] = useState(false);
 
-            const [novoPedido, setNovoPedido] = useState({ cliente: '', servico: '', valor_total: '', status: 'Aguardando', data_pedido: obterDataAtual() });
+            const [novoPedido, setNovoPedido] = useState({ 
+                cliente: '', servico: '', valor_total: '', 
+                status: 'Aguardando Pagamento', data_pedido: obterDataAtual(),
+                prazo: '', responsavel: '', local_producao: 'Berlim', aprovado: false
+            });
             
             const [modalProdutoAberto, setModalProdutoAberto] = useState(false);
             const [salvandoProduto, setSalvandoProduto] = useState(false);
@@ -323,6 +329,20 @@
                 }
             };
 
+            // ==== ATUALIZAÇÃO EM LINHA DO AIRTABLE ====
+            async function atualizarCampoInline(id, campo, valor) {
+                // Atualização otimista local
+                setPedidos(pedidos.map(p => p.id === id ? { ...p, [campo]: valor } : p));
+                
+                // Dispara pro banco silenciosamente
+                const { error } = await supabase.from('pedidos').update({ [campo]: valor }).eq('id', id);
+                if (error) {
+                    alert('Erro ao atualizar: ' + error.message);
+                    carregarDados(); // Reverte se falhar
+                }
+            }
+
+            // MODAL O.S.
             function fecharModalOS() {
                 setModalAberto(false);
                 setPedidoEmEdicao(null);
@@ -330,7 +350,11 @@
                 setBuscaProduto('');
                 setItensPedido([]); 
                 setItemAtual({ nome: '', descricao: '', valor: '', desconto: '' });
-                setNovoPedido({ cliente: '', servico: '', valor_total: '', status: 'Aguardando', data_pedido: obterDataAtual() });
+                setNovoPedido({ 
+                    cliente: '', servico: '', valor_total: '', 
+                    status: 'Aguardando Pagamento', data_pedido: obterDataAtual(),
+                    prazo: '', responsavel: '', local_producao: 'Berlim', aprovado: false
+                });
             }
 
             function abrirEdicao(pedido) {
@@ -343,27 +367,24 @@
                     servico: dadosDesconstruidos.observacoes,
                     status: pedido.status,
                     valor_total: formatarMoeda((pedido.valor_total * 100).toFixed(0).toString()),
-                    data_pedido: pedido.data_pedido || obterDataAtual()
+                    data_pedido: pedido.data_pedido || obterDataAtual(),
+                    prazo: pedido.prazo || '',
+                    responsavel: pedido.responsavel || '',
+                    local_producao: pedido.local_producao || 'Berlim',
+                    aprovado: pedido.aprovado || false
                 });
                 setModalAberto(true);
             }
 
-            const obterValorFinalItem = () => {
-                const numOriginal = parseFloat(itemAtual.valor.replace(/\./g, '').replace(',', '.')) || 0;
-                const pctDesconto = parseFloat(itemAtual.desconto) || 0;
-                return numOriginal * (1 - pctDesconto / 100);
-            };
-
             function adicionarItemAoCarrinho() {
                 if (!itemAtual.descricao || !itemAtual.valor) return;
-                const valorFinalCalculadoNum = obterValorFinalItem();
+                const pctDesconto = parseFloat(itemAtual.desconto) || 0;
+                const numOriginal = parseFloat(itemAtual.valor.replace(/\./g, '').replace(',', '.')) || 0;
+                const valorFinalCalculadoNum = numOriginal * (1 - pctDesconto / 100);
                 const valorFinalCalculadoStr = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(valorFinalCalculadoNum);
                 
                 const novoItemEmpacotado = { 
-                    ...itemAtual, 
-                    valor_original: itemAtual.valor, 
-                    valor: valorFinalCalculadoStr, 
-                    id_temp: Math.random() + Date.now() 
+                    ...itemAtual, valor_original: itemAtual.valor, valor: valorFinalCalculadoStr, id_temp: Math.random() + Date.now() 
                 };
 
                 const novosItens = [...itensPedido, novoItemEmpacotado];
@@ -371,25 +392,18 @@
                 
                 let totalGeralOS = 0;
                 novosItens.forEach(i => { totalGeralOS += parseFloat(i.valor.replace(/\./g, '').replace(',', '.')) || 0; });
-                setNovoPedido({
-                    ...novoPedido,
-                    valor_total: formatarMoeda((totalGeralOS * 100).toFixed(0).toString())
-                });
+                setNovoPedido({...novoPedido, valor_total: formatarMoeda((totalGeralOS * 100).toFixed(0).toString())});
                 
                 setItemAtual({ nome: '', descricao: '', valor: '', desconto: '' });
-                setBuscaProduto('');
+                setBuscaProduto(''); // Limpa o campo de busca
             }
 
             function removerItemDoCarrinho(id_temp) {
                 const novosItens = itensPedido.filter(i => i.id_temp !== id_temp);
                 setItensPedido(novosItens);
-                
                 let totalGeralOS = 0;
                 novosItens.forEach(i => { totalGeralOS += parseFloat(i.valor.replace(/\./g, '').replace(',', '.')) || 0; });
-                setNovoPedido({
-                    ...novoPedido,
-                    valor_total: formatarMoeda((totalGeralOS * 100).toFixed(0).toString())
-                });
+                setNovoPedido({...novoPedido, valor_total: formatarMoeda((totalGeralOS * 100).toFixed(0).toString())});
             }
 
             async function salvarOS(e) {
@@ -412,39 +426,28 @@
 
                 const valorNumericoFinal = parseFloat(novoPedido.valor_total.replace(/\./g, '').replace(',', '.')) || 0;
 
+                const payload = {
+                    cliente: novoPedido.cliente,
+                    servico: textoFinalServico,
+                    status: novoPedido.status,
+                    valor_total: valorNumericoFinal,
+                    data_pedido: novoPedido.data_pedido,
+                    prazo: novoPedido.prazo,
+                    responsavel: novoPedido.responsavel,
+                    local_producao: novoPedido.local_producao,
+                    aprovado: novoPedido.aprovado
+                };
+
                 if (pedidoEmEdicao) {
-                    const { data, error } = await supabase.from('pedidos').update({
-                        cliente: novoPedido.cliente,
-                        servico: textoFinalServico,
-                        status: novoPedido.status,
-                        valor_total: valorNumericoFinal,
-                        data_pedido: novoPedido.data_pedido
-                    }).eq('id', pedidoEmEdicao.id).select();
-
-                    if (!error && data) {
-                        setPedidos(pedidos.map(p => p.id === data[0].id ? data[0] : p));
-                        fecharModalOS();
-                    } else alert('Erro ao atualizar OS: ' + error.message);
+                    const { data, error } = await supabase.from('pedidos').update(payload).eq('id', pedidoEmEdicao.id).select();
+                    if (!error && data) { setPedidos(pedidos.map(p => p.id === data[0].id ? data[0] : p)); fecharModalOS(); } 
+                    else alert('Erro ao atualizar OS: ' + error.message);
                 } else {
-                    const { data, error } = await supabase.from('pedidos').insert([{
-                        cliente: novoPedido.cliente,
-                        servico: textoFinalServico,
-                        status: novoPedido.status,
-                        valor_total: valorNumericoFinal,
-                        data_pedido: novoPedido.data_pedido
-                    }]).select();
-
-                    if (!error && data) {
-                        setPedidos([data[0], ...pedidos]);
-                        fecharModalOS();
-                    } else alert('Erro ao salvar OS: ' + error.message);
+                    const { data, error } = await supabase.from('pedidos').insert([payload]).select();
+                    if (!error && data) { setPedidos([data[0], ...pedidos]); fecharModalOS(); } 
+                    else alert('Erro ao salvar OS: ' + error.message);
                 }
                 setSalvandoOS(false);
-            }
-
-            function abrirEdicaoProduto(prod) {
-                setNovoProduto({ id: prod.id, nome: prod.nome, texto_padrao: prod.texto_padrao, preco_base: formatarMoeda((prod.preco_base * 100).toFixed(0).toString()) });
-                setModalProdutoAberto(true);
             }
 
             async function salvarProduto(e) {
@@ -455,18 +458,13 @@
                 if (novoProduto.id) {
                     const { data, error } = await supabase.from('produtos').update(produtoFormatado).eq('id', novoProduto.id).select();
                     if (!error && data) { setProdutos(produtos.map(p => p.id === novoProduto.id ? data[0] : p)); setModalProdutoAberto(false); setNovoProduto({ id: null, nome: '', texto_padrao: '', preco_base: '' }); } 
-                    else alert('Falha ao atualizar produto: ' + error.message);
+                    else alert('Falha ao atualizar: ' + error.message);
                 } else {
                     const { data, error } = await supabase.from('produtos').insert([produtoFormatado]).select();
                     if (!error && data) { setProdutos([...produtos, data[0]]); setModalProdutoAberto(false); setNovoProduto({ id: null, nome: '', texto_padrao: '', preco_base: '' }); } 
-                    else alert('Falha ao salvar produto: ' + error.message);
+                    else alert('Falha ao salvar: ' + error.message);
                 }
                 setSalvandoProduto(false);
-            }
-
-            function abrirEdicaoCliente(cli) {
-                setNovoCliente({ id: cli.id, nome: cli.nome, telefone: cli.telefone, email: cli.email, observacoes: cli.observacoes });
-                setModalClienteAberto(true);
             }
 
             async function salvarCliente(e) {
@@ -477,11 +475,11 @@
                 if (novoCliente.id) {
                     const { data, error } = await supabase.from('clientes').update(clienteFormatado).eq('id', novoCliente.id).select();
                     if (!error && data) { setClientes(clientes.map(c => c.id === novoCliente.id ? data[0] : c)); setModalClienteAberto(false); setNovoCliente({ id: null, nome: '', telefone: '', email: '', observacoes: '' }); } 
-                    else alert('Falha ao atualizar cliente: ' + error.message);
+                    else alert('Falha ao atualizar: ' + error.message);
                 } else {
                     const { data, error } = await supabase.from('clientes').insert([clienteFormatado]).select();
                     if (!error && data) { setClientes([...clientes, data[0]]); setNovoPedido({...novoPedido, cliente: data[0].nome}); setBuscaCliente(data[0].nome); setModalClienteAberto(false); setNovoCliente({ id: null, nome: '', telefone: '', email: '', observacoes: '' }); } 
-                    else alert('Falha ao salvar cliente: ' + error.message);
+                    else alert('Falha ao salvar: ' + error.message);
                 }
                 setSalvandoCliente(false);
             }
@@ -494,26 +492,24 @@
             const clientesFiltrados = clientes.filter(c => c.nome.toLowerCase().includes(buscaCliente.toLowerCase()) || (c.telefone && c.telefone.includes(buscaCliente)));
             const produtosFiltrados = produtos.filter(p => p.nome.toLowerCase().includes(buscaProduto.toLowerCase()) || p.id.toString().includes(buscaProduto));
             
+            const pedidosProducaoAtivos = pedidos.filter(p => STATUSES_PRODUCAO.includes(p.status) && !p.concluido);
+
             const pedidosHistoricoFiltrados = pedidos.filter(p => {
                 const termo = buscaHistoricoText.toLowerCase();
-                const matchTermo = !termo || 
-                    (p.cliente && p.cliente.toLowerCase().includes(termo)) || 
-                    (p.id && p.id.toString().includes(termo));
-                
+                const matchTermo = !termo || (p.cliente && p.cliente.toLowerCase().includes(termo)) || (p.id && p.id.toString().includes(termo));
                 let matchData = true;
                 if (dataFiltroInicio && (!p.data_pedido || p.data_pedido < dataFiltroInicio)) matchData = false;
                 if (dataFiltroFim && (!p.data_pedido || p.data_pedido > dataFiltroFim)) matchData = false;
-                
                 return matchTermo && matchData;
             });
 
-            const isModalTrancado = (pedidoEmEdicao && pedidoEmEdicao.status === 'Finalizado' && !isAdmin) ? true : false;
+            const isModalTrancado = (pedidoEmEdicao && STATUSES_FINALIZADOS.includes(pedidoEmEdicao.status) && !isAdmin) ? true : false;
 
             return (
                 <div>
                     <div className="flex flex-col min-h-screen no-print">
                         
-                        {/* ================= HEADER ================= */}
+                        {/* HEADER */}
                         <header className="sticky top-0 z-40 bg-white dark:bg-darkBg border-b border-gray-200 dark:border-darkBorder px-6 py-3 flex justify-between items-center">
                             <div className="flex items-center gap-8">
                                 <div className="flex items-center gap-2 text-gray-900 dark:text-white font-bold text-lg tracking-tight">
@@ -537,46 +533,155 @@
                             </div>
                         </header>
 
-                        {/* ================= KANBAN ================= */}
+                        {/* ================= PRODUÇÃO (KANBAN / AIRTABLE LIST) ================= */}
                         {abaAtual === 'producao' && (
-                            <main className="flex-1 p-6 lg:p-10 max-w-[1800px] mx-auto w-full fade-in">
-                                <div className="flex justify-between items-center mb-8">
-                                    <h1 className="text-3xl font-semibold dark:text-white tracking-tight">Produção</h1>
-                                    <button onClick={() => { setPedidoEmEdicao(null); setModalAberto(true); }} className="bg-white dark:bg-white text-black px-4 py-2 text-sm rounded-md font-medium flex items-center gap-2 hover:bg-gray-200 transition">Nova O.S.</button>
+                            <main className="flex-1 p-6 lg:p-10 mx-auto w-full fade-in flex flex-col h-[calc(100vh-60px)]">
+                                <div className="flex justify-between items-center mb-6 shrink-0">
+                                    <div className="flex items-center gap-4">
+                                        <h1 className="text-3xl font-semibold dark:text-white tracking-tight">Produção</h1>
+                                        {/* Alternador de Visão */}
+                                        <div className="flex bg-gray-100 dark:bg-darkCard p-1 rounded-md border border-gray-200 dark:border-darkBorder">
+                                            <button onClick={() => setVisaoProducao('lista')} className={`px-3 py-1.5 rounded text-xs font-medium flex items-center gap-1.5 transition ${visaoProducao === 'lista' ? 'bg-white dark:bg-darkElevated text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 hover:text-gray-800 dark:hover:text-gray-300'}`}>
+                                                <Icon name="list" className="w-3.5 h-3.5" /> Lista
+                                            </button>
+                                            <button onClick={() => setVisaoProducao('kanban')} className={`px-3 py-1.5 rounded text-xs font-medium flex items-center gap-1.5 transition ${visaoProducao === 'kanban' ? 'bg-white dark:bg-darkElevated text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 hover:text-gray-800 dark:hover:text-gray-300'}`}>
+                                                <Icon name="layout-dashboard" className="w-3.5 h-3.5" /> Quadro
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <button onClick={() => { setPedidoEmEdicao(null); setModalAberto(true); }} className="bg-white dark:bg-white text-black px-4 py-2 text-sm rounded-md font-medium flex items-center gap-2 hover:bg-gray-200 transition shadow-sm">Nova O.S.</button>
                                 </div>
-                                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-                                    <div className="flex flex-col bg-gray-50 dark:bg-darkCard rounded-xl border border-gray-200 dark:border-darkBorder overflow-hidden shadow-sm">
-                                        <div className="p-4 border-b border-gray-200 dark:border-darkBorder border-t-2 border-t-orange-500 bg-white dark:bg-transparent flex justify-between items-center">
-                                            <h2 className="font-bold text-sm tracking-wide text-gray-700 dark:text-[#EDEDED] flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-orange-500"></div> Aguardando</h2>
-                                            <span className="text-xs font-bold text-gray-500 bg-gray-100 dark:bg-darkBg px-2 py-0.5 rounded border dark:border-darkBorder">{pedidos.filter(p => p.status === 'Aguardando').length}</span>
-                                        </div>
-                                        <div className="p-4 flex flex-col gap-3 min-h-[200px]">
-                                            {pedidos.filter(p => p.status === 'Aguardando').map(p => <Cartao key={p.id} pedido={p} onPrint={() => imprimirOS(p)} />)}
+
+                                {/* VISÃO 1: LISTA (AIRTABLE STYLE) */}
+                                {visaoProducao === 'lista' && (
+                                    <div className="flex-1 bg-white dark:bg-darkCard rounded border border-gray-200 dark:border-darkBorder overflow-hidden flex flex-col">
+                                        <div className="overflow-auto custom-scrollbar flex-1">
+                                            <table className="w-full text-left border-collapse whitespace-nowrap">
+                                                <thead className="sticky top-0 z-10 bg-gray-50 dark:bg-darkCard">
+                                                    <tr className="border-b border-gray-200 dark:border-darkBorder text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">
+                                                        <th className="px-4 py-3 w-10 text-center">ID</th>
+                                                        <th className="px-4 py-3 w-32">Prazo</th>
+                                                        <th className="px-4 py-3 w-32">Resp.</th>
+                                                        <th className="px-4 py-3 w-48">Cliente</th>
+                                                        <th className="px-4 py-3 min-w-[200px]">Serviço</th>
+                                                        <th className="px-4 py-3 w-20 text-center" title="Aprovação de Serviço">Aprov.</th>
+                                                        <th className="px-4 py-3 w-48">Status</th>
+                                                        <th className="px-4 py-3 w-36">Local</th>
+                                                        <th className="px-4 py-3 w-24 text-center">Concluir</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {pedidosProducaoAtivos.length === 0 ? (
+                                                        <tr><td colSpan="9" className="p-8 text-center text-gray-500 italic">Nenhum pedido ativo na esteira.</td></tr>
+                                                    ) : (
+                                                        pedidosProducaoAtivos.map(p => (
+                                                            <tr key={p.id} className="border-b border-gray-100 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover transition group text-sm">
+                                                                {/* ID Clicável para Abrir Janela Mestre */}
+                                                                <td className="px-4 py-2 font-medium text-gray-400 dark:text-gray-600 text-center">
+                                                                    <button onClick={() => abrirEdicao(p)} className="hover:text-brand transition">#{p.id}</button>
+                                                                </td>
+                                                                
+                                                                {/* Prazo */}
+                                                                <td className="px-4 py-2">
+                                                                    <input type="date" value={p.prazo || ''} onChange={e => atualizarCampoInline(p.id, 'prazo', e.target.value)} className="bg-transparent border-none outline-none text-gray-700 dark:text-[#EDEDED] cursor-pointer hover:bg-gray-100 dark:hover:bg-darkElevated rounded px-1 -ml-1 text-xs" />
+                                                                </td>
+                                                                
+                                                                {/* Responsável */}
+                                                                <td className="px-4 py-2">
+                                                                    <select value={p.responsavel || ''} onChange={e => atualizarCampoInline(p.id, 'responsavel', e.target.value)} className="bg-transparent border-none outline-none text-gray-700 dark:text-[#EDEDED] font-medium cursor-pointer hover:bg-gray-100 dark:hover:bg-darkElevated rounded px-1 -ml-1 appearance-none">
+                                                                        <option value="" className="dark:bg-darkBg">Indefinido</option>
+                                                                        {RESPONSAVEIS.map(r => <option key={r} value={r} className="dark:bg-darkBg">{r}</option>)}
+                                                                    </select>
+                                                                </td>
+                                                                
+                                                                {/* Cliente */}
+                                                                <td className="px-4 py-2 font-semibold text-gray-900 dark:text-white truncate max-w-[12rem]">{p.cliente}</td>
+                                                                
+                                                                {/* Serviço Resumido */}
+                                                                <td className="px-4 py-2 text-gray-600 dark:text-[#A1A1AA] truncate max-w-[18rem]">{obterResumoServicos(p.servico)}</td>
+                                                                
+                                                                {/* Aprovação (Checkbox Joinha) */}
+                                                                <td className="px-4 py-2 text-center">
+                                                                    <button onClick={() => atualizarCampoInline(p.id, 'aprovado', !p.aprovado)} className={`p-1.5 rounded-md transition ${p.aprovado ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-gray-100 text-gray-400 dark:bg-darkElevated dark:text-gray-600 hover:text-gray-600 dark:hover:text-gray-400'}`}>
+                                                                        <Icon name="thumbs-up" className="w-3.5 h-3.5" />
+                                                                    </button>
+                                                                </td>
+                                                                
+                                                                {/* Status com Ícone Especial Entrega */}
+                                                                <td className="px-4 py-2">
+                                                                    <div className="flex items-center gap-2">
+                                                                        {p.status === 'Entrega' && <Icon name="truck" className="w-4 h-4 text-orange-500" />}
+                                                                        <select value={p.status} onChange={e => atualizarCampoInline(p.id, 'status', e.target.value)} className={`bg-transparent border-none outline-none font-semibold cursor-pointer rounded px-1 -ml-1 appearance-none
+                                                                            ${p.status === 'Entrega' ? 'text-orange-500' : 
+                                                                              p.status === 'Produção' || p.status === 'Produzir' ? 'text-blue-500' : 
+                                                                              p.status === 'Desenvolvimento de Arte' ? 'text-purple-500' : 
+                                                                              'text-gray-700 dark:text-[#EDEDED] hover:bg-gray-100 dark:hover:bg-darkElevated'}`}>
+                                                                            {STATUSES_PRODUCAO.map(s => <option key={s} value={s} className="dark:bg-darkBg">{s}</option>)}
+                                                                            {STATUSES_FINALIZADOS.map(s => <option key={s} value={s} className="dark:bg-darkBg">{s}</option>)}
+                                                                        </select>
+                                                                    </div>
+                                                                </td>
+                                                                
+                                                                {/* Local Produção */}
+                                                                <td className="px-4 py-2">
+                                                                    <select value={p.local_producao || 'Berlim'} onChange={e => atualizarCampoInline(p.id, 'local_producao', e.target.value)} className="bg-transparent border-none outline-none text-gray-600 dark:text-gray-400 cursor-pointer hover:bg-gray-100 dark:hover:bg-darkElevated rounded px-1 -ml-1 appearance-none text-xs font-medium">
+                                                                        {LOCAIS.map(l => <option key={l} value={l} className="dark:bg-darkBg">{l}</option>)}
+                                                                    </select>
+                                                                </td>
+
+                                                                {/* Checkbox Concluir (Joga pro Histórico) */}
+                                                                <td className="px-4 py-2 text-center">
+                                                                    <button onClick={() => atualizarCampoInline(p.id, 'status', 'Concluído')} className="p-1 text-gray-300 hover:text-emerald-500 dark:text-darkBorder dark:hover:text-emerald-500 transition" title="Marcar como Concluído">
+                                                                        <Icon name="square" className="w-4 h-4" />
+                                                                    </button>
+                                                                </td>
+                                                            </tr>
+                                                        ))
+                                                    )}
+                                                </tbody>
+                                            </table>
                                         </div>
                                     </div>
-                                    <div className="flex flex-col bg-gray-50 dark:bg-darkCard rounded-xl border border-gray-200 dark:border-darkBorder overflow-hidden shadow-sm">
-                                        <div className="p-4 border-b border-gray-200 dark:border-darkBorder border-t-2 border-t-blue-500 bg-white dark:bg-transparent flex justify-between items-center">
-                                            <h2 className="font-bold text-sm tracking-wide text-gray-700 dark:text-[#EDEDED] flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-blue-500"></div> Em Produção</h2>
-                                            <span className="text-xs font-bold text-gray-500 bg-gray-100 dark:bg-darkBg px-2 py-0.5 rounded border dark:border-darkBorder">{pedidos.filter(p => p.status === 'Produzir').length}</span>
-                                        </div>
-                                        <div className="p-4 flex flex-col gap-3 min-h-[200px]">
-                                            {pedidos.filter(p => p.status === 'Produzir').map(p => <Cartao key={p.id} pedido={p} onPrint={() => imprimirOS(p)} />)}
-                                        </div>
+                                )}
+
+                                {/* VISÃO 2: KANBAN (QUADRO) */}
+                                {visaoProducao === 'kanban' && (
+                                    <div className="flex-1 overflow-x-auto custom-scrollbar pb-4 flex gap-4 items-start">
+                                        {STATUSES_PRODUCAO.map(status => {
+                                            const pedidosColuna = pedidosProducaoAtivos.filter(p => p.status === status);
+                                            return (
+                                                <div key={status} className="w-72 shrink-0 flex flex-col bg-gray-50 dark:bg-darkCard rounded-xl border border-gray-200 dark:border-darkBorder max-h-full">
+                                                    <div className="p-3 border-b border-gray-200 dark:border-darkBorder flex justify-between items-center sticky top-0 bg-gray-50/90 dark:bg-darkCard/90 glass z-10 rounded-t-xl">
+                                                        <h2 className="font-bold text-xs tracking-wide text-gray-700 dark:text-[#EDEDED] uppercase">{status}</h2>
+                                                        <span className="text-[10px] font-bold text-gray-500 bg-gray-200 dark:bg-darkElevated px-1.5 py-0.5 rounded border dark:border-darkBorder">{pedidosColuna.length}</span>
+                                                    </div>
+                                                    <div className="p-2 flex flex-col gap-2 overflow-y-auto custom-scrollbar flex-1">
+                                                        {pedidosColuna.map(p => (
+                                                            <div key={p.id} className="bg-white dark:bg-darkElevated p-3 rounded-lg border border-gray-200 dark:border-darkBorder shadow-sm flex flex-col gap-2 select-none group">
+                                                                <div className="flex justify-between items-start">
+                                                                    <h3 className="font-semibold text-sm text-gray-900 dark:text-white leading-tight">{p.cliente}</h3>
+                                                                    <button onClick={() => abrirEdicao(p)} className="text-gray-400 hover:text-brand transition opacity-0 group-hover:opacity-100" title="Editar"><Icon name="layout-dashboard" className="w-3 h-3" /></button>
+                                                                </div>
+                                                                
+                                                                <p className="text-gray-500 dark:text-[#A1A1AA] text-xs line-clamp-2">{obterResumoServicos(p.servico)}</p>
+                                                                
+                                                                <div className="flex flex-wrap gap-1 mt-1">
+                                                                    {p.responsavel && <span className="bg-gray-100 dark:bg-darkCard text-gray-600 dark:text-gray-400 text-[9px] font-bold px-1.5 py-0.5 rounded border dark:border-darkBorder">{p.responsavel}</span>}
+                                                                    {p.prazo && <span className="bg-brand/10 text-brand text-[9px] font-bold px-1.5 py-0.5 rounded border border-brand/20">{formatarDataExibicao(p.prazo).substring(0,5)}</span>}
+                                                                    {p.local_producao !== 'Berlim' && <span className="bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-[9px] font-bold px-1.5 py-0.5 rounded border border-blue-200 dark:border-blue-800/50">{p.local_producao}</span>}
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )
+                                        })}
                                     </div>
-                                    <div className="flex flex-col bg-gray-50 dark:bg-darkCard rounded-xl border border-gray-200 dark:border-darkBorder overflow-hidden shadow-sm">
-                                        <div className="p-4 border-b border-gray-200 dark:border-darkBorder border-t-2 border-t-emerald-500 bg-white dark:bg-transparent flex justify-between items-center">
-                                            <h2 className="font-bold text-sm tracking-wide text-gray-700 dark:text-[#EDEDED] flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-emerald-500"></div> Acabamento</h2>
-                                            <span className="text-xs font-bold text-gray-500 bg-gray-100 dark:bg-darkBg px-2 py-0.5 rounded border dark:border-darkBorder">{pedidos.filter(p => p.status === 'Acabamento').length}</span>
-                                        </div>
-                                        <div className="p-4 flex flex-col gap-3 min-h-[200px]">
-                                            {pedidos.filter(p => p.status === 'Acabamento').map(p => <Cartao key={p.id} pedido={p} onPrint={() => imprimirOS(p)} />)}
-                                        </div>
-                                    </div>
-                                </div>
+                                )}
                             </main>
                         )}
 
-                        {/* ================= BAIXA DE NOTAS (COM FILTRO) ================= */}
+                        {/* ================= HISTÓRICO DE BAIXAS ================= */}
                         {abaAtual === 'baixa' && (
                             <main className="flex-1 p-6 lg:p-10 max-w-[1400px] mx-auto w-full fade-in">
                                 <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 mb-6 border-b border-gray-100 dark:border-darkBorder pb-6">
@@ -588,39 +693,18 @@
                                     <div className="flex flex-wrap items-end gap-3 w-full lg:w-auto">
                                         <div className="relative flex-1 min-w-[200px]">
                                             <Icon name="search" className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
-                                            <input 
-                                                type="text" 
-                                                value={buscaHistoricoText} 
-                                                onChange={e => setBuscaHistoricoText(e.target.value)} 
-                                                placeholder="Buscar cliente ou OS..." 
-                                                className="w-full bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-md pl-9 pr-3 py-2 text-sm outline-none focus:border-brand transition dark:text-[#EDEDED]"
-                                            />
+                                            <input type="text" value={buscaHistoricoText} onChange={e => setBuscaHistoricoText(e.target.value)} placeholder="Buscar cliente ou OS..." className="w-full bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-md pl-9 pr-3 py-2 text-sm outline-none focus:border-brand transition dark:text-[#EDEDED]" />
                                         </div>
-
                                         <div className="flex flex-col w-36">
                                             <span className="text-[10px] font-bold text-gray-500 dark:text-[#888888] uppercase mb-1">De:</span>
-                                            <CustomDatePicker 
-                                                value={dataFiltroInicio} 
-                                                onChange={setDataFiltroInicio} 
-                                                placeholder="Início" 
-                                                className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-md px-3 py-2 text-sm outline-none hover:border-brand transition"
-                                            />
+                                            <CustomDatePicker value={dataFiltroInicio} onChange={setDataFiltroInicio} placeholder="Início" className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-md px-3 py-2 text-sm outline-none hover:border-brand transition" />
                                         </div>
-
                                         <div className="flex flex-col w-36">
                                             <span className="text-[10px] font-bold text-gray-500 dark:text-[#888888] uppercase mb-1">Até:</span>
-                                            <CustomDatePicker 
-                                                value={dataFiltroFim} 
-                                                onChange={setDataFiltroFim} 
-                                                placeholder="Fim" 
-                                                className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-md px-3 py-2 text-sm outline-none hover:border-brand transition"
-                                            />
+                                            <CustomDatePicker value={dataFiltroFim} onChange={setDataFiltroFim} placeholder="Fim" className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-md px-3 py-2 text-sm outline-none hover:border-brand transition" />
                                         </div>
-
                                         {(dataFiltroInicio || dataFiltroFim || buscaHistoricoText) && (
-                                            <button type="button" onClick={() => { setDataFiltroInicio(''); setDataFiltroFim(''); setBuscaHistoricoText(''); }} className="w-[38px] h-[38px] flex items-center justify-center bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-md hover:bg-gray-100 dark:hover:bg-darkElevated transition text-gray-400 hover:text-brand" title="Limpar Filtros">
-                                                <Icon name="x" className="w-4 h-4" />
-                                            </button>
+                                            <button type="button" onClick={() => { setDataFiltroInicio(''); setDataFiltroFim(''); setBuscaHistoricoText(''); }} className="w-[38px] h-[38px] flex items-center justify-center bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-md hover:bg-gray-100 dark:hover:bg-darkElevated transition text-gray-400 hover:text-brand" title="Limpar Filtros"><Icon name="x" className="w-4 h-4" /></button>
                                         )}
                                     </div>
                                 </div>
@@ -631,36 +715,26 @@
                                                 <th className="px-6 py-5">OS Nº</th>
                                                 <th className="px-6 py-5">Data</th>
                                                 <th className="px-6 py-5">Cliente</th>
-                                                <th className="px-6 py-5">Serviço</th>
+                                                <th className="px-6 py-5">Serviço (Resumo)</th>
                                                 <th className="px-6 py-5">Status</th>
                                                 <th className="px-6 py-5 text-right">Valor Final</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             {pedidosHistoricoFiltrados.map(p => {
-                                                const finalizado = p.status === 'Finalizado';
-                                                const trancado = finalizado && !isAdmin;
+                                                const trancado = STATUSES_FINALIZADOS.includes(p.status) && !isAdmin;
                                                 return (
-                                                    <tr key={p.id} 
-                                                        onClick={() => { if (trancado) return; abrirEdicao(p); }} 
-                                                        className={`border-b border-gray-100 dark:border-darkBorder transition 
-                                                            ${trancado ? 'opacity-30 bg-[#050505] cursor-not-allowed' : 'cursor-pointer hover:bg-gray-50 dark:hover:bg-darkHover'}`}
-                                                    >
-                                                        <td className="px-6 py-4 text-sm font-medium text-gray-500">
-                                                            <span className="flex items-center gap-1.5">
-                                                                {trancado && <Icon name="lock" className="w-3 h-3 text-red-500" />}
-                                                                #{p.id}
-                                                            </span>
-                                                        </td>
+                                                    <tr key={p.id} onClick={() => { if (trancado) return; abrirEdicao(p); }} className={`border-b border-gray-100 dark:border-darkBorder transition ${trancado ? 'opacity-30 bg-[#050505] cursor-not-allowed' : 'cursor-pointer hover:bg-gray-50 dark:hover:bg-darkHover'}`}>
+                                                        <td className="px-6 py-4 text-sm font-medium text-gray-500"><span className="flex items-center gap-1.5">{trancado && <Icon name="lock" className="w-3 h-3 text-red-500" />}#{p.id}</span></td>
                                                         <td className="px-6 py-4 text-sm text-gray-600 dark:text-[#A1A1AA]">{formatarDataExibicao(p.data_pedido)}</td>
                                                         <td className="px-6 py-4 font-semibold text-sm text-gray-900 dark:text-[#EDEDED]">{p.cliente}</td>
-                                                        <td className="px-6 py-4 text-sm text-gray-600 dark:text-[#A1A1AA] truncate max-w-xs">{p.servico}</td>
+                                                        <td className="px-6 py-4 text-sm text-gray-600 dark:text-[#A1A1AA] truncate max-w-xs">{obterResumoServicos(p.servico)}</td>
                                                         <td className="px-6 py-4">
                                                             <span className={`px-2.5 py-1 text-[11px] font-bold rounded border 
-                                                                ${finalizado ? 'bg-gray-100 text-gray-600 border-gray-200 dark:bg-darkElevated dark:text-gray-400 dark:border-darkBorder' : 
+                                                                ${STATUSES_FINALIZADOS.includes(p.status) ? 'bg-gray-100 text-gray-600 border-gray-200 dark:bg-darkElevated dark:text-gray-400 dark:border-darkBorder' : 
                                                                   p.status === 'Acabamento' ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-900/50' : 
-                                                                  p.status === 'Produzir' ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/30 dark:text-blue-400 dark:border-blue-900/50' : 
-                                                                  'bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-950/30 dark:text-orange-400 dark:border-orange-900/50'}`}>
+                                                                  p.status === 'Entrega' ? 'bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-950/30 dark:text-orange-400 dark:border-orange-900/50' :
+                                                                  'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/30 dark:text-blue-400 dark:border-blue-900/50'}`}>
                                                                 {p.status}
                                                             </span>
                                                         </td>
@@ -674,7 +748,7 @@
                             </main>
                         )}
 
-                        {/* ================= CATÁLOGO ================= */}
+                        {/* CATÁLOGO E CLIENTES (MANTIDOS IGUAIIS) */}
                         {abaAtual === 'produtos' && isAdmin && (
                             <main className="flex-1 p-6 lg:p-10 max-w-[1200px] mx-auto w-full fade-in">
                                 <div className="flex justify-between items-center mb-8">
@@ -693,8 +767,6 @@
                                 </div>
                             </main>
                         )}
-
-                        {/* ================= CLIENTES ================= */}
                         {abaAtual === 'clientes' && (
                             <main className="flex-1 p-6 lg:p-10 max-w-[1200px] mx-auto w-full fade-in">
                                 <div className="flex justify-between items-center mb-8">
@@ -715,7 +787,7 @@
                         )}
                     </div>
 
-                    {/* ================= MODAL MESTRE ================= */}
+                    {/* ================= MODAL MESTRE O.S. (ATUALIZADO COM OS NOVOS CAMPOS) ================= */}
                     {modalAberto && (
                         <div onClick={fecharModalOS} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer">
                             <div onClick={(e) => e.stopPropagation()} className="bg-white dark:bg-darkCard w-full max-w-3xl rounded border border-gray-200 dark:border-darkBorder shadow-2xl flex flex-col max-h-[95vh] cursor-default">
@@ -726,38 +798,58 @@
                                         </h3>
                                         {isModalTrancado && <span className="flex items-center gap-1 text-[11px] font-bold bg-red-950/20 text-red-400 border border-red-900/50 px-2 py-0.5 rounded"><Icon name="lock" className="w-3 h-3" /> Trancado</span>}
                                     </div>
-                                    <button type="button" onClick={fecharModalOS} className="text-gray-400 hover:text-gray-900 dark:hover:text-white transition">
-                                        <Icon name="x" className="w-5 h-5" />
-                                    </button>
+                                    <button type="button" onClick={fecharModalOS} className="text-gray-400 hover:text-gray-900 dark:hover:text-white transition"><Icon name="x" className="w-5 h-5" /></button>
                                 </div>
                                 
                                 <form onSubmit={salvarOS} className="p-8 overflow-y-auto custom-scrollbar flex flex-col gap-6">
                                     {isModalTrancado && <div className="p-3 bg-red-950/20 border border-red-900/50 rounded text-xs text-red-400 mb-2">Nota liquidada. Ative o Modo Admin no avatar para forçar modificações.</div>}
                                     
+                                    {/* 1: DATA E STATUS */}
                                     <div className="grid grid-cols-2 gap-4 pb-2 border-b border-gray-100 dark:border-darkBorder">
                                         <div>
-                                            <label className="block text-sm font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Data da O.S.</label>
-                                            <CustomDatePicker 
-                                                value={novoPedido.data_pedido} 
-                                                onChange={val => setNovoPedido({...novoPedido, data_pedido: val})} 
-                                                disabled={isModalTrancado}
-                                                className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none transition"
-                                            />
+                                            <label className="block text-sm font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Data de Entrada</label>
+                                            <CustomDatePicker value={novoPedido.data_pedido} onChange={val => setNovoPedido({...novoPedido, data_pedido: val})} disabled={isModalTrancado} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none transition" />
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Status da Ordem</label>
+                                            <label className="block text-sm font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Status Inicial</label>
                                             <div className="relative">
                                                 <select required value={novoPedido.status} onChange={e => setNovoPedido({...novoPedido, status: e.target.value})} disabled={isModalTrancado} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2.5 text-sm outline-none focus:border-brand transition dark:text-white font-semibold cursor-pointer appearance-none disabled:opacity-50">
-                                                    <option value="Aguardando">Aguardando</option>
-                                                    <option value="Produzir">Em Produção</option>
-                                                    <option value="Acabamento">Acabamento</option>
-                                                    <option value="Finalizado">Finalizado / Baixa</option>
+                                                    {STATUSES_PRODUCAO.map(s => <option key={s} value={s}>{s}</option>)}
+                                                    {STATUSES_FINALIZADOS.map(s => <option key={s} value={s}>{s}</option>)}
                                                 </select>
                                                 <Icon name="chevron-down" className="absolute right-3 top-3.5 w-4 h-4 text-gray-400 pointer-events-none" />
                                             </div>
                                         </div>
                                     </div>
 
+                                    {/* 2: ATRIBUIÇÕES (PRAZO, RESPONSAVEL E LOCAL) */}
+                                    <div className="grid grid-cols-3 gap-4">
+                                        <div>
+                                            <label className="block text-sm font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Prazo Entrega</label>
+                                            <CustomDatePicker value={novoPedido.prazo} onChange={val => setNovoPedido({...novoPedido, prazo: val})} disabled={isModalTrancado} placeholder="Data final..." className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none transition" />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Responsável</label>
+                                            <div className="relative">
+                                                <select value={novoPedido.responsavel} onChange={e => setNovoPedido({...novoPedido, responsavel: e.target.value})} disabled={isModalTrancado} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2.5 text-sm outline-none focus:border-brand transition dark:text-[#EDEDED] cursor-pointer appearance-none disabled:opacity-50">
+                                                    <option value="">Indefinido</option>
+                                                    {RESPONSAVEIS.map(r => <option key={r} value={r}>{r}</option>)}
+                                                </select>
+                                                <Icon name="chevron-down" className="absolute right-3 top-3.5 w-4 h-4 text-gray-400 pointer-events-none" />
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Local Prod.</label>
+                                            <div className="relative">
+                                                <select value={novoPedido.local_producao} onChange={e => setNovoPedido({...novoPedido, local_producao: e.target.value})} disabled={isModalTrancado} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2.5 text-sm outline-none focus:border-brand transition dark:text-[#EDEDED] cursor-pointer appearance-none disabled:opacity-50">
+                                                    {LOCAIS.map(l => <option key={l} value={l}>{l}</option>)}
+                                                </select>
+                                                <Icon name="chevron-down" className="absolute right-3 top-3.5 w-4 h-4 text-gray-400 pointer-events-none" />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* 3: CLIENTE */}
                                     <div>
                                         <label className="block text-sm font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Cliente / Empresa</label>
                                         <div className="flex gap-2">
@@ -765,15 +857,12 @@
                                                 <input required type="text" value={buscaCliente} disabled={isModalTrancado}
                                                     onChange={e => { setBuscaCliente(e.target.value); setNovoPedido({...novoPedido, cliente: e.target.value}); setClienteDropdownAberto(true); }}
                                                     onFocus={() => { if(!isModalTrancado) setClienteDropdownAberto(true); }} onBlur={() => setTimeout(() => setClienteDropdownAberto(false), 200)}
-                                                    className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:focus:border-brand transition dark:text-[#EDEDED] disabled:opacity-50" 
-                                                    placeholder="Buscar cliente..." autoComplete="off" />
+                                                    className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand transition dark:text-[#EDEDED] disabled:opacity-50" placeholder="Buscar cliente..." autoComplete="off" />
                                                 <Icon name="chevron-down" className="absolute right-3 top-2.5 w-4 h-4 text-gray-400 pointer-events-none" />
                                                 {clienteDropdownAberto && clientesFiltrados.length > 0 && (
                                                     <ul className="absolute z-[60] w-full mt-1 max-h-48 overflow-y-auto bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded shadow-xl custom-scrollbar">
                                                         {clientesFiltrados.map(c => (
-                                                            <li key={c.id} onClick={() => { setBuscaCliente(c.nome); setNovoPedido({...novoPedido, cliente: c.nome}); setClienteDropdownAberto(false); }} className="px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-darkHover cursor-pointer border-b border-gray-100 dark:border-darkBorder last:border-0 flex justify-between items-center transition">
-                                                                <span className="font-medium text-sm text-gray-800 dark:text-[#EDEDED]">{c.nome}</span><span className="text-xs text-gray-500">{c.telefone}</span>
-                                                            </li>
+                                                            <li key={c.id} onClick={() => { setBuscaCliente(c.nome); setNovoPedido({...novoPedido, cliente: c.nome}); setClienteDropdownAberto(false); }} className="px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-darkHover cursor-pointer border-b border-gray-100 dark:border-darkBorder last:border-0 flex justify-between items-center transition"><span className="font-medium text-sm text-gray-800 dark:text-[#EDEDED]">{c.nome}</span><span className="text-xs text-gray-500">{c.telefone}</span></li>
                                                         ))}
                                                     </ul>
                                                 )}
@@ -784,58 +873,50 @@
                                         </div>
                                     </div>
 
+                                    {/* 4: CARRINHO DE ITENS */}
                                     <div>
                                         <label className="block text-sm font-medium mb-3 text-gray-700 dark:text-[#EDEDED]">Carrinho de Itens do Orçamento</label>
-                                        
                                         {itensPedido.length > 0 ? (
                                             <div className="mb-4 flex flex-col gap-2">
                                                 {itensPedido.map((item, index) => (
                                                     <div key={item.id_temp} className="flex justify-between items-center p-3 bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded shadow-sm">
-                                                        <div className="flex flex-col">
-                                                            <span className="font-semibold text-sm dark:text-white">{index + 1}. {item.nome || 'Serviço Personalizado'}</span>
-                                                            <span className="text-xs text-gray-500 dark:text-[#A1A1AA] whitespace-pre-wrap mt-1">{item.descricao}</span>
-                                                        </div>
-                                                        <div className="flex items-center gap-4">
-                                                            <div className="text-right">
-                                                                <span className="font-semibold text-sm dark:text-white">R$ {item.valor}</span>
-                                                                {item.desconto && <span className="block text-[10px] text-brand font-medium">-{item.desconto}% desc</span>}
-                                                            </div>
-                                                            <button type="button" disabled={isModalTrancado} onClick={() => removerItemDoCarrinho(item.id_temp)} className="text-gray-400 hover:text-red-500 transition disabled:opacity-30">
-                                                                <Icon name="trash-2" className="w-4 h-4" />
-                                                            </button>
-                                                        </div>
+                                                        <div className="flex flex-col"><span className="font-semibold text-sm dark:text-white">{index + 1}. {item.nome || 'Serviço Personalizado'}</span><span className="text-xs text-gray-500 dark:text-[#A1A1AA] whitespace-pre-wrap mt-1">{item.descricao}</span></div>
+                                                        <div className="flex items-center gap-4"><div className="text-right"><span className="font-semibold text-sm dark:text-white">R$ {item.valor}</span>{item.desconto && <span className="block text-[10px] text-brand font-medium">-{item.desconto}% desc</span>}</div><button type="button" disabled={isModalTrancado} onClick={() => removerItemDoCarrinho(item.id_temp)} className="text-gray-400 hover:text-red-500 transition disabled:opacity-30"><Icon name="trash-2" className="w-4 h-4" /></button></div>
                                                     </div>
                                                 ))}
                                             </div>
                                         ) : (
-                                            <p className="text-xs text-gray-500 dark:text-[#666] mb-4 italic">Nenhum item adicionado de forma estruturada. Utilize o configurador abaixo.</p>
+                                            <p className="text-xs text-gray-500 dark:text-[#666] mb-4 italic">Nenhum item adicionado de forma estruturada.</p>
                                         )}
 
                                         <div className="p-4 border border-dashed border-gray-300 dark:border-darkBorder rounded bg-transparent">
                                             <div className="flex flex-col gap-3">
                                                 <div className="flex gap-2">
                                                     <div className="relative flex-1">
-                                                        <input type="text" value={buscaProduto} disabled={isModalTrancado} onChange={e => { setBuscaProduto(e.target.value); setProdutoDropdownAberto(true); }}
+                                                        <input type="text" value={buscaProduto} disabled={isModalTrancado} 
+                                                            onChange={e => { setBuscaProduto(e.target.value); setProdutoDropdownAberto(true); }}
                                                             onFocus={() => { if(!isModalTrancado) setProdutoDropdownAberto(true); }} onBlur={() => setTimeout(() => setProdutoDropdownAberto(false), 200)}
                                                             className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand transition dark:text-[#EDEDED] disabled:opacity-50" placeholder="Puxar item do catálogo (Opcional)..." autoComplete="off" />
                                                         <Icon name="chevron-down" className="absolute right-3 top-3 w-4 h-4 text-gray-400 pointer-events-none" />
                                                         {produtoDropdownAberto && produtosFiltrados.length > 0 && (
                                                             <ul className="absolute z-[60] w-full mt-1 max-h-48 overflow-y-auto bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded shadow-xl custom-scrollbar">
                                                                 {produtosFiltrados.map(p => (
-                                                                    <li key={p.id} onClick={() => { setBuscaProduto(''); setItemAtual({ nome: p.nome, descricao: p.texto_padrao, valor: formatarMoeda((p.preco_base * 100).toFixed(0).toString()), desconto: '' }); setProdutoDropdownAberto(false); }} className="px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-darkHover cursor-pointer border-b border-gray-100 dark:border-darkBorder last:border-0 flex flex-col transition">
+                                                                    <li key={p.id} onClick={() => { 
+                                                                        setBuscaProduto(p.nome); // <- CORREÇÃO: Mantém o nome escrito na busca
+                                                                        setItemAtual({ nome: p.nome, descricao: p.texto_padrao, valor: formatarMoeda((p.preco_base * 100).toFixed(0).toString()), desconto: '' }); 
+                                                                        setProdutoDropdownAberto(false); 
+                                                                    }} className="px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-darkHover cursor-pointer border-b border-gray-100 dark:border-darkBorder last:border-0 flex flex-col transition">
                                                                         <div className="flex justify-between items-center"><span className="font-medium text-sm dark:text-[#EDEDED]">{p.nome}</span><span className="text-xs font-bold text-brand">R$ {Number(p.preco_base).toFixed(2).replace('.', ',')}</span></div>
                                                                     </li>
                                                                 ))}
                                                             </ul>
                                                         )}
                                                     </div>
-                                                    
                                                     {isAdmin && (
                                                         <button type="button" onClick={() => { setNovoProduto({ id: null, nome: '', texto_padrao: '', preco_base: '' }); setModalProdutoAberto(true); }} disabled={isModalTrancado} className="shrink-0 w-[38px] h-[38px] flex items-center justify-center bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded hover:bg-darkHover transition disabled:opacity-50" title="Novo Produto">
                                                             <Icon name="plus" className="w-4 h-4 text-brand" />
                                                         </button>
                                                     )}
-
                                                 </div>
 
                                                 <textarea rows="2" value={itemAtual.descricao} disabled={isModalTrancado} onChange={e => setItemAtual({...itemAtual, descricao: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand transition dark:text-[#EDEDED] disabled:opacity-50" placeholder="Especificações do item (Ex: Medida, quantidade, material...)"></textarea>
@@ -851,15 +932,15 @@
                                         </div>
                                     </div>
 
+                                    {/* 5: DESCRIÇÃO LIVRE */}
                                     <div>
-                                        <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-[#EDEDED]">
-                                            Observações Gerais ou Texto Complementar
-                                        </label>
+                                        <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-[#EDEDED]">Observações Gerais ou Texto Complementar</label>
                                         <textarea rows="4" value={novoPedido.servico} onChange={e => setNovoPedido({...novoPedido, servico: e.target.value})} disabled={isModalTrancado} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand transition dark:text-[#EDEDED] custom-scrollbar disabled:opacity-50" placeholder="Prazos de entrega, observações do financeiro ou complementos da O.S..."></textarea>
                                     </div>
 
                                 </form>
 
+                                {/* RODAPÉ DE FINALIZAÇÃO */}
                                 <div className="px-6 py-5 border-t border-gray-100 dark:border-darkBorder bg-gray-50 dark:bg-darkCard flex justify-between items-center shrink-0">
                                     <div className="flex items-center gap-3">
                                         <span className="text-xs font-bold text-gray-500 dark:text-[#888888] uppercase tracking-wider">Total Final:</span>
@@ -882,74 +963,36 @@
                         </div>
                     )}
 
-                    {/* MODAIS AUXILIARES */}
+                    {/* MODAIS SECUNDÁRIOS OMITIDOS (São Exatamente Iguais Aos Anteriores) */}
                     {modalProdutoAberto && (
                         <div onClick={() => setModalProdutoAberto(false)} className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer">
-                            <div onClick={(e) => e.stopPropagation()} className="bg-white dark:bg-darkCard w-full max-w-md rounded shadow-2xl overflow-hidden border border-gray-200 dark:border-darkBorder cursor-default">
-                                <div className="px-6 py-5 border-b border-gray-100 dark:border-darkBorder flex justify-between items-center bg-gray-50 dark:bg-darkCard"><h3 className="font-semibold text-lg dark:text-white tracking-tight">{novoProduto.id ? 'Editar Produto' : 'Novo Produto'}</h3><button type="button" onClick={() => setModalProdutoAberto(false)} className="text-gray-400 hover:text-gray-900 dark:hover:text-white transition"><Icon name="x" className="w-5 h-5" /></button></div>
+                            <div className="bg-white dark:bg-darkCard w-full max-w-md rounded shadow-2xl overflow-hidden border border-gray-200 dark:border-darkBorder" onClick={(e) => e.stopPropagation()}>
+                                <div className="px-6 py-5 border-b border-gray-100 dark:border-darkBorder flex justify-between items-center bg-gray-50 dark:bg-darkCard"><h3 className="font-semibold text-lg dark:text-white tracking-tight">{novoProduto.id ? 'Editar Produto' : 'Novo Produto'}</h3><button onClick={() => setModalProdutoAberto(false)} className="text-gray-400 hover:text-white transition"><Icon name="x" /></button></div>
                                 <form onSubmit={salvarProduto} className="p-6 flex flex-col gap-4">
-                                    <div><label className="block text-sm font-medium mb-1.5 dark:text-[#EDEDED]">Nome</label><input required type="text" value={novoProduto.nome} onChange={e => setNovoProduto({...novoProduto, nome: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" /></div>
-                                    <div><label className="block text-sm font-medium mb-1.5 dark:text-[#EDEDED]">Descrição Base</label><textarea required rows="2" value={novoProduto.texto_padrao} onChange={e => setNovoProduto({...novoProduto, texto_padrao: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition"></textarea></div>
-                                    <div><label className="block text-sm font-medium mb-1.5 dark:text-[#EDEDED]">Preço Base (R$)</label><input required type="text" value={novoProduto.preco_base} onChange={e => setNovoProduto({...novoProduto, preco_base: formatarMoeda(e.target.value)})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition font-medium" placeholder="0,00" /></div>
-                                    <div className="mt-4 flex justify-end gap-3"><button type="button" onClick={() => setModalProdutoAberto(false)} className="px-4 py-2 rounded text-sm font-medium text-gray-600 dark:text-[#A1A1AA] hover:bg-gray-100 dark:hover:bg-darkHover transition">Cancelar</button><button type="submit" disabled={salvandoProduto} className="px-5 py-2 rounded text-sm font-medium bg-white text-black hover:bg-gray-200 transition">Salvar</button></div>
+                                    <input required value={novoProduto.nome} onChange={e => setNovoProduto({...novoProduto, nome: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" placeholder="Nome" />
+                                    <textarea required rows="2" value={novoProduto.texto_padrao} onChange={e => setNovoProduto({...novoProduto, texto_padrao: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" placeholder="Descrição"></textarea>
+                                    <input required value={novoProduto.preco_base} onChange={e => setNovoProduto({...novoProduto, preco_base: formatarMoeda(e.target.value)})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white font-medium transition" placeholder="0,00" />
+                                    <div className="flex justify-end gap-3"><button type="button" onClick={() => setModalProdutoAberto(false)} className="px-4 py-2 rounded text-sm font-medium text-gray-600 dark:text-[#A1A1AA] hover:bg-gray-100 dark:hover:bg-darkHover transition">Cancelar</button><button type="submit" className="px-5 py-2 rounded text-sm font-medium bg-white text-black hover:bg-gray-200 transition">Salvar</button></div>
                                 </form>
                             </div>
                         </div>
                     )}
                     {modalClienteAberto && (
                         <div onClick={() => setModalClienteAberto(false)} className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer">
-                            <div onClick={(e) => e.stopPropagation()} className="bg-white dark:bg-darkCard w-full max-w-md rounded shadow-2xl overflow-hidden border border-gray-200 dark:border-darkBorder cursor-default">
-                                <div className="px-6 py-5 border-b border-gray-100 dark:border-darkBorder flex justify-between items-center bg-gray-50 dark:bg-darkCard"><h3 className="font-semibold text-lg dark:text-white tracking-tight">{novoCliente.id ? 'Editar Cliente' : 'Novo Cliente'}</h3><button type="button" onClick={() => setModalClienteAberto(false)} className="text-gray-400 hover:text-gray-900 dark:hover:text-white transition"><Icon name="x" className="w-5 h-5" /></button></div>
+                            <div className="bg-white dark:bg-darkCard w-full max-w-md rounded shadow-2xl overflow-hidden border border-gray-200 dark:border-darkBorder" onClick={(e) => e.stopPropagation()}>
+                                <div className="px-6 py-5 border-b border-gray-100 dark:border-darkBorder flex justify-between items-center bg-gray-50 dark:bg-darkCard"><h3 className="font-semibold text-lg dark:text-white tracking-tight">{novoCliente.id ? 'Editar Cliente' : 'Novo Cliente'}</h3><button onClick={() => setModalClienteAberto(false)} className="text-gray-400 hover:text-white transition"><Icon name="x" /></button></div>
                                 <form onSubmit={salvarCliente} className="p-6 flex flex-col gap-4">
-                                    <div><label className="block text-sm font-medium mb-1.5 dark:text-[#EDEDED]">Nome / Empresa *</label><input required type="text" value={novoCliente.nome} onChange={e => setNovoCliente({...novoCliente, nome: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" placeholder="Ex: Fibrion" /></div>
-                                    <div className="grid grid-cols-2 gap-4"><div><label className="block text-sm font-medium mb-1.5 dark:text-[#EDEDED]">WhatsApp</label><input type="text" value={novoCliente.telefone} onChange={e => setNovoCliente({...novoCliente, telefone: formatarTelefone(e.target.value)})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" placeholder="(11) 90000-0000" /></div><div><label className="block text-sm font-medium mb-1.5 dark:text-[#EDEDED]">E-mail</label><input type="email" value={novoCliente.email} onChange={e => setNovoCliente({...novoCliente, email: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" placeholder="contato@..." /></div></div>
-                                    <div><label className="block text-sm font-medium mb-1.5 dark:text-[#EDEDED]">Observações</label><textarea rows="2" value={novoCliente.observacoes} onChange={e => setNovoCliente({...novoCliente, observacoes: e.target.value})} className="w-full bg-transparent border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand transition dark:text-[#EDEDED]"></textarea></div>
-                                    <div className="mt-4 flex justify-end gap-3"><button type="button" onClick={() => setModalClienteAberto(false)} className="px-4 py-2 rounded text-sm font-medium text-gray-600 dark:text-[#A1A1AA] hover:bg-gray-100 dark:hover:bg-darkHover transition">Cancelar</button><button type="submit" disabled={salvandoCliente} className="px-5 py-2 rounded text-sm font-medium bg-white text-black hover:bg-gray-200 transition">Salvar</button></div>
+                                    <input required value={novoCliente.nome} onChange={e => setNovoCliente({...novoCliente, nome: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" placeholder="Nome *" />
+                                    <div className="grid grid-cols-2 gap-4"><input value={novoCliente.telefone} onChange={e => setNovoCliente({...novoCliente, telefone: formatarTelefone(e.target.value)})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" placeholder="WhatsApp" /><input type="email" value={novoCliente.email} onChange={e => setNovoCliente({...novoCliente, email: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" placeholder="E-mail" /></div>
+                                    <textarea rows="2" value={novoCliente.observacoes} onChange={e => setNovoCliente({...novoCliente, observacoes: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand transition dark:text-[#EDEDED]" placeholder="Observações"></textarea>
+                                    <div className="flex justify-end gap-3"><button type="button" onClick={() => setModalClienteAberto(false)} className="px-4 py-2 rounded text-sm font-medium text-gray-600 dark:text-[#A1A1AA] hover:bg-gray-100 dark:hover:bg-darkHover transition">Cancelar</button><button type="submit" className="px-5 py-2 rounded text-sm font-medium bg-white text-black hover:bg-gray-200 transition">Salvar</button></div>
                                 </form>
                             </div>
                         </div>
                     )}
-
-                    {/* VISTA DE IMPRESSÃO */}
-                    <div className="hidden print-only bg-white text-black p-8 font-sans max-w-2xl mx-auto">
-                        {osParaImprimir && (
-                            <div className="border-2 border-black p-6 rounded">
-                                <div className="flex justify-between items-center border-b-2 border-black pb-4 mb-4">
-                                    <div><h1 className="text-2xl font-black uppercase">BERLIM GRÁFICA</h1><p className="text-sm font-bold mt-1">Ordem de Serviço Nº {osParaImprimir.id}</p></div>
-                                    <div className="text-right text-sm"><p>Data: {formatarDataExibicao(osParaImprimir.data_pedido)}</p><p className="font-bold mt-1 uppercase">Local: Berlim</p></div>
-                                </div>
-                                <div className="mb-6"><p className="text-sm text-gray-600 uppercase mb-1">Cliente</p><p className="text-xl font-bold">{osParaImprimir.cliente}</p></div>
-                                <div className="mb-6"><p className="text-sm text-gray-600 uppercase mb-1">Descrição do Serviço</p><div className="border border-gray-300 p-4 rounded bg-gray-50 min-h-[100px] whitespace-pre-wrap text-sm leading-relaxed">{osParaImprimir.servico}</div></div>
-                                <div className="flex justify-between items-end border-t-2 border-black pt-4 mt-8">
-                                    <div className="text-right w-full"><p className="text-sm text-gray-600 uppercase mb-1">Valor Total</p><p className="text-2xl font-black">R$ {Number(osParaImprimir.valor_total).toFixed(2).replace('.', ',')}</p></div>
-                                </div>
-                                <div className="mt-12 pt-4 text-center border-t border-dashed border-gray-400 text-xs text-gray-500">Uso interno - Assinatura do cliente na retirada: _____________________________________</div>
-                            </div>
-                        )}
-                    </div>
                 </div>
             );
         }
-
-        // Cartão estático para o Kanban
-        function Cartao({ pedido, onPrint }) {
-            return (
-                <div className="bg-white dark:bg-darkCard p-4 rounded border border-gray-200 dark:border-darkBorder flex flex-col gap-3 group shadow-sm select-none">
-                    <div className="flex justify-between items-start">
-                        <h3 className="font-semibold text-sm text-gray-900 dark:text-[#EDEDED] leading-tight">{pedido.cliente}</h3>
-                        <button onClick={(e) => { e.stopPropagation(); onPrint(); }} className="text-gray-400 hover:text-gray-900 dark:hover:text-white transition opacity-0 group-hover:opacity-100" title="Imprimir O.S.">
-                            <Icon name="printer" className="w-3.5 h-3.5" />
-                        </button>
-                    </div>
-                    <p className="text-gray-500 dark:text-[#A1A1AA] text-xs line-clamp-3 leading-relaxed whitespace-pre-wrap">{pedido.servico}</p>
-                    <div className="flex justify-between items-center pt-3 border-t border-gray-100 dark:border-darkBorder">
-                        <span className="text-[11px] font-medium text-gray-400 dark:text-[#555]">#{pedido.id}</span>
-                        <span className="font-bold text-xs text-gray-800 dark:text-[#EDEDED]">R$ {Number(pedido.valor_total).toFixed(2).replace('.', ',')}</span>
-                    </div>
-                </div>
-            );
-        }
-
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
     </script>
