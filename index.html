@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Berlim Gráfica | Sistema</title>
     
+    <!-- Fonte Geométrica e Moderna: Montserrat -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -180,7 +181,7 @@
                 novosItens.forEach(i => { totalGeralOS += parseFloat(i.valor.replace(/\./g, '').replace(',', '.')) || 0; });
                 setNovoPedido({...novoPedido, valor_total: formatarMoeda((totalGeralOS * 100).toFixed(0).toString())});
                 
-                setItemAtual({ nome: '', text_padrao: '', descricao: '', valor: '', desconto: '' });
+                setItemAtual({ nome: '', descricao: '', valor: '', desconto: '' });
                 setBuscaProduto('');
             }
 
@@ -301,7 +302,7 @@
                             </div>
                         </header>
 
-                        {/* ================= KANBAN ================= */}
+                        {/* ================= KANBAN (CARTÕES TRAVADOS) ================= */}
                         {abaAtual === 'producao' && (
                             <main className="flex-1 p-6 lg:p-10 max-w-[1800px] mx-auto w-full fade-in">
                                 <div className="flex justify-between items-center mb-8">
@@ -309,30 +310,30 @@
                                     <button onClick={() => { setPedidoEmEdicao(null); setModalAberto(true); }} className="bg-white dark:bg-white text-black px-4 py-2 text-sm rounded-md font-medium flex items-center gap-2 hover:bg-gray-200 transition">Nova O.S.</button>
                                 </div>
                                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-                                    <div className="flex flex-col bg-gray-100 dark:bg-darkLane rounded border border-gray-200 dark:border-darkBorder overflow-hidden">
-                                        <div className="p-4 border-b border-gray-200 dark:border-darkBorder border-t-2 border-t-orange-500 bg-gray-50/50 dark:bg-darkBg/50 flex justify-between items-center">
+                                    <div className="flex flex-col rounded-lg">
+                                        <div className="pb-3 mb-2 flex justify-between items-center">
                                             <h2 className="font-medium text-sm text-gray-700 dark:text-[#EDEDED] flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-orange-500"></div> Aguardando</h2>
                                             <span className="text-xs font-medium text-gray-500 bg-gray-100 dark:bg-darkCard px-2 py-0.5 rounded border dark:border-darkBorder">{pedidos.filter(p => p.status === 'Aguardando').length}</span>
                                         </div>
-                                        <div className="p-4 flex flex-col gap-3 min-h-[200px]">
+                                        <div className="p-1 flex flex-col gap-3 min-h-[200px]">
                                             {pedidos.filter(p => p.status === 'Aguardando').map(p => <Cartao key={p.id} pedido={p} onPrint={() => imprimirOS(p)} />)}
                                         </div>
                                     </div>
-                                    <div className="flex flex-col bg-gray-100 dark:bg-darkLane rounded border border-gray-200 dark:border-darkBorder overflow-hidden">
-                                        <div className="p-4 border-b border-gray-200 dark:border-darkBorder border-t-2 border-t-blue-500 bg-gray-50/50 dark:bg-darkBg/50 flex justify-between items-center">
+                                    <div className="flex flex-col rounded-lg">
+                                        <div className="pb-3 mb-2 flex justify-between items-center">
                                             <h2 className="font-medium text-sm text-gray-700 dark:text-[#EDEDED] flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-blue-500"></div> Em Produção</h2>
                                             <span className="text-xs font-medium text-gray-500 bg-gray-100 dark:bg-darkCard px-2 py-0.5 rounded border dark:border-darkBorder">{pedidos.filter(p => p.status === 'Produzir').length}</span>
                                         </div>
-                                        <div className="p-4 flex flex-col gap-3 min-h-[200px]">
+                                        <div className="p-1 flex flex-col gap-3 min-h-[200px]">
                                             {pedidos.filter(p => p.status === 'Produzir').map(p => <Cartao key={p.id} pedido={p} onPrint={() => imprimirOS(p)} />)}
                                         </div>
                                     </div>
-                                    <div className="flex flex-col bg-gray-100 dark:bg-darkLane rounded border border-gray-200 dark:border-darkBorder overflow-hidden">
-                                        <div className="p-4 border-b border-gray-200 dark:border-darkBorder border-t-2 border-t-emerald-500 bg-gray-50/50 dark:bg-darkBg/50 flex justify-between items-center">
+                                    <div className="flex flex-col rounded-lg">
+                                        <div className="pb-3 mb-2 flex justify-between items-center">
                                             <h2 className="font-medium text-sm text-gray-700 dark:text-[#EDEDED] flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-emerald-500"></div> Acabamento</h2>
                                             <span className="text-xs font-medium text-gray-500 bg-gray-100 dark:bg-darkCard px-2 py-0.5 rounded border dark:border-darkBorder">{pedidos.filter(p => p.status === 'Acabamento').length}</span>
                                         </div>
-                                        <div className="p-4 flex flex-col gap-3 min-h-[200px]">
+                                        <div className="p-1 flex flex-col gap-3 min-h-[200px]">
                                             {pedidos.filter(p => p.status === 'Acabamento').map(p => <Cartao key={p.id} pedido={p} onPrint={() => imprimirOS(p)} />)}
                                         </div>
                                     </div>
@@ -340,7 +341,7 @@
                             </main>
                         )}
 
-                        {/* ================= BAIXA DE NOTAS ================= */}
+                        {/* ================= BAIXA DE NOTAS (CENTRAL DE EDIÇÃO) ================= */}
                         {abaAtual === 'baixa' && (
                             <main className="flex-1 p-6 lg:p-10 max-w-[1400px] mx-auto w-full fade-in">
                                 <div className="flex justify-between items-center mb-8">
@@ -348,7 +349,7 @@
                                 </div>
                                 <div className="bg-white dark:bg-darkCard rounded border border-gray-200 dark:border-darkBorder overflow-hidden">
                                     <table className="w-full text-left border-collapse">
-                                        <thead><tr className="bg-gray-50 dark:bg-darkLane border-b border-gray-200 dark:border-darkBorder text-xs text-gray-500 dark:text-[#888888]"><th className="px-6 py-4 font-medium">OS Nº</th><th className="px-6 py-4 font-medium">Cliente</th><th className="px-6 py-4 font-medium">Serviço</th><th className="px-6 py-4 font-medium">Status</th><th className="px-6 py-4 text-right font-medium">Valor Final</th></tr></thead>
+                                        <thead><tr className="bg-gray-50 dark:bg-darkCard border-b border-gray-200 dark:border-darkBorder text-xs text-gray-500 dark:text-[#888888]"><th className="px-6 py-4 font-medium">OS Nº</th><th className="px-6 py-4 font-medium">Cliente</th><th className="px-6 py-4 font-medium">Serviço</th><th className="px-6 py-4 font-medium">Status</th><th className="px-6 py-4 text-right font-medium">Valor Final</th></tr></thead>
                                         <tbody>
                                             {pedidos.map(p => {
                                                 const finalizado = p.status === 'Finalizado';
@@ -376,7 +377,7 @@
                             </main>
                         )}
 
-                        {/* ================= CATÁLOGO ================= */}
+                        {/* ================= CATÁLOGO (EDITÁVEL) ================= */}
                         {abaAtual === 'produtos' && (
                             <main className="flex-1 p-6 lg:p-10 max-w-[1200px] mx-auto w-full fade-in">
                                 <div className="flex justify-between items-center mb-8">
@@ -385,7 +386,7 @@
                                 </div>
                                 <div className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded overflow-hidden">
                                     <table className="w-full text-left border-collapse">
-                                        <thead><tr className="bg-gray-50 dark:bg-darkLane border-b border-gray-200 dark:border-darkBorder text-xs font-medium text-gray-500 dark:text-[#888888]"><th className="px-6 py-4">ID</th><th className="px-6 py-4">Nome do Produto</th><th className="px-6 py-4">Descrição Base</th><th className="px-6 py-4 text-right">Preço Base</th></tr></thead>
+                                        <thead><tr className="bg-gray-50 dark:bg-darkCard border-b border-gray-200 dark:border-darkBorder text-xs font-medium text-gray-500 dark:text-[#888888]"><th className="px-6 py-4">ID</th><th className="px-6 py-4">Nome do Produto</th><th className="px-6 py-4">Descrição Base</th><th className="px-6 py-4 text-right">Preço Base</th></tr></thead>
                                         <tbody>
                                             {produtos.map(p => (
                                                 <tr key={p.id} onClick={() => abrirEdicaoProduto(p)} className="border-b border-gray-100 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover transition cursor-pointer"><td className="px-6 py-4 text-sm font-medium text-gray-500">#{p.id}</td><td className="px-6 py-4 text-sm font-semibold dark:text-[#EDEDED]">{p.nome}</td><td className="px-6 py-4 text-sm text-gray-600 dark:text-[#A1A1AA] truncate max-w-xs">{p.texto_padrao}</td><td className="px-6 py-4 text-sm font-bold dark:text-[#EDEDED] text-right">R$ {Number(p.preco_base).toFixed(2).replace('.', ',')}</td></tr>
@@ -396,7 +397,7 @@
                             </main>
                         )}
 
-                        {/* ================= CLIENTES ================= */}
+                        {/* ================= CLIENTES (EDITÁVEL) ================= */}
                         {abaAtual === 'clientes' && (
                             <main className="flex-1 p-6 lg:p-10 max-w-[1200px] mx-auto w-full fade-in">
                                 <div className="flex justify-between items-center mb-8">
@@ -405,7 +406,7 @@
                                 </div>
                                 <div className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded overflow-hidden">
                                     <table className="w-full text-left border-collapse">
-                                        <thead><tr className="bg-gray-50 dark:bg-darkLane border-b border-gray-200 dark:border-darkBorder text-xs font-medium text-gray-500 dark:text-[#888888]"><th className="px-6 py-4">Cliente</th><th className="px-6 py-4">WhatsApp</th><th className="px-6 py-4">E-mail</th><th className="px-6 py-4">Observações</th></tr></thead>
+                                        <thead><tr className="bg-gray-50 dark:bg-darkCard border-b border-gray-200 dark:border-darkBorder text-xs font-medium text-gray-500 dark:text-[#888888]"><th className="px-6 py-4">Cliente</th><th className="px-6 py-4">WhatsApp</th><th className="px-6 py-4">E-mail</th><th className="px-6 py-4">Observações</th></tr></thead>
                                         <tbody>
                                             {clientes.map(c => (
                                                 <tr key={c.id} onClick={() => abrirEdicaoCliente(c)} className="border-b border-gray-100 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover transition cursor-pointer"><td className="px-6 py-4 text-sm font-semibold dark:text-[#EDEDED]">{c.nome}</td><td className="px-6 py-4 text-sm text-gray-600 dark:text-[#A1A1AA]">{c.telefone || '---'}</td><td className="px-6 py-4 text-sm text-gray-600 dark:text-[#A1A1AA]">{c.email || '---'}</td><td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-600 truncate max-w-xs">{c.observacoes || '---'}</td></tr>
@@ -417,7 +418,7 @@
                         )}
                     </div>
 
-                    {/* ================= JANELA UNIFICADA: NOVA OS OU EDIÇÃO (CINZA VERCEL LEVEL 1) ================= */}
+                    {/* ================= A MESMA JANELA: CRIAÇÃO OU EDIÇÃO DE O.S. ================= */}
                     {modalAberto && (
                         <div onClick={fecharModalOS} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer">
                             <div onClick={(e) => e.stopPropagation()} className="bg-white dark:bg-darkCard w-full max-w-2xl rounded border border-gray-200 dark:border-darkBorder shadow-2xl flex flex-col max-h-[95vh] cursor-default">
@@ -563,7 +564,7 @@
                         </div>
                     )}
 
-                    {/* ================= MODAIS AUXILIARES: PRODUTOS / CLIENTES (CINZA VERCEL darkCard) ================= */}
+                    {/* ================= MODAIS AUXILIARES: PRODUTOS / CLIENTES ================= */}
                     {modalProdutoAberto && (
                         <div onClick={() => setModalProdutoAberto(false)} className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer">
                             <div onClick={(e) => e.stopPropagation()} className="bg-white dark:bg-darkCard w-full max-w-md rounded shadow-2xl overflow-hidden border border-gray-200 dark:border-darkBorder cursor-default">
@@ -582,7 +583,7 @@
                             <div onClick={(e) => e.stopPropagation()} className="bg-white dark:bg-darkCard w-full max-w-md rounded shadow-2xl overflow-hidden border border-gray-200 dark:border-darkBorder cursor-default">
                                 <div className="px-6 py-5 border-b border-gray-100 dark:border-darkBorder flex justify-between items-center bg-gray-50 dark:bg-darkCard"><h3 className="font-semibold text-lg dark:text-white tracking-tight">{novoCliente.id ? 'Editar Cliente' : 'Novo Cliente'}</h3><button type="button" onClick={() => setModalClienteAberto(false)} className="text-gray-400 hover:text-gray-900 dark:hover:text-white transition"><i data-lucide="x" className="w-5 h-5"></i></button></div>
                                 <form onSubmit={salvarCliente} className="p-6 flex flex-col gap-4">
-                                    <div><label className="block text-sm font-medium mb-1.5 dark:text-[#EDEDED]">Nome / Empresa *</label><input required type="text" value={novoCliente.nome} onChange={e => setNovoCliente({...novoCliente, nome: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" /></div>
+                                    <div><label className="block text-sm font-medium mb-1.5 dark:text-[#EDEDED]">Nome / Empresa *</label><input required type="text" value={novoCliente.nome} onChange={e => setNovoCliente({...novoCliente, nome: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" placeholder="Ex: Fibrion" /></div>
                                     <div className="grid grid-cols-2 gap-4"><div><label className="block text-sm font-medium mb-1.5 dark:text-[#EDEDED]">WhatsApp</label><input type="text" value={novoCliente.telefone} onChange={e => setNovoCliente({...novoCliente, telefone: formatarTelefone(e.target.value)})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" placeholder="(11) 90000-0000" /></div><div><label className="block text-sm font-medium mb-1.5 dark:text-[#EDEDED]">E-mail</label><input type="email" value={novoCliente.email} onChange={e => setNovoCliente({...novoCliente, email: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" placeholder="contato@..." /></div></div>
                                     <div><label className="block text-sm font-medium mb-1.5 dark:text-[#EDEDED]">Observações</label><textarea rows="2" value={novoCliente.observacoes} onChange={e => setNovoCliente({...novoCliente, observacoes: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition"></textarea></div>
                                     <div className="mt-4 flex justify-end gap-3"><button type="button" onClick={() => setModalClienteAberto(false)} className="px-4 py-2 rounded text-sm font-medium text-gray-600 dark:text-[#A1A1AA] hover:bg-gray-100 dark:hover:bg-darkHover transition">Cancelar</button><button type="submit" disabled={salvandoCliente} className="px-5 py-2 rounded text-sm font-medium bg-white text-black hover:bg-gray-200 transition">Salvar</button></div>
@@ -629,7 +630,7 @@
         }
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
+        root.render(<App/>);
     </script>
 </body>
 </html>
