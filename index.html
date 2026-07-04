@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Berlim Gráfica | Produção</title>
     
-    <!-- Bibliotecas -->
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -24,8 +23,6 @@
     <style>
         body { transition: background-color 0.3s ease; }
         .glass { backdrop-filter: blur(8px); }
-        
-        /* Esconde tudo ao imprimir, exceto a área de impressão da OS */
         @media print {
             body { background: white !important; color: black !important; }
             .no-print { display: none !important; }
@@ -46,9 +43,9 @@
 
         function App() {
             const [pedidos, setPedidos] = useState([]);
+            const [produtos, setProdutos] = useState([]); // Nova gaveta para os produtos
             const [darkMode, setDarkMode] = useState(false);
             
-            // Estados do Formulário e Impressão
             const [modalAberto, setModalAberto] = useState(false);
             const [salvando, setSalvando] = useState(false);
             const [osParaImprimir, setOsParaImprimir] = useState(null);
@@ -58,16 +55,20 @@
             });
 
             useEffect(() => {
-                carregarPedidos();
+                carregarDados();
             }, []);
 
             useEffect(() => {
                 lucide.createIcons();
-            }, [pedidos, modalAberto, darkMode]);
+            }, [pedidos, produtos, modalAberto, darkMode]);
 
-            async function carregarPedidos() {
-                const { data } = await supabase.from('pedidos').select('*').order('id', { ascending: true });
-                if (data) setPedidos(data);
+            // Carrega Pedidos e Produtos simultaneamente
+            async function carregarDados() {
+                const { data: listaPedidos } = await supabase.from('pedidos').select('*').order('id', { ascending: true });
+                if (listaPedidos) setPedidos(listaPedidos);
+
+                const { data: listaProdutos } = await supabase.from('produtos').select('*').order('codigo', { ascending: true });
+                if (listaProdutos) setProdutos(listaProdutos);
             }
 
             const toggleDarkMode = () => {
@@ -75,7 +76,21 @@
                 document.documentElement.classList.toggle('dark');
             };
 
-            // Função para Salvar Nova OS no Banco
+            // Trata a seleção do produto para fazer o Auto-preenchimento
+            function tratarSelecaoProduto(e) {
+                const produtoId = e.target.value;
+                if (!produtoId) return;
+
+                const produtoSelecionado = produtos.find(p => p.id === parseInt(produtoId));
+                if (produtoSelecionado) {
+                    setNovoPedido({
+                        ...novoPedido,
+                        servico: produtoSelecionado.texto_padrao,
+                        valor_total: Number(produtoSelecionado.preco_base).toFixed(2).replace('.', ',')
+                    });
+                }
+            }
+
             async function salvarOS(e) {
                 e.preventDefault();
                 setSalvando(true);
@@ -90,7 +105,6 @@
                 if (!error && data) {
                     setPedidos([...pedidos, data[0]]);
                     setModalAberto(false);
-                    // Limpa o formulário
                     setNovoPedido({ cliente: '', servico: '', valor_total: '', local_producao: 'Berlim', responsavel: '', status: 'Aguardando' });
                 } else {
                     alert('Erro ao salvar o pedido.');
@@ -98,16 +112,13 @@
                 setSalvando(false);
             }
 
-            // Função para disparar a impressão
             function imprimirOS(pedido) {
                 setOsParaImprimir(pedido);
-                // Dá um tempinho mínimo para o React desenhar a OS na tela antes de chamar a impressora
                 setTimeout(() => window.print(), 100);
             }
 
             return (
                 <div>
-                    {/* APLICAÇÃO PRINCIPAL (Fica oculta na impressão) */}
                     <div className="flex flex-col min-h-screen no-print">
                         {/* Menu Superior */}
                         <header className="sticky top-0 z-40 glass bg-white/80 dark:bg-darkBg/80 border-b border-gray-200 dark:border-darkBorder px-6 py-4 flex justify-between items-center shadow-sm">
@@ -118,6 +129,7 @@
                                 </div>
                                 <nav className="hidden md:flex gap-6 font-medium text-sm text-gray-500 dark:text-gray-400">
                                     <a href="#" className="text-slate-900 dark:text-white border-b-2 border-blue-600 pb-1">Produção</a>
+                                    <a href="#" className="hover:text-slate-900 dark:hover:text-white transition">Produtos</a>
                                     <a href="#" className="hover:text-slate-900 dark:hover:text-white transition">Clientes</a>
                                     <a href="#" className="hover:text-slate-900 dark:hover:text-white transition">Configurações</a>
                                 </nav>
@@ -132,7 +144,7 @@
                             </div>
                         </header>
 
-                        {/* Kanban */}
+                        {/* Quadro Operacional */}
                         <main className="flex-1 p-6 max-w-[1600px] mx-auto w-full">
                             <div className="flex justify-between items-center mb-8">
                                 <button onClick={() => setModalAberto(true)} className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-semibold flex items-center gap-2 shadow-md transition transform hover:-translate-y-0.5">
@@ -181,7 +193,7 @@
                         </main>
                     </div>
 
-                    {/* MODAL DE NOVA O.S. (Efeito Vidro) */}
+                    {/* MODAL INTELIGENTE DE NOVA O.S. */}
                     {modalAberto && (
                         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 glass no-print transition-all">
                             <div className="bg-white dark:bg-darkCard w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden border border-gray-200 dark:border-darkBorder">
@@ -197,16 +209,27 @@
                                         <label className="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">Cliente / Empresa</label>
                                         <input required type="text" value={novoPedido.cliente} onChange={e => setNovoPedido({...novoPedido, cliente: e.target.value})} className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-blue-500 transition dark:text-white" placeholder="Ex: Fibrion" />
                                     </div>
+
+                                    {/* SELETOR DE PRODUTOS DO CATÁLOGO */}
+                                    <div>
+                                        <label className="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">Selecione o Produto/Serviço Base</label>
+                                        <select onChange={tratarSelecaoProduto} className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-blue-500 transition dark:text-white font-medium cursor-pointer">
+                                            <option value="">-- Escolha um item do catálogo para preencher --</option>
+                                            {produtos.map(p => (
+                                                <option key={p.id} value={p.id}>[{p.codigo}] {p.nome} - R$ {Number(p.preco_base).toFixed(2).replace('.', ',')}</option>
+                                            ))}
+                                        </select>
+                                    </div>
                                     
                                     <div>
-                                        <label className="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">Descrição do Serviço</label>
-                                        <textarea required rows="2" value={novoPedido.servico} onChange={e => setNovoPedido({...novoPedido, servico: e.target.value})} className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-blue-500 transition dark:text-white" placeholder="Ex: 500 Envelopes 24x34cm..."></textarea>
+                                        <label className="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">Descrição Detalhada do Serviço</label>
+                                        <textarea required rows="3" value={novoPedido.servico} onChange={e => setNovoPedido({...novoPedido, servico: e.target.value})} className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-blue-500 transition dark:text-white text-sm" placeholder="O texto padrão aparecerá aqui, você pode ajustar ou complementar livremente..."></textarea>
                                     </div>
 
                                     <div className="grid grid-cols-2 gap-4">
                                         <div>
-                                            <label className="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">Valor Total (R$)</label>
-                                            <input required type="text" value={novoPedido.valor_total} onChange={e => setNovoPedido({...novoPedido, valor_total: e.target.value})} className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-blue-500 transition dark:text-white" placeholder="0,00" />
+                                            <label className="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">Valor Final (R$)</label>
+                                            <input required type="text" value={novoPedido.valor_total} onChange={e => setNovoPedido({...novoPedido, valor_total: e.target.value})} className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-blue-500 transition dark:text-white font-bold text-green-600 dark:text-green-400" placeholder="0,00" />
                                         </div>
                                         <div>
                                             <label className="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">Responsável</label>
@@ -225,7 +248,7 @@
                         </div>
                     )}
 
-                    {/* VISTA DE IMPRESSÃO DA O.S. (Só aparece na hora de imprimir) */}
+                    {/* VISTA DE IMPRESSÃO DA O.S. */}
                     <div className="hidden print-only bg-white text-black p-8 font-sans max-w-2xl mx-auto">
                         {osParaImprimir && (
                             <div className="border-2 border-black p-6 rounded-xl">
@@ -273,7 +296,6 @@
             );
         }
 
-        // Componente do Cartão (agora com botão de imprimir)
         function Cartao({ pedido, onPrint }) {
             return (
                 <div className="bg-white dark:bg-darkCard p-4 rounded-xl shadow-sm border border-gray-200 dark:border-darkBorder hover:shadow-md transition relative group">
