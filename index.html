@@ -405,8 +405,8 @@
         function App() {
             // ==== CONTROLE DE SESSÃO E USUÁRIOS ====
             const [usuariosSistema, setUsuariosSistema] = useState([
-                { id: 1, login: 'admin', senha: '123', nome: 'Murilo', nivel: 'Admin' },
-                { id: 2, login: 'gi', senha: '123', nome: 'Gi', nivel: 'Produção' },
+                { id: 1, login: 'admin', senha: '123', nome: 'Murilo', nivel: 'Administrador' },
+                { id: 2, login: 'gi', senha: '123', nome: 'Gi', nivel: 'Produção/Atendimento' },
                 { id: 3, login: 'financeiro', senha: '123', nome: 'Financeiro', nivel: 'Financeiro' }
             ]);
             const [usuario, setUsuario] = useState(null);
@@ -416,13 +416,14 @@
             const [erroLogin, setErroLogin] = useState('');
 
             const [abaAtual, setAbaAtual] = useState('producao');
+            const [visaoProducao, setVisaoProducao] = useState('lista'); 
             const [pedidos, setPedidos] = useState([]);
             const [produtos, setProdutos] = useState([]);
             const [clientes, setClientes] = useState([]);
             const [darkMode, setDarkMode] = useState(true); 
             
-            const isAdmin = usuario?.nivel === 'Admin';
-            const isOperador = usuario?.nivel === 'Produção';
+            const isAdmin = usuario?.nivel === 'Administrador';
+            const isOperador = usuario?.nivel === 'Produção/Atendimento';
             
             // Filtros
             const [buscaHistoricoText, setBuscaHistoricoText] = useState('');
