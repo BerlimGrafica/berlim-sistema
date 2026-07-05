@@ -312,12 +312,12 @@
             
             for (let bloco of blocosIndividuais) {
                 if (!bloco.startsWith('• ')) { obs = obs ? obs + '\n' + bloco : bloco; continue; }
-                let linhas = bloco.split('\n');
-                if (linhas.length < 3) { obs = obs ? obs + '\n' + bloco : bloco; continue; }
+                let lines = bloco.split('\n');
+                if (lines.length < 3) { obs = obs ? obs + '\n' + bloco : bloco; continue; }
                 
-                let nome = linhas[0].replace('• ', '').trim();
-                let descricao = linhas[1].replace(/^  /, '').trim();
-                let AppValor = linhas[2].replace(/^  Valor: R\$ /, '').trim();
+                let nome = lines[0].replace('• ', '').trim();
+                let descricao = lines[1].replace(/^  /, '').trim();
+                let AppValor = lines[2].replace(/^  Valor: R\$ /, '').trim();
                 
                 let valor = AppValor; let desconto = '';
                 let matchDesconto = AppValor.match(/\s\(-(\d+)%\)$/);
@@ -446,6 +446,16 @@
                     urgente: pedido.urgente || false
                 });
                 setModalAberto(true);
+            }
+
+            function abrirEdicaoProduto(produto) {
+                setNovoProduto({ id: produto.id, nome: produto.nome, texto_padrao: produto.texto_padrao, preco_base: formatarMoeda((produto.preco_base * 100).toFixed(0).toString()) });
+                setModalProdutoAberto(true);
+            }
+
+            function abrirEdicaoCliente(cliente) {
+                setNovoCliente({ id: cliente.id, nome: cliente.nome, telefone: cliente.telefone, email: cliente.email, observacoes: cliente.observacoes });
+                setModalClienteAberto(true);
             }
 
             function adicionarItemAoCarrinho() {
@@ -1132,113 +1142,112 @@
                             </div>
                         </div>
                     )}
-                </div>
 
-                {/* ================= RECIBO PARA IMPRESSÃO ================= */}
-                {osParaImprimir && (
-                    <div className="print-only p-8 max-w-4xl mx-auto text-black bg-white font-sans">
-                        {/* Cabeçalho */}
-                        <div className="flex justify-between items-start border-b-2 border-black pb-4 mb-6">
-                            <div>
-                                <h1 className="text-3xl font-extrabold uppercase tracking-widest">Berlim</h1>
-                                <p className="text-sm font-semibold tracking-widest uppercase text-gray-500">Gráfica & Comunicação</p>
+                    {/* ================= RECIBO PARA IMPRESSÃO ================= */}
+                    {osParaImprimir && (
+                        <div className="print-only p-8 max-w-4xl mx-auto text-black bg-white font-sans">
+                            {/* Cabeçalho */}
+                            <div className="flex justify-between items-start border-b-2 border-black pb-4 mb-6">
+                                <div>
+                                    <h1 className="text-3xl font-extrabold uppercase tracking-widest">Berlim</h1>
+                                    <p className="text-sm font-semibold tracking-widest uppercase text-gray-500">Gráfica & Comunicação</p>
+                                </div>
+                                <div className="text-right">
+                                    <h2 className="text-xl font-bold uppercase">Ordem de Serviço #{osParaImprimir.id}</h2>
+                                    <p className="text-sm">Data de Entrada: {formatarDataExibicao(osParaImprimir.data_pedido)}</p>
+                                    {osParaImprimir.prazo && <p className="text-sm font-bold mt-1">Previsão de Entrega: {formatarDataExibicao(osParaImprimir.prazo)}</p>}
+                                </div>
                             </div>
-                            <div className="text-right">
-                                <h2 className="text-xl font-bold uppercase">Ordem de Serviço #{osParaImprimir.id}</h2>
-                                <p className="text-sm">Data de Entrada: {formatarDataExibicao(osParaImprimir.data_pedido)}</p>
-                                {osParaImprimir.prazo && <p className="text-sm font-bold mt-1">Previsão de Entrega: {formatarDataExibicao(osParaImprimir.prazo)}</p>}
-                            </div>
-                        </div>
 
-                        {/* Dados do Cliente e Operador */}
-                        <div className="flex justify-between mb-8">
-                            <div>
-                                <h3 className="font-bold text-xs uppercase text-gray-500 mb-1">Cliente</h3>
-                                <p className="text-lg font-bold">{osParaImprimir.cliente}</p>
+                            {/* Dados do Cliente e Operador */}
+                            <div className="flex justify-between mb-8">
+                                <div>
+                                    <h3 className="font-bold text-xs uppercase text-gray-500 mb-1">Cliente</h3>
+                                    <p className="text-lg font-bold">{osParaImprimir.cliente}</p>
+                                </div>
+                                <div className="text-right">
+                                    <h3 className="font-bold text-xs uppercase text-gray-500 mb-1">Atendimento</h3>
+                                    <p className="text-base">{osParaImprimir.responsavel || 'Não informado'}</p>
+                                </div>
                             </div>
-                            <div className="text-right">
-                                <h3 className="font-bold text-xs uppercase text-gray-500 mb-1">Atendimento</h3>
-                                <p className="text-base">{osParaImprimir.responsavel || 'Não informado'}</p>
-                            </div>
-                        </div>
 
-                        {/* Detalhamento de Itens */}
-                        <div className="mb-8 min-h-[300px]">
-                            <h3 className="font-bold text-sm uppercase mb-2 border-b border-gray-300 pb-2">Detalhamento dos Serviços</h3>
-                            
-                            {(() => {
-                                const desc = desconstruirTextoServico(osParaImprimir.servico);
-                                return (
-                                    <>
-                                        {desc.itens.length > 0 ? (
-                                            <table className="w-full text-left mb-6 text-sm">
-                                                <thead>
-                                                    <tr className="border-b border-gray-200">
-                                                        <th className="py-2">Item</th>
-                                                        <th className="py-2">Especificação</th>
-                                                        <th className="py-2 text-right">Valor</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    {desc.itens.map((item, idx) => (
-                                                        <tr key={idx} className="border-b border-gray-100">
-                                                            <td className="py-3 font-bold align-top">{item.nome}</td>
-                                                            <td className="py-3 text-gray-700 whitespace-pre-wrap pr-4 align-top">{item.descricao}</td>
-                                                            <td className="py-3 text-right whitespace-nowrap align-top font-medium">
-                                                                R$ {item.valor}
-                                                                {item.desconto && <span className="block text-[10px] text-gray-500">(-{item.desconto}% desc)</span>}
-                                                            </td>
+                            {/* Detalhamento de Itens */}
+                            <div className="mb-8 min-h-[300px]">
+                                <h3 className="font-bold text-sm uppercase mb-2 border-b border-gray-300 pb-2">Detalhamento dos Serviços</h3>
+                                
+                                {(() => {
+                                    const desc = desconstruirTextoServico(osParaImprimir.servico);
+                                    return (
+                                        <>
+                                            {desc.itens.length > 0 ? (
+                                                <table className="w-full text-left mb-6 text-sm">
+                                                    <thead>
+                                                        <tr className="border-b border-gray-200">
+                                                            <th className="py-2">Item</th>
+                                                            <th className="py-2">Especificação</th>
+                                                            <th className="py-2 text-right">Valor</th>
                                                         </tr>
-                                                    ))}
-                                                </tbody>
-                                            </table>
-                                        ) : (
-                                            <div className="py-4 whitespace-pre-wrap text-sm text-gray-800 border-b border-gray-100 mb-6">
-                                                {desc.observacoes || osParaImprimir.servico || 'Nenhum detalhe especificado.'}
-                                            </div>
-                                        )}
+                                                    </thead>
+                                                    <tbody>
+                                                        {desc.itens.map((item, idx) => (
+                                                            <tr key={idx} className="border-b border-gray-100">
+                                                                <td className="py-3 font-bold align-top">{item.nome}</td>
+                                                                <td className="py-3 text-gray-700 whitespace-pre-wrap pr-4 align-top">{item.descricao}</td>
+                                                                <td className="py-3 text-right whitespace-nowrap align-top font-medium">
+                                                                    R$ {item.valor}
+                                                                    {item.desconto && <span className="block text-[10px] text-gray-500">(-{item.desconto}% desc)</span>}
+                                                                </td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
+                                            ) : (
+                                                <div className="py-4 whitespace-pre-wrap text-sm text-gray-800 border-b border-gray-100 mb-6">
+                                                    {desc.observacoes || osParaImprimir.servico || 'Nenhum detalhe especificado.'}
+                                                </div>
+                                            )}
 
-                                        {desc.itens.length > 0 && desc.observacoes && (
-                                            <div className="text-sm bg-gray-50 p-4 rounded border border-gray-200">
-                                                <h4 className="font-bold text-xs uppercase mb-1 text-gray-500">Observações Extras</h4>
-                                                <div className="whitespace-pre-wrap text-gray-700">{desc.observacoes}</div>
-                                            </div>
-                                        )}
-                                    </>
-                                );
-                            })()}
-                        </div>
+                                            {desc.itens.length > 0 && desc.observacoes && (
+                                                <div className="text-sm bg-gray-50 p-4 rounded border border-gray-200">
+                                                    <h4 className="font-bold text-xs uppercase mb-1 text-gray-500">Observações Extras</h4>
+                                                    <div className="whitespace-pre-wrap text-gray-700">{desc.observacoes}</div>
+                                                </div>
+                                            )}
+                                        </>
+                                    );
+                                })()}
+                            </div>
 
-                        {/* Totais */}
-                        <div className="border-t-2 border-black pt-4 flex justify-between items-center">
-                            <div className="text-sm">
-                                <p className="text-gray-500 mb-1">Status atual:</p>
-                                <p className="font-bold uppercase bg-gray-100 px-2 py-1 inline-block rounded">{osParaImprimir.status}</p>
+                            {/* Totais */}
+                            <div className="border-t-2 border-black pt-4 flex justify-between items-center">
+                                <div className="text-sm">
+                                    <p className="text-gray-500 mb-1">Status atual:</p>
+                                    <p className="font-bold uppercase bg-gray-100 px-2 py-1 inline-block rounded">{osParaImprimir.status}</p>
+                                </div>
+                                <div className="text-right">
+                                    <span className="text-xs uppercase tracking-wider text-gray-500">Total a Pagar</span>
+                                    <h2 className="text-3xl font-extrabold mt-1">R$ {Number(osParaImprimir.valor_total).toFixed(2).replace('.', ',')}</h2>
+                                </div>
                             </div>
-                            <div className="text-right">
-                                <span className="text-xs uppercase tracking-wider text-gray-500">Total a Pagar</span>
-                                <h2 className="text-3xl font-extrabold mt-1">R$ {Number(osParaImprimir.valor_total).toFixed(2).replace('.', ',')}</h2>
-                            </div>
-                        </div>
 
-                        {/* Rodapé / Assinatura */}
-                        <div className="mt-20 pt-4 text-center text-xs text-gray-400 flex justify-between items-end">
-                            <div className="text-left">
-                                <p className="font-bold text-gray-600">Berlim Gráfica</p>
-                                <p>Rua Exemplo, 123 - Santo André, SP</p>
-                                <p>WhatsApp: (11) 99999-9999</p>
-                            </div>
-                            <div className="w-64 border-t border-gray-400 text-center pt-2">
-                                Assinatura do Cliente
+                            {/* Rodapé / Assinatura */}
+                            <div className="mt-20 pt-4 text-center text-xs text-gray-400 flex justify-between items-end">
+                                <div className="text-left">
+                                    <p className="font-bold text-gray-600">Berlim Gráfica</p>
+                                    <p>Rua Exemplo, 123 - Santo André, SP</p>
+                                    <p>WhatsApp: (11) 99999-9999</p>
+                                </div>
+                                <div className="w-64 border-t border-gray-400 text-center pt-2">
+                                    Assinatura do Cliente
+                                </div>
                             </div>
                         </div>
-                    </div>
-                )}
-            </div>
-        );
-    }
-    const root = ReactDOM.createRoot(document.getElementById('root'));
-    root.render(<App />);
-</script>
+                    )}
+                </div>
+            );
+        }
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
 </body>
 </html>
