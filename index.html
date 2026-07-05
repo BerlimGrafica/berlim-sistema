@@ -464,7 +464,7 @@
             const [novoCliente, setNovoCliente] = useState({ id: null, nome: '', telefone: '', email: '', observacoes: '' });
 
             const [modalUsuarioAberto, setModalUsuarioAberto] = useState(false);
-            const [novoUsuario, setNovoUsuario] = useState({ id: null, login: '', senha: '', nome: '', nivel: 'Produção' });
+            const [novoUsuario, setNovoUsuario] = useState({ id: null, login: '', senha: '', nome: '', nivel: 'Produção/Atendimento' });
 
             useEffect(() => { 
                 if(usuario) carregarDados(); 
@@ -796,17 +796,17 @@
                                     BERLIM
                                 </div>
                                 <nav className="hidden md:flex gap-6 font-medium text-sm text-gray-500 dark:text-[#888888] cursor-pointer">
-                                    {(usuario?.nivel === 'Admin' || usuario?.nivel === 'Produção') && (
+                                    {(usuario?.nivel === 'Administrador' || usuario?.nivel === 'Produção/Atendimento') && (
                                         <a onClick={() => setAbaAtual('producao')} className={`transition ${abaAtual === 'producao' ? 'text-gray-900 dark:text-white font-semibold' : 'hover:text-gray-900 dark:hover:text-white'}`}>Produção</a>
                                     )}
                                     <a onClick={() => setAbaAtual('baixa')} className={`transition ${abaAtual === 'baixa' ? 'text-gray-900 dark:text-white font-semibold' : 'hover:text-gray-900 dark:hover:text-white'}`}>Baixa de Notas</a>
-                                    {(usuario?.nivel === 'Admin' || usuario?.nivel === 'Financeiro') && (
+                                    {(usuario?.nivel === 'Administrador' || usuario?.nivel === 'Financeiro') && (
                                         <a onClick={() => setAbaAtual('financeiro')} className={`transition ${abaAtual === 'financeiro' ? 'text-gray-900 dark:text-white font-semibold' : 'hover:text-gray-900 dark:hover:text-white'}`}>Financeiro</a>
                                     )}
                                     {isAdmin && (
                                         <a onClick={() => setAbaAtual('produtos')} className={`transition ${abaAtual === 'produtos' ? 'text-gray-900 dark:text-white font-semibold' : 'hover:text-gray-900 dark:hover:text-white'}`}>Catálogo</a>
                                     )}
-                                    {(usuario?.nivel === 'Admin' || usuario?.nivel === 'Produção') && (
+                                    {(usuario?.nivel === 'Administrador' || usuario?.nivel === 'Produção/Atendimento') && (
                                         <a onClick={() => setAbaAtual('clientes')} className={`transition ${abaAtual === 'clientes' ? 'text-gray-900 dark:text-white font-semibold' : 'hover:text-gray-900 dark:hover:text-white'}`}>Clientes</a>
                                     )}
                                     {isAdmin && (
@@ -1039,7 +1039,7 @@
                         )}
 
                         {/* ================= FINANCEIRO ERP / BI ================= */}
-                        {abaAtual === 'financeiro' && (usuario?.nivel === 'Admin' || usuario?.nivel === 'Financeiro') && (
+                        {abaAtual === 'financeiro' && (usuario?.nivel === 'Administrador' || usuario?.nivel === 'Financeiro') && (
                             <main className="flex-1 p-6 lg:p-10 max-w-[1400px] mx-auto w-full fade-in flex flex-col gap-6">
                                 
                                 <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 border-b border-gray-100 dark:border-darkBorder pb-6 shrink-0">
@@ -1338,9 +1338,9 @@
                                 <div className="flex justify-between items-center mb-8">
                                     <div>
                                         <h1 className="text-3xl font-semibold dark:text-white tracking-tight">Usuários do Sistema</h1>
-                                        <p className="text-sm text-gray-500 mt-1">Gerencie os acessos da equipe (Admin, Produção, Financeiro).</p>
+                                        <p className="text-sm text-gray-500 mt-1">Gerencie os acessos da equipe (Administrador, Produção/Atendimento, Financeiro).</p>
                                     </div>
-                                    <button onClick={() => { setNovoUsuario({ id: null, login: '', senha: '', nome: '', nivel: 'Produção' }); setModalUsuarioAberto(true); }} className="bg-brand hover:bg-brandHover text-white px-4 py-2 text-sm rounded-md font-bold shadow-sm transition flex items-center gap-2">
+                                    <button onClick={() => { setNovoUsuario({ id: null, login: '', senha: '', nome: '', nivel: 'Produção/Atendimento' }); setModalUsuarioAberto(true); }} className="bg-brand hover:bg-brandHover text-white px-4 py-2 text-sm rounded-md font-bold shadow-sm transition flex items-center gap-2">
                                         Novo Usuário
                                     </button>
                                 </div>
@@ -1353,7 +1353,7 @@
                                                     <td className="px-6 py-4 text-sm font-semibold dark:text-[#EDEDED]">{u.nome}</td>
                                                     <td className="px-6 py-4 text-sm text-gray-600 dark:text-[#A1A1AA]">@{u.login}</td>
                                                     <td className="px-6 py-4 text-sm font-bold dark:text-[#EDEDED] text-right">
-                                                        <span className={`px-2 py-1 rounded text-[10px] uppercase tracking-wider border ${u.nivel === 'Admin' ? 'bg-red-50 text-red-600 border-red-200' : u.nivel === 'Financeiro' ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-blue-50 text-blue-600 border-blue-200'}`}>
+                                                        <span className={`px-2 py-1 rounded text-[10px] uppercase tracking-wider border ${u.nivel === 'Administrador' ? 'bg-red-50 text-red-600 border-red-200' : u.nivel === 'Financeiro' ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-blue-50 text-blue-600 border-blue-200'}`}>
                                                             {u.nivel}
                                                         </span>
                                                     </td>
@@ -1585,9 +1585,9 @@
                                     </div>
                                     <div className="relative">
                                         <select value={novoUsuario.nivel} onChange={e => setNovoUsuario({...novoUsuario, nivel: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition appearance-none cursor-pointer">
-                                            <option value="Produção">Operador de Produção</option>
+                                            <option value="Produção/Atendimento">Operador de Produção / Atendimento</option>
                                             <option value="Financeiro">Equipe Financeira</option>
-                                            <option value="Admin">Administrador (Total)</option>
+                                            <option value="Administrador">Administrador (Total)</option>
                                         </select>
                                         <Icon name="chevron-down" className="absolute right-3 top-2.5 w-4 h-4 text-gray-400 pointer-events-none" />
                                     </div>
