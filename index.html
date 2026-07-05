@@ -576,61 +576,86 @@
                                                     ) : (
                                                         pedidosProducaoAtivos.map(p => (
                                                             <tr key={p.id} className="border-b border-gray-100 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover transition group text-sm">
+                                                                
                                                                 {/* ID Clicável para Abrir Janela Mestre */}
-                                                                <td className="px-4 py-2 font-medium text-gray-400 dark:text-gray-600 text-center">
+                                                                <td className="px-4 py-3 font-medium text-gray-400 dark:text-gray-600 text-center">
                                                                     <button onClick={() => abrirEdicao(p)} className="hover:text-brand transition">#{p.id}</button>
                                                                 </td>
                                                                 
-                                                                {/* Prazo */}
-                                                                <td className="px-4 py-2">
-                                                                    <input type="date" value={p.prazo || ''} onChange={e => atualizarCampoInline(p.id, 'prazo', e.target.value)} className="bg-transparent border-none outline-none text-gray-700 dark:text-[#EDEDED] cursor-pointer hover:bg-gray-100 dark:hover:bg-darkElevated rounded px-1 -ml-1 text-xs" />
+                                                                {/* Prazo (Uniformizado com o CustomDatePicker do Modal) */}
+                                                                <td className="px-4 py-3 w-40">
+                                                                    <CustomDatePicker 
+                                                                        value={p.prazo || ''} 
+                                                                        onChange={val => atualizarCampoInline(p.id, 'prazo', val)} 
+                                                                        placeholder="Definir prazo..." 
+                                                                        className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-2.5 py-1.5 text-xs outline-none focus:border-brand transition text-gray-700 dark:text-[#EDEDED]" 
+                                                                    />
                                                                 </td>
                                                                 
-                                                                {/* Responsável */}
-                                                                <td className="px-4 py-2">
-                                                                    <select value={p.responsavel || ''} onChange={e => atualizarCampoInline(p.id, 'responsavel', e.target.value)} className="bg-transparent border-none outline-none text-gray-700 dark:text-[#EDEDED] font-medium cursor-pointer hover:bg-gray-100 dark:hover:bg-darkElevated rounded px-1 -ml-1 appearance-none">
-                                                                        <option value="" className="dark:bg-darkBg">Indefinido</option>
-                                                                        {RESPONSAVEIS.map(r => <option key={r} value={r} className="dark:bg-darkBg">{r}</option>)}
-                                                                    </select>
+                                                                {/* Responsável (Uniformizado com Dropdown Customizado) */}
+                                                                <td className="px-4 py-3 w-36">
+                                                                    <div className="relative">
+                                                                        <select 
+                                                                            value={p.responsavel || ''} 
+                                                                            onChange={e => atualizarCampoInline(p.id, 'responsavel', e.target.value)} 
+                                                                            className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded pl-2.5 pr-7 py-1.5 text-xs font-medium outline-none focus:border-brand transition text-gray-700 dark:text-[#EDEDED] cursor-pointer appearance-none"
+                                                                        >
+                                                                            <option value="" className="dark:bg-darkBg">Indefinido</option>
+                                                                            {RESPONSAVEIS.map(r => <option key={r} value={r} className="dark:bg-darkBg">{r}</option>)}
+                                                                        </select>
+                                                                        <Icon name="chevron-down" className="absolute right-2 top-2.5 w-3 h-3 text-gray-400 pointer-events-none" />
+                                                                    </div>
                                                                 </td>
                                                                 
                                                                 {/* Cliente */}
-                                                                <td className="px-4 py-2 font-semibold text-gray-900 dark:text-white truncate max-w-[12rem]">{p.cliente}</td>
+                                                                <td className="px-4 py-3 font-semibold text-gray-900 dark:text-white truncate max-w-[12rem]">{p.cliente}</td>
                                                                 
                                                                 {/* Serviço Resumido */}
-                                                                <td className="px-4 py-2 text-gray-600 dark:text-[#A1A1AA] truncate max-w-[18rem]">{obterResumoServicos(p.servico)}</td>
+                                                                <td className="px-4 py-3 text-gray-600 dark:text-[#A1A1AA] truncate max-w-[18rem]">{obterResumoServicos(p.servico)}</td>
                                                                 
                                                                 {/* Aprovação (Checkbox Joinha) */}
-                                                                <td className="px-4 py-2 text-center">
+                                                                <td className="px-4 py-3 text-center">
                                                                     <button onClick={() => atualizarCampoInline(p.id, 'aprovado', !p.aprovado)} className={`p-1.5 rounded-md transition ${p.aprovado ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-gray-100 text-gray-400 dark:bg-darkElevated dark:text-gray-600 hover:text-gray-600 dark:hover:text-gray-400'}`}>
                                                                         <Icon name="thumbs-up" className="w-3.5 h-3.5" />
                                                                     </button>
                                                                 </td>
                                                                 
-                                                                {/* Status com Ícone Especial Entrega */}
-                                                                <td className="px-4 py-2">
-                                                                    <div className="flex items-center gap-2">
-                                                                        {p.status === 'Entrega' && <Icon name="truck" className="w-4 h-4 text-orange-500" />}
-                                                                        <select value={p.status} onChange={e => atualizarCampoInline(p.id, 'status', e.target.value)} className={`bg-transparent border-none outline-none font-semibold cursor-pointer rounded px-1 -ml-1 appearance-none
-                                                                            ${p.status === 'Entrega' ? 'text-orange-500' : 
-                                                                              p.status === 'Produção' || p.status === 'Produzir' ? 'text-blue-500' : 
-                                                                              p.status === 'Desenvolvimento de Arte' ? 'text-purple-500' : 
-                                                                              'text-gray-700 dark:text-[#EDEDED] hover:bg-gray-100 dark:hover:bg-darkElevated'}`}>
-                                                                            {STATUSES_PRODUCAO.map(s => <option key={s} value={s} className="dark:bg-darkBg">{s}</option>)}
-                                                                            {STATUSES_FINALIZADOS.map(s => <option key={s} value={s} className="dark:bg-darkBg">{s}</option>)}
+                                                                {/* Status (Uniformizado com Cores Dinâmicas e Seta) */}
+                                                                <td className="px-4 py-3 w-52">
+                                                                    <div className="relative flex items-center">
+                                                                        {p.status === 'Entrega' && <Icon name="truck" className="absolute left-2.5 w-3.5 h-3.5 text-orange-500 pointer-events-none z-10" />}
+                                                                        <select 
+                                                                            value={p.status} 
+                                                                            onChange={e => atualizarCampoInline(p.id, 'status', e.target.value)} 
+                                                                            className={`w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded pr-7 py-1.5 text-xs font-bold outline-none focus:border-brand transition cursor-pointer appearance-none
+                                                                                ${p.status === 'Entrega' ? 'text-orange-500 pl-8' : 
+                                                                                  p.status === 'Produção' || p.status === 'Produzir' ? 'text-blue-500 pl-2.5' : 
+                                                                                  p.status === 'Desenvolvimento de Arte' ? 'text-purple-500 pl-2.5' : 
+                                                                                  'text-gray-700 dark:text-[#EDEDED] pl-2.5'}`}
+                                                                        >
+                                                                            {STATUSES_PRODUCAO.map(s => <option key={s} value={s} className="dark:bg-darkBg text-gray-900 dark:text-white font-medium">{s}</option>)}
+                                                                            {STATUSES_FINALIZADOS.map(s => <option key={s} value={s} className="dark:bg-darkBg text-gray-900 dark:text-white font-medium">{s}</option>)}
                                                                         </select>
+                                                                        <Icon name="chevron-down" className="absolute right-2 top-2.5 w-3 h-3 text-gray-400 pointer-events-none" />
                                                                     </div>
                                                                 </td>
                                                                 
-                                                                {/* Local Produção */}
-                                                                <td className="px-4 py-2">
-                                                                    <select value={p.local_producao || 'Berlim'} onChange={e => atualizarCampoInline(p.id, 'local_producao', e.target.value)} className="bg-transparent border-none outline-none text-gray-600 dark:text-gray-400 cursor-pointer hover:bg-gray-100 dark:hover:bg-darkElevated rounded px-1 -ml-1 appearance-none text-xs font-medium">
-                                                                        {LOCAIS.map(l => <option key={l} value={l} className="dark:bg-darkBg">{l}</option>)}
-                                                                    </select>
+                                                                {/* Local Produção (Uniformizado) */}
+                                                                <td className="px-4 py-3 w-40">
+                                                                    <div className="relative">
+                                                                        <select 
+                                                                            value={p.local_producao || 'Berlim'} 
+                                                                            onChange={e => atualizarCampoInline(p.id, 'local_producao', e.target.value)} 
+                                                                            className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded pl-2.5 pr-7 py-1.5 text-xs font-medium outline-none focus:border-brand transition text-gray-600 dark:text-gray-400 cursor-pointer appearance-none"
+                                                                        >
+                                                                            {LOCAIS.map(l => <option key={l} value={l} className="dark:bg-darkBg">{l}</option>)}
+                                                                        </select>
+                                                                        <Icon name="chevron-down" className="absolute right-2 top-2.5 w-3 h-3 text-gray-400 pointer-events-none" />
+                                                                    </div>
                                                                 </td>
-
+                                                
                                                                 {/* Checkbox Concluir (Joga pro Histórico) */}
-                                                                <td className="px-4 py-2 text-center">
+                                                                <td className="px-4 py-3 text-center">
                                                                     <button onClick={() => atualizarCampoInline(p.id, 'status', 'Concluído')} className="p-1 text-gray-300 hover:text-emerald-500 dark:text-darkBorder dark:hover:text-emerald-500 transition" title="Marcar como Concluído">
                                                                         <Icon name="square" className="w-4 h-4" />
                                                                     </button>
