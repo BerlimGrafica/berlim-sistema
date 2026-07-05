@@ -131,7 +131,14 @@
                 default: return 'text-gray-700 dark:text-[#EDEDED]';
             }
         };
-
+        
+        // ==== CREDENCIAIS DO SISTEMA (NÍVEIS DE ACESSO) ====
+        const USUARIOS_SISTEMA = [
+            { login: 'admin', senha: '123', nome: 'Murilo', nivel: 'Admin' },
+            { login: 'gi', senha: '123', nome: 'Gi', nivel: 'Produção' },
+            { login: 'financeiro', senha: '123', nome: 'Financeiro', nivel: 'Financeiro' }
+        ];
+        
         // ==== FORMATADORES ====
         const formatarMoeda = (valor) => {
             if (!valor) return '';
@@ -396,7 +403,31 @@
             const [produtos, setProdutos] = useState([]);
             const [clientes, setClientes] = useState([]);
             const [darkMode, setDarkMode] = useState(true); 
-            const [isAdmin, setIsAdmin] = useState(false);
+            
+            // Controle de Sessão e Segurança
+            const [usuario, setUsuario] = useState(null);
+            const isAdmin = usuario?.nivel === 'Admin';
+            
+            // Estados do Formulário de Login
+            const [loginInput, setLoginInput] = useState('');
+            const [senhaInput, setSenhaInput] = useState('');
+            const [erroLogin, setErroLogin] = useState('');
+            
+            const efetuarLogin = (e) => {
+                e.preventDefault();
+                const conta = USUARIOS_SISTEMA.find(u => u.login === loginInput.toLowerCase() && u.senha === senhaInput);
+                if (conta) {
+                    setUsuario(conta);
+                    setErroLogin('');
+                    setLoginInput('');
+                    setSenhaInput('');
+                    // Direcionamento inteligente de aba por nível de acesso
+                    if (conta.nivel === 'Financeiro') setAbaAtual('baixa');
+                    else setAbaAtual('producao');
+                } else {
+                    setErroLogin('Usuário ou senha incorretos.');
+                }
+            };
             
             const [buscaHistoricoText, setBuscaHistoricoText] = useState('');
             const [dataFiltroInicio, setDataFiltroInicio] = useState('');
@@ -641,6 +672,55 @@
 
             const isModalTrancado = (pedidoEmEdicao && STATUSES_FINALIZADOS.includes(pedidoEmEdicao.status) && !isAdmin) ? true : false;
 
+            // ==== TELA DE LOGIN (BLOQUEIA O SISTEMA SE NÃO ESTIVER LOGADO) ====
+            if (!usuario) {
+                return (
+                    <div className="flex min-h-screen items-center justify-center bg-black text-white p-4 select-none font-sans">
+                        <div className="w-full max-w-sm bg-darkCard border border-darkBorder rounded-xl p-8 shadow-2xl flex flex-col gap-6">
+                            <div className="text-center flex flex-col items-center">
+                                <div className="w-12 h-12 bg-brand text-white flex items-center justify-center rounded-lg mb-3 shadow-md shadow-brand/10">
+                                    <Icon name="printer" className="w-6 h-6 text-white" />
+                                </div>
+                                <h2 className="text-xl font-bold tracking-tight">Berlim Gráfica</h2>
+                                <p className="text-xs text-gray-400 mt-1">Insira suas credenciais para acessar o ERP</p>
+                            </div>
+                            
+                            <form onSubmit={efetuarLogin} className="flex flex-col gap-4">
+                                <div>
+                                    <label className="block text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-1.5">Usuário</label>
+                                    <input 
+                                        required 
+                                        type="text" 
+                                        value={loginInput} 
+                                        onChange={e => setLoginInput(e.target.value)} 
+                                        className="w-full bg-black border border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand transition text-white" 
+                                        placeholder="Ex: admin, gi, financeiro..." 
+                                        autoComplete="off"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-1.5">Senha</label>
+                                    <input 
+                                        required 
+                                        type="password" 
+                                        value={senhaInput} 
+                                        onChange={e => setSenhaInput(e.target.value)} 
+                                        className="w-full bg-black border border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand transition text-white" 
+                                        placeholder="••••••" 
+                                    />
+                                </div>
+                                
+                                {erroLogin && <p className="text-xs text-red-500 font-medium text-center">{erroLogin}</p>}
+                                
+                                <button type="submit" className="w-full bg-brand hover:bg-brandHover text-white py-2 rounded text-sm font-bold shadow transition mt-2">
+                                    Entrar no Sistema
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                );
+            }
+
             return (
                 <div>
                     <div className="flex flex-col min-h-screen no-print">
@@ -655,17 +735,37 @@
                                     BERLIM
                                 </div>
                                 <nav className="hidden md:flex gap-6 font-medium text-sm text-gray-500 dark:text-[#888888] cursor-pointer">
-                                    <a onClick={() => setAbaAtual('producao')} className={`transition ${abaAtual === 'producao' ? 'text-gray-900 dark:text-white font-semibold' : 'hover:text-gray-900 dark:hover:text-white'}`}>Produção</a>
-                                    <a onClick={() => setAbaAtual('baixa')} className={`transition ${abaAtual === 'baixa' ? 'text-gray-900 dark:text-white font-semibold' : 'hover:text-gray-900 dark:hover:text-white'}`}>Baixa de Notas</a>
-                                    {isAdmin && <a onClick={() => setAbaAtual('produtos')} className={`transition ${abaAtual === 'produtos' ? 'text-gray-900 dark:text-white font-semibold' : 'hover:text-gray-900 dark:hover:text-white'}`}>Catálogo</a>}
-                                    <a onClick={() => setAbaAtual('clientes')} className={`transition ${abaAtual === 'clientes' ? 'text-gray-900 dark:text-white font-semibold' : 'hover:text-gray-900 dark:hover:text-white'}`}>Clientes</a>
+                                    {(usuario?.nivel === 'Admin' || usuario?.nivel === 'Produção') && (
+                                        <a onClick={() => setAbaAtual('producao')} className={`transition ${abaAtual === 'producao' ? 'text-gray-900 dark:text-white font-semibold' : 'hover:text-gray-900 dark:hover:text-white'}`}>Produção</a>
+                                    )}
+                                    {(usuario?.nivel === 'Admin' || usuario?.nivel === 'Financeiro') && (
+                                        <a onClick={() => setAbaAtual('baixa')} className={`transition ${abaAtual === 'baixa' ? 'text-gray-900 dark:text-white font-semibold' : 'hover:text-gray-900 dark:hover:text-white'}`}>Baixa de Notas</a>
+                                    )}
+                                    {usuario?.nivel === 'Admin' && (
+                                        <a onClick={() => setAbaAtual('produtos')} className={`transition ${abaAtual === 'produtos' ? 'text-gray-900 dark:text-white font-semibold' : 'hover:text-gray-900 dark:hover:text-white'}`}>Catálogo</a>
+                                    )}
+                                    {(usuario?.nivel === 'Admin' || usuario?.nivel === 'Financeiro') && (
+                                        <a onClick={() => setAbaAtual('clientes')} className={`transition ${abaAtual === 'clientes' ? 'text-gray-900 dark:text-white font-semibold' : 'hover:text-gray-900 dark:hover:text-white'}`}>Clientes</a>
+                                    )}
                                 </nav>
                             </div>
                             <div className="flex items-center gap-4">
                                 <button onClick={toggleDarkMode} className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-darkHover transition text-gray-600 dark:text-[#888888]">
                                     <Icon name={darkMode ? "sun" : "moon"} className="w-4 h-4" />
                                 </button>
-                                <div onClick={handleAdminToggle} className={`w-7 h-7 rounded-full text-white flex items-center justify-center font-bold text-xs cursor-pointer transition ${isAdmin ? 'bg-red-600 ring-2 ring-red-500/30' : 'bg-brand'}`} title={isAdmin ? "Modo Admin Ativo" : "Admin"}>AD</div>
+                                <div className="flex items-center gap-2 select-none">
+                                    <span className="bg-brand/10 border border-brand/20 text-brand text-xs font-bold px-2.5 py-1 rounded uppercase tracking-wide">
+                                        {usuario?.nome} ({usuario?.nivel})
+                                    </span>
+                                    <button 
+                                        type="button"
+                                        onClick={() => setUsuario(null)} 
+                                        className="text-xs text-gray-400 hover:text-red-500 transition font-medium border border-gray-200 dark:border-darkBorder rounded px-2.5 py-1 bg-gray-50 dark:bg-darkCard"
+                                    >
+                                        Sair
+                                    </button>
+                                    {/* Removido o antigo toggle do avatar por segurança */}
+                                </div>
                             </div>
                         </header>
 
