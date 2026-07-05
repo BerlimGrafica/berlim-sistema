@@ -416,7 +416,6 @@
             const [erroLogin, setErroLogin] = useState('');
 
             const [abaAtual, setAbaAtual] = useState('producao');
-            const [visaoProducao, setVisaoProducao] = useState('lista'); 
             const [pedidos, setPedidos] = useState([]);
             const [produtos, setProdutos] = useState([]);
             const [clientes, setClientes] = useState([]);
@@ -425,17 +424,13 @@
             const isAdmin = usuario?.nivel === 'Admin';
             const isOperador = usuario?.nivel === 'Produção';
             
-            // Filtros de Histórico / Baixa
+            // Filtros
             const [buscaHistoricoText, setBuscaHistoricoText] = useState('');
             const [dataFiltroInicio, setDataFiltroInicio] = useState('');
             const [dataFiltroFim, setDataFiltroFim] = useState('');
 
-            // Filtros de Produção
             const [buscaProducaoText, setBuscaProducaoText] = useState('');
-            const [dataFiltroProducaoInicio, setDataFiltroProducaoInicio] = useState('');
-            const [dataFiltroProducaoFim, setDataFiltroProducaoFim] = useState('');
 
-            // Filtros do Financeiro
             const [dataFiltroFinInicio, setDataFiltroFinInicio] = useState('');
             const [dataFiltroFinFim, setDataFiltroFinFim] = useState('');
 
@@ -467,7 +462,6 @@
             const [salvandoCliente, setSalvandoCliente] = useState(false);
             const [novoCliente, setNovoCliente] = useState({ id: null, nome: '', telefone: '', email: '', observacoes: '' });
 
-            // Estado do Modal de Usuários
             const [modalUsuarioAberto, setModalUsuarioAberto] = useState(false);
             const [novoUsuario, setNovoUsuario] = useState({ id: null, login: '', senha: '', nome: '', nivel: 'Produção' });
 
@@ -693,26 +687,23 @@
             const clientesFiltrados = clientes.filter(c => c.nome.toLowerCase().includes(buscaCliente.toLowerCase()) || (c.telefone && c.telefone.includes(buscaCliente)));
             const produtosFiltrados = produtos.filter(p => p.nome.toLowerCase().includes(buscaProduto.toLowerCase()) || p.id.toString().includes(buscaProduto));
             
-            // Filtra Finalizados da aba produção. Filtra também com base no termo de busca e datas
+            // Filtro Produção Aprimorado (Sem data e buscando em MultiSelect)
             const pedidosProducaoAtivos = pedidos.filter(p => {
                 const statusPermitido = STATUSES_PRODUCAO.includes(p.status) || p.status === 'Concluído';
                 if (!statusPermitido) return false;
 
                 const termo = buscaProducaoText.toLowerCase();
-                const matchTermo = !termo || (p.cliente && p.cliente.toLowerCase().includes(termo)) || (p.id && p.id.toString().includes(termo));
+                const matchTermo = !termo || 
+                    (p.cliente && p.cliente.toLowerCase().includes(termo)) || 
+                    (p.id && p.id.toString().includes(termo)) || 
+                    (p.responsavel && p.responsavel.toLowerCase().includes(termo)); // Procura no MultiSelect de Responsaveis
                 
-                let matchData = true;
-                if (dataFiltroProducaoInicio && (!p.data_pedido || p.data_pedido < dataFiltroProducaoInicio)) matchData = false;
-                if (dataFiltroProducaoFim && (!p.data_pedido || p.data_pedido > dataFiltroProducaoFim)) matchData = false;
-                
-                return matchTermo && matchData;
+                return matchTermo;
             });
 
             // Filtros aba de Histórico/Baixas
             const pedidosHistoricoFiltrados = pedidos.filter(p => {
-                // Operador não vê Finalizados
                 if (isOperador && p.status === 'Finalizado') return false;
-
                 const termo = buscaHistoricoText.toLowerCase();
                 const matchTermo = !termo || (p.cliente && p.cliente.toLowerCase().includes(termo)) || (p.id && p.id.toString().includes(termo));
                 let matchData = true;
@@ -721,11 +712,25 @@
                 return matchTermo && matchData;
             });
 
-            // Opções dinâmicas de Status baseadas no nível
             const opcoesStatusPermitidas = isOperador ? [...STATUSES_PRODUCAO, 'Abandonado', 'Concluído'] : [...STATUSES_PRODUCAO, ...STATUSES_FINALIZADOS];
-
-            // Bloqueio de Edição. Finalizado bloqueia se não for Admin/Financeiro.
             const isModalTrancado = (pedidoEmEdicao && pedidoEmEdicao.status === 'Finalizado' && isOperador) ? true : false;
+
+            // Render de barras para o Financeiro
+            const renderBarHorizontal = (label, valor, maxVal, isCaixa = false, customColor = null) => {
+                const pct = maxVal > 0 ? (valor / maxVal) * 100 : 0;
+                const barColor = customColor || (isCaixa ? 'bg-emerald-500' : 'bg-brand');
+                return (
+                    <div key={label} className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 text-xs group">
+                        <span className="w-24 sm:w-32 font-medium truncate text-gray-700 dark:text-gray-300">{label}</span>
+                        <div className="flex-1 bg-gray-100 dark:bg-darkElevated h-6 rounded overflow-hidden relative border dark:border-darkBorder">
+                            <div className={`${barColor} h-full transition-all duration-500 opacity-80 group-hover:opacity-100`} style={{ width: `${Math.max(pct, 1)}%` }}></div>
+                        </div>
+                        <span className="w-24 text-right font-bold text-gray-900 dark:text-[#EDEDED]">
+                            R$ {valor.toFixed(2).replace('.', ',')}
+                        </span>
+                    </div>
+                )
+            };
 
             // ==== TELA DE LOGIN ====
             if (!usuario) {
@@ -823,225 +828,142 @@
                             </div>
                         </header>
 
-                        {/* ================= PRODUÇÃO (KANBAN / AIRTABLE LIST) ================= */}
+                        {/* ================= PRODUÇÃO (LIST VIEW) ================= */}
                         {abaAtual === 'producao' && (
                             <main className="flex-1 p-6 lg:p-10 mx-auto w-full fade-in flex flex-col h-[calc(100vh-60px)]">
                                 
-                                {/* TOPO COM FILTROS */}
-                                <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 mb-6 shrink-0">
+                                {/* TOPO COM FILTRO SIMPLIFICADO */}
+                                <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6 shrink-0">
                                     <div className="flex items-center gap-4">
                                         <h1 className="text-3xl font-semibold dark:text-white tracking-tight">Produção</h1>
-                                        {/* Alternador de Visão */}
-                                        <div className="flex bg-gray-100 dark:bg-darkCard p-1 rounded-md border border-gray-200 dark:border-darkBorder">
-                                            <button onClick={() => setVisaoProducao('lista')} className={`px-3 py-1.5 rounded text-xs font-medium flex items-center gap-1.5 transition ${visaoProducao === 'lista' ? 'bg-white dark:bg-darkElevated text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 hover:text-gray-800 dark:hover:text-gray-300'}`}>
-                                                <Icon name="list" className="w-3.5 h-3.5" /> Lista
-                                            </button>
-                                            <button onClick={() => setVisaoProducao('kanban')} className={`px-3 py-1.5 rounded text-xs font-medium flex items-center gap-1.5 transition ${visaoProducao === 'kanban' ? 'bg-white dark:bg-darkElevated text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 hover:text-gray-800 dark:hover:text-gray-300'}`}>
-                                                <Icon name="layout-dashboard" className="w-3.5 h-3.5" /> Quadro
-                                            </button>
-                                        </div>
                                     </div>
                                     
-                                    <div className="flex flex-wrap items-end gap-3 w-full lg:w-auto">
-                                        <div className="relative flex-1 min-w-[200px]">
+                                    <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
+                                        <div className="relative flex-1 min-w-[300px]">
                                             <Icon name="search" className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
-                                            <input type="text" value={buscaProducaoText} onChange={e => setBuscaProducaoText(e.target.value)} placeholder="Buscar cliente ou OS..." className="w-full bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-md pl-9 pr-3 py-2 text-sm outline-none focus:border-brand transition dark:text-[#EDEDED]" />
+                                            <input type="text" value={buscaProducaoText} onChange={e => setBuscaProducaoText(e.target.value)} placeholder="Pesquisar por cliente, OS ou responsável..." className="w-full bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-md pl-9 pr-3 py-2 text-sm outline-none focus:border-brand transition dark:text-[#EDEDED]" />
                                         </div>
-                                        <div className="flex flex-col w-32">
-                                            <CustomDatePicker value={dataFiltroProducaoInicio} onChange={setDataFiltroProducaoInicio} placeholder="Início" className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-md px-3 py-2 text-sm outline-none hover:border-brand transition" />
-                                        </div>
-                                        <div className="flex flex-col w-32">
-                                            <CustomDatePicker value={dataFiltroProducaoFim} onChange={setDataFiltroProducaoFim} placeholder="Fim" className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-md px-3 py-2 text-sm outline-none hover:border-brand transition" />
-                                        </div>
-                                        {(dataFiltroProducaoInicio || dataFiltroProducaoFim || buscaProducaoText) && (
-                                            <button type="button" onClick={() => { setDataFiltroProducaoInicio(''); setDataFiltroProducaoFim(''); setBuscaProducaoText(''); }} className="w-[38px] h-[38px] flex items-center justify-center bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-md hover:bg-gray-100 dark:hover:bg-darkElevated transition text-gray-400 hover:text-brand" title="Limpar Filtros"><Icon name="x" className="w-4 h-4" /></button>
+                                        {buscaProducaoText && (
+                                            <button type="button" onClick={() => setBuscaProducaoText('')} className="w-[38px] h-[38px] flex items-center justify-center bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-md hover:bg-gray-100 dark:hover:bg-darkElevated transition text-gray-400 hover:text-brand" title="Limpar Busca"><Icon name="x" className="w-4 h-4" /></button>
                                         )}
                                         <button onClick={() => { setPedidoEmEdicao(null); setModalAberto(true); }} className="bg-brand text-white px-4 py-2 text-sm rounded-md font-bold shadow-sm transition hover:bg-brandHover h-[38px] flex items-center gap-1.5"><Icon name="plus" /> Nova O.S.</button>
                                     </div>
                                 </div>
 
-                                {/* VISÃO 1: LISTA (AIRTABLE STYLE) */}
-                                {visaoProducao === 'lista' && (
-                                    <div className="flex-1 bg-white dark:bg-darkCard rounded border border-gray-200 dark:border-darkBorder overflow-hidden flex flex-col">
-                                        <div className="overflow-auto custom-scrollbar flex-1">
-                                            <table className="w-full text-left border-collapse whitespace-nowrap">
-                                                <thead className="sticky top-0 z-10 bg-gray-50 dark:bg-darkCard">
-                                                    <tr className="border-b border-gray-200 dark:border-darkBorder text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">
-                                                        <th className="px-4 py-3 w-10 text-center">ID</th>
-                                                        <th className="px-4 py-3 w-40">Prazo</th>
-                                                        <th className="px-4 py-3 w-36">Resp.</th>
-                                                        <th className="px-4 py-3 w-48">Cliente</th>
-                                                        <th className="px-4 py-3 min-w-[200px]">Serviço</th>
-                                                        <th className="px-4 py-3 w-20 text-center">Aprov.</th>
-                                                        <th className="px-4 py-3 w-20 text-center">Entrega</th>
-                                                        <th className="px-4 py-3 w-20 text-center">Urgente</th>
-                                                        <th className="px-4 py-3 w-48">Status</th>
-                                                        <th className="px-4 py-3 w-36">Local</th>
-                                                        <th className="px-4 py-3 w-24 text-center">Concluir</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    {pedidosProducaoAtivos.length === 0 ? (
-                                                        <tr><td colSpan="11" className="p-8 text-center text-gray-500 italic">Nenhum pedido ativo encontrado.</td></tr>
-                                                    ) : (
-                                                        [...STATUSES_PRODUCAO, 'Concluído'].map(status => {
-                                                            const pedidosDoStatus = pedidosProducaoAtivos
-                                                                .filter(p => p.status === status)
-                                                                .sort((a, b) => {
-                                                                    if (!a.prazo) return 1;
-                                                                    if (!b.prazo) return -1;
-                                                                    return a.prazo.localeCompare(b.prazo);
-                                                                });
+                                {/* LISTA DE PRODUÇÃO */}
+                                <div className="flex-1 bg-white dark:bg-darkCard rounded border border-gray-200 dark:border-darkBorder overflow-hidden flex flex-col">
+                                    <div className="overflow-auto custom-scrollbar flex-1">
+                                        <table className="w-full text-left border-collapse whitespace-nowrap">
+                                            <thead className="sticky top-0 z-10 bg-gray-50 dark:bg-darkCard">
+                                                <tr className="border-b border-gray-200 dark:border-darkBorder text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">
+                                                    <th className="px-4 py-3 w-10 text-center">ID</th>
+                                                    <th className="px-4 py-3 w-40">Prazo</th>
+                                                    <th className="px-4 py-3 w-36">Resp.</th>
+                                                    <th className="px-4 py-3 w-48">Cliente</th>
+                                                    <th className="px-4 py-3 min-w-[200px]">Serviço</th>
+                                                    <th className="px-4 py-3 w-20 text-center">Aprov.</th>
+                                                    <th className="px-4 py-3 w-20 text-center">Entrega</th>
+                                                    <th className="px-4 py-3 w-20 text-center">Urgente</th>
+                                                    <th className="px-4 py-3 w-48">Status</th>
+                                                    <th className="px-4 py-3 w-36">Local</th>
+                                                    <th className="px-4 py-3 w-24 text-center">Concluir</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {pedidosProducaoAtivos.length === 0 ? (
+                                                    <tr><td colSpan="11" className="p-8 text-center text-gray-500 italic">Nenhuma OS encontrada.</td></tr>
+                                                ) : (
+                                                    [...STATUSES_PRODUCAO, 'Concluído'].map(status => {
+                                                        const pedidosDoStatus = pedidosProducaoAtivos
+                                                            .filter(p => p.status === status)
+                                                            .sort((a, b) => {
+                                                                if (!a.prazo) return 1;
+                                                                if (!b.prazo) return -1;
+                                                                return a.prazo.localeCompare(b.prazo);
+                                                            });
 
-                                                            if (pedidosDoStatus.length === 0) return null;
+                                                        if (pedidosDoStatus.length === 0) return null;
 
-                                                            return (
-                                                                <React.Fragment key={status}>
-                                                                    <tr className="bg-gray-50/50 dark:bg-darkElevated/40 select-none">
-                                                                        <td colSpan="11" className={`px-4 py-2 border-y border-gray-200 dark:border-darkBorder font-bold tracking-wide uppercase text-[10px] bg-gray-100/50 dark:bg-darkHover/40 ${obterCorStatus(status)}`}>
-                                                                            {status} — <span className="text-gray-400 dark:text-gray-500">{pedidosDoStatus.length} {pedidosDoStatus.length === 1 ? 'pedido' : 'pedidos'}</span>
+                                                        return (
+                                                            <React.Fragment key={status}>
+                                                                <tr className="bg-gray-50/50 dark:bg-darkElevated/40 select-none">
+                                                                    <td colSpan="11" className={`px-4 py-2 border-y border-gray-200 dark:border-darkBorder font-bold tracking-wide uppercase text-[10px] bg-gray-100/50 dark:bg-darkHover/40 ${obterCorStatus(status)}`}>
+                                                                        {status} — <span className="text-gray-400 dark:text-gray-500">{pedidosDoStatus.length} {pedidosDoStatus.length === 1 ? 'pedido' : 'pedidos'}</span>
+                                                                    </td>
+                                                                </tr>
+                                                                
+                                                                {pedidosDoStatus.map(p => (
+                                                                    <tr key={p.id} className="border-b border-gray-100 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover transition group text-sm">
+                                                                        <td className="px-4 py-3 font-medium text-gray-400 dark:text-gray-600 text-center">
+                                                                            <button type="button" onClick={() => abrirEdicao(p)} className="hover:text-brand transition">#{p.id}</button>
+                                                                        </td>
+                                                                        <td className="px-4 py-3">
+                                                                            <CustomDatePicker 
+                                                                                value={p.prazo || ''} 
+                                                                                onChange={val => atualizarCampoInline(p.id, 'prazo', val)} 
+                                                                                placeholder="Definir prazo..." 
+                                                                                className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-2.5 py-1.5 text-xs outline-none hover:border-brand transition text-gray-700 dark:text-[#EDEDED]" 
+                                                                            />
+                                                                        </td>
+                                                                        <td className="px-4 py-3">
+                                                                            <MultiSelectDropdown 
+                                                                                value={p.responsavel} 
+                                                                                options={RESPONSAVEIS} 
+                                                                                onChange={(val) => atualizarCampoInline(p.id, 'responsavel', val)} 
+                                                                                className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-2.5 py-1.5 text-xs outline-none hover:border-brand"
+                                                                            />
+                                                                        </td>
+                                                                        <td className="px-4 py-3 font-semibold text-gray-900 dark:text-white truncate max-w-[12rem]">{p.cliente}</td>
+                                                                        <td className="px-4 py-3 text-gray-600 dark:text-[#A1A1AA] truncate max-w-[18rem]">{obterResumoServicos(p.servico)}</td>
+                                                                        
+                                                                        <td className="px-4 py-3 text-center">
+                                                                            <button type="button" onClick={() => atualizarCampoInline(p.id, 'aprovado', !p.aprovado)} className={`p-1.5 rounded-md transition ${p.aprovado ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-gray-100 text-gray-400 dark:bg-darkElevated dark:text-gray-600 hover:text-gray-600 dark:hover:text-gray-400'}`}>
+                                                                                <Icon name="thumbs-up" className="w-3.5 h-3.5" />
+                                                                            </button>
+                                                                        </td>
+                                                                        <td className="px-4 py-3 text-center">
+                                                                            <button type="button" onClick={() => atualizarCampoInline(p.id, 'entrega', !p.entrega)} className={`p-1.5 rounded-md transition ${p.entrega ? 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400' : 'bg-gray-100 text-gray-400 dark:bg-darkElevated dark:text-gray-600 hover:text-gray-600 dark:hover:text-gray-400'}`}>
+                                                                                <Icon name="truck" className="w-3.5 h-3.5" />
+                                                                            </button>
+                                                                        </td>
+                                                                        <td className="px-4 py-3 text-center">
+                                                                            <button type="button" onClick={() => atualizarCampoInline(p.id, 'urgente', !p.urgente)} className={`p-1.5 rounded-md transition ${p.urgente ? 'bg-red-500/20 text-red-600 dark:bg-red-950/40 dark:text-red-400 ring-1 ring-red-500/30' : 'bg-gray-100 text-gray-400 dark:bg-darkElevated dark:text-gray-600 hover:text-gray-600 dark:hover:text-gray-400'}`}>
+                                                                                <Icon name="alert-triangle" className="w-3.5 h-3.5" />
+                                                                            </button>
+                                                                        </td>
+
+                                                                        <td className="px-4 py-3">
+                                                                            <InlineDropdown 
+                                                                                value={p.status} 
+                                                                                options={opcoesStatusPermitidas} 
+                                                                                onChange={(val) => atualizarCampoInline(p.id, 'status', val)} 
+                                                                                className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-2.5 py-1.5 text-xs outline-none hover:border-brand"
+                                                                            />
+                                                                        </td>
+                                                                        <td className="px-4 py-3">
+                                                                            <MultiSelectDropdown 
+                                                                                value={p.local_producao} 
+                                                                                options={LOCAIS} 
+                                                                                onChange={(val) => atualizarCampoInline(p.id, 'local_producao', val)} 
+                                                                                placeholder="Berlim"
+                                                                                className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-2.5 py-1.5 text-xs outline-none hover:border-brand"
+                                                                            />
+                                                                        </td>
+                                                                        <td className="px-4 py-3 text-center">
+                                                                            <button type="button" onClick={() => atualizarCampoInline(p.id, 'status', 'Concluído')} className="p-1 text-gray-300 hover:text-emerald-500 dark:text-darkBorder dark:hover:text-emerald-500 transition" title="Marcar como Concluído">
+                                                                                <Icon name="square" className="w-4 h-4" />
+                                                                            </button>
                                                                         </td>
                                                                     </tr>
-                                                                    
-                                                                    {pedidosDoStatus.map(p => (
-                                                                        <tr key={p.id} className="border-b border-gray-100 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover transition group text-sm">
-                                                                            <td className="px-4 py-3 font-medium text-gray-400 dark:text-gray-600 text-center">
-                                                                                <button type="button" onClick={() => abrirEdicao(p)} className="hover:text-brand transition">#{p.id}</button>
-                                                                            </td>
-                                                                            <td className="px-4 py-3">
-                                                                                <CustomDatePicker 
-                                                                                    value={p.prazo || ''} 
-                                                                                    onChange={val => atualizarCampoInline(p.id, 'prazo', val)} 
-                                                                                    placeholder="Definir prazo..." 
-                                                                                    className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-2.5 py-1.5 text-xs outline-none hover:border-brand transition text-gray-700 dark:text-[#EDEDED]" 
-                                                                                />
-                                                                            </td>
-                                                                            <td className="px-4 py-3">
-                                                                                <MultiSelectDropdown 
-                                                                                    value={p.responsavel} 
-                                                                                    options={RESPONSAVEIS} 
-                                                                                    onChange={(val) => atualizarCampoInline(p.id, 'responsavel', val)} 
-                                                                                    className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-2.5 py-1.5 text-xs outline-none hover:border-brand"
-                                                                                />
-                                                                            </td>
-                                                                            <td className="px-4 py-3 font-semibold text-gray-900 dark:text-white truncate max-w-[12rem]">{p.cliente}</td>
-                                                                            <td className="px-4 py-3 text-gray-600 dark:text-[#A1A1AA] truncate max-w-[18rem]">{obterResumoServicos(p.servico)}</td>
-                                                                            
-                                                                            <td className="px-4 py-3 text-center">
-                                                                                <button type="button" onClick={() => atualizarCampoInline(p.id, 'aprovado', !p.aprovado)} className={`p-1.5 rounded-md transition ${p.aprovado ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-gray-100 text-gray-400 dark:bg-darkElevated dark:text-gray-600 hover:text-gray-600 dark:hover:text-gray-400'}`}>
-                                                                                    <Icon name="thumbs-up" className="w-3.5 h-3.5" />
-                                                                                </button>
-                                                                            </td>
-                                                                            <td className="px-4 py-3 text-center">
-                                                                                <button type="button" onClick={() => atualizarCampoInline(p.id, 'entrega', !p.entrega)} className={`p-1.5 rounded-md transition ${p.entrega ? 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400' : 'bg-gray-100 text-gray-400 dark:bg-darkElevated dark:text-gray-600 hover:text-gray-600 dark:hover:text-gray-400'}`}>
-                                                                                    <Icon name="truck" className="w-3.5 h-3.5" />
-                                                                                </button>
-                                                                            </td>
-                                                                            <td className="px-4 py-3 text-center">
-                                                                                <button type="button" onClick={() => atualizarCampoInline(p.id, 'urgente', !p.urgente)} className={`p-1.5 rounded-md transition ${p.urgente ? 'bg-red-500/20 text-red-600 dark:bg-red-950/40 dark:text-red-400 ring-1 ring-red-500/30' : 'bg-gray-100 text-gray-400 dark:bg-darkElevated dark:text-gray-600 hover:text-gray-600 dark:hover:text-gray-400'}`}>
-                                                                                    <Icon name="alert-triangle" className="w-3.5 h-3.5" />
-                                                                                </button>
-                                                                            </td>
-
-                                                                            <td className="px-4 py-3">
-                                                                                <InlineDropdown 
-                                                                                    value={p.status} 
-                                                                                    options={opcoesStatusPermitidas} 
-                                                                                    onChange={(val) => atualizarCampoInline(p.id, 'status', val)} 
-                                                                                    className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-2.5 py-1.5 text-xs outline-none hover:border-brand"
-                                                                                />
-                                                                            </td>
-                                                                            <td className="px-4 py-3">
-                                                                                <MultiSelectDropdown 
-                                                                                    value={p.local_producao} 
-                                                                                    options={LOCAIS} 
-                                                                                    onChange={(val) => atualizarCampoInline(p.id, 'local_producao', val)} 
-                                                                                    placeholder="Berlim"
-                                                                                    className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-2.5 py-1.5 text-xs outline-none hover:border-brand"
-                                                                                />
-                                                                            </td>
-                                                                            <td className="px-4 py-3 text-center">
-                                                                                <button type="button" onClick={() => atualizarCampoInline(p.id, 'status', 'Concluído')} className="p-1 text-gray-300 hover:text-emerald-500 dark:text-darkBorder dark:hover:text-emerald-500 transition" title="Marcar como Concluído">
-                                                                                    <Icon name="square" className="w-4 h-4" />
-                                                                                </button>
-                                                                            </td>
-                                                                        </tr>
-                                                                    ))}
-                                                                </React.Fragment>
-                                                            );
-                                                        })
-                                                    )}
-                                                </tbody>
-                                            </table>
-                                        </div>
+                                                                ))}
+                                                            </React.Fragment>
+                                                        );
+                                                    })
+                                                )}
+                                            </tbody>
+                                        </table>
                                     </div>
-                                )}
-
-                                {/* VISÃO 2: KANBAN (QUADRO) */}
-                                {visaoProducao === 'kanban' && (
-                                    <div className="flex-1 flex flex-col min-h-0 overflow-y-auto custom-scrollbar gap-6">
-                                        
-                                        {pedidosProducaoAtivos.filter(p => p.urgente).length > 0 && (
-                                            <div className="p-4 bg-red-500/5 dark:bg-red-950/10 border border-red-200 dark:border-red-900/30 rounded-xl flex flex-col gap-3 shrink-0 backdrop-blur-sm">
-                                                <div className="flex items-center gap-2 text-red-600 dark:text-red-400 font-bold text-xs tracking-wider uppercase">
-                                                    <Icon name="alert-triangle" className="w-4 h-4 animate-bounce" />
-                                                    Atenção Crítica — Ordens Urgentes ({pedidosProducaoAtivos.filter(p => p.urgente).length})
-                                                </div>
-                                                <div className="flex gap-4 overflow-x-auto custom-scrollbar pb-2 pt-1 items-start">
-                                                    {pedidosProducaoAtivos.filter(p => p.urgente).map(p => (
-                                                        <div key={p.id} className="w-72 shrink-0 bg-white dark:bg-darkCard p-3 rounded-lg border border-red-300 dark:border-red-900/60 shadow-md flex flex-col gap-2 relative group ring-1 ring-red-500/20">
-                                                            <div className="flex justify-between items-start">
-                                                                <div className="flex flex-col">
-                                                                    <span className="text-[9px] font-bold text-red-500 dark:text-red-400 uppercase tracking-widest bg-red-500/10 dark:bg-red-950/40 px-1 py-0.5 rounded border border-red-500/20 w-max mb-1">{p.status}</span>
-                                                                    <h3 className="font-semibold text-sm text-gray-900 dark:text-white leading-tight">{p.cliente}</h3>
-                                                                </div>
-                                                                <button type="button" onClick={() => abrirEdicao(p)} className="text-gray-400 hover:text-brand transition opacity-0 group-hover:opacity-100" title="Editar"><Icon name="layout-dashboard" className="w-3 h-3" /></button>
-                                                            </div>
-                                                            <p className="text-gray-500 dark:text-[#A1A1AA] text-xs line-clamp-2">{obterResumoServicos(p.servico)}</p>
-                                                            <div className="flex flex-wrap gap-1 mt-1">
-                                                                {p.responsavel && p.responsavel.split(',').map(r => r.trim()).filter(Boolean).map((r, i) => <span key={`resp-${i}`} className="bg-gray-100 dark:bg-darkCard text-gray-600 dark:text-gray-400 text-[9px] font-bold px-1.5 py-0.5 rounded border dark:border-darkBorder">{r}</span>)}
-                                                                {p.prazo && <span className="bg-brand/10 text-brand text-[9px] font-bold px-1.5 py-0.5 rounded border border-brand/20">{formatarDataExibicao(p.prazo).substring(0,5)}</span>}
-                                                                {p.entrega && <span className="bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 text-[9px] font-bold px-1.5 py-0.5 rounded border border-orange-200 dark:border-orange-900/30 flex items-center gap-1"><Icon name="truck" className="w-2.5 h-2.5"/>Entrega</span>}
-                                                                {p.local_producao && p.local_producao.split(',').map(l => l.trim()).filter(Boolean).filter(l => l !== 'Berlim').map((l, i) => <span key={`loc-${i}`} className="bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-[9px] font-bold px-1.5 py-0.5 rounded border border-blue-200 dark:border-blue-800/50">{l}</span>)}
-                                                            </div>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        <div className="flex-1 overflow-x-auto custom-scrollbar pb-4 flex gap-4 items-start">
-                                            {[...STATUSES_PRODUCAO, 'Concluído'].map(status => {
-                                                const pedidosColuna = pedidosProducaoAtivos.filter(p => p.status === status && !p.urgente);
-                                                return (
-                                                    <div key={status} className="w-72 shrink-0 flex flex-col bg-gray-50 dark:bg-darkCard rounded-xl border border-gray-200 dark:border-darkBorder max-h-full">
-                                                        <div className="p-3 border-b border-gray-200 dark:border-darkBorder flex justify-between items-center sticky top-0 bg-gray-50/90 dark:bg-darkCard/90 glass z-10 rounded-t-xl">
-                                                            <h2 className="font-bold text-xs tracking-wide text-gray-700 dark:text-[#EDEDED] uppercase">{status}</h2>
-                                                            <span className="text-[10px] font-bold text-gray-500 bg-gray-200 dark:bg-darkElevated px-1.5 py-0.5 rounded border dark:border-darkBorder">{pedidosColuna.length}</span>
-                                                        </div>
-                                                        <div className="p-2 flex flex-col gap-2 overflow-y-auto custom-scrollbar flex-1">
-                                                            {pedidosColuna.map(p => (
-                                                                <div key={p.id} className="bg-white dark:bg-darkElevated p-3 rounded-lg border border-gray-200 dark:border-darkBorder shadow-sm flex flex-col gap-2 select-none group">
-                                                                    <div className="flex justify-between items-start">
-                                                                        <h3 className="font-semibold text-sm text-gray-900 dark:text-white leading-tight">{p.cliente}</h3>
-                                                                        <button type="button" onClick={() => abrirEdicao(p)} className="text-gray-400 hover:text-brand transition opacity-0 group-hover:opacity-100" title="Editar"><Icon name="layout-dashboard" className="w-3 h-3" /></button>
-                                                                    </div>
-                                                                    <p className="text-gray-500 dark:text-[#A1A1AA] text-xs line-clamp-2">{obterResumoServicos(p.servico)}</p>
-                                                                    <div className="flex flex-wrap gap-1 mt-1">
-                                                                        {p.responsavel && p.responsavel.split(',').map(r => r.trim()).filter(Boolean).map((r, i) => <span key={`resp-${i}`} className="bg-gray-100 dark:bg-darkCard text-gray-600 dark:text-gray-400 text-[9px] font-bold px-1.5 py-0.5 rounded border dark:border-darkBorder">{r}</span>)}
-                                                                        {p.prazo && <span className="bg-brand/10 text-brand text-[9px] font-bold px-1.5 py-0.5 rounded border border-brand/20">{formatarDataExibicao(p.prazo).substring(0,5)}</span>}
-                                                                        {p.entrega && <span className="bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 text-[9px] font-bold px-1.5 py-0.5 rounded border border-orange-200 dark:border-orange-900/30 flex items-center gap-1"><Icon name="truck" className="w-2.5 h-2.5"/>Entrega</span>}
-                                                                        {p.local_producao && p.local_producao.split(',').map(l => l.trim()).filter(Boolean).filter(l => l !== 'Berlim').map((l, i) => <span key={`loc-${i}`} className="bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-[9px] font-bold px-1.5 py-0.5 rounded border border-blue-200 dark:border-blue-800/50">{l}</span>)}
-                                                                    </div>
-                                                                </div>
-                                                            ))}
-                                                        </div>
-                                                    </div>
-                                                )
-                                            })}
-                                        </div>
-                                    </div>
-                                )}
+                                </div>
                             </main>
                         )}
 
@@ -1114,14 +1036,14 @@
                             </main>
                         )}
 
-                        {/* ================= FINANCEIRO ================= */}
+                        {/* ================= FINANCEIRO ERP / BI ================= */}
                         {abaAtual === 'financeiro' && (usuario?.nivel === 'Admin' || usuario?.nivel === 'Financeiro') && (
                             <main className="flex-1 p-6 lg:p-10 max-w-[1400px] mx-auto w-full fade-in flex flex-col gap-6">
                                 
                                 <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 border-b border-gray-100 dark:border-darkBorder pb-6 shrink-0">
                                     <div>
-                                        <h1 className="text-3xl font-semibold dark:text-white tracking-tight">Financeiro & Relatórios</h1>
-                                        <p className="text-sm text-gray-500 dark:text-[#888888] mt-1">Análise de faturamento, caixa e crescimento.</p>
+                                        <h1 className="text-3xl font-semibold dark:text-white tracking-tight">Dashboard de Business Intelligence</h1>
+                                        <p className="text-sm text-gray-500 dark:text-[#888888] mt-1">Análise de Receitas, Centros de Custo e Performance.</p>
                                     </div>
                                     <div className="flex flex-wrap items-end gap-3 w-full lg:w-auto">
                                         <div className="flex flex-col w-36">
@@ -1144,8 +1066,8 @@
                                                     if (dataFiltroFinFim && (!p.data_pedido || p.data_pedido > dataFiltroFinFim)) match = false;
                                                     return match;
                                                 });
-                                                const cabecalho = "ID;Data;Cliente;Status;Valor\n";
-                                                const linhas = pedidosExport.map(p => `${p.id};${p.data_pedido};${p.cliente};${p.status};${p.valor_total}`).join("\n");
+                                                const cabecalho = "ID;Data;Cliente;Responsavel;Local;Status;Valor\n";
+                                                const linhas = pedidosExport.map(p => `${p.id};${p.data_pedido};${p.cliente};${p.responsavel};${p.local_producao};${p.status};${p.valor_total}`).join("\n");
                                                 const blob = new Blob([cabecalho + linhas], { type: 'text/csv;charset=utf-8;' });
                                                 const url = URL.createObjectURL(blob);
                                                 const link = document.createElement("a");
@@ -1163,7 +1085,7 @@
                                 </div>
 
                                 {(() => {
-                                    // Filtro aplicado apenas para o grid principal (faturamento no periodo)
+                                    // Filtra os pedidos com base nas datas escolhidas no painel financeiro
                                     const pedidosFin = pedidos.filter(p => {
                                         let match = true;
                                         if (dataFiltroFinInicio && (!p.data_pedido || p.data_pedido < dataFiltroFinInicio)) match = false;
@@ -1171,12 +1093,13 @@
                                         return match;
                                     });
 
+                                    // Indicadores Principais
                                     const totalBruto = pedidosFin.reduce((acc, p) => acc + (Number(p.valor_total) || 0), 0);
                                     const totalRecebido = pedidosFin.filter(p => p.status === 'Concluído' || p.status === 'Finalizado').reduce((acc, p) => acc + (Number(p.valor_total) || 0), 0);
                                     const totalAReceber = pedidosFin.filter(p => p.status !== 'Concluído' && p.status !== 'Finalizado' && p.status !== 'Abandonado').reduce((acc, p) => acc + (Number(p.valor_total) || 0), 0);
                                     const ticketMedio = pedidosFin.length > 0 ? (totalBruto / pedidosFin.length) : 0;
 
-                                    // Crescimento Anual (Ignora os filtros de data locais para pegar os anos cheios)
+                                    // Crescimento Anual (YoY) - Ignora filtros locais para pegar anos cheios
                                     const anoAtualStr = new Date().getFullYear().toString();
                                     const anoAnteriorStr = (new Date().getFullYear() - 1).toString();
                                     
@@ -1187,38 +1110,53 @@
                                     // Agrupamento Mes a Mes
                                     const agrupadoPorMesAno = pedidosFin.reduce((acc, p) => {
                                         if (!p.data_pedido) return acc;
-                                        const mesAno = p.data_pedido.substring(0, 7); // "YYYY-MM"
-                                        if (!acc[mesAno]) acc[mesAno] = { mesAno, bruto: 0, recebido: 0, qtde: 0 };
+                                        const mesAno = p.data_pedido.substring(0, 7);
+                                        if (!acc[mesAno]) acc[mesAno] = { mesAno, bruto: 0, recebido: 0 };
                                         const val = Number(p.valor_total) || 0;
                                         acc[mesAno].bruto += val;
-                                        acc[mesAno].qtde += 1;
                                         if (p.status === 'Concluído' || p.status === 'Finalizado') acc[mesAno].recebido += val;
                                         return acc;
                                     }, {});
                                     const mesesOrdenados = Object.values(agrupadoPorMesAno).sort((a, b) => a.mesAno.localeCompare(b.mesAno));
                                     const maxBrutoMes = Math.max(...mesesOrdenados.map(m => m.bruto), 1);
 
-                                    const renderBarHorizontal = (label, valor, maxVal, isCaixa = false) => {
-                                        const pct = maxVal > 0 ? (valor / maxVal) * 100 : 0;
-                                        return (
-                                            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 text-xs group">
-                                                <span className="w-24 font-medium truncate text-gray-700 dark:text-gray-300">{label}</span>
-                                                <div className="flex-1 bg-gray-100 dark:bg-darkElevated h-6 rounded overflow-hidden relative border dark:border-darkBorder">
-                                                    <div className={`${isCaixa ? 'bg-emerald-500' : 'bg-brand'} h-full transition-all duration-500 opacity-80 group-hover:opacity-100`} style={{ width: `${Math.max(pct, 1)}%` }}></div>
-                                                </div>
-                                                <span className="w-28 text-right font-bold text-gray-900 dark:text-[#EDEDED]">
-                                                    R$ {valor.toFixed(2).replace('.', ',')}
-                                                </span>
-                                            </div>
-                                        )
-                                    }
+                                    // Agrupamento de Rentabilidade por Responsável
+                                    const agrupadoResp = pedidosFin.reduce((acc, p) => {
+                                        if(!p.responsavel) return acc;
+                                        const resps = p.responsavel.split(',').map(s=>s.trim()).filter(Boolean);
+                                        resps.forEach(r => {
+                                            if(!acc[r]) acc[r] = 0;
+                                            acc[r] += (Number(p.valor_total) || 0) / resps.length; // Divide o valor se tiver mais de 1 pessoa
+                                        });
+                                        return acc;
+                                    }, {});
+                                    const rankingResp = Object.entries(agrupadoResp).sort((a,b) => b[1] - a[1]);
+                                    const maxResp = Math.max(...rankingResp.map(r => r[1]), 1);
+
+                                    // Agrupamento por Local de Produção
+                                    const agrupadoLocal = pedidosFin.reduce((acc, p) => {
+                                        if(!p.local_producao) return acc;
+                                        const locais = p.local_producao.split(',').map(s=>s.trim()).filter(Boolean);
+                                        locais.forEach(l => {
+                                            if(!acc[l]) acc[l] = 0;
+                                            acc[l] += (Number(p.valor_total) || 0) / locais.length;
+                                        });
+                                        return acc;
+                                    }, {});
+                                    const rankingLocal = Object.entries(agrupadoLocal).sort((a,b) => b[1] - a[1]);
+                                    const maxLocal = Math.max(...rankingLocal.map(l => l[1]), 1);
+
+                                    // Cores dinâmicas para as listas
+                                    const colorsRank = ['bg-blue-500', 'bg-indigo-500', 'bg-purple-500', 'bg-fuchsia-500', 'bg-rose-500', 'bg-red-500'];
+                                    const colorsLocal = ['bg-teal-500', 'bg-emerald-500', 'bg-cyan-500', 'bg-sky-500', 'bg-blue-500'];
 
                                     return (
                                         <>
+                                            {/* LINHA 1: TOP INDICADORES (KPIs) */}
                                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                                                 <div className="bg-white dark:bg-darkCard p-5 rounded-xl border border-gray-200 dark:border-darkBorder shadow-sm lg:col-span-2 relative overflow-hidden">
                                                     <div className="absolute right-0 top-0 w-32 h-full bg-gradient-to-l from-brand/10 to-transparent pointer-events-none"></div>
-                                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">Crescimento Anual (YoY)</span>
+                                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">Crescimento Anual Global (YoY)</span>
                                                     <div className="flex items-end gap-3 mt-1">
                                                         <h2 className="text-3xl font-black text-gray-900 dark:text-white">R$ {totalAnoAtual.toFixed(2).replace('.', ',')}</h2>
                                                         <div className={`flex items-center gap-1 text-sm font-bold pb-1 ${crescimentoPercentual >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
@@ -1226,52 +1164,123 @@
                                                             {Math.abs(crescimentoPercentual).toFixed(1)}%
                                                         </div>
                                                     </div>
-                                                    <p className="text-[11px] text-gray-400 mt-2">Vs R$ {totalAnoAnterior.toFixed(2).replace('.', ',')} arrecadados em {anoAnteriorStr}</p>
+                                                    <p className="text-[11px] text-gray-400 mt-2">Vs R$ {totalAnoAnterior.toFixed(2).replace('.', ',')} faturados em todo ano passado</p>
                                                 </div>
 
                                                 <div className="bg-white dark:bg-darkCard p-5 rounded-xl border border-gray-200 dark:border-darkBorder shadow-sm">
                                                     <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-wider block mb-1">Caixa Realizado</span>
                                                     <h2 className="text-2xl font-black text-emerald-500">R$ {totalRecebido.toFixed(2).replace('.', ',')}</h2>
-                                                    <p className="text-[11px] text-gray-400 mt-2">No período selecionado</p>
+                                                    <p className="text-[11px] text-gray-400 mt-2">Ordens recebidas no filtro</p>
                                                 </div>
                                                 <div className="bg-white dark:bg-darkCard p-5 rounded-xl border border-gray-200 dark:border-darkBorder shadow-sm">
-                                                    <span className="text-[10px] font-bold text-orange-500 uppercase tracking-wider block mb-1">Projeção a Receber</span>
+                                                    <span className="text-[10px] font-bold text-orange-500 uppercase tracking-wider block mb-1">Contas a Receber</span>
                                                     <h2 className="text-2xl font-black text-orange-500">R$ {totalAReceber.toFixed(2).replace('.', ',')}</h2>
-                                                    <p className="text-[11px] text-gray-400 mt-2">Ordens ativas na esteira</p>
+                                                    <p className="text-[11px] text-gray-400 mt-2">Valor na esteira de produção</p>
                                                 </div>
                                                 <div className="bg-white dark:bg-darkCard p-5 rounded-xl border border-gray-200 dark:border-darkBorder shadow-sm">
                                                     <span className="text-[10px] font-bold text-blue-500 uppercase tracking-wider block mb-1">Ticket Médio</span>
                                                     <h2 className="text-2xl font-black text-blue-500">R$ {ticketMedio.toFixed(2).replace('.', ',')}</h2>
-                                                    <p className="text-[11px] text-gray-400 mt-2">Média de valor por pedido</p>
+                                                    <p className="text-[11px] text-gray-400 mt-2">Média gasta por pedido</p>
                                                 </div>
                                             </div>
 
+                                            {/* LINHA 2: GRÁFICOS MENSAL E STATUS */}
                                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                                                {/* Gráfico Mensal */}
                                                 <div className="bg-white dark:bg-darkCard p-6 rounded-xl border border-gray-200 dark:border-darkBorder flex flex-col gap-4">
                                                     <div>
                                                         <h3 className="font-bold text-sm text-gray-800 dark:text-white uppercase tracking-wider">Desempenho Mês a Mês</h3>
-                                                        <p className="text-xs text-gray-400 mt-0.5">Evolução de faturamento bruto.</p>
+                                                        <p className="text-xs text-gray-400 mt-0.5">Evolução do faturamento bruto no período.</p>
                                                     </div>
                                                     <div className="flex flex-col gap-3 mt-2 overflow-y-auto max-h-64 custom-scrollbar pr-2">
                                                         {mesesOrdenados.length === 0 ? <p className="text-xs text-gray-500 italic">Sem dados no período.</p> : 
-                                                            mesesOrdenados.map(m => renderBarHorizontal(formatarMesAno(m.mesAno), m.bruto, maxBrutoMes, false))
+                                                            mesesOrdenados.map(m => {
+                                                                const pct = (m.bruto / maxBrutoMes) * 100;
+                                                                return (
+                                                                    <div key={m.mesAno} className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 text-xs group">
+                                                                        <span className="w-24 font-medium truncate text-gray-700 dark:text-gray-300">{formatarMesAno(m.mesAno)}</span>
+                                                                        <div className="flex-1 bg-gray-100 dark:bg-darkElevated h-6 rounded overflow-hidden relative border dark:border-darkBorder">
+                                                                            <div className="bg-brand h-full transition-all duration-500 opacity-80 group-hover:opacity-100" style={{ width: `${Math.max(pct, 1)}%` }}></div>
+                                                                        </div>
+                                                                        <span className="w-24 text-right font-bold text-gray-900 dark:text-[#EDEDED]">R$ {m.bruto.toFixed(2).replace('.', ',')}</span>
+                                                                    </div>
+                                                                )
+                                                            })
                                                         }
                                                     </div>
                                                 </div>
 
-                                                {/* Gráfico Distribuição Status */}
                                                 <div className="bg-white dark:bg-darkCard p-6 rounded-xl border border-gray-200 dark:border-darkBorder flex flex-col gap-4">
                                                     <div>
-                                                        <h3 className="font-bold text-sm text-gray-800 dark:text-white uppercase tracking-wider">Distribuição por Status</h3>
+                                                        <h3 className="font-bold text-sm text-gray-800 dark:text-white uppercase tracking-wider">Distribuição por Status Financeiro</h3>
                                                         <p className="text-xs text-gray-400 mt-0.5">Visão do montante alocado em cada etapa.</p>
                                                     </div>
                                                     <div className="flex flex-col gap-3 mt-2 overflow-y-auto max-h-64 custom-scrollbar pr-2">
                                                         {[...STATUSES_PRODUCAO, ...STATUSES_FINALIZADOS].map(st => {
                                                             const valorDoStatus = pedidosFin.filter(p => p.status === st).reduce((acc, p) => acc + (Number(p.valor_total) || 0), 0);
                                                             if (valorDoStatus === 0) return null;
-                                                            return renderBarHorizontal(st, valorDoStatus, totalBruto, st === 'Concluído' || st === 'Finalizado');
+                                                            const pct = (valorDoStatus / totalBruto) * 100;
+                                                            const isCaixa = st === 'Concluído' || st === 'Finalizado';
+                                                            return (
+                                                                <div key={st} className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 text-xs group">
+                                                                    <span className="w-32 font-medium truncate text-gray-700 dark:text-gray-300">{st}</span>
+                                                                    <div className="flex-1 bg-gray-100 dark:bg-darkElevated h-6 rounded overflow-hidden relative border dark:border-darkBorder">
+                                                                        <div className={`${isCaixa ? 'bg-emerald-500' : 'bg-brand'} h-full transition-all duration-500 opacity-80 group-hover:opacity-100`} style={{ width: `${Math.max(pct, 1)}%` }}></div>
+                                                                    </div>
+                                                                    <span className="w-24 text-right font-bold text-gray-900 dark:text-[#EDEDED]">R$ {valorDoStatus.toFixed(2).replace('.', ',')}</span>
+                                                                </div>
+                                                            )
                                                         })}
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* LINHA 3: CENTROS DE CUSTO E RANKING */}
+                                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                                <div className="bg-white dark:bg-darkCard p-6 rounded-xl border border-gray-200 dark:border-darkBorder flex flex-col gap-4">
+                                                    <div>
+                                                        <h3 className="font-bold text-sm text-gray-800 dark:text-white uppercase tracking-wider">Performance de Vendas por Responsável</h3>
+                                                        <p className="text-xs text-gray-400 mt-0.5">Ranking financeiro gerado por cada membro.</p>
+                                                    </div>
+                                                    <div className="flex flex-col gap-3 mt-2 overflow-y-auto max-h-64 custom-scrollbar pr-2">
+                                                        {rankingResp.length === 0 ? <p className="text-xs text-gray-500 italic">Nenhum responsável registrado no período.</p> :
+                                                            rankingResp.map((resp, index) => {
+                                                                const color = colorsRank[index % colorsRank.length];
+                                                                const pct = (resp[1] / maxResp) * 100;
+                                                                return (
+                                                                    <div key={resp[0]} className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 text-xs group">
+                                                                        <span className="w-24 font-bold truncate text-gray-700 dark:text-gray-300">{index + 1}º. {resp[0]}</span>
+                                                                        <div className="flex-1 bg-gray-100 dark:bg-darkElevated h-6 rounded overflow-hidden relative border dark:border-darkBorder">
+                                                                            <div className={`${color} h-full transition-all duration-500 opacity-80 group-hover:opacity-100`} style={{ width: `${Math.max(pct, 1)}%` }}></div>
+                                                                        </div>
+                                                                        <span className="w-24 text-right font-bold text-gray-900 dark:text-[#EDEDED]">R$ {resp[1].toFixed(2).replace('.', ',')}</span>
+                                                                    </div>
+                                                                )
+                                                            })
+                                                        }
+                                                    </div>
+                                                </div>
+
+                                                <div className="bg-white dark:bg-darkCard p-6 rounded-xl border border-gray-200 dark:border-darkBorder flex flex-col gap-4">
+                                                    <div>
+                                                        <h3 className="font-bold text-sm text-gray-800 dark:text-white uppercase tracking-wider">Receitas por Local de Produção</h3>
+                                                        <p className="text-xs text-gray-400 mt-0.5">Rentabilidade baseada nos centros de custo (Terceiros x Interno).</p>
+                                                    </div>
+                                                    <div className="flex flex-col gap-3 mt-2 overflow-y-auto max-h-64 custom-scrollbar pr-2">
+                                                        {rankingLocal.length === 0 ? <p className="text-xs text-gray-500 italic">Nenhum local registrado no período.</p> :
+                                                            rankingLocal.map((loc, index) => {
+                                                                const color = colorsLocal[index % colorsLocal.length];
+                                                                const pct = (loc[1] / maxLocal) * 100;
+                                                                return (
+                                                                    <div key={loc[0]} className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 text-xs group">
+                                                                        <span className="w-24 font-medium truncate text-gray-700 dark:text-gray-300">{loc[0]}</span>
+                                                                        <div className="flex-1 bg-gray-100 dark:bg-darkElevated h-6 rounded overflow-hidden relative border dark:border-darkBorder">
+                                                                            <div className={`${color} h-full transition-all duration-500 opacity-80 group-hover:opacity-100`} style={{ width: `${Math.max(pct, 1)}%` }}></div>
+                                                                        </div>
+                                                                        <span className="w-24 text-right font-bold text-gray-900 dark:text-[#EDEDED]">R$ {loc[1].toFixed(2).replace('.', ',')}</span>
+                                                                    </div>
+                                                                )
+                                                            })
+                                                        }
                                                     </div>
                                                 </div>
                                             </div>
@@ -1372,7 +1381,6 @@
                                 <form onSubmit={salvarOS} className="p-8 overflow-y-auto custom-scrollbar flex flex-col gap-6">
                                     {isModalTrancado && <div className="p-3 bg-red-950/20 border border-red-900/50 rounded text-xs text-red-400 mb-2">Nota liquidada. Peça para um Admin ou Financeiro destravar para edições.</div>}
                                     
-                                    {/* 1: ENTRADA, ENTREGA E STATUS */}
                                     <div className="grid grid-cols-3 gap-4 pb-4 border-b border-gray-100 dark:border-darkBorder">
                                         <div>
                                             <label className="block text-sm font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Data de Entrada</label>
@@ -1393,7 +1401,6 @@
                                         </div>
                                     </div>
 
-                                    {/* 2: RESPONSÁVEL, LOCAL E TAGS */}
                                     <div className="grid grid-cols-3 gap-4">
                                         <div>
                                             <label className="block text-sm font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Resp.</label>
@@ -1425,7 +1432,6 @@
                                         </div>
                                     </div>
 
-                                    {/* 3: CLIENTE */}
                                     <div>
                                         <label className="block text-sm font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Cliente / Empresa</label>
                                         <div className="flex gap-2">
@@ -1449,7 +1455,6 @@
                                         </div>
                                     </div>
 
-                                    {/* 4: CARRINHO DE ITENS */}
                                     <div>
                                         <label className="block text-sm font-medium mb-3 text-gray-700 dark:text-[#EDEDED]">Carrinho de Itens do Orçamento</label>
                                         {itensPedido.length > 0 ? (
@@ -1508,7 +1513,6 @@
                                         </div>
                                     </div>
 
-                                    {/* 5: DESCRIÇÃO LIVRE */}
                                     <div>
                                         <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-[#EDEDED]">Observações Gerais ou Texto Complementar</label>
                                         <textarea rows="4" value={novoPedido.servico} onChange={e => setNovoPedido({...novoPedido, servico: e.target.value})} disabled={isModalTrancado} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand transition dark:text-[#EDEDED] custom-scrollbar disabled:opacity-50" placeholder="Prazos de entrega, observações do financeiro ou complementos da O.S..."></textarea>
@@ -1662,10 +1666,10 @@
                                                 <tbody>
                                                     {desc.itens.length > 0 ? desc.itens.map((item, idx) => (
                                                         <tr key={idx} className="border-b border-gray-100 last:border-0">
-                                                            <td className="py-1 text-gray-900 whitespace-pre-wrap pr-4 align-middle text-xs font-medium leading-tight">
+                                                            <td className="py-0.5 text-gray-900 whitespace-pre-wrap pr-4 align-middle text-xs font-medium leading-tight">
                                                                 {item.descricao || item.nome}
                                                             </td>
-                                                            <td className="py-1 text-right whitespace-nowrap align-middle font-bold text-sm">
+                                                            <td className="py-0.5 text-right whitespace-nowrap align-middle font-bold text-sm">
                                                                 R$ {item.valor}
                                                                 {item.desconto && <span className="block text-[9px] text-gray-400 font-normal mt-0.5">(-{item.desconto}%)</span>}
                                                             </td>
