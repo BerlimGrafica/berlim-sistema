@@ -104,7 +104,24 @@
         const STATUSES_FINALIZADOS = ['Abandonado', 'Concluído'];
         const RESPONSAVEIS = ['Gi', 'Murilo', 'Bruno', 'Nicole', 'Hellen', 'Jessica', 'Vini'];
         const LOCAIS = ['Berlim', 'Futura', 'Atual Card', 'Alvo', 'Xexe', 'StampMix'];
-
+        
+        // ==== MAPEAMENTO DE CORES DOS STATUS ====
+        const obterCorStatus = (status) => {
+            switch (status) {
+                case 'Aguardando Pagamento': return 'text-emerald-500 dark:text-emerald-400';
+                case 'Aguardando Retorno': return 'text-lime-500 dark:text-lime-400';
+                case 'Desenvolvimento de Arte': return 'text-cyan-500 dark:text-cyan-400';
+                case 'Etiqueta Escolar': return 'text-blue-600 dark:text-blue-500';
+                case 'Produzir': return 'text-purple-500 dark:text-purple-400';
+                case 'Produção': return 'text-gray-500 dark:text-gray-400';
+                case 'Avisar Cliente': return 'text-pink-500 dark:text-pink-400';
+                case 'Retirada': return 'text-sky-500 dark:text-sky-400';
+                case 'Abandonado': return 'text-yellow-600 dark:text-yellow-400';
+                case 'Concluído': return 'text-orange-500 dark:text-orange-400';
+                default: return 'text-gray-700 dark:text-[#EDEDED]';
+            }
+        };
+        
         // ==== FORMATADORES ====
         const formatarMoeda = (valor) => {
             if (!valor) return '';
@@ -230,11 +247,7 @@
         function InlineDropdown({ value, options, onChange, className, hasIndefinido = false }) {
             const [isOpen, setIsOpen] = useState(false);
 
-            const getTextColor = (val) => {
-                if (val === 'Produção' || val === 'Produzir') return 'text-blue-500';
-                if (val === 'Desenvolvimento de Arte') return 'text-purple-500';
-                return 'text-gray-700 dark:text-[#EDEDED]';
-            };
+            const getTextColor = (val) => obterCorStatus(val);
 
             return (
                 <div className="relative">
@@ -641,7 +654,7 @@
                                                             return (
                                                                 <React.Fragment key={status}>
                                                                     <tr className="bg-gray-50/50 dark:bg-darkElevated/40 select-none">
-                                                                        <td colSpan="11" className="px-4 py-2 border-y border-gray-200 dark:border-darkBorder font-bold tracking-wide uppercase text-[10px] text-brand bg-gray-100/50 dark:bg-darkHover/40">
+                                                                        <td colSpan="11" className={`px-4 py-2 border-y border-gray-200 dark:border-darkBorder font-bold tracking-wide uppercase text-[10px] bg-gray-100/50 dark:bg-darkHover/40 ${obterCorStatus(status)}`}>
                                                                             {status} — <span className="text-gray-400 dark:text-gray-500">{pedidosDoStatus.length} {pedidosDoStatus.length === 1 ? 'pedido' : 'pedidos'}</span>
                                                                         </td>
                                                                     </tr>
