@@ -924,11 +924,15 @@
                                 <form onSubmit={salvarOS} className="p-8 overflow-y-auto custom-scrollbar flex flex-col gap-6">
                                     {isModalTrancado && <div className="p-3 bg-red-950/20 border border-red-900/50 rounded text-xs text-red-400 mb-2">Nota liquidada. Ative o Modo Admin no avatar para forçar modificações.</div>}
                                     
-                                    {/* 1: DATA E STATUS */}
-                                    <div className="grid grid-cols-2 gap-4 pb-2 border-b border-gray-100 dark:border-darkBorder">
+                                    {/* 1: ENTRADA, ENTREGA E STATUS */}
+                                    <div className="grid grid-cols-3 gap-4 pb-4 border-b border-gray-100 dark:border-darkBorder">
                                         <div>
                                             <label className="block text-sm font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Data de Entrada</label>
                                             <CustomDatePicker value={novoPedido.data_pedido} onChange={val => setNovoPedido({...novoPedido, data_pedido: val})} disabled={isModalTrancado} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none transition" />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Data de Entrega</label>
+                                            <CustomDatePicker value={novoPedido.prazo} onChange={val => setNovoPedido({...novoPedido, prazo: val})} disabled={isModalTrancado} placeholder="Data final..." className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none transition" />
                                         </div>
                                         <div>
                                             <label className="block text-sm font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Status Inicial</label>
@@ -942,12 +946,8 @@
                                         </div>
                                     </div>
 
-                                    {/* 2: ATRIBUIÇÕES (PRAZO, RESPONSAVEL E LOCAL) E OPÇÕES EXTRAS */}
-                                    <div className="grid grid-cols-4 gap-4">
-                                        <div>
-                                            <label className="block text-sm font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Prazo</label>
-                                            <CustomDatePicker value={novoPedido.prazo} onChange={val => setNovoPedido({...novoPedido, prazo: val})} disabled={isModalTrancado} placeholder="Data final..." className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none transition" />
-                                        </div>
+                                    {/* 2: RESPONSÁVEL, LOCAL E TAGS */}
+                                    <div className="grid grid-cols-3 gap-4">
                                         <div>
                                             <label className="block text-sm font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Resp.</label>
                                             <div className="relative">
@@ -969,9 +969,9 @@
                                         </div>
                                         <div>
                                             <label className="block text-sm font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Tags Especiais</label>
-                                            <div className="flex items-center gap-2 mt-2">
-                                                <button type="button" onClick={() => setNovoPedido({...novoPedido, entrega: !novoPedido.entrega})} disabled={isModalTrancado} className={`flex items-center gap-1.5 px-2 py-1.5 rounded text-xs font-bold transition disabled:opacity-50 ${novoPedido.entrega ? 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400' : 'bg-gray-100 text-gray-500 dark:bg-darkElevated dark:text-gray-400'}`}><Icon name="truck" className="w-3.5 h-3.5"/> Entrega</button>
-                                                <button type="button" onClick={() => setNovoPedido({...novoPedido, urgente: !novoPedido.urgente})} disabled={isModalTrancado} className={`flex items-center gap-1.5 px-2 py-1.5 rounded text-xs font-bold transition disabled:opacity-50 ${novoPedido.urgente ? 'bg-red-500/20 text-red-600 dark:bg-red-950/40 dark:text-red-400' : 'bg-gray-100 text-gray-500 dark:bg-darkElevated dark:text-gray-400'}`}><Icon name="alert-triangle" className="w-3.5 h-3.5"/> Urgente</button>
+                                            <div className="flex items-center gap-2 mt-1">
+                                                <button type="button" onClick={() => setNovoPedido({...novoPedido, entrega: !novoPedido.entrega})} disabled={isModalTrancado} className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded text-xs font-bold transition disabled:opacity-50 ${novoPedido.entrega ? 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400' : 'bg-gray-100 text-gray-500 dark:bg-darkElevated dark:text-gray-400'}`}><Icon name="truck" className="w-3.5 h-3.5"/> Entrega</button>
+                                                <button type="button" onClick={() => setNovoPedido({...novoPedido, urgente: !novoPedido.urgente})} disabled={isModalTrancado} className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded text-xs font-bold transition disabled:opacity-50 ${novoPedido.urgente ? 'bg-red-500/20 text-red-600 dark:bg-red-950/40 dark:text-red-400' : 'bg-gray-100 text-gray-500 dark:bg-darkElevated dark:text-gray-400'}`}><Icon name="alert-triangle" className="w-3.5 h-3.5"/> Urgente</button>
                                             </div>
                                         </div>
                                     </div>
