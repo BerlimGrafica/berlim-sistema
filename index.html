@@ -477,10 +477,14 @@
                 if (listaUsuarios) setUsuariosSistema(listaUsuarios);
             }
 
-            const efetuarLogin = (e) => {
+            const efetuarLogin = async (e) => {
                 e.preventDefault();
-                // Agora o login pesquisa ignorando maiúsculas e minúsculas no campo "nome"
-                const conta = usuariosSistema.find(u => u.nome.toLowerCase() === loginInput.toLowerCase().trim() && u.senha === senhaInput);
+                // Força a busca diretamente no banco antes de validar, garantindo o acesso
+                const { data } = await supabase.from('usuarios').select('*');
+                const listaUsuarios = data || usuariosSistema;
+                
+                const conta = listaUsuarios.find(u => u.nome.toLowerCase() === loginInput.toLowerCase().trim() && u.senha === senhaInput);
+                
                 if (conta) {
                     setUsuario(conta);
                     setErroLogin('');
