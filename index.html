@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Berlim Gráfica | Sistema</title>
+    <title>Berlim Gráfica | ERP</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -103,6 +103,7 @@
             if (name === 'square') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/></svg>;
             if (name === 'check-square') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>;
             if (name === 'alert-triangle') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/></svg>;
+            if (name === 'users') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>;
             return null;
         }
 
@@ -111,7 +112,8 @@
             'Aguardando Pagamento', 'Aguardando Retorno', 'Desenvolvimento de Arte', 
             'Etiqueta Escolar', 'Produzir', 'Produção', 'Avisar Cliente', 'Retirada'
         ];
-        const STATUSES_FINALIZADOS = ['Abandonado', 'Concluído'];
+        // Adicionado "Finalizado"
+        const STATUSES_FINALIZADOS = ['Abandonado', 'Concluído', 'Finalizado'];
         const RESPONSAVEIS = ['Gi', 'Murilo', 'Bruno', 'Nicole', 'Hellen', 'Jessica', 'Vini'];
         const LOCAIS = ['Berlim', 'Futura', 'Atual Card', 'Alvo', 'Xexe', 'StampMix'];
         
@@ -128,17 +130,11 @@
                 case 'Retirada': return 'text-sky-500 dark:text-sky-400';
                 case 'Abandonado': return 'text-yellow-600 dark:text-yellow-400';
                 case 'Concluído': return 'text-orange-500 dark:text-orange-400';
+                case 'Finalizado': return 'text-indigo-500 dark:text-indigo-400';
                 default: return 'text-gray-700 dark:text-[#EDEDED]';
             }
         };
-        
-        // ==== CREDENCIAIS DO SISTEMA (NÍVEIS DE ACESSO) ====
-        const USUARIOS_SISTEMA = [
-            { login: 'admin', senha: '123', nome: 'Murilo', nivel: 'Admin' },
-            { login: 'gi', senha: '123', nome: 'Gi', nivel: 'Produção' },
-            { login: 'financeiro', senha: '123', nome: 'Financeiro', nivel: 'Financeiro' }
-        ];
-        
+
         // ==== FORMATADORES ====
         const formatarMoeda = (valor) => {
             if (!valor) return '';
@@ -397,6 +393,18 @@
 
         // ================= APLICAÇÃO PRINCIPAL =================
         function App() {
+            // ==== CONTROLE DE SESSÃO E USUÁRIOS ====
+            const [usuariosSistema, setUsuariosSistema] = useState([
+                { id: 1, login: 'admin', senha: '123', nome: 'Murilo', nivel: 'Admin' },
+                { id: 2, login: 'gi', senha: '123', nome: 'Gi', nivel: 'Produção' },
+                { id: 3, login: 'financeiro', senha: '123', nome: 'Financeiro', nivel: 'Financeiro' }
+            ]);
+            const [usuario, setUsuario] = useState(null);
+            
+            const [loginInput, setLoginInput] = useState('');
+            const [senhaInput, setSenhaInput] = useState('');
+            const [erroLogin, setErroLogin] = useState('');
+
             const [abaAtual, setAbaAtual] = useState('producao');
             const [visaoProducao, setVisaoProducao] = useState('lista'); 
             const [pedidos, setPedidos] = useState([]);
@@ -404,30 +412,8 @@
             const [clientes, setClientes] = useState([]);
             const [darkMode, setDarkMode] = useState(true); 
             
-            // Controle de Sessão e Segurança
-            const [usuario, setUsuario] = useState(null);
             const isAdmin = usuario?.nivel === 'Admin';
-            
-            // Estados do Formulário de Login
-            const [loginInput, setLoginInput] = useState('');
-            const [senhaInput, setSenhaInput] = useState('');
-            const [erroLogin, setErroLogin] = useState('');
-            
-            const efetuarLogin = (e) => {
-                e.preventDefault();
-                const conta = USUARIOS_SISTEMA.find(u => u.login === loginInput.toLowerCase() && u.senha === senhaInput);
-                if (conta) {
-                    setUsuario(conta);
-                    setErroLogin('');
-                    setLoginInput('');
-                    setSenhaInput('');
-                    // Direcionamento inteligente de aba por nível de acesso
-                    if (conta.nivel === 'Financeiro') setAbaAtual('baixa');
-                    else setAbaAtual('producao');
-                } else {
-                    setErroLogin('Usuário ou senha incorretos.');
-                }
-            };
+            const isOperador = usuario?.nivel === 'Produção';
             
             const [buscaHistoricoText, setBuscaHistoricoText] = useState('');
             const [dataFiltroInicio, setDataFiltroInicio] = useState('');
@@ -461,7 +447,13 @@
             const [salvandoCliente, setSalvandoCliente] = useState(false);
             const [novoCliente, setNovoCliente] = useState({ id: null, nome: '', telefone: '', email: '', observacoes: '' });
 
-            useEffect(() => { carregarDados(); }, []);
+            // Estado do Modal de Usuários
+            const [modalUsuarioAberto, setModalUsuarioAberto] = useState(false);
+            const [novoUsuario, setNovoUsuario] = useState({ id: null, login: '', senha: '', nome: '', nivel: 'Produção' });
+
+            useEffect(() => { 
+                if(usuario) carregarDados(); 
+            }, [usuario]);
 
             async function carregarDados() {
                 const { data: listaPedidos } = await supabase.from('pedidos').select('*').order('id', { ascending: false });
@@ -472,18 +464,25 @@
                 if (listaClientes) setClientes(listaClientes);
             }
 
+            const efetuarLogin = (e) => {
+                e.preventDefault();
+                const conta = usuariosSistema.find(u => u.login === loginInput.toLowerCase() && u.senha === senhaInput);
+                if (conta) {
+                    setUsuario(conta);
+                    setErroLogin('');
+                    setLoginInput('');
+                    setSenhaInput('');
+                    if (conta.nivel === 'Financeiro') setAbaAtual('baixa');
+                    else setAbaAtual('producao');
+                } else {
+                    setErroLogin('Usuário ou senha incorretos.');
+                }
+            };
+
             const toggleDarkMode = () => {
                 if (darkMode) { document.documentElement.classList.remove('dark'); } 
                 else { document.documentElement.classList.add('dark'); }
                 setDarkMode(!darkMode);
-            };
-
-            const handleAdminToggle = () => {
-                const novoEstado = !isAdmin;
-                setIsAdmin(novoEstado);
-                if (!novoEstado && abaAtual === 'produtos') {
-                    setAbaAtual('producao');
-                }
             };
 
             async function atualizarCampoInline(id, campo, valor) {
@@ -539,6 +538,21 @@
             function abrirEdicaoCliente(cliente) {
                 setNovoCliente({ id: cliente.id, nome: cliente.nome, telefone: cliente.telefone, email: cliente.email, observacoes: cliente.observacoes });
                 setModalClienteAberto(true);
+            }
+
+            function abrirEdicaoUsuario(usr) {
+                setNovoUsuario({ id: usr.id, login: usr.login, senha: usr.senha, nome: usr.nome, nivel: usr.nivel });
+                setModalUsuarioAberto(true);
+            }
+
+            function salvarUsuario(e) {
+                e.preventDefault();
+                if (novoUsuario.id) {
+                    setUsuariosSistema(usuariosSistema.map(u => u.id === novoUsuario.id ? novoUsuario : u));
+                } else {
+                    setUsuariosSistema([...usuariosSistema, { ...novoUsuario, id: Date.now() }]);
+                }
+                setModalUsuarioAberto(false);
             }
 
             function adicionarItemAoCarrinho() {
@@ -659,9 +673,13 @@
             const clientesFiltrados = clientes.filter(c => c.nome.toLowerCase().includes(buscaCliente.toLowerCase()) || (c.telefone && c.telefone.includes(buscaCliente)));
             const produtosFiltrados = produtos.filter(p => p.nome.toLowerCase().includes(buscaProduto.toLowerCase()) || p.id.toString().includes(buscaProduto));
             
-            const pedidosProducaoAtivos = pedidos.filter(p => STATUSES_PRODUCAO.includes(p.status) && !p.concluido);
+            // Filtra Finalizados da aba produção. Operador e Admin não veem 'Finalizado' na esteira.
+            const pedidosProducaoAtivos = pedidos.filter(p => STATUSES_PRODUCAO.includes(p.status) || p.status === 'Concluído');
 
             const pedidosHistoricoFiltrados = pedidos.filter(p => {
+                // Operador não vê Finalizados
+                if (isOperador && p.status === 'Finalizado') return false;
+
                 const termo = buscaHistoricoText.toLowerCase();
                 const matchTermo = !termo || (p.cliente && p.cliente.toLowerCase().includes(termo)) || (p.id && p.id.toString().includes(termo));
                 let matchData = true;
@@ -670,9 +688,13 @@
                 return matchTermo && matchData;
             });
 
-            const isModalTrancado = (pedidoEmEdicao && STATUSES_FINALIZADOS.includes(pedidoEmEdicao.status) && !isAdmin) ? true : false;
+            // Opções dinâmicas de Status baseadas no nível
+            const opcoesStatusPermitidas = isOperador ? [...STATUSES_PRODUCAO, 'Abandonado', 'Concluído'] : [...STATUSES_PRODUCAO, ...STATUSES_FINALIZADOS];
 
-            // ==== TELA DE LOGIN (BLOQUEIA O SISTEMA SE NÃO ESTIVER LOGADO) ====
+            // Bloqueio de Edição. Concluído não bloqueia mais. Finalizado bloqueia se não for Admin/Financeiro.
+            const isModalTrancado = (pedidoEmEdicao && pedidoEmEdicao.status === 'Finalizado' && isOperador) ? true : false;
+
+            // ==== TELA DE LOGIN ====
             if (!usuario) {
                 return (
                     <div className="flex min-h-screen items-center justify-center bg-black text-white p-4 select-none font-sans">
@@ -725,7 +747,7 @@
                 <div>
                     <div className="flex flex-col min-h-screen no-print">
                         
-                        {/* HEADER */}
+                        {/* HEADER E NAVEGAÇÃO DE ACESSO */}
                         <header className="sticky top-0 z-40 bg-white dark:bg-darkBg border-b border-gray-200 dark:border-darkBorder px-6 py-3 flex justify-between items-center">
                             <div className="flex items-center gap-8">
                                 <div className="flex items-center gap-2 text-gray-900 dark:text-white font-bold text-lg tracking-tight">
@@ -738,14 +760,18 @@
                                     {(usuario?.nivel === 'Admin' || usuario?.nivel === 'Produção') && (
                                         <a onClick={() => setAbaAtual('producao')} className={`transition ${abaAtual === 'producao' ? 'text-gray-900 dark:text-white font-semibold' : 'hover:text-gray-900 dark:hover:text-white'}`}>Produção</a>
                                     )}
+                                    <a onClick={() => setAbaAtual('baixa')} className={`transition ${abaAtual === 'baixa' ? 'text-gray-900 dark:text-white font-semibold' : 'hover:text-gray-900 dark:hover:text-white'}`}>Baixa de Notas</a>
                                     {(usuario?.nivel === 'Admin' || usuario?.nivel === 'Financeiro') && (
-                                        <a onClick={() => setAbaAtual('baixa')} className={`transition ${abaAtual === 'baixa' ? 'text-gray-900 dark:text-white font-semibold' : 'hover:text-gray-900 dark:hover:text-white'}`}>Baixa de Notas</a>
+                                        <a onClick={() => setAbaAtual('financeiro')} className={`transition ${abaAtual === 'financeiro' ? 'text-gray-900 dark:text-white font-semibold' : 'hover:text-gray-900 dark:hover:text-white'}`}>Financeiro</a>
                                     )}
-                                    {usuario?.nivel === 'Admin' && (
+                                    {isAdmin && (
                                         <a onClick={() => setAbaAtual('produtos')} className={`transition ${abaAtual === 'produtos' ? 'text-gray-900 dark:text-white font-semibold' : 'hover:text-gray-900 dark:hover:text-white'}`}>Catálogo</a>
                                     )}
-                                    {(usuario?.nivel === 'Admin' || usuario?.nivel === 'Financeiro') && (
+                                    {(usuario?.nivel === 'Admin' || usuario?.nivel === 'Produção') && (
                                         <a onClick={() => setAbaAtual('clientes')} className={`transition ${abaAtual === 'clientes' ? 'text-gray-900 dark:text-white font-semibold' : 'hover:text-gray-900 dark:hover:text-white'}`}>Clientes</a>
+                                    )}
+                                    {isAdmin && (
+                                        <a onClick={() => setAbaAtual('usuarios')} className={`transition ${abaAtual === 'usuarios' ? 'text-gray-900 dark:text-white font-semibold' : 'hover:text-gray-900 dark:hover:text-white'}`}>Usuários</a>
                                     )}
                                 </nav>
                             </div>
@@ -757,14 +783,9 @@
                                     <span className="bg-brand/10 border border-brand/20 text-brand text-xs font-bold px-2.5 py-1 rounded uppercase tracking-wide">
                                         {usuario?.nome} ({usuario?.nivel})
                                     </span>
-                                    <button 
-                                        type="button"
-                                        onClick={() => setUsuario(null)} 
-                                        className="text-xs text-gray-400 hover:text-red-500 transition font-medium border border-gray-200 dark:border-darkBorder rounded px-2.5 py-1 bg-gray-50 dark:bg-darkCard"
-                                    >
+                                    <button type="button" onClick={() => setUsuario(null)} className="text-xs text-gray-400 hover:text-red-500 transition font-medium border border-gray-200 dark:border-darkBorder rounded px-2.5 py-1 bg-gray-50 dark:bg-darkCard">
                                         Sair
                                     </button>
-                                    {/* Removido o antigo toggle do avatar por segurança */}
                                 </div>
                             </div>
                         </header>
@@ -812,7 +833,7 @@
                                                     {pedidosProducaoAtivos.length === 0 ? (
                                                         <tr><td colSpan="11" className="p-8 text-center text-gray-500 italic">Nenhum pedido ativo na esteira.</td></tr>
                                                     ) : (
-                                                        STATUSES_PRODUCAO.map(status => {
+                                                        [...STATUSES_PRODUCAO, 'Concluído'].map(status => {
                                                             const pedidosDoStatus = pedidosProducaoAtivos
                                                                 .filter(p => p.status === status)
                                                                 .sort((a, b) => {
@@ -874,7 +895,7 @@
                                                                             <td className="px-4 py-3">
                                                                                 <InlineDropdown 
                                                                                     value={p.status} 
-                                                                                    options={[...STATUSES_PRODUCAO, ...STATUSES_FINALIZADOS]} 
+                                                                                    options={opcoesStatusPermitidas} 
                                                                                     onChange={(val) => atualizarCampoInline(p.id, 'status', val)} 
                                                                                     className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-2.5 py-1.5 text-xs outline-none hover:border-brand"
                                                                                 />
@@ -939,7 +960,7 @@
                                         )}
 
                                         <div className="flex-1 overflow-x-auto custom-scrollbar pb-4 flex gap-4 items-start">
-                                            {STATUSES_PRODUCAO.map(status => {
+                                            {[...STATUSES_PRODUCAO, 'Concluído'].map(status => {
                                                 const pedidosColuna = pedidosProducaoAtivos.filter(p => p.status === status && !p.urgente);
                                                 return (
                                                     <div key={status} className="w-72 shrink-0 flex flex-col bg-gray-50 dark:bg-darkCard rounded-xl border border-gray-200 dark:border-darkBorder max-h-full">
@@ -1015,7 +1036,7 @@
                                         </thead>
                                         <tbody>
                                             {pedidosHistoricoFiltrados.map(p => {
-                                                const trancado = STATUSES_FINALIZADOS.includes(p.status) && !isAdmin;
+                                                const trancado = isOperador && p.status === 'Finalizado';
                                                 return (
                                                     <tr key={p.id} onClick={() => { if (trancado) return; abrirEdicao(p); }} className={`border-b border-gray-100 dark:border-darkBorder transition ${trancado ? 'opacity-30 bg-[#050505] cursor-not-allowed' : 'cursor-pointer hover:bg-gray-50 dark:hover:bg-darkHover'}`}>
                                                         <td className="px-6 py-4 text-sm font-medium text-gray-500"><span className="flex items-center gap-1.5">{trancado && <Icon name="lock" className="w-3 h-3 text-red-500" />}#{p.id}</span></td>
@@ -1039,6 +1060,101 @@
                                         </tbody>
                                     </table>
                                 </div>
+                            </main>
+                        )}
+
+                        {/* ================= FINANCEIRO ================= */}
+                        {abaAtual === 'financeiro' && (usuario?.nivel === 'Admin' || usuario?.nivel === 'Financeiro') && (
+                            <main className="flex-1 p-6 lg:p-10 max-w-[1400px] mx-auto w-full fade-in flex flex-col gap-6">
+                                <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 border-b border-gray-100 dark:border-darkBorder pb-6 shrink-0">
+                                    <div>
+                                        <h1 className="text-3xl font-semibold dark:text-white tracking-tight">Financeiro & Relatórios</h1>
+                                        <p className="text-sm text-gray-500 dark:text-[#888888] mt-1">Análise de faturamento, caixa e exportação de dados.</p>
+                                    </div>
+                                    <div className="flex flex-wrap items-end gap-3 w-full lg:w-auto">
+                                        <button 
+                                            type="button"
+                                            onClick={() => {
+                                                const cabecalho = "ID;Data;Cliente;Status;Valor\n";
+                                                const linhas = pedidos.map(p => `${p.id};${p.data_pedido};${p.cliente};${p.status};${p.valor_total}`).join("\n");
+                                                const blob = new Blob([cabecalho + linhas], { type: 'text/csv;charset=utf-8;' });
+                                                const url = URL.createObjectURL(blob);
+                                                const link = document.createElement("a");
+                                                link.setAttribute("href", url);
+                                                link.setAttribute("download", `relatorio_financeiro_${obterDataAtual()}.csv`);
+                                                document.body.appendChild(link);
+                                                link.click();
+                                                document.body.removeChild(link);
+                                            }}
+                                            className="bg-brand hover:bg-brandHover text-white px-4 py-2 text-sm rounded-md font-bold shadow-sm transition flex items-center gap-2"
+                                        >
+                                            <Icon name="printer" className="w-4 h-4" /> Exportar Relatório (CSV)
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {(() => {
+                                    const totalBruto = pedidos.reduce((acc, p) => acc + (Number(p.valor_total) || 0), 0);
+                                    // Financeiro considera Concluído e Finalizado como Caixa.
+                                    const totalRecebido = pedidos.filter(p => p.status === 'Concluído' || p.status === 'Finalizado').reduce((acc, p) => acc + (Number(p.valor_total) || 0), 0);
+                                    const totalAReceber = pedidos.filter(p => p.status !== 'Concluído' && p.status !== 'Finalizado' && p.status !== 'Abandonado').reduce((acc, p) => acc + (Number(p.valor_total) || 0), 0);
+                                    const ticketMedio = pedidos.length > 0 ? (totalBruto / pedidos.length) : 0;
+
+                                    return (
+                                        <>
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                                                <div className="bg-white dark:bg-darkCard p-5 rounded-xl border border-gray-200 dark:border-darkBorder shadow-sm">
+                                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">Faturamento Bruto Histórico</span>
+                                                    <h2 className="text-2xl font-black text-gray-900 dark:text-white">R$ {totalBruto.toFixed(2).replace('.', ',')}</h2>
+                                                    <p className="text-[11px] text-gray-400 mt-2">Volume movimentado no sistema</p>
+                                                </div>
+                                                <div className="bg-white dark:bg-darkCard p-5 rounded-xl border border-gray-200 dark:border-darkBorder shadow-sm">
+                                                    <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-wider block mb-1">Caixa Realizado</span>
+                                                    <h2 className="text-2xl font-black text-emerald-500">R$ {totalRecebido.toFixed(2).replace('.', ',')}</h2>
+                                                    <p className="text-[11px] text-gray-400 mt-2">Valores de ordens pagas</p>
+                                                </div>
+                                                <div className="bg-white dark:bg-darkCard p-5 rounded-xl border border-gray-200 dark:border-darkBorder shadow-sm">
+                                                    <span className="text-[10px] font-bold text-orange-500 uppercase tracking-wider block mb-1">Projeção a Receber</span>
+                                                    <h2 className="text-2xl font-black text-orange-500">R$ {totalAReceber.toFixed(2).replace('.', ',')}</h2>
+                                                    <p className="text-[11px] text-gray-400 mt-2">Ordens ativas na esteira</p>
+                                                </div>
+                                                <div className="bg-white dark:bg-darkCard p-5 rounded-xl border border-gray-200 dark:border-darkBorder shadow-sm">
+                                                    <span className="text-[10px] font-bold text-blue-500 uppercase tracking-wider block mb-1">Ticket Médio por O.S.</span>
+                                                    <h2 className="text-2xl font-black text-blue-500">R$ {ticketMedio.toFixed(2).replace('.', ',')}</h2>
+                                                    <p className="text-[11px] text-gray-400 mt-2">Média de valor por pedido criado</p>
+                                                </div>
+                                            </div>
+
+                                            <div className="bg-white dark:bg-darkCard p-6 rounded-xl border border-gray-200 dark:border-darkBorder flex flex-col gap-4">
+                                                <div>
+                                                    <h3 className="font-bold text-sm text-gray-800 dark:text-white uppercase tracking-wider">Distribuição Financeira por Status</h3>
+                                                    <p className="text-xs text-gray-400 mt-0.5">Visão do montante alocado em cada etapa do fluxo.</p>
+                                                </div>
+                                                <div className="flex flex-col gap-3 mt-2">
+                                                    {[...STATUSES_PRODUCAO, ...STATUSES_FINALIZADOS].map(st => {
+                                                        const valorDoStatus = pedidos.filter(p => p.status === st).reduce((acc, p) => acc + (Number(p.valor_total) || 0), 0);
+                                                        const porcentagem = totalBruto > 0 ? (valorDoStatus / totalBruto) * 100 : 0;
+                                                        
+                                                        if (valorDoStatus === 0) return null;
+
+                                                        return (
+                                                            <div key={st} className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 text-xs">
+                                                                <span className="w-48 font-medium truncate text-gray-700 dark:text-gray-300">{st}</span>
+                                                                <div className="flex-1 bg-gray-100 dark:bg-darkElevated h-5 rounded overflow-hidden relative border dark:border-darkBorder">
+                                                                    <div className="bg-brand h-full transition-all duration-500" style={{ width: `${Math.max(porcentagem, 1)}%` }}></div>
+                                                                    <span className="absolute left-2 top-0.5 text-[10px] font-bold text-gray-900 dark:text-white drop-shadow-sm">{porcentagem.toFixed(1)}%</span>
+                                                                </div>
+                                                                <span className="w-28 text-right font-bold text-gray-900 dark:text-[#EDEDED]">
+                                                                    R$ {valorDoStatus.toFixed(2).replace('.', ',')}
+                                                                </span>
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </div>
+                                        </>
+                                    );
+                                })()}
                             </main>
                         )}
 
@@ -1081,6 +1197,39 @@
                                 </div>
                             </main>
                         )}
+
+                        {/* ================= USUÁRIOS ================= */}
+                        {abaAtual === 'usuarios' && isAdmin && (
+                            <main className="flex-1 p-6 lg:p-10 max-w-[1200px] mx-auto w-full fade-in">
+                                <div className="flex justify-between items-center mb-8">
+                                    <div>
+                                        <h1 className="text-3xl font-semibold dark:text-white tracking-tight">Usuários do Sistema</h1>
+                                        <p className="text-sm text-gray-500 mt-1">Gerencie os acessos da equipe (Admin, Produção, Financeiro).</p>
+                                    </div>
+                                    <button onClick={() => { setNovoUsuario({ id: null, login: '', senha: '', nome: '', nivel: 'Produção' }); setModalUsuarioAberto(true); }} className="bg-brand hover:bg-brandHover text-white px-4 py-2 text-sm rounded-md font-bold shadow-sm transition flex items-center gap-2">
+                                        Novo Usuário
+                                    </button>
+                                </div>
+                                <div className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded overflow-hidden">
+                                    <table className="w-full text-left border-collapse">
+                                        <thead><tr className="border-b border-gray-200 dark:border-darkBorder text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider bg-transparent"><th className="px-6 py-5">Nome</th><th className="px-6 py-5">Login</th><th className="px-6 py-5 text-right">Nível de Acesso</th></tr></thead>
+                                        <tbody>
+                                            {usuariosSistema.map(u => (
+                                                <tr key={u.id} onClick={() => abrirEdicaoUsuario(u)} className="border-b border-gray-100 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover transition cursor-pointer">
+                                                    <td className="px-6 py-4 text-sm font-semibold dark:text-[#EDEDED]">{u.nome}</td>
+                                                    <td className="px-6 py-4 text-sm text-gray-600 dark:text-[#A1A1AA]">@{u.login}</td>
+                                                    <td className="px-6 py-4 text-sm font-bold dark:text-[#EDEDED] text-right">
+                                                        <span className={`px-2 py-1 rounded text-[10px] uppercase tracking-wider border ${u.nivel === 'Admin' ? 'bg-red-50 text-red-600 border-red-200' : u.nivel === 'Financeiro' ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-blue-50 text-blue-600 border-blue-200'}`}>
+                                                            {u.nivel}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </main>
+                        )}
                     </div>
 
                     {/* ================= MODAIS DE CADASTRO E OS ================= */}
@@ -1098,9 +1247,8 @@
                                 </div>
                                 
                                 <form onSubmit={salvarOS} className="p-8 overflow-y-auto custom-scrollbar flex flex-col gap-6">
-                                    {isModalTrancado && <div className="p-3 bg-red-950/20 border border-red-900/50 rounded text-xs text-red-400 mb-2">Nota liquidada. Ative o Modo Admin no avatar para forçar modificações.</div>}
+                                    {isModalTrancado && <div className="p-3 bg-red-950/20 border border-red-900/50 rounded text-xs text-red-400 mb-2">Nota liquidada. Peça para um Admin ou Financeiro destravar para edições.</div>}
                                     
-                                    {/* 1: ENTRADA, ENTREGA E STATUS */}
                                     <div className="grid grid-cols-3 gap-4 pb-4 border-b border-gray-100 dark:border-darkBorder">
                                         <div>
                                             <label className="block text-sm font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Data de Entrada</label>
@@ -1114,15 +1262,13 @@
                                             <label className="block text-sm font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Status Inicial</label>
                                             <div className="relative">
                                                 <select required value={novoPedido.status} onChange={e => setNovoPedido({...novoPedido, status: e.target.value})} disabled={isModalTrancado} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2.5 text-sm outline-none focus:border-brand transition dark:text-white font-semibold cursor-pointer appearance-none disabled:opacity-50">
-                                                    {STATUSES_PRODUCAO.map(s => <option key={s} value={s}>{s}</option>)}
-                                                    {STATUSES_FINALIZADOS.map(s => <option key={s} value={s}>{s}</option>)}
+                                                    {opcoesStatusPermitidas.map(s => <option key={s} value={s}>{s}</option>)}
                                                 </select>
                                                 <Icon name="chevron-down" className="absolute right-3 top-3.5 w-4 h-4 text-gray-400 pointer-events-none" />
                                             </div>
                                         </div>
                                     </div>
 
-                                    {/* 2: RESPONSÁVEL, LOCAL E TAGS */}
                                     <div className="grid grid-cols-3 gap-4">
                                         <div>
                                             <label className="block text-sm font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Resp.</label>
@@ -1154,7 +1300,6 @@
                                         </div>
                                     </div>
 
-                                    {/* 3: CLIENTE */}
                                     <div>
                                         <label className="block text-sm font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Cliente / Empresa</label>
                                         <div className="flex gap-2">
@@ -1178,7 +1323,6 @@
                                         </div>
                                     </div>
 
-                                    {/* 4: CARRINHO DE ITENS */}
                                     <div>
                                         <label className="block text-sm font-medium mb-3 text-gray-700 dark:text-[#EDEDED]">Carrinho de Itens do Orçamento</label>
                                         {itensPedido.length > 0 ? (
@@ -1237,7 +1381,6 @@
                                         </div>
                                     </div>
 
-                                    {/* 5: DESCRIÇÃO LIVRE */}
                                     <div>
                                         <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-[#EDEDED]">Observações Gerais ou Texto Complementar</label>
                                         <textarea rows="4" value={novoPedido.servico} onChange={e => setNovoPedido({...novoPedido, servico: e.target.value})} disabled={isModalTrancado} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand transition dark:text-[#EDEDED] custom-scrollbar disabled:opacity-50" placeholder="Prazos de entrega, observações do financeiro ou complementos da O.S..."></textarea>
@@ -1290,6 +1433,32 @@
                                     <div className="grid grid-cols-2 gap-4"><input value={novoCliente.telefone} onChange={e => setNovoCliente({...novoCliente, telefone: formatarTelefone(e.target.value)})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" placeholder="WhatsApp" /><input type="email" value={novoCliente.email} onChange={e => setNovoCliente({...novoCliente, email: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" placeholder="E-mail" /></div>
                                     <textarea rows="2" value={novoCliente.observacoes} onChange={e => setNovoCliente({...novoCliente, observacoes: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand transition dark:text-[#EDEDED]" placeholder="Observações"></textarea>
                                     <div className="flex justify-end gap-3"><button type="button" onClick={() => setModalClienteAberto(false)} className="px-4 py-2 rounded text-sm font-medium text-gray-600 dark:text-[#A1A1AA] hover:bg-gray-100 dark:hover:bg-darkHover transition">Cancelar</button><button type="submit" className="px-5 py-2 rounded text-sm font-medium bg-white text-black hover:bg-gray-200 transition">Salvar</button></div>
+                                </form>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* MODAL DE USUÁRIOS */}
+                    {modalUsuarioAberto && (
+                        <div onClick={() => setModalUsuarioAberto(false)} className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer">
+                            <div className="bg-white dark:bg-darkCard w-full max-w-md rounded shadow-2xl overflow-hidden border border-gray-200 dark:border-darkBorder" onClick={(e) => e.stopPropagation()}>
+                                <div className="px-6 py-5 border-b border-gray-100 dark:border-darkBorder flex justify-between items-center bg-gray-50 dark:bg-darkCard"><h3 className="font-semibold text-lg dark:text-white tracking-tight">{novoUsuario.id ? 'Editar Conta' : 'Nova Conta de Acesso'}</h3><button onClick={() => setModalUsuarioAberto(false)} className="text-gray-400 hover:text-white transition"><Icon name="x" /></button></div>
+                                <form onSubmit={salvarUsuario} className="p-6 flex flex-col gap-4">
+                                    <input required value={novoUsuario.nome} onChange={e => setNovoUsuario({...novoUsuario, nome: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" placeholder="Nome do Funcionário" />
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <input required value={novoUsuario.login} onChange={e => setNovoUsuario({...novoUsuario, login: e.target.value.toLowerCase().trim()})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" placeholder="Login (ex: carlos)" />
+                                        <input required type="password" value={novoUsuario.senha} onChange={e => setNovoUsuario({...novoUsuario, senha: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" placeholder="Senha" />
+                                    </div>
+                                    <div className="relative">
+                                        <select value={novoUsuario.nivel} onChange={e => setNovoUsuario({...novoUsuario, nivel: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition appearance-none cursor-pointer">
+                                            <option value="Produção">Operador de Produção</option>
+                                            <option value="Financeiro">Equipe Financeira</option>
+                                            <option value="Admin">Administrador (Total)</option>
+                                        </select>
+                                        <Icon name="chevron-down" className="absolute right-3 top-2.5 w-4 h-4 text-gray-400 pointer-events-none" />
+                                    </div>
+                                    <p className="text-[10px] text-gray-500 italic mt-1">* Nota: Os usuários são salvos na sessão atual para demonstração.</p>
+                                    <div className="flex justify-end gap-3 mt-2"><button type="button" onClick={() => setModalUsuarioAberto(false)} className="px-4 py-2 rounded text-sm font-medium text-gray-600 dark:text-[#A1A1AA] hover:bg-gray-100 dark:hover:bg-darkHover transition">Cancelar</button><button type="submit" className="px-5 py-2 rounded text-sm font-medium bg-brand text-white hover:bg-brandHover transition shadow-sm">Salvar Acesso</button></div>
                                 </form>
                             </div>
                         </div>
@@ -1365,10 +1534,10 @@
                                                 <tbody>
                                                     {desc.itens.length > 0 ? desc.itens.map((item, idx) => (
                                                         <tr key={idx} className="border-b border-gray-100 last:border-0">
-                                                            <td className="py-1 text-gray-900 whitespace-pre-wrap pr-4 align-middle text-xs font-medium leading-tight">
+                                                            <td className="py-0.5 text-gray-900 whitespace-pre-wrap pr-4 align-middle text-xs font-medium leading-tight">
                                                                 {item.descricao || item.nome}
                                                             </td>
-                                                            <td className="py-1 text-right whitespace-nowrap align-middle font-bold text-sm">
+                                                            <td className="py-0.5 text-right whitespace-nowrap align-middle font-bold text-sm">
                                                                 R$ {item.valor}
                                                                 {item.desconto && <span className="block text-[9px] text-gray-400 font-normal mt-0.5">(-{item.desconto}%)</span>}
                                                             </td>
