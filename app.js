@@ -744,11 +744,8 @@ function App() {
             <div className="flex flex-col min-h-screen no-print">
                 <header className="sticky top-0 z-40 bg-white dark:bg-darkBg border-b border-gray-200 dark:border-darkBorder px-6 py-3 flex justify-between items-center">
                     <div className="flex items-center gap-8">
-                        <div className="flex items-center gap-2 text-gray-900 dark:text-white font-bold text-lg tracking-tight">
-                            <div className="w-5 h-5 bg-brand text-white flex items-center justify-center rounded-sm">
-                                <Icon name="printer" className="w-3 h-3 text-white" />
-                            </div>
-                            BERLIM
+                        <div className="flex items-center">
+                            <img src="https://www.berlimgraficarapida.com.br/wp-content/uploads/elementor/thumbs/logosite-rm0erpiqj90gcf7ff4jp8ujys78opflob1b9vn5jjs.png" alt="Berlim Gráfica" className="h-8 object-contain" />
                         </div>
                         <nav className="hidden md:flex gap-6 font-medium text-sm text-gray-500 dark:text-[#888888] cursor-pointer">
                             {(usuario?.nivel === 'Administrador' || usuario?.nivel === 'Produção/Atendimento') && (
@@ -1462,8 +1459,7 @@ function App() {
                                 <div className="shrink-0 flex flex-col">
                                     <div className="flex justify-between items-start mb-3">
                                         <div className="flex flex-col">
-                                            <img src="https://www.berlimgraficarapida.com.br/wp-content/uploads/elementor/thumbs/logosite-rm0erpiqj90gcf7ff4jp8ujys78opflob1b9vn5jjs.png" alt="Berlim Gráfica" className="h-14 object-contain object-left mb-2" onError={(e) => { e.currentTarget.style.display='none'; e.currentTarget.nextElementSibling.style.display='block'; }} />
-                                            <h1 className="text-2xl font-extrabold uppercase tracking-widest hidden">Berlim Gráfica</h1>
+                                            <img src="https://www.berlimgraficarapida.com.br/wp-content/uploads/elementor/thumbs/logosite-rm0erpiqj90gcf7ff4jp8ujys78opflob1b9vn5jjs.png" alt="Berlim Gráfica" className="h-12 object-contain object-left mb-2" />
                                             
                                             <h2 className="text-xl font-bold uppercase text-gray-800">O.S. #{osParaImprimir.id}</h2>
                                             <div className="flex items-center gap-3 mt-0.5">
