@@ -746,11 +746,10 @@
                                                                                 />
                                                                             </td>
                                                                             <td className="px-4 py-3">
-                                                                                <InlineDropdown 
+                                                                                <MultiSelectDropdown 
                                                                                     value={p.responsavel} 
                                                                                     options={RESPONSAVEIS} 
                                                                                     onChange={(val) => atualizarCampoInline(p.id, 'responsavel', val)} 
-                                                                                    hasIndefinido={true}
                                                                                     className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-2.5 py-1.5 text-xs outline-none hover:border-brand"
                                                                                 />
                                                                             </td>
@@ -782,10 +781,11 @@
                                                                                 />
                                                                             </td>
                                                                             <td className="px-4 py-3">
-                                                                                <InlineDropdown 
-                                                                                    value={p.local_producao || 'Berlim'} 
+                                                                                <MultiSelectDropdown 
+                                                                                    value={p.local_producao} 
                                                                                     options={LOCAIS} 
                                                                                     onChange={(val) => atualizarCampoInline(p.id, 'local_producao', val)} 
+                                                                                    placeholder="Berlim"
                                                                                     className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-2.5 py-1.5 text-xs outline-none hover:border-brand"
                                                                                 />
                                                                             </td>
@@ -828,9 +828,10 @@
                                                             </div>
                                                             <p className="text-gray-500 dark:text-[#A1A1AA] text-xs line-clamp-2">{obterResumoServicos(p.servico)}</p>
                                                             <div className="flex flex-wrap gap-1 mt-1">
-                                                                {p.responsavel && <span className="bg-gray-100 dark:bg-darkElevated text-gray-600 dark:text-gray-400 text-[9px] font-bold px-1.5 py-0.5 rounded border dark:border-darkBorder">{p.responsavel}</span>}
-                                                                {p.prazo && <span className="bg-red-500/10 text-red-500 text-[9px] font-bold px-1.5 py-0.5 rounded border border-red-500/20">{formatarDataExibicao(p.prazo).substring(0,5)}</span>}
+                                                                {p.responsavel && p.responsavel.split(',').map(r => r.trim()).filter(Boolean).map((r, i) => <span key={`resp-${i}`} className="bg-gray-100 dark:bg-darkCard text-gray-600 dark:text-gray-400 text-[9px] font-bold px-1.5 py-0.5 rounded border dark:border-darkBorder">{r}</span>)}
+                                                                {p.prazo && <span className="bg-brand/10 text-brand text-[9px] font-bold px-1.5 py-0.5 rounded border border-brand/20">{formatarDataExibicao(p.prazo).substring(0,5)}</span>}
                                                                 {p.entrega && <span className="bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 text-[9px] font-bold px-1.5 py-0.5 rounded border border-orange-200 dark:border-orange-900/30 flex items-center gap-1"><Icon name="truck" className="w-2.5 h-2.5"/>Entrega</span>}
+                                                                {p.local_producao && p.local_producao.split(',').map(l => l.trim()).filter(Boolean).filter(l => l !== 'Berlim').map((l, i) => <span key={`loc-${i}`} className="bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-[9px] font-bold px-1.5 py-0.5 rounded border border-blue-200 dark:border-blue-800/50">{l}</span>)}
                                                             </div>
                                                         </div>
                                                     ))}
@@ -856,10 +857,10 @@
                                                                     </div>
                                                                     <p className="text-gray-500 dark:text-[#A1A1AA] text-xs line-clamp-2">{obterResumoServicos(p.servico)}</p>
                                                                     <div className="flex flex-wrap gap-1 mt-1">
-                                                                        {p.responsavel && <span className="bg-gray-100 dark:bg-darkCard text-gray-600 dark:text-gray-400 text-[9px] font-bold px-1.5 py-0.5 rounded border dark:border-darkBorder">{p.responsavel}</span>}
+                                                                        {p.responsavel && p.responsavel.split(',').map(r => r.trim()).filter(Boolean).map((r, i) => <span key={`resp-${i}`} className="bg-gray-100 dark:bg-darkCard text-gray-600 dark:text-gray-400 text-[9px] font-bold px-1.5 py-0.5 rounded border dark:border-darkBorder">{r}</span>)}
                                                                         {p.prazo && <span className="bg-brand/10 text-brand text-[9px] font-bold px-1.5 py-0.5 rounded border border-brand/20">{formatarDataExibicao(p.prazo).substring(0,5)}</span>}
                                                                         {p.entrega && <span className="bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 text-[9px] font-bold px-1.5 py-0.5 rounded border border-orange-200 dark:border-orange-900/30 flex items-center gap-1"><Icon name="truck" className="w-2.5 h-2.5"/>Entrega</span>}
-                                                                        {p.local_producao !== 'Berlim' && <span className="bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-[9px] font-bold px-1.5 py-0.5 rounded border border-blue-200 dark:border-blue-800/50">{p.local_producao}</span>}
+                                                                        {p.local_producao && p.local_producao.split(',').map(l => l.trim()).filter(Boolean).filter(l => l !== 'Berlim').map((l, i) => <span key={`loc-${i}`} className="bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-[9px] font-bold px-1.5 py-0.5 rounded border border-blue-200 dark:border-blue-800/50">{l}</span>)}
                                                                     </div>
                                                                 </div>
                                                             ))}
@@ -923,10 +924,7 @@
                                                         <td className="px-6 py-4 font-semibold text-sm text-gray-900 dark:text-[#EDEDED]">{p.cliente}</td>
                                                         <td className="px-6 py-4 text-sm text-gray-600 dark:text-[#A1A1AA] truncate max-w-xs">{obterResumoServicos(p.servico)}</td>
                                                         <td className="px-6 py-4">
-                                                            <span className={`px-2.5 py-1 text-[11px] font-bold rounded border 
-                                                                ${STATUSES_FINALIZADOS.includes(p.status) ? 'bg-gray-100 text-gray-600 border-gray-200 dark:bg-darkElevated dark:text-gray-400 dark:border-darkBorder' : 
-                                                                  p.status === 'Acabamento' ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-900/50' : 
-                                                                  'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/30 dark:text-blue-400 dark:border-blue-900/50'}`}>
+                                                            <span className={`px-2.5 py-1 text-[11px] font-bold rounded border bg-gray-50 border-gray-200 dark:bg-darkElevated dark:border-darkBorder ${obterCorStatus(p.status)}`}>
                                                                 {p.status}
                                                             </span>
                                                         </td>
@@ -1029,22 +1027,24 @@
                                     <div className="grid grid-cols-3 gap-4">
                                         <div>
                                             <label className="block text-sm font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Resp.</label>
-                                            <div className="relative">
-                                                <select value={novoPedido.responsavel} onChange={e => setNovoPedido({...novoPedido, responsavel: e.target.value})} disabled={isModalTrancado} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2.5 text-sm outline-none focus:border-brand transition dark:text-[#EDEDED] cursor-pointer appearance-none disabled:opacity-50">
-                                                    <option value="">Indefinido</option>
-                                                    {RESPONSAVEIS.map(r => <option key={r} value={r}>{r}</option>)}
-                                                </select>
-                                                <Icon name="chevron-down" className="absolute right-3 top-3.5 w-4 h-4 text-gray-400 pointer-events-none" />
-                                            </div>
+                                            <MultiSelectDropdown 
+                                                value={novoPedido.responsavel} 
+                                                options={RESPONSAVEIS} 
+                                                onChange={val => setNovoPedido({...novoPedido, responsavel: val})} 
+                                                disabled={isModalTrancado} 
+                                                className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand transition dark:text-[#EDEDED]"
+                                            />
                                         </div>
                                         <div>
                                             <label className="block text-sm font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Local</label>
-                                            <div className="relative">
-                                                <select value={novoPedido.local_producao} onChange={e => setNovoPedido({...novoPedido, local_producao: e.target.value})} disabled={isModalTrancado} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2.5 text-sm outline-none focus:border-brand transition dark:text-[#EDEDED] cursor-pointer appearance-none disabled:opacity-50">
-                                                    {LOCAIS.map(l => <option key={l} value={l}>{l}</option>)}
-                                                </select>
-                                                <Icon name="chevron-down" className="absolute right-3 top-3.5 w-4 h-4 text-gray-400 pointer-events-none" />
-                                            </div>
+                                            <MultiSelectDropdown 
+                                                value={novoPedido.local_producao} 
+                                                options={LOCAIS} 
+                                                onChange={val => setNovoPedido({...novoPedido, local_producao: val})} 
+                                                disabled={isModalTrancado} 
+                                                placeholder="Berlim"
+                                                className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand transition dark:text-[#EDEDED]"
+                                            />
                                         </div>
                                         <div>
                                             <label className="block text-sm font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Tags Especiais</label>
