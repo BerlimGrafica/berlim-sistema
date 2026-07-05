@@ -1145,81 +1145,79 @@
 
                     {/* ================= RECIBO PARA IMPRESSÃO (2 VIAS) ================= */}
                     {osParaImprimir && (
-                        <div className="print-only bg-white text-black font-sans flex flex-col w-full h-full overflow-hidden">
+                        <div className="print-only bg-white text-black font-sans flex flex-col w-full h-[286mm] overflow-hidden justify-between select-none">
                             {[1, 2].map((via, index) => {
                                 const cInfo = clientes.find(c => c.nome === osParaImprimir.cliente);
                                 const desc = desconstruirTextoServico(osParaImprimir.servico);
                                 
                                 return (
-                                    <div key={via} className={`flex-1 flex flex-col p-6 overflow-hidden relative ${index === 0 ? 'border-b-[2px] border-dashed border-gray-400' : ''}`}>
+                                    <div key={via} className={`h-[143mm] flex flex-col p-6 overflow-hidden relative justify-between ${index === 0 ? 'border-b-[2px] border-dashed border-gray-400' : ''}`}>
                                         
-                                        {/* Cabeçalho Limpo */}
-                                        <div className="flex justify-between items-start mb-3 shrink-0">
-                                            <div className="flex flex-col">
-                                                {/* O Logo está com fallback */}
-                                                <img src="/logo.png" alt="Berlim Gráfica" className="h-14 object-contain object-left mb-2" onError={(e) => { e.currentTarget.style.display='none'; e.currentTarget.nextElementSibling.style.display='block'; }} />
-                                                <h1 className="text-2xl font-extrabold uppercase tracking-widest hidden">Berlim Gráfica</h1>
+                                        {/* Grupo Superior: Cabeçalho e Cliente */}
+                                        <div className="shrink-0 flex flex-col">
+                                            {/* Cabeçalho Limpo */}
+                                            <div className="flex justify-between items-start mb-3">
+                                                <div className="flex flex-col">
+                                                    <img src="/logo.png" alt="Berlim Gráfica" className="h-14 object-contain object-left mb-2" onError={(e) => { e.currentTarget.style.display='none'; e.currentTarget.nextElementSibling.style.display='block'; }} />
+                                                    <h1 className="text-2xl font-extrabold uppercase tracking-widest hidden">Berlim Gráfica</h1>
+                                                    
+                                                    <h2 className="text-xl font-bold uppercase text-gray-800">O.S. #{osParaImprimir.id}</h2>
+                                                    <div className="flex items-center gap-3 mt-0.5">
+                                                        <p className="text-xs text-gray-500 font-medium">Entrada: {formatarDataExibicao(osParaImprimir.data_pedido)}</p>
+                                                        <span className="border border-gray-300 text-gray-400 text-[8px] uppercase tracking-widest px-1.5 py-0.5 rounded">
+                                                            {index === 0 ? 'Via da Gráfica' : 'Via do Cliente'}
+                                                        </span>
+                                                    </div>
+                                                </div>
                                                 
-                                                <h2 className="text-xl font-bold uppercase text-gray-800">O.S. #{osParaImprimir.id}</h2>
-                                                <div className="flex items-center gap-3 mt-0.5">
-                                                    <p className="text-xs text-gray-500 font-medium">Entrada: {formatarDataExibicao(osParaImprimir.data_pedido)}</p>
-                                                    {/* Sinalizador de Via Movido para baixo da data */}
-                                                    <span className="border border-gray-300 text-gray-400 text-[8px] uppercase tracking-widest px-1.5 py-0.5 rounded">
-                                                        {index === 0 ? 'Via da Gráfica' : 'Via do Cliente'}
-                                                    </span>
+                                                <div className="text-right text-[11px] text-gray-600 flex flex-col justify-end mt-1">
+                                                    <p className="font-bold text-gray-900 uppercase tracking-wide">Berlim Gráfica Rápida</p>
+                                                    <p>CNPJ: 36.117.136/0001-23</p>
+                                                    <p>R. Alencastro, 42 - Silveira</p>
+                                                    <p>Santo André - SP, 09110-050</p>
+                                                    <p className="font-semibold text-gray-800 mt-0.5">(11) 2677-6057 | (11) 95471-6011</p>
                                                 </div>
                                             </div>
-                                            
-                                            {/* Informações da Gráfica (Alinhadas à direita e mais para cima) */}
-                                            <div className="text-right text-[11px] text-gray-600 flex flex-col justify-end mt-1">
-                                                <p className="font-bold text-gray-900 uppercase tracking-wide">Berlim Gráfica Rápida</p>
-                                                <p>CNPJ: 36.117.136/0001-23</p>
-                                                <p>R. Alencastro, 42 - Silveira</p>
-                                                <p>Santo André - SP, 09110-050</p>
-                                                <p className="font-semibold text-gray-800 mt-0.5">(11) 2677-6057 | (11) 95471-6011</p>
+    
+                                            <hr className="border-t-2 border-black mb-3" />
+    
+                                            {/* Dados do Cliente */}
+                                            <div className="mb-2">
+                                                <div className="flex justify-between items-end mb-1">
+                                                    <div>
+                                                        <h3 className="font-bold text-[10px] uppercase text-gray-400 mb-0.5 tracking-wider">Cliente</h3>
+                                                        <p className="font-bold text-base uppercase text-gray-900">{osParaImprimir.cliente}</p>
+                                                    </div>
+                                                    <div className="text-right">
+                                                        <h3 className="font-bold text-[10px] uppercase text-gray-400 mb-0.5 tracking-wider">Contato</h3>
+                                                        <p className="font-bold text-sm text-gray-800">{cInfo?.telefone || 'Não informado'}</p>
+                                                    </div>
+                                                </div>
+                                                {cInfo?.observacoes && (
+                                                    <div className="mt-1">
+                                                        <p className="text-xs text-gray-600 italic">" {cInfo.observacoes} "</p>
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
     
-                                        <hr className="border-t-2 border-black mb-3 shrink-0" />
-    
-                                        {/* Dados do Cliente */}
-                                        <div className="shrink-0 mb-3">
-                                            <div className="flex justify-between items-end mb-1">
-                                                <div>
-                                                    <h3 className="font-bold text-[10px] uppercase text-gray-400 mb-0.5 tracking-wider">Cliente</h3>
-                                                    <p className="font-bold text-base uppercase text-gray-900">{osParaImprimir.cliente}</p>
-                                                </div>
-                                                <div className="text-right">
-                                                    <h3 className="font-bold text-[10px] uppercase text-gray-400 mb-0.5 tracking-wider">Contato</h3>
-                                                    <p className="font-bold text-sm text-gray-800">{cInfo?.telefone || 'Não informado'}</p>
-                                                </div>
-                                            </div>
-                                            {/* Só renderiza se houver observação do cliente no cadastro */}
-                                            {cInfo?.observacoes && (
-                                                <div className="mt-1">
-                                                    <p className="text-xs text-gray-600 italic">" {cInfo.observacoes} "</p>
-                                                </div>
-                                            )}
-                                        </div>
-    
-                                        {/* Tabela de Serviços Ampla (Sem a linha cinza em cima) */}
-                                        <div className="flex-1 overflow-hidden flex flex-col mt-1">
+                                        {/* Grupo Central: Tabela de Serviços (Absorve 100% do espaço vazio restante) */}
+                                        <div className="flex-1 overflow-hidden flex flex-col mt-2">
                                             <table className="w-full text-left text-sm border-collapse">
                                                 <thead>
                                                     <tr className="border-b border-gray-800 text-gray-800">
                                                         <th className="pb-1 uppercase text-[10px] font-extrabold tracking-wider w-full">Serviços Contratados</th>
-                                                        <th className="pb-1 uppercase text-[10px] font-extrabold tracking-wider text-right w-32 whitespace-nowrap pl-4">Valor R$</th>
+                                                        <th className="pb-1 uppercase text-[10px] font-extrabold tracking-wider text-right w-32 whitespace-nowrap pl-4">Valor</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
                                                     {desc.itens.length > 0 ? desc.itens.map((item, idx) => (
                                                         <tr key={idx} className="border-b border-gray-100 last:border-0">
-                                                            {/* Deixando APENAS a descrição digitada */}
                                                             <td className="py-2 text-gray-900 whitespace-pre-wrap pr-4 align-top text-xs font-medium leading-relaxed">
                                                                 {item.descricao || item.nome}
                                                             </td>
                                                             <td className="py-2 text-right whitespace-nowrap align-top font-bold text-sm">
-                                                                {item.valor}
+                                                                R$ {item.valor}
                                                                 {item.desconto && <span className="block text-[9px] text-gray-400 font-normal">(-{item.desconto}%)</span>}
                                                             </td>
                                                         </tr>
@@ -1229,7 +1227,7 @@
                                                                 Serviço formatado manualmente (Verifique as observações gerais abaixo).
                                                             </td>
                                                             <td className="py-4 text-right whitespace-nowrap align-top font-bold text-sm">
-                                                                {Number(osParaImprimir.valor_total).toFixed(2).replace('.', ',')}
+                                                                R$ {Number(osParaImprimir.valor_total).toFixed(2).replace('.', ',')}
                                                             </td>
                                                         </tr>
                                                     )}
@@ -1237,21 +1235,24 @@
                                             </table>
                                         </div>
     
-                                        <hr className="border-t-2 border-black mt-2 mb-3 shrink-0" />
+                                        {/* Grupo Inferior: Linha Grossa e Totais Pados ao Fundo */}
+                                        <div className="shrink-0 flex flex-col mt-auto pt-2">
+                                            <hr className="border-t-2 border-black mb-3" />
     
-                                        {/* Footer da O.S (Obs e Totais Alinhados pelo Topo) */}
-                                        <div className="shrink-0 flex justify-between items-start gap-6 mb-2">
-                                            <div className="flex-1 max-w-[60%]">
-                                                <h3 className="font-bold text-[10px] uppercase text-gray-400 mb-1.5 tracking-wider">Observações Gerais do Pedido</h3>
-                                                <p className="text-xs text-gray-800 whitespace-pre-wrap leading-snug">
-                                                    {desc.observacoes || <span className="italic text-gray-400">Nenhuma observação extra registrada.</span>}
-                                                </p>
-                                            </div>
-                                            <div className="text-right shrink-0">
-                                                <span className="text-[10px] uppercase font-bold tracking-widest text-gray-500 block mb-0.5">Total do Pedido</span>
-                                                <h2 className="text-4xl font-black tracking-tight text-gray-900">R$ {Number(osParaImprimir.valor_total).toFixed(2).replace('.', ',')}</h2>
+                                            <div className="flex justify-between items-start gap-6 mb-2">
+                                                <div className="flex-1 max-w-[60%]">
+                                                    <h3 className="font-bold text-[10px] uppercase text-gray-400 mb-1.5 tracking-wider">Observações Gerais do Pedido</h3>
+                                                    <p className="text-xs text-gray-800 whitespace-pre-wrap leading-snug">
+                                                        {desc.observacoes || <span className="italic text-gray-400">Nenhuma observação extra registrada.</span>}
+                                                    </p>
+                                                </div>
+                                                <div className="text-right shrink-0">
+                                                    <span className="text-[10px] uppercase font-bold tracking-widest text-gray-500 block mb-0.5">Total do Pedido</span>
+                                                    <h2 className="text-4xl font-black tracking-tight text-gray-900">R$ {Number(osParaImprimir.valor_total).toFixed(2).replace('.', ',')}</h2>
+                                                </div>
                                             </div>
                                         </div>
+    
                                     </div>
                                 );
                             })}
