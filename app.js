@@ -335,7 +335,6 @@ function App() {
     const [erroLogin, setErroLogin] = useState('');
 
     const [abaAtual, setAbaAtual] = useState('producao');
-    const [visaoProducao, setVisaoProducao] = useState('lista'); 
     const [pedidos, setPedidos] = useState([]);
     const [produtos, setProdutos] = useState([]);
     const [clientes, setClientes] = useState([]);
@@ -502,16 +501,26 @@ function App() {
 
         if (novoUsuario.id) {
             const { data, error } = await supabase.from('usuarios').update(usuarioFormatado).eq('id', novoUsuario.id).select();
-            if (!error && data) { 
-                setUsuariosSistema(usuariosSistema.map(u => u.id === novoUsuario.id ? data[0] : u)); 
-                setModalUsuarioAberto(false); 
-            } else alert('Falha ao atualizar usuário: ' + error.message);
+            if (error) {
+                alert('Falha ao atualizar usuário: ' + error.message);
+            } else if (data && data.length > 0) {
+                setUsuariosSistema(usuariosSistema.map(u => u.id === novoUsuario.id ? data[0] : u));
+                setModalUsuarioAberto(false);
+            } else {
+                carregarDados();
+                setModalUsuarioAberto(false);
+            }
         } else {
             const { data, error } = await supabase.from('usuarios').insert([usuarioFormatado]).select();
-            if (!error && data) { 
-                setUsuariosSistema([...usuariosSistema, data[0]]); 
-                setModalUsuarioAberto(false); 
-            } else alert('Falha ao salvar usuário: ' + error.message);
+            if (error) {
+                alert('Falha ao salvar usuário: ' + error.message);
+            } else if (data && data.length > 0) {
+                setUsuariosSistema([...usuariosSistema, data[0]]);
+                setModalUsuarioAberto(false);
+            } else {
+                carregarDados();
+                setModalUsuarioAberto(false);
+            }
         }
     }
 
@@ -956,12 +965,24 @@ function App() {
                             const totalAReceber = pedidosFin.filter(p => p.status !== 'Concluído' && p.status !== 'Finalizado' && p.status !== 'Abandonado').reduce((acc, p) => acc + (Number(p.valor_total) || 0), 0);
                             const ticketMedio = pedidosFin.length > 0 ? (totalBruto / pedidosFin.length) : 0;
 
+                            const totalVendasHoje = pedidos.filter(p => p.data_pedido === obterDataAtual()).reduce((acc, p) => acc + (Number(p.valor_total) || 0), 0);
+
                             const anoAtualStr = new Date().getFullYear().toString();
                             const anoAnteriorStr = (new Date().getFullYear() - 1).toString();
                             
                             const totalAnoAtual = pedidos.filter(p => p.data_pedido && p.data_pedido.startsWith(anoAtualStr)).reduce((a, b) => a + (Number(b.valor_total)||0), 0);
                             const totalAnoAnterior = pedidos.filter(p => p.data_pedido && p.data_pedido.startsWith(anoAnteriorStr)).reduce((a, b) => a + (Number(b.valor_total)||0), 0);
                             const crescimentoPercentual = totalAnoAnterior > 0 ? ((totalAnoAtual - totalAnoAnterior) / totalAnoAnterior) * 100 : (totalAnoAtual > 0 ? 100 : 0);
+
+                            const agrupadoPorDia = pedidosFin.reduce((acc, p) => {
+                                if (!p.data_pedido) return acc;
+                                const dia = p.data_pedido;
+                                if (!acc[dia]) acc[dia] = { dia, bruto: 0 };
+                                acc[dia].bruto += (Number(p.valor_total) || 0);
+                                return acc;
+                            }, {});
+                            const diasOrdenados = Object.values(agrupadoPorDia).sort((a, b) => b.dia.localeCompare(a.dia));
+                            const maxBrutoDia = Math.max(...diasOrdenados.map(d => d.bruto), 1);
 
                             const agrupadoPorMesAno = pedidosFin.reduce((acc, p) => {
                                 if (!p.data_pedido) return acc;
@@ -1004,7 +1025,7 @@ function App() {
 
                             return (
                                 <>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                                    <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-6 gap-4">
                                         <div className="bg-white dark:bg-darkCard p-5 rounded-xl border border-gray-200 dark:border-darkBorder shadow-sm lg:col-span-2 relative overflow-hidden">
                                             <div className="absolute right-0 top-0 w-32 h-full bg-gradient-to-l from-brand/10 to-transparent pointer-events-none"></div>
                                             <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">Crescimento Anual Global (YoY)</span>
@@ -1016,6 +1037,12 @@ function App() {
                                                 </div>
                                             </div>
                                             <p className="text-[11px] text-gray-400 mt-2">Vs R$ {totalAnoAnterior.toFixed(2).replace('.', ',')} faturados em todo ano passado</p>
+                                        </div>
+
+                                        <div className="bg-purple-50 dark:bg-purple-900/10 p-5 rounded-xl border border-purple-200 dark:border-purple-900/30 shadow-sm relative overflow-hidden">
+                                            <span className="text-[10px] font-bold text-purple-600 dark:text-purple-400 uppercase tracking-wider block mb-1">Vendas Hoje</span>
+                                            <h2 className="text-2xl font-black text-purple-600 dark:text-purple-400">R$ {totalVendasHoje.toFixed(2).replace('.', ',')}</h2>
+                                            <p className="text-[11px] text-purple-500/70 dark:text-purple-400/70 mt-2">Faturamento de pedidos lançados hoje</p>
                                         </div>
 
                                         <div className="bg-white dark:bg-darkCard p-5 rounded-xl border border-gray-200 dark:border-darkBorder shadow-sm">
@@ -1035,10 +1062,22 @@ function App() {
                                         </div>
                                     </div>
 
-                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                                         <div className="bg-white dark:bg-darkCard p-6 rounded-xl border border-gray-200 dark:border-darkBorder flex flex-col gap-4">
                                             <div>
-                                                <h3 className="font-bold text-sm text-gray-800 dark:text-white uppercase tracking-wider">Desempenho Mês a Mês</h3>
+                                                <h3 className="font-bold text-sm text-gray-800 dark:text-white uppercase tracking-wider">Faturamento Diário</h3>
+                                                <p className="text-xs text-gray-400 mt-0.5">Evolução do faturamento, dia a dia.</p>
+                                            </div>
+                                            <div className="flex flex-col gap-3 mt-2 overflow-y-auto max-h-64 custom-scrollbar pr-2">
+                                                {diasOrdenados.length === 0 ? <p className="text-xs text-gray-500 italic">Sem dados no período.</p> : 
+                                                    diasOrdenados.map(d => renderBarHorizontal(formatarDataExibicao(d.dia).substring(0,5), d.bruto, maxBrutoDia, false, 'bg-purple-500'))
+                                                }
+                                            </div>
+                                        </div>
+
+                                        <div className="bg-white dark:bg-darkCard p-6 rounded-xl border border-gray-200 dark:border-darkBorder flex flex-col gap-4">
+                                            <div>
+                                                <h3 className="font-bold text-sm text-gray-800 dark:text-white uppercase tracking-wider">Faturamento Mensal</h3>
                                                 <p className="text-xs text-gray-400 mt-0.5">Evolução do faturamento bruto no período.</p>
                                             </div>
                                             <div className="flex flex-col gap-3 mt-2 overflow-y-auto max-h-64 custom-scrollbar pr-2">
@@ -1050,7 +1089,7 @@ function App() {
 
                                         <div className="bg-white dark:bg-darkCard p-6 rounded-xl border border-gray-200 dark:border-darkBorder flex flex-col gap-4">
                                             <div>
-                                                <h3 className="font-bold text-sm text-gray-800 dark:text-white uppercase tracking-wider">Distribuição por Status Financeiro</h3>
+                                                <h3 className="font-bold text-sm text-gray-800 dark:text-white uppercase tracking-wider">Distribuição por Status</h3>
                                                 <p className="text-xs text-gray-400 mt-0.5">Visão do montante alocado em cada etapa.</p>
                                             </div>
                                             <div className="flex flex-col gap-3 mt-2 overflow-y-auto max-h-64 custom-scrollbar pr-2">
