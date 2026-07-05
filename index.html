@@ -403,12 +403,8 @@
 
         // ================= APLICAÇÃO PRINCIPAL =================
         function App() {
-            // ==== CONTROLE DE SESSÃO E USUÁRIOS ====
-            const [usuariosSistema, setUsuariosSistema] = useState([
-                { id: 1, login: 'admin', senha: '123', nome: 'Murilo', nivel: 'Administrador' },
-                { id: 2, login: 'gi', senha: '123', nome: 'Gi', nivel: 'Produção/Atendimento' },
-                { id: 3, login: 'financeiro', senha: '123', nome: 'Financeiro', nivel: 'Financeiro' }
-            ]);
+            /// ==== CONTROLE DE SESSÃO E USUÁRIOS ====
+            const [usuariosSistema, setUsuariosSistema] = useState([]);
             const [usuario, setUsuario] = useState(null);
             
             const [loginInput, setLoginInput] = useState('');
@@ -464,7 +460,7 @@
             const [novoCliente, setNovoCliente] = useState({ id: null, nome: '', telefone: '', email: '', observacoes: '' });
 
             const [modalUsuarioAberto, setModalUsuarioAberto] = useState(false);
-            const [novoUsuario, setNovoUsuario] = useState({ id: null, login: '', senha: '', nome: '', nivel: 'Produção/Atendimento' });
+            const [novoUsuario, setNovoUsuario] = useState({ id: null, nome: '', senha: '', nivel: 'Produção/Atendimento' });
 
             useEffect(() => { 
                 if(usuario) carregarDados(); 
@@ -477,11 +473,14 @@
                 if (listaProdutos) setProdutos(listaProdutos);
                 const { data: listaClientes } = await supabase.from('clientes').select('*').order('nome', { ascending: true });
                 if (listaClientes) setClientes(listaClientes);
+                const { data: listaUsuarios } = await supabase.from('usuarios').select('*').order('nome', { ascending: true });
+                if (listaUsuarios) setUsuariosSistema(listaUsuarios);
             }
 
             const efetuarLogin = (e) => {
                 e.preventDefault();
-                const conta = usuariosSistema.find(u => u.login === loginInput.toLowerCase() && u.senha === senhaInput);
+                // Agora o login pesquisa ignorando maiúsculas e minúsculas no campo "nome"
+                const conta = usuariosSistema.find(u => u.nome.toLowerCase() === loginInput.toLowerCase().trim() && u.senha === senhaInput);
                 if (conta) {
                     setUsuario(conta);
                     setErroLogin('');
@@ -556,18 +555,27 @@
             }
 
             function abrirEdicaoUsuario(usr) {
-                setNovoUsuario({ id: usr.id, login: usr.login, senha: usr.senha, nome: usr.nome, nivel: usr.nivel });
+                setNovoUsuario({ id: usr.id, nome: usr.nome, senha: usr.senha, nivel: usr.nivel });
                 setModalUsuarioAberto(true);
             }
 
-            function salvarUsuario(e) {
+            async function salvarUsuario(e) {
                 e.preventDefault();
+                const usuarioFormatado = { nome: novoUsuario.nome, senha: novoUsuario.senha, nivel: novoUsuario.nivel };
+
                 if (novoUsuario.id) {
-                    setUsuariosSistema(usuariosSistema.map(u => u.id === novoUsuario.id ? novoUsuario : u));
+                    const { data, error } = await supabase.from('usuarios').update(usuarioFormatado).eq('id', novoUsuario.id).select();
+                    if (!error && data) { 
+                        setUsuariosSistema(usuariosSistema.map(u => u.id === novoUsuario.id ? data[0] : u)); 
+                        setModalUsuarioAberto(false); 
+                    } else alert('Falha ao atualizar usuário: ' + error.message);
                 } else {
-                    setUsuariosSistema([...usuariosSistema, { ...novoUsuario, id: Date.now() }]);
+                    const { data, error } = await supabase.from('usuarios').insert([usuarioFormatado]).select();
+                    if (!error && data) { 
+                        setUsuariosSistema([...usuariosSistema, data[0]]); 
+                        setModalUsuarioAberto(false); 
+                    } else alert('Falha ao salvar usuário: ' + error.message);
                 }
-                setModalUsuarioAberto(false);
             }
 
             function adicionarItemAoCarrinho() {
@@ -1340,18 +1348,17 @@
                                         <h1 className="text-3xl font-semibold dark:text-white tracking-tight">Usuários do Sistema</h1>
                                         <p className="text-sm text-gray-500 mt-1">Gerencie os acessos da equipe (Administrador, Produção/Atendimento, Financeiro).</p>
                                     </div>
-                                    <button onClick={() => { setNovoUsuario({ id: null, login: '', senha: '', nome: '', nivel: 'Produção/Atendimento' }); setModalUsuarioAberto(true); }} className="bg-brand hover:bg-brandHover text-white px-4 py-2 text-sm rounded-md font-bold shadow-sm transition flex items-center gap-2">
+                                    <button onClick={() => { setNovoUsuario({ id: null, nome: '', senha: '', nivel: 'Produção/Atendimento' }); setModalUsuarioAberto(true); }} className="bg-brand hover:bg-brandHover text-white px-4 py-2 text-sm rounded-md font-bold shadow-sm transition flex items-center gap-2">
                                         Novo Usuário
                                     </button>
                                 </div>
                                 <div className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded overflow-hidden">
                                     <table className="w-full text-left border-collapse">
-                                        <thead><tr className="border-b border-gray-200 dark:border-darkBorder text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider bg-transparent"><th className="px-6 py-5">Nome</th><th className="px-6 py-5">Login</th><th className="px-6 py-5 text-right">Nível de Acesso</th></tr></thead>
+                                        <thead><tr className="border-b border-gray-200 dark:border-darkBorder text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider bg-transparent"><th className="px-6 py-5">Nome do Usuário</th><th className="px-6 py-5 text-right">Nível de Acesso</th></tr></thead>
                                         <tbody>
                                             {usuariosSistema.map(u => (
                                                 <tr key={u.id} onClick={() => abrirEdicaoUsuario(u)} className="border-b border-gray-100 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover transition cursor-pointer">
                                                     <td className="px-6 py-4 text-sm font-semibold dark:text-[#EDEDED]">{u.nome}</td>
-                                                    <td className="px-6 py-4 text-sm text-gray-600 dark:text-[#A1A1AA]">@{u.login}</td>
                                                     <td className="px-6 py-4 text-sm font-bold dark:text-[#EDEDED] text-right">
                                                         <span className={`px-2 py-1 rounded text-[10px] uppercase tracking-wider border ${u.nivel === 'Administrador' ? 'bg-red-50 text-red-600 border-red-200' : u.nivel === 'Financeiro' ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-blue-50 text-blue-600 border-blue-200'}`}>
                                                             {u.nivel}
@@ -1578,11 +1585,9 @@
                             <div className="bg-white dark:bg-darkCard w-full max-w-md rounded shadow-2xl overflow-hidden border border-gray-200 dark:border-darkBorder" onClick={(e) => e.stopPropagation()}>
                                 <div className="px-6 py-5 border-b border-gray-100 dark:border-darkBorder flex justify-between items-center bg-gray-50 dark:bg-darkCard"><h3 className="font-semibold text-lg dark:text-white tracking-tight">{novoUsuario.id ? 'Editar Conta' : 'Nova Conta de Acesso'}</h3><button onClick={() => setModalUsuarioAberto(false)} className="text-gray-400 hover:text-white transition"><Icon name="x" /></button></div>
                                 <form onSubmit={salvarUsuario} className="p-6 flex flex-col gap-4">
-                                    <input required value={novoUsuario.nome} onChange={e => setNovoUsuario({...novoUsuario, nome: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" placeholder="Nome do Funcionário" />
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <input required value={novoUsuario.login} onChange={e => setNovoUsuario({...novoUsuario, login: e.target.value.toLowerCase().trim()})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" placeholder="Login (ex: carlos)" />
-                                        <input required type="password" value={novoUsuario.senha} onChange={e => setNovoUsuario({...novoUsuario, senha: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" placeholder="Senha" />
-                                    </div>
+                                    <input required value={novoUsuario.nome} onChange={e => setNovoUsuario({...novoUsuario, nome: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" placeholder="Nome de Acesso" />
+                                    <input required type="password" value={novoUsuario.senha} onChange={e => setNovoUsuario({...novoUsuario, senha: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" placeholder="Senha" />
+                                    
                                     <div className="relative">
                                         <select value={novoUsuario.nivel} onChange={e => setNovoUsuario({...novoUsuario, nivel: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition appearance-none cursor-pointer">
                                             <option value="Produção/Atendimento">Operador de Produção / Atendimento</option>
@@ -1591,7 +1596,6 @@
                                         </select>
                                         <Icon name="chevron-down" className="absolute right-3 top-2.5 w-4 h-4 text-gray-400 pointer-events-none" />
                                     </div>
-                                    <p className="text-[10px] text-gray-500 italic mt-1">* Nota: Os usuários são salvos na sessão atual para demonstração.</p>
                                     <div className="flex justify-end gap-3 mt-2"><button type="button" onClick={() => setModalUsuarioAberto(false)} className="px-4 py-2 rounded text-sm font-medium text-gray-600 dark:text-[#A1A1AA] hover:bg-gray-100 dark:hover:bg-darkHover transition">Cancelar</button><button type="submit" className="px-5 py-2 rounded text-sm font-medium bg-brand text-white hover:bg-brandHover transition shadow-sm">Salvar Acesso</button></div>
                                 </form>
                             </div>
