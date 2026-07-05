@@ -1213,20 +1213,20 @@
                                                 <tbody>
                                                     {desc.itens.length > 0 ? desc.itens.map((item, idx) => (
                                                         <tr key={idx} className="border-b border-gray-100 last:border-0">
-                                                            <td className="py-2 text-gray-900 whitespace-pre-wrap pr-4 align-top text-xs font-medium leading-relaxed">
+                                                            <td className="py-0.5 text-gray-900 whitespace-pre-wrap pr-4 align-middle text-xs font-medium leading-tight">
                                                                 {item.descricao || item.nome}
                                                             </td>
-                                                            <td className="py-2 text-right whitespace-nowrap align-top font-bold text-sm">
+                                                            <td className="py-0.5 text-right whitespace-nowrap align-middle font-bold text-sm">
                                                                 R$ {item.valor}
                                                                 {item.desconto && <span className="block text-[9px] text-gray-400 font-normal">(-{item.desconto}%)</span>}
                                                             </td>
                                                         </tr>
                                                     )) : (
                                                         <tr>
-                                                            <td className="py-4 text-gray-500 whitespace-pre-wrap pr-4 align-top text-xs italic">
+                                                            <td className="py-1 text-gray-500 whitespace-pre-wrap pr-4 align-middle text-xs italic">
                                                                 Serviço formatado manualmente (Verifique as observações gerais abaixo).
                                                             </td>
-                                                            <td className="py-4 text-right whitespace-nowrap align-top font-bold text-sm">
+                                                            <td className="py-1 text-right whitespace-nowrap align-middle font-bold text-sm">
                                                                 R$ {Number(osParaImprimir.valor_total).toFixed(2).replace('.', ',')}
                                                             </td>
                                                         </tr>
