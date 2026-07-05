@@ -1147,86 +1147,90 @@
                     {osParaImprimir && (
                         <div className="print-only bg-white text-black font-sans flex flex-col w-full h-full overflow-hidden">
                             {[1, 2].map((via, index) => {
-                                // Puxa as observações do cliente direto da base de clientes
                                 const cInfo = clientes.find(c => c.nome === osParaImprimir.cliente);
                                 const desc = desconstruirTextoServico(osParaImprimir.servico);
                                 
                                 return (
-                                    <div key={via} className={`flex-1 flex flex-col p-6 overflow-hidden relative ${index === 0 ? 'border-b-[3px] border-dashed border-gray-400' : ''}`}>
+                                    <div key={via} className={`flex-1 flex flex-col p-6 overflow-hidden relative ${index === 0 ? 'border-b-[2px] border-dashed border-gray-400' : ''}`}>
                                         
                                         {/* Sinalizador de Via */}
                                         <div className="absolute right-6 top-6 border border-gray-300 text-gray-400 text-[8px] uppercase tracking-widest px-2 py-1 rounded">
                                             {index === 0 ? 'Via da Gráfica' : 'Via do Cliente'}
                                         </div>
     
-                                        {/* Cabeçalho */}
-                                        <div className="flex justify-between items-start mb-4 shrink-0">
+                                        {/* Cabeçalho Limpo */}
+                                        <div className="flex justify-between items-start mb-3 shrink-0">
                                             <div className="flex flex-col">
-                                                {/* O Logo está com fallback: se o caminho não bater, ele mostra o nome em texto automaticamente */}
-                                                <img src="/logo.png" alt="Berlim Gráfica" className="h-12 object-contain object-left mb-1" onError={(e) => { e.currentTarget.style.display='none'; e.currentTarget.nextElementSibling.style.display='block'; }} />
-                                                <h1 className="text-2xl font-extrabold uppercase tracking-widest hidden">Berlim</h1>
-                                                <h2 className="text-lg font-bold uppercase mt-1">O.S. #{osParaImprimir.id}</h2>
-                                                <p className="text-sm">Entrada: {formatarDataExibicao(osParaImprimir.data_pedido)}</p>
+                                                {/* O Logo está com fallback */}
+                                                <img src="/logo.png" alt="Berlim Gráfica" className="h-14 object-contain object-left mb-2" onError={(e) => { e.currentTarget.style.display='none'; e.currentTarget.nextElementSibling.style.display='block'; }} />
+                                                <h1 className="text-2xl font-extrabold uppercase tracking-widest hidden">Berlim Gráfica</h1>
+                                                
+                                                <h2 className="text-xl font-bold uppercase text-gray-800">O.S. #{osParaImprimir.id}</h2>
+                                                <p className="text-xs text-gray-500 font-medium">Entrada: {formatarDataExibicao(osParaImprimir.data_pedido)}</p>
                                             </div>
-                                            <div className="text-right text-xs text-gray-800 flex flex-col gap-0.5 mt-6">
-                                                <p className="font-bold text-sm text-black">Berlim Gráfica Rápida</p>
+                                            
+                                            {/* Informações da Gráfica (Alinhadas à direita) */}
+                                            <div className="text-right text-[11px] text-gray-600 flex flex-col justify-end h-full pt-8">
+                                                <p className="font-bold text-gray-900 uppercase tracking-wide">Berlim Gráfica Rápida</p>
                                                 <p>CNPJ: 36.117.136/0001-23</p>
                                                 <p>R. Alencastro, 42 - Silveira</p>
                                                 <p>Santo André - SP, 09110-050</p>
-                                                <p className="font-semibold mt-0.5">(11) 2677-6057 | (11) 95471-6011</p>
+                                                <p className="font-semibold text-gray-800 mt-0.5">(11) 2677-6057 | (11) 95471-6011</p>
                                             </div>
                                         </div>
     
-                                        {/* Linha Grossa */}
-                                        <hr className="border-t-[3px] border-black mb-4 shrink-0" />
+                                        <hr className="border-t-2 border-black mb-3 shrink-0" />
     
-                                        {/* Dados do Cliente */}
-                                        <div className="mb-4 shrink-0">
+                                        {/* Dados do Cliente Sem Linha Divisória Inferior */}
+                                        <div className="shrink-0 mb-3">
                                             <div className="flex justify-between items-end mb-1">
                                                 <div>
-                                                    <h3 className="font-bold text-[10px] uppercase text-gray-500 mb-0.5">Cliente</h3>
-                                                    <p className="font-bold text-base uppercase">{osParaImprimir.cliente}</p>
+                                                    <h3 className="font-bold text-[10px] uppercase text-gray-400 mb-0.5 tracking-wider">Cliente</h3>
+                                                    <p className="font-bold text-base uppercase text-gray-900">{osParaImprimir.cliente}</p>
                                                 </div>
                                                 <div className="text-right">
-                                                    <h3 className="font-bold text-[10px] uppercase text-gray-500 mb-0.5">Contato</h3>
-                                                    <p className="font-bold text-sm">{cInfo?.telefone || 'Não informado'}</p>
+                                                    <h3 className="font-bold text-[10px] uppercase text-gray-400 mb-0.5 tracking-wider">Contato</h3>
+                                                    <p className="font-bold text-sm text-gray-800">{cInfo?.telefone || 'Não informado'}</p>
                                                 </div>
                                             </div>
-                                            <div className="mt-2">
-                                                <h3 className="font-bold text-[10px] uppercase text-gray-500 mb-0.5">Observações do Cliente</h3>
-                                                <p className="text-sm text-gray-800 min-h-[1.5rem] italic">{cInfo?.observacoes || 'Nenhuma.'}</p>
-                                            </div>
+                                            {/* Só renderiza se houver observação do cliente no cadastro */}
+                                            {cInfo?.observacoes && (
+                                                <div className="mt-1">
+                                                    <p className="text-xs text-gray-600 italic">" {cInfo.observacoes} "</p>
+                                                </div>
+                                            )}
                                         </div>
     
-                                        <hr className="border-t border-black mb-4 shrink-0" />
+                                        <hr className="border-t border-gray-300 mb-3 shrink-0" />
     
-                                        {/* Serviços Contratados */}
+                                        {/* Tabela de Serviços Ampla */}
                                         <div className="flex-1 overflow-hidden flex flex-col">
-                                            <table className="w-full text-left text-sm">
+                                            <table className="w-full text-left text-sm border-collapse">
                                                 <thead>
-                                                    <tr className="border-b border-gray-400">
-                                                        <th className="py-1 uppercase text-xs font-bold text-gray-600">Serviço</th>
-                                                        <th className="py-1 uppercase text-xs font-bold text-gray-600 text-right w-32">Valor</th>
+                                                    <tr className="border-b border-gray-800 text-gray-800">
+                                                        <th className="pb-1 uppercase text-[10px] font-extrabold tracking-wider w-full">Serviços Contratados</th>
+                                                        <th className="pb-1 uppercase text-[10px] font-extrabold tracking-wider text-right w-32 whitespace-nowrap pl-4">Valor R$</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
                                                     {desc.itens.length > 0 ? desc.itens.map((item, idx) => (
-                                                        <tr key={idx} className="border-b border-gray-200">
-                                                            <td className="py-2 text-gray-900 whitespace-pre-wrap pr-4 align-top font-medium text-xs">
-                                                                {item.descricao || item.nome}
+                                                        <tr key={idx} className="border-b border-gray-100 last:border-0">
+                                                            <td className="py-2 text-gray-900 whitespace-pre-wrap pr-4 align-top text-xs">
+                                                                <span className="font-bold">{item.nome}</span>
+                                                                {item.descricao && <span className="block mt-0.5 text-gray-600">{item.descricao}</span>}
                                                             </td>
                                                             <td className="py-2 text-right whitespace-nowrap align-top font-bold text-sm">
-                                                                R$ {item.valor}
-                                                                {item.desconto && <span className="block text-[10px] text-gray-500 font-normal">(-{item.desconto}%)</span>}
+                                                                {item.valor}
+                                                                {item.desconto && <span className="block text-[9px] text-gray-400 font-normal">(-{item.desconto}%)</span>}
                                                             </td>
                                                         </tr>
                                                     )) : (
-                                                        <tr className="border-b border-gray-200">
-                                                            <td className="py-2 text-gray-900 whitespace-pre-wrap pr-4 align-top font-medium text-xs italic text-gray-500">
-                                                                Lançamento avulso (Verifique observações gerais abaixo).
+                                                        <tr>
+                                                            <td className="py-4 text-gray-500 whitespace-pre-wrap pr-4 align-top text-xs italic">
+                                                                Serviço formatado manualmente (Verifique as observações gerais abaixo).
                                                             </td>
-                                                            <td className="py-2 text-right whitespace-nowrap align-top font-bold text-sm">
-                                                                R$ {Number(osParaImprimir.valor_total).toFixed(2).replace('.', ',')}
+                                                            <td className="py-4 text-right whitespace-nowrap align-top font-bold text-sm">
+                                                                {Number(osParaImprimir.valor_total).toFixed(2).replace('.', ',')}
                                                             </td>
                                                         </tr>
                                                     )}
@@ -1234,19 +1238,19 @@
                                             </table>
                                         </div>
     
-                                        <hr className="border-t border-black my-4 shrink-0" />
+                                        <hr className="border-t-2 border-black mt-2 mb-3 shrink-0" />
     
-                                        {/* Observações Gerais e Total */}
-                                        <div className="shrink-0 flex justify-between items-end gap-6">
-                                            <div className="flex-1">
-                                                <h3 className="font-bold text-[10px] uppercase text-gray-500 mb-1">Observações Gerais do Pedido</h3>
-                                                <p className="text-xs text-gray-900 whitespace-pre-wrap bg-gray-50 p-2.5 rounded border border-gray-200 min-h-[3.5rem]">
-                                                    {desc.observacoes || 'Nenhuma.'}
+                                        {/* Footer da O.S (Obs e Totais Alinhados) */}
+                                        <div className="shrink-0 flex justify-between items-end gap-6 mb-2">
+                                            <div className="flex-1 max-w-[60%]">
+                                                <h3 className="font-bold text-[10px] uppercase text-gray-400 mb-1 tracking-wider">Observações Gerais do Pedido</h3>
+                                                <p className="text-xs text-gray-800 whitespace-pre-wrap leading-snug">
+                                                    {desc.observacoes || <span className="italic text-gray-400">Nenhuma observação extra registrada.</span>}
                                                 </p>
                                             </div>
                                             <div className="text-right shrink-0">
-                                                <span className="text-xs uppercase font-extrabold tracking-widest text-gray-500 block">Total do Pedido</span>
-                                                <h2 className="text-3xl font-extrabold mt-1">R$ {Number(osParaImprimir.valor_total).toFixed(2).replace('.', ',')}</h2>
+                                                <span className="text-[10px] uppercase font-bold tracking-widest text-gray-500 block mb-0.5">Total do Pedido</span>
+                                                <h2 className="text-4xl font-black tracking-tight text-gray-900">R$ {Number(osParaImprimir.valor_total).toFixed(2).replace('.', ',')}</h2>
                                             </div>
                                         </div>
                                     </div>
