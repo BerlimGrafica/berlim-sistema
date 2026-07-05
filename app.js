@@ -1462,7 +1462,7 @@ function App() {
                                 <div className="shrink-0 flex flex-col">
                                     <div className="flex justify-between items-start mb-3">
                                         <div className="flex flex-col">
-                                            <img src="/logo.png" alt="Berlim Gráfica" className="h-14 object-contain object-left mb-2" onError={(e) => { e.currentTarget.style.display='none'; e.currentTarget.nextElementSibling.style.display='block'; }} />
+                                            <img src="https://www.berlimgraficarapida.com.br/wp-content/uploads/elementor/thumbs/logosite-rm0erpiqj90gcf7ff4jp8ujys78opflob1b9vn5jjs.png" alt="Berlim Gráfica" className="h-14 object-contain object-left mb-2" onError={(e) => { e.currentTarget.style.display='none'; e.currentTarget.nextElementSibling.style.display='block'; }} />
                                             <h1 className="text-2xl font-extrabold uppercase tracking-widest hidden">Berlim Gráfica</h1>
                                             
                                             <h2 className="text-xl font-bold uppercase text-gray-800">O.S. #{osParaImprimir.id}</h2>
