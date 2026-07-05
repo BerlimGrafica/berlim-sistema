@@ -86,20 +86,20 @@
             if (name === 'lock') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>;
             if (name === 'search') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>;
             if (name === 'calendar') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect width="18" height="18" x="3" y="4" rx="2" ry="2"></rect><line x1="16" x2="16" y1="2" y2="6"></line><line x1="8" x2="8" y1="2" y2="6"></line><line x1="3" x2="21" y1="10" y2="10"></line></svg>;
-            // Novos Ícones
             if (name === 'thumbs-up') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>;
             if (name === 'truck') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect width="15" height="8" x="1" y="8" rx="1" ry="1"/><path d="M16 8h2.5a2 2 0 0 1 1.95 1.57l.5 3.43H16V8Z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="16.5" cy="18.5" r="2.5"/></svg>;
             if (name === 'layout-dashboard') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>;
             if (name === 'list') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="8" x2="21" y1="6" y2="6"/><line x1="8" x2="21" y1="12" y2="12"/><line x1="8" x2="21" y1="18" y2="18"/><line x1="3" x2="3.01" y1="6" y2="6"/><line x1="3" x2="3.01" y1="12" y2="12"/><line x1="3" x2="3.01" y1="18" y2="18"/></svg>;
             if (name === 'square') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/></svg>;
             if (name === 'check-square') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>;
+            if (name === 'alert-triangle') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/></svg>;
             return null;
         }
 
         // ==== LISTAS GLOBAIS DE ESTADOS ====
         const STATUSES_PRODUCAO = [
             'Aguardando Pagamento', 'Aguardando Retorno', 'Desenvolvimento de Arte', 
-            'Etiqueta Escolar', 'Produzir', 'Produção', 'Avisar Cliente', 'Retirada', 'Entrega'
+            'Etiqueta Escolar', 'Produzir', 'Produção', 'Avisar Cliente', 'Retirada'
         ];
         const STATUSES_FINALIZADOS = ['Abandonado', 'Concluído'];
         const RESPONSAVEIS = ['Gi', 'Murilo', 'Bruno', 'Nicole', 'Hellen', 'Jessica', 'Vini'];
@@ -201,10 +201,10 @@
                         onClick={() => !disabled && setIsOpen(!isOpen)} 
                         className={`flex justify-between items-center cursor-pointer select-none ${className} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
-                        <span className={value ? "text-gray-900 dark:text-[#EDEDED]" : "text-gray-400 dark:text-gray-600"}>
+                        <span className={value ? "text-gray-900 dark:text-[#EDEDED]" : "text-gray-400 dark:text-gray-600 truncate"}>
                             {value ? formatarDataExibicao(value) : placeholder}
                         </span>
-                        <Icon name="calendar" className="w-4 h-4 text-gray-400" />
+                        <Icon name="calendar" className="w-4 h-4 text-gray-400 shrink-0 ml-1" />
                     </div>
                     {isOpen && (
                         <div className="absolute top-full left-0 mt-2 z-[100] bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-lg shadow-2xl p-4 w-72">
@@ -225,14 +225,12 @@
                 </div>
             );
         }
-        
+
         // ==== COMPONENTE DE DROPDOWN CUSTOMIZADO (ESTILO MODAL) ====
         function InlineDropdown({ value, options, onChange, className, hasIndefinido = false }) {
             const [isOpen, setIsOpen] = useState(false);
 
-            // Regras de cores baseadas no valor (para Status e Gatilhos)
             const getTextColor = (val) => {
-                if (val === 'Entrega') return 'text-orange-500';
                 if (val === 'Produção' || val === 'Produzir') return 'text-blue-500';
                 if (val === 'Desenvolvimento de Arte') return 'text-purple-500';
                 return 'text-gray-700 dark:text-[#EDEDED]';
@@ -240,19 +238,15 @@
 
             return (
                 <div className="relative">
-                    {/* Botão Gatilho */}
                     <div 
                         onClick={() => setIsOpen(!isOpen)}
                         className={`flex items-center justify-between cursor-pointer transition ${className} ${isOpen ? 'border-brand ring-1 ring-brand/20' : ''}`}
                     >
                         <div className="flex items-center gap-1.5 truncate">
-                            {value === 'Entrega' && <Icon name="truck" className="w-3.5 h-3.5 text-orange-500 shrink-0" />}
                             <span className={`truncate font-medium ${getTextColor(value)}`}>{value || 'Indefinido'}</span>
                         </div>
                         <Icon name="chevron-down" className={`w-3 h-3 text-gray-400 shrink-0 ml-1 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
                     </div>
-
-                    {/* Menu Flutuante */}
                     {isOpen && (
                         <>
                             <div className="fixed inset-0 z-[55]" onClick={(e) => { e.stopPropagation(); setIsOpen(false); }}></div>
@@ -271,10 +265,7 @@
                                         onClick={(e) => { e.stopPropagation(); onChange(opt); setIsOpen(false); }}
                                         className={`px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-darkHover cursor-pointer border-b border-gray-100 dark:border-darkBorder last:border-0 transition font-medium flex items-center justify-between ${getTextColor(opt)}`}
                                     >
-                                        <div className="flex items-center gap-1.5">
-                                            {opt === 'Entrega' && <Icon name="truck" className="w-3 h-3 text-orange-500 shrink-0" />}
-                                            {opt}
-                                        </div>
+                                        {opt}
                                         {value === opt && <div className="w-1.5 h-1.5 rounded-full bg-brand"></div>}
                                     </li>
                                 ))}
@@ -284,7 +275,7 @@
                 </div>
             );
         }
-        
+
         // DESTRUTURADOR E RESUMO DE SERVIÇO
         function desconstruirTextoServico(texto) {
             if (!texto) return { itens: [], observacoes: '' };
@@ -325,7 +316,7 @@
         // ================= APLICAÇÃO PRINCIPAL =================
         function App() {
             const [abaAtual, setAbaAtual] = useState('producao');
-            const [visaoProducao, setVisaoProducao] = useState('lista'); // 'lista' ou 'kanban'
+            const [visaoProducao, setVisaoProducao] = useState('lista'); 
             const [pedidos, setPedidos] = useState([]);
             const [produtos, setProdutos] = useState([]);
             const [clientes, setClientes] = useState([]);
@@ -352,7 +343,8 @@
             const [novoPedido, setNovoPedido] = useState({ 
                 cliente: '', servico: '', valor_total: '', 
                 status: 'Aguardando Pagamento', data_pedido: obterDataAtual(),
-                prazo: '', responsavel: '', local_producao: 'Berlim', aprovado: false
+                prazo: '', responsavel: '', local_producao: 'Berlim', aprovado: false,
+                entrega: false, urgente: false
             });
             
             const [modalProdutoAberto, setModalProdutoAberto] = useState(false);
@@ -388,20 +380,15 @@
                 }
             };
 
-            // ==== ATUALIZAÇÃO EM LINHA DO AIRTABLE ====
             async function atualizarCampoInline(id, campo, valor) {
-                // Atualização otimista local
                 setPedidos(pedidos.map(p => p.id === id ? { ...p, [campo]: valor } : p));
-                
-                // Dispara pro banco silenciosamente
                 const { error } = await supabase.from('pedidos').update({ [campo]: valor }).eq('id', id);
                 if (error) {
                     alert('Erro ao atualizar: ' + error.message);
-                    carregarDados(); // Reverte se falhar
+                    carregarDados(); 
                 }
             }
 
-            // MODAL O.S.
             function fecharModalOS() {
                 setModalAberto(false);
                 setPedidoEmEdicao(null);
@@ -412,7 +399,8 @@
                 setNovoPedido({ 
                     cliente: '', servico: '', valor_total: '', 
                     status: 'Aguardando Pagamento', data_pedido: obterDataAtual(),
-                    prazo: '', responsavel: '', local_producao: 'Berlim', aprovado: false
+                    prazo: '', responsavel: '', local_producao: 'Berlim', aprovado: false,
+                    entrega: false, urgente: false
                 });
             }
 
@@ -430,7 +418,9 @@
                     prazo: pedido.prazo || '',
                     responsavel: pedido.responsavel || '',
                     local_producao: pedido.local_producao || 'Berlim',
-                    aprovado: pedido.aprovado || false
+                    aprovado: pedido.aprovado || false,
+                    entrega: pedido.entrega || false,
+                    urgente: pedido.urgente || false
                 });
                 setModalAberto(true);
             }
@@ -454,7 +444,7 @@
                 setNovoPedido({...novoPedido, valor_total: formatarMoeda((totalGeralOS * 100).toFixed(0).toString())});
                 
                 setItemAtual({ nome: '', descricao: '', valor: '', desconto: '' });
-                setBuscaProduto(''); // Limpa o campo de busca
+                setBuscaProduto('');
             }
 
             function removerItemDoCarrinho(id_temp) {
@@ -494,7 +484,9 @@
                     prazo: novoPedido.prazo,
                     responsavel: novoPedido.responsavel,
                     local_producao: novoPedido.local_producao,
-                    aprovado: novoPedido.aprovado
+                    aprovado: novoPedido.aprovado,
+                    entrega: novoPedido.entrega,
+                    urgente: novoPedido.urgente
                 };
 
                 if (pedidoEmEdicao) {
@@ -619,11 +611,13 @@
                                                 <thead className="sticky top-0 z-10 bg-gray-50 dark:bg-darkCard">
                                                     <tr className="border-b border-gray-200 dark:border-darkBorder text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">
                                                         <th className="px-4 py-3 w-10 text-center">ID</th>
-                                                        <th className="px-4 py-3 w-32">Prazo</th>
-                                                        <th className="px-4 py-3 w-32">Resp.</th>
+                                                        <th className="px-4 py-3 w-40">Prazo</th>
+                                                        <th className="px-4 py-3 w-36">Resp.</th>
                                                         <th className="px-4 py-3 w-48">Cliente</th>
                                                         <th className="px-4 py-3 min-w-[200px]">Serviço</th>
-                                                        <th className="px-4 py-3 w-20 text-center" title="Aprovação de Serviço">Aprov.</th>
+                                                        <th className="px-4 py-3 w-20 text-center">Aprov.</th>
+                                                        <th className="px-4 py-3 w-20 text-center">Entrega</th>
+                                                        <th className="px-4 py-3 w-20 text-center">Urgente</th>
                                                         <th className="px-4 py-3 w-48">Status</th>
                                                         <th className="px-4 py-3 w-36">Local</th>
                                                         <th className="px-4 py-3 w-24 text-center">Concluir</th>
@@ -631,78 +625,94 @@
                                                 </thead>
                                                 <tbody>
                                                     {pedidosProducaoAtivos.length === 0 ? (
-                                                        <tr><td colSpan="9" className="p-8 text-center text-gray-500 italic">Nenhum pedido ativo na esteira.</td></tr>
+                                                        <tr><td colSpan="11" className="p-8 text-center text-gray-500 italic">Nenhum pedido ativo na esteira.</td></tr>
                                                     ) : (
-                                                        pedidosProducaoAtivos.map(p => (
-                                                            <tr key={p.id} className="border-b border-gray-100 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover transition group text-sm">
-                                                                
-                                                                {/* ID */}
-                                                                <td className="px-4 py-3 font-medium text-gray-400 dark:text-gray-600 text-center">
-                                                                    <button onClick={() => abrirEdicao(p)} className="hover:text-brand transition">#{p.id}</button>
-                                                                </td>
-                                                                
-                                                                {/* Prazo */}
-                                                                <td className="px-4 py-3 w-40">
-                                                                    <CustomDatePicker 
-                                                                        value={p.prazo || ''} 
-                                                                        onChange={val => atualizarCampoInline(p.id, 'prazo', val)} 
-                                                                        placeholder="Definir prazo..." 
-                                                                        className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-2.5 py-1.5 text-xs outline-none hover:border-brand transition text-gray-700 dark:text-[#EDEDED]" 
-                                                                    />
-                                                                </td>
-                                                                
-                                                                {/* Responsável (Menu Customizado) */}
-                                                                <td className="px-4 py-3 w-36">
-                                                                    <InlineDropdown 
-                                                                        value={p.responsavel} 
-                                                                        options={RESPONSAVEIS} 
-                                                                        onChange={(val) => atualizarCampoInline(p.id, 'responsavel', val)} 
-                                                                        hasIndefinido={true}
-                                                                        className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-2.5 py-1.5 text-xs outline-none hover:border-brand"
-                                                                    />
-                                                                </td>
-                                                                
-                                                                {/* Cliente */}
-                                                                <td className="px-4 py-3 font-semibold text-gray-900 dark:text-white truncate max-w-[12rem]">{p.cliente}</td>
-                                                                
-                                                                {/* Serviço Resumido */}
-                                                                <td className="px-4 py-3 text-gray-600 dark:text-[#A1A1AA] truncate max-w-[18rem]">{obterResumoServicos(p.servico)}</td>
-                                                                
-                                                                {/* Aprovação (Checkbox Joinha) */}
-                                                                <td className="px-4 py-3 text-center">
-                                                                    <button onClick={() => atualizarCampoInline(p.id, 'aprovado', !p.aprovado)} className={`p-1.5 rounded-md transition ${p.aprovado ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-gray-100 text-gray-400 dark:bg-darkElevated dark:text-gray-600 hover:text-gray-600 dark:hover:text-gray-400'}`}>
-                                                                        <Icon name="thumbs-up" className="w-3.5 h-3.5" />
-                                                                    </button>
-                                                                </td>
-                                                                
-                                                                {/* Status (Menu Customizado) */}
-                                                                <td className="px-4 py-3 w-52">
-                                                                    <InlineDropdown 
-                                                                        value={p.status} 
-                                                                        options={[...STATUSES_PRODUCAO, ...STATUSES_FINALIZADOS]} 
-                                                                        onChange={(val) => atualizarCampoInline(p.id, 'status', val)} 
-                                                                        className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-2.5 py-1.5 text-xs outline-none hover:border-brand"
-                                                                    />
-                                                                </td>
-                                                                
-                                                                {/* Local Produção (Menu Customizado) */}
-                                                                <td className="px-4 py-3 w-40">
-                                                                    <InlineDropdown 
-                                                                        value={p.local_producao || 'Berlim'} 
-                                                                        options={LOCAIS} 
-                                                                        onChange={(val) => atualizarCampoInline(p.id, 'local_producao', val)} 
-                                                                        className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-2.5 py-1.5 text-xs outline-none hover:border-brand"
-                                                                    />
-                                                                </td>
-                                                
-                                                                {/* Checkbox Concluir */}
-                                                                <td className="px-4 py-3 text-center">
-                                                                    <button onClick={() => atualizarCampoInline(p.id, 'status', 'Concluído')} className="p-1 text-gray-300 hover:text-emerald-500 dark:text-darkBorder dark:hover:text-emerald-500 transition" title="Marcar como Concluído">
-                                                                        <Icon name="square" className="w-4 h-4" />
-                                                                    </button>
-                                                                </td>
-                                                            </tr>
-                                                        ))
+                                                        STATUSES_PRODUCAO.map(status => {
+                                                            const pedidosDoStatus = pedidosProducaoAtivos
+                                                                .filter(p => p.status === status)
+                                                                .sort((a, b) => {
+                                                                    if (!a.prazo) return 1;
+                                                                    if (!b.prazo) return -1;
+                                                                    return a.prazo.localeCompare(b.prazo);
+                                                                });
+
+                                                            if (pedidosDoStatus.length === 0) return null;
+
+                                                            return (
+                                                                <React.Fragment key={status}>
+                                                                    <tr className="bg-gray-50/50 dark:bg-darkElevated/40 select-none">
+                                                                        <td colSpan="11" className="px-4 py-2 border-y border-gray-200 dark:border-darkBorder font-bold tracking-wide uppercase text-[10px] text-brand bg-gray-100/50 dark:bg-darkHover/40">
+                                                                            {status} — <span className="text-gray-400 dark:text-gray-500">{pedidosDoStatus.length} {pedidosDoStatus.length === 1 ? 'pedido' : 'pedidos'}</span>
+                                                                        </td>
+                                                                    </tr>
+                                                                    
+                                                                    {pedidosDoStatus.map(p => (
+                                                                        <tr key={p.id} className="border-b border-gray-100 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover transition group text-sm">
+                                                                            <td className="px-4 py-3 font-medium text-gray-400 dark:text-gray-600 text-center">
+                                                                                <button type="button" onClick={() => abrirEdicao(p)} className="hover:text-brand transition">#{p.id}</button>
+                                                                            </td>
+                                                                            <td className="px-4 py-3">
+                                                                                <CustomDatePicker 
+                                                                                    value={p.prazo || ''} 
+                                                                                    onChange={val => atualizarCampoInline(p.id, 'prazo', val)} 
+                                                                                    placeholder="Definir prazo..." 
+                                                                                    className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-2.5 py-1.5 text-xs outline-none hover:border-brand transition text-gray-700 dark:text-[#EDEDED]" 
+                                                                                />
+                                                                            </td>
+                                                                            <td className="px-4 py-3">
+                                                                                <InlineDropdown 
+                                                                                    value={p.responsavel} 
+                                                                                    options={RESPONSAVEIS} 
+                                                                                    onChange={(val) => atualizarCampoInline(p.id, 'responsavel', val)} 
+                                                                                    hasIndefinido={true}
+                                                                                    className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-2.5 py-1.5 text-xs outline-none hover:border-brand"
+                                                                                />
+                                                                            </td>
+                                                                            <td className="px-4 py-3 font-semibold text-gray-900 dark:text-white truncate max-w-[12rem]">{p.cliente}</td>
+                                                                            <td className="px-4 py-3 text-gray-600 dark:text-[#A1A1AA] truncate max-w-[18rem]">{obterResumoServicos(p.servico)}</td>
+                                                                            
+                                                                            <td className="px-4 py-3 text-center">
+                                                                                <button type="button" onClick={() => atualizarCampoInline(p.id, 'aprovado', !p.aprovado)} className={`p-1.5 rounded-md transition ${p.aprovado ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-gray-100 text-gray-400 dark:bg-darkElevated dark:text-gray-600 hover:text-gray-600 dark:hover:text-gray-400'}`}>
+                                                                                    <Icon name="thumbs-up" className="w-3.5 h-3.5" />
+                                                                                </button>
+                                                                            </td>
+                                                                            <td className="px-4 py-3 text-center">
+                                                                                <button type="button" onClick={() => atualizarCampoInline(p.id, 'entrega', !p.entrega)} className={`p-1.5 rounded-md transition ${p.entrega ? 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400' : 'bg-gray-100 text-gray-400 dark:bg-darkElevated dark:text-gray-600 hover:text-gray-600 dark:hover:text-gray-400'}`}>
+                                                                                    <Icon name="truck" className="w-3.5 h-3.5" />
+                                                                                </button>
+                                                                            </td>
+                                                                            <td className="px-4 py-3 text-center">
+                                                                                <button type="button" onClick={() => atualizarCampoInline(p.id, 'urgente', !p.urgente)} className={`p-1.5 rounded-md transition ${p.urgente ? 'bg-red-500/20 text-red-600 dark:bg-red-950/40 dark:text-red-400 ring-1 ring-red-500/30' : 'bg-gray-100 text-gray-400 dark:bg-darkElevated dark:text-gray-600 hover:text-gray-600 dark:hover:text-gray-400'}`}>
+                                                                                    <Icon name="alert-triangle" className="w-3.5 h-3.5" />
+                                                                                </button>
+                                                                            </td>
+
+                                                                            <td className="px-4 py-3">
+                                                                                <InlineDropdown 
+                                                                                    value={p.status} 
+                                                                                    options={[...STATUSES_PRODUCAO, ...STATUSES_FINALIZADOS]} 
+                                                                                    onChange={(val) => atualizarCampoInline(p.id, 'status', val)} 
+                                                                                    className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-2.5 py-1.5 text-xs outline-none hover:border-brand"
+                                                                                />
+                                                                            </td>
+                                                                            <td className="px-4 py-3">
+                                                                                <InlineDropdown 
+                                                                                    value={p.local_producao || 'Berlim'} 
+                                                                                    options={LOCAIS} 
+                                                                                    onChange={(val) => atualizarCampoInline(p.id, 'local_producao', val)} 
+                                                                                    className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-2.5 py-1.5 text-xs outline-none hover:border-brand"
+                                                                                />
+                                                                            </td>
+                                                                            <td className="px-4 py-3 text-center">
+                                                                                <button type="button" onClick={() => atualizarCampoInline(p.id, 'status', 'Concluído')} className="p-1 text-gray-300 hover:text-emerald-500 dark:text-darkBorder dark:hover:text-emerald-500 transition" title="Marcar como Concluído">
+                                                                                    <Icon name="square" className="w-4 h-4" />
+                                                                                </button>
+                                                                            </td>
+                                                                        </tr>
+                                                                    ))}
+                                                                </React.Fragment>
+                                                            );
+                                                        })
                                                     )}
                                                 </tbody>
                                             </table>
@@ -712,36 +722,66 @@
 
                                 {/* VISÃO 2: KANBAN (QUADRO) */}
                                 {visaoProducao === 'kanban' && (
-                                    <div className="flex-1 overflow-x-auto custom-scrollbar pb-4 flex gap-4 items-start">
-                                        {STATUSES_PRODUCAO.map(status => {
-                                            const pedidosColuna = pedidosProducaoAtivos.filter(p => p.status === status);
-                                            return (
-                                                <div key={status} className="w-72 shrink-0 flex flex-col bg-gray-50 dark:bg-darkCard rounded-xl border border-gray-200 dark:border-darkBorder max-h-full">
-                                                    <div className="p-3 border-b border-gray-200 dark:border-darkBorder flex justify-between items-center sticky top-0 bg-gray-50/90 dark:bg-darkCard/90 glass z-10 rounded-t-xl">
-                                                        <h2 className="font-bold text-xs tracking-wide text-gray-700 dark:text-[#EDEDED] uppercase">{status}</h2>
-                                                        <span className="text-[10px] font-bold text-gray-500 bg-gray-200 dark:bg-darkElevated px-1.5 py-0.5 rounded border dark:border-darkBorder">{pedidosColuna.length}</span>
-                                                    </div>
-                                                    <div className="p-2 flex flex-col gap-2 overflow-y-auto custom-scrollbar flex-1">
-                                                        {pedidosColuna.map(p => (
-                                                            <div key={p.id} className="bg-white dark:bg-darkElevated p-3 rounded-lg border border-gray-200 dark:border-darkBorder shadow-sm flex flex-col gap-2 select-none group">
-                                                                <div className="flex justify-between items-start">
-                                                                    <h3 className="font-semibold text-sm text-gray-900 dark:text-white leading-tight">{p.cliente}</h3>
-                                                                    <button onClick={() => abrirEdicao(p)} className="text-gray-400 hover:text-brand transition opacity-0 group-hover:opacity-100" title="Editar"><Icon name="layout-dashboard" className="w-3 h-3" /></button>
-                                                                </div>
-                                                                
-                                                                <p className="text-gray-500 dark:text-[#A1A1AA] text-xs line-clamp-2">{obterResumoServicos(p.servico)}</p>
-                                                                
-                                                                <div className="flex flex-wrap gap-1 mt-1">
-                                                                    {p.responsavel && <span className="bg-gray-100 dark:bg-darkCard text-gray-600 dark:text-gray-400 text-[9px] font-bold px-1.5 py-0.5 rounded border dark:border-darkBorder">{p.responsavel}</span>}
-                                                                    {p.prazo && <span className="bg-brand/10 text-brand text-[9px] font-bold px-1.5 py-0.5 rounded border border-brand/20">{formatarDataExibicao(p.prazo).substring(0,5)}</span>}
-                                                                    {p.local_producao !== 'Berlim' && <span className="bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-[9px] font-bold px-1.5 py-0.5 rounded border border-blue-200 dark:border-blue-800/50">{p.local_producao}</span>}
-                                                                </div>
-                                                            </div>
-                                                        ))}
-                                                    </div>
+                                    <div className="flex-1 flex flex-col min-h-0 overflow-y-auto custom-scrollbar gap-6">
+                                        
+                                        {pedidosProducaoAtivos.filter(p => p.urgente).length > 0 && (
+                                            <div className="p-4 bg-red-500/5 dark:bg-red-950/10 border border-red-200 dark:border-red-900/30 rounded-xl flex flex-col gap-3 shrink-0 backdrop-blur-sm">
+                                                <div className="flex items-center gap-2 text-red-600 dark:text-red-400 font-bold text-xs tracking-wider uppercase">
+                                                    <Icon name="alert-triangle" className="w-4 h-4 animate-bounce" />
+                                                    Atenção Crítica — Ordens Urgentes ({pedidosProducaoAtivos.filter(p => p.urgente).length})
                                                 </div>
-                                            )
-                                        })}
+                                                <div className="flex gap-4 overflow-x-auto custom-scrollbar pb-2 pt-1 items-start">
+                                                    {pedidosProducaoAtivos.filter(p => p.urgente).map(p => (
+                                                        <div key={p.id} className="w-72 shrink-0 bg-white dark:bg-darkCard p-3 rounded-lg border border-red-300 dark:border-red-900/60 shadow-md flex flex-col gap-2 relative group ring-1 ring-red-500/20">
+                                                            <div className="flex justify-between items-start">
+                                                                <div className="flex flex-col">
+                                                                    <span className="text-[9px] font-bold text-red-500 dark:text-red-400 uppercase tracking-widest bg-red-500/10 dark:bg-red-950/40 px-1 py-0.5 rounded border border-red-500/20 w-max mb-1">{p.status}</span>
+                                                                    <h3 className="font-semibold text-sm text-gray-900 dark:text-white leading-tight">{p.cliente}</h3>
+                                                                </div>
+                                                                <button type="button" onClick={() => abrirEdicao(p)} className="text-gray-400 hover:text-brand transition opacity-0 group-hover:opacity-100" title="Editar"><Icon name="layout-dashboard" className="w-3 h-3" /></button>
+                                                            </div>
+                                                            <p className="text-gray-500 dark:text-[#A1A1AA] text-xs line-clamp-2">{obterResumoServicos(p.servico)}</p>
+                                                            <div className="flex flex-wrap gap-1 mt-1">
+                                                                {p.responsavel && <span className="bg-gray-100 dark:bg-darkElevated text-gray-600 dark:text-gray-400 text-[9px] font-bold px-1.5 py-0.5 rounded border dark:border-darkBorder">{p.responsavel}</span>}
+                                                                {p.prazo && <span className="bg-red-500/10 text-red-500 text-[9px] font-bold px-1.5 py-0.5 rounded border border-red-500/20">{formatarDataExibicao(p.prazo).substring(0,5)}</span>}
+                                                                {p.entrega && <span className="bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 text-[9px] font-bold px-1.5 py-0.5 rounded border border-orange-200 dark:border-orange-900/30 flex items-center gap-1"><Icon name="truck" className="w-2.5 h-2.5"/>Entrega</span>}
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        <div className="flex-1 overflow-x-auto custom-scrollbar pb-4 flex gap-4 items-start">
+                                            {STATUSES_PRODUCAO.map(status => {
+                                                const pedidosColuna = pedidosProducaoAtivos.filter(p => p.status === status && !p.urgente);
+                                                return (
+                                                    <div key={status} className="w-72 shrink-0 flex flex-col bg-gray-50 dark:bg-darkCard rounded-xl border border-gray-200 dark:border-darkBorder max-h-full">
+                                                        <div className="p-3 border-b border-gray-200 dark:border-darkBorder flex justify-between items-center sticky top-0 bg-gray-50/90 dark:bg-darkCard/90 glass z-10 rounded-t-xl">
+                                                            <h2 className="font-bold text-xs tracking-wide text-gray-700 dark:text-[#EDEDED] uppercase">{status}</h2>
+                                                            <span className="text-[10px] font-bold text-gray-500 bg-gray-200 dark:bg-darkElevated px-1.5 py-0.5 rounded border dark:border-darkBorder">{pedidosColuna.length}</span>
+                                                        </div>
+                                                        <div className="p-2 flex flex-col gap-2 overflow-y-auto custom-scrollbar flex-1">
+                                                            {pedidosColuna.map(p => (
+                                                                <div key={p.id} className="bg-white dark:bg-darkElevated p-3 rounded-lg border border-gray-200 dark:border-darkBorder shadow-sm flex flex-col gap-2 select-none group">
+                                                                    <div className="flex justify-between items-start">
+                                                                        <h3 className="font-semibold text-sm text-gray-900 dark:text-white leading-tight">{p.cliente}</h3>
+                                                                        <button type="button" onClick={() => abrirEdicao(p)} className="text-gray-400 hover:text-brand transition opacity-0 group-hover:opacity-100" title="Editar"><Icon name="layout-dashboard" className="w-3 h-3" /></button>
+                                                                    </div>
+                                                                    <p className="text-gray-500 dark:text-[#A1A1AA] text-xs line-clamp-2">{obterResumoServicos(p.servico)}</p>
+                                                                    <div className="flex flex-wrap gap-1 mt-1">
+                                                                        {p.responsavel && <span className="bg-gray-100 dark:bg-darkCard text-gray-600 dark:text-gray-400 text-[9px] font-bold px-1.5 py-0.5 rounded border dark:border-darkBorder">{p.responsavel}</span>}
+                                                                        {p.prazo && <span className="bg-brand/10 text-brand text-[9px] font-bold px-1.5 py-0.5 rounded border border-brand/20">{formatarDataExibicao(p.prazo).substring(0,5)}</span>}
+                                                                        {p.entrega && <span className="bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 text-[9px] font-bold px-1.5 py-0.5 rounded border border-orange-200 dark:border-orange-900/30 flex items-center gap-1"><Icon name="truck" className="w-2.5 h-2.5"/>Entrega</span>}
+                                                                        {p.local_producao !== 'Berlim' && <span className="bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-[9px] font-bold px-1.5 py-0.5 rounded border border-blue-200 dark:border-blue-800/50">{p.local_producao}</span>}
+                                                                    </div>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                )
+                                            })}
+                                        </div>
                                     </div>
                                 )}
                             </main>
@@ -799,7 +839,6 @@
                                                             <span className={`px-2.5 py-1 text-[11px] font-bold rounded border 
                                                                 ${STATUSES_FINALIZADOS.includes(p.status) ? 'bg-gray-100 text-gray-600 border-gray-200 dark:bg-darkElevated dark:text-gray-400 dark:border-darkBorder' : 
                                                                   p.status === 'Acabamento' ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-900/50' : 
-                                                                  p.status === 'Entrega' ? 'bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-950/30 dark:text-orange-400 dark:border-orange-900/50' :
                                                                   'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/30 dark:text-blue-400 dark:border-blue-900/50'}`}>
                                                                 {p.status}
                                                             </span>
@@ -814,7 +853,7 @@
                             </main>
                         )}
 
-                        {/* CATÁLOGO E CLIENTES (MANTIDOS IGUAIIS) */}
+                        {/* ================= CATÁLOGO ================= */}
                         {abaAtual === 'produtos' && isAdmin && (
                             <main className="flex-1 p-6 lg:p-10 max-w-[1200px] mx-auto w-full fade-in">
                                 <div className="flex justify-between items-center mb-8">
@@ -833,6 +872,8 @@
                                 </div>
                             </main>
                         )}
+
+                        {/* ================= CLIENTES ================= */}
                         {abaAtual === 'clientes' && (
                             <main className="flex-1 p-6 lg:p-10 max-w-[1200px] mx-auto w-full fade-in">
                                 <div className="flex justify-between items-center mb-8">
@@ -853,7 +894,7 @@
                         )}
                     </div>
 
-                    {/* ================= MODAL MESTRE O.S. (ATUALIZADO COM OS NOVOS CAMPOS) ================= */}
+                    {/* ================= MODAL MESTRE O.S. ================= */}
                     {modalAberto && (
                         <div onClick={fecharModalOS} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer">
                             <div onClick={(e) => e.stopPropagation()} className="bg-white dark:bg-darkCard w-full max-w-3xl rounded border border-gray-200 dark:border-darkBorder shadow-2xl flex flex-col max-h-[95vh] cursor-default">
@@ -888,14 +929,14 @@
                                         </div>
                                     </div>
 
-                                    {/* 2: ATRIBUIÇÕES (PRAZO, RESPONSAVEL E LOCAL) */}
-                                    <div className="grid grid-cols-3 gap-4">
+                                    {/* 2: ATRIBUIÇÕES (PRAZO, RESPONSAVEL E LOCAL) E OPÇÕES EXTRAS */}
+                                    <div className="grid grid-cols-4 gap-4">
                                         <div>
-                                            <label className="block text-sm font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Prazo Entrega</label>
+                                            <label className="block text-sm font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Prazo</label>
                                             <CustomDatePicker value={novoPedido.prazo} onChange={val => setNovoPedido({...novoPedido, prazo: val})} disabled={isModalTrancado} placeholder="Data final..." className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none transition" />
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Responsável</label>
+                                            <label className="block text-sm font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Resp.</label>
                                             <div className="relative">
                                                 <select value={novoPedido.responsavel} onChange={e => setNovoPedido({...novoPedido, responsavel: e.target.value})} disabled={isModalTrancado} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2.5 text-sm outline-none focus:border-brand transition dark:text-[#EDEDED] cursor-pointer appearance-none disabled:opacity-50">
                                                     <option value="">Indefinido</option>
@@ -905,12 +946,19 @@
                                             </div>
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Local Prod.</label>
+                                            <label className="block text-sm font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Local</label>
                                             <div className="relative">
                                                 <select value={novoPedido.local_producao} onChange={e => setNovoPedido({...novoPedido, local_producao: e.target.value})} disabled={isModalTrancado} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2.5 text-sm outline-none focus:border-brand transition dark:text-[#EDEDED] cursor-pointer appearance-none disabled:opacity-50">
                                                     {LOCAIS.map(l => <option key={l} value={l}>{l}</option>)}
                                                 </select>
                                                 <Icon name="chevron-down" className="absolute right-3 top-3.5 w-4 h-4 text-gray-400 pointer-events-none" />
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Tags Especiais</label>
+                                            <div className="flex items-center gap-2 mt-2">
+                                                <button type="button" onClick={() => setNovoPedido({...novoPedido, entrega: !novoPedido.entrega})} disabled={isModalTrancado} className={`flex items-center gap-1.5 px-2 py-1.5 rounded text-xs font-bold transition disabled:opacity-50 ${novoPedido.entrega ? 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400' : 'bg-gray-100 text-gray-500 dark:bg-darkElevated dark:text-gray-400'}`}><Icon name="truck" className="w-3.5 h-3.5"/> Entrega</button>
+                                                <button type="button" onClick={() => setNovoPedido({...novoPedido, urgente: !novoPedido.urgente})} disabled={isModalTrancado} className={`flex items-center gap-1.5 px-2 py-1.5 rounded text-xs font-bold transition disabled:opacity-50 ${novoPedido.urgente ? 'bg-red-500/20 text-red-600 dark:bg-red-950/40 dark:text-red-400' : 'bg-gray-100 text-gray-500 dark:bg-darkElevated dark:text-gray-400'}`}><Icon name="alert-triangle" className="w-3.5 h-3.5"/> Urgente</button>
                                             </div>
                                         </div>
                                     </div>
@@ -968,7 +1016,7 @@
                                                             <ul className="absolute z-[60] w-full mt-1 max-h-48 overflow-y-auto bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded shadow-xl custom-scrollbar">
                                                                 {produtosFiltrados.map(p => (
                                                                     <li key={p.id} onClick={() => { 
-                                                                        setBuscaProduto(p.nome); // <- CORREÇÃO: Mantém o nome escrito na busca
+                                                                        setBuscaProduto(p.nome);
                                                                         setItemAtual({ nome: p.nome, descricao: p.texto_padrao, valor: formatarMoeda((p.preco_base * 100).toFixed(0).toString()), desconto: '' }); 
                                                                         setProdutoDropdownAberto(false); 
                                                                     }} className="px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-darkHover cursor-pointer border-b border-gray-100 dark:border-darkBorder last:border-0 flex flex-col transition">
@@ -1003,7 +1051,6 @@
                                         <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-[#EDEDED]">Observações Gerais ou Texto Complementar</label>
                                         <textarea rows="4" value={novoPedido.servico} onChange={e => setNovoPedido({...novoPedido, servico: e.target.value})} disabled={isModalTrancado} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand transition dark:text-[#EDEDED] custom-scrollbar disabled:opacity-50" placeholder="Prazos de entrega, observações do financeiro ou complementos da O.S..."></textarea>
                                     </div>
-
                                 </form>
 
                                 {/* RODAPÉ DE FINALIZAÇÃO */}
@@ -1029,7 +1076,7 @@
                         </div>
                     )}
 
-                    {/* MODAIS SECUNDÁRIOS OMITIDOS (São Exatamente Iguais Aos Anteriores) */}
+                    {/* ================= MODAIS DE CADASTRO ================= */}
                     {modalProdutoAberto && (
                         <div onClick={() => setModalProdutoAberto(false)} className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer">
                             <div className="bg-white dark:bg-darkCard w-full max-w-md rounded shadow-2xl overflow-hidden border border-gray-200 dark:border-darkBorder" onClick={(e) => e.stopPropagation()}>
