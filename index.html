@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Berlim Gráfica | ERP</title>
+    <title>Berlim Gráfica | ERP Corporativo</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1508,6 +1508,7 @@
                                         </div>
                                     </div>
 
+                                    {/* 5: DESCRIÇÃO LIVRE */}
                                     <div>
                                         <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-[#EDEDED]">Observações Gerais ou Texto Complementar</label>
                                         <textarea rows="4" value={novoPedido.servico} onChange={e => setNovoPedido({...novoPedido, servico: e.target.value})} disabled={isModalTrancado} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand transition dark:text-[#EDEDED] custom-scrollbar disabled:opacity-50" placeholder="Prazos de entrega, observações do financeiro ou complementos da O.S..."></textarea>
@@ -1661,10 +1662,10 @@
                                                 <tbody>
                                                     {desc.itens.length > 0 ? desc.itens.map((item, idx) => (
                                                         <tr key={idx} className="border-b border-gray-100 last:border-0">
-                                                            <td className="py-0.5 text-gray-900 whitespace-pre-wrap pr-4 align-middle text-xs font-medium leading-tight">
+                                                            <td className="py-1 text-gray-900 whitespace-pre-wrap pr-4 align-middle text-xs font-medium leading-tight">
                                                                 {item.descricao || item.nome}
                                                             </td>
-                                                            <td className="py-0.5 text-right whitespace-nowrap align-middle font-bold text-sm">
+                                                            <td className="py-1 text-right whitespace-nowrap align-middle font-bold text-sm">
                                                                 R$ {item.valor}
                                                                 {item.desconto && <span className="block text-[9px] text-gray-400 font-normal mt-0.5">(-{item.desconto}%)</span>}
                                                             </td>
