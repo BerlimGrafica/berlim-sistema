@@ -385,7 +385,27 @@ function App() {
     const [novoUsuario, setNovoUsuario] = useState({ id: null, nome: '', senha: '', nivel: 'Produção/Atendimento' });
 
     useEffect(() => { 
-        if(usuario) carregarDados(); 
+        if(usuario) {
+            carregarDados(); 
+            
+            // LIGA O RADAR DE TEMPO REAL DO SUPABASE
+            const canalRealTime = supabase
+                .channel('mudancas-banco')
+                .on(
+                    'postgres_changes', 
+                    { event: '*', schema: 'public', table: 'pedidos' }, 
+                    (payload) => {
+                        console.log('Atualização em tempo real recebida!', payload);
+                        carregarDados(); // Puxa os dados novos invisivelmente
+                    }
+                )
+            .subscribe();
+
+            // Desliga o radar se o usuário fizer logoff
+            return () => {
+                supabase.removeChannel(canalRealTime);
+            };
+        }
     }, [usuario]);
 
     async function carregarDados() {
