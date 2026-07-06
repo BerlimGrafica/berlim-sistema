@@ -629,7 +629,7 @@ function App() {
             textoFinalServico = novoPedido.servico;
         }
 
-        const valorNumericoFinal = parseFloat(novoPedido.valor_total.replace(/\./g, '').replace(',', '.')) || 0;
+        const valorNumericoFinal = parseFloat(String(novoPedido.valor_total).replace(/\./g, '').replace(',', '.')) || 0;
 
         const payload = {
             cliente: novoPedido.cliente,
@@ -647,18 +647,34 @@ function App() {
 
         if (pedidoEmEdicao) {
             const { data, error } = await supabase.from('pedidos').update(payload).eq('id', pedidoEmEdicao.id).select();
-            if (!error && data) { 
+            
+            if (error) {
+                alert('Erro ao atualizar OS: ' + error.message);
+            } else if (data && data.length > 0) {
                 setPedidos(pedidos.map(p => p.id === data[0].id ? data[0] : p)); 
                 fecharModalOS(); 
                 if (querImprimir) imprimirOS(data[0]); 
-            } else alert('Erro ao atualizar OS: ' + error.message);
+            } else {
+                // Se a resposta for vazia, puxa as informações limpas e fecha sem travar
+                carregarDados();
+                fecharModalOS();
+                if (querImprimir) imprimirOS({ ...pedidoEmEdicao, ...payload });
+            }
         } else {
             const { data, error } = await supabase.from('pedidos').insert([payload]).select();
-            if (!error && data) { 
+            
+            if (error) {
+                alert('Erro ao salvar OS: ' + error.message);
+            } else if (data && data.length > 0) {
                 setPedidos([data[0], ...pedidos]); 
                 fecharModalOS(); 
                 if (querImprimir) imprimirOS(data[0]); 
-            } else alert('Erro ao salvar OS: ' + error.message);
+            } else {
+                // Se a resposta for vazia, puxa as informações limpas e fecha sem travar
+                carregarDados();
+                fecharModalOS();
+                if (querImprimir) alert('Pedido atualizado com sucesso! Para evitar lentidão, inicie a impressão manualmente através do Histórico.');
+            }
         }
         setSalvandoOS(false);
     }
