@@ -16,6 +16,7 @@ function Icon({ name, className = "w-4 h-4" }) {
     if (name === 'chevron-left') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="m15 18-6-6 6-6"></path></svg>;
     if (name === 'chevron-right') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="m9 18 6-6-6-6"></path></svg>;
     if (name === 'trash-2') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><line x1="10" x2="10" y1="11" y2="17"></line><line x1="14" x2="14" y1="11" y2="17"></line></svg>;
+    if (name === 'log-out') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>;
     if (name === 'lock') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>;
     if (name === 'search') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>;
     if (name === 'calendar') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect width="18" height="18" x="3" y="4" rx="2" ry="2"></rect><line x1="16" x2="16" y1="2" y2="6"></line><line x1="8" x2="8" y1="2" y2="6"></line><line x1="3" x2="21" y1="10" y2="10"></line></svg>;
@@ -778,7 +779,7 @@ function App() {
     return (
         <div>
             <div className="flex flex-col min-h-screen no-print">
-                <header className="sticky top-0 z-40 bg-white dark:bg-darkBg border-b border-gray-200 dark:border-darkBorder px-6 py-3 flex justify-between items-center">
+                <header className="sticky top-0 z-40 bg-white dark:bg-darkBg border-b border-gray-200 dark:border-darkBorder px-6 py-6 flex justify-between items-center">
                     <div className="flex items-center gap-8">
                         <div className="flex items-center">
                             <img src="https://www.berlimgraficarapida.com.br/wp-content/uploads/elementor/thumbs/logosite-rm0erpiqj90gcf7ff4jp8ujys78opflob1b9vn5jjs.png" alt="Berlim Gráfica" className="h-8 object-contain" />
@@ -802,16 +803,26 @@ function App() {
                             )}
                         </nav>
                     </div>
-                    <div className="flex items-center gap-4">
-                        <button onClick={toggleDarkMode} className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-darkHover transition text-gray-600 dark:text-[#888888]">
-                            <Icon name={darkMode ? "sun" : "moon"} className="w-4 h-4" />
+                    <div className="flex items-center gap-5">
+                        <button onClick={toggleDarkMode} className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-darkHover transition text-gray-600 dark:text-[#888888]">
+                            <Icon name={darkMode ? "sun" : "moon"} className="w-5 h-5" />
                         </button>
-                        <div className="flex items-center gap-2 select-none">
-                            <span className="bg-brand/10 border border-brand/20 text-brand text-xs font-bold px-2.5 py-1 rounded uppercase tracking-wide">
-                                {usuario?.nome} ({usuario?.nivel})
-                            </span>
-                            <button type="button" onClick={() => setUsuario(null)} className="text-xs text-gray-400 hover:text-red-500 transition font-medium border border-gray-200 dark:border-darkBorder rounded px-2.5 py-1 bg-gray-50 dark:bg-darkCard">
-                                Sair
+                        
+                        {/* SEPARADOR VERTICAL DE ELEGÂNCIA */}
+                        <div className="hidden sm:block w-[1px] h-8 bg-gray-200 dark:bg-darkBorder"></div>
+
+                        {/* BLOCO DO USUÁRIO ATUALIZADO */}
+                        <div className="flex items-center gap-4 select-none">
+                            <div className="flex flex-col text-right">
+                                <span className="text-sm font-extrabold text-gray-900 dark:text-white leading-none">
+                                    {usuario?.nome}
+                                </span>
+                                <span className="text-[11px] font-medium text-brand italic mt-1 tracking-wide">
+                                    {usuario?.nivel}
+                                </span>
+                            </div>
+                            <button type="button" onClick={() => setUsuario(null)} className="text-gray-400 hover:text-red-500 transition p-2 rounded-md hover:bg-red-50 dark:hover:bg-red-950/30" title="Sair do Sistema">
+                                <Icon name="log-out" className="w-5 h-5" />
                             </button>
                         </div>
                     </div>
