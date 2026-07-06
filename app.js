@@ -1504,7 +1504,7 @@ function App() {
                                 <button type="button" onClick={fecharModalOS} className="px-5 py-2.5 rounded text-sm font-medium text-gray-600 dark:text-[#A1A1AA] hover:bg-gray-200 dark:hover:bg-darkHover transition">Cancelar</button>
                                 {!isModalTrancado && (
                                     <div className="flex gap-2">
-                                        <button type="submit" disabled={salvandoOS} className="px-6 py-2.5 rounded text-sm font-bold bg-brand hover:bg-brandHover text-white shadow-sm transition disabled:opacity-50">
+                                        <button type="button" onClick={(e) => salvarOS(e, false)} disabled={salvandoOS} className="px-6 py-2.5 rounded text-sm font-bold bg-brand hover:bg-brandHover text-white shadow-sm transition disabled:opacity-50">
                                             {salvandoOS ? 'Aguarde...' : pedidoEmEdicao ? 'Apenas Atualizar' : 'Apenas Salvar'}
                                         </button>
                                         <button type="button" onClick={(e) => salvarOS(e, true)} disabled={salvandoOS} className="px-6 py-2.5 rounded text-sm font-bold bg-gray-800 dark:bg-white text-white dark:text-black hover:bg-black dark:hover:bg-gray-200 shadow-sm transition disabled:opacity-50 flex items-center gap-2">
