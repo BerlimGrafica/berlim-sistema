@@ -701,7 +701,7 @@ function App() {
     
     // Filtro Produção Aprimorado (Sem data e buscando em MultiSelect)
     const pedidosProducaoAtivos = pedidos.filter(p => {
-        const statusPermitido = STATUSES_PRODUCAO.includes(p.status) || p.status === 'Concluído';
+        const statusPermitido = STATUSES_PRODUCAO.includes(p.status);
         if (!statusPermitido) return false;
 
         const termo = buscaProducaoText.toLowerCase();
@@ -869,7 +869,7 @@ function App() {
                                         {pedidosProducaoAtivos.length === 0 ? (
                                             <tr><td colSpan="11" className="p-8 text-center text-gray-500 italic">Nenhuma OS encontrada.</td></tr>
                                         ) : (
-                                            [...STATUSES_PRODUCAO, 'Concluído'].map(status => {
+                                            STATUSES_PRODUCAO.map(status => {
                                                 const pedidosDoStatus = pedidosProducaoAtivos
                                                     .filter(p => p.status === status)
                                                     .sort((a, b) => {
