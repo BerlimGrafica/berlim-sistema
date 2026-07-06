@@ -611,8 +611,8 @@ function App() {
         setNovoPedido({...novoPedido, valor_total: formatarMoeda((totalGeralOS * 100).toFixed(0).toString())});
     }
 
-    async function salvarOS(e) {
-        e.preventDefault();
+    async function salvarOS(e, querImprimir = false) {
+        if (e) e.preventDefault();
         setSalvandoOS(true);
         
         let textoFinalServico = '';
@@ -647,12 +647,18 @@ function App() {
 
         if (pedidoEmEdicao) {
             const { data, error } = await supabase.from('pedidos').update(payload).eq('id', pedidoEmEdicao.id).select();
-            if (!error && data) { setPedidos(pedidos.map(p => p.id === data[0].id ? data[0] : p)); fecharModalOS(); } 
-            else alert('Erro ao atualizar OS: ' + error.message);
+            if (!error && data) { 
+                setPedidos(pedidos.map(p => p.id === data[0].id ? data[0] : p)); 
+                fecharModalOS(); 
+                if (querImprimir) imprimirOS(data[0]); 
+            } else alert('Erro ao atualizar OS: ' + error.message);
         } else {
             const { data, error } = await supabase.from('pedidos').insert([payload]).select();
-            if (!error && data) { setPedidos([data[0], ...pedidos]); fecharModalOS(); } 
-            else alert('Erro ao salvar OS: ' + error.message);
+            if (!error && data) { 
+                setPedidos([data[0], ...pedidos]); 
+                fecharModalOS(); 
+                if (querImprimir) imprimirOS(data[0]); 
+            } else alert('Erro ao salvar OS: ' + error.message);
         }
         setSalvandoOS(false);
     }
@@ -1296,7 +1302,7 @@ function App() {
                             <button type="button" onClick={fecharModalOS} className="text-gray-400 hover:text-gray-900 dark:hover:text-white transition"><Icon name="x" className="w-5 h-5" /></button>
                         </div>
                         
-                        <form onSubmit={salvarOS} className="p-8 overflow-y-auto custom-scrollbar flex flex-col gap-6">
+                        <form onSubmit={(e) => salvarOS(e, false)} className="p-8 overflow-y-auto custom-scrollbar flex flex-col gap-6">
                             {isModalTrancado && <div className="p-3 bg-red-950/20 border border-red-900/50 rounded text-xs text-red-400 mb-2">Nota liquidada. Peça para um Admin ou Financeiro destravar para edições.</div>}
                             
                             <div className="grid grid-cols-3 gap-4 pb-4 border-b border-gray-100 dark:border-darkBorder">
@@ -1449,9 +1455,15 @@ function App() {
                             <div className="flex gap-3">
                                 <button type="button" onClick={fecharModalOS} className="px-5 py-2.5 rounded text-sm font-medium text-gray-600 dark:text-[#A1A1AA] hover:bg-gray-200 dark:hover:bg-darkHover transition">Cancelar</button>
                                 {!isModalTrancado && (
-                                    <button type="submit" onClick={salvarOS} disabled={salvandoOS} className="px-6 py-2.5 rounded text-sm font-bold bg-brand hover:bg-brandHover text-white shadow-sm transition disabled:opacity-50">
-                                        {salvandoOS ? 'Salvando...' : pedidoEmEdicao ? 'Atualizar Pedido' : 'Salvar Pedido'}
-                                    </button>
+                                    <div className="flex gap-2">
+                                        <button type="submit" disabled={salvandoOS} className="px-6 py-2.5 rounded text-sm font-bold bg-brand hover:bg-brandHover text-white shadow-sm transition disabled:opacity-50">
+                                            {salvandoOS ? 'Aguarde...' : pedidoEmEdicao ? 'Apenas Atualizar' : 'Apenas Salvar'}
+                                        </button>
+                                        <button type="button" onClick={(e) => salvarOS(e, true)} disabled={salvandoOS} className="px-6 py-2.5 rounded text-sm font-bold bg-gray-800 dark:bg-white text-white dark:text-black hover:bg-black dark:hover:bg-gray-200 shadow-sm transition disabled:opacity-50 flex items-center gap-2">
+                                            <Icon name="printer" className="w-4 h-4" />
+                                            {salvandoOS ? 'Aguarde...' : 'Salvar e Imprimir'}
+                                        </button>
+                                    </div>
                                 )}
                             </div>
                         </div>
