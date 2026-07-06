@@ -680,6 +680,20 @@ function App() {
         setSalvandoProduto(false);
     }
 
+    async function excluirProduto(id, e) {
+        e.stopPropagation(); // Evita que o clique no lixo abra a tela de edição
+        
+        if (!window.confirm("Tem certeza que deseja excluir este produto do catálogo?")) return;
+
+        const { error } = await supabase.from('produtos').delete().eq('id', id);
+        
+        if (error) {
+            alert('Erro ao excluir produto: ' + error.message);
+        } else {
+            setProdutos(produtos.filter(p => p.id !== id));
+        }
+    }
+
     async function salvarCliente(e) {
         e.preventDefault();
         setSalvandoCliente(true);
@@ -1218,10 +1232,28 @@ function App() {
                         </div>
                         <div className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded overflow-hidden">
                             <table className="w-full text-left border-collapse">
-                                <thead><tr className="border-b border-gray-200 dark:border-darkBorder text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider bg-transparent"><th className="px-6 py-5">ID</th><th className="px-6 py-5">Nome do Produto</th><th className="px-6 py-5">Descrição Base</th><th className="px-6 py-5 text-right">Preço Base</th></tr></thead>
+                                <thead>
+                                    <tr className="border-b border-gray-200 dark:border-darkBorder text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider bg-transparent">
+                                        <th className="px-6 py-5">ID</th>
+                                        <th className="px-6 py-5">Nome do Produto</th>
+                                        <th className="px-6 py-5">Descrição Base</th>
+                                        <th className="px-6 py-5 text-right">Preço Base</th>
+                                        <th className="px-6 py-5 w-16 text-center">Excluir</th>
+                                    </tr>
+                                </thead>
                                 <tbody>
                                     {produtos.map(p => (
-                                        <tr key={p.id} onClick={() => abrirEdicaoProduto(p)} className="border-b border-gray-100 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover transition cursor-pointer"><td className="px-6 py-4 text-sm font-medium text-gray-500">#{p.id}</td><td className="px-6 py-4 text-sm font-semibold dark:text-[#EDEDED]">{p.nome}</td><td className="px-6 py-4 text-sm text-gray-600 dark:text-[#A1A1AA] truncate max-w-xs">{p.texto_padrao}</td><td className="px-6 py-4 text-sm font-bold dark:text-[#EDEDED] text-right">R$ {Number(p.preco_base).toFixed(2).replace('.', ',')}</td></tr>
+                                        <tr key={p.id} onClick={() => abrirEdicaoProduto(p)} className="border-b border-gray-100 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover transition cursor-pointer group">
+                                            <td className="px-6 py-4 text-sm font-medium text-gray-500">#{p.id}</td>
+                                            <td className="px-6 py-4 text-sm font-semibold dark:text-[#EDEDED]">{p.nome}</td>
+                                            <td className="px-6 py-4 text-sm text-gray-600 dark:text-[#A1A1AA] truncate max-w-xs">{p.texto_padrao}</td>
+                                            <td className="px-6 py-4 text-sm font-bold dark:text-[#EDEDED] text-right">R$ {Number(p.preco_base).toFixed(2).replace('.', ',')}</td>
+                                            <td className="px-6 py-4 text-center">
+                                                <button type="button" onClick={(e) => excluirProduto(p.id, e)} className="p-2 text-gray-300 hover:text-red-500 dark:text-gray-600 dark:hover:text-red-500 transition rounded hover:bg-red-50 dark:hover:bg-red-950/30 opacity-50 group-hover:opacity-100" title="Excluir Produto">
+                                                    <Icon name="trash-2" className="w-4 h-4" />
+                                                </button>
+                                            </td>
+                                        </tr>
                                     ))}
                                 </tbody>
                             </table>
