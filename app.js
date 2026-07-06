@@ -96,6 +96,8 @@ const formatarMesAno = (str) => {
 function CustomDatePicker({ value, onChange, placeholder, disabled, className }) {
     const [isOpen, setIsOpen] = useState(false);
     const [viewDate, setViewDate] = useState(new Date());
+    const [openUpwards, setOpenUpwards] = useState(false);
+    const containerRef = useRef(null);
 
     useEffect(() => {
         if (value && isOpen) {
@@ -119,6 +121,16 @@ function CustomDatePicker({ value, onChange, placeholder, disabled, className })
         const dd = String(day).padStart(2, '0');
         onChange(`${yyyy}-${mm}-${dd}`);
         setIsOpen(false);
+    };
+
+    const toggleDropdown = () => {
+        if (disabled) return;
+        if (!isOpen && containerRef.current) {
+            const rect = containerRef.current.getBoundingClientRect();
+            // Se o espaço abaixo for menor que a altura do calendário (~320px), abre pra cima
+            setOpenUpwards(window.innerHeight - rect.bottom < 320);
+        }
+        setIsOpen(!isOpen);
     };
 
     const diasSemana = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
@@ -157,9 +169,9 @@ function CustomDatePicker({ value, onChange, placeholder, disabled, className })
     };
 
     return (
-        <div className="relative">
+        <div className="relative" ref={containerRef}>
             <div 
-                onClick={() => !disabled && setIsOpen(!isOpen)} 
+                onClick={toggleDropdown} 
                 className={`flex justify-between items-center cursor-pointer select-none ${className} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
                 <span className={value ? "text-gray-900 dark:text-[#EDEDED]" : "text-gray-400 dark:text-gray-600 truncate"}>
@@ -170,7 +182,7 @@ function CustomDatePicker({ value, onChange, placeholder, disabled, className })
             {isOpen && (
                 <>
                     <div className="fixed inset-0 z-[55]" onClick={(e) => { e.stopPropagation(); setIsOpen(false); }}></div>
-                    <div className="absolute top-full left-0 mt-2 z-[60] bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-lg shadow-2xl p-4 w-72">
+                    <div className={`absolute left-0 z-[60] bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-lg shadow-2xl p-4 w-72 ${openUpwards ? 'bottom-full mb-2' : 'top-full mt-2'}`}>
                         <div className="flex justify-between items-center mb-4">
                             <button type="button" onClick={(e) => changeMonth(e, -1)} className="p-1 hover:bg-gray-100 dark:hover:bg-darkElevated rounded text-gray-500 dark:text-gray-400"><Icon name="chevron-left" /></button>
                             <span className="font-semibold text-sm dark:text-white">{meses[viewDate.getMonth()]} de {viewDate.getFullYear()}</span>
