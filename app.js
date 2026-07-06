@@ -202,14 +202,26 @@ function CustomDatePicker({ value, onChange, placeholder, disabled, className })
 }
 
 // ==== COMPONENTE DE DROPDOWN CUSTOMIZADO ====
+// ==== COMPONENTE DE DROPDOWN CUSTOMIZADO ====
 function InlineDropdown({ value, options, onChange, className, hasIndefinido = false }) {
     const [isOpen, setIsOpen] = useState(false);
+    const [openUpwards, setOpenUpwards] = useState(false);
+    const containerRef = useRef(null);
     const getTextColor = (val) => obterCorStatus(val);
 
+    const toggleDropdown = () => {
+        if (!isOpen && containerRef.current) {
+            const rect = containerRef.current.getBoundingClientRect();
+            // Calcula se há espaço para baixo. Se não, abre para cima
+            setOpenUpwards(window.innerHeight - rect.bottom < 250);
+        }
+        setIsOpen(!isOpen);
+    };
+
     return (
-        <div className="relative">
+        <div className="relative" ref={containerRef}>
             <div 
-                onClick={() => setIsOpen(!isOpen)}
+                onClick={toggleDropdown}
                 className={`flex items-center justify-between cursor-pointer transition ${className} ${isOpen ? 'border-brand ring-1 ring-brand/20' : ''}`}
             >
                 <div className="flex items-center gap-1.5 truncate">
@@ -220,7 +232,7 @@ function InlineDropdown({ value, options, onChange, className, hasIndefinido = f
             {isOpen && (
                 <>
                     <div className="fixed inset-0 z-[55]" onClick={(e) => { e.stopPropagation(); setIsOpen(false); }}></div>
-                    <ul className="absolute left-0 top-full mt-1 z-[60] w-full min-w-[160px] max-h-48 overflow-y-auto bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded shadow-xl custom-scrollbar text-xs">
+                    <ul className={`absolute left-0 z-[60] w-full min-w-[160px] max-h-48 overflow-y-auto bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded shadow-xl custom-scrollbar text-xs ${openUpwards ? 'bottom-full mb-1' : 'top-full mt-1'}`}>
                         {hasIndefinido && (
                             <li 
                                 onClick={(e) => { e.stopPropagation(); onChange(''); setIsOpen(false); }}
@@ -249,6 +261,8 @@ function InlineDropdown({ value, options, onChange, className, hasIndefinido = f
 // ==== COMPONENTE DE DROPDOWN MULTI-SELECT ====
 function MultiSelectDropdown({ value, options, onChange, className, disabled, placeholder = "Indefinido" }) {
     const [isOpen, setIsOpen] = useState(false);
+    const [openUpwards, setOpenUpwards] = useState(false);
+    const containerRef = useRef(null);
     const selectedArr = value ? value.split(',').map(s => s.trim()).filter(Boolean) : [];
 
     const toggleOption = (opt, e) => {
@@ -262,10 +276,20 @@ function MultiSelectDropdown({ value, options, onChange, className, disabled, pl
         onChange(newArr.join(', '));
     };
 
+    const toggleDropdown = () => {
+        if (disabled) return;
+        if (!isOpen && containerRef.current) {
+            const rect = containerRef.current.getBoundingClientRect();
+            // Calcula o espaço. Se faltar espaço em baixo, abre o pop-up para cima.
+            setOpenUpwards(window.innerHeight - rect.bottom < 250);
+        }
+        setIsOpen(!isOpen);
+    };
+
     return (
-        <div className="relative w-full">
+        <div className="relative w-full" ref={containerRef}>
             <div 
-                onClick={() => !disabled && setIsOpen(!isOpen)}
+                onClick={toggleDropdown}
                 className={`flex items-center justify-between cursor-pointer transition ${className} ${isOpen ? 'border-brand ring-1 ring-brand/20' : ''} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
                 <div className="flex items-center gap-1.5 truncate">
@@ -278,7 +302,7 @@ function MultiSelectDropdown({ value, options, onChange, className, disabled, pl
             {isOpen && (
                 <>
                     <div className="fixed inset-0 z-[55]" onClick={(e) => { e.stopPropagation(); setIsOpen(false); }}></div>
-                    <ul className="absolute left-0 top-full mt-1 z-[60] w-full min-w-[160px] max-h-48 overflow-y-auto bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded shadow-xl custom-scrollbar text-xs">
+                    <ul className={`absolute left-0 z-[60] w-full min-w-[160px] max-h-48 overflow-y-auto bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded shadow-xl custom-scrollbar text-xs ${openUpwards ? 'bottom-full mb-1' : 'top-full mt-1'}`}>
                         {options.map(opt => {
                             const isSelected = selectedArr.includes(opt);
                             return (
