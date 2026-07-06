@@ -1199,9 +1199,16 @@ function App() {
 
                 {abaAtual === 'produtos' && isAdmin && (
                     <main className="flex-1 p-6 lg:p-10 max-w-[1200px] mx-auto w-full fade-in">
-                        <div className="flex justify-between items-center mb-8">
-                            <h1 className="text-3xl font-semibold dark:text-white tracking-tight">Catálogo</h1>
-                            <button onClick={() => { setNovoProduto({ id: null, nome: '', texto_padrao: '', preco_base: '' }); setModalProdutoAberto(true); }} className="bg-white dark:bg-white text-black px-4 py-2 text-sm rounded-md font-medium hover:bg-gray-200 transition">Novo Produto</button>
+                        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 mb-6 border-b border-gray-100 dark:border-darkBorder pb-6 shrink-0">
+                            <div>
+                                <h1 className="text-3xl font-semibold dark:text-white tracking-tight">Catálogo</h1>
+                                <p className="text-sm text-gray-500 dark:text-[#888888] mt-1">Gerencie os serviços, itens e preços base para orçamentos.</p>
+                            </div>
+                            <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
+                                <button onClick={() => { setNovoProduto({ id: null, nome: '', texto_padrao: '', preco_base: '' }); setModalProdutoAberto(true); }} className="bg-brand hover:bg-brandHover text-white h-[38px] px-4 text-sm rounded-md font-bold shadow-sm transition flex items-center gap-2">
+                                    <Icon name="plus" className="w-4 h-4" /> Novo Produto
+                                </button>
+                            </div>
                         </div>
                         <div className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded overflow-hidden">
                             <table className="w-full text-left border-collapse">
@@ -1218,9 +1225,16 @@ function App() {
 
                 {abaAtual === 'clientes' && (
                     <main className="flex-1 p-6 lg:p-10 max-w-[1200px] mx-auto w-full fade-in">
-                        <div className="flex justify-between items-center mb-8">
-                            <h1 className="text-3xl font-semibold dark:text-white tracking-tight">Clientes</h1>
-                            <button onClick={() => { setNovoCliente({ id: null, nome: '', telefone: '', email: '', observacoes: '' }); setModalClienteAberto(true); }} className="bg-white dark:bg-white text-black px-4 py-2 text-sm rounded-md font-medium hover:bg-gray-200 transition">Novo Cliente</button>
+                        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 mb-6 border-b border-gray-100 dark:border-darkBorder pb-6 shrink-0">
+                            <div>
+                                <h1 className="text-3xl font-semibold dark:text-white tracking-tight">Clientes</h1>
+                                <p className="text-sm text-gray-500 dark:text-[#888888] mt-1">Base de dados e informações de contato dos seus clientes.</p>
+                            </div>
+                            <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
+                                <button onClick={() => { setNovoCliente({ id: null, nome: '', telefone: '', email: '', observacoes: '' }); setModalClienteAberto(true); }} className="bg-brand hover:bg-brandHover text-white h-[38px] px-4 text-sm rounded-md font-bold shadow-sm transition flex items-center gap-2">
+                                    <Icon name="plus" className="w-4 h-4" /> Novo Cliente
+                                </button>
+                            </div>
                         </div>
                         <div className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded overflow-hidden">
                             <table className="w-full text-left border-collapse">
@@ -1237,14 +1251,16 @@ function App() {
 
                 {abaAtual === 'usuarios' && isAdmin && (
                     <main className="flex-1 p-6 lg:p-10 max-w-[1200px] mx-auto w-full fade-in">
-                        <div className="flex justify-between items-center mb-8">
+                        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 mb-6 border-b border-gray-100 dark:border-darkBorder pb-6 shrink-0">
                             <div>
                                 <h1 className="text-3xl font-semibold dark:text-white tracking-tight">Usuários do Sistema</h1>
-                                <p className="text-sm text-gray-500 mt-1">Gerencie os acessos da equipe (Administrador, Produção/Atendimento, Financeiro).</p>
+                                <p className="text-sm text-gray-500 dark:text-[#888888] mt-1">Gerencie os acessos da equipe (Administrador, Produção/Atendimento, Financeiro).</p>
                             </div>
-                            <button onClick={() => { setNovoUsuario({ id: null, nome: '', senha: '', nivel: 'Produção/Atendimento' }); setModalUsuarioAberto(true); }} className="bg-brand hover:bg-brandHover text-white px-4 py-2 text-sm rounded-md font-bold shadow-sm transition flex items-center gap-2">
-                                Novo Usuário
-                            </button>
+                            <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
+                                <button onClick={() => { setNovoUsuario({ id: null, nome: '', senha: '', nivel: 'Produção/Atendimento' }); setModalUsuarioAberto(true); }} className="bg-brand hover:bg-brandHover text-white h-[38px] px-4 text-sm rounded-md font-bold shadow-sm transition flex items-center gap-2">
+                                    <Icon name="plus" className="w-4 h-4" /> Novo Usuário
+                                </button>
+                            </div>
                         </div>
                         <div className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded overflow-hidden">
                             <table className="w-full text-left border-collapse">
