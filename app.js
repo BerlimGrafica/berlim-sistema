@@ -326,11 +326,18 @@ function MultiSelectDropdown({ value, options, onChange, className, disabled, pl
 
 // DESTRUTURADOR E RESUMO DE SERVIÇO
 function desconstruirTextoServico(texto) {
-    if (!texto) return { itens: [], observacoes: '' };
-    let partes = texto.split('\n\n[OBSERVAÇÕES GERAIS]\n');
+    if (!texto) return { itens: [], observacoes: '', pagamentos: [] };
+    
+    let partesPagamento = texto.split('\n\n[PAGAMENTOS]\n');
+    let textoSemPagamento = partesPagamento[0];
+    let pagamentosStr = partesPagamento[1] || '[]';
+    let pagamentos = [];
+    try { pagamentos = JSON.parse(pagamentosStr); } catch (e) { pagamentos = []; }
+
+    let partes = textoSemPagamento.split('\n\n[OBSERVAÇÕES GERAIS]\n');
     let blocoItens = partes[0];
     let obs = partes[1] || '';
-    if (!blocoItens.startsWith('• ') && partes.length === 1) return { itens: [], observacoes: texto };
+    if (!blocoItens.startsWith('• ') && partes.length === 1) return { itens: [], observacoes: textoSemPagamento, pagamentos };
     
     let itensTraduzidos = [];
     let blocosIndividuais = blocoItens.split('\n\n');
@@ -350,7 +357,7 @@ function desconstruirTextoServico(texto) {
         
         itensTraduzidos.push({ nome, descricao, valor, desconto, id_temp: Math.random() + Date.now() });
     }
-    return { itens: itensTraduzidos, observacoes: obs };
+    return { itens: itensTraduzidos, observacoes: obs, pagamentos };
 }
 
 function obterResumoServicos(texto) {
@@ -402,6 +409,9 @@ function App() {
     const [clienteDropdownAberto, setClienteDropdownAberto] = useState(false);
     const [buscaProduto, setBuscaProduto] = useState('');
     const [produtoDropdownAberto, setProdutoDropdownAberto] = useState(false);
+
+    const [pagamentosPedido, setPagamentosPedido] = useState([]);
+    const [novoPagamento, setNovoPagamento] = useState({ valor: '', forma: 'PIX', parcelas: 1 });
 
     const [novoPedido, setNovoPedido] = useState({ 
         cliente: '', servico: '', valor_total: '', 
@@ -507,6 +517,8 @@ function App() {
         setBuscaCliente('');
         setBuscaProduto('');
         setItensPedido([]); 
+        setPagamentosPedido([]);
+        setNovoPagamento({ valor: '', forma: 'PIX', parcelas: 1 });
         setItemAtual({ nome: '', descricao: '', valor: '', desconto: '' });
         setNovoPedido({ 
             cliente: '', servico: '', valor_total: '', 
@@ -521,6 +533,7 @@ function App() {
         setPedidoEmEdicao(pedido);
         setBuscaCliente(pedido.cliente);
         setItensPedido(dadosDesconstruidos.itens); 
+        setPagamentosPedido(dadosDesconstruidos.pagamentos || []);
         setNovoPedido({
             cliente: pedido.cliente,
             servico: dadosDesconstruidos.observacoes,
@@ -627,6 +640,10 @@ function App() {
             textoFinalServico = itensTextoString + obsGerais;
         } else {
             textoFinalServico = novoPedido.servico;
+        }
+
+        if (pagamentosPedido && pagamentosPedido.length > 0) {
+            textoFinalServico += '\n\n[PAGAMENTOS]\n' + JSON.stringify(pagamentosPedido);
         }
 
         const valorNumericoFinal = parseFloat(String(novoPedido.valor_total).replace(/\./g, '').replace(',', '.')) || 0;
@@ -1060,9 +1077,27 @@ function App() {
                                 return match;
                             });
 
+                            // Helper para extrair pagamentos de um pedido
+                            const obterTotalPagoPedido = (pedido) => {
+                                const pagamentosStr = pedido.servico && pedido.servico.split('\n\n[PAGAMENTOS]\n')[1];
+                                if (!pagamentosStr) return 0;
+                                try {
+                                    const pagamentos = JSON.parse(pagamentosStr);
+                                    return pagamentos.reduce((a, p) => a + (parseFloat(String(p.valor).replace(/\./g, '').replace(',', '.')) || 0), 0);
+                                } catch (e) { return 0; }
+                            };
+
                             const totalBruto = pedidosFin.reduce((acc, p) => acc + (Number(p.valor_total) || 0), 0);
-                            const totalRecebido = pedidosFin.filter(p => p.status === 'Concluído' || p.status === 'Finalizado').reduce((acc, p) => acc + (Number(p.valor_total) || 0), 0);
-                            const totalAReceber = pedidosFin.filter(p => p.status !== 'Concluído' && p.status !== 'Finalizado' && p.status !== 'Abandonado').reduce((acc, p) => acc + (Number(p.valor_total) || 0), 0);
+                            
+                            const totalRecebido = pedidosFin.reduce((acc, p) => {
+                                const pagoStr = p.servico && p.servico.split('\n\n[PAGAMENTOS]\n')[1];
+                                if (pagoStr) return acc + obterTotalPagoPedido(p);
+                                // Compatibilidade com OS antigas:
+                                if (p.status === 'Concluído' || p.status === 'Finalizado') return acc + (Number(p.valor_total) || 0);
+                                return acc;
+                            }, 0);
+                            
+                            const totalAReceber = totalBruto - totalRecebido;
                             const ticketMedio = pedidosFin.length > 0 ? (totalBruto / pedidosFin.length) : 0;
 
                             const totalVendasHoje = pedidos.filter(p => p.data_pedido === obterDataAtual()).reduce((acc, p) => acc + (Number(p.valor_total) || 0), 0);
@@ -1483,6 +1518,76 @@ function App() {
                                         </div>
                                     </div>
                                 </div>
+                            </div>
+
+                            <div className="pt-4 border-t border-gray-200 dark:border-darkBorder">
+                                <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-[#EDEDED]">Histórico de Pagamentos</label>
+                                {pagamentosPedido.length > 0 && (
+                                    <div className="mb-3 flex flex-col gap-2">
+                                        {pagamentosPedido.map((pag, idx) => (
+                                            <div key={idx} className="flex justify-between items-center bg-gray-50 dark:bg-darkElevated px-3 py-2 rounded border border-gray-100 dark:border-darkBorder">
+                                                <div className="flex flex-col">
+                                                    <span className="text-sm font-medium dark:text-white">{pag.forma} {pag.parcelas > 1 ? `(${pag.parcelas}x)` : ''}</span>
+                                                    <span className="text-xs text-gray-500">{pag.data}</span>
+                                                </div>
+                                                <div className="flex items-center gap-3">
+                                                    <span className="font-bold text-sm text-emerald-600 dark:text-emerald-400">R$ {pag.valor}</span>
+                                                    {!isModalTrancado && (
+                                                        <button type="button" onClick={() => setPagamentosPedido(pagamentosPedido.filter((_, i) => i !== idx))} className="text-red-500 hover:text-red-700"><Icon name="trash-2" className="w-4 h-4" /></button>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                                
+                                {(() => {
+                                    const totalPago = pagamentosPedido.reduce((acc, p) => acc + (parseFloat(String(p.valor).replace(/\./g, '').replace(',', '.')) || 0), 0);
+                                    const totalOS = parseFloat(String(novoPedido.valor_total).replace(/\./g, '').replace(',', '.')) || 0;
+                                    const saldo = totalOS - totalPago;
+                                    return (
+                                        <div className="mb-4 flex justify-between items-center text-sm">
+                                            <span className="text-gray-600 dark:text-gray-400">Total Pago: <strong className="text-emerald-600">R$ {totalPago.toFixed(2).replace('.', ',')}</strong></span>
+                                            <span className="text-gray-600 dark:text-gray-400">Saldo Devedor: <strong className={saldo > 0 ? "text-red-500" : "text-gray-400"}>R$ {saldo.toFixed(2).replace('.', ',')}</strong></span>
+                                        </div>
+                                    );
+                                })()}
+
+                                {!isModalTrancado && (
+                                    <div className="flex flex-col gap-2 p-3 bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded mb-4">
+                                        <div className="grid grid-cols-2 gap-2">
+                                            <select value={novoPagamento.forma} onChange={e => setNovoPagamento({...novoPagamento, forma: e.target.value})} className="bg-white dark:bg-darkCard border border-gray-300 dark:border-darkBorder rounded px-2 py-1.5 text-xs outline-none">
+                                                <option value="PIX">PIX</option>
+                                                <option value="Cartão de Crédito">Cartão de Crédito</option>
+                                                <option value="Cartão de Débito">Cartão de Débito</option>
+                                                <option value="Dinheiro">Dinheiro</option>
+                                                <option value="Link de Pagamento">Link de Pagamento</option>
+                                            </select>
+                                            <div className="relative">
+                                                <span className="absolute left-2 top-2 text-[10px] text-gray-400">R$</span>
+                                                <input type="text" value={novoPagamento.valor} onChange={e => setNovoPagamento({...novoPagamento, valor: formatarMoeda(e.target.value)})} className="w-full bg-white dark:bg-darkCard border border-gray-300 dark:border-darkBorder rounded pl-6 pr-2 py-1.5 text-xs outline-none" placeholder="Valor" />
+                                            </div>
+                                        </div>
+                                        {(novoPagamento.forma === 'Cartão de Crédito' || novoPagamento.forma === 'Link de Pagamento') && (
+                                            <div>
+                                                <select value={novoPagamento.parcelas} onChange={e => setNovoPagamento({...novoPagamento, parcelas: parseInt(e.target.value)})} className="w-full bg-white dark:bg-darkCard border border-gray-300 dark:border-darkBorder rounded px-2 py-1.5 text-xs outline-none">
+                                                    {[1,2,3,4,5,6,7,8,9,10,11,12].map(n => <option key={n} value={n}>{n}x</option>)}
+                                                </select>
+                                            </div>
+                                        )}
+                                        <button type="button" onClick={() => {
+                                            if (!novoPagamento.valor) return;
+                                            setPagamentosPedido([...pagamentosPedido, { ...novoPagamento, data: obterDataAtual() }]);
+                                            
+                                            // Atualiza sugerindo o restante
+                                            const novoTotalPago = pagamentosPedido.reduce((acc, p) => acc + (parseFloat(String(p.valor).replace(/\./g, '').replace(',', '.')) || 0), 0) + parseFloat(String(novoPagamento.valor).replace(/\./g, '').replace(',', '.'));
+                                            const totalOS = parseFloat(String(novoPedido.valor_total).replace(/\./g, '').replace(',', '.')) || 0;
+                                            const saldoRestante = totalOS - novoTotalPago;
+                                            
+                                            setNovoPagamento({ valor: saldoRestante > 0 ? formatarMoeda((saldoRestante * 100).toFixed(0).toString()) : '', forma: 'PIX', parcelas: 1 });
+                                        }} className="w-full bg-brand hover:bg-brandHover text-white py-1.5 rounded text-xs font-bold transition">Registrar Pagamento</button>
+                                    </div>
+                                )}
                             </div>
 
                             <div>
