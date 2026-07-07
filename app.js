@@ -411,7 +411,7 @@ function App() {
     const [produtoDropdownAberto, setProdutoDropdownAberto] = useState(false);
 
     const [pagamentosPedido, setPagamentosPedido] = useState([]);
-    const [novoPagamento, setNovoPagamento] = useState({ valor: '', forma: 'PIX', parcelas: 1 });
+    const [novoPagamento, setNovoPagamento] = useState({ valor: '', forma: 'PIX', parcelas: 1, instituicao: 'Itaú' });
 
     const [novoPedido, setNovoPedido] = useState({ 
         cliente: '', servico: '', valor_total: '', 
@@ -518,7 +518,7 @@ function App() {
         setBuscaProduto('');
         setItensPedido([]); 
         setPagamentosPedido([]);
-        setNovoPagamento({ valor: '', forma: 'PIX', parcelas: 1 });
+        setNovoPagamento({ valor: '', forma: 'PIX', parcelas: 1, instituicao: 'Itaú' });
         setItemAtual({ nome: '', descricao: '', valor: '', desconto: '' });
         setNovoPedido({ 
             cliente: '', servico: '', valor_total: '', 
@@ -533,7 +533,17 @@ function App() {
         setPedidoEmEdicao(pedido);
         setBuscaCliente(pedido.cliente);
         setItensPedido(dadosDesconstruidos.itens); 
-        setPagamentosPedido(dadosDesconstruidos.pagamentos || []);
+        const pagamentosRecuperados = dadosDesconstruidos.pagamentos || [];
+        setPagamentosPedido(pagamentosRecuperados);
+        
+        const totalPago = pagamentosRecuperados.reduce((acc, p) => acc + (parseFloat(String(p.valor).replace(/\./g, '').replace(',', '.')) || 0), 0);
+        const totalOSStr = parseFloat(String(pedido.valor_total).replace(/\./g, '').replace(',', '.')) || 0;
+        const saldoRestante = totalOSStr - totalPago;
+        
+        setNovoPagamento({ 
+            valor: saldoRestante > 0 ? formatarMoeda((saldoRestante * 100).toFixed(0).toString()) : '', 
+            forma: 'PIX', parcelas: 1, instituicao: 'Itaú' 
+        });
         setNovoPedido({
             cliente: pedido.cliente,
             servico: dadosDesconstruidos.observacoes,
@@ -1567,6 +1577,14 @@ function App() {
                                                             <input type="text" value={novoPagamento.valor} onChange={e => setNovoPagamento({...novoPagamento, valor: formatarMoeda(e.target.value)})} className="w-full bg-white dark:bg-darkCard border border-gray-300 dark:border-darkBorder rounded pl-6 pr-2 py-1.5 text-xs outline-none" placeholder="Valor" />
                                                         </div>
                                                     </div>
+                                                    {(novoPagamento.forma === 'PIX') && (
+                                                        <div>
+                                                            <select value={novoPagamento.instituicao} onChange={e => setNovoPagamento({...novoPagamento, instituicao: e.target.value})} className="w-full bg-white dark:bg-darkCard border border-gray-300 dark:border-darkBorder rounded px-2 py-1.5 text-xs outline-none">
+                                                                <option value="Itaú">Itaú</option>
+                                                                <option value="Infinite Pay">Infinite Pay</option>
+                                                            </select>
+                                                        </div>
+                                                    )}
                                                     {(novoPagamento.forma === 'Cartão de Crédito' || novoPagamento.forma === 'Link de Pagamento') && (
                                                         <div>
                                                             <select value={novoPagamento.parcelas} onChange={e => setNovoPagamento({...novoPagamento, parcelas: parseInt(e.target.value)})} className="w-full bg-white dark:bg-darkCard border border-gray-300 dark:border-darkBorder rounded px-2 py-1.5 text-xs outline-none">
@@ -1583,12 +1601,7 @@ function App() {
                                                         const totalOSStr = parseFloat(String(novoPedido.valor_total).replace(/\./g, '').replace(',', '.')) || 0;
                                                         const saldoRestante = totalOSStr - novoTotalPago;
                                                         
-                                                        setNovoPagamento({ valor: saldoRestante > 0 ? formatarMoeda((saldoRestante * 100).toFixed(0).toString()) : '', forma: 'PIX', parcelas: 1 });
-                                                        
-                                                        // Se quitou o saldo devedor, finaliza a nota automaticamente
-                                                        if (saldoRestante <= 0) {
-                                                            setNovoPedido(prev => ({ ...prev, status: 'Finalizado' }));
-                                                        }
+                                                        setNovoPagamento({ valor: saldoRestante > 0 ? formatarMoeda((saldoRestante * 100).toFixed(0).toString()) : '', forma: 'PIX', parcelas: 1, instituicao: 'Itaú' });
                                                     }} className="w-full bg-brand hover:bg-brandHover text-white py-1.5 rounded text-xs font-bold transition">Registrar Pagamento</button>
                                                 </div>
                                             )}
@@ -1616,6 +1629,20 @@ function App() {
                                 <button type="button" onClick={fecharModalOS} className="px-5 py-2.5 rounded text-sm font-medium text-gray-600 dark:text-[#A1A1AA] hover:bg-gray-200 dark:hover:bg-darkHover transition">Cancelar</button>
                                 {!isModalTrancado && (
                                     <div className="flex gap-2">
+                                        {novoPedido.status !== 'Finalizado' && (
+                                            <button type="button" onClick={(e) => {
+                                                const tpago = pagamentosPedido.reduce((acc, p) => acc + (parseFloat(String(p.valor).replace(/\./g, '').replace(',', '.')) || 0), 0);
+                                                const tos = parseFloat(String(novoPedido.valor_total).replace(/\./g, '').replace(',', '.')) || 0;
+                                                if ((tos - tpago) > 0) {
+                                                    alert("Não é possível finalizar a OS: O valor total ainda não foi pago.");
+                                                    return;
+                                                }
+                                                novoPedido.status = 'Finalizado';
+                                                salvarOS(e, false);
+                                            }} disabled={salvandoOS} className="px-6 py-2.5 rounded text-sm font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm transition disabled:opacity-50">
+                                                Finalizar OS
+                                            </button>
+                                        )}
                                         <button type="button" onClick={(e) => salvarOS(e, false)} disabled={salvandoOS} className="px-6 py-2.5 rounded text-sm font-bold bg-brand hover:bg-brandHover text-white shadow-sm transition disabled:opacity-50">
                                             {salvandoOS ? 'Aguarde...' : pedidoEmEdicao ? 'Apenas Atualizar' : 'Apenas Salvar'}
                                         </button>
@@ -1779,7 +1806,7 @@ function App() {
                                                     <div className="text-xs text-gray-800">
                                                         {desc.pagamentos.map((pag, idx) => (
                                                             <div key={idx} className="flex justify-between items-center border-b border-dashed border-gray-200 py-0.5 last:border-0">
-                                                                <span>{pag.forma} {pag.parcelas > 1 ? `(${pag.parcelas}x)` : ''} <span className="text-[10px] text-gray-500">({pag.data})</span></span>
+                                                                <span>{pag.forma} {pag.parcelas > 1 ? `(${pag.parcelas}x)` : ''} {pag.instituicao ? `(${pag.instituicao})` : ''} <span className="text-[10px] text-gray-500">({pag.data})</span></span>
                                                                 <span className="font-bold text-gray-900">R$ {pag.valor}</span>
                                                             </div>
                                                         ))}
