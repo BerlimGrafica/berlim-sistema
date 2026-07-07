@@ -1546,48 +1546,55 @@ function App() {
                                     const totalOS = parseFloat(String(novoPedido.valor_total).replace(/\./g, '').replace(',', '.')) || 0;
                                     const saldo = totalOS - totalPago;
                                     return (
-                                        <div className="mb-4 flex justify-between items-center text-sm">
-                                            <span className="text-gray-600 dark:text-gray-400">Total Pago: <strong className="text-emerald-600">R$ {totalPago.toFixed(2).replace('.', ',')}</strong></span>
-                                            <span className="text-gray-600 dark:text-gray-400">Saldo Devedor: <strong className={saldo > 0 ? "text-red-500" : "text-gray-400"}>R$ {saldo.toFixed(2).replace('.', ',')}</strong></span>
-                                        </div>
+                                        <>
+                                            <div className="mb-4 flex justify-between items-center text-sm">
+                                                <span className="text-gray-600 dark:text-gray-400">Total Pago: <strong className="text-emerald-600">R$ {totalPago.toFixed(2).replace('.', ',')}</strong></span>
+                                                <span className="text-gray-600 dark:text-gray-400">Saldo Devedor: <strong className={saldo > 0 ? "text-red-500" : "text-gray-400"}>R$ {saldo.toFixed(2).replace('.', ',')}</strong></span>
+                                            </div>
+
+                                            {!isModalTrancado && saldo > 0 && (
+                                                <div className="flex flex-col gap-2 p-3 bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded mb-4">
+                                                    <div className="grid grid-cols-2 gap-2">
+                                                        <select value={novoPagamento.forma} onChange={e => setNovoPagamento({...novoPagamento, forma: e.target.value})} className="bg-white dark:bg-darkCard border border-gray-300 dark:border-darkBorder rounded px-2 py-1.5 text-xs outline-none">
+                                                            <option value="PIX">PIX</option>
+                                                            <option value="Cartão de Crédito">Cartão de Crédito</option>
+                                                            <option value="Cartão de Débito">Cartão de Débito</option>
+                                                            <option value="Dinheiro">Dinheiro</option>
+                                                            <option value="Link de Pagamento">Link de Pagamento</option>
+                                                        </select>
+                                                        <div className="relative">
+                                                            <span className="absolute left-2 top-2 text-[10px] text-gray-400">R$</span>
+                                                            <input type="text" value={novoPagamento.valor} onChange={e => setNovoPagamento({...novoPagamento, valor: formatarMoeda(e.target.value)})} className="w-full bg-white dark:bg-darkCard border border-gray-300 dark:border-darkBorder rounded pl-6 pr-2 py-1.5 text-xs outline-none" placeholder="Valor" />
+                                                        </div>
+                                                    </div>
+                                                    {(novoPagamento.forma === 'Cartão de Crédito' || novoPagamento.forma === 'Link de Pagamento') && (
+                                                        <div>
+                                                            <select value={novoPagamento.parcelas} onChange={e => setNovoPagamento({...novoPagamento, parcelas: parseInt(e.target.value)})} className="w-full bg-white dark:bg-darkCard border border-gray-300 dark:border-darkBorder rounded px-2 py-1.5 text-xs outline-none">
+                                                                {[1,2,3,4,5,6,7,8,9,10,11,12].map(n => <option key={n} value={n}>{n}x</option>)}
+                                                            </select>
+                                                        </div>
+                                                    )}
+                                                    <button type="button" onClick={() => {
+                                                        if (!novoPagamento.valor) return;
+                                                        setPagamentosPedido([...pagamentosPedido, { ...novoPagamento, data: obterDataAtual() }]);
+                                                        
+                                                        // Atualiza sugerindo o restante
+                                                        const novoTotalPago = pagamentosPedido.reduce((acc, p) => acc + (parseFloat(String(p.valor).replace(/\./g, '').replace(',', '.')) || 0), 0) + parseFloat(String(novoPagamento.valor).replace(/\./g, '').replace(',', '.'));
+                                                        const totalOSStr = parseFloat(String(novoPedido.valor_total).replace(/\./g, '').replace(',', '.')) || 0;
+                                                        const saldoRestante = totalOSStr - novoTotalPago;
+                                                        
+                                                        setNovoPagamento({ valor: saldoRestante > 0 ? formatarMoeda((saldoRestante * 100).toFixed(0).toString()) : '', forma: 'PIX', parcelas: 1 });
+                                                        
+                                                        // Se quitou o saldo devedor, finaliza a nota automaticamente
+                                                        if (saldoRestante <= 0) {
+                                                            setNovoPedido(prev => ({ ...prev, status: 'Finalizado' }));
+                                                        }
+                                                    }} className="w-full bg-brand hover:bg-brandHover text-white py-1.5 rounded text-xs font-bold transition">Registrar Pagamento</button>
+                                                </div>
+                                            )}
+                                        </>
                                     );
                                 })()}
-
-                                {!isModalTrancado && (
-                                    <div className="flex flex-col gap-2 p-3 bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded mb-4">
-                                        <div className="grid grid-cols-2 gap-2">
-                                            <select value={novoPagamento.forma} onChange={e => setNovoPagamento({...novoPagamento, forma: e.target.value})} className="bg-white dark:bg-darkCard border border-gray-300 dark:border-darkBorder rounded px-2 py-1.5 text-xs outline-none">
-                                                <option value="PIX">PIX</option>
-                                                <option value="Cartão de Crédito">Cartão de Crédito</option>
-                                                <option value="Cartão de Débito">Cartão de Débito</option>
-                                                <option value="Dinheiro">Dinheiro</option>
-                                                <option value="Link de Pagamento">Link de Pagamento</option>
-                                            </select>
-                                            <div className="relative">
-                                                <span className="absolute left-2 top-2 text-[10px] text-gray-400">R$</span>
-                                                <input type="text" value={novoPagamento.valor} onChange={e => setNovoPagamento({...novoPagamento, valor: formatarMoeda(e.target.value)})} className="w-full bg-white dark:bg-darkCard border border-gray-300 dark:border-darkBorder rounded pl-6 pr-2 py-1.5 text-xs outline-none" placeholder="Valor" />
-                                            </div>
-                                        </div>
-                                        {(novoPagamento.forma === 'Cartão de Crédito' || novoPagamento.forma === 'Link de Pagamento') && (
-                                            <div>
-                                                <select value={novoPagamento.parcelas} onChange={e => setNovoPagamento({...novoPagamento, parcelas: parseInt(e.target.value)})} className="w-full bg-white dark:bg-darkCard border border-gray-300 dark:border-darkBorder rounded px-2 py-1.5 text-xs outline-none">
-                                                    {[1,2,3,4,5,6,7,8,9,10,11,12].map(n => <option key={n} value={n}>{n}x</option>)}
-                                                </select>
-                                            </div>
-                                        )}
-                                        <button type="button" onClick={() => {
-                                            if (!novoPagamento.valor) return;
-                                            setPagamentosPedido([...pagamentosPedido, { ...novoPagamento, data: obterDataAtual() }]);
-                                            
-                                            // Atualiza sugerindo o restante
-                                            const novoTotalPago = pagamentosPedido.reduce((acc, p) => acc + (parseFloat(String(p.valor).replace(/\./g, '').replace(',', '.')) || 0), 0) + parseFloat(String(novoPagamento.valor).replace(/\./g, '').replace(',', '.'));
-                                            const totalOS = parseFloat(String(novoPedido.valor_total).replace(/\./g, '').replace(',', '.')) || 0;
-                                            const saldoRestante = totalOS - novoTotalPago;
-                                            
-                                            setNovoPagamento({ valor: saldoRestante > 0 ? formatarMoeda((saldoRestante * 100).toFixed(0).toString()) : '', forma: 'PIX', parcelas: 1 });
-                                        }} className="w-full bg-brand hover:bg-brandHover text-white py-1.5 rounded text-xs font-bold transition">Registrar Pagamento</button>
-                                    </div>
-                                )}
                             </div>
 
                             <div>
@@ -1765,11 +1772,26 @@ function App() {
                                     <hr className="border-t-2 border-black mb-3" />
 
                                     <div className="flex justify-between items-start gap-6 mb-2">
-                                        <div className="flex-1 max-w-[60%]">
-                                            <h3 className="font-bold text-[10px] uppercase text-gray-400 mb-1.5 tracking-wider">Observações Gerais do Pedido</h3>
-                                            <p className="text-xs text-gray-800 whitespace-pre-wrap leading-snug">
-                                                {desc.observacoes || <span className="italic text-gray-400">Nenhuma observação extra registrada.</span>}
-                                            </p>
+                                        <div className="flex-1 max-w-[60%] flex flex-col gap-3">
+                                            {desc.pagamentos && desc.pagamentos.length > 0 && (
+                                                <div>
+                                                    <h3 className="font-bold text-[10px] uppercase text-gray-400 mb-1 tracking-wider">Histórico de Pagamentos</h3>
+                                                    <div className="text-xs text-gray-800">
+                                                        {desc.pagamentos.map((pag, idx) => (
+                                                            <div key={idx} className="flex justify-between items-center border-b border-dashed border-gray-200 py-0.5 last:border-0">
+                                                                <span>{pag.forma} {pag.parcelas > 1 ? `(${pag.parcelas}x)` : ''} <span className="text-[10px] text-gray-500">({pag.data})</span></span>
+                                                                <span className="font-bold text-gray-900">R$ {pag.valor}</span>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+                                            <div>
+                                                <h3 className="font-bold text-[10px] uppercase text-gray-400 mb-1.5 tracking-wider">Observações Gerais do Pedido</h3>
+                                                <p className="text-xs text-gray-800 whitespace-pre-wrap leading-snug">
+                                                    {desc.observacoes || <span className="italic text-gray-400">Nenhuma observação extra registrada.</span>}
+                                                </p>
+                                            </div>
                                         </div>
                                         <div className="text-right shrink-0">
                                             <span className="text-[10px] uppercase font-bold tracking-widest text-gray-500 block mb-0.5">Total do Pedido</span>
