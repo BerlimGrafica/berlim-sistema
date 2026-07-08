@@ -350,14 +350,28 @@ function desconstruirTextoServico(texto) {
         if (lines.length < 3) { obs = obs ? obs + '\n' + bloco : bloco; continue; }
         
         let nome = lines[0].replace('• ', '').trim();
-        let descricao = lines[1].replace(/^  /, '').trim();
-        let AppValor = lines[2].replace(/^  Valor: R\$ /, '').trim();
+        let AppValor = '0,00';
+        let local_producao = 'Berlim'; // fallback/default
+        let descLines = [];
+        
+        for (let i = 1; i < lines.length; i++) {
+            let line = lines[i].trim();
+            if (line.startsWith('Valor: R$ ')) {
+                AppValor = line.replace('Valor: R$ ', '');
+            } else if (line.startsWith('Local: ')) {
+                local_producao = line.replace('Local: ', '');
+            } else {
+                descLines.push(lines[i].replace(/^  /, ''));
+            }
+        }
+        
+        let descricao = descLines.join('\n').trim();
         
         let valor = AppValor; let desconto = '';
         let matchDesconto = AppValor.match(/\s\(-(\d+)%\)$/);
         if (matchDesconto) { desconto = matchDesconto[1]; valor = AppValor.replace(matchDesconto[0], '').trim(); }
         
-        itensTraduzidos.push({ nome, descricao, valor, desconto, id_temp: Math.random() + Date.now() });
+        itensTraduzidos.push({ nome, descricao, valor, desconto, local_producao, id_temp: Math.random() + Date.now() });
     }
     return { itens: itensTraduzidos, observacoes: obs, pagamentos };
 }
@@ -497,7 +511,7 @@ function App() {
     const [pedidoEmEdicao, setPedidoEmEdicao] = useState(null); 
 
     const [itensPedido, setItensPedido] = useState([]);
-    const [itemAtual, setItemAtual] = useState({ nome: '', descricao: '', valor: '', desconto: '' });
+    const [itemAtual, setItemAtual] = useState({ nome: '', descricao: '', valor: '', desconto: '', local_producao: 'Berlim' });
 
     const [buscaCliente, setBuscaCliente] = useState('');
     const [clienteDropdownAberto, setClienteDropdownAberto] = useState(false);
@@ -613,7 +627,7 @@ function App() {
         setItensPedido([]); 
         setPagamentosPedido([]);
         setNovoPagamento({ valor: '', forma: 'PIX', parcelas: 1, instituicao: 'Itaú' });
-        setItemAtual({ nome: '', descricao: '', valor: '', desconto: '' });
+        setItemAtual({ nome: '', descricao: '', valor: '', desconto: '', local_producao: 'Berlim' });
         setNovoPedido({ 
             cliente: '', servico: '', valor_total: '', 
             status: 'Aguardando Pagamento', data_pedido: obterDataAtual(),
@@ -716,7 +730,7 @@ function App() {
         novosItens.forEach(i => { totalGeralOS += parseFloat(i.valor.replace(/\./g, '').replace(',', '.')) || 0; });
         setNovoPedido({...novoPedido, valor_total: formatarMoeda((totalGeralOS * 100).toFixed(0).toString())});
         
-        setItemAtual({ nome: '', descricao: '', valor: '', desconto: '' });
+        setItemAtual({ nome: '', descricao: '', valor: '', desconto: '', local_producao: 'Berlim' });
         setBuscaProduto('');
     }
 
@@ -737,20 +751,23 @@ function App() {
             const itensTextoArray = itensPedido.map(i => {
                 const strDesconto = i.desconto ? ' (-' + i.desconto + '%)' : '';
                 const strNome = i.nome ? '• ' + i.nome : '• Serviço Personalizado';
-                return strNome + '\n  ' + i.descricao + '\n  Valor: R$ ' + i.valor + strDesconto;
+                const strLocal = i.local_producao ? '\n  Local: ' + i.local_producao : '\n  Local: Berlim';
+                return strNome + '\n  ' + i.descricao + '\n  Valor: R$ ' + i.valor + strDesconto + strLocal;
             });
-            const itensTextoString = itensTextoArray.join('\n\n');
-            const obsGerais = novoPedido.servico ? '\n\n[OBSERVAÇÕES GERAIS]\n' + novoPedido.servico : '';
-            textoFinalServico = itensTextoString + obsGerais;
+            textoFinalServico += itensTextoArray.join('\n\n') + '\n\n';
+            if (novoPedido.servico) textoFinalServico += '[OBSERVAÇÕES GERAIS]\n' + novoPedido.servico;
         } else {
             textoFinalServico = novoPedido.servico;
         }
 
-        if (pagamentosPedido && pagamentosPedido.length > 0) {
+        if (pagamentosPedido.length > 0) {
             textoFinalServico += '\n\n[PAGAMENTOS]\n' + JSON.stringify(pagamentosPedido);
         }
 
         const valorNumericoFinal = parseFloat(String(novoPedido.valor_total).replace(/\./g, '').replace(',', '.')) || 0;
+
+        // Calcular locais unicos da OS a partir dos itens
+        const locaisOS = [...new Set(itensPedido.map(i => i.local_producao || 'Berlim'))].join(', ');
 
         const payload = {
             cliente: novoPedido.cliente,
@@ -760,7 +777,7 @@ function App() {
             data_pedido: novoPedido.data_pedido || null,
             prazo: novoPedido.prazo || null,
             responsavel: novoPedido.responsavel,
-            local_producao: novoPedido.local_producao,
+            local_producao: locaisOS,
             aprovado: novoPedido.aprovado,
             entrega: novoPedido.entrega,
             urgente: novoPedido.urgente
@@ -1055,7 +1072,7 @@ function App() {
                                                                 <td className="px-4 py-3 text-center"><button type="button" onClick={() => atualizarCampoInline(p.id, 'entrega', !p.entrega)} className={`p-1.5 rounded-md transition ${p.entrega ? 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400' : 'bg-gray-100 text-gray-400 dark:bg-darkElevated dark:text-gray-600 hover:text-gray-600 dark:hover:text-gray-400'}`}><Icon name="package" className="w-4 h-4" /></button></td>
                                                                 <td className="px-4 py-3 text-center"><button type="button" onClick={() => atualizarCampoInline(p.id, 'urgente', !p.urgente)} className={`p-1.5 rounded-md transition ${p.urgente ? 'bg-red-500/20 text-red-600 dark:bg-red-950/40 dark:text-red-400 ring-1 ring-red-500/30' : 'bg-gray-100 text-gray-400 dark:bg-darkElevated dark:text-gray-600 hover:text-gray-600 dark:hover:text-gray-400'}`}><Icon name="alert-triangle" className="w-3.5 h-3.5" /></button></td>
                                                                 <td className="px-4 py-3"><InlineDropdown value={p.status} options={opcoesStatusPermitidas} onChange={(val) => atualizarCampoInline(p.id, 'status', val)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-2.5 py-1.5 text-xs outline-none hover:border-brand" /></td>
-                                                                <td className="px-4 py-3"><MultiSelectDropdown value={p.local_producao} options={LOCAIS} onChange={(val) => atualizarCampoInline(p.id, 'local_producao', val)} placeholder="Berlim" className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-2.5 py-1.5 text-xs outline-none hover:border-brand" /></td>
+                                                                <td className="px-4 py-3"><span className="text-[11px] font-bold px-2 py-1 bg-gray-100 dark:bg-darkElevated text-gray-700 dark:text-[#EDEDED] rounded border border-gray-200 dark:border-darkBorder truncate max-w-[150px] inline-block" title={p.local_producao || 'Berlim'}>{p.local_producao || 'Berlim'}</span></td>
                                                                 <td className="px-4 py-3 text-center"><button type="button" onClick={() => atualizarCampoInline(p.id, 'status', 'Concluído')} className="p-1 text-gray-300 hover:text-emerald-500 dark:text-darkBorder dark:hover:text-emerald-500 transition" title="Marcar como Concluído"><Icon name="square" className="w-4 h-4" /></button></td>
                                                             </tr>
                                                         ))}
@@ -1641,7 +1658,7 @@ function App() {
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-3 gap-4">
+                            <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-sm font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Resp.</label>
                                     <MultiSelectDropdown 
@@ -1649,17 +1666,6 @@ function App() {
                                         options={RESPONSAVEIS} 
                                         onChange={val => setNovoPedido({...novoPedido, responsavel: val})} 
                                         disabled={isModalTrancado} 
-                                        className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand transition dark:text-[#EDEDED]"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Local</label>
-                                    <MultiSelectDropdown 
-                                        value={novoPedido.local_producao} 
-                                        options={LOCAIS} 
-                                        onChange={val => setNovoPedido({...novoPedido, local_producao: val})} 
-                                        disabled={isModalTrancado} 
-                                        placeholder="Berlim"
                                         className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand transition dark:text-[#EDEDED]"
                                     />
                                 </div>
@@ -1701,7 +1707,7 @@ function App() {
                                     <div className="mb-4 flex flex-col gap-2">
                                         {itensPedido.map((item, index) => (
                                             <div key={item.id_temp} className="flex justify-between items-center p-3 bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded shadow-sm">
-                                                <div className="flex flex-col"><span className="font-semibold text-sm dark:text-white">{index + 1}. {item.nome || 'Serviço Personalizado'}</span><span className="text-xs text-gray-500 dark:text-[#A1A1AA] whitespace-pre-wrap mt-1">{item.descricao}</span></div>
+                                                <div className="flex flex-col"><span className="font-semibold text-sm dark:text-white">{index + 1}. {item.nome || 'Serviço Personalizado'}</span><span className="text-xs text-gray-500 dark:text-[#A1A1AA] whitespace-pre-wrap mt-1">{item.descricao}</span>{item.local_producao && <span className="text-[10px] bg-brand/10 text-brand font-bold px-1.5 py-0.5 rounded mt-1.5 w-max">Local: {item.local_producao}</span>}</div>
                                                 <div className="flex items-center gap-4"><div className="text-right"><span className="font-semibold text-sm dark:text-white">R$ {item.valor}</span>{item.desconto && <span className="block text-[10px] text-brand font-medium">-{item.desconto}% desc</span>}</div><button type="button" disabled={isModalTrancado} onClick={() => removerItemDoCarrinho(item.id_temp)} className="text-gray-400 hover:text-red-500 transition disabled:opacity-30"><Icon name="trash-2" className="w-4 h-4" /></button></div>
                                             </div>
                                         ))}
@@ -1741,14 +1747,21 @@ function App() {
                                         </div>
 
                                         <textarea rows="2" value={itemAtual.descricao} disabled={isModalTrancado} onChange={e => setItemAtual({...itemAtual, descricao: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand transition dark:text-[#EDEDED] disabled:opacity-50" placeholder="Especificações do item (Ex: Medida, quantidade, material...)"></textarea>
-                                        <div className="grid grid-cols-3 gap-3">
-                                            <div className="relative">
-                                                <span className="absolute left-3 top-2.5 text-xs text-gray-400">R$</span>
-                                                <input type="text" value={itemAtual.valor} disabled={isModalTrancado} onChange={e => setItemAtual({...itemAtual, valor: formatarMoeda(e.target.value)})} className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded pl-8 pr-3 py-2 text-xs outline-none focus:border-brand transition dark:text-[#EDEDED] font-medium disabled:opacity-50" placeholder="Bruto" />
+                                        <div className="grid grid-cols-4 gap-3">
+                                            <div className="relative col-span-2">
+                                                <span className="absolute left-3 top-2.5 text-xs text-gray-400 font-medium">Local:</span>
+                                                <select value={itemAtual.local_producao} disabled={isModalTrancado} onChange={e => setItemAtual({...itemAtual, local_producao: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded pl-[52px] pr-8 py-2 text-xs outline-none focus:border-brand transition dark:text-[#EDEDED] font-medium appearance-none disabled:opacity-50">
+                                                    {LOCAIS.map(l => <option key={l} value={l}>{l}</option>)}
+                                                </select>
+                                                <Icon name="chevron-down" className="absolute right-3 top-2.5 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
                                             </div>
-                                            <div><input type="text" value={itemAtual.desconto} disabled={isModalTrancado} onChange={e => { let val = e.target.value.replace(/\D/g, ''); if (parseFloat(val) > 100) val = '100'; setItemAtual({...itemAtual, desconto: val}); }} className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-xs outline-none focus:border-brand transition dark:text-[#EDEDED] disabled:opacity-50" placeholder="Desc. %" /></div>
-                                            <button type="button" onClick={adicionarItemAoCarrinho} disabled={!itemAtual.descricao || !itemAtual.valor || isModalTrancado} className="px-3 py-2 text-xs font-medium bg-white hover:bg-gray-200 text-black rounded transition disabled:opacity-50">+ Inserir</button>
+                                            <div className="relative">
+                                                <span className="absolute left-2.5 top-2.5 text-xs text-gray-400">R$</span>
+                                                <input type="text" value={itemAtual.valor} disabled={isModalTrancado} onChange={e => setItemAtual({...itemAtual, valor: formatarMoeda(e.target.value)})} className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded pl-7 pr-2 py-2 text-xs outline-none focus:border-brand transition dark:text-[#EDEDED] font-medium disabled:opacity-50" placeholder="Bruto" />
+                                            </div>
+                                            <div><input type="text" value={itemAtual.desconto} disabled={isModalTrancado} onChange={e => { let val = e.target.value.replace(/\D/g, ''); if (parseFloat(val) > 100) val = '100'; setItemAtual({...itemAtual, desconto: val}); }} className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-2 py-2 text-xs outline-none focus:border-brand transition dark:text-[#EDEDED] disabled:opacity-50" placeholder="Desc. %" /></div>
                                         </div>
+                                        <button type="button" onClick={adicionarItemAoCarrinho} disabled={!itemAtual.descricao || !itemAtual.valor || isModalTrancado} className="w-full mt-3 px-3 py-2 text-xs font-bold bg-white hover:bg-gray-100 dark:bg-darkHover dark:hover:bg-darkBorder text-gray-800 dark:text-white rounded border border-gray-200 dark:border-darkBorder transition shadow-sm disabled:opacity-50 flex items-center justify-center gap-1.5"><Icon name="plus" className="w-3.5 h-3.5"/> Inserir Item no Orçamento</button>
                                     </div>
                                 </div>
                             </div>
