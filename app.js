@@ -1169,43 +1169,86 @@ function App() {
 
                             const colorsRank = ['bg-blue-500', 'bg-indigo-500', 'bg-purple-500', 'bg-fuchsia-500', 'bg-rose-500', 'bg-red-500'];
                             const colorsLocal = ['bg-teal-500', 'bg-emerald-500', 'bg-cyan-500', 'bg-sky-500', 'bg-blue-500'];
+                            const colorsForma = ['bg-amber-500', 'bg-yellow-500', 'bg-orange-500', 'bg-lime-500'];
+                            const colorsInst = ['bg-emerald-500', 'bg-teal-500', 'bg-cyan-500', 'bg-sky-500'];
+
+                            const pagamentosExtraidos = pedidosFin.flatMap(p => {
+                                const pagamentosStr = p.servico && p.servico.split('\n\n[PAGAMENTOS]\n')[1];
+                                if (!pagamentosStr) return [];
+                                try {
+                                    return JSON.parse(pagamentosStr).map(pag => ({
+                                        valor: parseFloat(String(pag.valor).replace(/\./g, '').replace(',', '.')) || 0,
+                                        forma: pag.forma || 'Indefinido',
+                                        instituicao: pag.instituicao || 'Indefinido'
+                                    }));
+                                } catch (e) { return []; }
+                            });
+
+                            const agrupadoForma = pagamentosExtraidos.reduce((acc, p) => {
+                                if (!acc[p.forma]) acc[p.forma] = 0;
+                                acc[p.forma] += p.valor;
+                                return acc;
+                            }, {});
+                            const rankingForma = Object.entries(agrupadoForma).sort((a,b) => b[1] - a[1]);
+                            const maxForma = Math.max(...rankingForma.map(f => f[1]), 1);
+
+                            const agrupadoInstituicao = pagamentosExtraidos.reduce((acc, p) => {
+                                if (p.forma === 'PIX' || p.forma === 'Link de Pagamento') {
+                                    const inst = p.instituicao;
+                                    if (!acc[inst]) acc[inst] = 0;
+                                    acc[inst] += p.valor;
+                                }
+                                return acc;
+                            }, {});
+                            const rankingInstituicao = Object.entries(agrupadoInstituicao).sort((a,b) => b[1] - a[1]);
+                            const maxInstituicao = Math.max(...rankingInstituicao.map(i => i[1]), 1);
 
                             return (
                                 <>
-                                    <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-                                        <div className="bg-white dark:bg-darkCard p-5 rounded-xl border border-gray-200 dark:border-darkBorder shadow-sm lg:col-span-2 relative overflow-hidden">
-                                            <div className="absolute right-0 top-0 w-32 h-full bg-gradient-to-l from-brand/10 to-transparent pointer-events-none"></div>
-                                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">Crescimento Anual Global (YoY)</span>
-                                            <div className="flex items-end gap-3 mt-1">
-                                                <h2 className="text-3xl font-black text-gray-900 dark:text-white">R$ {totalAnoAtual.toFixed(2).replace('.', ',')}</h2>
-                                                <div className={`flex items-center gap-1 text-sm font-bold pb-1 ${crescimentoPercentual >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
-                                                    <Icon name={crescimentoPercentual >= 0 ? 'trending-up' : 'trending-down'} className="w-4 h-4" />
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                                        <div className="bg-white dark:bg-darkCard p-5 rounded-xl border border-gray-200 dark:border-darkBorder shadow-sm relative overflow-hidden flex flex-col justify-between">
+                                            <div>
+                                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">Crescimento (YoY)</span>
+                                                <h2 className="text-xl font-black text-gray-900 dark:text-white">R$ {totalAnoAtual.toFixed(2).replace('.', ',')}</h2>
+                                            </div>
+                                            <div className="mt-2">
+                                                <div className={`inline-flex items-center gap-1 text-[11px] font-bold px-1.5 py-0.5 rounded ${crescimentoPercentual >= 0 ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-red-50 text-red-600 dark:bg-red-900/30 dark:text-red-400'}`}>
+                                                    <Icon name={crescimentoPercentual >= 0 ? 'trending-up' : 'trending-down'} className="w-3 h-3" />
                                                     {Math.abs(crescimentoPercentual).toFixed(1)}%
                                                 </div>
                                             </div>
-                                            <p className="text-[11px] text-gray-400 mt-2">Vs R$ {totalAnoAnterior.toFixed(2).replace('.', ',')} faturados em todo ano passado</p>
                                         </div>
 
-                                        <div className="bg-purple-50 dark:bg-purple-900/10 p-5 rounded-xl border border-purple-200 dark:border-purple-900/30 shadow-sm relative overflow-hidden">
-                                            <span className="text-[10px] font-bold text-purple-600 dark:text-purple-400 uppercase tracking-wider block mb-1">Vendas Hoje</span>
-                                            <h2 className="text-2xl font-black text-purple-600 dark:text-purple-400">R$ {totalVendasHoje.toFixed(2).replace('.', ',')}</h2>
-                                            <p className="text-[11px] text-purple-500/70 dark:text-purple-400/70 mt-2">Faturamento de pedidos lançados hoje</p>
+                                        <div className="bg-purple-50 dark:bg-purple-900/10 p-5 rounded-xl border border-purple-200 dark:border-purple-900/30 shadow-sm relative overflow-hidden flex flex-col justify-between">
+                                            <div>
+                                                <span className="text-[10px] font-bold text-purple-600 dark:text-purple-400 uppercase tracking-wider block mb-1">Vendas Hoje</span>
+                                                <h2 className="text-2xl font-black text-purple-600 dark:text-purple-400">R$ {totalVendasHoje.toFixed(2).replace('.', ',')}</h2>
+                                            </div>
+                                            <p className="text-[10px] text-purple-500/70 dark:text-purple-400/70 mt-2 font-medium">Pedidos lançados hoje</p>
                                         </div>
 
-                                        <div className="bg-white dark:bg-darkCard p-5 rounded-xl border border-gray-200 dark:border-darkBorder shadow-sm">
-                                            <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-wider block mb-1">Caixa Realizado</span>
-                                            <h2 className="text-2xl font-black text-emerald-500">R$ {totalRecebido.toFixed(2).replace('.', ',')}</h2>
-                                            <p className="text-[11px] text-gray-400 mt-2">Ordens recebidas no filtro</p>
+                                        <div className="bg-emerald-50 dark:bg-emerald-900/10 p-5 rounded-xl border border-emerald-200 dark:border-emerald-900/30 shadow-sm flex flex-col justify-between">
+                                            <div>
+                                                <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider block mb-1">Total Pago (Recebido)</span>
+                                                <h2 className="text-2xl font-black text-emerald-600 dark:text-emerald-400">R$ {totalRecebido.toFixed(2).replace('.', ',')}</h2>
+                                            </div>
+                                            <p className="text-[10px] text-emerald-500/70 dark:text-emerald-400/70 mt-2 font-medium">Já entrou no caixa</p>
                                         </div>
-                                        <div className="bg-white dark:bg-darkCard p-5 rounded-xl border border-gray-200 dark:border-darkBorder shadow-sm">
-                                            <span className="text-[10px] font-bold text-orange-500 uppercase tracking-wider block mb-1">Contas a Receber</span>
-                                            <h2 className="text-2xl font-black text-orange-500">R$ {totalAReceber.toFixed(2).replace('.', ',')}</h2>
-                                            <p className="text-[11px] text-gray-400 mt-2">Valor na esteira de produção</p>
+                                        
+                                        <div className="bg-orange-50 dark:bg-orange-900/10 p-5 rounded-xl border border-orange-200 dark:border-orange-900/30 shadow-sm flex flex-col justify-between">
+                                            <div>
+                                                <span className="text-[10px] font-bold text-orange-600 dark:text-orange-400 uppercase tracking-wider block mb-1">Saldo Devedor (A Receber)</span>
+                                                <h2 className="text-2xl font-black text-orange-600 dark:text-orange-400">R$ {totalAReceber.toFixed(2).replace('.', ',')}</h2>
+                                            </div>
+                                            <p className="text-[10px] text-orange-500/70 dark:text-orange-400/70 mt-2 font-medium">Falta receber</p>
                                         </div>
-                                        <div className="bg-white dark:bg-darkCard p-5 rounded-xl border border-gray-200 dark:border-darkBorder shadow-sm">
-                                            <span className="text-[10px] font-bold text-blue-500 uppercase tracking-wider block mb-1">Ticket Médio</span>
-                                            <h2 className="text-2xl font-black text-blue-500">R$ {ticketMedio.toFixed(2).replace('.', ',')}</h2>
-                                            <p className="text-[11px] text-gray-400 mt-2">Média gasta por pedido</p>
+                                        
+                                        <div className="bg-white dark:bg-darkCard p-5 rounded-xl border border-gray-200 dark:border-darkBorder shadow-sm flex flex-col justify-between">
+                                            <div>
+                                                <span className="text-[10px] font-bold text-blue-500 uppercase tracking-wider block mb-1">Ticket Médio</span>
+                                                <h2 className="text-2xl font-black text-blue-500">R$ {ticketMedio.toFixed(2).replace('.', ',')}</h2>
+                                            </div>
+                                            <p className="text-[10px] text-gray-400 mt-2 font-medium">Média por pedido</p>
                                         </div>
                                     </div>
 
@@ -1213,7 +1256,7 @@ function App() {
                                         <div className="bg-white dark:bg-darkCard p-6 rounded-xl border border-gray-200 dark:border-darkBorder flex flex-col gap-4">
                                             <div>
                                                 <h3 className="font-bold text-sm text-gray-800 dark:text-white uppercase tracking-wider">Faturamento Diário</h3>
-                                                <p className="text-xs text-gray-400 mt-0.5">Evolução do faturamento, dia a dia.</p>
+                                                <p className="text-xs text-gray-400 mt-0.5">Evolução dia a dia.</p>
                                             </div>
                                             <div className="flex flex-col gap-3 mt-2 overflow-y-auto max-h-64 custom-scrollbar pr-2">
                                                 {diasOrdenados.length === 0 ? <p className="text-xs text-gray-500 italic">Sem dados no período.</p> : 
@@ -1225,7 +1268,7 @@ function App() {
                                         <div className="bg-white dark:bg-darkCard p-6 rounded-xl border border-gray-200 dark:border-darkBorder flex flex-col gap-4">
                                             <div>
                                                 <h3 className="font-bold text-sm text-gray-800 dark:text-white uppercase tracking-wider">Faturamento Mensal</h3>
-                                                <p className="text-xs text-gray-400 mt-0.5">Evolução do faturamento bruto no período.</p>
+                                                <p className="text-xs text-gray-400 mt-0.5">Evolução por mês.</p>
                                             </div>
                                             <div className="flex flex-col gap-3 mt-2 overflow-y-auto max-h-64 custom-scrollbar pr-2">
                                                 {mesesOrdenados.length === 0 ? <p className="text-xs text-gray-500 italic">Sem dados no período.</p> : 
@@ -1236,8 +1279,8 @@ function App() {
 
                                         <div className="bg-white dark:bg-darkCard p-6 rounded-xl border border-gray-200 dark:border-darkBorder flex flex-col gap-4">
                                             <div>
-                                                <h3 className="font-bold text-sm text-gray-800 dark:text-white uppercase tracking-wider">Distribuição por Status</h3>
-                                                <p className="text-xs text-gray-400 mt-0.5">Visão do montante alocado em cada etapa.</p>
+                                                <h3 className="font-bold text-sm text-gray-800 dark:text-white uppercase tracking-wider">Por Status</h3>
+                                                <p className="text-xs text-gray-400 mt-0.5">Montante em cada etapa.</p>
                                             </div>
                                             <div className="flex flex-col gap-3 mt-2 overflow-y-auto max-h-64 custom-scrollbar pr-2">
                                                 {[...STATUSES_PRODUCAO, ...STATUSES_FINALIZADOS].map(st => {
@@ -1252,11 +1295,11 @@ function App() {
                                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                         <div className="bg-white dark:bg-darkCard p-6 rounded-xl border border-gray-200 dark:border-darkBorder flex flex-col gap-4">
                                             <div>
-                                                <h3 className="font-bold text-sm text-gray-800 dark:text-white uppercase tracking-wider">Performance de Vendas por Responsável</h3>
-                                                <p className="text-xs text-gray-400 mt-0.5">Ranking financeiro gerado por cada membro.</p>
+                                                <h3 className="font-bold text-sm text-gray-800 dark:text-white uppercase tracking-wider">Performance por Vendedor</h3>
+                                                <p className="text-xs text-gray-400 mt-0.5">Ranking financeiro por equipe.</p>
                                             </div>
                                             <div className="flex flex-col gap-3 mt-2 overflow-y-auto max-h-64 custom-scrollbar pr-2">
-                                                {rankingResp.length === 0 ? <p className="text-xs text-gray-500 italic">Nenhum responsável registrado no período.</p> :
+                                                {rankingResp.length === 0 ? <p className="text-xs text-gray-500 italic">Nenhum vendedor registrado.</p> :
                                                     rankingResp.map((resp, index) => renderBarHorizontal(`${index + 1}º. ${resp[0]}`, resp[1], maxResp, false, colorsRank[index % colorsRank.length]))
                                                 }
                                             </div>
@@ -1264,12 +1307,38 @@ function App() {
 
                                         <div className="bg-white dark:bg-darkCard p-6 rounded-xl border border-gray-200 dark:border-darkBorder flex flex-col gap-4">
                                             <div>
-                                                <h3 className="font-bold text-sm text-gray-800 dark:text-white uppercase tracking-wider">Receitas por Local de Produção</h3>
-                                                <p className="text-xs text-gray-400 mt-0.5">Rentabilidade baseada nos centros de custo (Terceiros x Interno).</p>
+                                                <h3 className="font-bold text-sm text-gray-800 dark:text-white uppercase tracking-wider">Receitas por Local</h3>
+                                                <p className="text-xs text-gray-400 mt-0.5">Rentabilidade baseada nos centros de custo.</p>
                                             </div>
                                             <div className="flex flex-col gap-3 mt-2 overflow-y-auto max-h-64 custom-scrollbar pr-2">
-                                                {rankingLocal.length === 0 ? <p className="text-xs text-gray-500 italic">Nenhum local registrado no período.</p> :
+                                                {rankingLocal.length === 0 ? <p className="text-xs text-gray-500 italic">Nenhum local registrado.</p> :
                                                     rankingLocal.map((loc, index) => renderBarHorizontal(loc[0], loc[1], maxLocal, false, colorsLocal[index % colorsLocal.length]))
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                        <div className="bg-white dark:bg-darkCard p-6 rounded-xl border border-gray-200 dark:border-darkBorder flex flex-col gap-4">
+                                            <div>
+                                                <h3 className="font-bold text-sm text-gray-800 dark:text-white uppercase tracking-wider">Formas de Pagamento</h3>
+                                                <p className="text-xs text-gray-400 mt-0.5">Como os clientes estão pagando.</p>
+                                            </div>
+                                            <div className="flex flex-col gap-3 mt-2 overflow-y-auto max-h-64 custom-scrollbar pr-2">
+                                                {rankingForma.length === 0 ? <p className="text-xs text-gray-500 italic">Nenhum pagamento registrado.</p> :
+                                                    rankingForma.map((f, index) => renderBarHorizontal(f[0], f[1], maxForma, false, colorsForma[index % colorsForma.length]))
+                                                }
+                                            </div>
+                                        </div>
+
+                                        <div className="bg-white dark:bg-darkCard p-6 rounded-xl border border-gray-200 dark:border-darkBorder flex flex-col gap-4">
+                                            <div>
+                                                <h3 className="font-bold text-sm text-gray-800 dark:text-white uppercase tracking-wider">Vendas por Instituição (PIX/Link)</h3>
+                                                <p className="text-xs text-gray-400 mt-0.5">Volume processado em cada conta/banco.</p>
+                                            </div>
+                                            <div className="flex flex-col gap-3 mt-2 overflow-y-auto max-h-64 custom-scrollbar pr-2">
+                                                {rankingInstituicao.length === 0 ? <p className="text-xs text-gray-500 italic">Nenhuma instituição registrada.</p> :
+                                                    rankingInstituicao.map((i, index) => renderBarHorizontal(i[0], i[1], maxInstituicao, false, colorsInst[index % colorsInst.length]))
                                                 }
                                             </div>
                                         </div>
@@ -1579,11 +1648,12 @@ function App() {
                                                             <input type="text" value={novoPagamento.valor} onChange={e => setNovoPagamento({...novoPagamento, valor: formatarMoeda(e.target.value)})} className="w-full bg-white dark:bg-darkCard border border-gray-300 dark:border-darkBorder rounded pl-6 pr-2 py-1.5 text-xs outline-none" placeholder="Valor" />
                                                         </div>
                                                     </div>
-                                                    {(novoPagamento.forma === 'PIX') && (
+                                                    {(novoPagamento.forma === 'PIX' || novoPagamento.forma === 'Link de Pagamento') && (
                                                         <div>
                                                             <select value={novoPagamento.instituicao} onChange={e => setNovoPagamento({...novoPagamento, instituicao: e.target.value})} className="w-full bg-white dark:bg-darkCard border border-gray-300 dark:border-darkBorder rounded px-2 py-1.5 text-xs outline-none">
                                                                 <option value="Itaú">Itaú</option>
                                                                 <option value="Infinite Pay">Infinite Pay</option>
+                                                                <option value="Pag Seguro">Pag Seguro</option>
                                                             </select>
                                                         </div>
                                                     )}
