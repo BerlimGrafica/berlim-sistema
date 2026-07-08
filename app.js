@@ -382,9 +382,9 @@ function StackedCards({ title, description, cards }) {
                     <p className="text-xs text-gray-400 mt-0.5">{description}</p>
                 </div>
                 {cards.length > 1 && (
-                    <button type="button" onClick={nextCard} className="text-[10px] uppercase font-bold text-brand bg-brand/10 px-2 py-1 rounded hover:bg-brand/20 transition">
-                        Ver Próximo ({ativo + 1}/{cards.length})
-                    </button>
+                    <span className="text-[10px] uppercase font-bold text-brand bg-brand/10 px-2 py-1 rounded cursor-pointer" onClick={nextCard} title="Próximo">
+                        ({ativo + 1}/{cards.length})
+                    </span>
                 )}
             </div>
             <div className="relative flex-1 mt-2">
@@ -416,19 +416,32 @@ function StackedCards({ title, description, cards }) {
                         zIndex = 0;
                     }
 
+                    const isFirstCard = i === 0;
+                    const cardBgClass = isFirstCard 
+                        ? "bg-gradient-to-br from-brand/5 to-white dark:from-brand/10 dark:to-darkCard border-brand/20 dark:border-brand/30" 
+                        : "bg-white dark:bg-darkCard border-gray-100 dark:border-darkBorder";
+                        
+                    const titleClass = isFirstCard
+                        ? "text-brand dark:text-brand"
+                        : "text-gray-600 dark:text-gray-300";
+
                     return (
                         <div 
                             key={i}
-                            className="absolute top-0 left-0 w-full h-full bg-white dark:bg-darkCard border border-gray-100 dark:border-darkBorder shadow-sm rounded-lg transition-all duration-300 ease-in-out flex flex-col p-4"
+                            className={`absolute top-0 left-0 w-full h-full shadow-sm rounded-lg transition-all duration-300 ease-in-out flex flex-col p-4 cursor-pointer hover:border-brand/30 border ${cardBgClass}`}
                             style={{
                                 transform: `translateY(${translate}px) scale(${scale})`,
                                 zIndex,
                                 opacity,
                                 pointerEvents: isFront ? 'auto' : 'none'
                             }}
+                            onClick={nextCard}
                         >
-                            <div className="flex justify-between items-center mb-3 border-b border-gray-100 dark:border-darkBorder pb-2">
-                                <h4 className="text-xs font-bold text-gray-600 dark:text-gray-300">{card.title}</h4>
+                            <div className={`flex justify-between items-center mb-3 border-b pb-2 ${isFirstCard ? 'border-brand/20 dark:border-brand/30' : 'border-gray-100 dark:border-darkBorder'}`}>
+                                <h4 className={`text-xs font-bold flex items-center ${titleClass}`}>
+                                    {isFirstCard && <i className="fas fa-crown mr-1.5 opacity-70"></i>}
+                                    {card.title}
+                                </h4>
                             </div>
                             <div className="flex flex-col gap-3 overflow-y-auto custom-scrollbar pr-2 flex-1">
                                 {card.content}
