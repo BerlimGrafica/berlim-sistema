@@ -370,20 +370,27 @@ function obterResumoServicos(texto) {
     return texto ? texto.substring(0, 40) + '...' : '---';
 }
 
-function StackedCards({ title, description, cards }) {
+function StackedCards({ title, description, icon, cards }) {
     const [ativo, setAtivo] = useState(0);
     const nextCard = () => setAtivo((prev) => (prev + 1) % cards.length);
 
     return (
-        <div className="flex flex-col gap-4 relative" style={{ minHeight: '380px' }}>
-            <div className="flex justify-between items-start z-10 relative px-1">
-                <div>
-                    <h3 className="font-bold text-sm text-gray-800 dark:text-white uppercase tracking-wider">{title}</h3>
-                    <p className="text-xs text-gray-400 mt-0.5">{description}</p>
+        <div className="flex flex-col gap-4 relative" style={{ minHeight: '400px' }}>
+            <div className="flex justify-between items-center z-10 relative px-3 py-3 bg-gray-50/80 dark:bg-darkBorder/50 rounded-xl backdrop-blur-sm border border-gray-100 dark:border-darkBorder">
+                <div className="flex items-center gap-3">
+                    {icon && (
+                        <div className="w-8 h-8 rounded-full bg-white dark:bg-darkCard flex items-center justify-center shadow-sm text-brand border border-gray-100 dark:border-darkBorder">
+                            <Icon name={icon} className="w-4 h-4" />
+                        </div>
+                    )}
+                    <div>
+                        <h3 className="font-extrabold text-[15px] text-gray-900 dark:text-white capitalize leading-tight">{title}</h3>
+                        <p className="text-[11px] text-gray-500 dark:text-gray-400 font-medium">{description}</p>
+                    </div>
                 </div>
                 {cards.length > 1 && (
-                    <span className="text-[10px] uppercase font-bold text-brand bg-brand/10 px-2 py-1 rounded cursor-pointer" onClick={nextCard} title="Próximo">
-                        ({ativo + 1}/{cards.length})
+                    <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400 bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder px-2.5 py-1 rounded-full shadow-sm cursor-pointer hover:text-brand hover:border-brand/30 transition-all" onClick={nextCard} title="Avançar quadro">
+                        {ativo + 1} de {cards.length}
                     </span>
                 )}
             </div>
@@ -418,7 +425,7 @@ function StackedCards({ title, description, cards }) {
 
                     const isFirstCard = i === 0;
                     const cardBgClass = isFirstCard 
-                        ? "bg-gradient-to-br from-brand/5 to-white dark:from-brand/10 dark:to-darkCard border-brand/20 dark:border-brand/30" 
+                        ? "bg-white dark:bg-darkCard bg-gradient-to-br from-brand/5 to-transparent dark:from-brand/10 border-brand/20 dark:border-brand/30" 
                         : "bg-white dark:bg-darkCard border-gray-100 dark:border-darkBorder";
                         
                     const titleClass = isFirstCard
@@ -1417,6 +1424,7 @@ function App() {
                                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                                         <StackedCards 
                                             title="Visão Anual" 
+                                            icon="calendar"
                                             description="Evolução e Análise (Anos)"
                                             cards={[
                                                 { title: "Faturamento Histórico", content: anosOrdenados.length === 0 ? <p className="text-xs text-gray-500 italic">Sem dados.</p> : anosOrdenados.map(a => renderBarHorizontal(a.ano, a.bruto, maxBrutoAno, false, 'bg-blue-500')) },
@@ -1427,6 +1435,7 @@ function App() {
                                         />
                                         <StackedCards 
                                             title="Visão Mensal" 
+                                            icon="bar-chart-2"
                                             description="Evolução e Análise (Meses)"
                                             cards={[
                                                 { title: `Faturamento (${anoAtual})`, content: mesesOrdenados.length === 0 ? <p className="text-xs text-gray-500 italic">Sem dados.</p> : mesesOrdenados.map(m => renderBarHorizontal(formatarMesAno(m.mesAno), m.bruto, maxBrutoMes, false, 'bg-emerald-500')) },
@@ -1437,6 +1446,7 @@ function App() {
                                         />
                                         <StackedCards 
                                             title="Visão Diária" 
+                                            icon="clock"
                                             description="Evolução e Análise (Dias)"
                                             cards={[
                                                 { title: `Faturamento (${nomeMesAtual})`, content: diasOrdenados.length === 0 ? <p className="text-xs text-gray-500 italic">Sem dados.</p> : diasOrdenados.map(d => renderBarHorizontal(formatarDataExibicao(d.dia).substring(0,5), d.bruto, maxBrutoDia, false, 'bg-purple-500')) },
