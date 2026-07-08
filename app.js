@@ -1730,7 +1730,7 @@ function App() {
                                                         {produtosFiltrados.map(p => (
                                                             <li key={p.id} onClick={() => { 
                                                                 setBuscaProduto(p.nome);
-                                                                setItemAtual({ nome: p.nome, descricao: p.texto_padrao, valor: formatarMoeda((p.preco_base * 100).toFixed(0).toString()), desconto: '' }); 
+                                                                setItemAtual({ ...itemAtual, nome: p.nome, descricao: p.texto_padrao, valor: formatarMoeda((p.preco_base * 100).toFixed(0).toString()), desconto: '' }); 
                                                                 setProdutoDropdownAberto(false); 
                                                             }} className="px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-darkHover cursor-pointer border-b border-gray-100 dark:border-darkBorder last:border-0 flex flex-col transition">
                                                                 <div className="flex justify-between items-center"><span className="font-medium text-sm dark:text-[#EDEDED]">{p.nome}</span><span className="text-xs font-bold text-brand">R$ {Number(p.preco_base).toFixed(2).replace('.', ',')}</span></div>
