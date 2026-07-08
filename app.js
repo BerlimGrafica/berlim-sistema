@@ -1619,15 +1619,7 @@ function App() {
                         </form>
 
                         <div className="px-6 py-4 border-t border-gray-100 dark:border-darkBorder bg-gray-50 dark:bg-darkCard flex flex-col sm:flex-row justify-between items-center gap-4 shrink-0">
-                            <div className="flex items-center gap-3">
-                                <span className="text-xs font-bold text-gray-500 dark:text-[#888888] uppercase tracking-wider">Total Final:</span>
-                                <div className="relative w-36">
-                                    <span className="absolute left-0 top-1.5 font-bold text-sm dark:text-gray-400">R$</span>
-                                    <input required type="text" value={novoPedido.valor_total} onChange={e => setNovoPedido({...novoPedido, valor_total: formatarMoeda(e.target.value)})} disabled={isModalTrancado} className="w-full bg-transparent border-none text-left pl-7 pr-0 py-1 font-bold text-xl text-brand outline-none disabled:opacity-50" placeholder="0,00" />
-                                </div>
-                            </div>
-
-                            <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                            <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto order-2 sm:order-1">
                                 <button type="button" onClick={fecharModalOS} className="flex-1 sm:flex-none px-4 py-2.5 rounded-md text-sm font-semibold text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-darkHover transition border border-transparent hover:border-gray-300 dark:hover:border-darkBorder">
                                     Cancelar
                                 </button>
@@ -1663,6 +1655,14 @@ function App() {
                                         )}
                                     </>
                                 )}
+                            </div>
+
+                            <div className="flex items-center gap-3 order-1 sm:order-2 w-full sm:w-auto justify-end">
+                                <span className="text-xs font-bold text-gray-500 dark:text-[#888888] uppercase tracking-wider">Total Final:</span>
+                                <div className="relative w-36">
+                                    <span className="absolute left-0 top-[5px] font-bold text-sm dark:text-gray-400">R$</span>
+                                    <input required type="text" value={novoPedido.valor_total} onChange={e => setNovoPedido({...novoPedido, valor_total: formatarMoeda(e.target.value)})} disabled={isModalTrancado} className="w-full bg-transparent border-none text-left pl-7 pr-0 py-1 font-bold text-xl text-brand outline-none disabled:opacity-50" placeholder="0,00" />
+                                </div>
                             </div>
                         </div>
                     </div>
