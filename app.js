@@ -1237,7 +1237,7 @@ function App() {
                                 acc[dia].bruto += (Number(p.valor_total) || 0);
                                 return acc;
                             }, {});
-                            const diasOrdenados = Object.values(agrupadoPorDia).sort((a, b) => b.dia.localeCompare(a.dia));
+                            const diasOrdenados = Object.values(agrupadoPorDia).sort((a, b) => b.dia.localeCompare(a.dia)).slice(0, 15);
                             const maxBrutoDia = Math.max(...diasOrdenados.map(d => d.bruto), 1);
 
                             const agrupadoPorMesAno = pedidosFin.reduce((acc, p) => {
@@ -1249,7 +1249,7 @@ function App() {
                                 if (p.status === 'Concluído' || p.status === 'Finalizado') acc[mesAno].recebido += val;
                                 return acc;
                             }, {});
-                            const mesesOrdenados = Object.values(agrupadoPorMesAno).sort((a, b) => a.mesAno.localeCompare(b.mesAno));
+                            const mesesOrdenados = Object.values(agrupadoPorMesAno).sort((a, b) => b.mesAno.localeCompare(a.mesAno)).slice(0, 15);
                             const maxBrutoMes = Math.max(...mesesOrdenados.map(m => m.bruto), 1);
 
                             const agrupadoResp = pedidosFin.reduce((acc, p) => {
@@ -1387,7 +1387,7 @@ function App() {
                                 acc[ano].bruto += (Number(p.valor_total) || 0);
                                 return acc;
                             }, {});
-                            const anosOrdenados = Object.values(agrupadoPorAno).sort((a, b) => b.ano.localeCompare(a.ano));
+                            const anosOrdenados = Object.values(agrupadoPorAno).sort((a, b) => b.ano.localeCompare(a.ano)).slice(0, 15);
                             const maxBrutoAno = Math.max(...anosOrdenados.map(a => a.bruto), 1);
 
                             return (
@@ -1625,14 +1625,14 @@ function App() {
             {modalAberto && (
                 <div onClick={fecharModalOS} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer">
                     <div onClick={(e) => e.stopPropagation()} className="bg-white dark:bg-darkCard w-full max-w-3xl rounded border border-gray-200 dark:border-darkBorder shadow-2xl flex flex-col max-h-[95vh] cursor-default">
-                        <div className="px-6 py-5 border-b border-gray-100 dark:border-darkBorder flex justify-between items-center bg-gray-50 dark:bg-darkCard">
+                        <div className="px-6 py-5 flex justify-between items-center bg-brand text-white rounded-t">
                             <div className="flex items-center gap-3">
-                                <h3 className="font-semibold text-xl dark:text-white tracking-tight">
+                                <h3 className="font-semibold text-xl tracking-tight">
                                     {pedidoEmEdicao ? 'Editar Ordem de Serviço #' + pedidoEmEdicao.id : 'Nova Ordem de Serviço'}
                                 </h3>
-                                {isModalTrancado && <span className="flex items-center gap-1 text-[11px] font-bold bg-red-950/20 text-red-400 border border-red-900/50 px-2 py-0.5 rounded"><Icon name="lock" className="w-3 h-3" /> Trancado</span>}
+                                {isModalTrancado && <span className="flex items-center gap-1 text-[11px] font-bold bg-white/20 text-white border border-white/30 px-2 py-0.5 rounded"><Icon name="lock" className="w-3 h-3" /> Trancado</span>}
                             </div>
-                            <button type="button" onClick={fecharModalOS} className="text-gray-400 hover:text-gray-900 dark:hover:text-white transition"><Icon name="x" className="w-5 h-5" /></button>
+                            <button type="button" onClick={fecharModalOS} className="text-white/70 hover:text-white transition"><Icon name="x" className="w-5 h-5" /></button>
                         </div>
                         
                         <form onSubmit={(e) => salvarOS(e, false)} className="p-8 overflow-y-auto custom-scrollbar flex flex-col gap-6">
