@@ -26,6 +26,8 @@ function Icon({ name, className = "w-4 h-4" }) {
     if (name === 'list') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="8" x2="21" y1="6" y2="6"/><line x1="8" x2="21" y1="12" y2="12"/><line x1="8" x2="21" y1="18" y2="18"/><line x1="3" x2="3.01" y1="6" y2="6"/><line x1="3" x2="3.01" y1="12" y2="12"/><line x1="3" x2="3.01" y1="18" y2="18"/></svg>;
     if (name === 'square') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/></svg>;
     if (name === 'check-square') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>;
+    if (name === 'save') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>;
+    if (name === 'check') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="20 6 9 17 4 12"></polyline></svg>;
     if (name === 'alert-triangle') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/></svg>;
     if (name === 'users') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>;
     if (name === 'trending-up') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>;
@@ -1616,7 +1618,7 @@ function App() {
                             </div>
                         </form>
 
-                        <div className="px-6 py-5 border-t border-gray-100 dark:border-darkBorder bg-gray-50 dark:bg-darkCard flex justify-between items-center shrink-0">
+                        <div className="px-6 py-4 border-t border-gray-100 dark:border-darkBorder bg-gray-50 dark:bg-darkCard flex flex-col sm:flex-row justify-between items-center gap-4 shrink-0">
                             <div className="flex items-center gap-3">
                                 <span className="text-xs font-bold text-gray-500 dark:text-[#888888] uppercase tracking-wider">Total Final:</span>
                                 <div className="relative w-36">
@@ -1625,11 +1627,26 @@ function App() {
                                 </div>
                             </div>
 
-                            <div className="flex gap-3">
-                                <button type="button" onClick={fecharModalOS} className="px-5 py-2.5 rounded text-sm font-medium text-gray-600 dark:text-[#A1A1AA] hover:bg-gray-200 dark:hover:bg-darkHover transition">Cancelar</button>
+                            <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                                <button type="button" onClick={fecharModalOS} className="flex-1 sm:flex-none px-4 py-2.5 rounded-md text-sm font-semibold text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-darkHover transition border border-transparent hover:border-gray-300 dark:hover:border-darkBorder">
+                                    Cancelar
+                                </button>
+                                
                                 {!isModalTrancado && (
-                                    <div className="flex gap-2">
-                                        {novoPedido.status !== 'Finalizado' && (
+                                    <>
+                                        <div className="hidden sm:block w-px h-6 bg-gray-300 dark:bg-darkBorder mx-1"></div>
+                                        
+                                        <button type="button" onClick={(e) => salvarOS(e, false)} disabled={salvandoOS} className="flex-1 sm:flex-none px-4 py-2.5 rounded-md text-sm font-bold bg-white dark:bg-darkElevated text-gray-800 dark:text-white border border-gray-200 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover hover:border-brand shadow-sm transition disabled:opacity-50 flex items-center justify-center gap-2">
+                                            <Icon name="save" className="w-4 h-4 text-brand" />
+                                            {salvandoOS ? 'Salvando...' : pedidoEmEdicao ? 'Atualizar' : 'Salvar'}
+                                        </button>
+                                        
+                                        <button type="button" onClick={(e) => salvarOS(e, true)} disabled={salvandoOS} className="flex-1 sm:flex-none px-4 py-2.5 rounded-md text-sm font-bold bg-gray-800 dark:bg-white text-white dark:text-black hover:bg-black dark:hover:bg-gray-200 shadow-sm transition disabled:opacity-50 flex items-center justify-center gap-2">
+                                            <Icon name="printer" className="w-4 h-4" />
+                                            {salvandoOS ? 'Salvando...' : 'Salvar e Imprimir'}
+                                        </button>
+
+                                        {novoPedido.status !== 'Finalizado' && (usuario?.nivel === 'Administrador' || usuario?.nivel === 'Financeiro') && (
                                             <button type="button" onClick={(e) => {
                                                 const tpago = pagamentosPedido.reduce((acc, p) => acc + (parseFloat(String(p.valor).replace(/\./g, '').replace(',', '.')) || 0), 0);
                                                 const tos = parseFloat(String(novoPedido.valor_total).replace(/\./g, '').replace(',', '.')) || 0;
@@ -1639,18 +1656,12 @@ function App() {
                                                 }
                                                 novoPedido.status = 'Finalizado';
                                                 salvarOS(e, false);
-                                            }} disabled={salvandoOS} className="px-6 py-2.5 rounded text-sm font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm transition disabled:opacity-50">
+                                            }} disabled={salvandoOS} className="flex-1 sm:flex-none px-4 py-2.5 rounded-md text-sm font-bold bg-emerald-500 hover:bg-emerald-600 text-white shadow-md transition disabled:opacity-50 flex items-center justify-center gap-2 border border-emerald-600">
+                                                <Icon name="check" className="w-4 h-4" />
                                                 Finalizar OS
                                             </button>
                                         )}
-                                        <button type="button" onClick={(e) => salvarOS(e, false)} disabled={salvandoOS} className="px-6 py-2.5 rounded text-sm font-bold bg-brand hover:bg-brandHover text-white shadow-sm transition disabled:opacity-50">
-                                            {salvandoOS ? 'Aguarde...' : pedidoEmEdicao ? 'Apenas Atualizar' : 'Apenas Salvar'}
-                                        </button>
-                                        <button type="button" onClick={(e) => salvarOS(e, true)} disabled={salvandoOS} className="px-6 py-2.5 rounded text-sm font-bold bg-gray-800 dark:bg-white text-white dark:text-black hover:bg-black dark:hover:bg-gray-200 shadow-sm transition disabled:opacity-50 flex items-center gap-2">
-                                            <Icon name="printer" className="w-4 h-4" />
-                                            {salvandoOS ? 'Aguarde...' : 'Salvar e Imprimir'}
-                                        </button>
-                                    </div>
+                                    </>
                                 )}
                             </div>
                         </div>
