@@ -367,7 +367,84 @@ function obterResumoServicos(texto) {
     if (desc.itens.length > 0) {
         return desc.itens.map(i => i.nome).join(' + ');
     }
+}
     return texto ? texto.substring(0, 40) + '...' : '---';
+}
+
+function StackedCards({ title, description, cards }) {
+    const [activeIndex, React.useState] = window.React.useState ? [0, window.React.useState] : [0, null];
+    const [index, setIndex] = React.useState ? React.useState(0) : [0, () => {}]; // using simple fallback if React not fully destructured in scope, but wait, the project uses `useState` globally.
+    // Let's rely on global `useState` since it's imported via babel/react.
+    
+    // Actually, `useState` is used throughout app.js without React prefix.
+    const [ativo, setAtivo] = useState(0);
+    const nextCard = () => setAtivo((prev) => (prev + 1) % cards.length);
+
+    return (
+        <div className="bg-white dark:bg-darkCard p-6 rounded-xl border border-gray-200 dark:border-darkBorder flex flex-col gap-4 relative overflow-hidden" style={{ minHeight: '380px' }}>
+            <div className="flex justify-between items-start z-10 relative">
+                <div>
+                    <h3 className="font-bold text-sm text-gray-800 dark:text-white uppercase tracking-wider">{title}</h3>
+                    <p className="text-xs text-gray-400 mt-0.5">{description}</p>
+                </div>
+                {cards.length > 1 && (
+                    <button type="button" onClick={nextCard} className="text-[10px] uppercase font-bold text-brand bg-brand/10 px-2 py-1 rounded hover:bg-brand/20 transition">
+                        Ver Próximo ({ativo + 1}/{cards.length})
+                    </button>
+                )}
+            </div>
+            <div className="relative flex-1 mt-2">
+                {cards.map((card, i) => {
+                    const isFront = i === ativo;
+                    const pos = (i - ativo + cards.length) % cards.length;
+                    
+                    let translate = 0;
+                    let scale = 1;
+                    let zIndex = 0;
+                    let opacity = 1;
+
+                    if (isFront) {
+                        translate = 0;
+                        scale = 1;
+                        zIndex = 30;
+                    } else if (pos === 1) {
+                        translate = 12;
+                        scale = 0.95;
+                        zIndex = 20;
+                        opacity = 0.8;
+                    } else if (pos === 2) {
+                        translate = 24;
+                        scale = 0.90;
+                        zIndex = 10;
+                        opacity = 0.6;
+                    } else {
+                        opacity = 0;
+                        zIndex = 0;
+                    }
+
+                    return (
+                        <div 
+                            key={i}
+                            className="absolute top-0 left-0 w-full h-full bg-white dark:bg-darkCard border border-gray-100 dark:border-darkBorder shadow-sm rounded-lg transition-all duration-300 ease-in-out flex flex-col p-4"
+                            style={{
+                                transform: `translateY(${translate}px) scale(${scale})`,
+                                zIndex,
+                                opacity,
+                                pointerEvents: isFront ? 'auto' : 'none'
+                            }}
+                        >
+                            <div className="flex justify-between items-center mb-3 border-b border-gray-100 dark:border-darkBorder pb-2">
+                                <h4 className="text-xs font-bold text-gray-600 dark:text-gray-300">{card.title}</h4>
+                            </div>
+                            <div className="flex flex-col gap-3 overflow-y-auto custom-scrollbar pr-2 flex-1">
+                                {card.content}
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+        </div>
+    );
 }
 
 // ================= APLICAÇÃO PRINCIPAL =================
@@ -1203,6 +1280,77 @@ function App() {
                             const rankingInstituicao = Object.entries(agrupadoInstituicao).sort((a,b) => b[1] - a[1]);
                             const maxInstituicao = Math.max(...rankingInstituicao.map(i => i[1]), 1);
 
+                            // --- MÊS ATUAL METRICS (for layers 2, 3, 4) ---
+                            const mesAtualString = obterDataAtual().substring(0, 7); // yyyy-mm
+                            const pedidosMesAtual = pedidosFin.filter(p => p.data_pedido && p.data_pedido.startsWith(mesAtualString));
+
+                            const agrupadoLocalMesAtual = pedidosMesAtual.reduce((acc, p) => {
+                                if(!p.local_producao) return acc;
+                                const locais = p.local_producao.split(',').map(s=>s.trim()).filter(Boolean);
+                                locais.forEach(l => {
+                                    if(!acc[l]) acc[l] = 0;
+                                    acc[l] += (Number(p.valor_total) || 0) / locais.length;
+                                });
+                                return acc;
+                            }, {});
+                            const rankingLocalMesAtual = Object.entries(agrupadoLocalMesAtual).sort((a,b) => b[1] - a[1]);
+                            const maxLocalMesAtual = Math.max(...rankingLocalMesAtual.map(l => l[1]), 1);
+
+                            const pagamentosExtraidosMesAtual = pedidosMesAtual.flatMap(p => {
+                                const pagamentosStr = p.servico && p.servico.split('\n\n[PAGAMENTOS]\n')[1];
+                                if (!pagamentosStr) return [];
+                                try {
+                                    return JSON.parse(pagamentosStr).map(pag => ({
+                                        valor: parseFloat(String(pag.valor).replace(/\./g, '').replace(',', '.')) || 0,
+                                        forma: pag.forma || 'Indefinido',
+                                        instituicao: pag.instituicao || 'Indefinido'
+                                    }));
+                                } catch (e) { return []; }
+                            });
+
+                            const agrupadoFormaMesAtual = pagamentosExtraidosMesAtual.reduce((acc, p) => {
+                                if (!acc[p.forma]) acc[p.forma] = 0;
+                                acc[p.forma] += p.valor;
+                                return acc;
+                            }, {});
+                            const rankingFormaMesAtual = Object.entries(agrupadoFormaMesAtual).sort((a,b) => b[1] - a[1]);
+                            const maxFormaMesAtual = Math.max(...rankingFormaMesAtual.map(f => f[1]), 1);
+
+                            const agrupadoInstituicaoMesAtual = pagamentosExtraidosMesAtual.reduce((acc, p) => {
+                                if (p.forma === 'PIX' || p.forma === 'Link de Pagamento') {
+                                    const inst = p.instituicao;
+                                    if (!acc[inst]) acc[inst] = 0;
+                                    acc[inst] += p.valor;
+                                }
+                                return acc;
+                            }, {});
+                            const rankingInstituicaoMesAtual = Object.entries(agrupadoInstituicaoMesAtual).sort((a,b) => b[1] - a[1]);
+                            const maxInstituicaoMesAtual = Math.max(...rankingInstituicaoMesAtual.map(i => i[1]), 1);
+
+                            const renderLayer2 = () => {
+                                if (rankingLocalMesAtual.length === 0) return <p className="text-xs text-gray-500 italic">Nenhum local registrado no mês.</p>;
+                                return rankingLocalMesAtual.map((loc, index) => renderBarHorizontal(loc[0], loc[1], maxLocalMesAtual, false, colorsLocal[index % colorsLocal.length]));
+                            };
+                            const renderLayer3 = () => {
+                                if (rankingFormaMesAtual.length === 0) return <p className="text-xs text-gray-500 italic">Nenhum pagamento registrado no mês.</p>;
+                                return rankingFormaMesAtual.map((f, index) => renderBarHorizontal(f[0], f[1], maxFormaMesAtual, false, colorsForma[index % colorsForma.length]));
+                            };
+                            const renderLayer4 = () => {
+                                if (rankingInstituicaoMesAtual.length === 0) return <p className="text-xs text-gray-500 italic">Nenhuma instituição no mês.</p>;
+                                return rankingInstituicaoMesAtual.map((i, index) => renderBarHorizontal(i[0], i[1], maxInstituicaoMesAtual, false, colorsInst[index % colorsInst.length]));
+                            };
+
+                            // --- ANUAL METRICS ---
+                            const agrupadoPorAno = pedidosFin.reduce((acc, p) => {
+                                if (!p.data_pedido) return acc;
+                                const ano = p.data_pedido.substring(0, 4);
+                                if (!acc[ano]) acc[ano] = { ano, bruto: 0 };
+                                acc[ano].bruto += (Number(p.valor_total) || 0);
+                                return acc;
+                            }, {});
+                            const anosOrdenados = Object.values(agrupadoPorAno).sort((a, b) => b.ano.localeCompare(a.ano));
+                            const maxBrutoAno = Math.max(...anosOrdenados.map(a => a.bruto), 1);
+
                             return (
                                 <>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
@@ -1253,62 +1401,43 @@ function App() {
                                     </div>
 
                                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                                        <div className="bg-white dark:bg-darkCard p-6 rounded-xl border border-gray-200 dark:border-darkBorder flex flex-col gap-4">
-                                            <div>
-                                                <h3 className="font-bold text-sm text-gray-800 dark:text-white uppercase tracking-wider">Faturamento Diário</h3>
-                                                <p className="text-xs text-gray-400 mt-0.5">Evolução dia a dia.</p>
-                                            </div>
-                                            <div className="flex flex-col gap-3 mt-2 overflow-y-auto max-h-64 custom-scrollbar pr-2">
-                                                {diasOrdenados.length === 0 ? <p className="text-xs text-gray-500 italic">Sem dados no período.</p> : 
-                                                    diasOrdenados.map(d => renderBarHorizontal(formatarDataExibicao(d.dia).substring(0,5), d.bruto, maxBrutoDia, false, 'bg-purple-500'))
-                                                }
-                                            </div>
-                                        </div>
-
-                                        <div className="bg-white dark:bg-darkCard p-6 rounded-xl border border-gray-200 dark:border-darkBorder flex flex-col gap-4">
-                                            <div>
-                                                <h3 className="font-bold text-sm text-gray-800 dark:text-white uppercase tracking-wider">Faturamento Mensal</h3>
-                                                <p className="text-xs text-gray-400 mt-0.5">Evolução por mês.</p>
-                                            </div>
-                                            <div className="flex flex-col gap-3 mt-2 overflow-y-auto max-h-64 custom-scrollbar pr-2">
-                                                {mesesOrdenados.length === 0 ? <p className="text-xs text-gray-500 italic">Sem dados no período.</p> : 
-                                                    mesesOrdenados.map(m => renderBarHorizontal(formatarMesAno(m.mesAno), m.bruto, maxBrutoMes, false))
-                                                }
-                                            </div>
-                                        </div>
-
-                                        <div className="bg-white dark:bg-darkCard p-6 rounded-xl border border-gray-200 dark:border-darkBorder flex flex-col gap-4">
-                                            <div>
-                                                <h3 className="font-bold text-sm text-gray-800 dark:text-white uppercase tracking-wider">Por Status</h3>
-                                                <p className="text-xs text-gray-400 mt-0.5">Montante em cada etapa.</p>
-                                            </div>
-                                            <div className="flex flex-col gap-3 mt-2 overflow-y-auto max-h-64 custom-scrollbar pr-2">
-                                                {[...STATUSES_PRODUCAO, ...STATUSES_FINALIZADOS].map(st => {
-                                                    const valorDoStatus = pedidosFin.filter(p => p.status === st).reduce((acc, p) => acc + (Number(p.valor_total) || 0), 0);
-                                                    if (valorDoStatus === 0) return null;
-                                                    return renderBarHorizontal(st, valorDoStatus, totalBruto, st === 'Concluído' || st === 'Finalizado');
-                                                })}
-                                            </div>
-                                        </div>
+                                        <StackedCards 
+                                            title="Visão Anual" 
+                                            description="Evolução e Análise (Anos)"
+                                            cards={[
+                                                { title: "Faturamento Anual", content: anosOrdenados.length === 0 ? <p className="text-xs text-gray-500 italic">Sem dados.</p> : anosOrdenados.map(a => renderBarHorizontal(a.ano, a.bruto, maxBrutoAno, false, 'bg-blue-500')) },
+                                                { title: "Local de Produção (Mês Atual)", content: renderLayer2() },
+                                                { title: "Formas de Pagamento (Mês Atual)", content: renderLayer3() },
+                                                { title: "Vendas por Instituição (Mês Atual)", content: renderLayer4() }
+                                            ]}
+                                        />
+                                        <StackedCards 
+                                            title="Visão Mensal" 
+                                            description="Evolução e Análise (Meses)"
+                                            cards={[
+                                                { title: "Faturamento Mensal", content: mesesOrdenados.length === 0 ? <p className="text-xs text-gray-500 italic">Sem dados.</p> : mesesOrdenados.map(m => renderBarHorizontal(formatarMesAno(m.mesAno), m.bruto, maxBrutoMes, false, 'bg-emerald-500')) },
+                                                { title: "Local de Produção (Mês Atual)", content: renderLayer2() },
+                                                { title: "Formas de Pagamento (Mês Atual)", content: renderLayer3() },
+                                                { title: "Vendas por Instituição (Mês Atual)", content: renderLayer4() }
+                                            ]}
+                                        />
+                                        <StackedCards 
+                                            title="Visão Diária" 
+                                            description="Evolução e Análise (Dias)"
+                                            cards={[
+                                                { title: "Faturamento Diário", content: diasOrdenados.length === 0 ? <p className="text-xs text-gray-500 italic">Sem dados.</p> : diasOrdenados.map(d => renderBarHorizontal(formatarDataExibicao(d.dia).substring(0,5), d.bruto, maxBrutoDia, false, 'bg-purple-500')) },
+                                                { title: "Local de Produção (Mês Atual)", content: renderLayer2() },
+                                                { title: "Formas de Pagamento (Mês Atual)", content: renderLayer3() },
+                                                { title: "Vendas por Instituição (Mês Atual)", content: renderLayer4() }
+                                            ]}
+                                        />
                                     </div>
 
-                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                                         <div className="bg-white dark:bg-darkCard p-6 rounded-xl border border-gray-200 dark:border-darkBorder flex flex-col gap-4">
                                             <div>
-                                                <h3 className="font-bold text-sm text-gray-800 dark:text-white uppercase tracking-wider">Performance por Vendedor</h3>
-                                                <p className="text-xs text-gray-400 mt-0.5">Ranking financeiro por equipe.</p>
-                                            </div>
-                                            <div className="flex flex-col gap-3 mt-2 overflow-y-auto max-h-64 custom-scrollbar pr-2">
-                                                {rankingResp.length === 0 ? <p className="text-xs text-gray-500 italic">Nenhum vendedor registrado.</p> :
-                                                    rankingResp.map((resp, index) => renderBarHorizontal(`${index + 1}º. ${resp[0]}`, resp[1], maxResp, false, colorsRank[index % colorsRank.length]))
-                                                }
-                                            </div>
-                                        </div>
-
-                                        <div className="bg-white dark:bg-darkCard p-6 rounded-xl border border-gray-200 dark:border-darkBorder flex flex-col gap-4">
-                                            <div>
-                                                <h3 className="font-bold text-sm text-gray-800 dark:text-white uppercase tracking-wider">Receitas por Local</h3>
-                                                <p className="text-xs text-gray-400 mt-0.5">Rentabilidade baseada nos centros de custo.</p>
+                                                <h3 className="font-bold text-sm text-gray-800 dark:text-white uppercase tracking-wider">Receitas por Local (Geral)</h3>
+                                                <p className="text-xs text-gray-400 mt-0.5">Rentabilidade total no período filtrado.</p>
                                             </div>
                                             <div className="flex flex-col gap-3 mt-2 overflow-y-auto max-h-64 custom-scrollbar pr-2">
                                                 {rankingLocal.length === 0 ? <p className="text-xs text-gray-500 italic">Nenhum local registrado.</p> :
@@ -1316,13 +1445,11 @@ function App() {
                                                 }
                                             </div>
                                         </div>
-                                    </div>
 
-                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                         <div className="bg-white dark:bg-darkCard p-6 rounded-xl border border-gray-200 dark:border-darkBorder flex flex-col gap-4">
                                             <div>
-                                                <h3 className="font-bold text-sm text-gray-800 dark:text-white uppercase tracking-wider">Formas de Pagamento</h3>
-                                                <p className="text-xs text-gray-400 mt-0.5">Como os clientes estão pagando.</p>
+                                                <h3 className="font-bold text-sm text-gray-800 dark:text-white uppercase tracking-wider">Formas de Pagamento (Geral)</h3>
+                                                <p className="text-xs text-gray-400 mt-0.5">Como os clientes pagaram no período filtrado.</p>
                                             </div>
                                             <div className="flex flex-col gap-3 mt-2 overflow-y-auto max-h-64 custom-scrollbar pr-2">
                                                 {rankingForma.length === 0 ? <p className="text-xs text-gray-500 italic">Nenhum pagamento registrado.</p> :
@@ -1333,8 +1460,8 @@ function App() {
 
                                         <div className="bg-white dark:bg-darkCard p-6 rounded-xl border border-gray-200 dark:border-darkBorder flex flex-col gap-4">
                                             <div>
-                                                <h3 className="font-bold text-sm text-gray-800 dark:text-white uppercase tracking-wider">Vendas por Instituição (PIX/Link)</h3>
-                                                <p className="text-xs text-gray-400 mt-0.5">Volume processado em cada conta/banco.</p>
+                                                <h3 className="font-bold text-sm text-gray-800 dark:text-white uppercase tracking-wider">Instituições (Geral)</h3>
+                                                <p className="text-xs text-gray-400 mt-0.5">Volume por conta no período filtrado.</p>
                                             </div>
                                             <div className="flex flex-col gap-3 mt-2 overflow-y-auto max-h-64 custom-scrollbar pr-2">
                                                 {rankingInstituicao.length === 0 ? <p className="text-xs text-gray-500 italic">Nenhuma instituição registrada.</p> :
