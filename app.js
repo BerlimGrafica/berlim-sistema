@@ -375,8 +375,8 @@ function StackedCards({ title, description, cards }) {
     const nextCard = () => setAtivo((prev) => (prev + 1) % cards.length);
 
     return (
-        <div className="bg-white dark:bg-darkCard p-6 rounded-xl border border-gray-200 dark:border-darkBorder flex flex-col gap-4 relative overflow-hidden" style={{ minHeight: '380px' }}>
-            <div className="flex justify-between items-start z-10 relative">
+        <div className="flex flex-col gap-4 relative" style={{ minHeight: '380px' }}>
+            <div className="flex justify-between items-start z-10 relative px-1">
                 <div>
                     <h3 className="font-bold text-sm text-gray-800 dark:text-white uppercase tracking-wider">{title}</h3>
                     <p className="text-xs text-gray-400 mt-0.5">{description}</p>
@@ -1287,6 +1287,13 @@ function App() {
                             const rankingInstituicao = Object.entries(agrupadoInstituicao).sort((a,b) => b[1] - a[1]);
                             const maxInstituicao = Math.max(...rankingInstituicao.map(i => i[1]), 1);
 
+                            // --- CONTEXTUAL DATE NAMES ---
+                            const anoAtual = new Date().getFullYear();
+                            const objData = new Date();
+                            const nomeMesAtualRaw = objData.toLocaleString('pt-BR', { month: 'long' });
+                            const nomeMesAtual = nomeMesAtualRaw.charAt(0).toUpperCase() + nomeMesAtualRaw.slice(1);
+                            const diaAtual = formatarDataExibicao(obterDataAtual()).substring(0, 5);
+
                             // --- MÊS ATUAL METRICS (for layers 2, 3, 4) ---
                             const mesAtualString = obterDataAtual().substring(0, 7); // yyyy-mm
                             const pedidosMesAtual = pedidosFin.filter(p => p.data_pedido && p.data_pedido.startsWith(mesAtualString));
@@ -1412,30 +1419,30 @@ function App() {
                                             title="Visão Anual" 
                                             description="Evolução e Análise (Anos)"
                                             cards={[
-                                                { title: "Faturamento Anual", content: anosOrdenados.length === 0 ? <p className="text-xs text-gray-500 italic">Sem dados.</p> : anosOrdenados.map(a => renderBarHorizontal(a.ano, a.bruto, maxBrutoAno, false, 'bg-blue-500')) },
-                                                { title: "Local de Produção (Mês Atual)", content: renderLayer2() },
-                                                { title: "Formas de Pagamento (Mês Atual)", content: renderLayer3() },
-                                                { title: "Vendas por Instituição (Mês Atual)", content: renderLayer4() }
+                                                { title: "Faturamento Histórico", content: anosOrdenados.length === 0 ? <p className="text-xs text-gray-500 italic">Sem dados.</p> : anosOrdenados.map(a => renderBarHorizontal(a.ano, a.bruto, maxBrutoAno, false, 'bg-blue-500')) },
+                                                { title: `Local de Produção (${anoAtual})`, content: renderLayer2() },
+                                                { title: `Formas de Pagamento (${anoAtual})`, content: renderLayer3() },
+                                                { title: `Vendas por Instituição (${anoAtual})`, content: renderLayer4() }
                                             ]}
                                         />
                                         <StackedCards 
                                             title="Visão Mensal" 
                                             description="Evolução e Análise (Meses)"
                                             cards={[
-                                                { title: "Faturamento Mensal", content: mesesOrdenados.length === 0 ? <p className="text-xs text-gray-500 italic">Sem dados.</p> : mesesOrdenados.map(m => renderBarHorizontal(formatarMesAno(m.mesAno), m.bruto, maxBrutoMes, false, 'bg-emerald-500')) },
-                                                { title: "Local de Produção (Mês Atual)", content: renderLayer2() },
-                                                { title: "Formas de Pagamento (Mês Atual)", content: renderLayer3() },
-                                                { title: "Vendas por Instituição (Mês Atual)", content: renderLayer4() }
+                                                { title: `Faturamento (${anoAtual})`, content: mesesOrdenados.length === 0 ? <p className="text-xs text-gray-500 italic">Sem dados.</p> : mesesOrdenados.map(m => renderBarHorizontal(formatarMesAno(m.mesAno), m.bruto, maxBrutoMes, false, 'bg-emerald-500')) },
+                                                { title: `Local de Produção (${nomeMesAtual})`, content: renderLayer2() },
+                                                { title: `Formas de Pagamento (${nomeMesAtual})`, content: renderLayer3() },
+                                                { title: `Vendas por Instituição (${nomeMesAtual})`, content: renderLayer4() }
                                             ]}
                                         />
                                         <StackedCards 
                                             title="Visão Diária" 
                                             description="Evolução e Análise (Dias)"
                                             cards={[
-                                                { title: "Faturamento Diário", content: diasOrdenados.length === 0 ? <p className="text-xs text-gray-500 italic">Sem dados.</p> : diasOrdenados.map(d => renderBarHorizontal(formatarDataExibicao(d.dia).substring(0,5), d.bruto, maxBrutoDia, false, 'bg-purple-500')) },
-                                                { title: "Local de Produção (Mês Atual)", content: renderLayer2() },
-                                                { title: "Formas de Pagamento (Mês Atual)", content: renderLayer3() },
-                                                { title: "Vendas por Instituição (Mês Atual)", content: renderLayer4() }
+                                                { title: `Faturamento (${nomeMesAtual})`, content: diasOrdenados.length === 0 ? <p className="text-xs text-gray-500 italic">Sem dados.</p> : diasOrdenados.map(d => renderBarHorizontal(formatarDataExibicao(d.dia).substring(0,5), d.bruto, maxBrutoDia, false, 'bg-purple-500')) },
+                                                { title: `Local de Produção (${diaAtual})`, content: renderLayer2() },
+                                                { title: `Formas de Pagamento (${diaAtual})`, content: renderLayer3() },
+                                                { title: `Vendas por Instituição (${diaAtual})`, content: renderLayer4() }
                                             ]}
                                         />
                                     </div>
