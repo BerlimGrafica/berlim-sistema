@@ -367,16 +367,10 @@ function obterResumoServicos(texto) {
     if (desc.itens.length > 0) {
         return desc.itens.map(i => i.nome).join(' + ');
     }
-}
     return texto ? texto.substring(0, 40) + '...' : '---';
 }
 
 function StackedCards({ title, description, cards }) {
-    const [activeIndex, React.useState] = window.React.useState ? [0, window.React.useState] : [0, null];
-    const [index, setIndex] = React.useState ? React.useState(0) : [0, () => {}]; // using simple fallback if React not fully destructured in scope, but wait, the project uses `useState` globally.
-    // Let's rely on global `useState` since it's imported via babel/react.
-    
-    // Actually, `useState` is used throughout app.js without React prefix.
     const [ativo, setAtivo] = useState(0);
     const nextCard = () => setAtivo((prev) => (prev + 1) % cards.length);
 
