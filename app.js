@@ -26,6 +26,8 @@ function Icon({ name, className = "w-4 h-4" }) {
     if (name === 'list') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="8" x2="21" y1="6" y2="6"/><line x1="8" x2="21" y1="12" y2="12"/><line x1="8" x2="21" y1="18" y2="18"/><line x1="3" x2="3.01" y1="6" y2="6"/><line x1="3" x2="3.01" y1="12" y2="12"/><line x1="3" x2="3.01" y1="18" y2="18"/></svg>;
     if (name === 'square') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/></svg>;
     if (name === 'check-square') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>;
+    if (name === 'save') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>;
+    if (name === 'check') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="20 6 9 17 4 12"></polyline></svg>;
     if (name === 'alert-triangle') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/></svg>;
     if (name === 'users') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>;
     if (name === 'trending-up') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>;
@@ -348,14 +350,28 @@ function desconstruirTextoServico(texto) {
         if (lines.length < 3) { obs = obs ? obs + '\n' + bloco : bloco; continue; }
         
         let nome = lines[0].replace('• ', '').trim();
-        let descricao = lines[1].replace(/^  /, '').trim();
-        let AppValor = lines[2].replace(/^  Valor: R\$ /, '').trim();
+        let AppValor = '0,00';
+        let local_producao = 'Berlim'; // fallback/default
+        let descLines = [];
+        
+        for (let i = 1; i < lines.length; i++) {
+            let line = lines[i].trim();
+            if (line.startsWith('Valor: R$ ')) {
+                AppValor = line.replace('Valor: R$ ', '');
+            } else if (line.startsWith('Local: ')) {
+                local_producao = line.replace('Local: ', '');
+            } else {
+                descLines.push(lines[i].replace(/^  /, ''));
+            }
+        }
+        
+        let descricao = descLines.join('\n').trim();
         
         let valor = AppValor; let desconto = '';
         let matchDesconto = AppValor.match(/\s\(-(\d+)%\)$/);
         if (matchDesconto) { desconto = matchDesconto[1]; valor = AppValor.replace(matchDesconto[0], '').trim(); }
         
-        itensTraduzidos.push({ nome, descricao, valor, desconto, id_temp: Math.random() + Date.now() });
+        itensTraduzidos.push({ nome, descricao, valor, desconto, local_producao, id_temp: Math.random() + Date.now() });
     }
     return { itens: itensTraduzidos, observacoes: obs, pagamentos };
 }
@@ -366,6 +382,98 @@ function obterResumoServicos(texto) {
         return desc.itens.map(i => i.nome).join(' + ');
     }
     return texto ? texto.substring(0, 40) + '...' : '---';
+}
+
+function StackedCards({ title, description, icon, cards }) {
+    const [ativo, setAtivo] = useState(0);
+    const nextCard = () => setAtivo((prev) => (prev + 1) % cards.length);
+
+    return (
+        <div className="flex flex-col relative" style={{ minHeight: '420px' }}>
+            <div className="relative flex-1 mt-2">
+                {cards.map((card, i) => {
+                    const isFront = i === ativo;
+                    const pos = (i - ativo + cards.length) % cards.length;
+                    
+                    let translate = 0;
+                    let scale = 1;
+                    let zIndex = 0;
+                    let opacity = 1;
+
+                    if (isFront) {
+                        translate = 0;
+                        scale = 1;
+                        zIndex = 30;
+                    } else if (pos === 1) {
+                        translate = 12;
+                        scale = 0.95;
+                        zIndex = 20;
+                        opacity = 0.8;
+                    } else if (pos === 2) {
+                        translate = 24;
+                        scale = 0.90;
+                        zIndex = 10;
+                        opacity = 0.6;
+                    } else {
+                        opacity = 0;
+                        zIndex = 0;
+                    }
+
+                    const isFirstCard = i === 0;
+                    const cardBgClass = isFirstCard 
+                        ? "bg-white dark:bg-darkCard bg-gradient-to-br from-brand/5 to-transparent dark:from-brand/10 border-brand/20 dark:border-brand/30" 
+                        : "bg-white dark:bg-darkCard border-gray-100 dark:border-darkBorder";
+                        
+                    const titleClass = isFirstCard
+                        ? "text-brand dark:text-brand"
+                        : "text-gray-600 dark:text-gray-300";
+
+                    return (
+                        <div 
+                            key={i}
+                            className={`absolute top-0 left-0 w-full h-full shadow-md rounded-2xl transition-all duration-300 ease-in-out flex flex-col p-5 cursor-pointer hover:border-brand/40 border ${cardBgClass}`}
+                            style={{
+                                transform: `translateY(${translate}px) scale(${scale})`,
+                                zIndex,
+                                opacity,
+                                pointerEvents: isFront ? 'auto' : 'none'
+                            }}
+                            onClick={nextCard}
+                        >
+                            {/* CABEÇALHO INTEGRADO */}
+                            <div className="flex justify-between items-center mb-4 pb-3 border-b border-gray-100 dark:border-darkBorder/50">
+                                <div className="flex items-center gap-3">
+                                    {icon && (
+                                        <div className="w-8 h-8 rounded-full bg-white dark:bg-darkCard flex items-center justify-center shadow-sm text-brand border border-gray-100 dark:border-darkBorder/50">
+                                            <Icon name={icon} className="w-4 h-4" />
+                                        </div>
+                                    )}
+                                    <div>
+                                        <h3 className="font-extrabold text-sm text-gray-900 dark:text-white capitalize leading-tight">{title}</h3>
+                                    </div>
+                                </div>
+                                {cards.length > 1 && (
+                                    <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-darkBorder/30 border border-gray-200 dark:border-darkBorder px-2 py-1 rounded-full">
+                                        {i + 1}/{cards.length}
+                                    </span>
+                                )}
+                            </div>
+
+                            <div className="flex justify-between items-center mb-3">
+                                <h4 className={`text-xs font-bold flex items-center ${titleClass}`}>
+                                    {isFirstCard && <i className="fas fa-crown mr-1.5 opacity-70"></i>}
+                                    {card.title}
+                                </h4>
+                            </div>
+                            <div className="flex flex-col gap-3 overflow-y-auto custom-scrollbar pr-2 flex-1">
+                                {card.content}
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+        </div>
+    );
 }
 
 // ================= APLICAÇÃO PRINCIPAL =================
@@ -409,7 +517,7 @@ function App() {
     const [pedidoEmEdicao, setPedidoEmEdicao] = useState(null); 
 
     const [itensPedido, setItensPedido] = useState([]);
-    const [itemAtual, setItemAtual] = useState({ nome: '', descricao: '', valor: '', desconto: '' });
+    const [itemAtual, setItemAtual] = useState({ nome: '', descricao: '', valor: '', desconto: '', local_producao: 'Berlim' });
 
     const [buscaCliente, setBuscaCliente] = useState('');
     const [clienteDropdownAberto, setClienteDropdownAberto] = useState(false);
@@ -556,7 +664,7 @@ function App() {
         setItensPedido([]); 
         setPagamentosPedido([]);
         setNovoPagamento({ valor: '', forma: 'PIX', parcelas: 1, instituicao: 'Itaú' });
-        setItemAtual({ nome: '', descricao: '', valor: '', desconto: '' });
+        setItemAtual({ nome: '', descricao: '', valor: '', desconto: '', local_producao: 'Berlim' });
         setNovoPedido({ 
             cliente: '', servico: '', valor_total: '', 
             status: 'Aguardando Pagamento', data_pedido: obterDataAtual(),
@@ -659,7 +767,7 @@ function App() {
         novosItens.forEach(i => { totalGeralOS += parseFloat(i.valor.replace(/\./g, '').replace(',', '.')) || 0; });
         setNovoPedido({...novoPedido, valor_total: formatarMoeda((totalGeralOS * 100).toFixed(0).toString())});
         
-        setItemAtual({ nome: '', descricao: '', valor: '', desconto: '' });
+        setItemAtual({ nome: '', descricao: '', valor: '', desconto: '', local_producao: 'Berlim' });
         setBuscaProduto('');
     }
 
@@ -680,20 +788,23 @@ function App() {
             const itensTextoArray = itensPedido.map(i => {
                 const strDesconto = i.desconto ? ' (-' + i.desconto + '%)' : '';
                 const strNome = i.nome ? '• ' + i.nome : '• Serviço Personalizado';
-                return strNome + '\n  ' + i.descricao + '\n  Valor: R$ ' + i.valor + strDesconto;
+                const strLocal = i.local_producao ? '\n  Local: ' + i.local_producao : '\n  Local: Berlim';
+                return strNome + '\n  ' + i.descricao + '\n  Valor: R$ ' + i.valor + strDesconto + strLocal;
             });
-            const itensTextoString = itensTextoArray.join('\n\n');
-            const obsGerais = novoPedido.servico ? '\n\n[OBSERVAÇÕES GERAIS]\n' + novoPedido.servico : '';
-            textoFinalServico = itensTextoString + obsGerais;
+            textoFinalServico += itensTextoArray.join('\n\n') + '\n\n';
+            if (novoPedido.servico) textoFinalServico += '[OBSERVAÇÕES GERAIS]\n' + novoPedido.servico;
         } else {
             textoFinalServico = novoPedido.servico;
         }
 
-        if (pagamentosPedido && pagamentosPedido.length > 0) {
+        if (pagamentosPedido.length > 0) {
             textoFinalServico += '\n\n[PAGAMENTOS]\n' + JSON.stringify(pagamentosPedido);
         }
 
         const valorNumericoFinal = parseFloat(String(novoPedido.valor_total).replace(/\./g, '').replace(',', '.')) || 0;
+
+        // Calcular locais unicos da OS a partir dos itens
+        const locaisOS = [...new Set(itensPedido.map(i => i.local_producao || 'Berlim'))].join(', ');
 
         const payload = {
             cliente: novoPedido.cliente,
@@ -703,7 +814,7 @@ function App() {
             data_pedido: novoPedido.data_pedido || null,
             prazo: novoPedido.prazo || null,
             responsavel: novoPedido.responsavel,
-            local_producao: novoPedido.local_producao,
+            local_producao: locaisOS,
             aprovado: novoPedido.aprovado,
             entrega: novoPedido.entrega,
             urgente: novoPedido.urgente
@@ -998,7 +1109,7 @@ function App() {
                                                                 <td className="px-4 py-3 text-center"><button type="button" onClick={() => atualizarCampoInline(p.id, 'entrega', !p.entrega)} className={`p-1.5 rounded-md transition ${p.entrega ? 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400' : 'bg-gray-100 text-gray-400 dark:bg-darkElevated dark:text-gray-600 hover:text-gray-600 dark:hover:text-gray-400'}`}><Icon name="package" className="w-4 h-4" /></button></td>
                                                                 <td className="px-4 py-3 text-center"><button type="button" onClick={() => atualizarCampoInline(p.id, 'urgente', !p.urgente)} className={`p-1.5 rounded-md transition ${p.urgente ? 'bg-red-500/20 text-red-600 dark:bg-red-950/40 dark:text-red-400 ring-1 ring-red-500/30' : 'bg-gray-100 text-gray-400 dark:bg-darkElevated dark:text-gray-600 hover:text-gray-600 dark:hover:text-gray-400'}`}><Icon name="alert-triangle" className="w-3.5 h-3.5" /></button></td>
                                                                 <td className="px-4 py-3"><InlineDropdown value={p.status} options={opcoesStatusPermitidas} onChange={(val) => atualizarCampoInline(p.id, 'status', val)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-2.5 py-1.5 text-xs outline-none hover:border-brand" /></td>
-                                                                <td className="px-4 py-3"><MultiSelectDropdown value={p.local_producao} options={LOCAIS} onChange={(val) => atualizarCampoInline(p.id, 'local_producao', val)} placeholder="Berlim" className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-2.5 py-1.5 text-xs outline-none hover:border-brand" /></td>
+                                                                <td className="px-4 py-3"><span className="text-[11px] font-bold px-2 py-1 bg-gray-100 dark:bg-darkElevated text-gray-700 dark:text-[#EDEDED] rounded border border-gray-200 dark:border-darkBorder truncate max-w-[150px] inline-block" title={p.local_producao || 'Berlim'}>{p.local_producao || 'Berlim'}</span></td>
                                                                 <td className="px-4 py-3 text-center"><button type="button" onClick={() => atualizarCampoInline(p.id, 'status', 'Concluído')} className="p-1 text-gray-300 hover:text-emerald-500 dark:text-darkBorder dark:hover:text-emerald-500 transition" title="Marcar como Concluído"><Icon name="square" className="w-4 h-4" /></button></td>
                                                             </tr>
                                                         ))}
@@ -1184,7 +1295,7 @@ function App() {
                                 acc[dia].bruto += (Number(p.valor_total) || 0);
                                 return acc;
                             }, {});
-                            const diasOrdenados = Object.values(agrupadoPorDia).sort((a, b) => b.dia.localeCompare(a.dia));
+                            const diasOrdenados = Object.values(agrupadoPorDia).sort((a, b) => b.dia.localeCompare(a.dia)).slice(0, 15);
                             const maxBrutoDia = Math.max(...diasOrdenados.map(d => d.bruto), 1);
 
                             const agrupadoPorMesAno = pedidosFin.reduce((acc, p) => {
@@ -1196,7 +1307,7 @@ function App() {
                                 if (p.status === 'Concluído' || p.status === 'Finalizado') acc[mesAno].recebido += val;
                                 return acc;
                             }, {});
-                            const mesesOrdenados = Object.values(agrupadoPorMesAno).sort((a, b) => a.mesAno.localeCompare(b.mesAno));
+                            const mesesOrdenados = Object.values(agrupadoPorMesAno).sort((a, b) => b.mesAno.localeCompare(a.mesAno)).slice(0, 15);
                             const maxBrutoMes = Math.max(...mesesOrdenados.map(m => m.bruto), 1);
 
                             const agrupadoResp = pedidosFin.reduce((acc, p) => {
@@ -1225,107 +1336,236 @@ function App() {
 
                             const colorsRank = ['bg-blue-500', 'bg-indigo-500', 'bg-purple-500', 'bg-fuchsia-500', 'bg-rose-500', 'bg-red-500'];
                             const colorsLocal = ['bg-teal-500', 'bg-emerald-500', 'bg-cyan-500', 'bg-sky-500', 'bg-blue-500'];
+                            const colorsForma = ['bg-amber-500', 'bg-yellow-500', 'bg-orange-500', 'bg-lime-500'];
+                            const colorsInst = ['bg-emerald-500', 'bg-teal-500', 'bg-cyan-500', 'bg-sky-500'];
+
+                            const pagamentosExtraidos = pedidosFin.flatMap(p => {
+                                const pagamentosStr = p.servico && p.servico.split('\n\n[PAGAMENTOS]\n')[1];
+                                if (!pagamentosStr) return [];
+                                try {
+                                    return JSON.parse(pagamentosStr).map(pag => ({
+                                        valor: parseFloat(String(pag.valor).replace(/\./g, '').replace(',', '.')) || 0,
+                                        forma: pag.forma || 'Indefinido',
+                                        instituicao: pag.instituicao || 'Indefinido'
+                                    }));
+                                } catch (e) { return []; }
+                            });
+
+                            const agrupadoForma = pagamentosExtraidos.reduce((acc, p) => {
+                                if (!acc[p.forma]) acc[p.forma] = 0;
+                                acc[p.forma] += p.valor;
+                                return acc;
+                            }, {});
+                            const rankingForma = Object.entries(agrupadoForma).sort((a,b) => b[1] - a[1]);
+                            const maxForma = Math.max(...rankingForma.map(f => f[1]), 1);
+
+                            const agrupadoInstituicao = pagamentosExtraidos.reduce((acc, p) => {
+                                if (p.forma === 'PIX' || p.forma === 'Link de Pagamento') {
+                                    const inst = p.instituicao;
+                                    if (!acc[inst]) acc[inst] = 0;
+                                    acc[inst] += p.valor;
+                                }
+                                return acc;
+                            }, {});
+                            const rankingInstituicao = Object.entries(agrupadoInstituicao).sort((a,b) => b[1] - a[1]);
+                            const maxInstituicao = Math.max(...rankingInstituicao.map(i => i[1]), 1);
+
+                            // --- CONTEXTUAL DATE NAMES ---
+                            const anoAtual = new Date().getFullYear();
+                            const objData = new Date();
+                            const nomeMesAtualRaw = objData.toLocaleString('pt-BR', { month: 'long' });
+                            const nomeMesAtual = nomeMesAtualRaw.charAt(0).toUpperCase() + nomeMesAtualRaw.slice(1);
+                            const diaAtual = formatarDataExibicao(obterDataAtual()).substring(0, 5);
+
+                            // --- MÊS ATUAL METRICS (for layers 2, 3, 4) ---
+                            const mesAtualString = obterDataAtual().substring(0, 7); // yyyy-mm
+                            const pedidosMesAtual = pedidosFin.filter(p => p.data_pedido && p.data_pedido.startsWith(mesAtualString));
+
+                            const agrupadoLocalMesAtual = pedidosMesAtual.reduce((acc, p) => {
+                                if(!p.local_producao) return acc;
+                                const locais = p.local_producao.split(',').map(s=>s.trim()).filter(Boolean);
+                                locais.forEach(l => {
+                                    if(!acc[l]) acc[l] = 0;
+                                    acc[l] += (Number(p.valor_total) || 0) / locais.length;
+                                });
+                                return acc;
+                            }, {});
+                            const rankingLocalMesAtual = Object.entries(agrupadoLocalMesAtual).sort((a,b) => b[1] - a[1]);
+                            const maxLocalMesAtual = Math.max(...rankingLocalMesAtual.map(l => l[1]), 1);
+
+                            const pagamentosExtraidosMesAtual = pedidosMesAtual.flatMap(p => {
+                                const pagamentosStr = p.servico && p.servico.split('\n\n[PAGAMENTOS]\n')[1];
+                                if (!pagamentosStr) return [];
+                                try {
+                                    return JSON.parse(pagamentosStr).map(pag => ({
+                                        valor: parseFloat(String(pag.valor).replace(/\./g, '').replace(',', '.')) || 0,
+                                        forma: pag.forma || 'Indefinido',
+                                        instituicao: pag.instituicao || 'Indefinido'
+                                    }));
+                                } catch (e) { return []; }
+                            });
+
+                            const agrupadoFormaMesAtual = pagamentosExtraidosMesAtual.reduce((acc, p) => {
+                                if (!acc[p.forma]) acc[p.forma] = 0;
+                                acc[p.forma] += p.valor;
+                                return acc;
+                            }, {});
+                            const rankingFormaMesAtual = Object.entries(agrupadoFormaMesAtual).sort((a,b) => b[1] - a[1]);
+                            const maxFormaMesAtual = Math.max(...rankingFormaMesAtual.map(f => f[1]), 1);
+
+                            const agrupadoInstituicaoMesAtual = pagamentosExtraidosMesAtual.reduce((acc, p) => {
+                                if (p.forma === 'PIX' || p.forma === 'Link de Pagamento') {
+                                    const inst = p.instituicao;
+                                    if (!acc[inst]) acc[inst] = 0;
+                                    acc[inst] += p.valor;
+                                }
+                                return acc;
+                            }, {});
+                            const rankingInstituicaoMesAtual = Object.entries(agrupadoInstituicaoMesAtual).sort((a,b) => b[1] - a[1]);
+                            const maxInstituicaoMesAtual = Math.max(...rankingInstituicaoMesAtual.map(i => i[1]), 1);
+
+                            const renderLayer2 = () => {
+                                if (rankingLocalMesAtual.length === 0) return <p className="text-xs text-gray-500 italic">Nenhum local registrado no mês.</p>;
+                                return rankingLocalMesAtual.map((loc, index) => renderBarHorizontal(loc[0], loc[1], maxLocalMesAtual, false, colorsLocal[index % colorsLocal.length]));
+                            };
+                            const renderLayer3 = () => {
+                                if (rankingFormaMesAtual.length === 0) return <p className="text-xs text-gray-500 italic">Nenhum pagamento registrado no mês.</p>;
+                                return rankingFormaMesAtual.map((f, index) => renderBarHorizontal(f[0], f[1], maxFormaMesAtual, false, colorsForma[index % colorsForma.length]));
+                            };
+                            const renderLayer4 = () => {
+                                if (rankingInstituicaoMesAtual.length === 0) return <p className="text-xs text-gray-500 italic">Nenhuma instituição no mês.</p>;
+                                return rankingInstituicaoMesAtual.map((i, index) => renderBarHorizontal(i[0], i[1], maxInstituicaoMesAtual, false, colorsInst[index % colorsInst.length]));
+                            };
+
+                            // --- ANUAL METRICS ---
+                            const agrupadoPorAno = pedidosFin.reduce((acc, p) => {
+                                if (!p.data_pedido) return acc;
+                                const ano = p.data_pedido.substring(0, 4);
+                                if (!acc[ano]) acc[ano] = { ano, bruto: 0 };
+                                acc[ano].bruto += (Number(p.valor_total) || 0);
+                                return acc;
+                            }, {});
+                            const anosOrdenados = Object.values(agrupadoPorAno).sort((a, b) => b.ano.localeCompare(a.ano)).slice(0, 15);
+                            const maxBrutoAno = Math.max(...anosOrdenados.map(a => a.bruto), 1);
 
                             return (
                                 <>
-                                    <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-                                        <div className="bg-white dark:bg-darkCard p-5 rounded-xl border border-gray-200 dark:border-darkBorder shadow-sm lg:col-span-2 relative overflow-hidden">
-                                            <div className="absolute right-0 top-0 w-32 h-full bg-gradient-to-l from-brand/10 to-transparent pointer-events-none"></div>
-                                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">Crescimento Anual Global (YoY)</span>
-                                            <div className="flex items-end gap-3 mt-1">
-                                                <h2 className="text-3xl font-black text-gray-900 dark:text-white">R$ {totalAnoAtual.toFixed(2).replace('.', ',')}</h2>
-                                                <div className={`flex items-center gap-1 text-sm font-bold pb-1 ${crescimentoPercentual >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
-                                                    <Icon name={crescimentoPercentual >= 0 ? 'trending-up' : 'trending-down'} className="w-4 h-4" />
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                                        <div className="bg-white dark:bg-darkCard p-5 rounded-xl border border-gray-200 dark:border-darkBorder shadow-sm relative overflow-hidden flex flex-col justify-between">
+                                            <div>
+                                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">Crescimento (YoY)</span>
+                                                <h2 className="text-xl font-black text-gray-900 dark:text-white">R$ {totalAnoAtual.toFixed(2).replace('.', ',')}</h2>
+                                            </div>
+                                            <div className="mt-2">
+                                                <div className={`inline-flex items-center gap-1 text-[11px] font-bold px-1.5 py-0.5 rounded ${crescimentoPercentual >= 0 ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-red-50 text-red-600 dark:bg-red-900/30 dark:text-red-400'}`}>
+                                                    <Icon name={crescimentoPercentual >= 0 ? 'trending-up' : 'trending-down'} className="w-3 h-3" />
                                                     {Math.abs(crescimentoPercentual).toFixed(1)}%
                                                 </div>
                                             </div>
-                                            <p className="text-[11px] text-gray-400 mt-2">Vs R$ {totalAnoAnterior.toFixed(2).replace('.', ',')} faturados em todo ano passado</p>
                                         </div>
 
-                                        <div className="bg-purple-50 dark:bg-purple-900/10 p-5 rounded-xl border border-purple-200 dark:border-purple-900/30 shadow-sm relative overflow-hidden">
-                                            <span className="text-[10px] font-bold text-purple-600 dark:text-purple-400 uppercase tracking-wider block mb-1">Vendas Hoje</span>
-                                            <h2 className="text-2xl font-black text-purple-600 dark:text-purple-400">R$ {totalVendasHoje.toFixed(2).replace('.', ',')}</h2>
-                                            <p className="text-[11px] text-purple-500/70 dark:text-purple-400/70 mt-2">Faturamento de pedidos lançados hoje</p>
+                                        <div className="bg-purple-50 dark:bg-purple-900/10 p-5 rounded-xl border border-purple-200 dark:border-purple-900/30 shadow-sm relative overflow-hidden flex flex-col justify-between">
+                                            <div>
+                                                <span className="text-[10px] font-bold text-purple-600 dark:text-purple-400 uppercase tracking-wider block mb-1">Vendas Hoje</span>
+                                                <h2 className="text-2xl font-black text-purple-600 dark:text-purple-400">R$ {totalVendasHoje.toFixed(2).replace('.', ',')}</h2>
+                                            </div>
+                                            <p className="text-[10px] text-purple-500/70 dark:text-purple-400/70 mt-2 font-medium">Pedidos lançados hoje</p>
                                         </div>
 
-                                        <div className="bg-white dark:bg-darkCard p-5 rounded-xl border border-gray-200 dark:border-darkBorder shadow-sm">
-                                            <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-wider block mb-1">Caixa Realizado</span>
-                                            <h2 className="text-2xl font-black text-emerald-500">R$ {totalRecebido.toFixed(2).replace('.', ',')}</h2>
-                                            <p className="text-[11px] text-gray-400 mt-2">Ordens recebidas no filtro</p>
+                                        <div className="bg-emerald-50 dark:bg-emerald-900/10 p-5 rounded-xl border border-emerald-200 dark:border-emerald-900/30 shadow-sm flex flex-col justify-between">
+                                            <div>
+                                                <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider block mb-1">Total Pago (Recebido)</span>
+                                                <h2 className="text-2xl font-black text-emerald-600 dark:text-emerald-400">R$ {totalRecebido.toFixed(2).replace('.', ',')}</h2>
+                                            </div>
+                                            <p className="text-[10px] text-emerald-500/70 dark:text-emerald-400/70 mt-2 font-medium">Já entrou no caixa</p>
                                         </div>
-                                        <div className="bg-white dark:bg-darkCard p-5 rounded-xl border border-gray-200 dark:border-darkBorder shadow-sm">
-                                            <span className="text-[10px] font-bold text-orange-500 uppercase tracking-wider block mb-1">Contas a Receber</span>
-                                            <h2 className="text-2xl font-black text-orange-500">R$ {totalAReceber.toFixed(2).replace('.', ',')}</h2>
-                                            <p className="text-[11px] text-gray-400 mt-2">Valor na esteira de produção</p>
+                                        
+                                        <div className="bg-orange-50 dark:bg-orange-900/10 p-5 rounded-xl border border-orange-200 dark:border-orange-900/30 shadow-sm flex flex-col justify-between">
+                                            <div>
+                                                <span className="text-[10px] font-bold text-orange-600 dark:text-orange-400 uppercase tracking-wider block mb-1">Saldo Devedor (A Receber)</span>
+                                                <h2 className="text-2xl font-black text-orange-600 dark:text-orange-400">R$ {totalAReceber.toFixed(2).replace('.', ',')}</h2>
+                                            </div>
+                                            <p className="text-[10px] text-orange-500/70 dark:text-orange-400/70 mt-2 font-medium">Falta receber</p>
                                         </div>
-                                        <div className="bg-white dark:bg-darkCard p-5 rounded-xl border border-gray-200 dark:border-darkBorder shadow-sm">
-                                            <span className="text-[10px] font-bold text-blue-500 uppercase tracking-wider block mb-1">Ticket Médio</span>
-                                            <h2 className="text-2xl font-black text-blue-500">R$ {ticketMedio.toFixed(2).replace('.', ',')}</h2>
-                                            <p className="text-[11px] text-gray-400 mt-2">Média gasta por pedido</p>
+                                        
+                                        <div className="bg-white dark:bg-darkCard p-5 rounded-xl border border-gray-200 dark:border-darkBorder shadow-sm flex flex-col justify-between">
+                                            <div>
+                                                <span className="text-[10px] font-bold text-blue-500 uppercase tracking-wider block mb-1">Ticket Médio</span>
+                                                <h2 className="text-2xl font-black text-blue-500">R$ {ticketMedio.toFixed(2).replace('.', ',')}</h2>
+                                            </div>
+                                            <p className="text-[10px] text-gray-400 mt-2 font-medium">Média por pedido</p>
                                         </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                                        <StackedCards 
+                                            title="Visão Anual" 
+                                            icon="calendar"
+                                            description="Evolução e Análise (Anos)"
+                                            cards={[
+                                                { title: "Faturamento Histórico", content: anosOrdenados.length === 0 ? <p className="text-xs text-gray-500 italic">Sem dados.</p> : anosOrdenados.map(a => renderBarHorizontal(a.ano, a.bruto, maxBrutoAno, false, 'bg-blue-500')) },
+                                                { title: `Local de Produção (${anoAtual})`, content: renderLayer2() },
+                                                { title: `Formas de Pagamento (${anoAtual})`, content: renderLayer3() },
+                                                { title: `Vendas por Instituição (${anoAtual})`, content: renderLayer4() }
+                                            ]}
+                                        />
+                                        <StackedCards 
+                                            title="Visão Mensal" 
+                                            icon="layout-dashboard"
+                                            description="Evolução e Análise (Meses)"
+                                            cards={[
+                                                { title: `Faturamento (${anoAtual})`, content: mesesOrdenados.length === 0 ? <p className="text-xs text-gray-500 italic">Sem dados.</p> : mesesOrdenados.map(m => renderBarHorizontal(formatarMesAno(m.mesAno), m.bruto, maxBrutoMes, false, 'bg-emerald-500')) },
+                                                { title: `Local de Produção (${nomeMesAtual})`, content: renderLayer2() },
+                                                { title: `Formas de Pagamento (${nomeMesAtual})`, content: renderLayer3() },
+                                                { title: `Vendas por Instituição (${nomeMesAtual})`, content: renderLayer4() }
+                                            ]}
+                                        />
+                                        <StackedCards 
+                                            title="Visão Diária" 
+                                            icon="list"
+                                            description="Evolução e Análise (Dias)"
+                                            cards={[
+                                                { title: `Faturamento (${nomeMesAtual})`, content: diasOrdenados.length === 0 ? <p className="text-xs text-gray-500 italic">Sem dados.</p> : diasOrdenados.map(d => renderBarHorizontal(formatarDataExibicao(d.dia).substring(0,5), d.bruto, maxBrutoDia, false, 'bg-purple-500')) },
+                                                { title: `Local de Produção (${diaAtual})`, content: renderLayer2() },
+                                                { title: `Formas de Pagamento (${diaAtual})`, content: renderLayer3() },
+                                                { title: `Vendas por Instituição (${diaAtual})`, content: renderLayer4() }
+                                            ]}
+                                        />
                                     </div>
 
                                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                                         <div className="bg-white dark:bg-darkCard p-6 rounded-xl border border-gray-200 dark:border-darkBorder flex flex-col gap-4">
                                             <div>
-                                                <h3 className="font-bold text-sm text-gray-800 dark:text-white uppercase tracking-wider">Faturamento Diário</h3>
-                                                <p className="text-xs text-gray-400 mt-0.5">Evolução do faturamento, dia a dia.</p>
+                                                <h3 className="font-bold text-sm text-gray-800 dark:text-white uppercase tracking-wider">Receitas por Local (Geral)</h3>
+                                                <p className="text-xs text-gray-400 mt-0.5">Rentabilidade total no período filtrado.</p>
                                             </div>
                                             <div className="flex flex-col gap-3 mt-2 overflow-y-auto max-h-64 custom-scrollbar pr-2">
-                                                {diasOrdenados.length === 0 ? <p className="text-xs text-gray-500 italic">Sem dados no período.</p> : 
-                                                    diasOrdenados.map(d => renderBarHorizontal(formatarDataExibicao(d.dia).substring(0,5), d.bruto, maxBrutoDia, false, 'bg-purple-500'))
-                                                }
-                                            </div>
-                                        </div>
-
-                                        <div className="bg-white dark:bg-darkCard p-6 rounded-xl border border-gray-200 dark:border-darkBorder flex flex-col gap-4">
-                                            <div>
-                                                <h3 className="font-bold text-sm text-gray-800 dark:text-white uppercase tracking-wider">Faturamento Mensal</h3>
-                                                <p className="text-xs text-gray-400 mt-0.5">Evolução do faturamento bruto no período.</p>
-                                            </div>
-                                            <div className="flex flex-col gap-3 mt-2 overflow-y-auto max-h-64 custom-scrollbar pr-2">
-                                                {mesesOrdenados.length === 0 ? <p className="text-xs text-gray-500 italic">Sem dados no período.</p> : 
-                                                    mesesOrdenados.map(m => renderBarHorizontal(formatarMesAno(m.mesAno), m.bruto, maxBrutoMes, false))
-                                                }
-                                            </div>
-                                        </div>
-
-                                        <div className="bg-white dark:bg-darkCard p-6 rounded-xl border border-gray-200 dark:border-darkBorder flex flex-col gap-4">
-                                            <div>
-                                                <h3 className="font-bold text-sm text-gray-800 dark:text-white uppercase tracking-wider">Distribuição por Status</h3>
-                                                <p className="text-xs text-gray-400 mt-0.5">Visão do montante alocado em cada etapa.</p>
-                                            </div>
-                                            <div className="flex flex-col gap-3 mt-2 overflow-y-auto max-h-64 custom-scrollbar pr-2">
-                                                {[...STATUSES_PRODUCAO, ...STATUSES_FINALIZADOS].map(st => {
-                                                    const valorDoStatus = pedidosFin.filter(p => p.status === st).reduce((acc, p) => acc + (Number(p.valor_total) || 0), 0);
-                                                    if (valorDoStatus === 0) return null;
-                                                    return renderBarHorizontal(st, valorDoStatus, totalBruto, st === 'Concluído' || st === 'Finalizado');
-                                                })}
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                                        <div className="bg-white dark:bg-darkCard p-6 rounded-xl border border-gray-200 dark:border-darkBorder flex flex-col gap-4">
-                                            <div>
-                                                <h3 className="font-bold text-sm text-gray-800 dark:text-white uppercase tracking-wider">Performance de Vendas por Responsável</h3>
-                                                <p className="text-xs text-gray-400 mt-0.5">Ranking financeiro gerado por cada membro.</p>
-                                            </div>
-                                            <div className="flex flex-col gap-3 mt-2 overflow-y-auto max-h-64 custom-scrollbar pr-2">
-                                                {rankingResp.length === 0 ? <p className="text-xs text-gray-500 italic">Nenhum responsável registrado no período.</p> :
-                                                    rankingResp.map((resp, index) => renderBarHorizontal(`${index + 1}º. ${resp[0]}`, resp[1], maxResp, false, colorsRank[index % colorsRank.length]))
-                                                }
-                                            </div>
-                                        </div>
-
-                                        <div className="bg-white dark:bg-darkCard p-6 rounded-xl border border-gray-200 dark:border-darkBorder flex flex-col gap-4">
-                                            <div>
-                                                <h3 className="font-bold text-sm text-gray-800 dark:text-white uppercase tracking-wider">Receitas por Local de Produção</h3>
-                                                <p className="text-xs text-gray-400 mt-0.5">Rentabilidade baseada nos centros de custo (Terceiros x Interno).</p>
-                                            </div>
-                                            <div className="flex flex-col gap-3 mt-2 overflow-y-auto max-h-64 custom-scrollbar pr-2">
-                                                {rankingLocal.length === 0 ? <p className="text-xs text-gray-500 italic">Nenhum local registrado no período.</p> :
+                                                {rankingLocal.length === 0 ? <p className="text-xs text-gray-500 italic">Nenhum local registrado.</p> :
                                                     rankingLocal.map((loc, index) => renderBarHorizontal(loc[0], loc[1], maxLocal, false, colorsLocal[index % colorsLocal.length]))
+                                                }
+                                            </div>
+                                        </div>
+
+                                        <div className="bg-white dark:bg-darkCard p-6 rounded-xl border border-gray-200 dark:border-darkBorder flex flex-col gap-4">
+                                            <div>
+                                                <h3 className="font-bold text-sm text-gray-800 dark:text-white uppercase tracking-wider">Formas de Pagamento (Geral)</h3>
+                                                <p className="text-xs text-gray-400 mt-0.5">Como os clientes pagaram no período filtrado.</p>
+                                            </div>
+                                            <div className="flex flex-col gap-3 mt-2 overflow-y-auto max-h-64 custom-scrollbar pr-2">
+                                                {rankingForma.length === 0 ? <p className="text-xs text-gray-500 italic">Nenhum pagamento registrado.</p> :
+                                                    rankingForma.map((f, index) => renderBarHorizontal(f[0], f[1], maxForma, false, colorsForma[index % colorsForma.length]))
+                                                }
+                                            </div>
+                                        </div>
+
+                                        <div className="bg-white dark:bg-darkCard p-6 rounded-xl border border-gray-200 dark:border-darkBorder flex flex-col gap-4">
+                                            <div>
+                                                <h3 className="font-bold text-sm text-gray-800 dark:text-white uppercase tracking-wider">Instituições (Geral)</h3>
+                                                <p className="text-xs text-gray-400 mt-0.5">Volume por conta no período filtrado.</p>
+                                            </div>
+                                            <div className="flex flex-col gap-3 mt-2 overflow-y-auto max-h-64 custom-scrollbar pr-2">
+                                                {rankingInstituicao.length === 0 ? <p className="text-xs text-gray-500 italic">Nenhuma instituição registrada.</p> :
+                                                    rankingInstituicao.map((i, index) => renderBarHorizontal(i[0], i[1], maxInstituicao, false, colorsInst[index % colorsInst.length]))
                                                 }
                                             </div>
                                         </div>
@@ -1443,14 +1683,14 @@ function App() {
             {modalAberto && (
                 <div onClick={fecharModalOS} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer">
                     <div onClick={(e) => e.stopPropagation()} className="bg-white dark:bg-darkCard w-full max-w-3xl rounded border border-gray-200 dark:border-darkBorder shadow-2xl flex flex-col max-h-[95vh] cursor-default">
-                        <div className="px-6 py-5 border-b border-gray-100 dark:border-darkBorder flex justify-between items-center bg-gray-50 dark:bg-darkCard">
+                        <div className="px-6 py-5 flex justify-between items-center bg-brand text-white rounded-t">
                             <div className="flex items-center gap-3">
-                                <h3 className="font-semibold text-xl dark:text-white tracking-tight">
+                                <h3 className="font-semibold text-xl tracking-tight">
                                     {pedidoEmEdicao ? 'Editar Ordem de Serviço #' + pedidoEmEdicao.id : 'Nova Ordem de Serviço'}
                                 </h3>
-                                {isModalTrancado && <span className="flex items-center gap-1 text-[11px] font-bold bg-red-950/20 text-red-400 border border-red-900/50 px-2 py-0.5 rounded"><Icon name="lock" className="w-3 h-3" /> Trancado</span>}
+                                {isModalTrancado && <span className="flex items-center gap-1 text-[11px] font-bold bg-white/20 text-white border border-white/30 px-2 py-0.5 rounded"><Icon name="lock" className="w-3 h-3" /> Trancado</span>}
                             </div>
-                            <button type="button" onClick={fecharModalOS} className="text-gray-400 hover:text-gray-900 dark:hover:text-white transition"><Icon name="x" className="w-5 h-5" /></button>
+                            <button type="button" onClick={fecharModalOS} className="text-white/70 hover:text-white transition"><Icon name="x" className="w-5 h-5" /></button>
                         </div>
                         
                         <form onSubmit={(e) => salvarOS(e, false)} className="p-8 overflow-y-auto custom-scrollbar flex flex-col gap-6">
@@ -1476,7 +1716,7 @@ function App() {
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-3 gap-4">
+                            <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-sm font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Resp.</label>
                                     <MultiSelectDropdown 
@@ -1484,17 +1724,6 @@ function App() {
                                         options={RESPONSAVEIS} 
                                         onChange={val => setNovoPedido({...novoPedido, responsavel: val})} 
                                         disabled={isModalTrancado} 
-                                        className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand transition dark:text-[#EDEDED]"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Local</label>
-                                    <MultiSelectDropdown 
-                                        value={novoPedido.local_producao} 
-                                        options={LOCAIS} 
-                                        onChange={val => setNovoPedido({...novoPedido, local_producao: val})} 
-                                        disabled={isModalTrancado} 
-                                        placeholder="Berlim"
                                         className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand transition dark:text-[#EDEDED]"
                                     />
                                 </div>
@@ -1536,7 +1765,7 @@ function App() {
                                     <div className="mb-4 flex flex-col gap-2">
                                         {itensPedido.map((item, index) => (
                                             <div key={item.id_temp} className="flex justify-between items-center p-3 bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded shadow-sm">
-                                                <div className="flex flex-col"><span className="font-semibold text-sm dark:text-white">{index + 1}. {item.nome || 'Serviço Personalizado'}</span><span className="text-xs text-gray-500 dark:text-[#A1A1AA] whitespace-pre-wrap mt-1">{item.descricao}</span></div>
+                                                <div className="flex flex-col"><span className="font-semibold text-sm dark:text-white">{index + 1}. {item.nome || 'Serviço Personalizado'}</span><span className="text-xs text-gray-500 dark:text-[#A1A1AA] whitespace-pre-wrap mt-1">{item.descricao}</span>{item.local_producao && <span className="text-[10px] bg-brand/10 text-brand font-bold px-1.5 py-0.5 rounded mt-1.5 w-max">Local: {item.local_producao}</span>}</div>
                                                 <div className="flex items-center gap-4"><div className="text-right"><span className="font-semibold text-sm dark:text-white">R$ {item.valor}</span>{item.desconto && <span className="block text-[10px] text-brand font-medium">-{item.desconto}% desc</span>}</div><button type="button" disabled={isModalTrancado} onClick={() => removerItemDoCarrinho(item.id_temp)} className="text-gray-400 hover:text-red-500 transition disabled:opacity-30"><Icon name="trash-2" className="w-4 h-4" /></button></div>
                                             </div>
                                         ))}
@@ -1559,7 +1788,7 @@ function App() {
                                                         {produtosFiltrados.map(p => (
                                                             <li key={p.id} onClick={() => { 
                                                                 setBuscaProduto(p.nome);
-                                                                setItemAtual({ nome: p.nome, descricao: p.texto_padrao, valor: formatarMoeda((p.preco_base * 100).toFixed(0).toString()), desconto: '' }); 
+                                                                setItemAtual({ ...itemAtual, nome: p.nome, descricao: p.texto_padrao, valor: formatarMoeda((p.preco_base * 100).toFixed(0).toString()), desconto: '' }); 
                                                                 setProdutoDropdownAberto(false); 
                                                             }} className="px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-darkHover cursor-pointer border-b border-gray-100 dark:border-darkBorder last:border-0 flex flex-col transition">
                                                                 <div className="flex justify-between items-center"><span className="font-medium text-sm dark:text-[#EDEDED]">{p.nome}</span><span className="text-xs font-bold text-brand">R$ {Number(p.preco_base).toFixed(2).replace('.', ',')}</span></div>
@@ -1576,14 +1805,21 @@ function App() {
                                         </div>
 
                                         <textarea rows="2" value={itemAtual.descricao} disabled={isModalTrancado} onChange={e => setItemAtual({...itemAtual, descricao: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand transition dark:text-[#EDEDED] disabled:opacity-50" placeholder="Especificações do item (Ex: Medida, quantidade, material...)"></textarea>
-                                        <div className="grid grid-cols-3 gap-3">
-                                            <div className="relative">
-                                                <span className="absolute left-3 top-2.5 text-xs text-gray-400">R$</span>
-                                                <input type="text" value={itemAtual.valor} disabled={isModalTrancado} onChange={e => setItemAtual({...itemAtual, valor: formatarMoeda(e.target.value)})} className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded pl-8 pr-3 py-2 text-xs outline-none focus:border-brand transition dark:text-[#EDEDED] font-medium disabled:opacity-50" placeholder="Bruto" />
+                                        <div className="grid grid-cols-4 gap-3">
+                                            <div className="relative col-span-2">
+                                                <span className="absolute left-3 top-2.5 text-xs text-gray-400 font-medium">Local:</span>
+                                                <select value={itemAtual.local_producao} disabled={isModalTrancado} onChange={e => setItemAtual({...itemAtual, local_producao: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded pl-[52px] pr-8 py-2 text-xs outline-none focus:border-brand transition dark:text-[#EDEDED] font-medium appearance-none disabled:opacity-50">
+                                                    {LOCAIS.map(l => <option key={l} value={l}>{l}</option>)}
+                                                </select>
+                                                <Icon name="chevron-down" className="absolute right-3 top-2.5 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
                                             </div>
-                                            <div><input type="text" value={itemAtual.desconto} disabled={isModalTrancado} onChange={e => { let val = e.target.value.replace(/\D/g, ''); if (parseFloat(val) > 100) val = '100'; setItemAtual({...itemAtual, desconto: val}); }} className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-xs outline-none focus:border-brand transition dark:text-[#EDEDED] disabled:opacity-50" placeholder="Desc. %" /></div>
-                                            <button type="button" onClick={adicionarItemAoCarrinho} disabled={!itemAtual.descricao || !itemAtual.valor || isModalTrancado} className="px-3 py-2 text-xs font-medium bg-white hover:bg-gray-200 text-black rounded transition disabled:opacity-50">+ Inserir</button>
+                                            <div className="relative">
+                                                <span className="absolute left-2.5 top-2.5 text-xs text-gray-400">R$</span>
+                                                <input type="text" value={itemAtual.valor} disabled={isModalTrancado} onChange={e => setItemAtual({...itemAtual, valor: formatarMoeda(e.target.value)})} className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded pl-7 pr-2 py-2 text-xs outline-none focus:border-brand transition dark:text-[#EDEDED] font-medium disabled:opacity-50" placeholder="Bruto" />
+                                            </div>
+                                            <div><input type="text" value={itemAtual.desconto} disabled={isModalTrancado} onChange={e => { let val = e.target.value.replace(/\D/g, ''); if (parseFloat(val) > 100) val = '100'; setItemAtual({...itemAtual, desconto: val}); }} className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-2 py-2 text-xs outline-none focus:border-brand transition dark:text-[#EDEDED] disabled:opacity-50" placeholder="Desc. %" /></div>
                                         </div>
+                                        <button type="button" onClick={adicionarItemAoCarrinho} disabled={!itemAtual.descricao || !itemAtual.valor || isModalTrancado} className="w-full mt-3 px-3 py-2 text-xs font-bold bg-white hover:bg-gray-100 dark:bg-darkHover dark:hover:bg-darkBorder text-gray-800 dark:text-white rounded border border-gray-200 dark:border-darkBorder transition shadow-sm disabled:opacity-50 flex items-center justify-center gap-1.5"><Icon name="plus" className="w-3.5 h-3.5"/> Inserir Item no Orçamento</button>
                                     </div>
                                 </div>
                             </div>
@@ -1635,11 +1871,12 @@ function App() {
                                                             <input type="text" value={novoPagamento.valor} onChange={e => setNovoPagamento({...novoPagamento, valor: formatarMoeda(e.target.value)})} className="w-full bg-white dark:bg-darkCard border border-gray-300 dark:border-darkBorder rounded pl-6 pr-2 py-1.5 text-xs outline-none" placeholder="Valor" />
                                                         </div>
                                                     </div>
-                                                    {(novoPagamento.forma === 'PIX') && (
+                                                    {(novoPagamento.forma === 'PIX' || novoPagamento.forma === 'Link de Pagamento') && (
                                                         <div>
                                                             <select value={novoPagamento.instituicao} onChange={e => setNovoPagamento({...novoPagamento, instituicao: e.target.value})} className="w-full bg-white dark:bg-darkCard border border-gray-300 dark:border-darkBorder rounded px-2 py-1.5 text-xs outline-none">
                                                                 <option value="Itaú">Itaú</option>
                                                                 <option value="Infinite Pay">Infinite Pay</option>
+                                                                <option value="Pag Seguro">Pag Seguro</option>
                                                             </select>
                                                         </div>
                                                     )}
@@ -1674,20 +1911,27 @@ function App() {
                             </div>
                         </form>
 
-                        <div className="px-6 py-5 border-t border-gray-100 dark:border-darkBorder bg-gray-50 dark:bg-darkCard flex justify-between items-center shrink-0">
-                            <div className="flex items-center gap-3">
-                                <span className="text-xs font-bold text-gray-500 dark:text-[#888888] uppercase tracking-wider">Total Final:</span>
-                                <div className="relative w-36">
-                                    <span className="absolute left-0 top-1.5 font-bold text-sm dark:text-gray-400">R$</span>
-                                    <input required type="text" value={novoPedido.valor_total} onChange={e => setNovoPedido({...novoPedido, valor_total: formatarMoeda(e.target.value)})} disabled={isModalTrancado} className="w-full bg-transparent border-none text-left pl-7 pr-0 py-1 font-bold text-xl text-brand outline-none disabled:opacity-50" placeholder="0,00" />
-                                </div>
-                            </div>
-
-                            <div className="flex gap-3">
-                                <button type="button" onClick={fecharModalOS} className="px-5 py-2.5 rounded text-sm font-medium text-gray-600 dark:text-[#A1A1AA] hover:bg-gray-200 dark:hover:bg-darkHover transition">Cancelar</button>
+                        <div className="px-6 py-4 border-t border-gray-100 dark:border-darkBorder bg-gray-50 dark:bg-darkCard flex flex-col sm:flex-row justify-between items-center gap-4 shrink-0">
+                            <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto order-2 sm:order-1">
+                                <button type="button" onClick={fecharModalOS} className="flex-1 sm:flex-none px-4 py-2.5 rounded-md text-sm font-semibold text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-darkHover transition border border-transparent hover:border-gray-300 dark:hover:border-darkBorder">
+                                    Cancelar
+                                </button>
+                                
                                 {!isModalTrancado && (
-                                    <div className="flex gap-2">
-                                        {novoPedido.status !== 'Finalizado' && (
+                                    <>
+                                        <div className="hidden sm:block w-px h-6 bg-gray-300 dark:bg-darkBorder mx-1"></div>
+                                        
+                                        <button type="button" onClick={(e) => salvarOS(e, false)} disabled={salvandoOS} className="flex-1 sm:flex-none px-4 py-2.5 rounded-md text-sm font-bold bg-white dark:bg-darkElevated text-gray-800 dark:text-white border border-gray-200 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover hover:border-brand shadow-sm transition disabled:opacity-50 flex items-center justify-center gap-2">
+                                            <Icon name="save" className="w-4 h-4 text-brand" />
+                                            {salvandoOS ? 'Salvando...' : pedidoEmEdicao ? 'Atualizar' : 'Salvar'}
+                                        </button>
+                                        
+                                        <button type="button" onClick={(e) => salvarOS(e, true)} disabled={salvandoOS} className="flex-1 sm:flex-none px-4 py-2.5 rounded-md text-sm font-bold bg-gray-800 dark:bg-white text-white dark:text-black hover:bg-black dark:hover:bg-gray-200 shadow-sm transition disabled:opacity-50 flex items-center justify-center gap-2">
+                                            <Icon name="printer" className="w-4 h-4" />
+                                            {salvandoOS ? 'Salvando...' : 'Salvar e Imprimir'}
+                                        </button>
+
+                                        {novoPedido.status !== 'Finalizado' && (usuario?.nivel === 'Administrador' || usuario?.nivel === 'Financeiro') && (
                                             <button type="button" onClick={(e) => {
                                                 const tpago = pagamentosPedido.reduce((acc, p) => acc + (parseFloat(String(p.valor).replace(/\./g, '').replace(',', '.')) || 0), 0);
                                                 const tos = parseFloat(String(novoPedido.valor_total).replace(/\./g, '').replace(',', '.')) || 0;
@@ -1697,19 +1941,21 @@ function App() {
                                                 }
                                                 novoPedido.status = 'Finalizado';
                                                 salvarOS(e, false);
-                                            }} disabled={salvandoOS} className="px-6 py-2.5 rounded text-sm font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm transition disabled:opacity-50">
+                                            }} disabled={salvandoOS} className="flex-1 sm:flex-none px-4 py-2.5 rounded-md text-sm font-bold bg-emerald-500 hover:bg-emerald-600 text-white shadow-md transition disabled:opacity-50 flex items-center justify-center gap-2 border border-emerald-600">
+                                                <Icon name="check" className="w-4 h-4" />
                                                 Finalizar OS
                                             </button>
                                         )}
-                                        <button type="button" onClick={(e) => salvarOS(e, false)} disabled={salvandoOS} className="px-6 py-2.5 rounded text-sm font-bold bg-brand hover:bg-brandHover text-white shadow-sm transition disabled:opacity-50">
-                                            {salvandoOS ? 'Aguarde...' : pedidoEmEdicao ? 'Apenas Atualizar' : 'Apenas Salvar'}
-                                        </button>
-                                        <button type="button" onClick={(e) => salvarOS(e, true)} disabled={salvandoOS} className="px-6 py-2.5 rounded text-sm font-bold bg-gray-800 dark:bg-white text-white dark:text-black hover:bg-black dark:hover:bg-gray-200 shadow-sm transition disabled:opacity-50 flex items-center gap-2">
-                                            <Icon name="printer" className="w-4 h-4" />
-                                            {salvandoOS ? 'Aguarde...' : 'Salvar e Imprimir'}
-                                        </button>
-                                    </div>
+                                    </>
                                 )}
+                            </div>
+
+                            <div className="flex items-center gap-3 order-1 sm:order-2 w-full sm:w-auto justify-end">
+                                <span className="text-xs font-bold text-gray-500 dark:text-[#888888] uppercase tracking-wider">Total Final:</span>
+                                <div className="relative w-36">
+                                    <span className="absolute left-0 top-[5px] font-bold text-sm dark:text-gray-400">R$</span>
+                                    <input required type="text" value={novoPedido.valor_total} onChange={e => setNovoPedido({...novoPedido, valor_total: formatarMoeda(e.target.value)})} disabled={isModalTrancado} className="w-full bg-transparent border-none text-left pl-7 pr-0 py-1 font-bold text-xl text-brand outline-none disabled:opacity-50" placeholder="0,00" />
+                                </div>
                             </div>
                         </div>
                     </div>
