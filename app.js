@@ -389,6 +389,12 @@ function App() {
     
     // Filtros
     const [buscaHistoricoText, setBuscaHistoricoText] = useState('');
+    
+    // Paginação
+    const [paginaProducao, setPaginaProducao] = useState(1);
+    const [paginaHistorico, setPaginaHistorico] = useState(1);
+    const [paginaFinanceiro, setPaginaFinanceiro] = useState(1);
+    const itensPorPagina = 50;
     const [dataFiltroInicio, setDataFiltroInicio] = useState('');
     const [dataFiltroFim, setDataFiltroFim] = useState('');
 
@@ -456,8 +462,35 @@ function App() {
     }, [usuario]);
 
     async function carregarDados() {
-        const { data: listaPedidos } = await supabase.from('pedidos').select('*').order('id', { ascending: false });
-        if (listaPedidos) setPedidos(listaPedidos);
+        let todosPedidos = [];
+        let from = 0;
+        let limit = 1000;
+        let fetchMore = true;
+        
+        while (fetchMore) {
+            const { data: batch, error } = await supabase
+                .from('pedidos')
+                .select('*')
+                .order('id', { ascending: false })
+                .range(from, from + limit - 1);
+                
+            if (error) {
+                console.error('Erro ao buscar pedidos:', error);
+                break;
+            }
+            if (batch && batch.length > 0) {
+                todosPedidos = [...todosPedidos, ...batch];
+                if (batch.length < limit) {
+                    fetchMore = false;
+                } else {
+                    from += limit;
+                }
+            } else {
+                fetchMore = false;
+            }
+        }
+        if (todosPedidos.length > 0) setPedidos(todosPedidos);
+        
         const { data: listaProdutos } = await supabase.from('produtos').select('*').order('id', { ascending: true });
         if (listaProdutos) setProdutos(listaProdutos);
         const { data: listaClientes } = await supabase.from('clientes').select('*').order('nome', { ascending: true });
@@ -465,6 +498,10 @@ function App() {
         const { data: listaUsuarios } = await supabase.from('usuarios').select('*').order('nome', { ascending: true });
         if (listaUsuarios) setUsuariosSistema(listaUsuarios);
     }
+    
+    useEffect(() => {
+        setPaginaHistorico(1);
+    }, [buscaHistoricoText, dataFiltroInicio, dataFiltroFim]);
 
     const efetuarLogin = async (e) => {
         e.preventDefault();
@@ -1015,7 +1052,9 @@ function App() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {pedidosHistoricoFiltrados.map(p => {
+                                    {pedidosHistoricoFiltrados
+                                        .slice((paginaHistorico - 1) * itensPorPagina, paginaHistorico * itensPorPagina)
+                                        .map(p => {
                                         const trancado = isOperador && p.status === 'Finalizado';
                                         return (
                                             <tr key={p.id} onClick={() => { if (trancado) return; abrirEdicao(p); }} className={`border-b border-gray-100 dark:border-darkBorder transition ${trancado ? 'opacity-30 bg-[#050505] cursor-not-allowed' : 'cursor-pointer hover:bg-gray-50 dark:hover:bg-darkHover'}`}>
@@ -1031,6 +1070,25 @@ function App() {
                                     })}
                                 </tbody>
                             </table>
+                            {pedidosHistoricoFiltrados.length > itensPorPagina && (
+                                <div className="flex justify-between items-center p-4 border-t border-gray-200 dark:border-darkBorder bg-white dark:bg-darkCard rounded-b-xl">
+                                    <span className="text-sm text-gray-500">
+                                        Mostrando {((paginaHistorico - 1) * itensPorPagina) + 1} a {Math.min(paginaHistorico * itensPorPagina, pedidosHistoricoFiltrados.length)} de {pedidosHistoricoFiltrados.length}
+                                    </span>
+                                    <div className="flex gap-2">
+                                        <button 
+                                            onClick={() => setPaginaHistorico(p => Math.max(1, p - 1))}
+                                            disabled={paginaHistorico === 1}
+                                            className="px-3 py-1 text-sm font-medium bg-gray-100 dark:bg-darkElevated text-gray-700 dark:text-gray-300 rounded hover:bg-gray-200 dark:hover:bg-darkHover disabled:opacity-50 disabled:cursor-not-allowed transition"
+                                        >Anterior</button>
+                                        <button 
+                                            onClick={() => setPaginaHistorico(p => Math.min(Math.ceil(pedidosHistoricoFiltrados.length / itensPorPagina), p + 1))}
+                                            disabled={paginaHistorico === Math.ceil(pedidosHistoricoFiltrados.length / itensPorPagina)}
+                                            className="px-3 py-1 text-sm font-medium bg-gray-100 dark:bg-darkElevated text-gray-700 dark:text-gray-300 rounded hover:bg-gray-200 dark:hover:bg-darkHover disabled:opacity-50 disabled:cursor-not-allowed transition"
+                                        >Próxima</button>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </main>
                 )}
