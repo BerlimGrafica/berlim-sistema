@@ -68,11 +68,11 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div>
                     <label class="block text-sm font-semibold text-gray-300 mb-1">CNPJ *</label>
-                    <input type="text" id="cnpj" required maxlength="18" onblur="this.value = maskCNPJ(this.value)" class="w-full bg-darkElevated border border-darkBorder rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-brand transition" placeholder="00.000.000/0000-00">
+                    <input type="text" id="cnpj" required class="w-full bg-darkElevated border border-darkBorder rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-brand transition" placeholder="00.000.000/0000-00">
                 </div>
                 <div>
                     <label class="block text-sm font-semibold text-gray-300 mb-1">Contato (WhatsApp) *</label>
-                    <input type="text" id="contato" required maxlength="15" onblur="this.value = maskPhone(this.value)" class="w-full bg-darkElevated border border-darkBorder rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-brand transition" placeholder="(00) 00000-0000">
+                    <input type="text" id="contato" required class="w-full bg-darkElevated border border-darkBorder rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-brand transition" placeholder="(00) 00000-0000">
                 </div>
             </div>
 
@@ -81,7 +81,7 @@
                 <textarea id="endereco" required rows="3" class="w-full bg-darkElevated border border-darkBorder rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-brand transition" placeholder="Rua, Número, Bairro, Cidade, Estado, CEP"></textarea>
             </div>
 
-            <button type="button" onclick="enviarFormulario()" id="btnSubmit" class="w-full bg-brand hover:bg-brandHover text-white font-bold py-3 px-4 rounded-lg shadow-lg transition mt-4">
+            <button type="submit" id="btnSubmit" class="w-full bg-brand hover:bg-brandHover text-white font-bold py-3 px-4 rounded-lg shadow-lg transition mt-4">
                 Enviar Dados
             </button>
             <p id="feedback" class="text-center text-sm font-semibold mt-4 hidden"></p>
@@ -95,78 +95,75 @@
     </div>
 
     <script>
-        function maskCNPJ(value) {
-            let v = value.replace(/\D/g, '');
-            if (v.length > 14) v = v.substring(0, 14);
-            return v
-                .replace(/^(\d{2})(\d)/, '$1.$2')
-                .replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3')
-                .replace(/\.(\d{3})(\d)/, '.$1/$2')
-                .replace(/(\d{4})(\d)/, '$1-$2');
-        }
-
-        function maskPhone(value) {
-            let v = value.replace(/\D/g, '');
-            if (v.length > 11) v = v.substring(0, 11);
-            if (v.length <= 10) {
-                return v.replace(/(\d{2})(\d)/, '($1) $2').replace(/(\d{4})(\d)/, '$1-$2');
-            } else {
-                return v.replace(/(\d{2})(\d)/, '($1) $2').replace(/(\d{5})(\d{1,4})/, '$1-$2');
-            }
-        }
-
-        let supabase;
-        try {
-            const supabaseUrl = 'https://xbanoipgoleuahwbqksy.supabase.co';
-            const supabaseKey = 'sb_publishable_RSQ4odG0wxy8ZucJHu_WvQ_0JfM8jbh';
-            supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-        } catch(e) {
-            console.error("Erro ao carregar o Supabase", e);
-        }
-
-        async function enviarFormulario() {
+        document.addEventListener('DOMContentLoaded', () => {
+            const cnpjInput = document.getElementById('cnpj');
+            const contatoInput = document.getElementById('contato');
             const form = document.getElementById('notaForm');
-            if (!form.checkValidity()) {
-                form.reportValidity();
-                return;
-            }
-
             const btnSubmit = document.getElementById('btnSubmit');
             const feedback = document.getElementById('feedback');
             const successMessage = document.getElementById('successMessage');
-            
-            btnSubmit.disabled = true;
-            btnSubmit.innerText = 'Enviando...';
-            feedback.classList.add('hidden');
 
-            const payload = {
-                cliente: document.getElementById('cliente').value,
-                razao_social: document.getElementById('razao_social').value,
-                cnpj: document.getElementById('cnpj').value,
-                contato: document.getElementById('contato').value,
-                endereco: document.getElementById('endereco').value
-            };
+            // Máscara de CNPJ
+            cnpjInput.addEventListener('input', function(e) {
+                let x = e.target.value.replace(/\D/g, '').match(/(\d{0,2})(\d{0,3})(\d{0,3})(\d{0,4})(\d{0,2})/);
+                if (!x) return;
+                e.target.value = !x[2] ? x[1] : x[1] + '.' + x[2] + (x[3] ? '.' : '') + x[3] + (x[4] ? '/' : '') + x[4] + (x[5] ? '-' : '') + x[5];
+            });
 
-            try {
-                if (!supabase) throw new Error("Supabase não carregado");
-                
-                const { data, error } = await supabase.from('notas_fiscais').insert([payload]);
-
-                if (error) {
-                    throw error;
+            // Máscara de Telefone
+            contatoInput.addEventListener('input', function(e) {
+                let x = e.target.value.replace(/\D/g, '').match(/(\d{0,2})(\d{0,5})(\d{0,4})/);
+                if (!x) return;
+                if (!x[2]) {
+                    e.target.value = x[1] ? '(' + x[1] : '';
+                } else if (x[1].length === 2) {
+                    e.target.value = '(' + x[1] + ') ' + x[2] + (x[3] ? '-' + x[3] : '');
                 }
-                
-                form.classList.add('hidden');
-                successMessage.classList.remove('hidden');
-            } catch (err) {
-                feedback.innerText = 'Erro ao enviar dados. Verifique a configuração do banco ou RLS.';
-                feedback.classList.remove('hidden', 'text-emerald-500');
-                feedback.classList.add('text-red-500');
-                btnSubmit.disabled = false;
-                btnSubmit.innerText = 'Enviar Dados';
-                console.error("Erro Supabase:", err);
+            });
+
+            let supabase;
+            try {
+                const supabaseUrl = 'https://xbanoipgoleuahwbqksy.supabase.co';
+                const supabaseKey = 'sb_publishable_RSQ4odG0wxy8ZucJHu_WvQ_0JfM8jbh';
+                supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+            } catch(err) {
+                console.error("Erro ao instanciar Supabase:", err);
             }
-        }
+
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                btnSubmit.disabled = true;
+                btnSubmit.innerText = 'Enviando...';
+                feedback.classList.add('hidden');
+
+                const payload = {
+                    cliente: document.getElementById('cliente').value,
+                    razao_social: document.getElementById('razao_social').value,
+                    cnpj: document.getElementById('cnpj').value,
+                    contato: document.getElementById('contato').value,
+                    endereco: document.getElementById('endereco').value
+                };
+
+                try {
+                    if (!supabase) throw new Error("A conexão com o banco não pôde ser iniciada.");
+                    
+                    const { data, error } = await supabase.from('notas_fiscais').insert([payload]);
+
+                    if (error) throw error;
+                    
+                    form.classList.add('hidden');
+                    successMessage.classList.remove('hidden');
+                } catch (err) {
+                    feedback.innerText = 'Falha ao enviar os dados. Ocorreu um erro no servidor.';
+                    feedback.classList.remove('hidden', 'text-emerald-500');
+                    feedback.classList.add('text-red-500');
+                    btnSubmit.disabled = false;
+                    btnSubmit.innerText = 'Enviar Dados';
+                    console.error("Erro ao enviar:", err);
+                }
+            });
+        });
     </script>
 </body>
 </html>
