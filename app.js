@@ -570,7 +570,15 @@ function App() {
                     'postgres_changes', 
                     { event: '*', schema: 'public', table: 'pedidos' }, 
                     (payload) => {
-                        console.log('Atualização em tempo real recebida!', payload);
+                        console.log('Atualização em tempo real (pedidos) recebida!', payload);
+                        carregarDados(); // Puxa os dados novos invisivelmente
+                    }
+                )
+                .on(
+                    'postgres_changes', 
+                    { event: '*', schema: 'public', table: 'notas_fiscais' }, 
+                    (payload) => {
+                        console.log('Atualização em tempo real (notas_fiscais) recebida!', payload);
                         carregarDados(); // Puxa os dados novos invisivelmente
                     }
                 )
