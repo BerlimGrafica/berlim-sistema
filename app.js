@@ -842,6 +842,8 @@ function App() {
                 if (querImprimir) imprimirOS({ ...pedidoEmEdicao, ...payload });
             }
         } else {
+            const novoId = pedidos.length > 0 ? Math.max(...pedidos.map(p => p.id)) + 1 : 1;
+            payload.id = novoId;
             const { data, error } = await supabase.from('pedidos').insert([payload]).select();
             
             if (error) {
