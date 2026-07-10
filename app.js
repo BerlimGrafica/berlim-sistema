@@ -40,7 +40,7 @@ const STATUSES_PRODUCAO = [
     'Aguardando Pagamento', 'Aguardando Retorno', 'Desenvolvimento de Arte', 
     'Etiqueta Escolar', 'Produzir', 'Produção', 'Avisar Cliente', 'Retirada'
 ];
-const STATUSES_FINALIZADOS = ['Abandonado', 'Concluído', 'Finalizado'];
+const STATUSES_FINALIZADOS = ['Abandonado', 'Cancelado', 'Concluído', 'Finalizado'];
 const RESPONSAVEIS = ['Gi', 'Murilo', 'Bruno', 'Nicole', 'Hellen', 'Jessica', 'Vini'];
 const LOCAIS = ['Berlim', 'Futura', 'Atual Card', 'Alvo', 'Xexe', 'StampMix'];
 
@@ -56,6 +56,7 @@ const obterCorStatus = (status) => {
         case 'Avisar Cliente': return 'text-pink-500 dark:text-pink-400';
         case 'Retirada': return 'text-sky-500 dark:text-sky-400';
         case 'Abandonado': return 'text-yellow-600 dark:text-yellow-400';
+        case 'Cancelado': return 'text-red-500 dark:text-red-400';
         case 'Concluído': return 'text-orange-500 dark:text-orange-400';
         case 'Finalizado': return 'text-indigo-500 dark:text-indigo-400';
         default: return 'text-gray-700 dark:text-[#EDEDED]';
