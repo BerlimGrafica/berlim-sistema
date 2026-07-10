@@ -68,11 +68,11 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div>
                     <label class="block text-sm font-semibold text-gray-300 mb-1">CNPJ *</label>
-                    <input type="text" id="cnpj" required maxlength="18" oninput="this.value = maskCNPJ(this.value)" class="w-full bg-darkElevated border border-darkBorder rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-brand transition" placeholder="00.000.000/0000-00">
+                    <input type="text" id="cnpj" required maxlength="18" onblur="this.value = maskCNPJ(this.value)" class="w-full bg-darkElevated border border-darkBorder rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-brand transition" placeholder="00.000.000/0000-00">
                 </div>
                 <div>
                     <label class="block text-sm font-semibold text-gray-300 mb-1">Contato (WhatsApp) *</label>
-                    <input type="text" id="contato" required maxlength="15" oninput="this.value = maskPhone(this.value)" class="w-full bg-darkElevated border border-darkBorder rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-brand transition" placeholder="(00) 00000-0000">
+                    <input type="text" id="contato" required maxlength="15" onblur="this.value = maskPhone(this.value)" class="w-full bg-darkElevated border border-darkBorder rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-brand transition" placeholder="(00) 00000-0000">
                 </div>
             </div>
 
@@ -81,7 +81,7 @@
                 <textarea id="endereco" required rows="3" class="w-full bg-darkElevated border border-darkBorder rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-brand transition" placeholder="Rua, Número, Bairro, Cidade, Estado, CEP"></textarea>
             </div>
 
-            <button type="submit" id="btnSubmit" class="w-full bg-brand hover:bg-brandHover text-white font-bold py-3 px-4 rounded-lg shadow-lg transition mt-4">
+            <button type="button" onclick="enviarFormulario()" id="btnSubmit" class="w-full bg-brand hover:bg-brandHover text-white font-bold py-3 px-4 rounded-lg shadow-lg transition mt-4">
                 Enviar Dados
             </button>
             <p id="feedback" class="text-center text-sm font-semibold mt-4 hidden"></p>
@@ -96,35 +96,44 @@
 
     <script>
         function maskCNPJ(value) {
-            return value
-                .replace(/\D/g, '')
+            let v = value.replace(/\D/g, '');
+            if (v.length > 14) v = v.substring(0, 14);
+            return v
                 .replace(/^(\d{2})(\d)/, '$1.$2')
                 .replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3')
                 .replace(/\.(\d{3})(\d)/, '.$1/$2')
-                .replace(/(\d{4})(\d)/, '$1-$2')
-                .substring(0, 18);
+                .replace(/(\d{4})(\d)/, '$1-$2');
         }
 
         function maskPhone(value) {
             let v = value.replace(/\D/g, '');
+            if (v.length > 11) v = v.substring(0, 11);
             if (v.length <= 10) {
                 return v.replace(/(\d{2})(\d)/, '($1) $2').replace(/(\d{4})(\d)/, '$1-$2');
             } else {
-                return v.replace(/(\d{2})(\d)/, '($1) $2').replace(/(\d{5})(\d{1,4})/, '$1-$2').substring(0, 15);
+                return v.replace(/(\d{2})(\d)/, '($1) $2').replace(/(\d{5})(\d{1,4})/, '$1-$2');
             }
         }
 
-        const supabaseUrl = 'https://xbanoipgoleuahwbqksy.supabase.co';
-        const supabaseKey = 'sb_publishable_RSQ4odG0wxy8ZucJHu_WvQ_0JfM8jbh';
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+        let supabase;
+        try {
+            const supabaseUrl = 'https://xbanoipgoleuahwbqksy.supabase.co';
+            const supabaseKey = 'sb_publishable_RSQ4odG0wxy8ZucJHu_WvQ_0JfM8jbh';
+            supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+        } catch(e) {
+            console.error("Erro ao carregar o Supabase", e);
+        }
 
-        const form = document.getElementById('notaForm');
-        const btnSubmit = document.getElementById('btnSubmit');
-        const feedback = document.getElementById('feedback');
-        const successMessage = document.getElementById('successMessage');
+        async function enviarFormulario() {
+            const form = document.getElementById('notaForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
 
-        form.onsubmit = async function(e) {
-            e.preventDefault();
+            const btnSubmit = document.getElementById('btnSubmit');
+            const feedback = document.getElementById('feedback');
+            const successMessage = document.getElementById('successMessage');
             
             btnSubmit.disabled = true;
             btnSubmit.innerText = 'Enviando...';
@@ -139,6 +148,8 @@
             };
 
             try {
+                if (!supabase) throw new Error("Supabase não carregado");
+                
                 const { data, error } = await supabase.from('notas_fiscais').insert([payload]);
 
                 if (error) {
@@ -148,14 +159,14 @@
                 form.classList.add('hidden');
                 successMessage.classList.remove('hidden');
             } catch (err) {
-                feedback.innerText = 'Erro ao enviar dados. Verifique a configuração do Supabase.';
+                feedback.innerText = 'Erro ao enviar dados. Verifique a configuração do banco ou RLS.';
                 feedback.classList.remove('hidden', 'text-emerald-500');
                 feedback.classList.add('text-red-500');
                 btnSubmit.disabled = false;
                 btnSubmit.innerText = 'Enviar Dados';
-                console.error(err);
+                console.error("Erro Supabase:", err);
             }
-        };
+        }
     </script>
 </body>
 </html>
