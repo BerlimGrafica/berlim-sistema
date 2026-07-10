@@ -615,8 +615,24 @@ function App() {
         
         const { data: listaProdutos } = await supabase.from('produtos').select('*').order('id', { ascending: true });
         if (listaProdutos) setProdutos(listaProdutos);
-        const { data: listaClientes } = await supabase.from('clientes').select('*').order('nome', { ascending: true });
-        if (listaClientes) setClientes(listaClientes);
+        
+        let todosClientes = [];
+        let fetchMoreClientes = true;
+        let fromClientes = 0;
+        const limitClientes = 1000;
+        while (fetchMoreClientes) {
+            const { data: batchClientes, error: errClientes } = await supabase.from('clientes').select('*').order('nome', { ascending: true }).range(fromClientes, fromClientes + limitClientes - 1);
+            if (errClientes) break;
+            if (batchClientes && batchClientes.length > 0) {
+                todosClientes = [...todosClientes, ...batchClientes];
+                if (batchClientes.length < limitClientes) fetchMoreClientes = false;
+                else fromClientes += limitClientes;
+            } else {
+                fetchMoreClientes = false;
+            }
+        }
+        if (todosClientes.length > 0) setClientes(todosClientes);
+
         const { data: listaUsuarios } = await supabase.from('usuarios').select('*').order('nome', { ascending: true });
         if (listaUsuarios) setUsuariosSistema(listaUsuarios);
 
@@ -908,6 +924,17 @@ function App() {
         e.preventDefault();
         setSalvandoCliente(true);
         const clienteFormatado = { nome: novoCliente.nome, telefone: novoCliente.telefone, email: novoCliente.email, observacoes: novoCliente.observacoes };
+
+        if (clienteFormatado.telefone && clienteFormatado.telefone.trim() !== '') {
+            let query = supabase.from('clientes').select('id, telefone').eq('telefone', clienteFormatado.telefone);
+            if (novoCliente.id) query = query.neq('id', novoCliente.id);
+            const { data: telData } = await query;
+            if (telData && telData.length > 0) {
+                alert('Aviso: Este número de WhatsApp/Telefone já está cadastrado em outro cliente no sistema!');
+                setSalvandoCliente(false);
+                return;
+            }
+        }
 
         if (novoCliente.id) {
             const { data, error } = await supabase.from('clientes').update(clienteFormatado).eq('id', novoCliente.id).select();
@@ -1710,7 +1737,7 @@ function App() {
                             </table>
                         </div>
                         {totalPaginasClientes > 1 && (
-                            <div className="mt-6 flex justify-between items-center bg-white dark:bg-darkCard p-4 rounded-lg shadow-sm border border-gray-100 dark:border-darkBorder">
+                            <div className="mt-6 flex justify-between items-center p-4">
                                 <button onClick={() => setPaginaClientes(Math.max(1, paginaClientes - 1))} disabled={paginaClientes === 1} className="px-4 py-2 text-sm font-bold border border-gray-200 dark:border-darkBorder rounded hover:bg-gray-50 dark:hover:bg-darkHover disabled:opacity-50 dark:text-white transition">Anterior</button>
                                 <span className="text-sm font-semibold dark:text-white">Página {paginaClientes} de {totalPaginasClientes}</span>
                                 <button onClick={() => setPaginaClientes(Math.min(totalPaginasClientes, paginaClientes + 1))} disabled={paginaClientes === totalPaginasClientes} className="px-4 py-2 text-sm font-bold border border-gray-200 dark:border-darkBorder rounded hover:bg-gray-50 dark:hover:bg-darkHover disabled:opacity-50 dark:text-white transition">Próxima</button>
