@@ -68,11 +68,11 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div>
                     <label class="block text-sm font-semibold text-gray-300 mb-1">CNPJ *</label>
-                    <input type="text" id="cnpj" required class="w-full bg-darkElevated border border-darkBorder rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-brand transition" placeholder="00.000.000/0000-00">
+                    <input type="text" id="cnpj" required maxlength="18" oninput="this.value = maskCNPJ(this.value)" class="w-full bg-darkElevated border border-darkBorder rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-brand transition" placeholder="00.000.000/0000-00">
                 </div>
                 <div>
                     <label class="block text-sm font-semibold text-gray-300 mb-1">Contato (WhatsApp) *</label>
-                    <input type="text" id="contato" required class="w-full bg-darkElevated border border-darkBorder rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-brand transition" placeholder="(00) 00000-0000">
+                    <input type="text" id="contato" required maxlength="15" oninput="this.value = maskPhone(this.value)" class="w-full bg-darkElevated border border-darkBorder rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-brand transition" placeholder="(00) 00000-0000">
                 </div>
             </div>
 
@@ -95,6 +95,25 @@
     </div>
 
     <script>
+        function maskCNPJ(value) {
+            return value
+                .replace(/\D/g, '')
+                .replace(/^(\d{2})(\d)/, '$1.$2')
+                .replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3')
+                .replace(/\.(\d{3})(\d)/, '.$1/$2')
+                .replace(/(\d{4})(\d)/, '$1-$2')
+                .substring(0, 18);
+        }
+
+        function maskPhone(value) {
+            let v = value.replace(/\D/g, '');
+            if (v.length <= 10) {
+                return v.replace(/(\d{2})(\d)/, '($1) $2').replace(/(\d{4})(\d)/, '$1-$2');
+            } else {
+                return v.replace(/(\d{2})(\d)/, '($1) $2').replace(/(\d{5})(\d{1,4})/, '$1-$2').substring(0, 15);
+            }
+        }
+
         const supabaseUrl = 'https://xbanoipgoleuahwbqksy.supabase.co';
         const supabaseKey = 'sb_publishable_RSQ4odG0wxy8ZucJHu_WvQ_0JfM8jbh';
         const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
@@ -104,7 +123,7 @@
         const feedback = document.getElementById('feedback');
         const successMessage = document.getElementById('successMessage');
 
-        form.addEventListener('submit', async (e) => {
+        form.onsubmit = async function(e) {
             e.preventDefault();
             
             btnSubmit.disabled = true;
@@ -119,20 +138,24 @@
                 endereco: document.getElementById('endereco').value
             };
 
-            const { data, error } = await supabase.from('notas_fiscais').insert([payload]);
+            try {
+                const { data, error } = await supabase.from('notas_fiscais').insert([payload]);
 
-            if (error) {
-                feedback.innerText = 'Erro ao enviar dados. Tente novamente ou contate a Berlim Gráfica.';
+                if (error) {
+                    throw error;
+                }
+                
+                form.classList.add('hidden');
+                successMessage.classList.remove('hidden');
+            } catch (err) {
+                feedback.innerText = 'Erro ao enviar dados. Verifique a configuração do Supabase.';
                 feedback.classList.remove('hidden', 'text-emerald-500');
                 feedback.classList.add('text-red-500');
                 btnSubmit.disabled = false;
                 btnSubmit.innerText = 'Enviar Dados';
-                console.error(error);
-            } else {
-                form.classList.add('hidden');
-                successMessage.classList.remove('hidden');
+                console.error(err);
             }
-        });
+        };
     </script>
 </body>
 </html>

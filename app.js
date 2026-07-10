@@ -1718,13 +1718,13 @@ function App() {
                                 </button>
                             </div>
                         </div>
-                        <div className="mb-4 flex flex-wrap gap-1">
-                            <button onClick={() => { setLetraFiltroCliente(''); setPaginaClientes(1); }} className={`px-2 py-1 text-xs font-bold rounded border ${!letraFiltroCliente ? 'bg-brand text-white border-brand' : 'bg-white dark:bg-darkCard text-gray-600 dark:text-gray-300 border-gray-200 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover'}`}>Todas</button>
-                            {"ABCDEFGHIJKLMNOPQRSTUVWXYZ".split('').map(letra => (
-                                <button key={letra} onClick={() => { setLetraFiltroCliente(letra); setPaginaClientes(1); }} className={`px-2 py-1 text-xs font-bold rounded border ${letraFiltroCliente === letra ? 'bg-brand text-white border-brand' : 'bg-white dark:bg-darkCard text-gray-600 dark:text-gray-300 border-gray-200 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover'}`}>{letra}</button>
-                            ))}
-                        </div>
                         <div className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded overflow-hidden">
+                            <div className="p-4 border-b border-gray-200 dark:border-darkBorder flex flex-wrap gap-1.5 items-center justify-center sm:justify-start">
+                                <button onClick={() => { setLetraFiltroCliente(''); setPaginaClientes(1); }} className={`px-2 py-1 text-xs font-bold rounded border ${!letraFiltroCliente ? 'bg-brand text-white border-brand' : 'bg-white dark:bg-darkCard text-gray-600 dark:text-gray-300 border-gray-200 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover'}`}>Todas</button>
+                                {"ABCDEFGHIJKLMNOPQRSTUVWXYZ".split('').map(letra => (
+                                    <button key={letra} onClick={() => { setLetraFiltroCliente(letra); setPaginaClientes(1); }} className={`px-2 py-1 text-xs font-bold rounded border ${letraFiltroCliente === letra ? 'bg-brand text-white border-brand' : 'bg-white dark:bg-darkCard text-gray-600 dark:text-gray-300 border-gray-200 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover'}`}>{letra}</button>
+                                ))}
+                            </div>
                             <table className="w-full text-left border-collapse">
                                 <thead><tr className="border-b border-gray-200 dark:border-darkBorder text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider bg-transparent"><th className="px-6 py-5">Cliente</th><th className="px-6 py-5">WhatsApp</th><th className="px-6 py-5">E-mail</th><th className="px-6 py-5">Observações</th></tr></thead>
                                 <tbody>
