@@ -496,6 +496,14 @@ function App() {
     const [pedidos, setPedidos] = useState([]);
     const [produtos, setProdutos] = useState([]);
     const [clientes, setClientes] = useState([]);
+    const [paginaClientes, setPaginaClientes] = useState(1);
+    const [letraFiltroCliente, setLetraFiltroCliente] = useState('');
+    
+    const [notasFiscais, setNotasFiscais] = useState([]);
+    const [modalNotaFiscalAberto, setModalNotaFiscalAberto] = useState(false);
+    const [notaFiscalEmEdicao, setNotaFiscalEmEdicao] = useState(null);
+    const [salvandoNotaFiscal, setSalvandoNotaFiscal] = useState(false);
+
     const [darkMode, setDarkMode] = useState(true); 
     
     const isAdmin = usuario?.nivel === 'Administrador';
@@ -611,6 +619,9 @@ function App() {
         if (listaClientes) setClientes(listaClientes);
         const { data: listaUsuarios } = await supabase.from('usuarios').select('*').order('nome', { ascending: true });
         if (listaUsuarios) setUsuariosSistema(listaUsuarios);
+
+        const { data: listaNotas } = await supabase.from('notas_fiscais').select('*').order('created_at', { ascending: false });
+        if (listaNotas) setNotasFiscais(listaNotas);
     }
     
     useEffect(() => {
@@ -910,6 +921,35 @@ function App() {
         setSalvandoCliente(false);
     }
 
+    async function salvarNotaFiscal(e) {
+        e.preventDefault();
+        setSalvandoNotaFiscal(true);
+        const payload = { 
+            servico_feito: notaFiscalEmEdicao.servico_feito, 
+            valor_pago: notaFiscalEmEdicao.valor_pago, 
+            observacoes: notaFiscalEmEdicao.observacoes,
+            cliente: notaFiscalEmEdicao.cliente
+        };
+        const { data, error } = await supabase.from('notas_fiscais').update(payload).eq('id', notaFiscalEmEdicao.id).select();
+        if (!error && data) { 
+            setNotasFiscais(notasFiscais.map(n => n.id === notaFiscalEmEdicao.id ? data[0] : n)); 
+            setModalNotaFiscalAberto(false); 
+        } else {
+            alert('Falha ao atualizar nota: ' + error.message);
+        }
+        setSalvandoNotaFiscal(false);
+    }
+
+    async function concluirNotaFiscal(id) {
+        if (!confirm('Deseja realmente marcar esta nota como concluída? Ela não aparecerá mais nesta lista.')) return;
+        const { data, error } = await supabase.from('notas_fiscais').update({ concluido: true }).eq('id', id).select();
+        if (!error && data) {
+            setNotasFiscais(notasFiscais.map(n => n.id === id ? data[0] : n));
+        } else {
+            alert('Falha ao concluir: ' + error.message);
+        }
+    }
+
     function imprimirOS(pedido) {
         setOsParaImprimir(pedido);
         setTimeout(() => window.print(), 100);
@@ -917,6 +957,13 @@ function App() {
 
     const clientesFiltrados = clientes.filter(c => c.nome.toLowerCase().includes(buscaCliente.toLowerCase()) || (c.telefone && c.telefone.includes(buscaCliente)));
     const produtosFiltrados = produtos.filter(p => p.nome.toLowerCase().includes(buscaProduto.toLowerCase()) || p.id.toString().includes(buscaProduto));
+    
+    const clientesAbaFiltro = clientes.filter(c => {
+        if (!letraFiltroCliente) return true;
+        return c.nome.toUpperCase().startsWith(letraFiltroCliente.toUpperCase());
+    });
+    const clientesPaginados = clientesAbaFiltro.slice((paginaClientes - 1) * itensPorPagina, paginaClientes * itensPorPagina);
+    const totalPaginasClientes = Math.ceil(clientesAbaFiltro.length / itensPorPagina) || 1;
     
     // Filtro Produção Aprimorado (Sem data e buscando em MultiSelect)
     const pedidosProducaoAtivos = pedidos.filter(p => {
@@ -1009,7 +1056,10 @@ function App() {
                             )}
                             <a onClick={() => setAbaAtual('baixa')} className={`transition ${abaAtual === 'baixa' ? 'text-gray-900 dark:text-white font-semibold' : 'hover:text-gray-900 dark:hover:text-white'}`}>Baixa de Notas</a>
                             {(usuario?.nivel === 'Administrador' || usuario?.nivel === 'Financeiro') && (
-                                <a onClick={() => setAbaAtual('financeiro')} className={`transition ${abaAtual === 'financeiro' ? 'text-gray-900 dark:text-white font-semibold' : 'hover:text-gray-900 dark:hover:text-white'}`}>Financeiro</a>
+                                <>
+                                    <a onClick={() => setAbaAtual('financeiro')} className={`transition ${abaAtual === 'financeiro' ? 'text-gray-900 dark:text-white font-semibold' : 'hover:text-gray-900 dark:hover:text-white'}`}>Financeiro</a>
+                                    <a onClick={() => setAbaAtual('notas_fiscais')} className={`transition ${abaAtual === 'notas_fiscais' ? 'text-gray-900 dark:text-white font-semibold' : 'hover:text-gray-900 dark:hover:text-white'}`}>Notas Fiscais</a>
+                                </>
                             )}
                             {isAdmin && (
                                 <a onClick={() => setAbaAtual('produtos')} className={`transition ${abaAtual === 'produtos' ? 'text-gray-900 dark:text-white font-semibold' : 'hover:text-gray-900 dark:hover:text-white'}`}>Catálogo</a>
@@ -1641,15 +1691,90 @@ function App() {
                                 </button>
                             </div>
                         </div>
+                        <div className="mb-4 flex flex-wrap gap-1">
+                            <button onClick={() => { setLetraFiltroCliente(''); setPaginaClientes(1); }} className={`px-2 py-1 text-xs font-bold rounded border ${!letraFiltroCliente ? 'bg-brand text-white border-brand' : 'bg-white dark:bg-darkCard text-gray-600 dark:text-gray-300 border-gray-200 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover'}`}>Todas</button>
+                            {"ABCDEFGHIJKLMNOPQRSTUVWXYZ".split('').map(letra => (
+                                <button key={letra} onClick={() => { setLetraFiltroCliente(letra); setPaginaClientes(1); }} className={`px-2 py-1 text-xs font-bold rounded border ${letraFiltroCliente === letra ? 'bg-brand text-white border-brand' : 'bg-white dark:bg-darkCard text-gray-600 dark:text-gray-300 border-gray-200 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover'}`}>{letra}</button>
+                            ))}
+                        </div>
                         <div className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded overflow-hidden">
                             <table className="w-full text-left border-collapse">
                                 <thead><tr className="border-b border-gray-200 dark:border-darkBorder text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider bg-transparent"><th className="px-6 py-5">Cliente</th><th className="px-6 py-5">WhatsApp</th><th className="px-6 py-5">E-mail</th><th className="px-6 py-5">Observações</th></tr></thead>
                                 <tbody>
-                                    {clientes.map(c => (
+                                    {clientesPaginados.length > 0 ? clientesPaginados.map(c => (
                                         <tr key={c.id} onClick={() => abrirEdicaoCliente(c)} className="border-b border-gray-100 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover transition cursor-pointer"><td className="px-6 py-4 text-sm font-semibold dark:text-[#EDEDED]">{c.nome}</td><td className="px-6 py-4 text-sm text-gray-600 dark:text-[#A1A1AA]">{c.telefone || '---'}</td><td className="px-6 py-4 text-sm text-gray-600 dark:text-[#A1A1AA]">{c.email || '---'}</td><td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-600 truncate max-w-xs">{c.observacoes || '---'}</td></tr>
-                                    ))}
+                                    )) : (
+                                        <tr><td colSpan="4" className="px-6 py-8 text-center text-gray-500 dark:text-[#A1A1AA]">Nenhum cliente encontrado.</td></tr>
+                                    )}
                                 </tbody>
                             </table>
+                        </div>
+                        {totalPaginasClientes > 1 && (
+                            <div className="mt-6 flex justify-between items-center bg-white dark:bg-darkCard p-4 rounded-lg shadow-sm border border-gray-100 dark:border-darkBorder">
+                                <button onClick={() => setPaginaClientes(Math.max(1, paginaClientes - 1))} disabled={paginaClientes === 1} className="px-4 py-2 text-sm font-bold border border-gray-200 dark:border-darkBorder rounded hover:bg-gray-50 dark:hover:bg-darkHover disabled:opacity-50 dark:text-white transition">Anterior</button>
+                                <span className="text-sm font-semibold dark:text-white">Página {paginaClientes} de {totalPaginasClientes}</span>
+                                <button onClick={() => setPaginaClientes(Math.min(totalPaginasClientes, paginaClientes + 1))} disabled={paginaClientes === totalPaginasClientes} className="px-4 py-2 text-sm font-bold border border-gray-200 dark:border-darkBorder rounded hover:bg-gray-50 dark:hover:bg-darkHover disabled:opacity-50 dark:text-white transition">Próxima</button>
+                            </div>
+                        )}
+                    </main>
+                )}
+
+                {abaAtual === 'notas_fiscais' && (usuario?.nivel === 'Administrador' || usuario?.nivel === 'Financeiro') && (
+                    <main className="flex-1 p-6 lg:p-10 max-w-[1200px] mx-auto w-full fade-in">
+                        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 mb-6 border-b border-gray-100 dark:border-darkBorder pb-6 shrink-0">
+                            <div>
+                                <h1 className="text-3xl font-semibold dark:text-white tracking-tight">Notas Fiscais Pendentes</h1>
+                                <p className="text-sm text-gray-500 dark:text-[#888888] mt-1">Notas enviadas pelos clientes aguardando processamento.</p>
+                            </div>
+                            <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
+                                <a href="/solicitar-nota.html" target="_blank" className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover text-gray-800 dark:text-[#EDEDED] h-[38px] px-4 text-sm rounded-md font-bold shadow-sm transition flex items-center gap-2">
+                                    <Icon name="external-link" className="w-4 h-4" /> Link do Formulário
+                                </a>
+                            </div>
+                        </div>
+                        <div className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded overflow-hidden">
+                            <div className="overflow-x-auto custom-scrollbar">
+                                <table className="w-full text-left border-collapse min-w-[800px]">
+                                    <thead>
+                                        <tr className="border-b border-gray-200 dark:border-darkBorder text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider bg-transparent">
+                                            <th className="px-4 py-4">Data</th>
+                                            <th className="px-4 py-4">Cliente / Razão Social</th>
+                                            <th className="px-4 py-4">CNPJ</th>
+                                            <th className="px-4 py-4">Serviço / Valor</th>
+                                            <th className="px-4 py-4 text-right">Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {notasFiscais.filter(n => !n.concluido).map(n => (
+                                            <tr key={n.id} className="border-b border-gray-100 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover transition">
+                                                <td className="px-4 py-3 text-sm dark:text-[#EDEDED] whitespace-nowrap">{new Date(n.created_at).toLocaleDateString('pt-BR')}</td>
+                                                <td className="px-4 py-3">
+                                                    <div className="text-sm font-semibold dark:text-[#EDEDED]">{n.cliente || 'Sem Identificação'}</div>
+                                                    <div className="text-xs text-gray-500 dark:text-[#A1A1AA]">{n.razao_social}</div>
+                                                </td>
+                                                <td className="px-4 py-3 text-sm dark:text-[#EDEDED]">{n.cnpj}</td>
+                                                <td className="px-4 py-3">
+                                                    <div className="text-sm dark:text-[#EDEDED]">{n.servico_feito || <span className="text-gray-400 italic">Pendente</span>}</div>
+                                                    <div className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">{n.valor_pago ? `R$ ${parseFloat(n.valor_pago).toFixed(2).replace('.', ',')}` : ''}</div>
+                                                </td>
+                                                <td className="px-4 py-3 text-right">
+                                                    <div className="flex items-center justify-end gap-2">
+                                                        <button onClick={() => { setNotaFiscalEmEdicao(n); setModalNotaFiscalAberto(true); }} className="p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded transition" title="Editar / Ver Detalhes">
+                                                            <Icon name="edit-3" className="w-4 h-4" />
+                                                        </button>
+                                                        <button onClick={() => concluirNotaFiscal(n.id)} className="p-2 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded transition" title="Concluir Nota">
+                                                            <Icon name="check-circle" className="w-4 h-4" />
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                        {notasFiscais.filter(n => !n.concluido).length === 0 && (
+                                            <tr><td colSpan="5" className="px-6 py-8 text-center text-gray-500 dark:text-[#A1A1AA]">Nenhuma nota fiscal pendente.</td></tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </main>
                 )}
@@ -1994,6 +2119,48 @@ function App() {
                             <textarea rows="2" value={novoCliente.observacoes} onChange={e => setNovoCliente({...novoCliente, observacoes: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand transition dark:text-[#EDEDED]" placeholder="Observações"></textarea>
                             <div className="flex justify-end gap-3"><button type="button" onClick={() => setModalClienteAberto(false)} className="px-4 py-2 rounded text-sm font-medium text-gray-600 dark:text-[#A1A1AA] hover:bg-gray-100 dark:hover:bg-darkHover transition">Cancelar</button><button type="submit" className="px-5 py-2 rounded text-sm font-medium bg-white text-black hover:bg-gray-200 transition">Salvar</button></div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {modalNotaFiscalAberto && notaFiscalEmEdicao && (
+                <div onClick={() => setModalNotaFiscalAberto(false)} className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer">
+                    <div className="bg-white dark:bg-darkCard w-full max-w-2xl rounded shadow-2xl overflow-hidden border border-gray-200 dark:border-darkBorder" onClick={(e) => e.stopPropagation()}>
+                        <div className="px-6 py-5 border-b border-gray-100 dark:border-darkBorder flex justify-between items-center bg-gray-50 dark:bg-darkCard"><h3 className="font-semibold text-lg dark:text-white tracking-tight">Detalhes e Edição da Nota Fiscal</h3><button onClick={() => setModalNotaFiscalAberto(false)} className="text-gray-400 hover:text-white transition"><Icon name="x" /></button></div>
+                        <div className="p-6">
+                            <div className="grid grid-cols-2 gap-6 mb-6">
+                                <div className="space-y-4 bg-gray-50 dark:bg-darkElevated p-4 rounded border border-gray-100 dark:border-darkBorder">
+                                    <h4 className="font-bold text-sm text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">Dados do Cliente (Link)</h4>
+                                    <div><label className="text-xs text-gray-500">Razão Social</label><div className="text-sm dark:text-[#EDEDED] font-medium">{notaFiscalEmEdicao.razao_social || '---'}</div></div>
+                                    <div><label className="text-xs text-gray-500">CNPJ</label><div className="text-sm dark:text-[#EDEDED] font-medium">{notaFiscalEmEdicao.cnpj || '---'}</div></div>
+                                    <div><label className="text-xs text-gray-500">Endereço</label><div className="text-sm dark:text-[#EDEDED] font-medium">{notaFiscalEmEdicao.endereco || '---'}</div></div>
+                                    <div><label className="text-xs text-gray-500">Contato</label><div className="text-sm dark:text-[#EDEDED] font-medium">{notaFiscalEmEdicao.contato || '---'}</div></div>
+                                </div>
+                                <form id="formNota" onSubmit={salvarNotaFiscal} className="space-y-4">
+                                    <h4 className="font-bold text-sm text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">Preenchimento Interno</h4>
+                                    <div>
+                                        <label className="text-xs text-gray-500 mb-1 block">Cliente (Identificação Interna)</label>
+                                        <input value={notaFiscalEmEdicao.cliente || ''} onChange={e => setNotaFiscalEmEdicao({...notaFiscalEmEdicao, cliente: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" placeholder="Nome Fantasia / Cliente" />
+                                    </div>
+                                    <div>
+                                        <label className="text-xs text-gray-500 mb-1 block">Serviço Feito</label>
+                                        <input value={notaFiscalEmEdicao.servico_feito || ''} onChange={e => setNotaFiscalEmEdicao({...notaFiscalEmEdicao, servico_feito: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" placeholder="Qual foi o serviço?" />
+                                    </div>
+                                    <div>
+                                        <label className="text-xs text-gray-500 mb-1 block">Valor Pago (R$)</label>
+                                        <input type="number" step="0.01" value={notaFiscalEmEdicao.valor_pago || ''} onChange={e => setNotaFiscalEmEdicao({...notaFiscalEmEdicao, valor_pago: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" placeholder="0.00" />
+                                    </div>
+                                    <div>
+                                        <label className="text-xs text-gray-500 mb-1 block">Observações</label>
+                                        <textarea rows="2" value={notaFiscalEmEdicao.observacoes || ''} onChange={e => setNotaFiscalEmEdicao({...notaFiscalEmEdicao, observacoes: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" placeholder="Anotações internas..."></textarea>
+                                    </div>
+                                </form>
+                            </div>
+                            <div className="flex justify-end gap-3 pt-4 border-t border-gray-100 dark:border-darkBorder">
+                                <button type="button" onClick={() => setModalNotaFiscalAberto(false)} className="px-4 py-2 rounded text-sm font-medium text-gray-600 dark:text-[#A1A1AA] hover:bg-gray-100 dark:hover:bg-darkHover transition">Cancelar</button>
+                                <button type="submit" form="formNota" disabled={salvandoNotaFiscal} className="px-5 py-2 rounded text-sm font-medium bg-brand text-white hover:bg-brandHover transition disabled:opacity-50">{salvandoNotaFiscal ? 'Salvando...' : 'Salvar Alterações'}</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}
