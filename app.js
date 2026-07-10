@@ -64,6 +64,11 @@ const obterCorStatus = (status) => {
 };
 
 // ==== FORMATADORES ====
+const formatarValorFinanceiro = (valor) => {
+    if (valor == null || isNaN(valor)) return '0,00';
+    return new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(valor);
+};
+
 const formatarMoeda = (valor) => {
     if (!valor) return '';
     const numeroLimpo = valor.toString().replace(/\D/g, ''); 
@@ -950,7 +955,7 @@ function App() {
                     <div className={`${barColor} h-full transition-all duration-500 opacity-80 group-hover:opacity-100`} style={{ width: `${Math.max(pct, 1)}%` }}></div>
                 </div>
                 <span className="w-24 text-right font-bold text-gray-900 dark:text-[#EDEDED]">
-                    R$ {valor.toFixed(2).replace('.', ',')}
+                    R$ {formatarValorFinanceiro(valor)}
                 </span>
             </div>
         )
@@ -1175,7 +1180,7 @@ function App() {
                                                 <td className="px-6 py-4 font-semibold text-sm text-gray-900 dark:text-[#EDEDED]">{p.cliente}</td>
                                                 <td className="px-6 py-4 text-sm text-gray-600 dark:text-[#A1A1AA] truncate max-w-xs">{obterResumoServicos(p.servico)}</td>
                                                 <td className="px-6 py-4"><span className={`px-2.5 py-1 text-[11px] font-bold rounded border bg-gray-50 border-gray-200 dark:bg-darkElevated dark:border-darkBorder ${obterCorStatus(p.status)}`}>{p.status}</span></td>
-                                                <td className="px-6 py-4 font-bold text-sm text-right text-gray-900 dark:text-[#EDEDED]">R$ {Number(p.valor_total).toFixed(2).replace('.', ',')}</td>
+                                                <td className="px-6 py-4 font-bold text-sm text-right text-gray-900 dark:text-[#EDEDED]">R$ {formatarValorFinanceiro(Number(p.valor_total))}</td>
                                                 <td className="px-6 py-4 text-center"><button type="button" onClick={(e) => { e.stopPropagation(); imprimirOS(p); }} className="p-2 text-gray-400 hover:text-brand transition bg-gray-50 hover:bg-orange-50 dark:bg-darkElevated dark:hover:bg-orange-900/20 rounded" title="Imprimir O.S."><Icon name="printer" className="w-4 h-4" /></button></td>
                                             </tr>
                                         )
@@ -1455,7 +1460,7 @@ function App() {
                                         <div className="bg-white dark:bg-darkCard p-5 rounded-xl border border-gray-200 dark:border-darkBorder shadow-sm relative overflow-hidden flex flex-col justify-between">
                                             <div>
                                                 <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">Crescimento (YoY)</span>
-                                                <h2 className="text-xl font-black text-gray-900 dark:text-white">R$ {totalAnoAtual.toFixed(2).replace('.', ',')}</h2>
+                                                <h2 className="text-xl font-black text-gray-900 dark:text-white">R$ {formatarValorFinanceiro(totalAnoAtual)}</h2>
                                             </div>
                                             <div className="mt-2">
                                                 <div className={`inline-flex items-center gap-1 text-[11px] font-bold px-1.5 py-0.5 rounded ${crescimentoPercentual >= 0 ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-red-50 text-red-600 dark:bg-red-900/30 dark:text-red-400'}`}>
@@ -1468,7 +1473,7 @@ function App() {
                                         <div className="bg-purple-50 dark:bg-purple-900/10 p-5 rounded-xl border border-purple-200 dark:border-purple-900/30 shadow-sm relative overflow-hidden flex flex-col justify-between">
                                             <div>
                                                 <span className="text-[10px] font-bold text-purple-600 dark:text-purple-400 uppercase tracking-wider block mb-1">Vendas Hoje</span>
-                                                <h2 className="text-2xl font-black text-purple-600 dark:text-purple-400">R$ {totalVendasHoje.toFixed(2).replace('.', ',')}</h2>
+                                                <h2 className="text-2xl font-black text-purple-600 dark:text-purple-400">R$ {formatarValorFinanceiro(totalVendasHoje)}</h2>
                                             </div>
                                             <p className="text-[10px] text-purple-500/70 dark:text-purple-400/70 mt-2 font-medium">Pedidos lançados hoje</p>
                                         </div>
@@ -1476,7 +1481,7 @@ function App() {
                                         <div className="bg-emerald-50 dark:bg-emerald-900/10 p-5 rounded-xl border border-emerald-200 dark:border-emerald-900/30 shadow-sm flex flex-col justify-between">
                                             <div>
                                                 <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider block mb-1">Total Pago (Recebido)</span>
-                                                <h2 className="text-2xl font-black text-emerald-600 dark:text-emerald-400">R$ {totalRecebido.toFixed(2).replace('.', ',')}</h2>
+                                                <h2 className="text-2xl font-black text-emerald-600 dark:text-emerald-400">R$ {formatarValorFinanceiro(totalRecebido)}</h2>
                                             </div>
                                             <p className="text-[10px] text-emerald-500/70 dark:text-emerald-400/70 mt-2 font-medium">Já entrou no caixa</p>
                                         </div>
@@ -1484,7 +1489,7 @@ function App() {
                                         <div className="bg-orange-50 dark:bg-orange-900/10 p-5 rounded-xl border border-orange-200 dark:border-orange-900/30 shadow-sm flex flex-col justify-between">
                                             <div>
                                                 <span className="text-[10px] font-bold text-orange-600 dark:text-orange-400 uppercase tracking-wider block mb-1">Saldo Devedor (A Receber)</span>
-                                                <h2 className="text-2xl font-black text-orange-600 dark:text-orange-400">R$ {totalAReceber.toFixed(2).replace('.', ',')}</h2>
+                                                <h2 className="text-2xl font-black text-orange-600 dark:text-orange-400">R$ {formatarValorFinanceiro(totalAReceber)}</h2>
                                             </div>
                                             <p className="text-[10px] text-orange-500/70 dark:text-orange-400/70 mt-2 font-medium">Falta receber</p>
                                         </div>
@@ -1492,7 +1497,7 @@ function App() {
                                         <div className="bg-white dark:bg-darkCard p-5 rounded-xl border border-gray-200 dark:border-darkBorder shadow-sm flex flex-col justify-between">
                                             <div>
                                                 <span className="text-[10px] font-bold text-blue-500 uppercase tracking-wider block mb-1">Ticket Médio</span>
-                                                <h2 className="text-2xl font-black text-blue-500">R$ {ticketMedio.toFixed(2).replace('.', ',')}</h2>
+                                                <h2 className="text-2xl font-black text-blue-500">R$ {formatarValorFinanceiro(ticketMedio)}</h2>
                                             </div>
                                             <p className="text-[10px] text-gray-400 mt-2 font-medium">Média por pedido</p>
                                         </div>
@@ -1607,7 +1612,7 @@ function App() {
                                             <td className="px-6 py-4 text-sm font-medium text-gray-500">#{p.id}</td>
                                             <td className="px-6 py-4 text-sm font-semibold dark:text-[#EDEDED]">{p.nome}</td>
                                             <td className="px-6 py-4 text-sm text-gray-600 dark:text-[#A1A1AA] truncate max-w-xs">{p.texto_padrao}</td>
-                                            <td className="px-6 py-4 text-sm font-bold dark:text-[#EDEDED] text-right">R$ {Number(p.preco_base).toFixed(2).replace('.', ',')}</td>
+                                            <td className="px-6 py-4 text-sm font-bold dark:text-[#EDEDED] text-right">R$ {formatarValorFinanceiro(Number(p.preco_base))}</td>
                                             <td className="px-6 py-4 text-center">
                                                 <button type="button" onClick={(e) => excluirProduto(p.id, e)} className="p-2 text-gray-300 hover:text-red-500 dark:text-gray-600 dark:hover:text-red-500 transition rounded hover:bg-red-50 dark:hover:bg-red-950/30 opacity-50 group-hover:opacity-100" title="Excluir Produto">
                                                     <Icon name="trash-2" className="w-4 h-4" />
@@ -1792,7 +1797,7 @@ function App() {
                                                                 setItemAtual({ ...itemAtual, nome: p.nome, descricao: p.texto_padrao, valor: formatarMoeda((p.preco_base * 100).toFixed(0).toString()), desconto: '' }); 
                                                                 setProdutoDropdownAberto(false); 
                                                             }} className="px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-darkHover cursor-pointer border-b border-gray-100 dark:border-darkBorder last:border-0 flex flex-col transition">
-                                                                <div className="flex justify-between items-center"><span className="font-medium text-sm dark:text-[#EDEDED]">{p.nome}</span><span className="text-xs font-bold text-brand">R$ {Number(p.preco_base).toFixed(2).replace('.', ',')}</span></div>
+                                                                <div className="flex justify-between items-center"><span className="font-medium text-sm dark:text-[#EDEDED]">{p.nome}</span><span className="text-xs font-bold text-brand">R$ {formatarValorFinanceiro(Number(p.preco_base))}</span></div>
                                                             </li>
                                                         ))}
                                                     </ul>
@@ -1853,8 +1858,8 @@ function App() {
                                     return (
                                         <>
                                             <div className="mb-4 flex justify-between items-center text-sm">
-                                                <span className="text-gray-600 dark:text-gray-400">Total Pago: <strong className="text-emerald-600">R$ {totalPago.toFixed(2).replace('.', ',')}</strong></span>
-                                                <span className="text-gray-600 dark:text-gray-400">Saldo Devedor: <strong className={saldo > 0 ? "text-red-500" : "text-gray-400"}>R$ {saldo.toFixed(2).replace('.', ',')}</strong></span>
+                                                <span className="text-gray-600 dark:text-gray-400">Total Pago: <strong className="text-emerald-600">R$ {formatarValorFinanceiro(totalPago)}</strong></span>
+                                                <span className="text-gray-600 dark:text-gray-400">Saldo Devedor: <strong className={saldo > 0 ? "text-red-500" : "text-gray-400"}>R$ {formatarValorFinanceiro(saldo)}</strong></span>
                                             </div>
 
                                             {!isModalTrancado && saldo > 0 && (
@@ -2092,7 +2097,7 @@ function App() {
                                                         Serviço formatado manualmente (Verifique as observações gerais abaixo).
                                                     </td>
                                                     <td className="py-2 text-right whitespace-nowrap align-middle font-bold text-sm">
-                                                        R$ {Number(osParaImprimir.valor_total).toFixed(2).replace('.', ',')}
+                                                        R$ {formatarValorFinanceiro(Number(osParaImprimir.valor_total))}
                                                     </td>
                                                 </tr>
                                             )}
@@ -2127,7 +2132,7 @@ function App() {
                                         </div>
                                         <div className="text-right shrink-0">
                                             <span className="text-[10px] uppercase font-bold tracking-widest text-gray-500 block mb-0.5">Total do Pedido</span>
-                                            <h2 className="text-4xl font-black tracking-tight text-gray-900">R$ {Number(osParaImprimir.valor_total).toFixed(2).replace('.', ',')}</h2>
+                                            <h2 className="text-4xl font-black tracking-tight text-gray-900">R$ {formatarValorFinanceiro(Number(osParaImprimir.valor_total))}</h2>
                                         </div>
                                     </div>
                                 </div>
