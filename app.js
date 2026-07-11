@@ -585,7 +585,8 @@ function CalculadoraBanner() {
         const val = calcular().replace('.', ',');
         const dim = `${Math.round(l * 100)}x${Math.round(a * 100)}cm`;
         
-        return `${quantidade} Banner(s) | ${dim} | ${textTipo} | ${textAcab} - R$ ${val}`;
+        const plural = quantidade > 1 ? 'Banners' : 'Banner';
+        return `${quantidade} ${plural} | ${dim} | ${textTipo} | ${textAcab} - R$ ${val}`;
     };
 
     return (
