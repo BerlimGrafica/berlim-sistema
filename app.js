@@ -550,8 +550,6 @@ function CalculadoraBanner() {
         const a = parseFloat(altura.replace(',', '.'));
         if (isNaN(l) || isNaN(a) || l <= 0 || a <= 0) return '0,00';
         
-        const area = l * a;
-        
         let valorM2 = tipo === 'simples' ? 90.0 : 130.0;
         
         if (acabamento === 'sem_acabamento') {
@@ -560,12 +558,13 @@ function CalculadoraBanner() {
 
         let precoUnitario = 0;
         
-        if (area <= 0.5) {
-            precoUnitario = 65.0; // Até 50x100cm (0.5m²)
-        } else if (area <= 1.0) {
-            precoUnitario = valorM2; // Entre 50x100cm e 100x100cm (1m²)
+        if (l <= 1 && a <= 1) { // none is > 1
+            const areaFisica = l * a;
+            if (areaFisica <= 0.5) precoUnitario = 65.0;
+            else precoUnitario = valorM2;
         } else {
-            precoUnitario = area * valorM2; // Acima de 1m²
+            const areaCobrada = Math.max(l, 1) * Math.max(a, 1);
+            precoUnitario = areaCobrada * valorM2;
         }
         
         // Multiplicador de prazo
@@ -574,6 +573,19 @@ function CalculadoraBanner() {
         if (prazo === 'mesmo_dia') multiplicadorPrazo = 1.6; // +60%
         
         return ((precoUnitario * multiplicadorPrazo) * quantidade).toFixed(2);
+    };
+
+    const gerarTextoCopia = () => {
+        const l = parseFloat(largura.replace(',', '.'));
+        const a = parseFloat(altura.replace(',', '.'));
+        if (isNaN(l) || isNaN(a) || l <= 0 || a <= 0) return '';
+        
+        const textTipo = tipo === 'simples' ? 'Lona 440g Brilho | Sem Laminação (Película de proteção)' : 'Lona 440g Brilho | Laminado Brilho ou Fosco';
+        const textAcab = acabamento === 'bastao_corda' ? 'Acabamento em Bastão e Corda' : acabamento === 'ilhos' ? 'Acabamento em Ilhós (Argolas de Ferro)' : 'Sem Acabamento';
+        const val = calcular().replace('.', ',');
+        const dim = `${Math.round(l * 100)}x${Math.round(a * 100)}cm`;
+        
+        return `${quantidade} Banner(s) | ${dim} | ${textTipo} | ${textAcab} - R$ ${val}`;
     };
 
     return (
@@ -591,8 +603,8 @@ function CalculadoraBanner() {
                 <div>
                     <label className="block text-xs font-bold text-gray-500 mb-1">Tipo de Lona</label>
                     <select value={tipo} onChange={e => setTipo(e.target.value)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition">
-                        <option value="simples">Lona Simples (R$ 90/m²)</option>
-                        <option value="laminado">Lona Laminada Brilho/Fosco (R$ 130/m²)</option>
+                        <option value="simples">Lona 440g Brilho (R$ 90/m²)</option>
+                        <option value="laminado">Lona 440g Brilho Laminada (R$ 130/m²)</option>
                     </select>
                 </div>
                 <div>
@@ -616,6 +628,18 @@ function CalculadoraBanner() {
                     <input type="number" min="1" value={quantidade} onChange={e => setQuantidade(parseInt(e.target.value) || 1)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" />
                 </div>
             </div>
+            
+            <div className="flex flex-col md:flex-row gap-4 mb-4">
+                <div className="flex-1 bg-gray-50 dark:bg-darkElevated p-3 rounded border border-gray-100 dark:border-darkBorder flex items-center gap-3 shadow-sm">
+                    <div className="text-[11px] text-gray-600 dark:text-[#A1A1AA] flex-1 font-mono break-all line-clamp-2">
+                        {gerarTextoCopia() || 'Preencha as medidas para gerar o texto da proposta...'}
+                    </div>
+                    <button onClick={() => { if(gerarTextoCopia()) navigator.clipboard.writeText(gerarTextoCopia()) }} className="w-8 h-8 flex items-center justify-center shrink-0 bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded hover:text-brand transition shadow-sm" title="Copiar Texto">
+                        <Icon name="copy" className="w-4 h-4" />
+                    </button>
+                </div>
+            </div>
+
             <div className="bg-brand/10 p-4 rounded-lg flex items-center justify-between border border-brand/20">
                 <span className="font-semibold text-brand">Total Estimado</span>
                 <span className="text-2xl font-black text-brand">R$ {calcular().replace('.', ',')}</span>
