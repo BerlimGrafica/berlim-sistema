@@ -1462,7 +1462,7 @@ function App() {
                                                     <div className="flex items-center gap-1.5">{p.cliente} {isClienteProblema(p.cliente) && <Icon name="alert-triangle" className="w-4 h-4 text-red-500 shrink-0" title="Cliente Problema" />}</div>
                                                 </td>
                                                 <td className="px-6 py-4 text-sm text-gray-600 dark:text-[#A1A1AA] truncate max-w-xs">{obterResumoServicos(p.servico)}</td>
-                                                <td className="px-6 py-4"><span className={`px-2.5 py-1 text-[11px] font-bold rounded border bg-gray-50 border-gray-200 dark:bg-darkElevated dark:border-darkBorder ${obterCorStatus(p.status)}`}>{p.status}</span></td>
+                                                <td className="px-6 py-4"><span className={`whitespace-nowrap px-2.5 py-1 text-[11px] font-bold rounded border bg-gray-50 border-gray-200 dark:bg-darkElevated dark:border-darkBorder ${obterCorStatus(p.status)}`}>{p.status}</span></td>
                                                 <td className="px-6 py-4 font-bold text-sm text-right text-gray-900 dark:text-[#EDEDED]">R$ {formatarValorFinanceiro(Number(p.valor_total))}</td>
                                                 <td className="px-6 py-4 text-center"><button type="button" onClick={(e) => { e.stopPropagation(); imprimirOS(p); }} className="p-2 text-gray-400 hover:text-brand transition bg-gray-50 hover:bg-orange-50 dark:bg-darkElevated dark:hover:bg-orange-900/20 rounded" title="Imprimir O.S."><Icon name="printer" className="w-4 h-4" /></button></td>
                                             </tr>
