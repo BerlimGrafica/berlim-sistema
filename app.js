@@ -8,6 +8,7 @@ const supabase = window.supabase.createClient(
 // ==== ÍCONES NATIVOS ====
 function Icon({ name, className = "w-4 h-4" }) {
     if (name === 'printer') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>;
+    if (name === 'copy') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>;
     if (name === 'sun') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg>;
     if (name === 'moon') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg>;
     if (name === 'plus') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>;
@@ -2011,7 +2012,7 @@ function App() {
                                                 <td className="px-4 py-3 text-sm dark:text-[#EDEDED]">{n.cnpj}</td>
                                                 <td className="px-4 py-3">
                                                     <div className="text-sm dark:text-[#EDEDED]">{n.servico_feito || <span className="text-gray-400 italic">Pendente</span>}</div>
-                                                    <div className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">{n.valor_pago ? `R$ ${parseFloat(n.valor_pago).toFixed(2).replace('.', ',')}` : ''}</div>
+                                                    <div className="text-xs font-semibold text-orange-500 dark:text-orange-400">{n.valor_pago ? `R$ ${parseFloat(n.valor_pago).toFixed(2).replace('.', ',')}` : ''}</div>
                                                 </td>
                                                 <td className="px-4 py-3 text-right">
                                                     <div className="flex items-center justify-end gap-2">
@@ -2417,9 +2418,9 @@ function App() {
                             <div className="grid grid-cols-2 gap-6 mb-6">
                                 <div className="space-y-4 bg-gray-50 dark:bg-darkElevated p-4 rounded border border-gray-100 dark:border-darkBorder">
                                     <h4 className="font-bold text-sm text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">Dados do Cliente (Link)</h4>
-                                    <div><label className="text-xs text-gray-500">Razão Social</label><div className="text-sm dark:text-[#EDEDED] font-medium">{notaFiscalEmEdicao.razao_social || '---'}</div></div>
-                                    <div><label className="text-xs text-gray-500">CNPJ</label><div className="text-sm dark:text-[#EDEDED] font-medium">{notaFiscalEmEdicao.cnpj || '---'}</div></div>
-                                    <div><label className="text-xs text-gray-500">Endereço</label><div className="text-sm dark:text-[#EDEDED] font-medium">{notaFiscalEmEdicao.endereco || '---'}</div></div>
+                                    <div><label className="text-xs text-gray-500">Razão Social</label><div className="flex items-center gap-2"><div className="text-sm dark:text-[#EDEDED] font-medium">{notaFiscalEmEdicao.razao_social || '---'}</div>{notaFiscalEmEdicao.razao_social && <button type="button" onClick={() => navigator.clipboard.writeText(notaFiscalEmEdicao.razao_social)} className="text-gray-400 hover:text-brand transition" title="Copiar"><Icon name="copy" className="w-3.5 h-3.5" /></button>}</div></div>
+                                    <div><label className="text-xs text-gray-500">CNPJ</label><div className="flex items-center gap-2"><div className="text-sm dark:text-[#EDEDED] font-medium">{notaFiscalEmEdicao.cnpj || '---'}</div>{notaFiscalEmEdicao.cnpj && <button type="button" onClick={() => navigator.clipboard.writeText(notaFiscalEmEdicao.cnpj)} className="text-gray-400 hover:text-brand transition" title="Copiar"><Icon name="copy" className="w-3.5 h-3.5" /></button>}</div></div>
+                                    <div><label className="text-xs text-gray-500">Endereço</label><div className="flex items-center gap-2"><div className="text-sm dark:text-[#EDEDED] font-medium">{notaFiscalEmEdicao.endereco || '---'}</div>{notaFiscalEmEdicao.endereco && <button type="button" onClick={() => navigator.clipboard.writeText(notaFiscalEmEdicao.endereco)} className="text-gray-400 hover:text-brand transition" title="Copiar"><Icon name="copy" className="w-3.5 h-3.5" /></button>}</div></div>
                                     <div><label className="text-xs text-gray-500">Contato</label><div className="text-sm dark:text-[#EDEDED] font-medium">{notaFiscalEmEdicao.contato || '---'}</div></div>
                                 </div>
                                 <form id="formNota" onSubmit={salvarNotaFiscal} className="space-y-4">
@@ -2498,7 +2499,7 @@ function App() {
                                         </div>
                                         
                                         <div className="text-right text-[11px] text-gray-600 flex flex-col justify-end mt-1">
-                                            <p className="font-bold text-gray-900 uppercase tracking-wide">Berlim Gráfica Rápida</p>
+
                                             <p>CNPJ: 36.117.136/0001-23</p>
                                             <p>R. Alencastro, 42 - Silveira</p>
                                             <p>Santo André - SP, 09110-050</p>
