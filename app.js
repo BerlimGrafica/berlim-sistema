@@ -1220,10 +1220,7 @@ function App() {
             <div className="flex min-h-screen items-center justify-center bg-black text-white p-4 select-none font-sans">
                 <div className="w-full max-w-sm bg-darkCard border border-darkBorder rounded-xl p-8 shadow-2xl flex flex-col gap-6">
                     <div className="text-center flex flex-col items-center">
-                        <div className="w-12 h-12 bg-brand text-white flex items-center justify-center rounded-lg mb-3 shadow-md shadow-brand/10">
-                            <Icon name="printer" className="w-6 h-6 text-white" />
-                        </div>
-                        <h2 className="text-xl font-bold tracking-tight">Berlim Gráfica</h2>
+                        <img src="https://www.berlimgraficarapida.com.br/wp-content/uploads/elementor/thumbs/logosite-rm0erpiqj90gcf7ff4jp8ujys78opflob1b9vn5jjs.png" alt="Berlim Gráfica" className="h-12 object-contain mb-3" />
                         <p className="text-xs text-gray-400 mt-1">Insira suas credenciais para acessar o ERP</p>
                     </div>
                     
