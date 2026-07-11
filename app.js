@@ -503,6 +503,9 @@ function App() {
     const [letraFiltroCliente, setLetraFiltroCliente] = useState('');
     
     const [notasFiscais, setNotasFiscais] = useState([]);
+    const [filtroNotas, setFiltroNotas] = useState('pendentes');
+    const [buscaNotaFiscal, setBuscaNotaFiscal] = useState('');
+    const [paginaNotasFiscais, setPaginaNotasFiscais] = useState(1);
     const [modalNotaFiscalAberto, setModalNotaFiscalAberto] = useState(false);
     const [notaFiscalEmEdicao, setNotaFiscalEmEdicao] = useState(null);
     const [salvandoNotaFiscal, setSalvandoNotaFiscal] = useState(false);
@@ -1078,6 +1081,19 @@ function App() {
     });
     const clientesPaginados = clientesAbaFiltro.slice((paginaClientes - 1) * itensPorPagina, paginaClientes * itensPorPagina);
     const totalPaginasClientes = Math.ceil(clientesAbaFiltro.length / itensPorPagina) || 1;
+
+    // Filtros e paginação da aba Notas Fiscais
+    const notasFiscaisAbaFiltro = notasFiscais.filter(n => {
+        const checkStatus = filtroNotas === 'pendentes' ? !n.concluido : n.concluido;
+        if (!checkStatus) return false;
+        if (!buscaNotaFiscal) return true;
+        const termo = buscaNotaFiscal.toLowerCase();
+        return (n.cliente && n.cliente.toLowerCase().includes(termo)) || 
+               (n.razao_social && n.razao_social.toLowerCase().includes(termo)) || 
+               (n.cnpj && n.cnpj.toLowerCase().includes(termo));
+    });
+    const notasFiscaisPaginadas = notasFiscaisAbaFiltro.slice((paginaNotasFiscais - 1) * itensPorPagina, paginaNotasFiscais * itensPorPagina);
+    const totalPaginasNotasFiscais = Math.ceil(notasFiscaisAbaFiltro.length / itensPorPagina) || 1;
     
     // Filtro Produção Aprimorado (Sem data e buscando em MultiSelect)
     const pedidosProducaoAtivos = pedidos.filter(p => {
@@ -1172,7 +1188,10 @@ function App() {
                             {(usuario?.nivel === 'Administrador' || usuario?.nivel === 'Financeiro') && (
                                 <>
                                     <a onClick={() => setAbaAtual('financeiro')} className={`transition ${abaAtual === 'financeiro' ? 'text-gray-900 dark:text-white font-semibold' : 'hover:text-gray-900 dark:hover:text-white'}`}>Financeiro</a>
-                                    <a onClick={() => setAbaAtual('notas_fiscais')} className={`transition ${abaAtual === 'notas_fiscais' ? 'text-gray-900 dark:text-white font-semibold' : 'hover:text-gray-900 dark:hover:text-white'}`}>Notas Fiscais</a>
+                                    <a onClick={() => setAbaAtual('notas_fiscais')} className={`transition ${abaAtual === 'notas_fiscais' ? 'text-gray-900 dark:text-white font-semibold' : 'hover:text-gray-900 dark:hover:text-white'} flex items-center gap-1.5`}>
+                                        Notas Fiscais
+                                        {notasFiscais.some(n => !n.concluido) && <span className="w-2 h-2 rounded-full bg-emerald-500 shadow shadow-emerald-500/50"></span>}
+                                    </a>
                                 </>
                             )}
                             {isAdmin && (
@@ -1848,10 +1867,24 @@ function App() {
                     <main className="flex-1 p-6 lg:p-10 max-w-[1200px] mx-auto w-full fade-in">
                         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 mb-6 border-b border-gray-100 dark:border-darkBorder pb-6 shrink-0">
                             <div>
-                                <h1 className="text-3xl font-semibold dark:text-white tracking-tight">Notas Fiscais Pendentes</h1>
-                                <p className="text-sm text-gray-500 dark:text-[#888888] mt-1">Notas enviadas pelos clientes aguardando processamento.</p>
+                                <h1 className="text-3xl font-semibold dark:text-white tracking-tight">Notas Fiscais {filtroNotas === 'pendentes' ? 'Pendentes' : 'Concluídas'}</h1>
+                                <p className="text-sm text-gray-500 dark:text-[#888888] mt-1">{filtroNotas === 'pendentes' ? 'Notas enviadas pelos clientes aguardando processamento.' : 'Histórico de notas já emitidas e processadas.'}</p>
                             </div>
                             <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
+                                <div className="relative w-full lg:w-64">
+                                    <Icon name="search" className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                                    <input 
+                                        type="text" 
+                                        placeholder="Buscar por nome, razão ou CNPJ..." 
+                                        value={buscaNotaFiscal} 
+                                        onChange={(e) => { setBuscaNotaFiscal(e.target.value); setPaginaNotasFiscais(1); }}
+                                        className="w-full pl-9 pr-4 py-1.5 h-[38px] text-sm border border-gray-200 dark:border-darkBorder bg-white dark:bg-darkCard rounded-md focus:outline-none focus:ring-2 focus:ring-brand dark:text-white transition"
+                                    />
+                                </div>
+                                <div className="flex bg-gray-100 dark:bg-darkHover rounded p-1">
+                                    <button onClick={() => { setFiltroNotas('pendentes'); setPaginaNotasFiscais(1); }} className={`px-4 py-1.5 text-sm font-semibold rounded ${filtroNotas === 'pendentes' ? 'bg-white dark:bg-darkCard shadow text-gray-900 dark:text-white' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'} transition`}>Pendentes</button>
+                                    <button onClick={() => { setFiltroNotas('concluidas'); setPaginaNotasFiscais(1); }} className={`px-4 py-1.5 text-sm font-semibold rounded ${filtroNotas === 'concluidas' ? 'bg-white dark:bg-darkCard shadow text-gray-900 dark:text-white' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'} transition`}>Concluídas</button>
+                                </div>
                                 <a href="/solicitar-nota.html" target="_blank" className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover text-gray-800 dark:text-[#EDEDED] h-[38px] px-4 text-sm rounded-md font-bold shadow-sm transition flex items-center gap-2">
                                     <Icon name="external-link" className="w-4 h-4" /> Link do Formulário
                                 </a>
@@ -1870,7 +1903,7 @@ function App() {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {notasFiscais.filter(n => !n.concluido).map(n => (
+                                        {notasFiscaisPaginadas.map(n => (
                                             <tr key={n.id} className="border-b border-gray-100 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover transition">
                                                 <td className="px-4 py-3 text-sm dark:text-[#EDEDED] whitespace-nowrap">{new Date(n.created_at).toLocaleDateString('pt-BR')}</td>
                                                 <td className="px-4 py-3">
@@ -1900,11 +1933,19 @@ function App() {
                                                 </td>
                                             </tr>
                                         ))}
-                                        {notasFiscais.filter(n => !n.concluido).length === 0 && (
-                                            <tr><td colSpan="5" className="px-6 py-8 text-center text-gray-500 dark:text-[#A1A1AA]">Nenhuma nota fiscal pendente.</td></tr>
+                                        {notasFiscaisPaginadas.length === 0 && (
+                                            <tr><td colSpan="5" className="px-6 py-8 text-center text-gray-500 dark:text-[#A1A1AA]">Nenhuma nota fiscal encontrada.</td></tr>
                                         )}
                                     </tbody>
                                 </table>
+                            </div>
+                            {totalPaginasNotasFiscais > 1 && (
+                                <div className="mt-6 flex justify-between items-center p-4">
+                                    <button onClick={() => setPaginaNotasFiscais(Math.max(1, paginaNotasFiscais - 1))} disabled={paginaNotasFiscais === 1} className="px-4 py-2 text-sm font-bold border border-gray-200 dark:border-darkBorder rounded hover:bg-gray-50 dark:hover:bg-darkHover disabled:opacity-50 dark:text-white transition">Anterior</button>
+                                    <span className="text-sm font-semibold dark:text-white">Página {paginaNotasFiscais} de {totalPaginasNotasFiscais}</span>
+                                    <button onClick={() => setPaginaNotasFiscais(Math.min(totalPaginasNotasFiscais, paginaNotasFiscais + 1))} disabled={paginaNotasFiscais === totalPaginasNotasFiscais} className="px-4 py-2 text-sm font-bold border border-gray-200 dark:border-darkBorder rounded hover:bg-gray-50 dark:hover:bg-darkHover disabled:opacity-50 dark:text-white transition">Próxima</button>
+                                </div>
+                            )}
                             </div>
                         </div>
                     </main>
