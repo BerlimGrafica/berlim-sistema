@@ -657,26 +657,74 @@ function CalculadoraAdesivo() {
     const [quantidade, setQuantidade] = useState(100);
 
     const precosVinil = {
-        'vinil_branco': 45.0,
-        'vinil_transparente': 45.0,
-        'vinil_fosco': 45.0,
-        'perfurado': 65.0
+        'vinil_branco': 90.0,
+        'vinil_fosco': 90.0,
+        'vinil_transparente': 115.0,
+        'vinil_laminado_brilho': 130.0,
+        'vinil_laminado_fosco': 130.0
+    };
+
+    const calculaCabem = (areaW, areaH, adW, adH) => {
+        return Math.floor(areaW / adW) * Math.floor(areaH / adH);
     };
 
     const calcular = () => {
-        const l = parseFloat(largura.replace(',', '.')) / 100; // cm para m
-        const a = parseFloat(altura.replace(',', '.')) / 100;
-        if (isNaN(l) || isNaN(a) || l <= 0 || a <= 0) return '0,00';
+        const lRaw = parseFloat(largura.replace(',', '.'));
+        const aRaw = parseFloat(altura.replace(',', '.'));
+        if (isNaN(lRaw) || isNaN(aRaw) || lRaw <= 0 || aRaw <= 0) return '0,00';
         
-        const areaTotal = (l * a) * quantidade;
-        let precoM2 = precosVinil[tipo];
+        // Sangria de 0,2cm
+        const l = lRaw + 0.2;
+        const a = aRaw + 0.2;
         
-        if (recorte === 'contorno') precoM2 += 25.0; // Adicional de recorte
+        const valorM2 = precosVinil[tipo] || 90.0;
+        const precoSRA3 = valorM2 * (33.0 / 90.0);
+        const precoMeioMetro = valorM2 * (66.0 / 90.0);
+        const preco1Metro = valorM2;
 
-        let total = areaTotal * precoM2;
-        if (total > 0 && total < 15) total = 15.0; // Preço mínimo
+        const qSRA3 = calculaCabem(30, 43, l, a);
+        const qMeio = calculaCabem(46, 96, l, a);
+        const qMetro = calculaCabem(96, 96, l, a);
+
+        let total = 0;
+
+        if (qSRA3 > 0 && quantidade <= qSRA3) {
+            total = precoSRA3;
+        } else if (qMeio > 0 && quantidade <= qMeio) {
+            total = precoMeioMetro;
+        } else if (qMetro > 0 && quantidade <= qMetro) {
+            total = preco1Metro;
+        } else {
+            if (qMetro > 0) {
+                const metrosNecessarios = quantidade / qMetro;
+                total = metrosNecessarios * preco1Metro;
+            } else {
+                // Adesivo maior que a área útil de 1m, calcula por m² linear/quadrado puro
+                const areaFisica = (l * a) / 10000;
+                total = (areaFisica * quantidade) * preco1Metro;
+            }
+        }
 
         return total.toFixed(2);
+    };
+
+    const gerarTextoCopia = () => {
+        const lRaw = parseFloat(largura.replace(',', '.'));
+        const aRaw = parseFloat(altura.replace(',', '.'));
+        if (isNaN(lRaw) || isNaN(aRaw) || lRaw <= 0 || aRaw <= 0) return '';
+        
+        let nomeTipo = 'Vinil';
+        if (tipo === 'vinil_branco') nomeTipo = 'Vinil Branco Brilho';
+        if (tipo === 'vinil_fosco') nomeTipo = 'Vinil Branco Fosco';
+        if (tipo === 'vinil_transparente') nomeTipo = 'Vinil Transparente';
+        if (tipo === 'vinil_laminado_brilho') nomeTipo = 'Vinil Laminado Brilho';
+        if (tipo === 'vinil_laminado_fosco') nomeTipo = 'Vinil Laminado Fosco';
+        
+        const nomeRecorte = recorte === 'reto' ? 'Corte Reto' : 'Meio Corte / Contorno';
+        const val = calcular().replace('.', ',');
+        
+        const plural = quantidade > 1 ? 'Adesivos' : 'Adesivo';
+        return `${quantidade} ${plural} | ${lRaw}x${aRaw}cm | ${nomeTipo} | ${nomeRecorte} - R$ ${val}`;
     };
 
     return (
@@ -694,10 +742,11 @@ function CalculadoraAdesivo() {
                 <div>
                     <label className="block text-xs font-bold text-gray-500 mb-1">Tipo de Adesivo</label>
                     <select value={tipo} onChange={e => setTipo(e.target.value)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition">
-                        <option value="vinil_branco">Vinil Branco Brilho</option>
-                        <option value="vinil_fosco">Vinil Branco Fosco</option>
-                        <option value="vinil_transparente">Vinil Transparente</option>
-                        <option value="perfurado">Vinil Perfurado</option>
+                        <option value="vinil_branco">Vinil Branco Brilho (R$ 90/m²)</option>
+                        <option value="vinil_fosco">Vinil Branco Fosco (R$ 90/m²)</option>
+                        <option value="vinil_transparente">Vinil Transparente (R$ 115/m²)</option>
+                        <option value="vinil_laminado_brilho">Vinil Laminado Brilho (R$ 130/m²)</option>
+                        <option value="vinil_laminado_fosco">Vinil Laminado Fosco (R$ 130/m²)</option>
                     </select>
                 </div>
                 <div>
@@ -712,6 +761,18 @@ function CalculadoraAdesivo() {
                     <input type="number" min="1" value={quantidade} onChange={e => setQuantidade(parseInt(e.target.value) || 1)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" />
                 </div>
             </div>
+
+            <div className="flex flex-col md:flex-row gap-4 mb-4">
+                <div className="flex-1 bg-gray-50 dark:bg-darkElevated p-3 rounded border border-gray-100 dark:border-darkBorder flex items-center gap-3 shadow-sm">
+                    <div className="text-[11px] text-gray-600 dark:text-[#A1A1AA] flex-1 font-mono break-all line-clamp-2">
+                        {gerarTextoCopia() || 'Preencha as medidas para gerar o texto da proposta...'}
+                    </div>
+                    <button onClick={() => { if(gerarTextoCopia()) navigator.clipboard.writeText(gerarTextoCopia()) }} className="w-8 h-8 flex items-center justify-center shrink-0 bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded hover:text-brand transition shadow-sm" title="Copiar Texto">
+                        <Icon name="copy" className="w-4 h-4" />
+                    </button>
+                </div>
+            </div>
+
             <div className="bg-brand/10 p-4 rounded-lg flex items-center justify-between border border-brand/20">
                 <span className="font-semibold text-brand">Total Estimado</span>
                 <span className="text-2xl font-black text-brand">R$ {calcular().replace('.', ',')}</span>
