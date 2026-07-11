@@ -560,7 +560,7 @@ function App() {
 
     const [modalClienteAberto, setModalClienteAberto] = useState(false);
     const [salvandoCliente, setSalvandoCliente] = useState(false);
-    const [novoCliente, setNovoCliente] = useState({ id: null, nome: '', telefone: '', email: '', observacoes: '' });
+    const [novoCliente, setNovoCliente] = useState({ id: null, nome: '', telefone: '', email: '', observacoes: '', cliente_problema: false });
 
     const [modalUsuarioAberto, setModalUsuarioAberto] = useState(false);
     const [novoUsuario, setNovoUsuario] = useState({ id: null, nome: '', senha: '', nivel: 'Produção/Atendimento' });
@@ -596,6 +596,12 @@ function App() {
             };
         }
     }, [usuario]);
+
+    const isClienteProblema = (nome) => {
+        if (!nome) return false;
+        const c = clientes.find(cliente => cliente.nome === nome);
+        return c ? c.cliente_problema : false;
+    };
 
     async function carregarDados() {
         let todosPedidos = [];
@@ -758,7 +764,7 @@ function App() {
     }
 
     function abrirEdicaoCliente(cliente) {
-        setNovoCliente({ id: cliente.id, nome: cliente.nome, telefone: cliente.telefone, email: cliente.email, observacoes: cliente.observacoes });
+        setNovoCliente({ id: cliente.id, nome: cliente.nome, telefone: cliente.telefone, email: cliente.email, observacoes: cliente.observacoes, cliente_problema: cliente.cliente_problema || false });
         setModalClienteAberto(true);
     }
 
@@ -969,7 +975,7 @@ function App() {
     async function salvarCliente(e) {
         e.preventDefault();
         setSalvandoCliente(true);
-        const clienteFormatado = { nome: novoCliente.nome, telefone: novoCliente.telefone, email: novoCliente.email, observacoes: novoCliente.observacoes };
+        const clienteFormatado = { nome: novoCliente.nome, telefone: novoCliente.telefone, email: novoCliente.email, observacoes: novoCliente.observacoes, cliente_problema: novoCliente.cliente_problema || false };
 
         if (clienteFormatado.telefone && clienteFormatado.telefone.trim() !== '') {
             const telNormalizado = clienteFormatado.telefone.replace(/\D/g, '');
@@ -988,11 +994,11 @@ function App() {
 
         if (novoCliente.id) {
             const { data, error } = await supabase.from('clientes').update(clienteFormatado).eq('id', novoCliente.id).select();
-            if (!error && data) { setClientes(clientes.map(c => c.id === novoCliente.id ? data[0] : c)); setModalClienteAberto(false); setNovoCliente({ id: null, nome: '', telefone: '', email: '', observacoes: '' }); } 
+            if (!error && data) { setClientes(clientes.map(c => c.id === novoCliente.id ? data[0] : c)); setModalClienteAberto(false); setNovoCliente({ id: null, nome: '', telefone: '', email: '', observacoes: '', cliente_problema: false }); } 
             else alert('Falha ao atualizar: ' + error.message);
         } else {
             const { data, error } = await supabase.from('clientes').insert([clienteFormatado]).select();
-            if (!error && data) { setClientes([...clientes, data[0]]); setNovoPedido({...novoPedido, cliente: data[0].nome}); setBuscaCliente(data[0].nome); setModalClienteAberto(false); setNovoCliente({ id: null, nome: '', telefone: '', email: '', observacoes: '' }); } 
+            if (!error && data) { setClientes([...clientes, data[0]]); setNovoPedido({...novoPedido, cliente: data[0].nome}); setBuscaCliente(data[0].nome); setModalClienteAberto(false); setNovoCliente({ id: null, nome: '', telefone: '', email: '', observacoes: '', cliente_problema: false }); } 
             else alert('Falha ao salvar: ' + error.message);
         }
         setSalvandoCliente(false);
@@ -1259,17 +1265,14 @@ function App() {
                                             <th className="px-6 py-4 w-32">Resp.</th>
                                             <th className="px-6 py-4">Cliente</th>
                                             <th className="px-6 py-4 min-w-[200px]">Serviço</th>
-                                            <th className="px-6 py-4 w-20 text-center">Aprov.</th>
-                                            <th className="px-6 py-4 w-20 text-center">Entrega</th>
-                                            <th className="px-6 py-4 w-20 text-center">Urgente</th>
                                             <th className="px-6 py-4 w-48">Status</th>
                                             <th className="px-6 py-4 w-36">Local</th>
-                                            <th className="px-6 py-4 w-24 text-center">Concluir</th>
+                                            <th className="px-6 py-4 w-40 text-right">Ações</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {pedidosProducaoAtivos.length === 0 ? (
-                                            <tr><td colSpan="11" className="p-8 text-center text-gray-500 italic">Nenhuma OS encontrada.</td></tr>
+                                            <tr><td colSpan="8" className="p-8 text-center text-gray-500 italic">Nenhuma OS encontrada.</td></tr>
                                         ) : (
                                             STATUSES_PRODUCAO.map(status => {
                                                 const pedidosDoStatus = pedidosProducaoAtivos
@@ -1285,7 +1288,7 @@ function App() {
                                                 return (
                                                     <React.Fragment key={status}>
                                                         <tr className="bg-gray-50/50 dark:bg-darkElevated/40 select-none">
-                                                            <td colSpan="11" className={`px-4 py-2 border-y border-gray-200 dark:border-darkBorder font-bold tracking-wide uppercase text-[10px] bg-gray-100/50 dark:bg-darkHover/40 ${obterCorStatus(status)}`}>
+                                                            <td colSpan="8" className={`px-4 py-2 border-y border-gray-200 dark:border-darkBorder font-bold tracking-wide uppercase text-[10px] bg-gray-100/50 dark:bg-darkHover/40 ${obterCorStatus(status)}`}>
                                                                 {status} — <span className="text-gray-400 dark:text-gray-500">{pedidosDoStatus.length} {pedidosDoStatus.length === 1 ? 'pedido' : 'pedidos'}</span>
                                                             </td>
                                                         </tr>
@@ -1294,14 +1297,28 @@ function App() {
                                                                 <td className="px-4 py-3 font-medium text-gray-400 dark:text-gray-600 text-center"><button type="button" onClick={() => abrirEdicao(p)} className="hover:text-brand transition">#{p.id}</button></td>
                                                                 <td className="px-4 py-3"><CustomDatePicker value={p.prazo || ''} onChange={val => atualizarCampoInline(p.id, 'prazo', val)} placeholder="Definir prazo..." className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-2.5 py-1.5 text-xs outline-none hover:border-brand transition text-gray-700 dark:text-[#EDEDED]" /></td>
                                                                 <td className="px-4 py-3"><MultiSelectDropdown value={p.responsavel} options={RESPONSAVEIS} onChange={(val) => atualizarCampoInline(p.id, 'responsavel', val)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-2.5 py-1.5 text-xs outline-none hover:border-brand" /></td>
-                                                                <td className="px-4 py-3 font-semibold text-gray-900 dark:text-white truncate max-w-[12rem]">{p.cliente}</td>
+                                                                <td className={`px-4 py-3 font-semibold truncate max-w-[12rem] ${isClienteProblema(p.cliente) ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-white'}`}>
+                                                                    <div className="flex items-center gap-1.5">{p.cliente} {isClienteProblema(p.cliente) && <Icon name="alert-triangle" className="w-3.5 h-3.5 text-red-500 shrink-0" title="Cliente Problema" />}</div>
+                                                                </td>
                                                                 <td className="px-4 py-3 text-gray-800 dark:text-white font-medium truncate max-w-[18rem]">{obterResumoServicos(p.servico)}</td>
-                                                                <td className="px-4 py-3 text-center"><button type="button" onClick={() => atualizarCampoInline(p.id, 'aprovado', !p.aprovado)} className={`p-1.5 rounded-md transition ${p.aprovado ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-gray-100 text-gray-400 dark:bg-darkElevated dark:text-gray-600 hover:text-gray-600 dark:hover:text-gray-400'}`}><Icon name="thumbs-up" className="w-3.5 h-3.5" /></button></td>
-                                                                <td className="px-4 py-3 text-center"><button type="button" onClick={() => atualizarCampoInline(p.id, 'entrega', !p.entrega)} className={`p-1.5 rounded-md transition ${p.entrega ? 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400' : 'bg-gray-100 text-gray-400 dark:bg-darkElevated dark:text-gray-600 hover:text-gray-600 dark:hover:text-gray-400'}`}><Icon name="package" className="w-4 h-4" /></button></td>
-                                                                <td className="px-4 py-3 text-center"><button type="button" onClick={() => atualizarCampoInline(p.id, 'urgente', !p.urgente)} className={`p-1.5 rounded-md transition ${p.urgente ? 'bg-red-500/20 text-red-600 dark:bg-red-950/40 dark:text-red-400 ring-1 ring-red-500/30' : 'bg-gray-100 text-gray-400 dark:bg-darkElevated dark:text-gray-600 hover:text-gray-600 dark:hover:text-gray-400'}`}><Icon name="alert-triangle" className="w-3.5 h-3.5" /></button></td>
                                                                 <td className="px-4 py-3"><InlineDropdown value={p.status} options={opcoesStatusPermitidas} onChange={(val) => atualizarCampoInline(p.id, 'status', val)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-2.5 py-1.5 text-xs outline-none hover:border-brand" /></td>
                                                                 <td className="px-4 py-3"><span className="text-[11px] font-bold px-2 py-1 bg-gray-100 dark:bg-darkElevated text-gray-700 dark:text-[#EDEDED] rounded border border-gray-200 dark:border-darkBorder truncate max-w-[150px] inline-block" title={p.local_producao || 'Berlim'}>{p.local_producao || 'Berlim'}</span></td>
-                                                                <td className="px-4 py-3 text-center"><button type="button" onClick={() => atualizarCampoInline(p.id, 'status', 'Concluído')} className="p-1 text-gray-300 hover:text-emerald-500 dark:text-darkBorder dark:hover:text-emerald-500 transition" title="Marcar como Concluído"><Icon name="square" className="w-4 h-4" /></button></td>
+                                                                <td className="px-4 py-3 text-right">
+                                                                    <div className="flex items-center justify-end gap-1">
+                                                                        <button type="button" onClick={() => atualizarCampoInline(p.id, 'aprovado', !p.aprovado)} className={`p-2 rounded transition ${p.aprovado ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30' : 'text-gray-300 dark:text-gray-600 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30'}`} title="Arte Aprovada">
+                                                                            <Icon name="thumbs-up" className="w-4 h-4" />
+                                                                        </button>
+                                                                        <button type="button" onClick={() => atualizarCampoInline(p.id, 'entrega', !p.entrega)} className={`p-2 rounded transition ${p.entrega ? 'text-orange-500 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/30' : 'text-gray-300 dark:text-gray-600 hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/30'}`} title="Pronto para Entrega">
+                                                                            <Icon name="package" className="w-4 h-4" />
+                                                                        </button>
+                                                                        <button type="button" onClick={() => atualizarCampoInline(p.id, 'urgente', !p.urgente)} className={`p-2 rounded transition ${p.urgente ? 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/30' : 'text-gray-300 dark:text-gray-600 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30'}`} title="Urgente">
+                                                                            <Icon name="alert-triangle" className="w-4 h-4" />
+                                                                        </button>
+                                                                        <button type="button" onClick={() => atualizarCampoInline(p.id, 'status', 'Concluído')} className="p-2 text-gray-300 dark:text-gray-600 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition rounded" title="Marcar como Concluído">
+                                                                            <Icon name="check-circle" className="w-4 h-4" />
+                                                                        </button>
+                                                                    </div>
+                                                                </td>
                                                             </tr>
                                                         ))}
                                                     </React.Fragment>
@@ -1362,7 +1379,9 @@ function App() {
                                             <tr key={p.id} onClick={() => { if (trancado) return; abrirEdicao(p); }} className={`border-b border-gray-100 dark:border-darkBorder transition ${trancado ? 'opacity-30 bg-[#050505] cursor-not-allowed' : 'cursor-pointer hover:bg-gray-50 dark:hover:bg-darkHover'}`}>
                                                 <td className="px-6 py-4 text-sm font-medium text-gray-500"><span className="flex items-center gap-1.5">{trancado && <Icon name="lock" className="w-3 h-3 text-red-500" />}#{p.id}</span></td>
                                                 <td className="px-6 py-4 text-sm text-gray-600 dark:text-[#A1A1AA]">{formatarDataExibicao(p.data_pedido)}</td>
-                                                <td className="px-6 py-4 font-semibold text-sm text-gray-900 dark:text-[#EDEDED]">{p.cliente}</td>
+                                                <td className={`px-6 py-4 font-semibold text-sm ${isClienteProblema(p.cliente) ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-[#EDEDED]'}`}>
+                                                    <div className="flex items-center gap-1.5">{p.cliente} {isClienteProblema(p.cliente) && <Icon name="alert-triangle" className="w-4 h-4 text-red-500 shrink-0" title="Cliente Problema" />}</div>
+                                                </td>
                                                 <td className="px-6 py-4 text-sm text-gray-600 dark:text-[#A1A1AA] truncate max-w-xs">{obterResumoServicos(p.servico)}</td>
                                                 <td className="px-6 py-4"><span className={`px-2.5 py-1 text-[11px] font-bold rounded border bg-gray-50 border-gray-200 dark:bg-darkElevated dark:border-darkBorder ${obterCorStatus(p.status)}`}>{p.status}</span></td>
                                                 <td className="px-6 py-4 font-bold text-sm text-right text-gray-900 dark:text-[#EDEDED]">R$ {formatarValorFinanceiro(Number(p.valor_total))}</td>
@@ -1830,7 +1849,7 @@ function App() {
                                 <p className="text-sm text-gray-500 dark:text-[#888888] mt-1">Base de dados e informações de contato dos seus clientes.</p>
                             </div>
                             <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
-                                <button onClick={() => { setNovoCliente({ id: null, nome: '', telefone: '', email: '', observacoes: '' }); setModalClienteAberto(true); }} className="bg-brand hover:bg-brandHover text-white h-[38px] px-4 text-sm rounded-md font-bold shadow-sm transition flex items-center gap-2">
+                                <button onClick={() => { setNovoCliente({ id: null, nome: '', telefone: '', email: '', observacoes: '', cliente_problema: false }); setModalClienteAberto(true); }} className="bg-brand hover:bg-brandHover text-white h-[38px] px-4 text-sm rounded-md font-bold shadow-sm transition flex items-center gap-2">
                                     <Icon name="plus" className="w-4 h-4" /> Novo Cliente
                                 </button>
                             </div>
@@ -1846,7 +1865,7 @@ function App() {
                                 <thead className="bg-gray-50/50 dark:bg-darkHover/50"><tr className="border-b border-gray-200 dark:border-darkBorder text-sm font-semibold text-gray-500 dark:text-gray-400 tracking-wide uppercase"><th className="px-6 py-4">Cliente</th><th className="px-6 py-4 w-48">WhatsApp</th><th className="px-6 py-4 w-64">E-mail</th><th className="px-6 py-4">Observações</th></tr></thead>
                                 <tbody>
                                     {clientesPaginados.length > 0 ? clientesPaginados.map(c => (
-                                        <tr key={c.id} onClick={() => abrirEdicaoCliente(c)} className="border-b border-gray-100 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover transition cursor-pointer"><td className="px-6 py-4 text-sm font-semibold dark:text-[#EDEDED]">{c.nome}</td><td className="px-6 py-4 text-sm text-gray-600 dark:text-[#A1A1AA]">{c.telefone || '---'}</td><td className="px-6 py-4 text-sm text-gray-600 dark:text-[#A1A1AA]">{c.email || '---'}</td><td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-600 truncate max-w-xs">{c.observacoes || '---'}</td></tr>
+                                        <tr key={c.id} onClick={() => abrirEdicaoCliente(c)} className="border-b border-gray-100 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover transition cursor-pointer"><td className={`px-6 py-4 text-sm font-semibold ${c.cliente_problema ? 'text-red-600 dark:text-red-400' : 'dark:text-[#EDEDED]'}`}>{c.nome} {c.cliente_problema && <Icon name="alert-triangle" className="w-3.5 h-3.5 inline text-red-500 ml-1" title="Cliente Problema" />}</td><td className="px-6 py-4 text-sm text-gray-600 dark:text-[#A1A1AA]">{c.telefone || '---'}</td><td className="px-6 py-4 text-sm text-gray-600 dark:text-[#A1A1AA]">{c.email || '---'}</td><td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-600 truncate max-w-xs">{c.observacoes || '---'}</td></tr>
                                     )) : (
                                         <tr><td colSpan="4" className="px-6 py-8 text-center text-gray-500 dark:text-[#A1A1AA]">Nenhum cliente encontrado.</td></tr>
                                     )}
@@ -2057,10 +2076,19 @@ function App() {
                                             </ul>
                                         )}
                                     </div>
-                                    <button type="button" onClick={() => { setNovoCliente({ id: null, nome: '', telefone: '', email: '', observacoes: '' }); setModalClienteAberto(true); }} disabled={isModalTrancado} className="shrink-0 w-[38px] h-[38px] flex items-center justify-center bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded hover:bg-darkHover transition disabled:opacity-50" title="Novo Cliente">
+                                    <button type="button" onClick={() => { setNovoCliente({ id: null, nome: '', telefone: '', email: '', observacoes: '', cliente_problema: false }); setModalClienteAberto(true); }} disabled={isModalTrancado} className="shrink-0 w-[38px] h-[38px] flex items-center justify-center bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded hover:bg-darkHover transition disabled:opacity-50" title="Novo Cliente">
                                         <Icon name="plus" className="w-4 h-4 text-brand" />
                                     </button>
                                 </div>
+                                {isClienteProblema(novoPedido.cliente) && (
+                                    <div className="mt-2 p-2.5 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded flex items-start gap-2.5 text-red-600 dark:text-red-400">
+                                        <Icon name="alert-triangle" className="w-5 h-5 shrink-0 mt-0.5" />
+                                        <div>
+                                            <span className="text-sm font-bold block">Atenção: Cliente Problemático</span>
+                                            <span className="text-xs">Este cliente possui restrições ou histórico negativo na empresa. Fique atento.</span>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
 
                             <div>
@@ -2288,7 +2316,11 @@ function App() {
                             <input required value={novoCliente.nome} onChange={e => setNovoCliente({...novoCliente, nome: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" placeholder="Nome *" />
                             <div className="grid grid-cols-2 gap-4"><input value={novoCliente.telefone} onChange={e => setNovoCliente({...novoCliente, telefone: formatarTelefone(e.target.value)})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" placeholder="WhatsApp" /><input type="email" value={novoCliente.email} onChange={e => setNovoCliente({...novoCliente, email: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" placeholder="E-mail" /></div>
                             <textarea rows="2" value={novoCliente.observacoes} onChange={e => setNovoCliente({...novoCliente, observacoes: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand transition dark:text-[#EDEDED]" placeholder="Observações"></textarea>
-                            <div className="flex justify-end gap-3"><button type="button" onClick={() => setModalClienteAberto(false)} className="px-4 py-2 rounded text-sm font-medium text-gray-600 dark:text-[#A1A1AA] hover:bg-gray-100 dark:hover:bg-darkHover transition">Cancelar</button><button type="submit" className="px-5 py-2 rounded text-sm font-medium bg-white text-black hover:bg-gray-200 transition">Salvar</button></div>
+                            <label className="flex items-center gap-2 cursor-pointer mt-1 p-2 border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-950/20 rounded transition hover:bg-red-100 dark:hover:bg-red-900/30">
+                                <input type="checkbox" checked={novoCliente.cliente_problema} onChange={e => setNovoCliente({...novoCliente, cliente_problema: e.target.checked})} className="w-4 h-4 text-red-600 rounded border-red-300 focus:ring-red-500 cursor-pointer accent-red-600" />
+                                <span className="text-sm font-semibold text-red-600 dark:text-red-400 flex items-center gap-1.5"><Icon name="alert-triangle" className="w-4 h-4" /> Sinalizar como Cliente Problema</span>
+                            </label>
+                            <div className="flex justify-end gap-3 mt-2"><button type="button" onClick={() => setModalClienteAberto(false)} className="px-4 py-2 rounded text-sm font-medium text-gray-600 dark:text-[#A1A1AA] hover:bg-gray-100 dark:hover:bg-darkHover transition">Cancelar</button><button type="submit" disabled={salvandoCliente} className="px-5 py-2 rounded text-sm font-medium bg-white text-black hover:bg-gray-200 transition disabled:opacity-50">{salvandoCliente ? 'Salvando...' : 'Salvar'}</button></div>
                         </form>
                     </div>
                 </div>
