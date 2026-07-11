@@ -497,6 +497,7 @@ function App() {
     const [abaAtual, setAbaAtual] = useState('producao');
     const [pedidos, setPedidos] = useState([]);
     const [produtos, setProdutos] = useState([]);
+    const [draggedProdutoIndex, setDraggedProdutoIndex] = useState(null);
     const [clientes, setClientes] = useState([]);
     const [paginaClientes, setPaginaClientes] = useState(1);
     const [letraFiltroCliente, setLetraFiltroCliente] = useState('');
@@ -623,7 +624,7 @@ function App() {
         }
         if (todosPedidos.length > 0) setPedidos(todosPedidos);
         
-        const { data: listaProdutos } = await supabase.from('produtos').select('*').order('id', { ascending: true });
+        const { data: listaProdutos } = await supabase.from('produtos').select('*').order('ordem', { ascending: true });
         if (listaProdutos) setProdutos(listaProdutos);
         
         let todosClientes = [];
@@ -927,6 +928,38 @@ function App() {
             alert('Erro ao excluir produto: ' + error.message);
         } else {
             setProdutos(produtos.filter(p => p.id !== id));
+        }
+    }
+
+    async function handleDragStartProduto(e, index) {
+        setDraggedProdutoIndex(index);
+        e.dataTransfer.effectAllowed = "move";
+    }
+
+    async function handleDropProduto(e, targetIndex) {
+        e.preventDefault();
+        if (draggedProdutoIndex === null || draggedProdutoIndex === targetIndex) return;
+
+        const novaLista = [...produtos];
+        const [itemArrastado] = novaLista.splice(draggedProdutoIndex, 1);
+        novaLista.splice(targetIndex, 0, itemArrastado);
+
+        const listaComOrdem = novaLista.map((prod, idx) => ({ ...prod, ordem: idx }));
+        setProdutos(listaComOrdem);
+        setDraggedProdutoIndex(null);
+
+        const payloadSupabase = listaComOrdem.map(p => ({
+            id: p.id,
+            nome: p.nome,
+            texto_padrao: p.texto_padrao,
+            preco_base: p.preco_base,
+            ordem: p.ordem
+        }));
+        
+        const { error } = await supabase.from('produtos').upsert(payloadSupabase);
+        if (error) {
+            console.error("Erro ao reordenar produtos:", error);
+            alert("Erro ao reordenar produtos: " + error.message);
         }
     }
 
@@ -1699,9 +1732,20 @@ function App() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {produtos.map(p => (
-                                        <tr key={p.id} onClick={() => abrirEdicaoProduto(p)} className="border-b border-gray-100 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover transition cursor-pointer group">
-                                            <td className="px-6 py-4 text-sm font-medium text-gray-500">#{p.id}</td>
+                                    {produtos.map((p, index) => (
+                                        <tr 
+                                            key={p.id} 
+                                            draggable
+                                            onDragStart={(e) => handleDragStartProduto(e, index)}
+                                            onDragOver={(e) => e.preventDefault()}
+                                            onDrop={(e) => handleDropProduto(e, index)}
+                                            onClick={() => abrirEdicaoProduto(p)} 
+                                            className={`border-b border-gray-100 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover transition cursor-pointer group ${draggedProdutoIndex === index ? 'opacity-50' : ''}`}
+                                        >
+                                            <td className="px-6 py-4 text-sm font-medium text-gray-500 cursor-grab active:cursor-grabbing">
+                                                <Icon name="list" className="w-4 h-4 inline-block mr-2 opacity-50" />
+                                                #{p.id}
+                                            </td>
                                             <td className="px-6 py-4 text-sm font-semibold dark:text-[#EDEDED]">{p.nome}</td>
                                             <td className="px-6 py-4 text-sm text-gray-600 dark:text-[#A1A1AA] truncate max-w-xs">{p.texto_padrao}</td>
                                             <td className="px-6 py-4 text-sm font-bold dark:text-[#EDEDED] text-right">R$ {formatarValorFinanceiro(Number(p.preco_base))}</td>
