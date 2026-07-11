@@ -1,4 +1,4 @@
-const { useState, useEffect, useRef } = React;
+const { useState, useEffect, useRef, useMemo } = React;
 
 const supabase = window.supabase.createClient(
     'https://xbanoipgoleuahwbqksy.supabase.co',
@@ -969,11 +969,15 @@ function App() {
         const clienteFormatado = { nome: novoCliente.nome, telefone: novoCliente.telefone, email: novoCliente.email, observacoes: novoCliente.observacoes };
 
         if (clienteFormatado.telefone && clienteFormatado.telefone.trim() !== '') {
-            let query = supabase.from('clientes').select('id, telefone').eq('telefone', clienteFormatado.telefone);
-            if (novoCliente.id) query = query.neq('id', novoCliente.id);
-            const { data: telData } = await query;
-            if (telData && telData.length > 0) {
-                alert('Aviso: Este número de WhatsApp/Telefone já está cadastrado em outro cliente no sistema!');
+            const telNormalizado = clienteFormatado.telefone.replace(/\D/g, '');
+            const duplicado = clientes.find(c => {
+                if (novoCliente.id && c.id === novoCliente.id) return false;
+                if (!c.telefone) return false;
+                return c.telefone.replace(/\D/g, '') === telNormalizado;
+            });
+            
+            if (duplicado) {
+                alert('Aviso: Este número de WhatsApp/Telefone já está cadastrado no cliente "' + duplicado.nome + '"!');
                 setSalvandoCliente(false);
                 return;
             }
@@ -1029,7 +1033,44 @@ function App() {
     }
 
     const clientesFiltrados = clientes.filter(c => c.nome.toLowerCase().includes(buscaCliente.toLowerCase()) || (c.telefone && c.telefone.includes(buscaCliente)));
-    const produtosFiltrados = produtos.filter(p => p.nome.toLowerCase().includes(buscaProduto.toLowerCase()) || p.id.toString().includes(buscaProduto));
+    // Lógica para elencar os 5 produtos mais vendidos com base no histórico
+    const vendasPorProduto = useMemo(() => {
+        const mapa = {};
+        pedidos.forEach(p => {
+            if (!p.servico) return;
+            // Busca o padrão estruturado salvo no campo "servico"
+            const regex = /• ([^\n]+)\n(?:[^•]*?)Valor: R\$ ([\d.,]+)/g;
+            let match;
+            while ((match = regex.exec(p.servico)) !== null) {
+                const nome = match[1].trim();
+                const valorStr = match[2].replace(/\./g, '').replace(',', '.');
+                const valorNum = parseFloat(valorStr) || 0;
+                if (mapa[nome]) mapa[nome] += valorNum;
+                else mapa[nome] = valorNum;
+            }
+        });
+        return mapa;
+    }, [pedidos]);
+
+    const top5Produtos = useMemo(() => {
+        return Object.entries(vendasPorProduto)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 5)
+            .map(entry => entry[0]);
+    }, [vendasPorProduto]);
+
+    const produtosFiltrados = produtos.filter(p => p.nome.toLowerCase().includes(buscaProduto.toLowerCase()) || p.id.toString().includes(buscaProduto)).sort((a, b) => {
+        // Prioriza os top 5 vendidos se não houver busca ativa (ou mesmo se houver, os que sobrarem da busca ainda terão prioridade)
+        const indexA = top5Produtos.indexOf(a.nome);
+        const indexB = top5Produtos.indexOf(b.nome);
+        
+        if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+        if (indexA !== -1) return -1;
+        if (indexB !== -1) return 1;
+        
+        // Se nenhum for top 5, mantém a ordenação original do catálogo
+        return (a.ordem || 0) - (b.ordem || 0);
+    });
     
     const clientesAbaFiltro = clientes.filter(c => {
         if (!letraFiltroCliente) return true;
