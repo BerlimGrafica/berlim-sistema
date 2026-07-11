@@ -1921,11 +1921,11 @@ function App() {
                             
                             <div className="grid grid-cols-3 gap-4 pb-4 border-b border-gray-100 dark:border-darkBorder">
                                 <div>
-                                    <label className="block text-sm font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Data de Entrada</label>
+                                    <label className="block text-sm font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Data da Venda</label>
                                     <CustomDatePicker value={novoPedido.data_pedido} onChange={val => setNovoPedido({...novoPedido, data_pedido: val})} disabled={isModalTrancado} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none transition" />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Data de Entrega</label>
+                                    <label className="block text-sm font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Prazo</label>
                                     <CustomDatePicker value={novoPedido.prazo} onChange={val => setNovoPedido({...novoPedido, prazo: val})} disabled={isModalTrancado} placeholder="Data final..." className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none transition" />
                                 </div>
                                 <div>
