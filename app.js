@@ -682,9 +682,9 @@ function CalculadoraAdesivo() {
         const precoMeioMetro = valorM2 * (66.0 / 90.0);
         const preco1Metro = valorM2;
 
-        const qSRA3 = calculaCabem(30, 43, l, a);
-        const qMeio = calculaCabem(46, 96, l, a);
-        const qMetro = calculaCabem(96, 96, l, a);
+        const qSRA3 = calculaCabem(26, 39, l, a);
+        const qMeio = calculaCabem(44, 94, l, a);
+        const qMetro = calculaCabem(94, 94, l, a);
 
         let total = 0;
 
@@ -723,8 +723,22 @@ function CalculadoraAdesivo() {
         const nomeRecorte = recorte === 'reto' ? 'Corte Reto' : 'Meio Corte / Contorno';
         const val = calcular().replace('.', ',');
         
+        // Calcular onde coube para gerar o texto de entrega
+        const l = lRaw + 0.2;
+        const a = aRaw + 0.2;
+        const qSRA3 = Math.floor(26 / l) * Math.floor(39 / a);
+        const qMeio = Math.floor(44 / l) * Math.floor(94 / a);
+        const qMetro = Math.floor(94 / l) * Math.floor(94 / a);
+        
+        let entregaStr = '';
+        if (qSRA3 > 0 && quantidade <= qSRA3) {
+            entregaStr = ' | Entregue em folha A3';
+        } else {
+            entregaStr = ' | Entregue em folha de 1/2 metro';
+        }
+        
         const plural = quantidade > 1 ? 'Adesivos' : 'Adesivo';
-        return `${quantidade} ${plural} | ${lRaw}x${aRaw}cm | ${nomeTipo} | ${nomeRecorte} - R$ ${val}`;
+        return `${quantidade} ${plural} | ${lRaw}x${aRaw}cm | ${nomeTipo} | ${nomeRecorte}${entregaStr} - R$ ${val}`;
     };
 
     return (
