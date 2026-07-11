@@ -9,6 +9,7 @@ const supabase = window.supabase.createClient(
 function Icon({ name, className = "w-4 h-4" }) {
     if (name === 'printer') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>;
     if (name === 'copy') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>;
+    if (name === 'calculator') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect width="16" height="20" x="4" y="2" rx="2"/><line x1="8" x2="16" y1="6" y2="6"/><line x1="16" x2="16" y1="14" y2="18"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/></svg>;
     if (name === 'sun') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg>;
     if (name === 'moon') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg>;
     if (name === 'plus') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>;
@@ -531,6 +532,239 @@ function StackedCards({ title, description, icon, cards }) {
                         </div>
                     );
                 })}
+            </div>
+        </div>
+    );
+}
+// ==== CALCULADORAS ====
+function CalculadoraBanner() {
+    const [largura, setLargura] = useState('');
+    const [altura, setAltura] = useState('');
+    const [tipo, setTipo] = useState('fosca_340g');
+    const [acabamento, setAcabamento] = useState('bainha_ilhos');
+    const [quantidade, setQuantidade] = useState(1);
+
+    const precosLona = {
+        'brilho_340g': 35.0,
+        'fosca_340g': 35.0,
+        'brilho_440g': 45.0,
+        'fosca_440g': 45.0
+    };
+
+    const precosAcabamento = {
+        'bainha_ilhos': 10.0,
+        'bastao_cordinha': 15.0,
+        'sem_acabamento': 0
+    };
+
+    const calcular = () => {
+        const l = parseFloat(largura.replace(',', '.'));
+        const a = parseFloat(altura.replace(',', '.'));
+        if (isNaN(l) || isNaN(a) || l <= 0 || a <= 0) return '0,00';
+        
+        const area = l * a;
+        const precoLona = precosLona[tipo] * area;
+        const precoAcab = precosAcabamento[acabamento] * (acabamento === 'bainha_ilhos' ? ((l+a)*2) : (l*2));
+        
+        return ((precoLona + precoAcab) * quantidade).toFixed(2);
+    };
+
+    return (
+        <div className="bg-white dark:bg-darkCard p-6 rounded border border-gray-200 dark:border-darkBorder">
+            <h3 className="text-lg font-bold dark:text-white mb-4">Calculadora de Banner / Lona</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div>
+                    <label className="block text-xs font-bold text-gray-500 mb-1">Largura (m)</label>
+                    <input type="text" value={largura} onChange={e => setLargura(e.target.value)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" placeholder="Ex: 1,50" />
+                </div>
+                <div>
+                    <label className="block text-xs font-bold text-gray-500 mb-1">Altura (m)</label>
+                    <input type="text" value={altura} onChange={e => setAltura(e.target.value)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" placeholder="Ex: 2,00" />
+                </div>
+                <div>
+                    <label className="block text-xs font-bold text-gray-500 mb-1">Tipo de Lona</label>
+                    <select value={tipo} onChange={e => setTipo(e.target.value)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition">
+                        <option value="brilho_340g">Lona Brilho 340g (R$ 35/m²)</option>
+                        <option value="fosca_340g">Lona Fosca 340g (R$ 35/m²)</option>
+                        <option value="brilho_440g">Lona Brilho 440g (R$ 45/m²)</option>
+                        <option value="fosca_440g">Lona Fosca 440g (R$ 45/m²)</option>
+                    </select>
+                </div>
+                <div>
+                    <label className="block text-xs font-bold text-gray-500 mb-1">Acabamento</label>
+                    <select value={acabamento} onChange={e => setAcabamento(e.target.value)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition">
+                        <option value="bainha_ilhos">Bainha e Ilhós</option>
+                        <option value="bastao_cordinha">Bastão e Cordinha</option>
+                        <option value="sem_acabamento">Sem Acabamento</option>
+                    </select>
+                </div>
+                <div>
+                    <label className="block text-xs font-bold text-gray-500 mb-1">Quantidade</label>
+                    <input type="number" min="1" value={quantidade} onChange={e => setQuantidade(parseInt(e.target.value) || 1)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" />
+                </div>
+            </div>
+            <div className="bg-brand/10 p-4 rounded-lg flex items-center justify-between border border-brand/20">
+                <span className="font-semibold text-brand">Total Estimado</span>
+                <span className="text-2xl font-black text-brand">R$ {calcular().replace('.', ',')}</span>
+            </div>
+        </div>
+    );
+}
+
+function CalculadoraAdesivo() {
+    const [largura, setLargura] = useState('');
+    const [altura, setAltura] = useState('');
+    const [tipo, setTipo] = useState('vinil_branco');
+    const [recorte, setRecorte] = useState('reto');
+    const [quantidade, setQuantidade] = useState(100);
+
+    const precosVinil = {
+        'vinil_branco': 45.0,
+        'vinil_transparente': 45.0,
+        'vinil_fosco': 45.0,
+        'perfurado': 65.0
+    };
+
+    const calcular = () => {
+        const l = parseFloat(largura.replace(',', '.')) / 100; // cm para m
+        const a = parseFloat(altura.replace(',', '.')) / 100;
+        if (isNaN(l) || isNaN(a) || l <= 0 || a <= 0) return '0,00';
+        
+        const areaTotal = (l * a) * quantidade;
+        let precoM2 = precosVinil[tipo];
+        
+        if (recorte === 'contorno') precoM2 += 25.0; // Adicional de recorte
+
+        let total = areaTotal * precoM2;
+        if (total > 0 && total < 15) total = 15.0; // Preço mínimo
+
+        return total.toFixed(2);
+    };
+
+    return (
+        <div className="bg-white dark:bg-darkCard p-6 rounded border border-gray-200 dark:border-darkBorder">
+            <h3 className="text-lg font-bold dark:text-white mb-4">Calculadora de Adesivos (Vinil)</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div>
+                    <label className="block text-xs font-bold text-gray-500 mb-1">Largura Unitária (cm)</label>
+                    <input type="text" value={largura} onChange={e => setLargura(e.target.value)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" placeholder="Ex: 5" />
+                </div>
+                <div>
+                    <label className="block text-xs font-bold text-gray-500 mb-1">Altura Unitária (cm)</label>
+                    <input type="text" value={altura} onChange={e => setAltura(e.target.value)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" placeholder="Ex: 5" />
+                </div>
+                <div>
+                    <label className="block text-xs font-bold text-gray-500 mb-1">Tipo de Adesivo</label>
+                    <select value={tipo} onChange={e => setTipo(e.target.value)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition">
+                        <option value="vinil_branco">Vinil Branco Brilho</option>
+                        <option value="vinil_fosco">Vinil Branco Fosco</option>
+                        <option value="vinil_transparente">Vinil Transparente</option>
+                        <option value="perfurado">Vinil Perfurado</option>
+                    </select>
+                </div>
+                <div>
+                    <label className="block text-xs font-bold text-gray-500 mb-1">Corte / Acabamento</label>
+                    <select value={recorte} onChange={e => setRecorte(e.target.value)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition">
+                        <option value="reto">Corte Reto (Refile)</option>
+                        <option value="contorno">Meio Corte / Contorno</option>
+                    </select>
+                </div>
+                <div>
+                    <label className="block text-xs font-bold text-gray-500 mb-1">Quantidade</label>
+                    <input type="number" min="1" value={quantidade} onChange={e => setQuantidade(parseInt(e.target.value) || 1)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" />
+                </div>
+            </div>
+            <div className="bg-brand/10 p-4 rounded-lg flex items-center justify-between border border-brand/20">
+                <span className="font-semibold text-brand">Total Estimado</span>
+                <span className="text-2xl font-black text-brand">R$ {calcular().replace('.', ',')}</span>
+            </div>
+        </div>
+    );
+}
+
+function CalculadoraCasamento() {
+    const [itens, setItens] = useState([{ id: 1, nome: 'Convite Principal', quantidade: 100, valorUnitario: '4,50' }]);
+
+    const adicionarItem = () => {
+        setItens([...itens, { id: Date.now(), nome: '', quantidade: 1, valorUnitario: '' }]);
+    };
+
+    const removerItem = (id) => {
+        setItens(itens.filter(i => i.id !== id));
+    };
+
+    const atualizarItem = (id, campo, valor) => {
+        setItens(itens.map(i => i.id === id ? { ...i, [campo]: valor } : i));
+    };
+
+    const calcularTotal = () => {
+        return itens.reduce((acc, item) => {
+            const v = parseFloat(String(item.valorUnitario).replace(',', '.'));
+            const q = parseInt(item.quantidade) || 0;
+            if (!isNaN(v) && q > 0) return acc + (v * q);
+            return acc;
+        }, 0).toFixed(2);
+    };
+
+    return (
+        <div className="bg-white dark:bg-darkCard p-6 rounded border border-gray-200 dark:border-darkBorder">
+            <h3 className="text-lg font-bold dark:text-white mb-4">Calculadora de Papelaria de Casamento</h3>
+            
+            <div className="space-y-4 mb-6">
+                {itens.map((item, index) => (
+                    <div key={item.id} className="flex gap-4 items-end bg-gray-50 dark:bg-darkElevated p-3 rounded border border-gray-100 dark:border-darkBorder">
+                        <div className="flex-1">
+                            <label className="block text-[10px] uppercase font-bold text-gray-500 mb-1">Item {index + 1}</label>
+                            <input type="text" value={item.nome} onChange={e => atualizarItem(item.id, 'nome', e.target.value)} placeholder="Ex: Menu, Lágrimas de Alegria..." className="w-full bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" />
+                        </div>
+                        <div className="w-24">
+                            <label className="block text-[10px] uppercase font-bold text-gray-500 mb-1">Qtd</label>
+                            <input type="number" min="1" value={item.quantidade} onChange={e => atualizarItem(item.id, 'quantidade', e.target.value)} className="w-full bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" />
+                        </div>
+                        <div className="w-32">
+                            <label className="block text-[10px] uppercase font-bold text-gray-500 mb-1">Valor Un. (R$)</label>
+                            <input type="text" value={item.valorUnitario} onChange={e => atualizarItem(item.id, 'valorUnitario', e.target.value)} className="w-full bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" placeholder="0,00" />
+                        </div>
+                        <button onClick={() => removerItem(item.id)} className="w-[38px] h-[38px] flex items-center justify-center bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition shrink-0" title="Remover">
+                            <Icon name="trash-2" className="w-4 h-4" />
+                        </button>
+                    </div>
+                ))}
+                <button onClick={adicionarItem} className="text-sm font-semibold text-brand hover:text-brandHover flex items-center gap-1 transition">
+                    <Icon name="plus" className="w-4 h-4" /> Adicionar Outro Item
+                </button>
+            </div>
+
+            <div className="bg-brand/10 p-4 rounded-lg flex items-center justify-between border border-brand/20">
+                <span className="font-semibold text-brand">Total do Pacote</span>
+                <span className="text-2xl font-black text-brand">R$ {calcularTotal().replace('.', ',')}</span>
+            </div>
+        </div>
+    );
+}
+
+function CalculadorasAba() {
+    const [calculadoraAtiva, setCalculadoraAtiva] = useState('banner');
+
+    return (
+        <div className="flex-1 p-6 lg:p-10 mx-auto w-full max-w-3xl fade-in flex flex-col h-[calc(100vh-60px)] overflow-y-auto custom-scrollbar">
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 mb-6 border-b border-gray-100 dark:border-darkBorder pb-6 shrink-0">
+                <div>
+                    <h1 className="text-3xl font-semibold dark:text-white tracking-tight">Calculadoras</h1>
+                    <p className="text-sm text-gray-500 dark:text-[#888888] mt-1">Ferramentas para auxiliar em orçamentos rápidos.</p>
+                </div>
+            </div>
+
+            <div className="flex gap-2 mb-6 bg-gray-100 dark:bg-darkElevated p-1 rounded-lg self-start">
+                <button onClick={() => setCalculadoraAtiva('banner')} className={`px-4 py-2 text-sm font-semibold rounded-md transition ${calculadoraAtiva === 'banner' ? 'bg-white dark:bg-darkCard shadow text-gray-900 dark:text-white' : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'}`}>Banner / Lona</button>
+                <button onClick={() => setCalculadoraAtiva('adesivo')} className={`px-4 py-2 text-sm font-semibold rounded-md transition ${calculadoraAtiva === 'adesivo' ? 'bg-white dark:bg-darkCard shadow text-gray-900 dark:text-white' : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'}`}>Adesivos (Vinil)</button>
+                <button onClick={() => setCalculadoraAtiva('casamento')} className={`px-4 py-2 text-sm font-semibold rounded-md transition ${calculadoraAtiva === 'casamento' ? 'bg-white dark:bg-darkCard shadow text-gray-900 dark:text-white' : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'}`}>Papelaria Casamento</button>
+            </div>
+
+            <div className="w-full">
+                {calculadoraAtiva === 'banner' && <CalculadoraBanner />}
+                {calculadoraAtiva === 'adesivo' && <CalculadoraAdesivo />}
+                {calculadoraAtiva === 'casamento' && <CalculadoraCasamento />}
             </div>
         </div>
     );
@@ -1257,6 +1491,7 @@ function App() {
                                 <a onClick={() => setAbaAtual('producao')} className={`transition ${abaAtual === 'producao' ? 'text-gray-900 dark:text-white font-semibold' : 'hover:text-gray-900 dark:hover:text-white'}`}>Produção</a>
                             )}
                             <a onClick={() => setAbaAtual('baixa')} className={`transition ${abaAtual === 'baixa' ? 'text-gray-900 dark:text-white font-semibold' : 'hover:text-gray-900 dark:hover:text-white'}`}>Baixa de Notas</a>
+                            <a onClick={() => setAbaAtual('calculadoras')} className={`transition ${abaAtual === 'calculadoras' ? 'text-gray-900 dark:text-white font-semibold' : 'hover:text-gray-900 dark:hover:text-white'} flex items-center gap-1.5`}><Icon name="calculator" /> Calculadoras</a>
                             {(usuario?.nivel === 'Administrador' || usuario?.nivel === 'Financeiro') && (
                                 <>
                                     <a onClick={() => setAbaAtual('financeiro')} className={`transition ${abaAtual === 'financeiro' ? 'text-gray-900 dark:text-white font-semibold' : 'hover:text-gray-900 dark:hover:text-white'}`}>Financeiro</a>
@@ -2085,6 +2320,7 @@ function App() {
                         </div>
                     </main>
                 )}
+                {abaAtual === 'calculadoras' && <CalculadorasAba />}
             </div>
 
             {modalAberto && (
