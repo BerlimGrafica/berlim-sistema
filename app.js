@@ -715,11 +715,19 @@ function CalculadoraAdesivo() {
         if (isNaN(lRaw) || isNaN(aRaw) || lRaw <= 0 || aRaw <= 0 || qty <= 0) return '';
         
         let nomeTipo = 'Vinil';
+        let lam = ' | Sem Laminação (Película de proteção)';
+        
         if (tipo === 'vinil_branco') nomeTipo = 'Vinil Branco Brilho';
         if (tipo === 'vinil_fosco') nomeTipo = 'Vinil Branco Fosco';
         if (tipo === 'vinil_transparente') nomeTipo = 'Vinil Transparente';
-        if (tipo === 'vinil_laminado_brilho') nomeTipo = 'Vinil Laminado Brilho';
-        if (tipo === 'vinil_laminado_fosco') nomeTipo = 'Vinil Laminado Fosco';
+        if (tipo === 'vinil_laminado_brilho') {
+            nomeTipo = 'Vinil Branco Brilho';
+            lam = ' | Laminado Brilho ou Fosco';
+        }
+        if (tipo === 'vinil_laminado_fosco') {
+            nomeTipo = 'Vinil Branco Fosco';
+            lam = ' | Laminado Brilho ou Fosco';
+        }
         
         const val = calcular().replace('.', ',');
         
@@ -736,7 +744,7 @@ function CalculadoraAdesivo() {
         }
         
         const plural = qty > 1 ? 'Adesivos' : 'Adesivo';
-        return `${qty} ${plural} | ${lRaw}x${aRaw}cm | ${nomeTipo}${entregaStr} - R$ ${val}`;
+        return `${qty} ${plural} | ${lRaw}x${aRaw}cm | ${nomeTipo}${lam} | 1/2 corte${entregaStr} - R$ ${val}`;
     };
 
     return (
