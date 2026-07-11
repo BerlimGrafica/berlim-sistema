@@ -361,6 +361,7 @@ function desconstruirTextoServico(texto) {
         let AppValor = '0,00';
         let local_producao = 'Berlim'; // fallback/default
         let descLines = [];
+        let concluido = false;
         
         for (let i = 1; i < lines.length; i++) {
             let line = lines[i].trim();
@@ -368,6 +369,8 @@ function desconstruirTextoServico(texto) {
                 AppValor = line.replace('Valor: R$ ', '');
             } else if (line.startsWith('Local: ')) {
                 local_producao = line.replace('Local: ', '');
+            } else if (line === '[✓] Concluído') {
+                concluido = true;
             } else {
                 descLines.push(lines[i].replace(/^  /, ''));
             }
@@ -379,7 +382,7 @@ function desconstruirTextoServico(texto) {
         let matchDesconto = AppValor.match(/\s\(-(\d+)%\)$/);
         if (matchDesconto) { desconto = matchDesconto[1]; valor = AppValor.replace(matchDesconto[0], '').trim(); }
         
-        itensTraduzidos.push({ nome, descricao, valor, desconto, local_producao, id_temp: Math.random() + Date.now() });
+        itensTraduzidos.push({ nome, descricao, valor, desconto, local_producao, concluido, id_temp: Math.random() + Date.now() });
     }
     return { itens: itensTraduzidos, observacoes: obs, pagamentos };
 }
@@ -390,6 +393,54 @@ function obterResumoServicos(texto) {
         return desc.itens.map(i => i.nome).join(' + ');
     }
     return texto ? texto.substring(0, 40) + '...' : '---';
+}
+
+function ItensChecklist({ pedido, atualizarCampoInline }) {
+    const { itens, observacoes, pagamentos } = desconstruirTextoServico(pedido.servico);
+    
+    if (itens.length === 0) {
+        return <span className="truncate max-w-[18rem] block">{pedido.servico ? pedido.servico.substring(0, 40) + '...' : '---'}</span>;
+    }
+
+    const toggleItem = (idx) => {
+        const novosItens = [...itens];
+        novosItens[idx].concluido = !novosItens[idx].concluido;
+        
+        let textoFinal = '';
+        const itensTextoArray = novosItens.map(i => {
+            const strDesconto = i.desconto ? ' (-' + i.desconto + '%)' : '';
+            const strNome = i.nome ? '• ' + i.nome : '• Serviço Personalizado';
+            const strLocal = i.local_producao ? '\n  Local: ' + i.local_producao : '\n  Local: Berlim';
+            const strConcluido = i.concluido ? '\n  [✓] Concluído' : '';
+            return strNome + '\n  ' + i.descricao + '\n  Valor: R$ ' + i.valor + strDesconto + strLocal + strConcluido;
+        });
+        textoFinal += itensTextoArray.join('\n\n') + '\n\n';
+        if (observacoes) textoFinal += '[OBSERVAÇÕES GERAIS]\n' + observacoes;
+        if (pagamentos.length > 0) textoFinal += '\n\n[PAGAMENTOS]\n' + JSON.stringify(pagamentos);
+        
+        atualizarCampoInline(pedido.id, 'servico', textoFinal);
+    };
+
+    return (
+        <div className="flex flex-wrap gap-1.5 items-center max-w-[18rem]">
+            {itens.map((item, idx) => (
+                <button
+                    key={idx}
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); toggleItem(idx); }}
+                    className={`flex items-center gap-1 px-2 py-1 text-[10px] uppercase font-bold rounded shadow-sm transition transform hover:scale-105 ${
+                        item.concluido
+                            ? 'bg-emerald-500 text-white border border-emerald-600'
+                            : 'bg-gray-100 dark:bg-darkElevated text-gray-500 dark:text-[#A1A1AA] border border-gray-200 dark:border-darkBorder hover:bg-gray-200 dark:hover:bg-darkHover'
+                    }`}
+                    title={item.concluido ? 'Marcar como pendente' : 'Marcar como concluído'}
+                >
+                    {item.concluido && <Icon name="check" className="w-3 h-3" />}
+                    <span className="truncate max-w-[100px]">{item.nome}</span>
+                </button>
+            ))}
+        </div>
+    );
 }
 
 function StackedCards({ title, description, icon, cards }) {
@@ -549,7 +600,7 @@ function App() {
 
     const [novoPedido, setNovoPedido] = useState({ 
         cliente: '', servico: '', valor_total: '', 
-        status: 'Aguardando Pagamento', data_pedido: obterDataAtual(),
+        status: 'Produzir', data_pedido: obterDataAtual(),
         prazo: '', responsavel: '', local_producao: 'Berlim', aprovado: false,
         entrega: false, urgente: false
     });
@@ -731,7 +782,7 @@ function App() {
         setItemAtual({ nome: '', descricao: '', valor: '', desconto: '', local_producao: 'Berlim' });
         setNovoPedido({ 
             cliente: '', servico: '', valor_total: '', 
-            status: 'Aguardando Pagamento', data_pedido: obterDataAtual(),
+            status: 'Produzir', data_pedido: obterDataAtual(),
             prazo: '', responsavel: '', local_producao: 'Berlim', aprovado: false,
             entrega: false, urgente: false
         });
@@ -853,7 +904,8 @@ function App() {
                 const strDesconto = i.desconto ? ' (-' + i.desconto + '%)' : '';
                 const strNome = i.nome ? '• ' + i.nome : '• Serviço Personalizado';
                 const strLocal = i.local_producao ? '\n  Local: ' + i.local_producao : '\n  Local: Berlim';
-                return strNome + '\n  ' + i.descricao + '\n  Valor: R$ ' + i.valor + strDesconto + strLocal;
+                const strConcluido = i.concluido ? '\n  [✓] Concluído' : '';
+                return strNome + '\n  ' + i.descricao + '\n  Valor: R$ ' + i.valor + strDesconto + strLocal + strConcluido;
             });
             textoFinalServico += itensTextoArray.join('\n\n') + '\n\n';
             if (novoPedido.servico) textoFinalServico += '[OBSERVAÇÕES GERAIS]\n' + novoPedido.servico;
@@ -1316,7 +1368,7 @@ function App() {
                                                                 <td className={`px-4 py-3 font-semibold truncate max-w-[12rem] ${isClienteProblema(p.cliente) ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-white'}`}>
                                                                     <div className="flex items-center gap-1.5">{p.cliente} {isClienteProblema(p.cliente) && <Icon name="alert-triangle" className="w-3.5 h-3.5 text-red-500 shrink-0" title="Cliente Problema" />}</div>
                                                                 </td>
-                                                                <td className="px-4 py-3 text-gray-800 dark:text-white font-medium truncate max-w-[18rem]">{obterResumoServicos(p.servico)}</td>
+                                                                <td className="px-4 py-3 text-gray-800 dark:text-white font-medium"><ItensChecklist pedido={p} atualizarCampoInline={atualizarCampoInline} /></td>
                                                                 <td className="px-4 py-3"><InlineDropdown value={p.status} options={opcoesStatusPermitidas} onChange={(val) => atualizarCampoInline(p.id, 'status', val)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-2.5 py-1.5 text-xs outline-none hover:border-brand" /></td>
                                                                 <td className="px-4 py-3"><span className="text-[11px] font-bold px-2 py-1 bg-gray-100 dark:bg-darkElevated text-gray-700 dark:text-[#EDEDED] rounded border border-gray-200 dark:border-darkBorder truncate max-w-[150px] inline-block" title={p.local_producao || 'Berlim'}>{p.local_producao || 'Berlim'}</span></td>
                                                                 <td className="px-4 py-3 text-right">
