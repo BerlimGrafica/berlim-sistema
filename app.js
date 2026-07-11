@@ -701,8 +701,19 @@ function App() {
     };
 
     async function atualizarCampoInline(id, campo, valor) {
-        setPedidos(pedidos.map(p => p.id === id ? { ...p, [campo]: valor } : p));
-        const { error } = await supabase.from('pedidos').update({ [campo]: valor }).eq('id', id);
+        let payload = { [campo]: valor };
+        if (campo === 'status' && valor === 'Concluído') {
+            payload.prazo = obterDataAtual();
+        }
+
+        setPedidos(pedidos.map(p => {
+            if (p.id === id) {
+                return { ...p, ...payload };
+            }
+            return p;
+        }));
+
+        const { error } = await supabase.from('pedidos').update(payload).eq('id', id);
         if (error) {
             alert('Erro ao atualizar: ' + error.message);
             carregarDados(); 
@@ -873,6 +884,10 @@ function App() {
             urgente: novoPedido.urgente
         };
 
+        if (novoPedido.status === 'Concluído' && (!pedidoEmEdicao || pedidoEmEdicao.status !== 'Concluído')) {
+            payload.prazo = obterDataAtual();
+        }
+
         if (pedidoEmEdicao) {
             const { data, error } = await supabase.from('pedidos').update(payload).eq('id', pedidoEmEdicao.id).select();
             
@@ -891,6 +906,7 @@ function App() {
         } else {
             const novoId = pedidos.length > 0 ? Math.max(...pedidos.map(p => p.id)) + 1 : 1;
             payload.id = novoId;
+            payload.criado_por = usuario?.nome || 'Desconhecido';
             const { data, error } = await supabase.from('pedidos').insert([payload]).select();
             
             if (error) {
@@ -1362,6 +1378,7 @@ function App() {
                                 <thead className="bg-gray-50/50 dark:bg-darkHover/50">
                                     <tr className="border-b border-gray-200 dark:border-darkBorder text-sm font-semibold text-gray-500 dark:text-gray-400 tracking-wide uppercase">
                                         <th className="px-6 py-4 w-24">OS Nº</th>
+                                        {isAdmin && <th className="px-6 py-4 w-48">Criado Por</th>}
                                         <th className="px-6 py-4 w-32">Data</th>
                                         <th className="px-6 py-4">Cliente</th>
                                         <th className="px-6 py-4">Serviço (Resumo)</th>
@@ -1378,7 +1395,13 @@ function App() {
                                         return (
                                             <tr key={p.id} onClick={() => { if (trancado) return; abrirEdicao(p); }} className={`border-b border-gray-100 dark:border-darkBorder transition ${trancado ? 'opacity-30 bg-[#050505] cursor-not-allowed' : 'cursor-pointer hover:bg-gray-50 dark:hover:bg-darkHover'}`}>
                                                 <td className="px-6 py-4 text-sm font-medium text-gray-500"><span className="flex items-center gap-1.5">{trancado && <Icon name="lock" className="w-3 h-3 text-red-500" />}#{p.id}</span></td>
-                                                <td className="px-6 py-4 text-sm text-gray-600 dark:text-[#A1A1AA]">{formatarDataExibicao(p.data_pedido)}</td>
+                                                {isAdmin && (
+                                                    <td className="px-6 py-4">
+                                                        <div className="text-sm font-semibold text-gray-800 dark:text-[#EDEDED]">{p.criado_por || '---'}</div>
+                                                        <div className="text-xs text-gray-400 mt-0.5">{formatarDataExibicao(p.data_pedido)}</div>
+                                                    </td>
+                                                )}
+                                                <td className="px-6 py-4 text-sm text-gray-600 dark:text-[#A1A1AA]">{formatarDataExibicao(p.prazo || p.data_pedido)}</td>
                                                 <td className={`px-6 py-4 font-semibold text-sm ${isClienteProblema(p.cliente) ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-[#EDEDED]'}`}>
                                                     <div className="flex items-center gap-1.5">{p.cliente} {isClienteProblema(p.cliente) && <Icon name="alert-triangle" className="w-4 h-4 text-red-500 shrink-0" title="Cliente Problema" />}</div>
                                                 </td>
@@ -1936,18 +1959,22 @@ function App() {
                                                 </td>
                                                 <td className="px-4 py-3 text-right">
                                                     <div className="flex items-center justify-end gap-2">
-                                                        <button onClick={() => { 
-                                                            setNotaFiscalEmEdicao({
-                                                                ...n,
-                                                                valor_pago: n.valor_pago ? formatarMoeda((n.valor_pago * 100).toFixed(0).toString()) : ''
-                                                            }); 
-                                                            setModalNotaFiscalAberto(true); 
-                                                        }} className="p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded transition" title="Editar / Ver Detalhes">
-                                                            <Icon name="edit-3" className="w-4 h-4" />
-                                                        </button>
-                                                        <button onClick={() => concluirNotaFiscal(n.id)} className="p-2 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded transition" title="Concluir Nota">
-                                                            <Icon name="check-circle" className="w-4 h-4" />
-                                                        </button>
+                                                        {!n.concluido && (
+                                                            <button onClick={() => { 
+                                                                setNotaFiscalEmEdicao({
+                                                                    ...n,
+                                                                    valor_pago: n.valor_pago ? formatarMoeda((n.valor_pago * 100).toFixed(0).toString()) : ''
+                                                                }); 
+                                                                setModalNotaFiscalAberto(true); 
+                                                            }} className="p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded transition" title="Editar / Ver Detalhes">
+                                                                <Icon name="edit-3" className="w-4 h-4" />
+                                                            </button>
+                                                        )}
+                                                        {!n.concluido && (usuario?.nivel === 'Administrador' || usuario?.nivel === 'Financeiro') && (
+                                                            <button onClick={() => concluirNotaFiscal(n.id)} className="p-2 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded transition" title="Concluir Nota">
+                                                                <Icon name="check-circle" className="w-4 h-4" />
+                                                            </button>
+                                                        )}
                                                     </div>
                                                 </td>
                                             </tr>
