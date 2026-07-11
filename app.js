@@ -1192,19 +1192,19 @@ function App() {
                         <div className="flex-1 bg-white dark:bg-darkCard rounded border border-gray-200 dark:border-darkBorder overflow-hidden flex flex-col">
                             <div className="overflow-auto custom-scrollbar flex-1">
                                 <table className="w-full text-left border-collapse whitespace-nowrap">
-                                    <thead className="sticky top-0 z-10 bg-gray-50 dark:bg-darkCard">
-                                        <tr className="border-b border-gray-200 dark:border-darkBorder text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">
-                                            <th className="px-4 py-3 w-10 text-center">ID</th>
-                                            <th className="px-4 py-3 w-40">Prazo</th>
-                                            <th className="px-4 py-3 w-36">Resp.</th>
-                                            <th className="px-4 py-3 w-48">Cliente</th>
-                                            <th className="px-4 py-3 min-w-[200px]">Serviço</th>
-                                            <th className="px-4 py-3 w-20 text-center">Aprov.</th>
-                                            <th className="px-4 py-3 w-20 text-center">Entrega</th>
-                                            <th className="px-4 py-3 w-20 text-center">Urgente</th>
-                                            <th className="px-4 py-3 w-48">Status</th>
-                                            <th className="px-4 py-3 w-36">Local</th>
-                                            <th className="px-4 py-3 w-24 text-center">Concluir</th>
+                                    <thead className="sticky top-0 z-10 bg-gray-50/50 dark:bg-darkHover/50">
+                                        <tr className="border-b border-gray-200 dark:border-darkBorder text-sm font-semibold text-gray-500 dark:text-gray-400 tracking-wide uppercase">
+                                            <th className="px-6 py-4 w-24 text-center">ID</th>
+                                            <th className="px-6 py-4 w-32">Prazo</th>
+                                            <th className="px-6 py-4 w-32">Resp.</th>
+                                            <th className="px-6 py-4">Cliente</th>
+                                            <th className="px-6 py-4 min-w-[200px]">Serviço</th>
+                                            <th className="px-6 py-4 w-20 text-center">Aprov.</th>
+                                            <th className="px-6 py-4 w-20 text-center">Entrega</th>
+                                            <th className="px-6 py-4 w-20 text-center">Urgente</th>
+                                            <th className="px-6 py-4 w-48">Status</th>
+                                            <th className="px-6 py-4 w-36">Local</th>
+                                            <th className="px-6 py-4 w-24 text-center">Concluir</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -1282,15 +1282,15 @@ function App() {
                         </div>
                         <div className="bg-white dark:bg-darkCard rounded border border-gray-200 dark:border-darkBorder overflow-hidden">
                             <table className="w-full text-left border-collapse">
-                                <thead>
-                                    <tr className="border-b border-gray-200 dark:border-darkBorder text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider bg-transparent">
-                                        <th className="px-6 py-5">OS Nº</th>
-                                        <th className="px-6 py-5">Data</th>
-                                        <th className="px-6 py-5">Cliente</th>
-                                        <th className="px-6 py-5">Serviço (Resumo)</th>
-                                        <th className="px-6 py-5">Status</th>
-                                        <th className="px-6 py-5 text-right">Valor Final</th>
-                                        <th className="px-6 py-5 text-center">Imprimir</th>
+                                <thead className="bg-gray-50/50 dark:bg-darkHover/50">
+                                    <tr className="border-b border-gray-200 dark:border-darkBorder text-sm font-semibold text-gray-500 dark:text-gray-400 tracking-wide uppercase">
+                                        <th className="px-6 py-4 w-24">OS Nº</th>
+                                        <th className="px-6 py-4 w-32">Data</th>
+                                        <th className="px-6 py-4">Cliente</th>
+                                        <th className="px-6 py-4">Serviço (Resumo)</th>
+                                        <th className="px-6 py-4 w-48">Status</th>
+                                        <th className="px-6 py-4 w-36 text-right">Valor Final</th>
+                                        <th className="px-6 py-4 w-24 text-center">Imprimir</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -1722,13 +1722,13 @@ function App() {
                         </div>
                         <div className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded overflow-hidden">
                             <table className="w-full text-left border-collapse">
-                                <thead>
-                                    <tr className="border-b border-gray-200 dark:border-darkBorder text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider bg-transparent">
-                                        <th className="px-6 py-5">ID</th>
-                                        <th className="px-6 py-5">Nome do Produto</th>
-                                        <th className="px-6 py-5">Descrição Base</th>
-                                        <th className="px-6 py-5 text-right">Preço Base</th>
-                                        <th className="px-6 py-5 w-16 text-center">Excluir</th>
+                                <thead className="bg-gray-50/50 dark:bg-darkHover/50">
+                                    <tr className="border-b border-gray-200 dark:border-darkBorder text-sm font-semibold text-gray-500 dark:text-gray-400 tracking-wide uppercase">
+                                        <th className="px-6 py-4 w-24">ID</th>
+                                        <th className="px-6 py-4">Nome do Produto</th>
+                                        <th className="px-6 py-4">Descrição Base</th>
+                                        <th className="px-6 py-4 w-36 text-right">Preço Base</th>
+                                        <th className="px-6 py-4 w-24 text-center">Excluir</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -1783,7 +1783,7 @@ function App() {
                                 ))}
                             </div>
                             <table className="w-full text-left border-collapse">
-                                <thead><tr className="border-b border-gray-200 dark:border-darkBorder text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider bg-transparent"><th className="px-6 py-5">Cliente</th><th className="px-6 py-5">WhatsApp</th><th className="px-6 py-5">E-mail</th><th className="px-6 py-5">Observações</th></tr></thead>
+                                <thead className="bg-gray-50/50 dark:bg-darkHover/50"><tr className="border-b border-gray-200 dark:border-darkBorder text-sm font-semibold text-gray-500 dark:text-gray-400 tracking-wide uppercase"><th className="px-6 py-4">Cliente</th><th className="px-6 py-4 w-48">WhatsApp</th><th className="px-6 py-4 w-64">E-mail</th><th className="px-6 py-4">Observações</th></tr></thead>
                                 <tbody>
                                     {clientesPaginados.length > 0 ? clientesPaginados.map(c => (
                                         <tr key={c.id} onClick={() => abrirEdicaoCliente(c)} className="border-b border-gray-100 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover transition cursor-pointer"><td className="px-6 py-4 text-sm font-semibold dark:text-[#EDEDED]">{c.nome}</td><td className="px-6 py-4 text-sm text-gray-600 dark:text-[#A1A1AA]">{c.telefone || '---'}</td><td className="px-6 py-4 text-sm text-gray-600 dark:text-[#A1A1AA]">{c.email || '---'}</td><td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-600 truncate max-w-xs">{c.observacoes || '---'}</td></tr>
@@ -1819,13 +1819,13 @@ function App() {
                         <div className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded overflow-hidden">
                             <div className="overflow-x-auto custom-scrollbar">
                                 <table className="w-full text-left border-collapse min-w-[800px]">
-                                    <thead>
-                                        <tr className="border-b border-gray-200 dark:border-darkBorder text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider bg-transparent">
-                                            <th className="px-4 py-4">Data</th>
-                                            <th className="px-4 py-4">Cliente / Razão Social</th>
-                                            <th className="px-4 py-4">CNPJ</th>
-                                            <th className="px-4 py-4">Serviço / Valor</th>
-                                            <th className="px-4 py-4 text-right">Ações</th>
+                                    <thead className="bg-gray-50/50 dark:bg-darkHover/50">
+                                        <tr className="border-b border-gray-200 dark:border-darkBorder text-sm font-semibold text-gray-500 dark:text-gray-400 tracking-wide uppercase">
+                                            <th className="px-6 py-4 w-32">Data</th>
+                                            <th className="px-6 py-4">Cliente / Razão Social</th>
+                                            <th className="px-6 py-4 w-48">CNPJ</th>
+                                            <th className="px-6 py-4 w-64">Serviço / Valor</th>
+                                            <th className="px-6 py-4 w-24 text-right">Ações</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -1884,7 +1884,7 @@ function App() {
                         </div>
                         <div className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded overflow-hidden">
                             <table className="w-full text-left border-collapse">
-                                <thead><tr className="border-b border-gray-200 dark:border-darkBorder text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider bg-transparent"><th className="px-6 py-5">Nome do Usuário</th><th className="px-6 py-5 text-right">Nível de Acesso</th></tr></thead>
+                                <thead className="bg-gray-50/50 dark:bg-darkHover/50"><tr className="border-b border-gray-200 dark:border-darkBorder text-sm font-semibold text-gray-500 dark:text-gray-400 tracking-wide uppercase"><th className="px-6 py-4">Nome do Usuário</th><th className="px-6 py-4 w-48 text-right">Nível de Acesso</th></tr></thead>
                                 <tbody>
                                     {usuariosSistema.map(u => (
                                         <tr key={u.id} onClick={() => abrirEdicaoUsuario(u)} className="border-b border-gray-100 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover transition cursor-pointer">
