@@ -653,7 +653,6 @@ function CalculadoraAdesivo() {
     const [largura, setLargura] = useState('');
     const [altura, setAltura] = useState('');
     const [tipo, setTipo] = useState('vinil_branco');
-    const [recorte, setRecorte] = useState('reto');
     const [quantidade, setQuantidade] = useState(100);
 
     const precosVinil = {
@@ -671,7 +670,8 @@ function CalculadoraAdesivo() {
     const calcular = () => {
         const lRaw = parseFloat(largura.replace(',', '.'));
         const aRaw = parseFloat(altura.replace(',', '.'));
-        if (isNaN(lRaw) || isNaN(aRaw) || lRaw <= 0 || aRaw <= 0) return '0,00';
+        const qty = parseInt(quantidade) || 0;
+        if (isNaN(lRaw) || isNaN(aRaw) || lRaw <= 0 || aRaw <= 0 || qty <= 0) return '0,00';
         
         // Sangria de 0,2cm
         const l = lRaw + 0.2;
@@ -688,20 +688,20 @@ function CalculadoraAdesivo() {
 
         let total = 0;
 
-        if (qSRA3 > 0 && quantidade <= qSRA3) {
+        if (qSRA3 > 0 && qty <= qSRA3) {
             total = precoSRA3;
-        } else if (qMeio > 0 && quantidade <= qMeio) {
+        } else if (qMeio > 0 && qty <= qMeio) {
             total = precoMeioMetro;
-        } else if (qMetro > 0 && quantidade <= qMetro) {
+        } else if (qMetro > 0 && qty <= qMetro) {
             total = preco1Metro;
         } else {
             if (qMetro > 0) {
-                const metrosNecessarios = quantidade / qMetro;
+                const metrosNecessarios = qty / qMetro;
                 total = metrosNecessarios * preco1Metro;
             } else {
                 // Adesivo maior que a área útil de 1m, calcula por m² linear/quadrado puro
                 const areaFisica = (l * a) / 10000;
-                total = (areaFisica * quantidade) * preco1Metro;
+                total = (areaFisica * qty) * preco1Metro;
             }
         }
 
@@ -711,7 +711,8 @@ function CalculadoraAdesivo() {
     const gerarTextoCopia = () => {
         const lRaw = parseFloat(largura.replace(',', '.'));
         const aRaw = parseFloat(altura.replace(',', '.'));
-        if (isNaN(lRaw) || isNaN(aRaw) || lRaw <= 0 || aRaw <= 0) return '';
+        const qty = parseInt(quantidade) || 0;
+        if (isNaN(lRaw) || isNaN(aRaw) || lRaw <= 0 || aRaw <= 0 || qty <= 0) return '';
         
         let nomeTipo = 'Vinil';
         if (tipo === 'vinil_branco') nomeTipo = 'Vinil Branco Brilho';
@@ -720,25 +721,22 @@ function CalculadoraAdesivo() {
         if (tipo === 'vinil_laminado_brilho') nomeTipo = 'Vinil Laminado Brilho';
         if (tipo === 'vinil_laminado_fosco') nomeTipo = 'Vinil Laminado Fosco';
         
-        const nomeRecorte = recorte === 'reto' ? 'Corte Reto' : 'Meio Corte / Contorno';
         const val = calcular().replace('.', ',');
         
         // Calcular onde coube para gerar o texto de entrega
         const l = lRaw + 0.2;
         const a = aRaw + 0.2;
         const qSRA3 = Math.floor(26 / l) * Math.floor(39 / a);
-        const qMeio = Math.floor(44 / l) * Math.floor(94 / a);
-        const qMetro = Math.floor(94 / l) * Math.floor(94 / a);
         
         let entregaStr = '';
-        if (qSRA3 > 0 && quantidade <= qSRA3) {
+        if (qSRA3 > 0 && qty <= qSRA3) {
             entregaStr = ' | Entregue em folha A3';
         } else {
             entregaStr = ' | Entregue em folha de 1/2 metro';
         }
         
-        const plural = quantidade > 1 ? 'Adesivos' : 'Adesivo';
-        return `${quantidade} ${plural} | ${lRaw}x${aRaw}cm | ${nomeTipo} | ${nomeRecorte}${entregaStr} - R$ ${val}`;
+        const plural = qty > 1 ? 'Adesivos' : 'Adesivo';
+        return `${qty} ${plural} | ${lRaw}x${aRaw}cm | ${nomeTipo}${entregaStr} - R$ ${val}`;
     };
 
     return (
@@ -764,15 +762,8 @@ function CalculadoraAdesivo() {
                     </select>
                 </div>
                 <div>
-                    <label className="block text-xs font-bold text-gray-500 mb-1">Corte / Acabamento</label>
-                    <select value={recorte} onChange={e => setRecorte(e.target.value)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition">
-                        <option value="reto">Corte Reto (Refile)</option>
-                        <option value="contorno">Meio Corte / Contorno</option>
-                    </select>
-                </div>
-                <div>
                     <label className="block text-xs font-bold text-gray-500 mb-1">Quantidade</label>
-                    <input type="number" min="1" value={quantidade} onChange={e => setQuantidade(parseInt(e.target.value) || 1)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" />
+                    <input type="number" min="1" value={quantidade} onChange={e => setQuantidade(e.target.value)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" />
                 </div>
             </div>
 
