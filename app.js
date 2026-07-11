@@ -1823,7 +1823,7 @@ function App() {
                                         <tr className="border-b border-gray-200 dark:border-darkBorder text-sm font-semibold text-gray-500 dark:text-gray-400 tracking-wide uppercase">
                                             <th className="px-6 py-4 w-32">Data</th>
                                             <th className="px-6 py-4">Cliente / Razão Social</th>
-                                            <th className="px-6 py-4 w-48">CNPJ</th>
+                                            <th className="px-6 py-4 w-48">CPF / CNPJ</th>
                                             <th className="px-6 py-4 w-64">Serviço / Valor</th>
                                             <th className="px-6 py-4 w-24 text-right">Ações</th>
                                         </tr>
