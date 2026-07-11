@@ -540,22 +540,10 @@ function StackedCards({ title, description, icon, cards }) {
 function CalculadoraBanner() {
     const [largura, setLargura] = useState('');
     const [altura, setAltura] = useState('');
-    const [tipo, setTipo] = useState('fosca_340g');
-    const [acabamento, setAcabamento] = useState('bainha_ilhos');
+    const [tipo, setTipo] = useState('simples');
+    const [acabamento, setAcabamento] = useState('bastao_corda');
+    const [prazo, setPrazo] = useState('padrao');
     const [quantidade, setQuantidade] = useState(1);
-
-    const precosLona = {
-        'brilho_340g': 35.0,
-        'fosca_340g': 35.0,
-        'brilho_440g': 45.0,
-        'fosca_440g': 45.0
-    };
-
-    const precosAcabamento = {
-        'bainha_ilhos': 10.0,
-        'bastao_cordinha': 15.0,
-        'sem_acabamento': 0
-    };
 
     const calcular = () => {
         const l = parseFloat(largura.replace(',', '.'));
@@ -563,16 +551,35 @@ function CalculadoraBanner() {
         if (isNaN(l) || isNaN(a) || l <= 0 || a <= 0) return '0,00';
         
         const area = l * a;
-        const precoLona = precosLona[tipo] * area;
-        const precoAcab = precosAcabamento[acabamento] * (acabamento === 'bainha_ilhos' ? ((l+a)*2) : (l*2));
         
-        return ((precoLona + precoAcab) * quantidade).toFixed(2);
+        let valorM2 = tipo === 'simples' ? 90.0 : 130.0;
+        
+        if (acabamento === 'sem_acabamento') {
+            valorM2 -= 10.0;
+        }
+
+        let precoUnitario = 0;
+        
+        if (area <= 0.5) {
+            precoUnitario = 65.0; // Até 50x100cm (0.5m²)
+        } else if (area <= 1.0) {
+            precoUnitario = valorM2; // Entre 50x100cm e 100x100cm (1m²)
+        } else {
+            precoUnitario = area * valorM2; // Acima de 1m²
+        }
+        
+        // Multiplicador de prazo
+        let multiplicadorPrazo = 1.0;
+        if (prazo === 'outro_dia') multiplicadorPrazo = 1.3; // +30%
+        if (prazo === 'mesmo_dia') multiplicadorPrazo = 1.6; // +60%
+        
+        return ((precoUnitario * multiplicadorPrazo) * quantidade).toFixed(2);
     };
 
     return (
         <div className="bg-white dark:bg-darkCard p-6 rounded border border-gray-200 dark:border-darkBorder">
             <h3 className="text-lg font-bold dark:text-white mb-4">Calculadora de Banner / Lona</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                 <div>
                     <label className="block text-xs font-bold text-gray-500 mb-1">Largura (m)</label>
                     <input type="text" value={largura} onChange={e => setLargura(e.target.value)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" placeholder="Ex: 1,50" />
@@ -584,18 +591,24 @@ function CalculadoraBanner() {
                 <div>
                     <label className="block text-xs font-bold text-gray-500 mb-1">Tipo de Lona</label>
                     <select value={tipo} onChange={e => setTipo(e.target.value)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition">
-                        <option value="brilho_340g">Lona Brilho 340g (R$ 35/m²)</option>
-                        <option value="fosca_340g">Lona Fosca 340g (R$ 35/m²)</option>
-                        <option value="brilho_440g">Lona Brilho 440g (R$ 45/m²)</option>
-                        <option value="fosca_440g">Lona Fosca 440g (R$ 45/m²)</option>
+                        <option value="simples">Lona Simples (R$ 90/m²)</option>
+                        <option value="laminado">Lona Laminada Brilho/Fosco (R$ 130/m²)</option>
                     </select>
                 </div>
                 <div>
                     <label className="block text-xs font-bold text-gray-500 mb-1">Acabamento</label>
                     <select value={acabamento} onChange={e => setAcabamento(e.target.value)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition">
-                        <option value="bainha_ilhos">Bainha e Ilhós</option>
-                        <option value="bastao_cordinha">Bastão e Cordinha</option>
-                        <option value="sem_acabamento">Sem Acabamento</option>
+                        <option value="bastao_corda">Bastão e Corda</option>
+                        <option value="ilhos">Ilhós (Argolas de ferro)</option>
+                        <option value="sem_acabamento">Sem Acabamento (- R$ 10/m²)</option>
+                    </select>
+                </div>
+                <div>
+                    <label className="block text-xs font-bold text-gray-500 mb-1">Prazo de Entrega</label>
+                    <select value={prazo} onChange={e => setPrazo(e.target.value)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition">
+                        <option value="padrao">Padrão</option>
+                        <option value="outro_dia">Para outro dia (+30%)</option>
+                        <option value="mesmo_dia">Para o mesmo dia (+60%)</option>
                     </select>
                 </div>
                 <div>
