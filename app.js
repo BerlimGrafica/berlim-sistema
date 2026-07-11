@@ -1328,14 +1328,14 @@ function App() {
                                 <table className="w-full text-left border-collapse whitespace-nowrap">
                                     <thead className="sticky top-0 z-10 bg-gray-50/50 dark:bg-darkHover/50">
                                         <tr className="border-b border-gray-200 dark:border-darkBorder text-sm font-semibold text-gray-500 dark:text-gray-400 tracking-wide uppercase">
-                                            <th className="px-6 py-4 w-24 text-center">ID</th>
+                                            <th className="px-6 py-4 w-20 text-center">ID</th>
                                             <th className="px-6 py-4 w-32">Prazo</th>
                                             <th className="px-6 py-4 w-32">Resp.</th>
-                                            <th className="px-6 py-4">Cliente</th>
-                                            <th className="px-6 py-4 min-w-[200px]">Serviço</th>
-                                            <th className="px-6 py-4 w-48">Status</th>
-                                            <th className="px-6 py-4 w-36">Local</th>
-                                            <th className="px-6 py-4 w-40 text-right">Ações</th>
+                                            <th className="px-6 py-4 w-1/5">Cliente</th>
+                                            <th className="px-6 py-4 w-full">Serviço</th>
+                                            <th className="px-6 py-4 w-40">Status</th>
+                                            <th className="px-6 py-4 w-32">Local</th>
+                                            <th className="px-6 py-4 w-16 text-right">Ação</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -1372,16 +1372,7 @@ function App() {
                                                                 <td className="px-4 py-3"><InlineDropdown value={p.status} options={opcoesStatusPermitidas} onChange={(val) => atualizarCampoInline(p.id, 'status', val)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-2.5 py-1.5 text-xs outline-none hover:border-brand" /></td>
                                                                 <td className="px-4 py-3"><span className="text-[11px] font-bold px-2 py-1 bg-gray-100 dark:bg-darkElevated text-gray-700 dark:text-[#EDEDED] rounded border border-gray-200 dark:border-darkBorder truncate max-w-[150px] inline-block" title={p.local_producao || 'Berlim'}>{p.local_producao || 'Berlim'}</span></td>
                                                                 <td className="px-4 py-3 text-right">
-                                                                    <div className="flex items-center justify-end gap-1">
-                                                                        <button type="button" onClick={() => atualizarCampoInline(p.id, 'aprovado', !p.aprovado)} className={`p-2 rounded transition ${p.aprovado ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30' : 'text-gray-300 dark:text-gray-600 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30'}`} title="Arte Aprovada">
-                                                                            <Icon name="thumbs-up" className="w-4 h-4" />
-                                                                        </button>
-                                                                        <button type="button" onClick={() => atualizarCampoInline(p.id, 'entrega', !p.entrega)} className={`p-2 rounded transition ${p.entrega ? 'text-orange-500 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/30' : 'text-gray-300 dark:text-gray-600 hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/30'}`} title="Pronto para Entrega">
-                                                                            <Icon name="package" className="w-4 h-4" />
-                                                                        </button>
-                                                                        <button type="button" onClick={() => atualizarCampoInline(p.id, 'urgente', !p.urgente)} className={`p-2 rounded transition ${p.urgente ? 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/30' : 'text-gray-300 dark:text-gray-600 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30'}`} title="Urgente">
-                                                                            <Icon name="alert-triangle" className="w-4 h-4" />
-                                                                        </button>
+                                                                    <div className="flex items-center justify-end">
                                                                         <button type="button" onClick={() => atualizarCampoInline(p.id, 'status', 'Concluído')} className="p-2 text-gray-300 dark:text-gray-600 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition rounded" title="Marcar como Concluído">
                                                                             <Icon name="check-circle" className="w-4 h-4" />
                                                                         </button>
