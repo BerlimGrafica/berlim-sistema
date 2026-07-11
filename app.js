@@ -1327,15 +1327,15 @@ function App() {
                             <div className="overflow-auto custom-scrollbar flex-1">
                                 <table className="w-full text-left border-collapse whitespace-nowrap">
                                     <thead className="sticky top-0 z-10 bg-gray-50/50 dark:bg-darkHover/50">
-                                        <tr className="border-b border-gray-200 dark:border-darkBorder text-sm font-semibold text-gray-500 dark:text-gray-400 tracking-wide uppercase">
-                                            <th className="px-6 py-4 w-24 text-center">ID</th>
+                                        <tr className="border-b border-gray-200 dark:border-darkBorder text-sm font-semibold text-gray-500 dark:text-gray-400 tracking-wide uppercase text-center">
+                                            <th className="px-6 py-4 w-24">ID</th>
                                             <th className="px-6 py-4 w-32">Prazo</th>
                                             <th className="px-6 py-4 w-32">Resp.</th>
                                             <th className="px-6 py-4">Cliente</th>
                                             <th className="px-6 py-4 w-full min-w-[300px]">Serviço</th>
                                             <th className="px-6 py-4 w-40">Status</th>
                                             <th className="px-6 py-4 w-32">Local</th>
-                                            <th className="px-6 py-4 w-40 text-right">Ações</th>
+                                            <th className="px-6 py-4 w-40">Ações</th>
                                         </tr>
                                     </thead>
                                     <tbody>
