@@ -418,7 +418,7 @@ function ItensChecklist({ pedido, atualizarCampoInline }) {
         let textoFinal = '';
         const itensTextoArray = novosItens.map(i => {
             const strDesconto = i.desconto ? ' (-' + i.desconto + '%)' : '';
-            const strNome = i.nome ? '  ' + (i.id_produto ? `[#${i.id_produto}] ` : '') + i.nome : '  Serviço Personalizado';
+            const strNome = i.nome ? '• ' + (i.id_produto ? `[#${i.id_produto}] ` : '') + i.nome : '• Serviço Personalizado';
             const strLocal = i.local_producao ? '\n  Local: ' + i.local_producao : '\n  Local: Berlim';
             const strConcluido = i.concluido ? '\n  [✓] Concluído' : '';
             return strNome + '\n  ' + i.descricao + '\n  Valor: R$ ' + i.valor + strDesconto + strLocal + strConcluido;
