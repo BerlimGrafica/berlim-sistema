@@ -995,10 +995,23 @@ function App() {
                         
                         // Lógica de alerta
                         if (payload.eventType === 'UPDATE') {
-                            const oldResponsavel = payload.old?.responsavel;
                             const newResponsavel = payload.new?.responsavel;
-                            if (oldResponsavel !== newResponsavel && newResponsavel === usuario.nome) {
-                                setAlertasNaoLidos(prev => [...prev, { id: Date.now(), msg: `Você foi designado para a O.S. #${payload.new.id}`, os_id: payload.new.id }]);
+                            // Se a O.S. já era do usuário, e ele só editou outra coisa, não precisamos notificar
+                            // O Supabase por padrão (se replica_identity não for full) não envia o old completo,
+                            // Mas, se ele enviasse, testaríamos. Por precaução, o alerta pode ser disparado.
+                            // Vamos focar no principal: quando vira o nome do usuário.
+                            if (newResponsavel === usuario.nome) {
+                                // Para não floodar, idealmente testaríamos se mudou. Mas para garantir que chegou:
+                                setAlertasNaoLidos(prev => {
+                                    // Evita duplicados na UI
+                                    if(prev.some(a => a.os_id === payload.new.id)) return prev;
+                                    return [...prev, { id: Date.now(), msg: `Você foi designado para a O.S. #${payload.new.id} (Atualizada)`, os_id: payload.new.id }];
+                                });
+                            }
+                        } else if (payload.eventType === 'INSERT') {
+                            const newResponsavel = payload.new?.responsavel;
+                            if (newResponsavel === usuario.nome) {
+                                setAlertasNaoLidos(prev => [...prev, { id: Date.now(), msg: `Nova O.S. #${payload.new.id} atribuída a você`, os_id: payload.new.id }]);
                             }
                         }
 
@@ -2418,15 +2431,15 @@ function App() {
                                                     const padX = 70;
                                                     const padY = 20;
                                                     const stepX = (svgWidth - padX * 2) / (mesesGrafico.length - 1 || 1);
-                                                    const hexColors = ["#F37020", "#3b82f6", "#10b981", "#8b5cf6", "#ec4899", "#f59e0b", "#06b6d4", "#f43f5e", "#84cc16", "#14b8a6"];
+                                                    const hexColors = ["#2D3349", "#76AB3C", "#3b82f6", "#F37020", "#8b5cf6", "#ec4899", "#f59e0b", "#06b6d4", "#f43f5e", "#84cc16"];
                                                     
                                                     const renderSVG = () => (
-                                                        <div className="w-full overflow-x-auto bg-gray-50 dark:bg-darkElevated rounded-xl p-4 border border-gray-100 dark:border-darkBorder mb-6 relative">
+                                                        <div className="w-full overflow-x-auto bg-white dark:bg-darkCard rounded-xl p-4 border border-gray-100 dark:border-darkBorder mb-6 relative drop-shadow-[0_2px_4px_rgba(0,0,0,0.02)]">
                                                             {selecionadosAtuais.length > 0 ? (
                                                                 <>
                                                                     <div className="flex flex-wrap gap-2 mb-6 justify-center px-4">
                                                                         {selecionadosAtuais.map((prod, i) => (
-                                                                            <span key={prod} className="text-[10px] font-bold px-2 py-1 rounded-full flex items-center gap-1.5 bg-white dark:bg-darkCard shadow-sm border border-gray-200 dark:border-darkBorder dark:text-gray-200">
+                                                                            <span key={prod} className="text-[10px] font-bold px-2 py-1 rounded-full flex items-center gap-1.5 bg-gray-50 dark:bg-darkElevated border border-gray-100 dark:border-darkBorder dark:text-gray-200">
                                                                                 <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: hexColors[i % hexColors.length] }}></span>
                                                                                 {prod}
                                                                             </span>
@@ -2437,7 +2450,7 @@ function App() {
                                                                             const y = svgHeight - padY - f * (svgHeight - padY * 2);
                                                                             return (
                                                                                 <g key={f}>
-                                                                                    <line x1={padX} y1={y} x2={svgWidth - padX} y2={y} stroke="currentColor" className="text-gray-200 dark:text-gray-800" strokeDasharray="4 4" />
+                                                                                    <line x1={padX} y1={y} x2={svgWidth - padX} y2={y} stroke="currentColor" className="text-gray-200/70 dark:text-gray-800/70" strokeDasharray="3 3" />
                                                                                     <text x={padX - 10} y={y + 4} textAnchor="end" fontSize="11" fill="currentColor" className="text-gray-400 dark:text-gray-500 font-bold">
                                                                                         R$ {formatarValorFinanceiro(f * (maxYGrafico / 1.1))}
                                                                                     </text>
@@ -2448,9 +2461,14 @@ function App() {
                                                                             const x = padX + i * stepX;
                                                                             const [ano, mes] = m.split('-');
                                                                             return (
-                                                                                <text key={m} x={x} y={svgHeight} textAnchor="middle" fontSize="11" fill="currentColor" className="text-gray-400 dark:text-gray-500 font-bold">
-                                                                                    {mes}/{ano.substring(2)}
-                                                                                </text>
+                                                                                <g key={m}>
+                                                                                    {i > 0 && i < mesesGrafico.length - 1 && (
+                                                                                        <line x1={x} y1={padY} x2={x} y2={svgHeight - padY} stroke="currentColor" className="text-gray-200/50 dark:text-gray-800/50" strokeDasharray="2 4" />
+                                                                                    )}
+                                                                                    <text x={x} y={svgHeight} textAnchor="middle" fontSize="11" fill="currentColor" className="text-gray-400 dark:text-gray-500 font-bold">
+                                                                                        {mes}/{ano.substring(2)}
+                                                                                    </text>
+                                                                                </g>
                                                                             );
                                                                         })}
                                                                         {selecionadosAtuais.map((prod, i) => {
@@ -2463,12 +2481,12 @@ function App() {
                                                                             }).join(" ");
                                                                             return (
                                                                                 <g key={prod}>
-                                                                                    <polyline points={points} fill="none" stroke={color} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="drop-shadow-sm transition-all duration-500 ease-out" />
+                                                                                    <polyline points={points} fill="none" stroke={color} strokeWidth="2.5" strokeLinejoin="round" className="drop-shadow-sm transition-all duration-500 ease-out" />
                                                                                     {mesesGrafico.map((m, mi) => {
                                                                                         const x = padX + mi * stepX;
                                                                                         const val = dadosMesProduto[prod][m] || 0;
                                                                                         const y = svgHeight - padY - (val / maxYGrafico) * (svgHeight - padY * 2);
-                                                                                        return <circle key={m} cx={x} cy={y} r="4.5" fill="white" stroke={color} strokeWidth="2.5" className="transition-all duration-500 ease-out" />;
+                                                                                        return <circle key={m} cx={x} cy={y} r="3.5" fill="white" stroke={color} strokeWidth="2" className="transition-all duration-500 ease-out" />;
                                                                                     })}
                                                                                 </g>
                                                                             );
