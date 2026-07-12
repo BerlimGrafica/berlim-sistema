@@ -2223,22 +2223,21 @@ function App() {
                                                             const valorStr = match[2].replace(/\./g, '').replace(',', '.');
                                                             const valorNum = parseFloat(valorStr) || 0;
                                                             
-                                                            const exists = produtos.find(prod => prod.nome.toLowerCase() === nome.toLowerCase());
-                                                            const finalName = exists ? exists.nome : nome;
-                                                            
-                                                            if (!acc[finalName]) acc[finalName] = 0;
-                                                            acc[finalName] += valorNum;
+                                                            // Look for matching product in catalog exactly or by inclusion
+                                                            const prod = produtos.find(prod => prod.nome.toLowerCase() === nome.toLowerCase() || nome.toLowerCase().includes(prod.nome.toLowerCase()));
+                                                            if (prod) {
+                                                                const finalName = prod.nome;
+                                                                if (!acc[finalName]) acc[finalName] = 0;
+                                                                acc[finalName] += valorNum;
+                                                            }
                                                         }
                                                         return acc;
                                                     }, {});
                                                     
-                                                    const rankingProduto = Object.entries(agrupadoPorProduto)
-                                                        .filter(([nome]) => produtos.some(p => p.nome.toLowerCase() === nome.toLowerCase()))
-                                                        .sort((a,b) => b[1] - a[1]);
-                                                    
+                                                    const rankingProduto = Object.entries(agrupadoPorProduto).sort((a,b) => b[1] - a[1]);
                                                     const maxProduto = Math.max(...rankingProduto.map(r => r[1]), 1);
                                                     
-                                                    if (rankingProduto.length === 0) return <p className="text-xs text-gray-500 italic">Nenhum produto do catálogo faturado.</p>;
+                                                    if (rankingProduto.length === 0) return <p className="text-xs text-gray-500 italic">Nenhum produto do catálogo faturado no período.</p>;
                                                     
                                                     return rankingProduto.map((r, index) => renderBarHorizontal(r[0], r[1], maxProduto, false, colorsRank[index % colorsRank.length]));
                                                 })()}
