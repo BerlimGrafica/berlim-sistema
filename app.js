@@ -989,6 +989,9 @@ function App() {
                     { event: '*', schema: 'public', table: 'pedidos' }, 
                     (payload) => {
                         console.log('Atualização em tempo real (pedidos) recebida!', payload);
+                        const isAdm = usuario?.nivel === 'Administrador';
+                        const isFin = usuario?.nivel === 'Financeiro';
+                        const isOpe = usuario?.nivel === 'Produção/Atendimento';
                         
                         // Lógica de alerta
                         if (payload.eventType === 'UPDATE') {
@@ -1000,22 +1003,41 @@ function App() {
 
                             const nomeUsuario = (usuario.nome || '').trim().toLowerCase();
 
-                            // Dispara se o usuário não estava na lista antes, mas está agora
-                            // NOTA: Para oldResponsavel funcionar, é preciso REPLICA IDENTITY FULL no Postgres.
-                            // Se não tiver, oldResponsavel vem vazio e ele vai alertar.
                             if (!oldList.includes(nomeUsuario) && newList.includes(nomeUsuario)) {
                                 setAlertasNaoLidos(prev => {
-                                    if(prev.some(a => a.os_id === payload.new.id)) return prev;
-                                    return [...prev, { id: Date.now(), msg: `Você foi designado para a O.S. #${payload.new.id}`, os_id: payload.new.id }];
+                                    if(prev.some(a => a.os_id === payload.new.id && a.tipo === 'atribuicao')) return prev;
+                                    return [...prev, { id: Date.now(), msg: `Você foi designado para a O.S. #${payload.new.id}`, os_id: payload.new.id, tipo: 'atribuicao' }];
                                 });
                             }
+
+                            // Alerta: Serviço Concluído (para Financeiro/Admin)
+                            if (payload.new.status === 'Concluído' && payload.old?.status !== 'Concluído') {
+                                if (isAdm || isFin) {
+                                    setAlertasNaoLidos(prev => [...prev, { id: Date.now() + 1, msg: `Serviço O.S. #${payload.new.id} concluído!`, os_id: payload.new.id, tipo: 'concluido' }]);
+                                }
+                            }
+
+                            // Alerta: Serviço de Urgência (para Operacional/Admin)
+                            if (payload.new.urgente && !payload.old?.urgente) {
+                                if (isAdm || isOpe) {
+                                    setAlertasNaoLidos(prev => [...prev, { id: Date.now() + 2, msg: `Urgência marcada na O.S. #${payload.new.id}!`, os_id: payload.new.id, tipo: 'urgencia' }]);
+                                }
+                            }
+
                         } else if (payload.eventType === 'INSERT') {
                             const newResponsavel = payload.new?.responsavel || '';
                             const newList = newResponsavel.split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
                             const nomeUsuario = (usuario.nome || '').trim().toLowerCase();
                             
                             if (newList.includes(nomeUsuario)) {
-                                setAlertasNaoLidos(prev => [...prev, { id: Date.now(), msg: `Nova O.S. #${payload.new.id} atribuída a você`, os_id: payload.new.id }]);
+                                setAlertasNaoLidos(prev => [...prev, { id: Date.now(), msg: `Nova O.S. #${payload.new.id} atribuída a você`, os_id: payload.new.id, tipo: 'atribuicao' }]);
+                            }
+                            
+                            // Alerta: Serviço de Urgência no cadastro
+                            if (payload.new.urgente) {
+                                if (isAdm || isOpe) {
+                                    setAlertasNaoLidos(prev => [...prev, { id: Date.now() + 2, msg: `Urgência na nova O.S. #${payload.new.id}!`, os_id: payload.new.id, tipo: 'urgencia' }]);
+                                }
                             }
                         }
 
@@ -1027,6 +1049,24 @@ function App() {
                     { event: '*', schema: 'public', table: 'notas_fiscais' }, 
                     (payload) => {
                         console.log('Atualização em tempo real (notas_fiscais) recebida!', payload);
+                        const isAdm = usuario?.nivel === 'Administrador';
+                        const isFin = usuario?.nivel === 'Financeiro';
+                        const isOpe = usuario?.nivel === 'Produção/Atendimento';
+
+                        if (payload.eventType === 'INSERT') {
+                            if (isAdm || isOpe) {
+                                setAlertasNaoLidos(prev => [...prev, { id: Date.now() + 3, msg: `Nova Nota Fiscal solicitada (${payload.new.cnpj})`, os_id: null, tipo: 'nf_nova' }]);
+                            }
+                        } else if (payload.eventType === 'UPDATE') {
+                            const changedServico = payload.new.servico_feito !== payload.old?.servico_feito && payload.new.servico_feito;
+                            const changedValor = payload.new.valor_pago !== payload.old?.valor_pago && payload.new.valor_pago;
+                            if (changedServico || changedValor) {
+                                if (isAdm || isFin) {
+                                    setAlertasNaoLidos(prev => [...prev, { id: Date.now() + 4, msg: `Nota Fiscal (${payload.new.cnpj}) preenchida!`, os_id: null, tipo: 'nf_preenchida' }]);
+                                }
+                            }
+                        }
+
                         carregarDados(); // Puxa os dados novos invisivelmente
                     }
                 )
@@ -1073,7 +1113,29 @@ function App() {
                 fetchMore = false;
             }
         }
-        if (todosPedidos.length > 0) setPedidos(todosPedidos);
+        if (todosPedidos.length > 0) {
+            setPedidos(todosPedidos);
+
+            if (usuario?.nivel === 'Administrador') {
+                const hoje = new Date();
+                const amanha = new Date(hoje);
+                amanha.setDate(amanha.getDate() + 1);
+                const amanhaStr = amanha.toISOString().split('T')[0];
+
+                const pedidosFuturaAmanha = todosPedidos.filter(p => p.local_producao === 'Futura' && p.status !== 'Concluído' && p.prazo && p.prazo.startsWith(amanhaStr));
+                if (pedidosFuturaAmanha.length > 0) {
+                    setAlertasNaoLidos(prev => {
+                        let novosAlertas = [...prev];
+                        pedidosFuturaAmanha.forEach(p => {
+                            if (!novosAlertas.some(a => a.os_id === p.id && a.tipo === 'alerta_futura')) {
+                                novosAlertas.push({ id: Date.now() + Math.random(), msg: `Prazo da Futura termina amanhã (O.S. #${p.id}). Retirar!`, os_id: p.id, tipo: 'alerta_futura' });
+                            }
+                        });
+                        return novosAlertas;
+                    });
+                }
+            }
+        }
         
         const { data: listaProdutos } = await supabase.from('produtos').select('*').order('ordem', { ascending: true });
         if (listaProdutos) setProdutos(listaProdutos);
