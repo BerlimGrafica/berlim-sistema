@@ -1478,11 +1478,12 @@ function App() {
                 const valorStr = match[3].replace(/\./g, '').replace(',', '.');
                 const valorNum = parseFloat(valorStr) || 0;
                 
+                const nomeLimpo = nome.replace(/^\[#\d+\]\s*/, '').trim();
                 const prod = id_produto_match 
-                    ? produtos.find(p => p.id === id_produto_match) 
-                    : produtos.find(prod => prod.nome.toLowerCase() === nome.toLowerCase() || nome.toLowerCase().includes(prod.nome.toLowerCase()));
+                    ? produtos.find(p => String(p.id) === String(id_produto_match)) 
+                    : produtos.find(prod => prod.nome.toLowerCase() === nomeLimpo.toLowerCase() || nomeLimpo.toLowerCase().includes(prod.nome.toLowerCase()));
 
-                const finalName = prod ? prod.nome : nome;
+                const finalName = prod ? prod.nome : nomeLimpo;
 
                 if (mapa[finalName]) mapa[finalName] += valorNum;
                 else mapa[finalName] = valorNum;
@@ -2240,15 +2241,14 @@ function App() {
                                                             const valorNum = parseFloat(valorStr) || 0;
                                                             
                                                             // Look for matching product in catalog exactly or by inclusion
+                                                            const nomeLimpo = nome.replace(/^\[#\d+\]\s*/, '').trim();
                                                             const prod = id_produto_match 
-                                                                ? produtos.find(p => p.id === id_produto_match) 
-                                                                : produtos.find(prod => prod.nome.toLowerCase() === nome.toLowerCase() || nome.toLowerCase().includes(prod.nome.toLowerCase()));
+                                                                ? produtos.find(p => String(p.id) === String(id_produto_match)) 
+                                                                : produtos.find(prod => prod.nome.toLowerCase() === nomeLimpo.toLowerCase() || nomeLimpo.toLowerCase().includes(prod.nome.toLowerCase()));
                                                             
-                                                            if (prod) {
-                                                                const finalName = prod.nome;
-                                                                if (!acc[finalName]) acc[finalName] = 0;
-                                                                acc[finalName] += valorNum;
-                                                            }
+                                                            const finalName = prod ? prod.nome : nomeLimpo;
+                                                            if (!acc[finalName]) acc[finalName] = 0;
+                                                            acc[finalName] += valorNum;
                                                         }
                                                         return acc;
                                                     }, {});
