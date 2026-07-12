@@ -359,7 +359,14 @@ function desconstruirTextoServico(texto) {
         let lines = bloco.split('\n');
         if (lines.length < 3) { obs = obs ? obs + '\n' + bloco : bloco; continue; }
         
-        let nome = lines[0].replace('• ', '').trim();
+        let nomeBruto = lines[0].replace('• ', '').replace('  ', '').trim();
+        let id_produto = null;
+        let matchId = nomeBruto.match(/^\[#(\d+)\]\s(.*)$/);
+        if (matchId) {
+            id_produto = parseInt(matchId[1]);
+            nomeBruto = matchId[2];
+        }
+        let nome = nomeBruto;
         let AppValor = '0,00';
         let local_producao = 'Berlim'; // fallback/default
         let descLines = [];
@@ -384,7 +391,7 @@ function desconstruirTextoServico(texto) {
         let matchDesconto = AppValor.match(/\s\(-(\d+)%\)$/);
         if (matchDesconto) { desconto = matchDesconto[1]; valor = AppValor.replace(matchDesconto[0], '').trim(); }
         
-        itensTraduzidos.push({ nome, descricao, valor, desconto, local_producao, concluido, id_temp: Math.random() + Date.now() });
+        itensTraduzidos.push({ id_produto, nome, descricao, valor, desconto, local_producao, concluido, id_temp: Math.random() + Date.now() });
     }
     return { itens: itensTraduzidos, observacoes: obs, pagamentos };
 }
@@ -411,7 +418,7 @@ function ItensChecklist({ pedido, atualizarCampoInline }) {
         let textoFinal = '';
         const itensTextoArray = novosItens.map(i => {
             const strDesconto = i.desconto ? ' (-' + i.desconto + '%)' : '';
-            const strNome = i.nome ? '• ' + i.nome : '• Serviço Personalizado';
+            const strNome = i.nome ? '  ' + (i.id_produto ? `[#${i.id_produto}] ` : '') + i.nome : '  Serviço Personalizado';
             const strLocal = i.local_producao ? '\n  Local: ' + i.local_producao : '\n  Local: Berlim';
             const strConcluido = i.concluido ? '\n  [✓] Concluído' : '';
             return strNome + '\n  ' + i.descricao + '\n  Valor: R$ ' + i.valor + strDesconto + strLocal + strConcluido;
@@ -935,7 +942,7 @@ function App() {
     const [pedidoEmEdicao, setPedidoEmEdicao] = useState(null); 
 
     const [itensPedido, setItensPedido] = useState([]);
-    const [itemAtual, setItemAtual] = useState({ nome: '', descricao: '', valor: '', desconto: '', local_producao: 'Berlim' });
+    const [itemAtual, setItemAtual] = useState({ nome: '', descricao: '', valor: '', desconto: '', local_producao: 'Berlim', id_produto: null });
 
     const [buscaCliente, setBuscaCliente] = useState('');
     const [clienteDropdownAberto, setClienteDropdownAberto] = useState(false);
@@ -1126,7 +1133,7 @@ function App() {
         setItensPedido([]); 
         setPagamentosPedido([]);
         setNovoPagamento({ valor: '', forma: 'PIX', parcelas: 1, instituicao: 'Itaú' });
-        setItemAtual({ nome: '', descricao: '', valor: '', desconto: '', local_producao: 'Berlim' });
+        setItemAtual({ nome: '', descricao: '', valor: '', desconto: '', local_producao: 'Berlim', id_produto: null });
         setNovoPedido({ 
             cliente: '', servico: '', valor_total: '', 
             status: 'Produzir', data_pedido: obterDataAtual(),
@@ -1229,7 +1236,7 @@ function App() {
         novosItens.forEach(i => { totalGeralOS += parseFloat(i.valor.replace(/\./g, '').replace(',', '.')) || 0; });
         setNovoPedido({...novoPedido, valor_total: formatarMoeda((totalGeralOS * 100).toFixed(0).toString())});
         
-        setItemAtual({ nome: '', descricao: '', valor: '', desconto: '', local_producao: 'Berlim' });
+        setItemAtual({ nome: '', descricao: '', valor: '', desconto: '', local_producao: 'Berlim', id_produto: null });
         setBuscaProduto('');
     }
 
@@ -1249,7 +1256,7 @@ function App() {
         if (itensPedido.length > 0) {
             const itensTextoArray = itensPedido.map(i => {
                 const strDesconto = i.desconto ? ' (-' + i.desconto + '%)' : '';
-                const strNome = i.nome ? '• ' + i.nome : '• Serviço Personalizado';
+                const strNome = i.nome ? '• ' + (i.id_produto ? `[#${i.id_produto}] ` : '') + i.nome : '• Serviço Personalizado';
                 const strLocal = i.local_producao ? '\n  Local: ' + i.local_producao : '\n  Local: Berlim';
                 const strConcluido = i.concluido ? '\n  [✓] Concluído' : '';
                 return strNome + '\n  ' + i.descricao + '\n  Valor: R$ ' + i.valor + strDesconto + strLocal + strConcluido;
@@ -1463,14 +1470,22 @@ function App() {
         pedidos.forEach(p => {
             if (!p.servico) return;
             // Busca o padrão estruturado salvo no campo "servico"
-            const regex = /• ([^\n]+)\n(?:[^•]*?)Valor: R\$ ([\d.,]+)/g;
+            const regex = /  (?:\[#(\d+)\] )?([^\n]+)\n[\s\S]*?Valor: R\$ ([\d.,]+)/g;
             let match;
             while ((match = regex.exec(p.servico)) !== null) {
-                const nome = match[1].trim();
-                const valorStr = match[2].replace(/\./g, '').replace(',', '.');
+                const id_produto_match = match[1] ? parseInt(match[1]) : null;
+                const nome = match[2].trim();
+                const valorStr = match[3].replace(/\./g, '').replace(',', '.');
                 const valorNum = parseFloat(valorStr) || 0;
-                if (mapa[nome]) mapa[nome] += valorNum;
-                else mapa[nome] = valorNum;
+                
+                const prod = id_produto_match 
+                    ? produtos.find(p => p.id === id_produto_match) 
+                    : produtos.find(prod => prod.nome.toLowerCase() === nome.toLowerCase() || nome.toLowerCase().includes(prod.nome.toLowerCase()));
+
+                const finalName = prod ? prod.nome : nome;
+
+                if (mapa[finalName]) mapa[finalName] += valorNum;
+                else mapa[finalName] = valorNum;
             }
         });
         return mapa;
@@ -2216,15 +2231,19 @@ function App() {
                                                 {(() => {
                                                     const agrupadoPorProduto = pedidosFin.reduce((acc, p) => {
                                                         if (!p.servico) return acc;
-                                                        const regex = /  ([^\n]+)\n(?:[^ ]*?)Valor: R\$ ([\d.,]+)/g;
+                                                        const regex = /  (?:\[#(\d+)\] )?([^\n]+)\n[\s\S]*?Valor: R\$ ([\d.,]+)/g;
                                                         let match;
                                                         while ((match = regex.exec(p.servico)) !== null) {
-                                                            const nome = match[1].trim();
-                                                            const valorStr = match[2].replace(/\./g, '').replace(',', '.');
+                                                            const id_produto_match = match[1] ? parseInt(match[1]) : null;
+                                                            const nome = match[2].trim();
+                                                            const valorStr = match[3].replace(/\./g, '').replace(',', '.');
                                                             const valorNum = parseFloat(valorStr) || 0;
                                                             
                                                             // Look for matching product in catalog exactly or by inclusion
-                                                            const prod = produtos.find(prod => prod.nome.toLowerCase() === nome.toLowerCase() || nome.toLowerCase().includes(prod.nome.toLowerCase()));
+                                                            const prod = id_produto_match 
+                                                                ? produtos.find(p => p.id === id_produto_match) 
+                                                                : produtos.find(prod => prod.nome.toLowerCase() === nome.toLowerCase() || nome.toLowerCase().includes(prod.nome.toLowerCase()));
+                                                            
                                                             if (prod) {
                                                                 const finalName = prod.nome;
                                                                 if (!acc[finalName]) acc[finalName] = 0;
@@ -2589,7 +2608,7 @@ function App() {
                                                         {produtosFiltrados.map(p => (
                                                             <li key={p.id} onClick={() => { 
                                                                 setBuscaProduto(p.nome);
-                                                                setItemAtual({ ...itemAtual, nome: p.nome, descricao: p.texto_padrao, valor: formatarMoeda((p.preco_base * 100).toFixed(0).toString()), desconto: '' }); 
+                                                                setItemAtual({ ...itemAtual, nome: p.nome, descricao: p.texto_padrao, valor: formatarMoeda((p.preco_base * 100).toFixed(0).toString()), desconto: '', id_produto: p.id }); 
                                                                 setProdutoDropdownAberto(false); 
                                                             }} className="px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-darkHover cursor-pointer border-b border-gray-100 dark:border-darkBorder last:border-0 flex flex-col transition">
                                                                 <div className="flex justify-between items-center"><span className="font-medium text-sm dark:text-[#EDEDED]">{p.nome}</span><span className="text-xs font-bold text-brand">R$ {formatarValorFinanceiro(Number(p.preco_base))}</span></div>
