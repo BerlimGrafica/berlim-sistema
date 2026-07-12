@@ -908,7 +908,7 @@ function App() {
     const [notaFiscalEmEdicao, setNotaFiscalEmEdicao] = useState(null);
     const [salvandoNotaFiscal, setSalvandoNotaFiscal] = useState(false);
 
-    const [darkMode, setDarkMode] = useState(true); 
+    const [darkMode, setDarkMode] = useState(false); 
     
     const isAdmin = usuario?.nivel === 'Administrador';
     const isOperador = usuario?.nivel === 'Produção/Atendimento';
@@ -2747,9 +2747,14 @@ function App() {
                                     />
                                 </div>
                                 {/* BOTOES FILTRONOTAS MOVIDOS PARA O TOPNAV */}
-                                <a href="/solicitar-nota.html" target="_blank" className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover text-gray-800 dark:text-[#EDEDED] h-[38px] px-4 text-[13px] rounded-md font-semibold shadow-sm transition flex items-center gap-2">
-                                    <Icon name="external-link" className="w-4 h-4" /> Link do Formulário
-                                </a>
+                                <div className="flex rounded-md shadow-sm">
+                                    <a href="/solicitar-nota.html" target="_blank" className="bg-brand hover:bg-brandHover text-white h-[38px] px-4 text-[13px] rounded-l-md font-semibold transition flex items-center gap-2 border border-brand border-r-0">
+                                        <Icon name="external-link" className="w-4 h-4" /> Formulário
+                                    </a>
+                                    <button onClick={() => { navigator.clipboard.writeText(window.location.origin + '/solicitar-nota.html'); alert('Link copiado!'); }} className="bg-brand hover:bg-brandHover text-white h-[38px] px-3 rounded-r-md font-semibold transition flex items-center gap-2 border border-brand border-l border-l-white/20" title="Copiar Link">
+                                        <Icon name="copy" className="w-4 h-4" />
+                                    </button>
+                                </div>
                             </div>
                         </div>
                         <div className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded overflow-hidden">
