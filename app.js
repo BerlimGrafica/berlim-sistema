@@ -998,13 +998,15 @@ function App() {
                             const oldResponsavel = payload.old?.responsavel || '';
                             const newResponsavel = payload.new?.responsavel || '';
                             
-                            const oldList = oldResponsavel.split(',').map(s => s.trim()).filter(Boolean);
-                            const newList = newResponsavel.split(',').map(s => s.trim()).filter(Boolean);
+                            const oldList = oldResponsavel.split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+                            const newList = newResponsavel.split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+
+                            const nomeUsuario = (usuario.nome || '').trim().toLowerCase();
 
                             // Dispara se o usuário não estava na lista antes, mas está agora
                             // NOTA: Para oldResponsavel funcionar, é preciso REPLICA IDENTITY FULL no Postgres.
                             // Se não tiver, oldResponsavel vem vazio e ele vai alertar.
-                            if (!oldList.includes(usuario.nome) && newList.includes(usuario.nome)) {
+                            if (!oldList.includes(nomeUsuario) && newList.includes(nomeUsuario)) {
                                 setAlertasNaoLidos(prev => {
                                     if(prev.some(a => a.os_id === payload.new.id)) return prev;
                                     return [...prev, { id: Date.now(), msg: `Você foi designado para a O.S. #${payload.new.id}`, os_id: payload.new.id }];
@@ -1012,9 +1014,10 @@ function App() {
                             }
                         } else if (payload.eventType === 'INSERT') {
                             const newResponsavel = payload.new?.responsavel || '';
-                            const newList = newResponsavel.split(',').map(s => s.trim()).filter(Boolean);
+                            const newList = newResponsavel.split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+                            const nomeUsuario = (usuario.nome || '').trim().toLowerCase();
                             
-                            if (newList.includes(usuario.nome)) {
+                            if (newList.includes(nomeUsuario)) {
                                 setAlertasNaoLidos(prev => [...prev, { id: Date.now(), msg: `Nova O.S. #${payload.new.id} atribuída a você`, os_id: payload.new.id }]);
                             }
                         }
