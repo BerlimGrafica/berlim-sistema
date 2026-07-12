@@ -653,7 +653,7 @@ function CalculadoraAdesivo() {
     const [largura, setLargura] = useState('');
     const [altura, setAltura] = useState('');
     const [tipo, setTipo] = useState('vinil_branco');
-    const [quantidade, setQuantidade] = useState(100);
+    const [quantidade, setQuantidade] = useState('');
 
     const precosVinil = {
         'vinil_branco': 90.0,
@@ -2170,7 +2170,7 @@ function App() {
                                         />
                                     </div>
 
-                                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
                                         <div className="bg-white dark:bg-darkCard p-6 rounded-xl border border-gray-200 dark:border-darkBorder flex flex-col gap-4">
                                             <div>
                                                 <h3 className="font-bold text-sm text-gray-800 dark:text-white uppercase tracking-wider">Receitas por Local (Geral)</h3>
@@ -2204,6 +2204,44 @@ function App() {
                                                 {rankingInstituicao.length === 0 ? <p className="text-xs text-gray-500 italic">Nenhuma instituição registrada.</p> :
                                                     rankingInstituicao.map((i, index) => renderBarHorizontal(i[0], i[1], maxInstituicao, false, colorsInst[index % colorsInst.length]))
                                                 }
+                                            </div>
+                                        </div>
+
+                                        <div className="bg-white dark:bg-darkCard p-6 rounded-xl border border-gray-200 dark:border-darkBorder flex flex-col gap-4">
+                                            <div>
+                                                <h3 className="font-bold text-sm text-gray-800 dark:text-white uppercase tracking-wider">Por Produto (Catálogo)</h3>
+                                                <p className="text-xs text-gray-400 mt-0.5">Vendas referentes ao período.</p>
+                                            </div>
+                                            <div className="flex flex-col gap-3 mt-2 overflow-y-auto max-h-64 custom-scrollbar pr-2">
+                                                {(() => {
+                                                    const agrupadoPorProduto = pedidosFin.reduce((acc, p) => {
+                                                        if (!p.servico) return acc;
+                                                        const regex = /  ([^\n]+)\n(?:[^ ]*?)Valor: R\$ ([\d.,]+)/g;
+                                                        let match;
+                                                        while ((match = regex.exec(p.servico)) !== null) {
+                                                            const nome = match[1].trim();
+                                                            const valorStr = match[2].replace(/\./g, '').replace(',', '.');
+                                                            const valorNum = parseFloat(valorStr) || 0;
+                                                            
+                                                            const exists = produtos.find(prod => prod.nome.toLowerCase() === nome.toLowerCase());
+                                                            const finalName = exists ? exists.nome : nome;
+                                                            
+                                                            if (!acc[finalName]) acc[finalName] = 0;
+                                                            acc[finalName] += valorNum;
+                                                        }
+                                                        return acc;
+                                                    }, {});
+                                                    
+                                                    const rankingProduto = Object.entries(agrupadoPorProduto)
+                                                        .filter(([nome]) => produtos.some(p => p.nome.toLowerCase() === nome.toLowerCase()))
+                                                        .sort((a,b) => b[1] - a[1]);
+                                                    
+                                                    const maxProduto = Math.max(...rankingProduto.map(r => r[1]), 1);
+                                                    
+                                                    if (rankingProduto.length === 0) return <p className="text-xs text-gray-500 italic">Nenhum produto do catálogo faturado.</p>;
+                                                    
+                                                    return rankingProduto.map((r, index) => renderBarHorizontal(r[0], r[1], maxProduto, false, colorsRank[index % colorsRank.length]));
+                                                })()}
                                             </div>
                                         </div>
                                     </div>
@@ -2341,10 +2379,10 @@ function App() {
                                 <table className="w-full text-left border-collapse min-w-[800px]">
                                     <thead className="bg-gray-50/50 dark:bg-darkHover/50">
                                         <tr className="border-b border-gray-200 dark:border-darkBorder text-sm font-semibold text-gray-500 dark:text-gray-400 tracking-wide uppercase">
-                                            <th className="px-6 py-4 w-32">Data</th>
-                                            <th className="px-6 py-4 w-64">Cliente / Razão Social</th>
-                                            <th className="px-6 py-4 w-48">CPF / CNPJ</th>
-                                            <th className="px-6 py-4">Serviço / Valor</th>
+                                            <th className="px-6 py-4 w-28">Data</th>
+                                            <th className="px-6 py-4 w-48">Cliente / Razão Social</th>
+                                            <th className="px-6 py-4 w-36">CPF / CNPJ</th>
+                                            <th className="px-6 py-4 min-w-[300px]">Serviço / Valor</th>
                                             <th className="px-6 py-4 w-24 text-right">Ações</th>
                                         </tr>
                                     </thead>
