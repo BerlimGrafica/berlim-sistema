@@ -1618,13 +1618,13 @@ function App() {
                             <a onClick={() => setAbaAtual('baixa')} className={`transition ${abaAtual === 'baixa' ? 'text-gray-900 dark:text-white font-semibold' : 'hover:text-gray-900 dark:hover:text-white'}`}>Baixa de Notas</a>
                             <a onClick={() => setAbaAtual('calculadoras')} className={`transition ${abaAtual === 'calculadoras' ? 'text-gray-900 dark:text-white font-semibold' : 'hover:text-gray-900 dark:hover:text-white'}`}>Calculadoras</a>
                             {(usuario?.nivel === 'Administrador' || usuario?.nivel === 'Financeiro') && (
-                                <>
-                                    <a onClick={() => setAbaAtual('financeiro')} className={`transition ${abaAtual === 'financeiro' ? 'text-gray-900 dark:text-white font-semibold' : 'hover:text-gray-900 dark:hover:text-white'}`}>Financeiro</a>
-                                    <a onClick={() => setAbaAtual('notas_fiscais')} className={`transition ${abaAtual === 'notas_fiscais' ? 'text-gray-900 dark:text-white font-semibold' : 'hover:text-gray-900 dark:hover:text-white'} flex items-center gap-1.5`}>
-                                        Notas Fiscais
-                                        {notasFiscais.some(n => !n.concluido) && <span className="w-2 h-2 rounded-full bg-emerald-500 shadow shadow-emerald-500/50"></span>}
-                                    </a>
-                                </>
+                                <a onClick={() => setAbaAtual('financeiro')} className={`transition ${abaAtual === 'financeiro' ? 'text-gray-900 dark:text-white font-semibold' : 'hover:text-gray-900 dark:hover:text-white'}`}>Financeiro</a>
+                            )}
+                            {(usuario?.nivel === 'Administrador' || usuario?.nivel === 'Financeiro' || usuario?.nivel === 'Produção/Atendimento') && (
+                                <a onClick={() => setAbaAtual('notas_fiscais')} className={`transition ${abaAtual === 'notas_fiscais' ? 'text-gray-900 dark:text-white font-semibold' : 'hover:text-gray-900 dark:hover:text-white'} flex items-center gap-1.5`}>
+                                    Notas Fiscais
+                                    {notasFiscais.some(n => !n.concluido) && <span className="w-2 h-2 rounded-full bg-emerald-500 shadow shadow-emerald-500/50"></span>}
+                                </a>
                             )}
                             {isAdmin && (
                                 <a onClick={() => setAbaAtual('produtos')} className={`transition ${abaAtual === 'produtos' ? 'text-gray-900 dark:text-white font-semibold' : 'hover:text-gray-900 dark:hover:text-white'}`}>Catálogo</a>
@@ -2360,7 +2360,7 @@ function App() {
                     </main>
                 )}
 
-                {abaAtual === 'notas_fiscais' && (usuario?.nivel === 'Administrador' || usuario?.nivel === 'Financeiro') && (
+                {abaAtual === 'notas_fiscais' && (usuario?.nivel === 'Administrador' || usuario?.nivel === 'Financeiro' || usuario?.nivel === 'Produção/Atendimento') && (
                     <main className="flex-1 p-6 lg:p-10 max-w-[1200px] mx-auto w-full fade-in">
                         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 mb-6 border-b border-gray-100 dark:border-darkBorder pb-6 shrink-0">
                             <div>
