@@ -36,6 +36,7 @@ function Icon({ name, className = "w-4 h-4" }) {
     if (name === 'trending-down') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="22 17 13.5 8.5 8.5 13.5 2 7"></polyline><polyline points="16 17 22 17 22 11"></polyline></svg>;
     if (name === 'edit-3') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>;
     if (name === 'check-circle') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>;
+    if (name === 'bell') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>;
     return null;
 }
 
@@ -935,6 +936,14 @@ function App() {
 
     const [dataFiltroFinInicio, setDataFiltroFinInicio] = useState('');
     const [dataFiltroFinFim, setDataFiltroFinFim] = useState('');
+    
+    // Financeiro Expandido e Alertas
+    const [abaFinanceiro, setAbaFinanceiro] = useState('geral');
+    const [contasPagar, setContasPagar] = useState([]);
+    const [modalContaAberto, setModalContaAberto] = useState(false);
+    const [novaConta, setNovaConta] = useState({ id: null, descricao: '', valor: '', vencimento: '', status: 'Pendente' });
+    const [alertasNaoLidos, setAlertasNaoLidos] = useState([]);
+    const [modalAlertasAberto, setModalAlertasAberto] = useState(false);
 
     const [modalAberto, setModalAberto] = useState(false);
     const [salvandoOS, setSalvandoOS] = useState(false);
@@ -982,6 +991,16 @@ function App() {
                     { event: '*', schema: 'public', table: 'pedidos' }, 
                     (payload) => {
                         console.log('Atualização em tempo real (pedidos) recebida!', payload);
+                        
+                        // Lógica de alerta
+                        if (payload.eventType === 'UPDATE') {
+                            const oldResponsavel = payload.old?.responsavel;
+                            const newResponsavel = payload.new?.responsavel;
+                            if (oldResponsavel !== newResponsavel && newResponsavel === usuario.nome) {
+                                setAlertasNaoLidos(prev => [...prev, { id: Date.now(), msg: `Você foi designado para a O.S. #${payload.new.id}`, os_id: payload.new.id }]);
+                            }
+                        }
+
                         carregarDados(); // Puxa os dados novos invisivelmente
                     }
                 )
@@ -1063,6 +1082,9 @@ function App() {
 
         const { data: listaNotas } = await supabase.from('notas_fiscais').select('*').order('created_at', { ascending: false });
         if (listaNotas) setNotasFiscais(listaNotas);
+
+        const { data: listaContas, error: erroContas } = await supabase.from('contas_pagar').select('*').order('vencimento', { ascending: true });
+        if (!erroContas && listaContas) setContasPagar(listaContas);
     }
     
     useEffect(() => {
@@ -1346,6 +1368,37 @@ function App() {
             else alert('Falha ao salvar: ' + error.message);
         }
         setSalvandoProduto(false);
+    }
+
+    const [salvandoConta, setSalvandoConta] = useState(false);
+    async function salvarConta(e) {
+        e.preventDefault();
+        setSalvandoConta(true);
+        const contaFormatada = { 
+            descricao: novaConta.descricao, 
+            valor: parseFloat(String(novaConta.valor).replace(/\./g, '').replace(',', '.')) || 0,
+            vencimento: novaConta.vencimento,
+            status: novaConta.status
+        };
+
+        if (novaConta.id) {
+            const { data, error } = await supabase.from('contas_pagar').update(contaFormatada).eq('id', novaConta.id).select();
+            if (!error && data) { 
+                setContasPagar(contasPagar.map(c => c.id === novaConta.id ? data[0] : c)); 
+                setModalContaAberto(false); 
+            } else {
+                alert('Falha ao atualizar (Tabela contas_pagar existe no Supabase?): ' + (error?.message || 'Erro desconhecido'));
+            }
+        } else {
+            const { data, error } = await supabase.from('contas_pagar').insert([contaFormatada]).select();
+            if (!error && data) { 
+                setContasPagar([...contasPagar, data[0]]); 
+                setModalContaAberto(false); 
+            } else {
+                alert('Falha ao salvar (Tabela contas_pagar existe no Supabase?): ' + (error?.message || 'Erro desconhecido'));
+            }
+        }
+        setSalvandoConta(false);
     }
 
     async function excluirProduto(id, e) {
@@ -1638,6 +1691,44 @@ function App() {
                         </nav>
                     </div>
                     <div className="flex items-center gap-5">
+                        <div className="relative">
+                            <button onClick={() => setModalAlertasAberto(!modalAlertasAberto)} className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-darkHover transition text-gray-600 dark:text-[#888888] relative">
+                                <Icon name="bell" className="w-5 h-5" />
+                                {alertasNaoLidos.length > 0 && (
+                                    <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full shadow-sm"></span>
+                                )}
+                            </button>
+                            {modalAlertasAberto && (
+                                <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded-lg shadow-lg py-2 z-50 fade-in">
+                                    <div className="px-4 py-2 border-b border-gray-100 dark:border-darkBorder flex justify-between items-center">
+                                        <h3 className="font-bold text-sm dark:text-white">Notificações</h3>
+                                        {alertasNaoLidos.length > 0 && (
+                                            <button onClick={() => setAlertasNaoLidos([])} className="text-xs text-brand hover:underline">Limpar</button>
+                                        )}
+                                    </div>
+                                    <div className="max-h-60 overflow-y-auto custom-scrollbar">
+                                        {alertasNaoLidos.length === 0 ? (
+                                            <p className="px-4 py-4 text-xs text-gray-500 text-center">Nenhuma nova notificação.</p>
+                                        ) : (
+                                            alertasNaoLidos.map(alerta => (
+                                                <div key={alerta.id} className="px-4 py-3 hover:bg-gray-50 dark:hover:bg-darkHover border-b border-gray-50 dark:border-darkBorder/50 last:border-0 cursor-pointer" onClick={() => {
+                                                    setModalAlertasAberto(false);
+                                                    setAbaAtual('producao');
+                                                    if (alerta.os_id) {
+                                                        const p = pedidos.find(x => x.id === alerta.os_id);
+                                                        if (p) abrirEdicao(p);
+                                                    }
+                                                }}>
+                                                    <p className="text-xs text-gray-800 dark:text-[#EDEDED]">{alerta.msg}</p>
+                                                    <span className="text-[10px] text-gray-400 mt-1 block">Agora</span>
+                                                </div>
+                                            ))
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
                         <button onClick={toggleDarkMode} className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-darkHover transition text-gray-600 dark:text-[#888888]">
                             <Icon name={darkMode ? "sun" : "moon"} className="w-5 h-5" />
                         </button>
@@ -1898,6 +1989,19 @@ function App() {
                             </div>
                         </div>
 
+                        {/* SUB-MENU DO FINANCEIRO */}
+                        <div className="flex flex-wrap items-center gap-2 pb-4 border-b border-gray-100 dark:border-darkBorder">
+                            <button onClick={() => setAbaFinanceiro('geral')} className={`px-4 py-2 text-sm font-bold rounded-md transition ${abaFinanceiro === 'geral' ? 'bg-brand text-white shadow-sm' : 'bg-gray-100 dark:bg-darkCard text-gray-600 dark:text-[#888888] hover:bg-gray-200 dark:hover:bg-darkHover'}`}>
+                                Visão Geral
+                            </button>
+                            <button onClick={() => setAbaFinanceiro('vendas_produto')} className={`px-4 py-2 text-sm font-bold rounded-md transition ${abaFinanceiro === 'vendas_produto' ? 'bg-brand text-white shadow-sm' : 'bg-gray-100 dark:bg-darkCard text-gray-600 dark:text-[#888888] hover:bg-gray-200 dark:hover:bg-darkHover'}`}>
+                                Vendas por Produto
+                            </button>
+                            <button onClick={() => setAbaFinanceiro('contas_pagar')} className={`px-4 py-2 text-sm font-bold rounded-md transition ${abaFinanceiro === 'contas_pagar' ? 'bg-brand text-white shadow-sm' : 'bg-gray-100 dark:bg-darkCard text-gray-600 dark:text-[#888888] hover:bg-gray-200 dark:hover:bg-darkHover'}`}>
+                                Contas a Pagar
+                            </button>
+                        </div>
+
                         {(() => {
                             const pedidosFin = pedidos.filter(p => {
                                 let match = true;
@@ -2100,7 +2204,9 @@ function App() {
 
                             return (
                                 <>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                                    {abaFinanceiro === 'geral' && (
+                                        <div className="flex flex-col gap-6 fade-in">
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                                         <div className="bg-white dark:bg-darkCard p-5 rounded-xl border border-gray-200 dark:border-darkBorder shadow-sm relative overflow-hidden flex flex-col justify-between">
                                             <div>
                                                 <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">Crescimento (YoY)</span>
@@ -2183,7 +2289,7 @@ function App() {
                                         />
                                     </div>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                                         <div className="bg-white dark:bg-darkCard p-6 rounded-xl border border-gray-200 dark:border-darkBorder flex flex-col gap-4">
                                             <div>
                                                 <h3 className="font-bold text-sm text-gray-800 dark:text-white uppercase tracking-wider">Receitas por Local (Geral)</h3>
@@ -2220,12 +2326,17 @@ function App() {
                                             </div>
                                         </div>
 
-                                        <div className="bg-white dark:bg-darkCard p-6 rounded-xl border border-gray-200 dark:border-darkBorder flex flex-col gap-4">
+                                        </div>
+                                        </div>
+                                    )}
+
+                                    {abaFinanceiro === 'vendas_produto' && (
+                                        <div className="bg-white dark:bg-darkCard p-6 rounded-xl border border-gray-200 dark:border-darkBorder flex flex-col gap-4 fade-in">
                                             <div>
-                                                <h3 className="font-bold text-sm text-gray-800 dark:text-white uppercase tracking-wider">Por Produto (Catálogo)</h3>
-                                                <p className="text-xs text-gray-400 mt-0.5">Vendas referentes ao período.</p>
+                                                <h3 className="font-bold text-sm text-gray-800 dark:text-white uppercase tracking-wider">Vendas por Produto (Catálogo)</h3>
+                                                <p className="text-xs text-gray-400 mt-0.5">Visão expandida de vendas baseadas nos produtos do sistema referentes ao período filtrado.</p>
                                             </div>
-                                            <div className="flex flex-col gap-3 mt-2 overflow-y-auto max-h-64 custom-scrollbar pr-2">
+                                            <div className="flex flex-col gap-3 mt-4">
                                                 {(() => {
                                                     const agrupadoPorProduto = pedidosFin.reduce((acc, p) => {
                                                         if (!p.servico) return acc;
@@ -2253,11 +2364,67 @@ function App() {
                                                     
                                                     if (rankingProduto.length === 0) return <p className="text-xs text-gray-500 italic">Nenhum produto do catálogo faturado no período.</p>;
                                                     
-                                                    return rankingProduto.map((r, index) => renderBarHorizontal(r[0], r[1], maxProduto, false, colorsRank[index % colorsRank.length]));
+                                                    return rankingProduto.map((r, index) => (
+                                                        <div key={index} className="flex items-center gap-4 mb-2">
+                                                            <div className="w-48 text-sm font-medium text-gray-700 dark:text-gray-300 truncate" title={r[0]}>{r[0]}</div>
+                                                            <div className="flex-1 bg-gray-100 dark:bg-darkBg rounded-full h-4 overflow-hidden relative">
+                                                                <div className={`h-full ${colorsRank[index % colorsRank.length]} transition-all duration-1000 ease-out`} style={{ width: `${(r[1] / maxProduto) * 100}%` }}></div>
+                                                            </div>
+                                                            <div className="w-32 text-right text-sm font-bold text-gray-800 dark:text-white">R$ {formatarValorFinanceiro(r[1])}</div>
+                                                        </div>
+                                                    ));
                                                 })()}
                                             </div>
                                         </div>
-                                    </div>
+                                    )}
+
+                                    {abaFinanceiro === 'contas_pagar' && (
+                                        <div className="bg-white dark:bg-darkCard p-6 rounded-xl border border-gray-200 dark:border-darkBorder flex flex-col gap-4 fade-in">
+                                            <div className="flex justify-between items-center mb-4">
+                                                <div>
+                                                    <h3 className="font-bold text-sm text-gray-800 dark:text-white uppercase tracking-wider">Contas a Pagar</h3>
+                                                    <p className="text-xs text-gray-400 mt-0.5">Gerencie as despesas da empresa.</p>
+                                                </div>
+                                                <button onClick={() => { setNovaConta({ id: null, descricao: '', valor: '', vencimento: '', status: 'Pendente' }); setModalContaAberto(true); }} className="bg-brand hover:bg-brandHover text-white h-[38px] px-4 text-sm rounded-md font-bold shadow-sm transition flex items-center gap-2">
+                                                    <Icon name="plus" className="w-4 h-4" /> Nova Conta
+                                                </button>
+                                            </div>
+                                            <div className="overflow-x-auto">
+                                                <table className="w-full text-left text-sm text-gray-600 dark:text-[#888888]">
+                                                    <thead className="text-xs uppercase bg-gray-50 dark:bg-darkElevated text-gray-700 dark:text-white">
+                                                        <tr>
+                                                            <th className="px-4 py-3 rounded-tl-lg font-bold">Vencimento</th>
+                                                            <th className="px-4 py-3 font-bold">Descrição</th>
+                                                            <th className="px-4 py-3 font-bold">Valor</th>
+                                                            <th className="px-4 py-3 font-bold">Status</th>
+                                                            <th className="px-4 py-3 rounded-tr-lg font-bold text-right">Ações</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {contasPagar.length === 0 ? (
+                                                            <tr><td colSpan="5" className="text-center py-8 text-gray-400">Nenhuma conta a pagar registrada.</td></tr>
+                                                        ) : (
+                                                            contasPagar.map(conta => (
+                                                                <tr key={conta.id} className="border-b border-gray-100 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover transition">
+                                                                    <td className="px-4 py-3">{formatarDataExibicao(conta.vencimento)}</td>
+                                                                    <td className="px-4 py-3 font-medium text-gray-800 dark:text-white">{conta.descricao}</td>
+                                                                    <td className="px-4 py-3 font-bold">R$ {formatarValorFinanceiro(conta.valor)}</td>
+                                                                    <td className="px-4 py-3">
+                                                                        <span className={`px-2 py-1 text-xs font-bold rounded-full ${conta.status === 'Pago' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'}`}>
+                                                                            {conta.status}
+                                                                        </span>
+                                                                    </td>
+                                                                    <td className="px-4 py-3 text-right">
+                                                                        <button onClick={() => { setNovaConta(conta); setModalContaAberto(true); }} className="text-brand hover:underline text-xs">Editar</button>
+                                                                    </td>
+                                                                </tr>
+                                                            ))
+                                                        )}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    )}
                                 </>
                             );
                         })()}
@@ -2804,6 +2971,37 @@ function App() {
                                 <span className="text-sm font-semibold text-red-600 dark:text-red-400 flex items-center gap-1.5"><Icon name="alert-triangle" className="w-4 h-4" /> Sinalizar como Cliente Problema</span>
                             </label>
                             <div className="flex justify-end gap-3 mt-2"><button type="button" onClick={() => setModalClienteAberto(false)} className="px-4 py-2 rounded text-sm font-medium text-gray-600 dark:text-[#A1A1AA] hover:bg-gray-100 dark:hover:bg-darkHover transition">Cancelar</button><button type="submit" disabled={salvandoCliente} className="px-5 py-2 rounded text-sm font-medium bg-white text-black hover:bg-gray-200 transition disabled:opacity-50">{salvandoCliente ? 'Salvando...' : 'Salvar'}</button></div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {modalContaAberto && (
+                <div onClick={() => setModalContaAberto(false)} className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer">
+                    <div className="bg-white dark:bg-darkCard w-full max-w-md rounded shadow-2xl overflow-hidden border border-gray-200 dark:border-darkBorder" onClick={(e) => e.stopPropagation()}>
+                        <div className="px-6 py-5 border-b border-gray-100 dark:border-darkBorder flex justify-between items-center bg-gray-50 dark:bg-darkCard">
+                            <h3 className="font-semibold text-lg dark:text-white tracking-tight">{novaConta.id ? 'Editar Conta a Pagar' : 'Nova Conta a Pagar'}</h3>
+                            <button onClick={() => setModalContaAberto(false)} className="text-gray-400 hover:text-white transition"><Icon name="x" /></button>
+                        </div>
+                        <form onSubmit={salvarConta} className="p-6 flex flex-col gap-4">
+                            <input required value={novaConta.descricao} onChange={e => setNovaConta({...novaConta, descricao: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" placeholder="Descrição da Despesa" />
+                            <div className="grid grid-cols-2 gap-4">
+                                <input required value={novaConta.valor} onChange={e => setNovaConta({...novaConta, valor: formatarMoeda(e.target.value)})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white font-medium transition" placeholder="Valor (R$)" />
+                                <input type="date" required value={novaConta.vencimento} onChange={e => setNovaConta({...novaConta, vencimento: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition text-gray-700" />
+                            </div>
+                            <div className="flex flex-col gap-1">
+                                <label className="text-xs font-bold text-gray-500 uppercase">Status</label>
+                                <select value={novaConta.status} onChange={e => setNovaConta({...novaConta, status: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition">
+                                    <option value="Pendente">Pendente</option>
+                                    <option value="Pago">Pago</option>
+                                </select>
+                            </div>
+                            <div className="flex justify-end gap-3 mt-2">
+                                <button type="button" onClick={() => setModalContaAberto(false)} className="px-4 py-2 rounded text-sm font-medium text-gray-600 dark:text-[#A1A1AA] hover:bg-gray-100 dark:hover:bg-darkHover transition">Cancelar</button>
+                                <button type="submit" disabled={salvandoConta} className="px-5 py-2 rounded text-sm font-medium bg-white text-black hover:bg-gray-200 transition disabled:opacity-50">
+                                    {salvandoConta ? 'Salvando...' : 'Salvar'}
+                                </button>
+                            </div>
                         </form>
                     </div>
                 </div>
