@@ -995,22 +995,26 @@ function App() {
                         
                         // Lógica de alerta
                         if (payload.eventType === 'UPDATE') {
-                            const newResponsavel = payload.new?.responsavel;
-                            // Se a O.S. já era do usuário, e ele só editou outra coisa, não precisamos notificar
-                            // O Supabase por padrão (se replica_identity não for full) não envia o old completo,
-                            // Mas, se ele enviasse, testaríamos. Por precaução, o alerta pode ser disparado.
-                            // Vamos focar no principal: quando vira o nome do usuário.
-                            if (newResponsavel === usuario.nome) {
-                                // Para não floodar, idealmente testaríamos se mudou. Mas para garantir que chegou:
+                            const oldResponsavel = payload.old?.responsavel || '';
+                            const newResponsavel = payload.new?.responsavel || '';
+                            
+                            const oldList = oldResponsavel.split(',').map(s => s.trim()).filter(Boolean);
+                            const newList = newResponsavel.split(',').map(s => s.trim()).filter(Boolean);
+
+                            // Dispara se o usuário não estava na lista antes, mas está agora
+                            // NOTA: Para oldResponsavel funcionar, é preciso REPLICA IDENTITY FULL no Postgres.
+                            // Se não tiver, oldResponsavel vem vazio e ele vai alertar.
+                            if (!oldList.includes(usuario.nome) && newList.includes(usuario.nome)) {
                                 setAlertasNaoLidos(prev => {
-                                    // Evita duplicados na UI
                                     if(prev.some(a => a.os_id === payload.new.id)) return prev;
-                                    return [...prev, { id: Date.now(), msg: `Você foi designado para a O.S. #${payload.new.id} (Atualizada)`, os_id: payload.new.id }];
+                                    return [...prev, { id: Date.now(), msg: `Você foi designado para a O.S. #${payload.new.id}`, os_id: payload.new.id }];
                                 });
                             }
                         } else if (payload.eventType === 'INSERT') {
-                            const newResponsavel = payload.new?.responsavel;
-                            if (newResponsavel === usuario.nome) {
+                            const newResponsavel = payload.new?.responsavel || '';
+                            const newList = newResponsavel.split(',').map(s => s.trim()).filter(Boolean);
+                            
+                            if (newList.includes(usuario.nome)) {
                                 setAlertasNaoLidos(prev => [...prev, { id: Date.now(), msg: `Nova O.S. #${payload.new.id} atribuída a você`, os_id: payload.new.id }]);
                             }
                         }
