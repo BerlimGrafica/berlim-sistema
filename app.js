@@ -1749,7 +1749,9 @@ function App() {
                             <button onClick={() => setModalAlertasAberto(!modalAlertasAberto)} className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-darkHover transition text-gray-600 dark:text-[#888888] relative">
                                 <Icon name="bell" className="w-5 h-5" />
                                 {alertasNaoLidos.length > 0 && (
-                                    <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full shadow-sm"></span>
+                                    <span className="absolute top-0.5 right-0.5 min-w-[14px] h-[14px] px-1 flex items-center justify-center bg-red-500 text-white text-[9px] font-bold rounded-full shadow-sm">
+                                        {alertasNaoLidos.length}
+                                    </span>
                                 )}
                             </button>
                             {modalAlertasAberto && (
@@ -1764,8 +1766,8 @@ function App() {
                                         {alertasNaoLidos.length === 0 ? (
                                             <p className="px-4 py-4 text-[11px] text-gray-500 text-center">Nenhuma nova notificação.</p>
                                         ) : (
-                                            alertasNaoLidos.map(alerta => (
-                                                <div key={alerta.id} className="px-4 py-3 hover:bg-gray-50 dark:hover:bg-darkHover border-b border-gray-50 dark:border-darkBorder/50 last:border-0 cursor-pointer" onClick={() => {
+                                            alertasNaoLidos.slice().reverse().map(alerta => (
+                                                <div key={alerta.id} className="px-4 py-3 hover:bg-gray-50 dark:hover:bg-darkHover border-b border-gray-50 dark:border-darkBorder/50 last:border-0 cursor-pointer flex justify-between items-start group" onClick={() => {
                                                     setModalAlertasAberto(false);
                                                     setAbaAtual('producao');
                                                     if (alerta.os_id) {
@@ -1773,8 +1775,16 @@ function App() {
                                                         if (p) abrirEdicao(p);
                                                     }
                                                 }}>
-                                                    <p className="text-[11px] text-gray-800 dark:text-[#EDEDED]">{alerta.msg}</p>
-                                                    <span className="text-[10px] text-gray-400 mt-1 block">Agora</span>
+                                                    <div className="flex-1 pr-2">
+                                                        <p className="text-[11px] text-gray-800 dark:text-[#EDEDED]">{alerta.msg}</p>
+                                                        <span className="text-[10px] text-gray-400 mt-1 block">Agora</span>
+                                                    </div>
+                                                    <button type="button" onClick={(e) => { 
+                                                        e.stopPropagation(); 
+                                                        setAlertasNaoLidos(prev => prev.filter(a => a.id !== alerta.id)); 
+                                                    }} className="text-gray-400 hover:text-gray-600 dark:hover:text-white opacity-0 group-hover:opacity-100 transition p-1">
+                                                        <Icon name="x" className="w-3 h-3" />
+                                                    </button>
                                                 </div>
                                             ))
                                         )}
