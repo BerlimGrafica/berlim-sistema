@@ -1469,25 +1469,22 @@ function App() {
         const mapa = {};
         pedidos.forEach(p => {
             if (!p.servico) return;
-            // Busca o padrão estruturado salvo no campo "servico"
-            const regex = /  (?:\[#(\d+)\] )?([^\n]+)\n[\s\S]*?Valor: R\$ ([\d.,]+)/g;
-            let match;
-            while ((match = regex.exec(p.servico)) !== null) {
-                const id_produto_match = match[1] ? parseInt(match[1]) : null;
-                const nome = match[2].trim();
-                const valorStr = match[3].replace(/\./g, '').replace(',', '.');
-                const valorNum = parseFloat(valorStr) || 0;
+            const { itens } = desconstruirTextoServico(p.servico);
+            
+            itens.forEach(item => {
+                const id_produto_match = item.id_produto;
+                const nomeLimpo = item.nome.trim();
+                const valorNum = parseFloat(item.valor.replace(/\./g, '').replace(',', '.')) || 0;
                 
-                const nomeLimpo = nome.replace(/^\[#\d+\]\s*/, '').trim();
                 const prod = id_produto_match 
                     ? produtos.find(p => String(p.id) === String(id_produto_match)) 
-                    : produtos.find(prod => prod.nome.toLowerCase() === nomeLimpo.toLowerCase() || nomeLimpo.toLowerCase().includes(prod.nome.toLowerCase()));
+                    : produtos.find(prod => prod.nome.toLowerCase() === nomeLimpo.toLowerCase());
 
                 const finalName = prod ? prod.nome : nomeLimpo;
 
                 if (mapa[finalName]) mapa[finalName] += valorNum;
                 else mapa[finalName] = valorNum;
-            }
+            });
         });
         return mapa;
     }, [pedidos]);
@@ -2232,24 +2229,22 @@ function App() {
                                                 {(() => {
                                                     const agrupadoPorProduto = pedidosFin.reduce((acc, p) => {
                                                         if (!p.servico) return acc;
-                                                        const regex = /  (?:\[#(\d+)\] )?([^\n]+)\n[\s\S]*?Valor: R\$ ([\d.,]+)/g;
-                                                        let match;
-                                                        while ((match = regex.exec(p.servico)) !== null) {
-                                                            const id_produto_match = match[1] ? parseInt(match[1]) : null;
-                                                            const nome = match[2].trim();
-                                                            const valorStr = match[3].replace(/\./g, '').replace(',', '.');
-                                                            const valorNum = parseFloat(valorStr) || 0;
+                                                        const { itens } = desconstruirTextoServico(p.servico);
+                                                        
+                                                        itens.forEach(item => {
+                                                            const id_produto_match = item.id_produto;
+                                                            const nomeLimpo = item.nome.trim();
+                                                            const valorNum = parseFloat(item.valor.replace(/\./g, '').replace(',', '.')) || 0;
                                                             
-                                                            // Look for matching product in catalog exactly or by inclusion
-                                                            const nomeLimpo = nome.replace(/^\[#\d+\]\s*/, '').trim();
+                                                            // Look for matching product in catalog exactly
                                                             const prod = id_produto_match 
                                                                 ? produtos.find(p => String(p.id) === String(id_produto_match)) 
-                                                                : produtos.find(prod => prod.nome.toLowerCase() === nomeLimpo.toLowerCase() || nomeLimpo.toLowerCase().includes(prod.nome.toLowerCase()));
+                                                                : produtos.find(prod => prod.nome.toLowerCase() === nomeLimpo.toLowerCase());
                                                             
                                                             const finalName = prod ? prod.nome : nomeLimpo;
                                                             if (!acc[finalName]) acc[finalName] = 0;
                                                             acc[finalName] += valorNum;
-                                                        }
+                                                        });
                                                         return acc;
                                                     }, {});
                                                     
