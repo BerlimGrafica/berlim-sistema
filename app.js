@@ -863,22 +863,14 @@ function CalculadoraCasamento() {
     );
 }
 
-function CalculadorasAba() {
-    const [calculadoraAtiva, setCalculadoraAtiva] = useState('banner');
-
+function CalculadorasAba({ calculadoraAtiva }) {
     return (
-        <div className="flex-1 p-6 lg:p-10 mx-auto w-full max-w-3xl fade-in flex flex-col h-[calc(100vh-60px)] overflow-y-auto custom-scrollbar">
+        <div className="flex-1 p-6 lg:p-10 mx-auto w-full max-w-3xl fade-in flex flex-col h-[calc(100vh-125px)] overflow-y-auto custom-scrollbar">
             <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 mb-6 border-b border-gray-100 dark:border-darkBorder pb-6 shrink-0">
                 <div>
                     <h1 className="text-3xl font-semibold dark:text-white tracking-tight">Calculadoras</h1>
                     <p className="text-sm text-gray-500 dark:text-[#888888] mt-1">Ferramentas para auxiliar em orçamentos rápidos.</p>
                 </div>
-            </div>
-
-            <div className="flex gap-2 mb-6 bg-gray-100 dark:bg-darkElevated p-1 rounded-lg self-start">
-                <button onClick={() => setCalculadoraAtiva('banner')} className={`px-4 py-2 text-sm font-semibold rounded-md transition ${calculadoraAtiva === 'banner' ? 'bg-white dark:bg-darkCard shadow text-gray-900 dark:text-white' : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'}`}>Banner / Lona</button>
-                <button onClick={() => setCalculadoraAtiva('adesivo')} className={`px-4 py-2 text-sm font-semibold rounded-md transition ${calculadoraAtiva === 'adesivo' ? 'bg-white dark:bg-darkCard shadow text-gray-900 dark:text-white' : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'}`}>Adesivos (Vinil)</button>
-                <button onClick={() => setCalculadoraAtiva('casamento')} className={`px-4 py-2 text-sm font-semibold rounded-md transition ${calculadoraAtiva === 'casamento' ? 'bg-white dark:bg-darkCard shadow text-gray-900 dark:text-white' : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'}`}>Papelaria Casamento</button>
             </div>
 
             <div className="w-full">
@@ -941,6 +933,7 @@ function App() {
     const [abaFinanceiro, setAbaFinanceiro] = useState('geral');
     const [produtosSelecionadosGrafico, setProdutosSelecionadosGrafico] = useState(null);
     const [contasPagar, setContasPagar] = useState([]);
+    const [calculadoraAtiva, setCalculadoraAtiva] = useState('banner');
     const [modalContaAberto, setModalContaAberto] = useState(false);
     const [novaConta, setNovaConta] = useState({ id: null, descricao: '', valor: '', vencimento: '', status: 'Pendente' });
     const [alertasNaoLidos, setAlertasNaoLidos] = useState([]);
@@ -1680,36 +1673,10 @@ function App() {
     return (
         <div>
             <div className="flex flex-col min-h-screen no-print">
-                <header className="sticky top-0 z-40 bg-white dark:bg-darkBg border-b border-gray-200 dark:border-darkBorder px-6 py-6 flex justify-between items-center">
-                    <div className="flex items-center gap-8">
-                        <div className="flex items-center">
-                            <img src="https://www.berlimgraficarapida.com.br/wp-content/uploads/elementor/thumbs/logosite-rm0erpiqj90gcf7ff4jp8ujys78opflob1b9vn5jjs.png" alt="Berlim Gráfica" className="h-8 object-contain" />
-                        </div>
-                        <nav className="hidden md:flex gap-6 font-medium text-sm text-gray-500 dark:text-[#888888] cursor-pointer">
-                            {(usuario?.nivel === 'Administrador' || usuario?.nivel === 'Produção/Atendimento') && (
-                                <a onClick={() => setAbaAtual('producao')} className={`transition ${abaAtual === 'producao' ? 'text-gray-900 dark:text-white font-semibold' : 'hover:text-gray-900 dark:hover:text-white'}`}>Produção</a>
-                            )}
-                            <a onClick={() => setAbaAtual('baixa')} className={`transition ${abaAtual === 'baixa' ? 'text-gray-900 dark:text-white font-semibold' : 'hover:text-gray-900 dark:hover:text-white'}`}>Baixa de Notas</a>
-                            <a onClick={() => setAbaAtual('calculadoras')} className={`transition ${abaAtual === 'calculadoras' ? 'text-gray-900 dark:text-white font-semibold' : 'hover:text-gray-900 dark:hover:text-white'}`}>Calculadoras</a>
-                            {(usuario?.nivel === 'Administrador' || usuario?.nivel === 'Financeiro') && (
-                                <a onClick={() => setAbaAtual('financeiro')} className={`transition ${abaAtual === 'financeiro' ? 'text-gray-900 dark:text-white font-semibold' : 'hover:text-gray-900 dark:hover:text-white'}`}>Financeiro</a>
-                            )}
-                            {(usuario?.nivel === 'Administrador' || usuario?.nivel === 'Financeiro' || usuario?.nivel === 'Produção/Atendimento') && (
-                                <a onClick={() => setAbaAtual('notas_fiscais')} className={`transition ${abaAtual === 'notas_fiscais' ? 'text-gray-900 dark:text-white font-semibold' : 'hover:text-gray-900 dark:hover:text-white'} flex items-center gap-1.5`}>
-                                    Notas Fiscais
-                                    {notasFiscais.some(n => !n.concluido) && <span className="w-2 h-2 rounded-full bg-emerald-500 shadow shadow-emerald-500/50"></span>}
-                                </a>
-                            )}
-                            {isAdmin && (
-                                <a onClick={() => setAbaAtual('produtos')} className={`transition ${abaAtual === 'produtos' ? 'text-gray-900 dark:text-white font-semibold' : 'hover:text-gray-900 dark:hover:text-white'}`}>Catálogo</a>
-                            )}
-                            {(usuario?.nivel === 'Administrador' || usuario?.nivel === 'Produção/Atendimento') && (
-                                <a onClick={() => setAbaAtual('clientes')} className={`transition ${abaAtual === 'clientes' ? 'text-gray-900 dark:text-white font-semibold' : 'hover:text-gray-900 dark:hover:text-white'}`}>Clientes</a>
-                            )}
-                            {isAdmin && (
-                                <a onClick={() => setAbaAtual('usuarios')} className={`transition ${abaAtual === 'usuarios' ? 'text-gray-900 dark:text-white font-semibold' : 'hover:text-gray-900 dark:hover:text-white'}`}>Usuários</a>
-                            )}
-                        </nav>
+                {/* TIER 1: Logo and Profile */}
+                <header className="sticky top-0 z-40 bg-white dark:bg-darkBg px-6 py-4 flex justify-between items-center border-b border-gray-200 dark:border-darkBorder">
+                    <div className="flex items-center">
+                        <img src="https://www.berlimgraficarapida.com.br/wp-content/uploads/elementor/thumbs/logosite-rm0erpiqj90gcf7ff4jp8ujys78opflob1b9vn5jjs.png" alt="Berlim Gráfica" className="h-8 object-contain" />
                     </div>
                     <div className="flex items-center gap-5">
                         <div className="relative">
@@ -1755,7 +1722,7 @@ function App() {
                         </button>
                         
                         {/* SEPARADOR VERTICAL DE ELEGÂNCIA */}
-                        <div className="hidden sm:block w-[1px] h-8 bg-gray-200 dark:bg-darkBorder"></div>
+                        <div className="hidden sm:block w-[1px] h-8 bg-gray-200 dark:border-darkBorder"></div>
 
                         {/* BLOCO DO USUÁRIO ATUALIZADO */}
                         <div className="flex items-center gap-4 select-none">
@@ -1773,6 +1740,80 @@ function App() {
                         </div>
                     </div>
                 </header>
+
+                {/* TIER 2: Main Navigation Bar (Brand Color) */}
+                <nav className="bg-brand text-white px-6 shadow-sm z-30 sticky top-[73px]">
+                    <div className="flex gap-1 overflow-x-auto custom-scrollbar no-scrollbar-style items-end h-[52px]">
+                        {(usuario?.nivel === 'Administrador' || usuario?.nivel === 'Produção/Atendimento') && (
+                            <a onClick={() => setAbaAtual('producao')} className={`px-5 py-3 text-[13px] font-bold cursor-pointer transition whitespace-nowrap rounded-t-md h-full flex items-center tracking-wide uppercase ${abaAtual === 'producao' ? 'bg-slate-50 text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
+                                Produção
+                            </a>
+                        )}
+                        <a onClick={() => setAbaAtual('baixa')} className={`px-5 py-3 text-[13px] font-bold cursor-pointer transition whitespace-nowrap rounded-t-md h-full flex items-center tracking-wide uppercase ${abaAtual === 'baixa' ? 'bg-slate-50 text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
+                            Baixa de Notas
+                        </a>
+                        <a onClick={() => setAbaAtual('calculadoras')} className={`px-5 py-3 text-[13px] font-bold cursor-pointer transition whitespace-nowrap rounded-t-md h-full flex items-center tracking-wide uppercase ${abaAtual === 'calculadoras' ? 'bg-slate-50 text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
+                            Calculadoras
+                        </a>
+                        
+                        {(usuario?.nivel === 'Administrador' || usuario?.nivel === 'Financeiro') && (
+                            <a onClick={() => setAbaAtual('financeiro')} className={`px-5 py-3 text-[13px] font-bold cursor-pointer transition whitespace-nowrap rounded-t-md h-full flex items-center tracking-wide uppercase ${abaAtual === 'financeiro' ? 'bg-slate-50 text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
+                                Financeiro
+                            </a>
+                        )}
+                        
+                        {(usuario?.nivel === 'Administrador' || usuario?.nivel === 'Financeiro' || usuario?.nivel === 'Produção/Atendimento') && (
+                            <a onClick={() => setAbaAtual('notas_fiscais')} className={`px-5 py-3 text-[13px] font-bold cursor-pointer transition whitespace-nowrap rounded-t-md h-full flex items-center gap-2 tracking-wide uppercase ${abaAtual === 'notas_fiscais' ? 'bg-slate-50 text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
+                                Notas Fiscais
+                                {notasFiscais.some(n => !n.concluido) && <span className={`w-2 h-2 rounded-full ${abaAtual === 'notas_fiscais' ? 'bg-emerald-500' : 'bg-white'} shadow`}></span>}
+                            </a>
+                        )}
+                        
+                        {isAdmin && (
+                            <a onClick={() => setAbaAtual('produtos')} className={`px-5 py-3 text-[13px] font-bold cursor-pointer transition whitespace-nowrap rounded-t-md h-full flex items-center tracking-wide uppercase ${abaAtual === 'produtos' ? 'bg-slate-50 text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
+                                Catálogo
+                            </a>
+                        )}
+                        
+                        {(usuario?.nivel === 'Administrador' || usuario?.nivel === 'Produção/Atendimento') && (
+                            <a onClick={() => setAbaAtual('clientes')} className={`px-5 py-3 text-[13px] font-bold cursor-pointer transition whitespace-nowrap rounded-t-md h-full flex items-center tracking-wide uppercase ${abaAtual === 'clientes' ? 'bg-slate-50 text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
+                                Clientes
+                            </a>
+                        )}
+                        
+                        {isAdmin && (
+                            <a onClick={() => setAbaAtual('usuarios')} className={`px-5 py-3 text-[13px] font-bold cursor-pointer transition whitespace-nowrap rounded-t-md h-full flex items-center tracking-wide uppercase ${abaAtual === 'usuarios' ? 'bg-slate-50 text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
+                                Usuários
+                            </a>
+                        )}
+                    </div>
+                </nav>
+
+                {/* TIER 3: Submenus */}
+                {abaAtual === 'financeiro' && (
+                    <div className="bg-slate-50 dark:bg-darkBg border-b border-gray-200 dark:border-darkBorder px-6 flex gap-6 z-20 overflow-x-auto no-scrollbar-style sticky top-[125px]">
+                        <button onClick={() => setAbaFinanceiro('geral')} className={`py-3 text-[13px] font-bold border-b-[3px] transition whitespace-nowrap uppercase tracking-wider ${abaFinanceiro === 'geral' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}>Visão Geral</button>
+                        <button onClick={() => setAbaFinanceiro('vendas_produto')} className={`py-3 text-[13px] font-bold border-b-[3px] transition whitespace-nowrap uppercase tracking-wider ${abaFinanceiro === 'vendas_produto' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}>Vendas por Produto</button>
+                        <button onClick={() => setAbaFinanceiro('contas_pagar')} className={`py-3 text-[13px] font-bold border-b-[3px] transition whitespace-nowrap uppercase tracking-wider ${abaFinanceiro === 'contas_pagar' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}>Contas a Pagar</button>
+                    </div>
+                )}
+                {abaAtual === 'calculadoras' && (
+                    <div className="bg-slate-50 dark:bg-darkBg border-b border-gray-200 dark:border-darkBorder px-6 flex gap-6 z-20 overflow-x-auto no-scrollbar-style sticky top-[125px]">
+                        <button onClick={() => setCalculadoraAtiva('banner')} className={`py-3 text-[13px] font-bold border-b-[3px] transition whitespace-nowrap uppercase tracking-wider ${calculadoraAtiva === 'banner' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}>Banner / Lona</button>
+                        <button onClick={() => setCalculadoraAtiva('adesivo')} className={`py-3 text-[13px] font-bold border-b-[3px] transition whitespace-nowrap uppercase tracking-wider ${calculadoraAtiva === 'adesivo' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}>Adesivos (Vinil)</button>
+                        <button onClick={() => setCalculadoraAtiva('casamento')} className={`py-3 text-[13px] font-bold border-b-[3px] transition whitespace-nowrap uppercase tracking-wider ${calculadoraAtiva === 'casamento' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}>Papelaria Casamento</button>
+                        {/* Se tiver mais calculadoras, elas aparecem aqui */}
+                    </div>
+                )}
+                {abaAtual === 'notas_fiscais' && (
+                    <div className="bg-slate-50 dark:bg-darkBg border-b border-gray-200 dark:border-darkBorder px-6 flex gap-6 z-20 overflow-x-auto no-scrollbar-style sticky top-[125px]">
+                        <button onClick={() => { setFiltroNotas('pendentes'); setPaginaNotasFiscais(1); }} className={`py-3 text-[13px] font-bold border-b-[3px] transition whitespace-nowrap flex items-center gap-2 uppercase tracking-wider ${filtroNotas === 'pendentes' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}>
+                            Pendentes
+                            {notasFiscais.some(n => !n.concluido) && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>}
+                        </button>
+                        <button onClick={() => { setFiltroNotas('concluidas'); setPaginaNotasFiscais(1); }} className={`py-3 text-[13px] font-bold border-b-[3px] transition whitespace-nowrap uppercase tracking-wider ${filtroNotas === 'concluidas' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}>Concluídas</button>
+                    </div>
+                )}
 
                 {abaAtual === 'producao' && (
                     <main className="flex-1 p-6 lg:p-10 mx-auto w-full fade-in flex flex-col h-[calc(100vh-60px)]">
@@ -2010,19 +2051,7 @@ function App() {
                             </div>
                         </div>
 
-                        {/* SUB-MENU DO FINANCEIRO */}
-                        <div className="flex flex-wrap items-center gap-2 pb-4 border-b border-gray-100 dark:border-darkBorder">
-                            <button onClick={() => setAbaFinanceiro('geral')} className={`px-4 py-2 text-sm font-bold rounded-md transition ${abaFinanceiro === 'geral' ? 'bg-brand text-white shadow-sm' : 'bg-gray-100 dark:bg-darkCard text-gray-600 dark:text-[#888888] hover:bg-gray-200 dark:hover:bg-darkHover'}`}>
-                                Visão Geral
-                            </button>
-                            <button onClick={() => setAbaFinanceiro('vendas_produto')} className={`px-4 py-2 text-sm font-bold rounded-md transition ${abaFinanceiro === 'vendas_produto' ? 'bg-brand text-white shadow-sm' : 'bg-gray-100 dark:bg-darkCard text-gray-600 dark:text-[#888888] hover:bg-gray-200 dark:hover:bg-darkHover'}`}>
-                                Vendas por Produto
-                            </button>
-                            <button onClick={() => setAbaFinanceiro('contas_pagar')} className={`px-4 py-2 text-sm font-bold rounded-md transition ${abaFinanceiro === 'contas_pagar' ? 'bg-brand text-white shadow-sm' : 'bg-gray-100 dark:bg-darkCard text-gray-600 dark:text-[#888888] hover:bg-gray-200 dark:hover:bg-darkHover'}`}>
-                                Contas a Pagar
-                            </button>
-                        </div>
-
+                        {/* SUB-MENU FOI MOVIDO PARA O TOPNAV */}
                         {(() => {
                             const pedidosFin = pedidos.filter(p => {
                                 let match = true;
@@ -2717,10 +2746,7 @@ function App() {
                                         className="w-full pl-9 pr-4 py-1.5 h-[38px] text-sm border border-gray-200 dark:border-darkBorder bg-white dark:bg-darkCard rounded-md focus:outline-none focus:ring-2 focus:ring-brand dark:text-white transition"
                                     />
                                 </div>
-                                <div className="flex bg-gray-100 dark:bg-darkHover rounded p-1">
-                                    <button onClick={() => { setFiltroNotas('pendentes'); setPaginaNotasFiscais(1); }} className={`px-4 py-1.5 text-sm font-semibold rounded ${filtroNotas === 'pendentes' ? 'bg-white dark:bg-darkCard shadow text-gray-900 dark:text-white' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'} transition`}>Pendentes</button>
-                                    <button onClick={() => { setFiltroNotas('concluidas'); setPaginaNotasFiscais(1); }} className={`px-4 py-1.5 text-sm font-semibold rounded ${filtroNotas === 'concluidas' ? 'bg-white dark:bg-darkCard shadow text-gray-900 dark:text-white' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'} transition`}>Concluídas</button>
-                                </div>
+                                {/* BOTOES FILTRONOTAS MOVIDOS PARA O TOPNAV */}
                                 <a href="/solicitar-nota.html" target="_blank" className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover text-gray-800 dark:text-[#EDEDED] h-[38px] px-4 text-sm rounded-md font-bold shadow-sm transition flex items-center gap-2">
                                     <Icon name="external-link" className="w-4 h-4" /> Link do Formulário
                                 </a>
@@ -2822,7 +2848,7 @@ function App() {
                         </div>
                     </main>
                 )}
-                {abaAtual === 'calculadoras' && <CalculadorasAba />}
+                {abaAtual === 'calculadoras' && <CalculadorasAba calculadoraAtiva={calculadoraAtiva} />}
             </div>
 
             {modalAberto && (
