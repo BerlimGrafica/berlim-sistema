@@ -47,7 +47,7 @@ const STATUSES_PRODUCAO = [
 ];
 const STATUSES_FINALIZADOS = ['Abandonado', 'Cancelado', 'Concluído', 'Finalizado'];
 const RESPONSAVEIS = ['Gi', 'Murilo', 'Bruno', 'Nicole', 'Hellen', 'Jessica', 'Vini'];
-const LOCAIS = ['Berlim', 'Futura', 'Atual Card', 'Alvo', 'Xexe', 'StampMix'];
+
 
 // ==== MAPEAMENTO DE CORES DOS STATUS ====
 const obterCorStatus = (status) => {
@@ -897,6 +897,10 @@ function App() {
     const [produtos, setProdutos] = useState([]);
     const [draggedProdutoIndex, setDraggedProdutoIndex] = useState(null);
     const [clientes, setClientes] = useState([]);
+    const [fornecedores, setFornecedores] = useState([]);
+    const [abaCadastros, setAbaCadastros] = useState('clientes');
+    const [modalFornecedorAberto, setModalFornecedorAberto] = useState(false);
+    const [novoFornecedor, setNovoFornecedor] = useState({ id: null, nome: '', contato: '', observacoes: '' });
     const [paginaClientes, setPaginaClientes] = useState(1);
     const [letraFiltroCliente, setLetraFiltroCliente] = useState('');
     
@@ -1165,6 +1169,9 @@ function App() {
 
         const { data: listaContas, error: erroContas } = await supabase.from('contas_pagar').select('*').order('vencimento', { ascending: true });
         if (!erroContas && listaContas) setContasPagar(listaContas);
+
+        const { data: listaFornecedores } = await supabase.from('fornecedores').select('*').order('nome', { ascending: true });
+        if (listaFornecedores) setFornecedores(listaFornecedores);
     }
     
     useEffect(() => {
@@ -1845,27 +1852,35 @@ function App() {
                             </a>
                         )}
                         
-                        {isAdmin && (
-                            <a onClick={() => setAbaAtual('produtos')} className={`px-5 py-2.5 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center tracking-wide uppercase ${abaAtual === 'produtos' ? 'bg-slate-50 text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
-                                Catálogo
-                            </a>
-                        )}
-                        
-                        {(usuario?.nivel === 'Administrador' || usuario?.nivel === 'Produção/Atendimento') && (
-                            <a onClick={() => setAbaAtual('clientes')} className={`px-5 py-2.5 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center tracking-wide uppercase ${abaAtual === 'clientes' ? 'bg-slate-50 text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
-                                Clientes
-                            </a>
-                        )}
-                        
-                        {isAdmin && (
-                            <a onClick={() => setAbaAtual('usuarios')} className={`px-5 py-2.5 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center tracking-wide uppercase ${abaAtual === 'usuarios' ? 'bg-slate-50 text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
-                                Usuários
-                            </a>
-                        )}
+                        <a onClick={() => setAbaAtual('cadastros')} className={`px-5 py-2.5 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center tracking-wide uppercase ${abaAtual === 'cadastros' ? 'bg-slate-50 text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
+                            Cadastros
+                        </a>
                     </div>
                 </nav>
 
                 {/* TIER 3: Submenus */}
+                {abaAtual === 'cadastros' && (
+                    <div className="bg-slate-50 dark:bg-darkBg border-b border-gray-200 dark:border-darkBorder px-6 flex gap-6 z-20 overflow-x-auto no-scrollbar-style sticky top-[125px]">
+                        {(usuario?.nivel === 'Administrador' || usuario?.nivel === 'Produção/Atendimento') && (
+                            <a onClick={() => setAbaCadastros('clientes')} className={`py-3 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap border-b-[3px] flex items-center gap-2 ${abaCadastros === 'clientes' ? 'border-brand text-brand' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'}`}>
+                                <Icon name="users" className="w-4 h-4" /> Clientes
+                            </a>
+                        )}
+                        {isAdmin && (
+                            <>
+                                <a onClick={() => setAbaCadastros('produtos')} className={`py-3 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap border-b-[3px] flex items-center gap-2 ${abaCadastros === 'produtos' ? 'border-brand text-brand' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'}`}>
+                                    <Icon name="package" className="w-4 h-4" /> Catálogo
+                                </a>
+                                <a onClick={() => setAbaCadastros('fornecedores')} className={`py-3 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap border-b-[3px] flex items-center gap-2 ${abaCadastros === 'fornecedores' ? 'border-brand text-brand' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'}`}>
+                                    <Icon name="truck" className="w-4 h-4" /> Fornecedores / Locais
+                                </a>
+                                <a onClick={() => setAbaCadastros('usuarios')} className={`py-3 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap border-b-[3px] flex items-center gap-2 ${abaCadastros === 'usuarios' ? 'border-brand text-brand' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'}`}>
+                                    <Icon name="user" className="w-4 h-4" /> Usuários
+                                </a>
+                            </>
+                        )}
+                    </div>
+                )}
                 {abaAtual === 'financeiro' && (
                     <div className="bg-slate-50 dark:bg-darkBg border-b border-gray-200 dark:border-darkBorder px-6 flex gap-6 z-20 overflow-x-auto no-scrollbar-style sticky top-[125px]">
                         <button onClick={() => setAbaFinanceiro('geral')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitespace-nowrap uppercase tracking-wider ${abaFinanceiro === 'geral' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}>Visão Geral</button>
@@ -2708,7 +2723,7 @@ function App() {
                     </main>
                 )}
 
-                {abaAtual === 'produtos' && isAdmin && (
+                {abaAtual === 'cadastros' && abaCadastros === 'produtos' && isAdmin && (
                     <main className="flex-1 p-6 lg:p-10 max-w-[1200px] mx-auto w-full fade-in">
                         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 mb-6 border-b border-gray-100 dark:border-darkBorder pb-6 shrink-0">
                             <div>
@@ -2763,7 +2778,7 @@ function App() {
                     </main>
                 )}
 
-                {abaAtual === 'clientes' && (
+                {abaAtual === 'cadastros' && abaCadastros === 'clientes' && (
                     <main className="flex-1 p-6 lg:p-10 max-w-[1200px] mx-auto w-full fade-in">
                         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 mb-6 border-b border-gray-100 dark:border-darkBorder pb-6 shrink-0">
                             <div>
@@ -2897,7 +2912,7 @@ function App() {
                     </main>
                 )}
 
-                {abaAtual === 'usuarios' && isAdmin && (
+                {abaAtual === 'cadastros' && abaCadastros === 'usuarios' && isAdmin && (
                     <main className="flex-1 p-6 lg:p-10 max-w-[1200px] mx-auto w-full fade-in">
                         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 mb-6 border-b border-gray-100 dark:border-darkBorder pb-6 shrink-0">
                             <div>
@@ -2924,6 +2939,66 @@ function App() {
                                             </td>
                                         </tr>
                                     ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </main>
+                )}
+
+                {abaAtual === 'cadastros' && abaCadastros === 'fornecedores' && isAdmin && (
+                    <main className="flex-1 p-6 lg:p-10 max-w-[1200px] mx-auto w-full fade-in">
+                        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 mb-6 border-b border-gray-100 dark:border-darkBorder pb-6 shrink-0">
+                            <div>
+                                <h1 className="text-3xl font-semibold dark:text-white tracking-tight">Fornecedores e Locais</h1>
+                                <p className="text-[13px] text-gray-500 dark:text-[#888888] mt-1">Gerencie os locais de produção e fornecedores externos.</p>
+                            </div>
+                            <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
+                                <button onClick={() => { setNovoFornecedor({ id: null, nome: '', contato: '', observacoes: '' }); setModalFornecedorAberto(true); }} className="bg-brand hover:bg-brandHover text-white h-[38px] px-4 text-[13px] rounded-md font-semibold shadow-sm transition flex items-center gap-2">
+                                    <Icon name="plus" className="w-4 h-4" /> Novo Fornecedor
+                                </button>
+                            </div>
+                        </div>
+                        <div className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded overflow-hidden">
+                            <table className="w-full text-left border-collapse">
+                                <thead className="bg-gray-50/50 dark:bg-darkHover/50">
+                                    <tr className="border-b border-gray-200 dark:border-darkBorder text-[13px] font-semibold text-gray-500 dark:text-gray-400 tracking-wide uppercase">
+                                        <th className="px-6 py-4 w-24">ID</th>
+                                        <th className="px-6 py-4">Nome do Fornecedor / Local</th>
+                                        <th className="px-6 py-4">Contato</th>
+                                        <th className="px-6 py-4">Observações</th>
+                                        <th className="px-6 py-4 w-24 text-right">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {fornecedores.length === 0 ? (
+                                        <tr>
+                                            <td colSpan="5" className="px-6 py-12 text-center text-[13px] text-gray-400 dark:text-gray-500">
+                                                Nenhum fornecedor cadastrado.
+                                            </td>
+                                        </tr>
+                                    ) : (
+                                        fornecedores.map(f => (
+                                            <tr key={f.id} className="border-b border-gray-100 dark:border-darkBorder/50 hover:bg-gray-50/50 dark:hover:bg-darkHover/50 transition">
+                                                <td className="px-6 py-4 text-[13px] font-semibold text-gray-900 dark:text-gray-300">#{f.id}</td>
+                                                <td className="px-6 py-4 text-[13px] font-medium text-gray-800 dark:text-white">{f.nome}</td>
+                                                <td className="px-6 py-4 text-[13px] text-gray-600 dark:text-gray-400">{f.contato || '-'}</td>
+                                                <td className="px-6 py-4 text-[13px] text-gray-600 dark:text-gray-400">{f.observacoes || '-'}</td>
+                                                <td className="px-6 py-4 text-right space-x-2">
+                                                    <button onClick={() => { setNovoFornecedor(f); setModalFornecedorAberto(true); }} className="p-1.5 text-gray-400 hover:text-brand dark:hover:text-brand transition rounded">
+                                                        <Icon name="edit-3" className="w-4 h-4" />
+                                                    </button>
+                                                    <button onClick={async () => {
+                                                        if(confirm(`Excluir o fornecedor ${f.nome}?`)) {
+                                                            await supabase.from('fornecedores').delete().eq('id', f.id);
+                                                            carregarDados();
+                                                        }
+                                                    }} className="p-1.5 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition rounded">
+                                                        <Icon name="trash-2" className="w-4 h-4" />
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
                                 </tbody>
                             </table>
                         </div>
@@ -3070,7 +3145,7 @@ function App() {
                                             <div className="relative col-span-2">
                                                 <span className="absolute left-3 top-2.5 text-[11px] text-gray-400 font-medium">Local:</span>
                                                 <select value={itemAtual.local_producao} disabled={isModalTrancado} onChange={e => setItemAtual({...itemAtual, local_producao: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded pl-[52px] pr-8 py-2 text-[11px] outline-none focus:border-brand transition dark:text-[#EDEDED] font-medium appearance-none disabled:opacity-50">
-                                                    {LOCAIS.map(l => <option key={l} value={l}>{l}</option>)}
+                                                    {(fornecedores.length > 0 ? fornecedores.map(f => f.nome) : ['Berlim']).map(l => <option key={l} value={l}>{l}</option>)}
                                                 </select>
                                                 <Icon name="chevron-down" className="absolute right-3 top-2.5 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
                                             </div>
@@ -3233,6 +3308,43 @@ function App() {
                             <input required value={novoProduto.preco_base} onChange={e => setNovoProduto({...novoProduto, preco_base: formatarMoeda(e.target.value)})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white font-medium transition" placeholder="0,00" />
                             <div className="flex justify-end gap-3"><button type="button" onClick={() => setModalProdutoAberto(false)} className="px-4 py-2 rounded text-[13px] font-medium text-gray-600 dark:text-[#A1A1AA] hover:bg-gray-100 dark:hover:bg-darkHover transition">Cancelar</button><button type="submit" className="px-5 py-2 rounded text-[13px] font-medium bg-white text-black hover:bg-gray-200 transition">Salvar</button></div>
                         </form>
+                    </div>
+                </div>
+            )}
+            {modalFornecedorAberto && (
+                <div onClick={() => setModalFornecedorAberto(false)} className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer">
+                    <div onClick={e => e.stopPropagation()} className="bg-white dark:bg-darkCard rounded shadow-2xl w-full max-w-md overflow-hidden cursor-default border border-gray-100 dark:border-darkBorder animate-fade-in-up">
+                        <div className="px-6 py-4 border-b border-gray-100 dark:border-darkBorder bg-gray-50/50 dark:bg-darkHover/30 flex justify-between items-center">
+                            <div>
+                                <h3 className="text-[14px] font-semibold text-gray-900 dark:text-white tracking-wide">{novoFornecedor.id ? 'Editar Fornecedor' : 'Novo Fornecedor'}</h3>
+                                <p className="text-[11px] text-gray-500 mt-0.5">Preencha os dados do local de produção</p>
+                            </div>
+                            <button type="button" onClick={() => setModalFornecedorAberto(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-white transition p-1"><Icon name="x" className="w-4 h-4" /></button>
+                        </div>
+                        <div className="p-6 space-y-4">
+                            <div>
+                                <label className="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-1.5 tracking-wide uppercase">Nome / Local *</label>
+                                <input type="text" required value={novoFornecedor.nome} onChange={e => setNovoFornecedor({...novoFornecedor, nome: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-[12px] outline-none focus:border-brand transition dark:text-[#EDEDED] font-medium" placeholder="Ex: Gráfica XYZ, Futura..." />
+                            </div>
+                            <div>
+                                <label className="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-1.5 tracking-wide uppercase">Contato (Telefone, E-mail)</label>
+                                <input type="text" value={novoFornecedor.contato} onChange={e => setNovoFornecedor({...novoFornecedor, contato: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-[12px] outline-none focus:border-brand transition dark:text-[#EDEDED] font-medium" placeholder="Ex: (11) 9999-9999" />
+                            </div>
+                            <div>
+                                <label className="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-1.5 tracking-wide uppercase">Observações</label>
+                                <textarea rows="3" value={novoFornecedor.observacoes} onChange={e => setNovoFornecedor({...novoFornecedor, observacoes: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-[12px] outline-none focus:border-brand transition dark:text-[#EDEDED] font-medium resize-none custom-scrollbar" placeholder="Dados bancários, prazo padrão..." />
+                            </div>
+                        </div>
+                        <div className="px-6 py-4 bg-gray-50 dark:bg-darkHover/30 border-t border-gray-100 dark:border-darkBorder flex justify-end gap-3">
+                            <button type="button" onClick={() => setModalFornecedorAberto(false)} className="px-4 py-2 text-[12px] font-semibold text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-darkHover rounded transition">Cancelar</button>
+                            <button type="button" onClick={async () => {
+                                if(!novoFornecedor.nome) return alert('Nome é obrigatório');
+                                if (novoFornecedor.id) await supabase.from('fornecedores').update({ nome: novoFornecedor.nome, contato: novoFornecedor.contato, observacoes: novoFornecedor.observacoes }).eq('id', novoFornecedor.id);
+                                else await supabase.from('fornecedores').insert([{ nome: novoFornecedor.nome, contato: novoFornecedor.contato, observacoes: novoFornecedor.observacoes }]);
+                                carregarDados();
+                                setModalFornecedorAberto(false);
+                            }} className="bg-brand hover:bg-brandHover text-white px-5 py-2 text-[12px] font-semibold rounded shadow-sm transition">Salvar</button>
+                        </div>
                     </div>
                 </div>
             )}
