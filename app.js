@@ -910,6 +910,10 @@ function App() {
 
     const [darkMode, setDarkMode] = useState(false); 
     
+    useEffect(() => {
+        if (darkMode) { document.documentElement.classList.add('dark'); }
+        else { document.documentElement.classList.remove('dark'); }
+    }, [darkMode]);
     const isAdmin = usuario?.nivel === 'Administrador';
     const isOperador = usuario?.nivel === 'Produção/Atendimento';
     
@@ -2777,7 +2781,7 @@ function App() {
                                                     <div className="text-[13px] font-semibold dark:text-[#EDEDED]">{n.cliente || 'Sem Identificação'}</div>
                                                     <div className="text-[11px] text-gray-500 dark:text-[#A1A1AA]">{n.razao_social}</div>
                                                 </td>
-                                                <td className="px-4 py-3 text-[13px] dark:text-[#EDEDED]">{n.cnpj}</td>
+                                                <td className="px-4 py-3 text-[13px] dark:text-[#EDEDED] whitespace-nowrap">{n.cnpj}</td>
                                                 <td className="px-4 py-3">
                                                     <div className="text-[13px] dark:text-[#EDEDED]">{n.servico_feito || <span className="text-gray-400 italic">Pendente</span>}</div>
                                                     <div className="text-[11px] font-semibold text-orange-500 dark:text-orange-400">{n.valor_pago ? `R$ ${parseFloat(n.valor_pago).toFixed(2).replace('.', ',')}` : ''}</div>
