@@ -1648,8 +1648,8 @@ function App() {
     // ==== TELA DE LOGIN ====
     if (!usuario) {
         return (
-            <div className="flex min-h-screen items-center justify-center bg-black text-white p-4 select-none font-sans">
-                <div className="w-full max-w-sm bg-darkCard border border-darkBorder rounded-xl p-8 shadow-2xl flex flex-col gap-6">
+            <div className="flex min-h-screen items-center justify-center bg-[#EDEFF0] text-[#454545] p-4 select-none font-sans">
+                <div className="w-full max-w-sm bg-white border border-gray-200 rounded-xl p-8 shadow-sm flex flex-col gap-6">
                     <div className="text-center flex flex-col items-center">
                         <img src="https://www.berlimgraficarapida.com.br/wp-content/uploads/elementor/thumbs/logosite-rm0erpiqj90gcf7ff4jp8ujys78opflob1b9vn5jjs.png" alt="Berlim Gráfica" className="h-12 object-contain mb-3" />
                         <p className="text-[11px] text-gray-400 mt-1">Insira suas credenciais para acessar o ERP</p>
@@ -1658,11 +1658,11 @@ function App() {
                     <form onSubmit={efetuarLogin} className="flex flex-col gap-4">
                         <div>
                             <label className="block text-[10px] font-semibold uppercase tracking-wider text-gray-500 mb-1.5">Usuário</label>
-                            <input required type="text" value={loginInput} onChange={e => setLoginInput(e.target.value)} className="w-full bg-black border border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand transition text-white" placeholder="Ex: admin, gi, financeiro..." autoComplete="off" />
+                            <input required type="text" value={loginInput} onChange={e => setLoginInput(e.target.value)} className="w-full bg-white border border-gray-200 rounded px-3 py-2 text-[13px] outline-none focus:border-brand transition text-gray-800" placeholder="Ex: admin, gi, financeiro..." autoComplete="off" />
                         </div>
                         <div>
                             <label className="block text-[10px] font-semibold uppercase tracking-wider text-gray-500 mb-1.5">Senha</label>
-                            <input required type="password" value={senhaInput} onChange={e => setSenhaInput(e.target.value)} className="w-full bg-black border border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand transition text-white" placeholder="••••••" />
+                            <input required type="password" value={senhaInput} onChange={e => setSenhaInput(e.target.value)} className="w-full bg-white border border-gray-200 rounded px-3 py-2 text-[13px] outline-none focus:border-brand transition text-gray-800" placeholder="••••••" />
                         </div>
                         {erroLogin && <p className="text-[11px] text-red-500 font-medium text-center">{erroLogin}</p>}
                         <button type="submit" className="w-full bg-brand hover:bg-brandHover text-white py-2 rounded text-[13px] font-semibold shadow transition mt-2">
