@@ -1,4 +1,4 @@
-const { useState, useEffect, useRef, useMemo } = React;
+﻿const { useState, useEffect, useRef, useMemo } = React;
 
 const supabase = window.supabase.createClient(
     'https://xbanoipgoleuahwbqksy.supabase.co',
@@ -170,9 +170,9 @@ function CustomDatePicker({ value, onChange, placeholder, disabled, className })
                 <div 
                     key={d} 
                     onClick={(e) => { e.stopPropagation(); selectDate(d); }}
-                    className={`w-8 h-8 flex items-center justify-center rounded-md text-sm cursor-pointer transition
-                        ${isSelected ? 'bg-brand text-white font-bold' : 
-                          isToday ? 'bg-gray-100 dark:bg-darkElevated text-brand font-bold hover:bg-gray-200 dark:hover:bg-darkHover' : 
+                    className={`w-8 h-8 flex items-center justify-center rounded-md text-[13px] cursor-pointer transition
+                        ${isSelected ? 'bg-brand text-white font-semibold' : 
+                          isToday ? 'bg-gray-100 dark:bg-darkElevated text-brand font-semibold hover:bg-gray-200 dark:hover:bg-darkHover' : 
                           'text-gray-700 dark:text-[#EDEDED] hover:bg-gray-100 dark:hover:bg-darkHover'}`}
                 >
                     {d}
@@ -199,11 +199,11 @@ function CustomDatePicker({ value, onChange, placeholder, disabled, className })
                     <div className={`absolute left-0 z-[60] bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-lg shadow-2xl p-4 w-72 ${openUpwards ? 'bottom-full mb-2' : 'top-full mt-2'}`}>
                         <div className="flex justify-between items-center mb-4">
                             <button type="button" onClick={(e) => changeMonth(e, -1)} className="p-1 hover:bg-gray-100 dark:hover:bg-darkElevated rounded text-gray-500 dark:text-gray-400"><Icon name="chevron-left" /></button>
-                            <span className="font-semibold text-sm dark:text-white">{meses[viewDate.getMonth()]} de {viewDate.getFullYear()}</span>
+                            <span className="font-semibold text-[13px] dark:text-white">{meses[viewDate.getMonth()]} de {viewDate.getFullYear()}</span>
                             <button type="button" onClick={(e) => changeMonth(e, 1)} className="p-1 hover:bg-gray-100 dark:hover:bg-darkElevated rounded text-gray-500 dark:text-gray-400"><Icon name="chevron-right" /></button>
                         </div>
                         <div className="grid grid-cols-7 mb-2">
-                            {diasSemana.map(d => <div key={d} className="w-8 h-8 flex items-center justify-center text-[10px] font-bold text-gray-400">{d}</div>)}
+                            {diasSemana.map(d => <div key={d} className="w-8 h-8 flex items-center justify-center text-[10px] font-semibold text-gray-400">{d}</div>)}
                         </div>
                         <div className="grid grid-cols-7 gap-y-1">
                             {renderDias()}
@@ -246,7 +246,7 @@ function InlineDropdown({ value, options, onChange, className, hasIndefinido = f
             {isOpen && (
                 <>
                     <div className="fixed inset-0 z-[55]" onClick={(e) => { e.stopPropagation(); setIsOpen(false); }}></div>
-                    <ul className={`absolute left-0 z-[60] w-full min-w-[160px] max-h-48 overflow-y-auto bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded shadow-xl custom-scrollbar text-xs ${openUpwards ? 'bottom-full mb-1' : 'top-full mt-1'}`}>
+                    <ul className={`absolute left-0 z-[60] w-full min-w-[160px] max-h-48 overflow-y-auto bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded shadow-xl custom-scrollbar text-[11px] ${openUpwards ? 'bottom-full mb-1' : 'top-full mt-1'}`}>
                         {hasIndefinido && (
                             <li 
                                 onClick={(e) => { e.stopPropagation(); onChange(''); setIsOpen(false); }}
@@ -316,7 +316,7 @@ function MultiSelectDropdown({ value, options, onChange, className, disabled, pl
             {isOpen && (
                 <>
                     <div className="fixed inset-0 z-[55]" onClick={(e) => { e.stopPropagation(); setIsOpen(false); }}></div>
-                    <ul className={`absolute left-0 z-[60] w-full min-w-[160px] max-h-48 overflow-y-auto bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded shadow-xl custom-scrollbar text-xs ${openUpwards ? 'bottom-full mb-1' : 'top-full mt-1'}`}>
+                    <ul className={`absolute left-0 z-[60] w-full min-w-[160px] max-h-48 overflow-y-auto bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded shadow-xl custom-scrollbar text-[11px] ${openUpwards ? 'bottom-full mb-1' : 'top-full mt-1'}`}>
                         {options.map(opt => {
                             const isSelected = selectedArr.includes(opt);
                             return (
@@ -438,7 +438,7 @@ function ItensChecklist({ pedido, atualizarCampoInline }) {
                     key={idx}
                     type="button"
                     onClick={(e) => { e.stopPropagation(); toggleItem(idx); }}
-                    className={`flex items-center gap-1 px-2 py-1 text-[10px] uppercase font-bold rounded shadow-sm transition transform hover:scale-105 ${
+                    className={`flex items-center gap-1 px-2 py-1 text-[10px] uppercase font-semibold rounded shadow-sm transition transform hover:scale-105 ${
                         item.concluido
                             ? 'bg-emerald-500 text-white border border-emerald-600'
                             : 'bg-gray-100 dark:bg-darkElevated text-gray-500 dark:text-[#A1A1AA] border border-gray-200 dark:border-darkBorder hover:bg-gray-200 dark:hover:bg-darkHover'
@@ -518,18 +518,18 @@ function StackedCards({ title, description, icon, cards }) {
                                         </div>
                                     )}
                                     <div>
-                                        <h3 className="font-extrabold text-sm text-gray-900 dark:text-white capitalize leading-tight">{title}</h3>
+                                        <h3 className="font-extrabold text-[13px] text-gray-900 dark:text-white capitalize leading-tight">{title}</h3>
                                     </div>
                                 </div>
                                 {cards.length > 1 && (
-                                    <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-darkBorder/30 border border-gray-200 dark:border-darkBorder px-2 py-1 rounded-full">
+                                    <span className="text-[10px] font-semibold text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-darkBorder/30 border border-gray-200 dark:border-darkBorder px-2 py-1 rounded-full">
                                         {i + 1}/{cards.length}
                                     </span>
                                 )}
                             </div>
 
                             <div className="flex justify-between items-center mb-3">
-                                <h4 className={`text-xs font-bold flex items-center ${titleClass}`}>
+                                <h4 className={`text-[11px] font-semibold flex items-center ${titleClass}`}>
                                     {isFirstCard && <i className="fas fa-crown mr-1.5 opacity-70"></i>}
                                     {card.title}
                                 </h4>
@@ -599,42 +599,42 @@ function CalculadoraBanner() {
 
     return (
         <div className="bg-white dark:bg-darkCard p-6 rounded border border-gray-200 dark:border-darkBorder">
-            <h3 className="text-lg font-bold dark:text-white mb-4">Calculadora de Banner / Lona</h3>
+            <h3 className="text-lg font-semibold dark:text-white mb-4">Calculadora de Banner / Lona</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                 <div>
-                    <label className="block text-xs font-bold text-gray-500 mb-1">Largura (m)</label>
-                    <input type="text" value={largura} onChange={e => setLargura(e.target.value)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" placeholder="Ex: 1,50" />
+                    <label className="block text-[11px] font-semibold text-gray-500 mb-1">Largura (m)</label>
+                    <input type="text" value={largura} onChange={e => setLargura(e.target.value)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition" placeholder="Ex: 1,50" />
                 </div>
                 <div>
-                    <label className="block text-xs font-bold text-gray-500 mb-1">Altura (m)</label>
-                    <input type="text" value={altura} onChange={e => setAltura(e.target.value)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" placeholder="Ex: 2,00" />
+                    <label className="block text-[11px] font-semibold text-gray-500 mb-1">Altura (m)</label>
+                    <input type="text" value={altura} onChange={e => setAltura(e.target.value)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition" placeholder="Ex: 2,00" />
                 </div>
                 <div>
-                    <label className="block text-xs font-bold text-gray-500 mb-1">Tipo de Lona</label>
-                    <select value={tipo} onChange={e => setTipo(e.target.value)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition">
+                    <label className="block text-[11px] font-semibold text-gray-500 mb-1">Tipo de Lona</label>
+                    <select value={tipo} onChange={e => setTipo(e.target.value)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition">
                         <option value="simples">Lona 440g Brilho (R$ 90/m²)</option>
                         <option value="laminado">Lona 440g Brilho Laminada (R$ 130/m²)</option>
                     </select>
                 </div>
                 <div>
-                    <label className="block text-xs font-bold text-gray-500 mb-1">Acabamento</label>
-                    <select value={acabamento} onChange={e => setAcabamento(e.target.value)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition">
+                    <label className="block text-[11px] font-semibold text-gray-500 mb-1">Acabamento</label>
+                    <select value={acabamento} onChange={e => setAcabamento(e.target.value)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition">
                         <option value="bastao_corda">Bastão e Corda</option>
                         <option value="ilhos">Ilhós (Argolas de ferro)</option>
                         <option value="sem_acabamento">Sem Acabamento (- R$ 10/m²)</option>
                     </select>
                 </div>
                 <div>
-                    <label className="block text-xs font-bold text-gray-500 mb-1">Prazo de Entrega</label>
-                    <select value={prazo} onChange={e => setPrazo(e.target.value)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition">
+                    <label className="block text-[11px] font-semibold text-gray-500 mb-1">Prazo de Entrega</label>
+                    <select value={prazo} onChange={e => setPrazo(e.target.value)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition">
                         <option value="padrao">Padrão</option>
                         <option value="outro_dia">Para outro dia (+30%)</option>
                         <option value="mesmo_dia">Para o mesmo dia (+60%)</option>
                     </select>
                 </div>
                 <div>
-                    <label className="block text-xs font-bold text-gray-500 mb-1">Quantidade</label>
-                    <input type="number" min="1" value={quantidade} onChange={e => setQuantidade(parseInt(e.target.value) || 1)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" />
+                    <label className="block text-[11px] font-semibold text-gray-500 mb-1">Quantidade</label>
+                    <input type="number" min="1" value={quantidade} onChange={e => setQuantidade(parseInt(e.target.value) || 1)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition" />
                 </div>
             </div>
             
@@ -757,19 +757,19 @@ function CalculadoraAdesivo() {
 
     return (
         <div className="bg-white dark:bg-darkCard p-6 rounded border border-gray-200 dark:border-darkBorder">
-            <h3 className="text-lg font-bold dark:text-white mb-4">Calculadora de Adesivos (Vinil)</h3>
+            <h3 className="text-lg font-semibold dark:text-white mb-4">Calculadora de Adesivos (Vinil)</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                 <div>
-                    <label className="block text-xs font-bold text-gray-500 mb-1">Largura Unitária (cm)</label>
-                    <input type="text" value={largura} onChange={e => setLargura(e.target.value)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" placeholder="Ex: 5" />
+                    <label className="block text-[11px] font-semibold text-gray-500 mb-1">Largura Unitária (cm)</label>
+                    <input type="text" value={largura} onChange={e => setLargura(e.target.value)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition" placeholder="Ex: 5" />
                 </div>
                 <div>
-                    <label className="block text-xs font-bold text-gray-500 mb-1">Altura Unitária (cm)</label>
-                    <input type="text" value={altura} onChange={e => setAltura(e.target.value)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" placeholder="Ex: 5" />
+                    <label className="block text-[11px] font-semibold text-gray-500 mb-1">Altura Unitária (cm)</label>
+                    <input type="text" value={altura} onChange={e => setAltura(e.target.value)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition" placeholder="Ex: 5" />
                 </div>
                 <div>
-                    <label className="block text-xs font-bold text-gray-500 mb-1">Tipo de Adesivo</label>
-                    <select value={tipo} onChange={e => setTipo(e.target.value)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition">
+                    <label className="block text-[11px] font-semibold text-gray-500 mb-1">Tipo de Adesivo</label>
+                    <select value={tipo} onChange={e => setTipo(e.target.value)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition">
                         <option value="vinil_branco">Vinil Branco Brilho (R$ 90/m²)</option>
                         <option value="vinil_fosco">Vinil Branco Fosco (R$ 90/m²)</option>
                         <option value="vinil_transparente">Vinil Transparente (R$ 115/m²)</option>
@@ -778,8 +778,8 @@ function CalculadoraAdesivo() {
                     </select>
                 </div>
                 <div>
-                    <label className="block text-xs font-bold text-gray-500 mb-1">Quantidade</label>
-                    <input type="number" min="1" value={quantidade} onChange={e => setQuantidade(e.target.value)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" />
+                    <label className="block text-[11px] font-semibold text-gray-500 mb-1">Quantidade</label>
+                    <input type="number" min="1" value={quantidade} onChange={e => setQuantidade(e.target.value)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition" />
                 </div>
             </div>
 
@@ -828,29 +828,29 @@ function CalculadoraCasamento() {
 
     return (
         <div className="bg-white dark:bg-darkCard p-6 rounded border border-gray-200 dark:border-darkBorder">
-            <h3 className="text-lg font-bold dark:text-white mb-4">Calculadora de Papelaria de Casamento</h3>
+            <h3 className="text-lg font-semibold dark:text-white mb-4">Calculadora de Papelaria de Casamento</h3>
             
             <div className="space-y-4 mb-6">
                 {itens.map((item, index) => (
                     <div key={item.id} className="flex gap-4 items-end bg-gray-50 dark:bg-darkElevated p-3 rounded border border-gray-100 dark:border-darkBorder">
                         <div className="flex-1">
-                            <label className="block text-[10px] uppercase font-bold text-gray-500 mb-1">Item {index + 1}</label>
-                            <input type="text" value={item.nome} onChange={e => atualizarItem(item.id, 'nome', e.target.value)} placeholder="Ex: Menu, Lágrimas de Alegria..." className="w-full bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" />
+                            <label className="block text-[10px] uppercase font-semibold text-gray-500 mb-1">Item {index + 1}</label>
+                            <input type="text" value={item.nome} onChange={e => atualizarItem(item.id, 'nome', e.target.value)} placeholder="Ex: Menu, Lágrimas de Alegria..." className="w-full bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition" />
                         </div>
                         <div className="w-24">
-                            <label className="block text-[10px] uppercase font-bold text-gray-500 mb-1">Qtd</label>
-                            <input type="number" min="1" value={item.quantidade} onChange={e => atualizarItem(item.id, 'quantidade', e.target.value)} className="w-full bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" />
+                            <label className="block text-[10px] uppercase font-semibold text-gray-500 mb-1">Qtd</label>
+                            <input type="number" min="1" value={item.quantidade} onChange={e => atualizarItem(item.id, 'quantidade', e.target.value)} className="w-full bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition" />
                         </div>
                         <div className="w-32">
-                            <label className="block text-[10px] uppercase font-bold text-gray-500 mb-1">Valor Un. (R$)</label>
-                            <input type="text" value={item.valorUnitario} onChange={e => atualizarItem(item.id, 'valorUnitario', e.target.value)} className="w-full bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" placeholder="0,00" />
+                            <label className="block text-[10px] uppercase font-semibold text-gray-500 mb-1">Valor Un. (R$)</label>
+                            <input type="text" value={item.valorUnitario} onChange={e => atualizarItem(item.id, 'valorUnitario', e.target.value)} className="w-full bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition" placeholder="0,00" />
                         </div>
                         <button onClick={() => removerItem(item.id)} className="w-[38px] h-[38px] flex items-center justify-center bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition shrink-0" title="Remover">
                             <Icon name="trash-2" className="w-4 h-4" />
                         </button>
                     </div>
                 ))}
-                <button onClick={adicionarItem} className="text-sm font-semibold text-brand hover:text-brandHover flex items-center gap-1 transition">
+                <button onClick={adicionarItem} className="text-[13px] font-semibold text-brand hover:text-brandHover flex items-center gap-1 transition">
                     <Icon name="plus" className="w-4 h-4" /> Adicionar Outro Item
                 </button>
             </div>
@@ -869,7 +869,7 @@ function CalculadorasAba({ calculadoraAtiva }) {
             <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 mb-6 border-b border-gray-100 dark:border-darkBorder pb-6 shrink-0">
                 <div>
                     <h1 className="text-3xl font-semibold dark:text-white tracking-tight">Calculadoras</h1>
-                    <p className="text-sm text-gray-500 dark:text-[#888888] mt-1">Ferramentas para auxiliar em orçamentos rápidos.</p>
+                    <p className="text-[13px] text-gray-500 dark:text-[#888888] mt-1">Ferramentas para auxiliar em orçamentos rápidos.</p>
                 </div>
             </div>
 
@@ -1629,12 +1629,12 @@ function App() {
         const pct = maxVal > 0 ? (valor / maxVal) * 100 : 0;
         const barColor = customColor || (isCaixa ? 'bg-emerald-500' : 'bg-brand');
         return (
-            <div key={label} className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 text-xs group">
+            <div key={label} className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 text-[11px] group">
                 <span className="w-24 sm:w-32 font-medium truncate text-gray-700 dark:text-gray-300">{label}</span>
                 <div className="flex-1 bg-gray-100 dark:bg-darkElevated h-6 rounded overflow-hidden relative border dark:border-darkBorder">
                     <div className={`${barColor} h-full transition-all duration-500 opacity-80 group-hover:opacity-100`} style={{ width: `${Math.max(pct, 1)}%` }}></div>
                 </div>
-                <span className="w-24 text-right font-bold text-gray-900 dark:text-[#EDEDED]">
+                <span className="w-24 text-right font-semibold text-gray-900 dark:text-[#EDEDED]">
                     R$ {formatarValorFinanceiro(valor)}
                 </span>
             </div>
@@ -1648,20 +1648,20 @@ function App() {
                 <div className="w-full max-w-sm bg-darkCard border border-darkBorder rounded-xl p-8 shadow-2xl flex flex-col gap-6">
                     <div className="text-center flex flex-col items-center">
                         <img src="https://www.berlimgraficarapida.com.br/wp-content/uploads/elementor/thumbs/logosite-rm0erpiqj90gcf7ff4jp8ujys78opflob1b9vn5jjs.png" alt="Berlim Gráfica" className="h-12 object-contain mb-3" />
-                        <p className="text-xs text-gray-400 mt-1">Insira suas credenciais para acessar o ERP</p>
+                        <p className="text-[11px] text-gray-400 mt-1">Insira suas credenciais para acessar o ERP</p>
                     </div>
                     
                     <form onSubmit={efetuarLogin} className="flex flex-col gap-4">
                         <div>
-                            <label className="block text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-1.5">Usuário</label>
-                            <input required type="text" value={loginInput} onChange={e => setLoginInput(e.target.value)} className="w-full bg-black border border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand transition text-white" placeholder="Ex: admin, gi, financeiro..." autoComplete="off" />
+                            <label className="block text-[10px] font-semibold uppercase tracking-wider text-gray-500 mb-1.5">Usuário</label>
+                            <input required type="text" value={loginInput} onChange={e => setLoginInput(e.target.value)} className="w-full bg-black border border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand transition text-white" placeholder="Ex: admin, gi, financeiro..." autoComplete="off" />
                         </div>
                         <div>
-                            <label className="block text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-1.5">Senha</label>
-                            <input required type="password" value={senhaInput} onChange={e => setSenhaInput(e.target.value)} className="w-full bg-black border border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand transition text-white" placeholder="••••••" />
+                            <label className="block text-[10px] font-semibold uppercase tracking-wider text-gray-500 mb-1.5">Senha</label>
+                            <input required type="password" value={senhaInput} onChange={e => setSenhaInput(e.target.value)} className="w-full bg-black border border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand transition text-white" placeholder="••••••" />
                         </div>
-                        {erroLogin && <p className="text-xs text-red-500 font-medium text-center">{erroLogin}</p>}
-                        <button type="submit" className="w-full bg-brand hover:bg-brandHover text-white py-2 rounded text-sm font-bold shadow transition mt-2">
+                        {erroLogin && <p className="text-[11px] text-red-500 font-medium text-center">{erroLogin}</p>}
+                        <button type="submit" className="w-full bg-brand hover:bg-brandHover text-white py-2 rounded text-[13px] font-semibold shadow transition mt-2">
                             Entrar no Sistema
                         </button>
                     </form>
@@ -1689,14 +1689,14 @@ function App() {
                             {modalAlertasAberto && (
                                 <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded-lg shadow-lg py-2 z-50 fade-in">
                                     <div className="px-4 py-2 border-b border-gray-100 dark:border-darkBorder flex justify-between items-center">
-                                        <h3 className="font-bold text-sm dark:text-white">Notificações</h3>
+                                        <h3 className="font-semibold text-[13px] dark:text-white">Notificações</h3>
                                         {alertasNaoLidos.length > 0 && (
-                                            <button onClick={() => setAlertasNaoLidos([])} className="text-xs text-brand hover:underline">Limpar</button>
+                                            <button onClick={() => setAlertasNaoLidos([])} className="text-[11px] text-brand hover:underline">Limpar</button>
                                         )}
                                     </div>
                                     <div className="max-h-60 overflow-y-auto custom-scrollbar">
                                         {alertasNaoLidos.length === 0 ? (
-                                            <p className="px-4 py-4 text-xs text-gray-500 text-center">Nenhuma nova notificação.</p>
+                                            <p className="px-4 py-4 text-[11px] text-gray-500 text-center">Nenhuma nova notificação.</p>
                                         ) : (
                                             alertasNaoLidos.map(alerta => (
                                                 <div key={alerta.id} className="px-4 py-3 hover:bg-gray-50 dark:hover:bg-darkHover border-b border-gray-50 dark:border-darkBorder/50 last:border-0 cursor-pointer" onClick={() => {
@@ -1707,7 +1707,7 @@ function App() {
                                                         if (p) abrirEdicao(p);
                                                     }
                                                 }}>
-                                                    <p className="text-xs text-gray-800 dark:text-[#EDEDED]">{alerta.msg}</p>
+                                                    <p className="text-[11px] text-gray-800 dark:text-[#EDEDED]">{alerta.msg}</p>
                                                     <span className="text-[10px] text-gray-400 mt-1 block">Agora</span>
                                                 </div>
                                             ))
@@ -1727,7 +1727,7 @@ function App() {
                         {/* BLOCO DO USUÁRIO ATUALIZADO */}
                         <div className="flex items-center gap-4 select-none">
                             <div className="flex flex-col text-right">
-                                <span className="text-sm font-extrabold text-gray-900 dark:text-white leading-none">
+                                <span className="text-[13px] font-extrabold text-gray-900 dark:text-white leading-none">
                                     {usuario?.nome}
                                 </span>
                                 <span className="text-[11px] font-medium text-brand italic mt-1 tracking-wide">
@@ -1745,44 +1745,44 @@ function App() {
                 <nav className="bg-brand text-white px-6 shadow-sm z-30 sticky top-[73px]">
                     <div className="flex gap-1 overflow-x-auto custom-scrollbar no-scrollbar-style items-end pt-2">
                         {(usuario?.nivel === 'Administrador' || usuario?.nivel === 'Produção/Atendimento') && (
-                            <a onClick={() => setAbaAtual('producao')} className={`px-5 py-2.5 text-[13px] font-bold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center tracking-wide uppercase ${abaAtual === 'producao' ? 'bg-slate-50 text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
+                            <a onClick={() => setAbaAtual('producao')} className={`px-5 py-2.5 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center tracking-wide uppercase ${abaAtual === 'producao' ? 'bg-slate-50 text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
                                 Produção
                             </a>
                         )}
-                        <a onClick={() => setAbaAtual('baixa')} className={`px-5 py-2.5 text-[13px] font-bold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center tracking-wide uppercase ${abaAtual === 'baixa' ? 'bg-slate-50 text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
+                        <a onClick={() => setAbaAtual('baixa')} className={`px-5 py-2.5 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center tracking-wide uppercase ${abaAtual === 'baixa' ? 'bg-slate-50 text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
                             Baixa de Notas
                         </a>
-                        <a onClick={() => setAbaAtual('calculadoras')} className={`px-5 py-2.5 text-[13px] font-bold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center tracking-wide uppercase ${abaAtual === 'calculadoras' ? 'bg-slate-50 text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
+                        <a onClick={() => setAbaAtual('calculadoras')} className={`px-5 py-2.5 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center tracking-wide uppercase ${abaAtual === 'calculadoras' ? 'bg-slate-50 text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
                             Calculadoras
                         </a>
                         
                         {(usuario?.nivel === 'Administrador' || usuario?.nivel === 'Financeiro') && (
-                            <a onClick={() => setAbaAtual('financeiro')} className={`px-5 py-2.5 text-[13px] font-bold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center tracking-wide uppercase ${abaAtual === 'financeiro' ? 'bg-slate-50 text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
+                            <a onClick={() => setAbaAtual('financeiro')} className={`px-5 py-2.5 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center tracking-wide uppercase ${abaAtual === 'financeiro' ? 'bg-slate-50 text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
                                 Financeiro
                             </a>
                         )}
                         
                         {(usuario?.nivel === 'Administrador' || usuario?.nivel === 'Financeiro' || usuario?.nivel === 'Produção/Atendimento') && (
-                            <a onClick={() => setAbaAtual('notas_fiscais')} className={`px-5 py-2.5 text-[13px] font-bold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center gap-2 tracking-wide uppercase ${abaAtual === 'notas_fiscais' ? 'bg-slate-50 text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
+                            <a onClick={() => setAbaAtual('notas_fiscais')} className={`px-5 py-2.5 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center gap-2 tracking-wide uppercase ${abaAtual === 'notas_fiscais' ? 'bg-slate-50 text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
                                 Notas Fiscais
                                 {notasFiscais.some(n => !n.concluido) && <span className={`w-2 h-2 rounded-full ${abaAtual === 'notas_fiscais' ? 'bg-emerald-500' : 'bg-white'} shadow`}></span>}
                             </a>
                         )}
                         
                         {isAdmin && (
-                            <a onClick={() => setAbaAtual('produtos')} className={`px-5 py-2.5 text-[13px] font-bold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center tracking-wide uppercase ${abaAtual === 'produtos' ? 'bg-slate-50 text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
+                            <a onClick={() => setAbaAtual('produtos')} className={`px-5 py-2.5 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center tracking-wide uppercase ${abaAtual === 'produtos' ? 'bg-slate-50 text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
                                 Catálogo
                             </a>
                         )}
                         
                         {(usuario?.nivel === 'Administrador' || usuario?.nivel === 'Produção/Atendimento') && (
-                            <a onClick={() => setAbaAtual('clientes')} className={`px-5 py-2.5 text-[13px] font-bold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center tracking-wide uppercase ${abaAtual === 'clientes' ? 'bg-slate-50 text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
+                            <a onClick={() => setAbaAtual('clientes')} className={`px-5 py-2.5 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center tracking-wide uppercase ${abaAtual === 'clientes' ? 'bg-slate-50 text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
                                 Clientes
                             </a>
                         )}
                         
                         {isAdmin && (
-                            <a onClick={() => setAbaAtual('usuarios')} className={`px-5 py-2.5 text-[13px] font-bold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center tracking-wide uppercase ${abaAtual === 'usuarios' ? 'bg-slate-50 text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
+                            <a onClick={() => setAbaAtual('usuarios')} className={`px-5 py-2.5 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center tracking-wide uppercase ${abaAtual === 'usuarios' ? 'bg-slate-50 text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
                                 Usuários
                             </a>
                         )}
@@ -1792,26 +1792,26 @@ function App() {
                 {/* TIER 3: Submenus */}
                 {abaAtual === 'financeiro' && (
                     <div className="bg-slate-50 dark:bg-darkBg border-b border-gray-200 dark:border-darkBorder px-6 flex gap-6 z-20 overflow-x-auto no-scrollbar-style sticky top-[125px]">
-                        <button onClick={() => setAbaFinanceiro('geral')} className={`py-3 text-[13px] font-bold border-b-[3px] transition whitespace-nowrap uppercase tracking-wider ${abaFinanceiro === 'geral' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}>Visão Geral</button>
-                        <button onClick={() => setAbaFinanceiro('vendas_produto')} className={`py-3 text-[13px] font-bold border-b-[3px] transition whitespace-nowrap uppercase tracking-wider ${abaFinanceiro === 'vendas_produto' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}>Vendas por Produto</button>
-                        <button onClick={() => setAbaFinanceiro('contas_pagar')} className={`py-3 text-[13px] font-bold border-b-[3px] transition whitespace-nowrap uppercase tracking-wider ${abaFinanceiro === 'contas_pagar' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}>Contas a Pagar</button>
+                        <button onClick={() => setAbaFinanceiro('geral')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitespace-nowrap uppercase tracking-wider ${abaFinanceiro === 'geral' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}>Visão Geral</button>
+                        <button onClick={() => setAbaFinanceiro('vendas_produto')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitespace-nowrap uppercase tracking-wider ${abaFinanceiro === 'vendas_produto' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}>Vendas por Produto</button>
+                        <button onClick={() => setAbaFinanceiro('contas_pagar')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitespace-nowrap uppercase tracking-wider ${abaFinanceiro === 'contas_pagar' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}>Contas a Pagar</button>
                     </div>
                 )}
                 {abaAtual === 'calculadoras' && (
                     <div className="bg-slate-50 dark:bg-darkBg border-b border-gray-200 dark:border-darkBorder px-6 flex gap-6 z-20 overflow-x-auto no-scrollbar-style sticky top-[125px]">
-                        <button onClick={() => setCalculadoraAtiva('banner')} className={`py-3 text-[13px] font-bold border-b-[3px] transition whitespace-nowrap uppercase tracking-wider ${calculadoraAtiva === 'banner' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}>Banner / Lona</button>
-                        <button onClick={() => setCalculadoraAtiva('adesivo')} className={`py-3 text-[13px] font-bold border-b-[3px] transition whitespace-nowrap uppercase tracking-wider ${calculadoraAtiva === 'adesivo' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}>Adesivos (Vinil)</button>
-                        <button onClick={() => setCalculadoraAtiva('casamento')} className={`py-3 text-[13px] font-bold border-b-[3px] transition whitespace-nowrap uppercase tracking-wider ${calculadoraAtiva === 'casamento' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}>Papelaria Casamento</button>
+                        <button onClick={() => setCalculadoraAtiva('banner')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitespace-nowrap uppercase tracking-wider ${calculadoraAtiva === 'banner' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}>Banner / Lona</button>
+                        <button onClick={() => setCalculadoraAtiva('adesivo')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitespace-nowrap uppercase tracking-wider ${calculadoraAtiva === 'adesivo' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}>Adesivos (Vinil)</button>
+                        <button onClick={() => setCalculadoraAtiva('casamento')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitespace-nowrap uppercase tracking-wider ${calculadoraAtiva === 'casamento' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}>Papelaria Casamento</button>
                         {/* Se tiver mais calculadoras, elas aparecem aqui */}
                     </div>
                 )}
                 {abaAtual === 'notas_fiscais' && (
                     <div className="bg-slate-50 dark:bg-darkBg border-b border-gray-200 dark:border-darkBorder px-6 flex gap-6 z-20 overflow-x-auto no-scrollbar-style sticky top-[125px]">
-                        <button onClick={() => { setFiltroNotas('pendentes'); setPaginaNotasFiscais(1); }} className={`py-3 text-[13px] font-bold border-b-[3px] transition whitespace-nowrap flex items-center gap-2 uppercase tracking-wider ${filtroNotas === 'pendentes' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}>
+                        <button onClick={() => { setFiltroNotas('pendentes'); setPaginaNotasFiscais(1); }} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitespace-nowrap flex items-center gap-2 uppercase tracking-wider ${filtroNotas === 'pendentes' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}>
                             Pendentes
                             {notasFiscais.some(n => !n.concluido) && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>}
                         </button>
-                        <button onClick={() => { setFiltroNotas('concluidas'); setPaginaNotasFiscais(1); }} className={`py-3 text-[13px] font-bold border-b-[3px] transition whitespace-nowrap uppercase tracking-wider ${filtroNotas === 'concluidas' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}>Concluídas</button>
+                        <button onClick={() => { setFiltroNotas('concluidas'); setPaginaNotasFiscais(1); }} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitespace-nowrap uppercase tracking-wider ${filtroNotas === 'concluidas' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}>Concluídas</button>
                     </div>
                 )}
 
@@ -1820,17 +1820,17 @@ function App() {
                         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 mb-6 border-b border-gray-100 dark:border-darkBorder pb-6 shrink-0">
                             <div>
                                 <h1 className="text-3xl font-semibold dark:text-white tracking-tight">Produção</h1>
-                                <p className="text-sm text-gray-500 dark:text-[#888888] mt-1">Gerencie a esteira de pedidos ativos.</p>
+                                <p className="text-[13px] text-gray-500 dark:text-[#888888] mt-1">Gerencie a esteira de pedidos ativos.</p>
                             </div>
                             <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
                                 <div className="relative flex-1 min-w-[300px]">
                                     <Icon name="search" className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
-                                    <input type="text" value={buscaProducaoText} onChange={e => setBuscaProducaoText(e.target.value)} placeholder="Pesquisar por cliente, OS ou responsável..." className="w-full bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-md pl-9 pr-3 py-2 text-sm outline-none focus:border-brand transition dark:text-[#EDEDED]" />
+                                    <input type="text" value={buscaProducaoText} onChange={e => setBuscaProducaoText(e.target.value)} placeholder="Pesquisar por cliente, OS ou responsável..." className="w-full bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-md pl-9 pr-3 py-2 text-[13px] outline-none focus:border-brand transition dark:text-[#EDEDED]" />
                                 </div>
                                 {buscaProducaoText && (
                                     <button type="button" onClick={() => setBuscaProducaoText('')} className="w-[38px] h-[38px] flex items-center justify-center bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-md hover:bg-gray-100 dark:hover:bg-darkElevated transition text-gray-400 hover:text-brand" title="Limpar Busca"><Icon name="x" className="w-4 h-4" /></button>
                                 )}
-                                <button onClick={() => { setPedidoEmEdicao(null); setModalAberto(true); }} className="bg-brand hover:bg-brandHover text-white px-4 py-2 text-sm rounded-md font-bold shadow-sm transition flex items-center gap-2"><Icon name="plus" /> Nova O.S.</button>
+                                <button onClick={() => { setPedidoEmEdicao(null); setModalAberto(true); }} className="bg-brand hover:bg-brandHover text-white px-4 py-2 text-[13px] rounded-md font-semibold shadow-sm transition flex items-center gap-2"><Icon name="plus" /> Nova O.S.</button>
                             </div>
                         </div>
 
@@ -1838,7 +1838,7 @@ function App() {
                             <div className="overflow-auto custom-scrollbar flex-1">
                                 <table className="w-full text-left border-collapse whitespace-nowrap">
                                     <thead className="sticky top-0 z-10 bg-gray-50/50 dark:bg-darkHover/50">
-                                        <tr className="border-b border-gray-200 dark:border-darkBorder text-sm font-semibold text-gray-500 dark:text-gray-400 tracking-wide uppercase text-center">
+                                        <tr className="border-b border-gray-200 dark:border-darkBorder text-[13px] font-semibold text-gray-500 dark:text-gray-400 tracking-wide uppercase text-center">
                                             <th className="px-6 py-4 w-24">ID</th>
                                             <th className="px-6 py-4 w-32">Prazo</th>
                                             <th className="px-6 py-4 w-32">Resp.</th>
@@ -1868,15 +1868,15 @@ function App() {
                                                 return (
                                                     <React.Fragment key={status}>
                                                         <tr className="bg-gray-50/50 dark:bg-darkElevated/40 select-none">
-                                                            <td colSpan="9" className={`px-4 py-2 border-y border-gray-200 dark:border-darkBorder font-bold tracking-wide uppercase text-[10px] bg-gray-100/50 dark:bg-darkHover/40 ${obterCorStatus(status)}`}>
+                                                            <td colSpan="9" className={`px-4 py-2 border-y border-gray-200 dark:border-darkBorder font-semibold tracking-wide uppercase text-[10px] bg-gray-100/50 dark:bg-darkHover/40 ${obterCorStatus(status)}`}>
                                                                 {status} — <span className="text-gray-400 dark:text-gray-500">{pedidosDoStatus.length} {pedidosDoStatus.length === 1 ? 'pedido' : 'pedidos'}</span>
                                                             </td>
                                                         </tr>
                                                         {pedidosDoStatus.map(p => (
-                                                            <tr key={p.id} className="border-b border-gray-100 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover transition group text-sm">
+                                                            <tr key={p.id} className="border-b border-gray-100 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover transition group text-[13px]">
                                                                 <td className="px-4 py-3 font-medium text-gray-400 dark:text-gray-600 text-center"><button type="button" onClick={() => abrirEdicao(p)} className="hover:text-brand transition">#{p.id}</button></td>
-                                                                <td className="px-4 py-3"><CustomDatePicker value={p.prazo || ''} onChange={val => atualizarCampoInline(p.id, 'prazo', val)} placeholder="Definir prazo..." className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-2.5 py-1.5 text-xs outline-none hover:border-brand transition text-gray-700 dark:text-[#EDEDED]" /></td>
-                                                                <td className="px-4 py-3"><MultiSelectDropdown value={p.responsavel} options={RESPONSAVEIS} onChange={(val) => atualizarCampoInline(p.id, 'responsavel', val)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-2.5 py-1.5 text-xs outline-none hover:border-brand" /></td>
+                                                                <td className="px-4 py-3"><CustomDatePicker value={p.prazo || ''} onChange={val => atualizarCampoInline(p.id, 'prazo', val)} placeholder="Definir prazo..." className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-2.5 py-1.5 text-[11px] outline-none hover:border-brand transition text-gray-700 dark:text-[#EDEDED]" /></td>
+                                                                <td className="px-4 py-3"><MultiSelectDropdown value={p.responsavel} options={RESPONSAVEIS} onChange={(val) => atualizarCampoInline(p.id, 'responsavel', val)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-2.5 py-1.5 text-[11px] outline-none hover:border-brand" /></td>
                                                                 <td className={`px-4 py-3 font-semibold truncate max-w-[12rem] ${isClienteProblema(p.cliente) ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-white'}`}>
                                                                     <div className="flex items-center gap-1.5">{p.cliente} {isClienteProblema(p.cliente) && <Icon name="alert-triangle" className="w-3.5 h-3.5 text-red-500 shrink-0" title="Cliente Problema" />}</div>
                                                                 </td>
@@ -1894,10 +1894,10 @@ function App() {
                                                                         </button>
                                                                     </div>
                                                                 </td>
-                                                                <td className="px-4 py-3"><InlineDropdown value={p.status} options={opcoesStatusPermitidas} onChange={(val) => atualizarCampoInline(p.id, 'status', val)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-2.5 py-1.5 text-xs outline-none hover:border-brand" /></td>
+                                                                <td className="px-4 py-3"><InlineDropdown value={p.status} options={opcoesStatusPermitidas} onChange={(val) => atualizarCampoInline(p.id, 'status', val)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-2.5 py-1.5 text-[11px] outline-none hover:border-brand" /></td>
                                                                 <td className="px-4 py-3 align-middle">
                                                                     <div className="flex items-center justify-center min-h-[32px]">
-                                                                        <span className="text-[11px] font-bold px-2 py-1 bg-gray-100 dark:bg-darkElevated text-gray-700 dark:text-[#EDEDED] rounded border border-gray-200 dark:border-darkBorder truncate max-w-[150px] inline-block" title={p.local_producao || 'Berlim'}>{p.local_producao || 'Berlim'}</span>
+                                                                        <span className="text-[11px] font-semibold px-2 py-1 bg-gray-100 dark:bg-darkElevated text-gray-700 dark:text-[#EDEDED] rounded border border-gray-200 dark:border-darkBorder truncate max-w-[150px] inline-block" title={p.local_producao || 'Berlim'}>{p.local_producao || 'Berlim'}</span>
                                                                     </div>
                                                                 </td>
                                                                 <td className="px-4 py-3 text-right">
@@ -1923,20 +1923,20 @@ function App() {
                         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 mb-6 border-b border-gray-100 dark:border-darkBorder pb-6">
                             <div>
                                 <h1 className="text-3xl font-semibold dark:text-white tracking-tight">Histórico de Notas</h1>
-                                <p className="text-sm text-gray-500 dark:text-[#888888] mt-1">Busque ordens e filtre por período.</p>
+                                <p className="text-[13px] text-gray-500 dark:text-[#888888] mt-1">Busque ordens e filtre por período.</p>
                             </div>
                             <div className="flex flex-wrap items-end gap-3 w-full lg:w-auto">
                                 <div className="relative flex-1 min-w-[200px]">
                                     <Icon name="search" className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
-                                    <input type="text" value={buscaHistoricoText} onChange={e => setBuscaHistoricoText(e.target.value)} placeholder="Buscar cliente ou OS..." className="w-full bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-md pl-9 pr-3 py-2 text-sm outline-none focus:border-brand transition dark:text-[#EDEDED]" />
+                                    <input type="text" value={buscaHistoricoText} onChange={e => setBuscaHistoricoText(e.target.value)} placeholder="Buscar cliente ou OS..." className="w-full bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-md pl-9 pr-3 py-2 text-[13px] outline-none focus:border-brand transition dark:text-[#EDEDED]" />
                                 </div>
                                 <div className="flex flex-col w-36">
-                                    <span className="text-[10px] font-bold text-gray-500 dark:text-[#888888] uppercase mb-1">De:</span>
-                                    <CustomDatePicker value={dataFiltroInicio} onChange={setDataFiltroInicio} placeholder="Início" className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-md px-3 py-2 text-sm outline-none hover:border-brand transition" />
+                                    <span className="text-[10px] font-semibold text-gray-500 dark:text-[#888888] uppercase mb-1">De:</span>
+                                    <CustomDatePicker value={dataFiltroInicio} onChange={setDataFiltroInicio} placeholder="Início" className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-md px-3 py-2 text-[13px] outline-none hover:border-brand transition" />
                                 </div>
                                 <div className="flex flex-col w-36">
-                                    <span className="text-[10px] font-bold text-gray-500 dark:text-[#888888] uppercase mb-1">Até:</span>
-                                    <CustomDatePicker value={dataFiltroFim} onChange={setDataFiltroFim} placeholder="Fim" className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-md px-3 py-2 text-sm outline-none hover:border-brand transition" />
+                                    <span className="text-[10px] font-semibold text-gray-500 dark:text-[#888888] uppercase mb-1">Até:</span>
+                                    <CustomDatePicker value={dataFiltroFim} onChange={setDataFiltroFim} placeholder="Fim" className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-md px-3 py-2 text-[13px] outline-none hover:border-brand transition" />
                                 </div>
                                 {(dataFiltroInicio || dataFiltroFim || buscaHistoricoText) && (
                                     <button type="button" onClick={() => { setDataFiltroInicio(''); setDataFiltroFim(''); setBuscaHistoricoText(''); }} className="w-[38px] h-[38px] flex items-center justify-center bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-md hover:bg-gray-100 dark:hover:bg-darkElevated transition text-gray-400 hover:text-brand" title="Limpar Filtros"><Icon name="x" className="w-4 h-4" /></button>
@@ -1946,7 +1946,7 @@ function App() {
                         <div className="bg-white dark:bg-darkCard rounded border border-gray-200 dark:border-darkBorder overflow-hidden">
                             <table className="w-full text-left border-collapse">
                                 <thead className="bg-gray-50/50 dark:bg-darkHover/50">
-                                    <tr className="border-b border-gray-200 dark:border-darkBorder text-sm font-semibold text-gray-500 dark:text-gray-400 tracking-wide uppercase">
+                                    <tr className="border-b border-gray-200 dark:border-darkBorder text-[13px] font-semibold text-gray-500 dark:text-gray-400 tracking-wide uppercase">
                                         <th className="px-6 py-4 w-24">OS Nº</th>
                                         {isAdmin && <th className="px-6 py-4 w-48">Criado Por</th>}
                                         <th className="px-6 py-4 w-32">Data</th>
@@ -1964,20 +1964,20 @@ function App() {
                                         const trancado = isOperador && p.status === 'Finalizado';
                                         return (
                                             <tr key={p.id} onClick={() => { if (trancado) return; abrirEdicao(p); }} className={`border-b border-gray-100 dark:border-darkBorder transition ${trancado ? 'opacity-30 bg-[#050505] cursor-not-allowed' : 'cursor-pointer hover:bg-gray-50 dark:hover:bg-darkHover'}`}>
-                                                <td className="px-6 py-4 text-sm font-medium text-gray-500"><span className="flex items-center gap-1.5">{trancado && <Icon name="lock" className="w-3 h-3 text-red-500" />}#{p.id}</span></td>
+                                                <td className="px-6 py-4 text-[13px] font-medium text-gray-500"><span className="flex items-center gap-1.5">{trancado && <Icon name="lock" className="w-3 h-3 text-red-500" />}#{p.id}</span></td>
                                                 {isAdmin && (
                                                     <td className="px-6 py-4">
-                                                        <div className="text-sm font-semibold text-gray-800 dark:text-[#EDEDED]">{p.criado_por || '---'}</div>
-                                                        <div className="text-xs text-gray-400 mt-0.5">{formatarDataExibicao(p.data_pedido)}</div>
+                                                        <div className="text-[13px] font-semibold text-gray-800 dark:text-[#EDEDED]">{p.criado_por || '---'}</div>
+                                                        <div className="text-[11px] text-gray-400 mt-0.5">{formatarDataExibicao(p.data_pedido)}</div>
                                                     </td>
                                                 )}
-                                                <td className="px-6 py-4 text-sm text-gray-600 dark:text-[#A1A1AA]">{formatarDataExibicao(p.prazo || p.data_pedido)}</td>
-                                                <td className={`px-6 py-4 font-semibold text-sm ${isClienteProblema(p.cliente) ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-[#EDEDED]'}`}>
+                                                <td className="px-6 py-4 text-[13px] text-gray-600 dark:text-[#A1A1AA]">{formatarDataExibicao(p.prazo || p.data_pedido)}</td>
+                                                <td className={`px-6 py-4 font-semibold text-[13px] ${isClienteProblema(p.cliente) ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-[#EDEDED]'}`}>
                                                     <div className="flex items-center gap-1.5">{p.cliente} {isClienteProblema(p.cliente) && <Icon name="alert-triangle" className="w-4 h-4 text-red-500 shrink-0" title="Cliente Problema" />}</div>
                                                 </td>
-                                                <td className="px-6 py-4 text-sm text-gray-600 dark:text-[#A1A1AA] truncate max-w-xs">{obterResumoServicos(p.servico)}</td>
-                                                <td className="px-6 py-4"><span className={`whitespace-nowrap px-2.5 py-1 text-[11px] font-bold rounded border bg-gray-50 border-gray-200 dark:bg-darkElevated dark:border-darkBorder ${obterCorStatus(p.status)}`}>{p.status}</span></td>
-                                                <td className="px-6 py-4 font-bold text-sm text-right text-gray-900 dark:text-[#EDEDED]">R$ {formatarValorFinanceiro(Number(p.valor_total))}</td>
+                                                <td className="px-6 py-4 text-[13px] text-gray-600 dark:text-[#A1A1AA] truncate max-w-xs">{obterResumoServicos(p.servico)}</td>
+                                                <td className="px-6 py-4"><span className={`whitespace-nowrap px-2.5 py-1 text-[11px] font-semibold rounded border bg-gray-50 border-gray-200 dark:bg-darkElevated dark:border-darkBorder ${obterCorStatus(p.status)}`}>{p.status}</span></td>
+                                                <td className="px-6 py-4 font-semibold text-[13px] text-right text-gray-900 dark:text-[#EDEDED]">R$ {formatarValorFinanceiro(Number(p.valor_total))}</td>
                                                 <td className="px-6 py-4 text-center"><button type="button" onClick={(e) => { e.stopPropagation(); imprimirOS(p); }} className="p-2 text-orange-500 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/30 transition rounded inline-block" title="Imprimir O.S."><Icon name="printer" className="w-5 h-5 inline-block" /></button></td>
                                             </tr>
                                         )
@@ -1986,19 +1986,19 @@ function App() {
                             </table>
                             {pedidosHistoricoFiltrados.length > itensPorPagina && (
                                 <div className="flex justify-between items-center p-4 border-t border-gray-200 dark:border-darkBorder bg-white dark:bg-darkCard rounded-b-xl">
-                                    <span className="text-sm text-gray-500">
+                                    <span className="text-[13px] text-gray-500">
                                         Mostrando {((paginaHistorico - 1) * itensPorPagina) + 1} a {Math.min(paginaHistorico * itensPorPagina, pedidosHistoricoFiltrados.length)} de {pedidosHistoricoFiltrados.length}
                                     </span>
                                     <div className="flex gap-2">
                                         <button 
                                             onClick={() => setPaginaHistorico(p => Math.max(1, p - 1))}
                                             disabled={paginaHistorico === 1}
-                                            className="px-3 py-1 text-sm font-medium bg-gray-100 dark:bg-darkElevated text-gray-700 dark:text-gray-300 rounded hover:bg-gray-200 dark:hover:bg-darkHover disabled:opacity-50 disabled:cursor-not-allowed transition"
+                                            className="px-3 py-1 text-[13px] font-medium bg-gray-100 dark:bg-darkElevated text-gray-700 dark:text-gray-300 rounded hover:bg-gray-200 dark:hover:bg-darkHover disabled:opacity-50 disabled:cursor-not-allowed transition"
                                         >Anterior</button>
                                         <button 
                                             onClick={() => setPaginaHistorico(p => Math.min(Math.ceil(pedidosHistoricoFiltrados.length / itensPorPagina), p + 1))}
                                             disabled={paginaHistorico === Math.ceil(pedidosHistoricoFiltrados.length / itensPorPagina)}
-                                            className="px-3 py-1 text-sm font-medium bg-gray-100 dark:bg-darkElevated text-gray-700 dark:text-gray-300 rounded hover:bg-gray-200 dark:hover:bg-darkHover disabled:opacity-50 disabled:cursor-not-allowed transition"
+                                            className="px-3 py-1 text-[13px] font-medium bg-gray-100 dark:bg-darkElevated text-gray-700 dark:text-gray-300 rounded hover:bg-gray-200 dark:hover:bg-darkHover disabled:opacity-50 disabled:cursor-not-allowed transition"
                                         >Próxima</button>
                                     </div>
                                 </div>
@@ -2012,16 +2012,16 @@ function App() {
                         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 border-b border-gray-100 dark:border-darkBorder pb-6 shrink-0">
                             <div>
                                 <h1 className="text-3xl font-semibold dark:text-white tracking-tight">Dashboard Financeiro</h1>
-                                <p className="text-sm text-gray-500 dark:text-[#888888] mt-1">Análise de Receitas, Centros de Custo e Performance.</p>
+                                <p className="text-[13px] text-gray-500 dark:text-[#888888] mt-1">Análise de Receitas, Centros de Custo e Performance.</p>
                             </div>
                             <div className="flex flex-wrap items-end gap-3 w-full lg:w-auto">
                                 <div className="flex flex-col w-36">
-                                    <span className="text-[10px] font-bold text-gray-500 dark:text-[#888888] uppercase mb-1">Período De:</span>
-                                    <CustomDatePicker value={dataFiltroFinInicio} onChange={setDataFiltroFinInicio} placeholder="Início" className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-md px-3 py-2 text-sm outline-none hover:border-brand transition" />
+                                    <span className="text-[10px] font-semibold text-gray-500 dark:text-[#888888] uppercase mb-1">Período De:</span>
+                                    <CustomDatePicker value={dataFiltroFinInicio} onChange={setDataFiltroFinInicio} placeholder="Início" className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-md px-3 py-2 text-[13px] outline-none hover:border-brand transition" />
                                 </div>
                                 <div className="flex flex-col w-36">
-                                    <span className="text-[10px] font-bold text-gray-500 dark:text-[#888888] uppercase mb-1">Período Até:</span>
-                                    <CustomDatePicker value={dataFiltroFinFim} onChange={setDataFiltroFinFim} placeholder="Fim" className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-md px-3 py-2 text-sm outline-none hover:border-brand transition" />
+                                    <span className="text-[10px] font-semibold text-gray-500 dark:text-[#888888] uppercase mb-1">Período Até:</span>
+                                    <CustomDatePicker value={dataFiltroFinFim} onChange={setDataFiltroFinFim} placeholder="Fim" className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-md px-3 py-2 text-[13px] outline-none hover:border-brand transition" />
                                 </div>
                                 {(dataFiltroFinInicio || dataFiltroFinFim) && (
                                     <button type="button" onClick={() => { setDataFiltroFinInicio(''); setDataFiltroFinFim(''); }} className="w-[38px] h-[38px] flex items-center justify-center bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-md hover:bg-gray-100 dark:hover:bg-darkElevated transition text-gray-400 hover:text-brand" title="Limpar Filtros"><Icon name="x" className="w-4 h-4" /></button>
@@ -2044,7 +2044,7 @@ function App() {
                                         link.click();
                                         document.body.removeChild(link);
                                     }}
-                                    className="bg-brand hover:bg-brandHover text-white h-[38px] px-4 text-sm rounded-md font-bold shadow-sm transition flex items-center gap-2"
+                                    className="bg-brand hover:bg-brandHover text-white h-[38px] px-4 text-[13px] rounded-md font-semibold shadow-sm transition flex items-center gap-2"
                                 >
                                     <Icon name="printer" className="w-4 h-4" /> Exportar CSV
                                 </button>
@@ -2229,15 +2229,15 @@ function App() {
                             const maxInstituicaoMesAtual = Math.max(...rankingInstituicaoMesAtual.map(i => i[1]), 1);
 
                             const renderLayer2 = () => {
-                                if (rankingLocalMesAtual.length === 0) return <p className="text-xs text-gray-500 italic">Nenhum local registrado no mês.</p>;
+                                if (rankingLocalMesAtual.length === 0) return <p className="text-[11px] text-gray-500 italic">Nenhum local registrado no mês.</p>;
                                 return rankingLocalMesAtual.map((loc, index) => renderBarHorizontal(loc[0], loc[1], maxLocalMesAtual, false, colorsLocal[index % colorsLocal.length]));
                             };
                             const renderLayer3 = () => {
-                                if (rankingFormaMesAtual.length === 0) return <p className="text-xs text-gray-500 italic">Nenhum pagamento registrado no mês.</p>;
+                                if (rankingFormaMesAtual.length === 0) return <p className="text-[11px] text-gray-500 italic">Nenhum pagamento registrado no mês.</p>;
                                 return rankingFormaMesAtual.map((f, index) => renderBarHorizontal(f[0], f[1], maxFormaMesAtual, false, colorsForma[index % colorsForma.length]));
                             };
                             const renderLayer4 = () => {
-                                if (rankingInstituicaoMesAtual.length === 0) return <p className="text-xs text-gray-500 italic">Nenhuma instituição no mês.</p>;
+                                if (rankingInstituicaoMesAtual.length === 0) return <p className="text-[11px] text-gray-500 italic">Nenhuma instituição no mês.</p>;
                                 return rankingInstituicaoMesAtual.map((i, index) => renderBarHorizontal(i[0], i[1], maxInstituicaoMesAtual, false, colorsInst[index % colorsInst.length]));
                             };
 
@@ -2259,11 +2259,11 @@ function App() {
                                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                                         <div className="bg-white dark:bg-darkCard p-5 rounded-xl border border-gray-200 dark:border-darkBorder shadow-sm relative overflow-hidden flex flex-col justify-between">
                                             <div>
-                                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">Crescimento (YoY)</span>
+                                                <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider block mb-1">Crescimento (YoY)</span>
                                                 <h2 className="text-xl font-black text-gray-900 dark:text-white">R$ {formatarValorFinanceiro(totalAnoAtual)}</h2>
                                             </div>
                                             <div className="mt-2">
-                                                <div className={`inline-flex items-center gap-1 text-[11px] font-bold px-1.5 py-0.5 rounded ${crescimentoPercentual >= 0 ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-red-50 text-red-600 dark:bg-red-900/30 dark:text-red-400'}`}>
+                                                <div className={`inline-flex items-center gap-1 text-[11px] font-semibold px-1.5 py-0.5 rounded ${crescimentoPercentual >= 0 ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-red-50 text-red-600 dark:bg-red-900/30 dark:text-red-400'}`}>
                                                     <Icon name={crescimentoPercentual >= 0 ? 'trending-up' : 'trending-down'} className="w-3 h-3" />
                                                     {Math.abs(crescimentoPercentual).toFixed(1)}%
                                                 </div>
@@ -2272,7 +2272,7 @@ function App() {
 
                                         <div className="bg-purple-50 dark:bg-purple-900/10 p-5 rounded-xl border border-purple-200 dark:border-purple-900/30 shadow-sm relative overflow-hidden flex flex-col justify-between">
                                             <div>
-                                                <span className="text-[10px] font-bold text-purple-600 dark:text-purple-400 uppercase tracking-wider block mb-1">Vendas Hoje</span>
+                                                <span className="text-[10px] font-semibold text-purple-600 dark:text-purple-400 uppercase tracking-wider block mb-1">Vendas Hoje</span>
                                                 <h2 className="text-2xl font-black text-purple-600 dark:text-purple-400">R$ {formatarValorFinanceiro(totalVendasHoje)}</h2>
                                             </div>
                                             <p className="text-[10px] text-purple-500/70 dark:text-purple-400/70 mt-2 font-medium">Pedidos lançados hoje</p>
@@ -2280,7 +2280,7 @@ function App() {
 
                                         <div className="bg-emerald-50 dark:bg-emerald-900/10 p-5 rounded-xl border border-emerald-200 dark:border-emerald-900/30 shadow-sm flex flex-col justify-between">
                                             <div>
-                                                <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider block mb-1">Total Pago (Recebido)</span>
+                                                <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider block mb-1">Total Pago (Recebido)</span>
                                                 <h2 className="text-2xl font-black text-emerald-600 dark:text-emerald-400">R$ {formatarValorFinanceiro(totalRecebido)}</h2>
                                             </div>
                                             <p className="text-[10px] text-emerald-500/70 dark:text-emerald-400/70 mt-2 font-medium">Já entrou no caixa</p>
@@ -2288,7 +2288,7 @@ function App() {
                                         
                                         <div className="bg-orange-50 dark:bg-orange-900/10 p-5 rounded-xl border border-orange-200 dark:border-orange-900/30 shadow-sm flex flex-col justify-between">
                                             <div>
-                                                <span className="text-[10px] font-bold text-orange-600 dark:text-orange-400 uppercase tracking-wider block mb-1">Saldo Devedor (A Receber)</span>
+                                                <span className="text-[10px] font-semibold text-orange-600 dark:text-orange-400 uppercase tracking-wider block mb-1">Saldo Devedor (A Receber)</span>
                                                 <h2 className="text-2xl font-black text-orange-600 dark:text-orange-400">R$ {formatarValorFinanceiro(totalAReceber)}</h2>
                                             </div>
                                             <p className="text-[10px] text-orange-500/70 dark:text-orange-400/70 mt-2 font-medium">Falta receber</p>
@@ -2296,7 +2296,7 @@ function App() {
                                         
                                         <div className="bg-white dark:bg-darkCard p-5 rounded-xl border border-gray-200 dark:border-darkBorder shadow-sm flex flex-col justify-between">
                                             <div>
-                                                <span className="text-[10px] font-bold text-blue-500 uppercase tracking-wider block mb-1">Ticket Médio</span>
+                                                <span className="text-[10px] font-semibold text-blue-500 uppercase tracking-wider block mb-1">Ticket Médio</span>
                                                 <h2 className="text-2xl font-black text-blue-500">R$ {formatarValorFinanceiro(ticketMedio)}</h2>
                                             </div>
                                             <p className="text-[10px] text-gray-400 mt-2 font-medium">Média por pedido</p>
@@ -2309,7 +2309,7 @@ function App() {
                                             icon="calendar"
                                             description="Evolução e Análise (Anos)"
                                             cards={[
-                                                { title: "Faturamento Histórico", content: anosOrdenados.length === 0 ? <p className="text-xs text-gray-500 italic">Sem dados.</p> : anosOrdenados.map(a => renderBarHorizontal(a.ano, a.bruto, maxBrutoAno, false, 'bg-blue-500')) },
+                                                { title: "Faturamento Histórico", content: anosOrdenados.length === 0 ? <p className="text-[11px] text-gray-500 italic">Sem dados.</p> : anosOrdenados.map(a => renderBarHorizontal(a.ano, a.bruto, maxBrutoAno, false, 'bg-blue-500')) },
                                                 { title: `Local de Produção (${anoAtual})`, content: renderLayer2() },
                                                 { title: `Formas de Pagamento (${anoAtual})`, content: renderLayer3() },
                                                 { title: `Vendas por Instituição (${anoAtual})`, content: renderLayer4() }
@@ -2320,7 +2320,7 @@ function App() {
                                             icon="layout-dashboard"
                                             description="Evolução e Análise (Meses)"
                                             cards={[
-                                                { title: `Faturamento (${anoAtual})`, content: mesesOrdenados.length === 0 ? <p className="text-xs text-gray-500 italic">Sem dados.</p> : mesesOrdenados.map(m => renderBarHorizontal(formatarMesAno(m.mesAno), m.bruto, maxBrutoMes, false, 'bg-emerald-500')) },
+                                                { title: `Faturamento (${anoAtual})`, content: mesesOrdenados.length === 0 ? <p className="text-[11px] text-gray-500 italic">Sem dados.</p> : mesesOrdenados.map(m => renderBarHorizontal(formatarMesAno(m.mesAno), m.bruto, maxBrutoMes, false, 'bg-emerald-500')) },
                                                 { title: `Local de Produção (${nomeMesAtual})`, content: renderLayer2() },
                                                 { title: `Formas de Pagamento (${nomeMesAtual})`, content: renderLayer3() },
                                                 { title: `Vendas por Instituição (${nomeMesAtual})`, content: renderLayer4() }
@@ -2331,7 +2331,7 @@ function App() {
                                             icon="list"
                                             description="Evolução e Análise (Dias)"
                                             cards={[
-                                                { title: `Faturamento (${nomeMesAtual})`, content: diasOrdenados.length === 0 ? <p className="text-xs text-gray-500 italic">Sem dados.</p> : diasOrdenados.map(d => renderBarHorizontal(formatarDataExibicao(d.dia).substring(0,5), d.bruto, maxBrutoDia, false, 'bg-purple-500')) },
+                                                { title: `Faturamento (${nomeMesAtual})`, content: diasOrdenados.length === 0 ? <p className="text-[11px] text-gray-500 italic">Sem dados.</p> : diasOrdenados.map(d => renderBarHorizontal(formatarDataExibicao(d.dia).substring(0,5), d.bruto, maxBrutoDia, false, 'bg-purple-500')) },
                                                 { title: `Local de Produção (${diaAtual})`, content: renderLayer2() },
                                                 { title: `Formas de Pagamento (${diaAtual})`, content: renderLayer3() },
                                                 { title: `Vendas por Instituição (${diaAtual})`, content: renderLayer4() }
@@ -2342,11 +2342,11 @@ function App() {
                                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                                         <div className="bg-white dark:bg-darkCard p-6 rounded-xl border border-gray-200 dark:border-darkBorder flex flex-col gap-4">
                                             <div>
-                                                <h3 className="font-bold text-sm text-gray-800 dark:text-white uppercase tracking-wider">Receitas por Local (Geral)</h3>
-                                                <p className="text-xs text-gray-400 mt-0.5">Rentabilidade total no período filtrado.</p>
+                                                <h3 className="font-semibold text-[13px] text-gray-800 dark:text-white uppercase tracking-wider">Receitas por Local (Geral)</h3>
+                                                <p className="text-[11px] text-gray-400 mt-0.5">Rentabilidade total no período filtrado.</p>
                                             </div>
                                             <div className="flex flex-col gap-3 mt-2 overflow-y-auto max-h-64 custom-scrollbar pr-2">
-                                                {rankingLocal.length === 0 ? <p className="text-xs text-gray-500 italic">Nenhum local registrado.</p> :
+                                                {rankingLocal.length === 0 ? <p className="text-[11px] text-gray-500 italic">Nenhum local registrado.</p> :
                                                     rankingLocal.map((loc, index) => renderBarHorizontal(loc[0], loc[1], maxLocal, false, colorsLocal[index % colorsLocal.length]))
                                                 }
                                             </div>
@@ -2354,11 +2354,11 @@ function App() {
 
                                         <div className="bg-white dark:bg-darkCard p-6 rounded-xl border border-gray-200 dark:border-darkBorder flex flex-col gap-4">
                                             <div>
-                                                <h3 className="font-bold text-sm text-gray-800 dark:text-white uppercase tracking-wider">Formas de Pagamento (Geral)</h3>
-                                                <p className="text-xs text-gray-400 mt-0.5">Como os clientes pagaram no período filtrado.</p>
+                                                <h3 className="font-semibold text-[13px] text-gray-800 dark:text-white uppercase tracking-wider">Formas de Pagamento (Geral)</h3>
+                                                <p className="text-[11px] text-gray-400 mt-0.5">Como os clientes pagaram no período filtrado.</p>
                                             </div>
                                             <div className="flex flex-col gap-3 mt-2 overflow-y-auto max-h-64 custom-scrollbar pr-2">
-                                                {rankingForma.length === 0 ? <p className="text-xs text-gray-500 italic">Nenhum pagamento registrado.</p> :
+                                                {rankingForma.length === 0 ? <p className="text-[11px] text-gray-500 italic">Nenhum pagamento registrado.</p> :
                                                     rankingForma.map((f, index) => renderBarHorizontal(f[0], f[1], maxForma, false, colorsForma[index % colorsForma.length]))
                                                 }
                                             </div>
@@ -2366,11 +2366,11 @@ function App() {
 
                                         <div className="bg-white dark:bg-darkCard p-6 rounded-xl border border-gray-200 dark:border-darkBorder flex flex-col gap-4">
                                             <div>
-                                                <h3 className="font-bold text-sm text-gray-800 dark:text-white uppercase tracking-wider">Instituições (Geral)</h3>
-                                                <p className="text-xs text-gray-400 mt-0.5">Volume por conta no período filtrado.</p>
+                                                <h3 className="font-semibold text-[13px] text-gray-800 dark:text-white uppercase tracking-wider">Instituições (Geral)</h3>
+                                                <p className="text-[11px] text-gray-400 mt-0.5">Volume por conta no período filtrado.</p>
                                             </div>
                                             <div className="flex flex-col gap-3 mt-2 overflow-y-auto max-h-64 custom-scrollbar pr-2">
-                                                {rankingInstituicao.length === 0 ? <p className="text-xs text-gray-500 italic">Nenhuma instituição registrada.</p> :
+                                                {rankingInstituicao.length === 0 ? <p className="text-[11px] text-gray-500 italic">Nenhuma instituição registrada.</p> :
                                                     rankingInstituicao.map((i, index) => renderBarHorizontal(i[0], i[1], maxInstituicao, false, colorsInst[index % colorsInst.length]))
                                                 }
                                             </div>
@@ -2383,8 +2383,8 @@ function App() {
                                     {abaFinanceiro === 'vendas_produto' && (
                                         <div className="bg-white dark:bg-darkCard p-6 rounded-xl border border-gray-200 dark:border-darkBorder flex flex-col gap-4 fade-in">
                                             <div>
-                                                <h3 className="font-bold text-sm text-gray-800 dark:text-white uppercase tracking-wider">Vendas por Produto (Catálogo)</h3>
-                                                <p className="text-xs text-gray-400 mt-0.5">Visão expandida de vendas baseadas nos produtos do sistema referentes ao período filtrado.</p>
+                                                <h3 className="font-semibold text-[13px] text-gray-800 dark:text-white uppercase tracking-wider">Vendas por Produto (Catálogo)</h3>
+                                                <p className="text-[11px] text-gray-400 mt-0.5">Visão expandida de vendas baseadas nos produtos do sistema referentes ao período filtrado.</p>
                                             </div>
                                             <div className="flex flex-col gap-3 mt-4">
                                                 {(() => {
@@ -2411,7 +2411,7 @@ function App() {
                                                     const rankingProduto = Object.entries(agrupadoPorProduto).sort((a,b) => b[1] - a[1]);
                                                     const maxProduto = Math.max(...rankingProduto.map(r => r[1]), 1);
                                                     
-                                                    if (rankingProduto.length === 0) return <p className="text-xs text-gray-500 italic">Nenhum produto do catálogo faturado no período.</p>;
+                                                    if (rankingProduto.length === 0) return <p className="text-[11px] text-gray-500 italic">Nenhum produto do catálogo faturado no período.</p>;
                                                     
                                                     const top5Nomes = rankingProduto.slice(0, 5).map(r => r[0]);
                                                     const selecionadosAtuais = produtosSelecionadosGrafico || top5Nomes;
@@ -2475,7 +2475,7 @@ function App() {
                                                                 <>
                                                                     <div className="flex flex-wrap gap-2 mb-6 justify-center px-4">
                                                                         {selecionadosAtuais.map((prod, i) => (
-                                                                            <span key={prod} className="text-[10px] font-bold px-2 py-1 rounded-full flex items-center gap-1.5 bg-gray-50 dark:bg-darkElevated border border-gray-100 dark:border-darkBorder dark:text-gray-200">
+                                                                            <span key={prod} className="text-[10px] font-semibold px-2 py-1 rounded-full flex items-center gap-1.5 bg-gray-50 dark:bg-darkElevated border border-gray-100 dark:border-darkBorder dark:text-gray-200">
                                                                                 <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: hexColors[i % hexColors.length] }}></span>
                                                                                 {prod}
                                                                             </span>
@@ -2487,7 +2487,7 @@ function App() {
                                                                             return (
                                                                                 <g key={f}>
                                                                                     <line x1={padX} y1={y} x2={svgWidth - padX} y2={y} stroke="currentColor" className="text-gray-200/70 dark:text-gray-800/70" strokeDasharray="3 3" />
-                                                                                    <text x={padX - 10} y={y + 4} textAnchor="end" fontSize="11" fill="currentColor" className="text-gray-400 dark:text-gray-500 font-bold">
+                                                                                    <text x={padX - 10} y={y + 4} textAnchor="end" fontSize="11" fill="currentColor" className="text-gray-400 dark:text-gray-500 font-semibold">
                                                                                         R$ {formatarValorFinanceiro(f * (maxYGrafico / 1.1))}
                                                                                     </text>
                                                                                 </g>
@@ -2501,7 +2501,7 @@ function App() {
                                                                                     {i > 0 && i < mesesGrafico.length - 1 && (
                                                                                         <line x1={x} y1={padY} x2={x} y2={svgHeight - padY} stroke="currentColor" className="text-gray-200/50 dark:text-gray-800/50" strokeDasharray="2 4" />
                                                                                     )}
-                                                                                    <text x={x} y={svgHeight} textAnchor="middle" fontSize="11" fill="currentColor" className="text-gray-400 dark:text-gray-500 font-bold">
+                                                                                    <text x={x} y={svgHeight} textAnchor="middle" fontSize="11" fill="currentColor" className="text-gray-400 dark:text-gray-500 font-semibold">
                                                                                         {mes}/{ano.substring(2)}
                                                                                     </text>
                                                                                 </g>
@@ -2530,7 +2530,7 @@ function App() {
                                                                     </svg>
                                                                 </>
                                                             ) : (
-                                                                <div className="text-center py-12 text-gray-400 dark:text-gray-500 text-sm italic font-medium">Nenhum produto selecionado para gerar o gráfico.</div>
+                                                                <div className="text-center py-12 text-gray-400 dark:text-gray-500 text-[13px] italic font-medium">Nenhum produto selecionado para gerar o gráfico.</div>
                                                             )}
                                                         </div>
                                                     );
@@ -2561,7 +2561,7 @@ function App() {
                                                                                     <div className="flex-shrink-0 flex items-center justify-center w-4 h-4 rounded border border-gray-300 dark:border-gray-600 transition-colors" style={{ backgroundColor: colorIndicator, borderColor: isSelected ? colorIndicator : '' }}>
                                                                                         {isSelected && <Icon name="check" className="w-3 h-3 text-white" />}
                                                                                     </div>
-                                                                                    <div className="text-xs font-bold text-gray-700 dark:text-gray-200 truncate" title={r[0]}>{r[0]}</div>
+                                                                                    <div className="text-[11px] font-semibold text-gray-700 dark:text-gray-200 truncate" title={r[0]}>{r[0]}</div>
                                                                                 </div>
                                                                                 <div className="text-right text-[11px] font-black text-gray-900 dark:text-white whitespace-nowrap">R$ {formatarValorFinanceiro(r[1])}</div>
                                                                             </div>
@@ -2583,22 +2583,22 @@ function App() {
                                         <div className="bg-white dark:bg-darkCard p-6 rounded-xl border border-gray-200 dark:border-darkBorder flex flex-col gap-4 fade-in">
                                             <div className="flex justify-between items-center mb-4">
                                                 <div>
-                                                    <h3 className="font-bold text-sm text-gray-800 dark:text-white uppercase tracking-wider">Contas a Pagar</h3>
-                                                    <p className="text-xs text-gray-400 mt-0.5">Gerencie as despesas da empresa.</p>
+                                                    <h3 className="font-semibold text-[13px] text-gray-800 dark:text-white uppercase tracking-wider">Contas a Pagar</h3>
+                                                    <p className="text-[11px] text-gray-400 mt-0.5">Gerencie as despesas da empresa.</p>
                                                 </div>
-                                                <button onClick={() => { setNovaConta({ id: null, descricao: '', valor: '', vencimento: '', status: 'Pendente' }); setModalContaAberto(true); }} className="bg-brand hover:bg-brandHover text-white h-[38px] px-4 text-sm rounded-md font-bold shadow-sm transition flex items-center gap-2">
+                                                <button onClick={() => { setNovaConta({ id: null, descricao: '', valor: '', vencimento: '', status: 'Pendente' }); setModalContaAberto(true); }} className="bg-brand hover:bg-brandHover text-white h-[38px] px-4 text-[13px] rounded-md font-semibold shadow-sm transition flex items-center gap-2">
                                                     <Icon name="plus" className="w-4 h-4" /> Nova Conta
                                                 </button>
                                             </div>
                                             <div className="overflow-x-auto">
-                                                <table className="w-full text-left text-sm text-gray-600 dark:text-[#888888]">
-                                                    <thead className="text-xs uppercase bg-gray-50 dark:bg-darkElevated text-gray-700 dark:text-white">
+                                                <table className="w-full text-left text-[13px] text-gray-600 dark:text-[#888888]">
+                                                    <thead className="text-[11px] uppercase bg-gray-50 dark:bg-darkElevated text-gray-700 dark:text-white">
                                                         <tr>
-                                                            <th className="px-4 py-3 rounded-tl-lg font-bold">Vencimento</th>
-                                                            <th className="px-4 py-3 font-bold">Descrição</th>
-                                                            <th className="px-4 py-3 font-bold">Valor</th>
-                                                            <th className="px-4 py-3 font-bold">Status</th>
-                                                            <th className="px-4 py-3 rounded-tr-lg font-bold text-right">Ações</th>
+                                                            <th className="px-4 py-3 rounded-tl-lg font-semibold">Vencimento</th>
+                                                            <th className="px-4 py-3 font-semibold">Descrição</th>
+                                                            <th className="px-4 py-3 font-semibold">Valor</th>
+                                                            <th className="px-4 py-3 font-semibold">Status</th>
+                                                            <th className="px-4 py-3 rounded-tr-lg font-semibold text-right">Ações</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
@@ -2609,14 +2609,14 @@ function App() {
                                                                 <tr key={conta.id} className="border-b border-gray-100 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover transition">
                                                                     <td className="px-4 py-3">{formatarDataExibicao(conta.vencimento)}</td>
                                                                     <td className="px-4 py-3 font-medium text-gray-800 dark:text-white">{conta.descricao}</td>
-                                                                    <td className="px-4 py-3 font-bold">R$ {formatarValorFinanceiro(conta.valor)}</td>
+                                                                    <td className="px-4 py-3 font-semibold">R$ {formatarValorFinanceiro(conta.valor)}</td>
                                                                     <td className="px-4 py-3">
-                                                                        <span className={`px-2 py-1 text-xs font-bold rounded-full ${conta.status === 'Pago' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'}`}>
+                                                                        <span className={`px-2 py-1 text-[11px] font-semibold rounded-full ${conta.status === 'Pago' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'}`}>
                                                                             {conta.status}
                                                                         </span>
                                                                     </td>
                                                                     <td className="px-4 py-3 text-right">
-                                                                        <button onClick={() => { setNovaConta(conta); setModalContaAberto(true); }} className="text-brand hover:underline text-xs">Editar</button>
+                                                                        <button onClick={() => { setNovaConta(conta); setModalContaAberto(true); }} className="text-brand hover:underline text-[11px]">Editar</button>
                                                                     </td>
                                                                 </tr>
                                                             ))
@@ -2637,10 +2637,10 @@ function App() {
                         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 mb-6 border-b border-gray-100 dark:border-darkBorder pb-6 shrink-0">
                             <div>
                                 <h1 className="text-3xl font-semibold dark:text-white tracking-tight">Catálogo</h1>
-                                <p className="text-sm text-gray-500 dark:text-[#888888] mt-1">Gerencie os serviços, itens e preços base para orçamentos.</p>
+                                <p className="text-[13px] text-gray-500 dark:text-[#888888] mt-1">Gerencie os serviços, itens e preços base para orçamentos.</p>
                             </div>
                             <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
-                                <button onClick={() => { setNovoProduto({ id: null, nome: '', texto_padrao: '', preco_base: '' }); setModalProdutoAberto(true); }} className="bg-brand hover:bg-brandHover text-white h-[38px] px-4 text-sm rounded-md font-bold shadow-sm transition flex items-center gap-2">
+                                <button onClick={() => { setNovoProduto({ id: null, nome: '', texto_padrao: '', preco_base: '' }); setModalProdutoAberto(true); }} className="bg-brand hover:bg-brandHover text-white h-[38px] px-4 text-[13px] rounded-md font-semibold shadow-sm transition flex items-center gap-2">
                                     <Icon name="plus" className="w-4 h-4" /> Novo Produto
                                 </button>
                             </div>
@@ -2648,7 +2648,7 @@ function App() {
                         <div className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded overflow-hidden">
                             <table className="w-full text-left border-collapse">
                                 <thead className="bg-gray-50/50 dark:bg-darkHover/50">
-                                    <tr className="border-b border-gray-200 dark:border-darkBorder text-sm font-semibold text-gray-500 dark:text-gray-400 tracking-wide uppercase">
+                                    <tr className="border-b border-gray-200 dark:border-darkBorder text-[13px] font-semibold text-gray-500 dark:text-gray-400 tracking-wide uppercase">
                                         <th className="px-6 py-4 w-24">ID</th>
                                         <th className="px-6 py-4">Nome do Produto</th>
                                         <th className="px-6 py-4">Descrição Base</th>
@@ -2667,13 +2667,13 @@ function App() {
                                             onClick={() => abrirEdicaoProduto(p)} 
                                             className={`border-b border-gray-100 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover transition cursor-pointer group ${draggedProdutoIndex === index ? 'opacity-50' : ''}`}
                                         >
-                                            <td className="px-6 py-4 text-sm font-medium text-gray-500 cursor-grab active:cursor-grabbing">
+                                            <td className="px-6 py-4 text-[13px] font-medium text-gray-500 cursor-grab active:cursor-grabbing">
                                                 <Icon name="list" className="w-4 h-4 inline-block mr-2 opacity-50" />
                                                 #{p.id}
                                             </td>
-                                            <td className="px-6 py-4 text-sm font-semibold dark:text-[#EDEDED]">{p.nome}</td>
-                                            <td className="px-6 py-4 text-sm text-gray-600 dark:text-[#A1A1AA] truncate max-w-xs">{p.texto_padrao}</td>
-                                            <td className="px-6 py-4 text-sm font-bold dark:text-[#EDEDED] text-right">R$ {formatarValorFinanceiro(Number(p.preco_base))}</td>
+                                            <td className="px-6 py-4 text-[13px] font-semibold dark:text-[#EDEDED]">{p.nome}</td>
+                                            <td className="px-6 py-4 text-[13px] text-gray-600 dark:text-[#A1A1AA] truncate max-w-xs">{p.texto_padrao}</td>
+                                            <td className="px-6 py-4 text-[13px] font-semibold dark:text-[#EDEDED] text-right">R$ {formatarValorFinanceiro(Number(p.preco_base))}</td>
                                             <td className="px-6 py-4 text-center">
                                                 <button type="button" onClick={(e) => excluirProduto(p.id, e)} className="p-2 text-gray-300 hover:text-red-500 dark:text-gray-600 dark:hover:text-red-500 transition rounded hover:bg-red-50 dark:hover:bg-red-950/30 opacity-50 group-hover:opacity-100" title="Excluir Produto">
                                                     <Icon name="trash-2" className="w-4 h-4" />
@@ -2692,26 +2692,26 @@ function App() {
                         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 mb-6 border-b border-gray-100 dark:border-darkBorder pb-6 shrink-0">
                             <div>
                                 <h1 className="text-3xl font-semibold dark:text-white tracking-tight">Clientes</h1>
-                                <p className="text-sm text-gray-500 dark:text-[#888888] mt-1">Base de dados e informações de contato dos seus clientes.</p>
+                                <p className="text-[13px] text-gray-500 dark:text-[#888888] mt-1">Base de dados e informações de contato dos seus clientes.</p>
                             </div>
                             <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
-                                <button onClick={() => { setNovoCliente({ id: null, nome: '', telefone: '', email: '', observacoes: '', cliente_problema: false }); setModalClienteAberto(true); }} className="bg-brand hover:bg-brandHover text-white h-[38px] px-4 text-sm rounded-md font-bold shadow-sm transition flex items-center gap-2">
+                                <button onClick={() => { setNovoCliente({ id: null, nome: '', telefone: '', email: '', observacoes: '', cliente_problema: false }); setModalClienteAberto(true); }} className="bg-brand hover:bg-brandHover text-white h-[38px] px-4 text-[13px] rounded-md font-semibold shadow-sm transition flex items-center gap-2">
                                     <Icon name="plus" className="w-4 h-4" /> Novo Cliente
                                 </button>
                             </div>
                         </div>
                         <div className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded overflow-hidden">
                             <div className="p-4 border-b border-gray-200 dark:border-darkBorder flex flex-wrap gap-1.5 items-center justify-center sm:justify-start">
-                                <button onClick={() => { setLetraFiltroCliente(''); setPaginaClientes(1); }} className={`px-2 py-1 text-xs font-bold rounded border ${!letraFiltroCliente ? 'bg-brand text-white border-brand' : 'bg-white dark:bg-darkCard text-gray-600 dark:text-gray-300 border-gray-200 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover'}`}>Todas</button>
+                                <button onClick={() => { setLetraFiltroCliente(''); setPaginaClientes(1); }} className={`px-2 py-1 text-[11px] font-semibold rounded border ${!letraFiltroCliente ? 'bg-brand text-white border-brand' : 'bg-white dark:bg-darkCard text-gray-600 dark:text-gray-300 border-gray-200 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover'}`}>Todas</button>
                                 {"ABCDEFGHIJKLMNOPQRSTUVWXYZ".split('').map(letra => (
-                                    <button key={letra} onClick={() => { setLetraFiltroCliente(letra); setPaginaClientes(1); }} className={`px-2 py-1 text-xs font-bold rounded border ${letraFiltroCliente === letra ? 'bg-brand text-white border-brand' : 'bg-white dark:bg-darkCard text-gray-600 dark:text-gray-300 border-gray-200 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover'}`}>{letra}</button>
+                                    <button key={letra} onClick={() => { setLetraFiltroCliente(letra); setPaginaClientes(1); }} className={`px-2 py-1 text-[11px] font-semibold rounded border ${letraFiltroCliente === letra ? 'bg-brand text-white border-brand' : 'bg-white dark:bg-darkCard text-gray-600 dark:text-gray-300 border-gray-200 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover'}`}>{letra}</button>
                                 ))}
                             </div>
                             <table className="w-full text-left border-collapse">
-                                <thead className="bg-gray-50/50 dark:bg-darkHover/50"><tr className="border-b border-gray-200 dark:border-darkBorder text-sm font-semibold text-gray-500 dark:text-gray-400 tracking-wide uppercase"><th className="px-6 py-4">Cliente</th><th className="px-6 py-4 w-48">WhatsApp</th><th className="px-6 py-4 w-64">E-mail</th><th className="px-6 py-4">Observações</th></tr></thead>
+                                <thead className="bg-gray-50/50 dark:bg-darkHover/50"><tr className="border-b border-gray-200 dark:border-darkBorder text-[13px] font-semibold text-gray-500 dark:text-gray-400 tracking-wide uppercase"><th className="px-6 py-4">Cliente</th><th className="px-6 py-4 w-48">WhatsApp</th><th className="px-6 py-4 w-64">E-mail</th><th className="px-6 py-4">Observações</th></tr></thead>
                                 <tbody>
                                     {clientesPaginados.length > 0 ? clientesPaginados.map(c => (
-                                        <tr key={c.id} onClick={() => abrirEdicaoCliente(c)} className="border-b border-gray-100 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover transition cursor-pointer"><td className={`px-6 py-4 text-sm font-semibold ${c.cliente_problema ? 'text-red-600 dark:text-red-400' : 'dark:text-[#EDEDED]'}`}>{c.nome} {c.cliente_problema && <Icon name="alert-triangle" className="w-3.5 h-3.5 inline text-red-500 ml-1" title="Cliente Problema" />}</td><td className="px-6 py-4 text-sm text-gray-600 dark:text-[#A1A1AA]">{c.telefone || '---'}</td><td className="px-6 py-4 text-sm text-gray-600 dark:text-[#A1A1AA]">{c.email || '---'}</td><td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-600 truncate max-w-xs">{c.observacoes || '---'}</td></tr>
+                                        <tr key={c.id} onClick={() => abrirEdicaoCliente(c)} className="border-b border-gray-100 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover transition cursor-pointer"><td className={`px-6 py-4 text-[13px] font-semibold ${c.cliente_problema ? 'text-red-600 dark:text-red-400' : 'dark:text-[#EDEDED]'}`}>{c.nome} {c.cliente_problema && <Icon name="alert-triangle" className="w-3.5 h-3.5 inline text-red-500 ml-1" title="Cliente Problema" />}</td><td className="px-6 py-4 text-[13px] text-gray-600 dark:text-[#A1A1AA]">{c.telefone || '---'}</td><td className="px-6 py-4 text-[13px] text-gray-600 dark:text-[#A1A1AA]">{c.email || '---'}</td><td className="px-6 py-4 text-[13px] text-gray-500 dark:text-gray-600 truncate max-w-xs">{c.observacoes || '---'}</td></tr>
                                     )) : (
                                         <tr><td colSpan="4" className="px-6 py-8 text-center text-gray-500 dark:text-[#A1A1AA]">Nenhum cliente encontrado.</td></tr>
                                     )}
@@ -2720,9 +2720,9 @@ function App() {
                         </div>
                         {totalPaginasClientes > 1 && (
                             <div className="mt-6 flex justify-between items-center p-4">
-                                <button onClick={() => setPaginaClientes(Math.max(1, paginaClientes - 1))} disabled={paginaClientes === 1} className="px-4 py-2 text-sm font-bold border border-gray-200 dark:border-darkBorder rounded hover:bg-gray-50 dark:hover:bg-darkHover disabled:opacity-50 dark:text-white transition">Anterior</button>
-                                <span className="text-sm font-semibold dark:text-white">Página {paginaClientes} de {totalPaginasClientes}</span>
-                                <button onClick={() => setPaginaClientes(Math.min(totalPaginasClientes, paginaClientes + 1))} disabled={paginaClientes === totalPaginasClientes} className="px-4 py-2 text-sm font-bold border border-gray-200 dark:border-darkBorder rounded hover:bg-gray-50 dark:hover:bg-darkHover disabled:opacity-50 dark:text-white transition">Próxima</button>
+                                <button onClick={() => setPaginaClientes(Math.max(1, paginaClientes - 1))} disabled={paginaClientes === 1} className="px-4 py-2 text-[13px] font-semibold border border-gray-200 dark:border-darkBorder rounded hover:bg-gray-50 dark:hover:bg-darkHover disabled:opacity-50 dark:text-white transition">Anterior</button>
+                                <span className="text-[13px] font-semibold dark:text-white">Página {paginaClientes} de {totalPaginasClientes}</span>
+                                <button onClick={() => setPaginaClientes(Math.min(totalPaginasClientes, paginaClientes + 1))} disabled={paginaClientes === totalPaginasClientes} className="px-4 py-2 text-[13px] font-semibold border border-gray-200 dark:border-darkBorder rounded hover:bg-gray-50 dark:hover:bg-darkHover disabled:opacity-50 dark:text-white transition">Próxima</button>
                             </div>
                         )}
                     </main>
@@ -2733,7 +2733,7 @@ function App() {
                         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 mb-6 border-b border-gray-100 dark:border-darkBorder pb-6 shrink-0">
                             <div>
                                 <h1 className="text-3xl font-semibold dark:text-white tracking-tight">Notas Fiscais {filtroNotas === 'pendentes' ? 'Pendentes' : 'Concluídas'}</h1>
-                                <p className="text-sm text-gray-500 dark:text-[#888888] mt-1">{filtroNotas === 'pendentes' ? 'Notas enviadas pelos clientes aguardando processamento.' : 'Histórico de notas já emitidas e processadas.'}</p>
+                                <p className="text-[13px] text-gray-500 dark:text-[#888888] mt-1">{filtroNotas === 'pendentes' ? 'Notas enviadas pelos clientes aguardando processamento.' : 'Histórico de notas já emitidas e processadas.'}</p>
                             </div>
                             <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
                                 <div className="relative w-full lg:w-64">
@@ -2743,11 +2743,11 @@ function App() {
                                         placeholder="Buscar por nome, razão ou CNPJ..." 
                                         value={buscaNotaFiscal} 
                                         onChange={(e) => { setBuscaNotaFiscal(e.target.value); setPaginaNotasFiscais(1); }}
-                                        className="w-full pl-9 pr-4 py-1.5 h-[38px] text-sm border border-gray-200 dark:border-darkBorder bg-white dark:bg-darkCard rounded-md focus:outline-none focus:ring-2 focus:ring-brand dark:text-white transition"
+                                        className="w-full pl-9 pr-4 py-1.5 h-[38px] text-[13px] border border-gray-200 dark:border-darkBorder bg-white dark:bg-darkCard rounded-md focus:outline-none focus:ring-2 focus:ring-brand dark:text-white transition"
                                     />
                                 </div>
                                 {/* BOTOES FILTRONOTAS MOVIDOS PARA O TOPNAV */}
-                                <a href="/solicitar-nota.html" target="_blank" className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover text-gray-800 dark:text-[#EDEDED] h-[38px] px-4 text-sm rounded-md font-bold shadow-sm transition flex items-center gap-2">
+                                <a href="/solicitar-nota.html" target="_blank" className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover text-gray-800 dark:text-[#EDEDED] h-[38px] px-4 text-[13px] rounded-md font-semibold shadow-sm transition flex items-center gap-2">
                                     <Icon name="external-link" className="w-4 h-4" /> Link do Formulário
                                 </a>
                             </div>
@@ -2756,7 +2756,7 @@ function App() {
                             <div className="overflow-x-auto custom-scrollbar">
                                 <table className="w-full text-left border-collapse min-w-[800px]">
                                     <thead className="bg-gray-50/50 dark:bg-darkHover/50">
-                                        <tr className="border-b border-gray-200 dark:border-darkBorder text-sm font-semibold text-gray-500 dark:text-gray-400 tracking-wide uppercase">
+                                        <tr className="border-b border-gray-200 dark:border-darkBorder text-[13px] font-semibold text-gray-500 dark:text-gray-400 tracking-wide uppercase">
                                             <th className="px-6 py-4 w-28">Data</th>
                                             <th className="px-6 py-4 w-48">Cliente / Razão Social</th>
                                             <th className="px-6 py-4 w-36">CPF / CNPJ</th>
@@ -2767,15 +2767,15 @@ function App() {
                                     <tbody>
                                         {notasFiscaisPaginadas.map(n => (
                                             <tr key={n.id} className="border-b border-gray-100 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover transition">
-                                                <td className="px-4 py-3 text-sm dark:text-[#EDEDED] whitespace-nowrap">{new Date(n.created_at).toLocaleDateString('pt-BR')}</td>
+                                                <td className="px-4 py-3 text-[13px] dark:text-[#EDEDED] whitespace-nowrap">{new Date(n.created_at).toLocaleDateString('pt-BR')}</td>
                                                 <td className="px-4 py-3">
-                                                    <div className="text-sm font-semibold dark:text-[#EDEDED]">{n.cliente || 'Sem Identificação'}</div>
-                                                    <div className="text-xs text-gray-500 dark:text-[#A1A1AA]">{n.razao_social}</div>
+                                                    <div className="text-[13px] font-semibold dark:text-[#EDEDED]">{n.cliente || 'Sem Identificação'}</div>
+                                                    <div className="text-[11px] text-gray-500 dark:text-[#A1A1AA]">{n.razao_social}</div>
                                                 </td>
-                                                <td className="px-4 py-3 text-sm dark:text-[#EDEDED]">{n.cnpj}</td>
+                                                <td className="px-4 py-3 text-[13px] dark:text-[#EDEDED]">{n.cnpj}</td>
                                                 <td className="px-4 py-3">
-                                                    <div className="text-sm dark:text-[#EDEDED]">{n.servico_feito || <span className="text-gray-400 italic">Pendente</span>}</div>
-                                                    <div className="text-xs font-semibold text-orange-500 dark:text-orange-400">{n.valor_pago ? `R$ ${parseFloat(n.valor_pago).toFixed(2).replace('.', ',')}` : ''}</div>
+                                                    <div className="text-[13px] dark:text-[#EDEDED]">{n.servico_feito || <span className="text-gray-400 italic">Pendente</span>}</div>
+                                                    <div className="text-[11px] font-semibold text-orange-500 dark:text-orange-400">{n.valor_pago ? `R$ ${parseFloat(n.valor_pago).toFixed(2).replace('.', ',')}` : ''}</div>
                                                 </td>
                                                 <td className="px-4 py-3 text-right">
                                                     <div className="flex items-center justify-end gap-2">
@@ -2807,9 +2807,9 @@ function App() {
                             </div>
                             {totalPaginasNotasFiscais > 1 && (
                                 <div className="mt-6 flex justify-between items-center p-4 border-t border-gray-200 dark:border-darkBorder">
-                                    <button onClick={() => setPaginaNotasFiscais(Math.max(1, paginaNotasFiscais - 1))} disabled={paginaNotasFiscais === 1} className="px-4 py-2 text-sm font-bold border border-gray-200 dark:border-darkBorder rounded hover:bg-gray-50 dark:hover:bg-darkHover disabled:opacity-50 dark:text-white transition">Anterior</button>
-                                    <span className="text-sm font-semibold dark:text-white">Página {paginaNotasFiscais} de {totalPaginasNotasFiscais}</span>
-                                    <button onClick={() => setPaginaNotasFiscais(Math.min(totalPaginasNotasFiscais, paginaNotasFiscais + 1))} disabled={paginaNotasFiscais === totalPaginasNotasFiscais} className="px-4 py-2 text-sm font-bold border border-gray-200 dark:border-darkBorder rounded hover:bg-gray-50 dark:hover:bg-darkHover disabled:opacity-50 dark:text-white transition">Próxima</button>
+                                    <button onClick={() => setPaginaNotasFiscais(Math.max(1, paginaNotasFiscais - 1))} disabled={paginaNotasFiscais === 1} className="px-4 py-2 text-[13px] font-semibold border border-gray-200 dark:border-darkBorder rounded hover:bg-gray-50 dark:hover:bg-darkHover disabled:opacity-50 dark:text-white transition">Anterior</button>
+                                    <span className="text-[13px] font-semibold dark:text-white">Página {paginaNotasFiscais} de {totalPaginasNotasFiscais}</span>
+                                    <button onClick={() => setPaginaNotasFiscais(Math.min(totalPaginasNotasFiscais, paginaNotasFiscais + 1))} disabled={paginaNotasFiscais === totalPaginasNotasFiscais} className="px-4 py-2 text-[13px] font-semibold border border-gray-200 dark:border-darkBorder rounded hover:bg-gray-50 dark:hover:bg-darkHover disabled:opacity-50 dark:text-white transition">Próxima</button>
                                 </div>
                             )}
                         </div>
@@ -2821,22 +2821,22 @@ function App() {
                         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 mb-6 border-b border-gray-100 dark:border-darkBorder pb-6 shrink-0">
                             <div>
                                 <h1 className="text-3xl font-semibold dark:text-white tracking-tight">Usuários do Sistema</h1>
-                                <p className="text-sm text-gray-500 dark:text-[#888888] mt-1">Gerencie os acessos da equipe (Administrador, Produção/Atendimento, Financeiro).</p>
+                                <p className="text-[13px] text-gray-500 dark:text-[#888888] mt-1">Gerencie os acessos da equipe (Administrador, Produção/Atendimento, Financeiro).</p>
                             </div>
                             <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
-                                <button onClick={() => { setNovoUsuario({ id: null, nome: '', senha: '', nivel: 'Produção/Atendimento' }); setModalUsuarioAberto(true); }} className="bg-brand hover:bg-brandHover text-white h-[38px] px-4 text-sm rounded-md font-bold shadow-sm transition flex items-center gap-2">
+                                <button onClick={() => { setNovoUsuario({ id: null, nome: '', senha: '', nivel: 'Produção/Atendimento' }); setModalUsuarioAberto(true); }} className="bg-brand hover:bg-brandHover text-white h-[38px] px-4 text-[13px] rounded-md font-semibold shadow-sm transition flex items-center gap-2">
                                     <Icon name="plus" className="w-4 h-4" /> Novo Usuário
                                 </button>
                             </div>
                         </div>
                         <div className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded overflow-hidden">
                             <table className="w-full text-left border-collapse">
-                                <thead className="bg-gray-50/50 dark:bg-darkHover/50"><tr className="border-b border-gray-200 dark:border-darkBorder text-sm font-semibold text-gray-500 dark:text-gray-400 tracking-wide uppercase"><th className="px-6 py-4">Nome do Usuário</th><th className="px-6 py-4 w-48 text-right">Nível de Acesso</th></tr></thead>
+                                <thead className="bg-gray-50/50 dark:bg-darkHover/50"><tr className="border-b border-gray-200 dark:border-darkBorder text-[13px] font-semibold text-gray-500 dark:text-gray-400 tracking-wide uppercase"><th className="px-6 py-4">Nome do Usuário</th><th className="px-6 py-4 w-48 text-right">Nível de Acesso</th></tr></thead>
                                 <tbody>
                                     {usuariosSistema.map(u => (
                                         <tr key={u.id} onClick={() => abrirEdicaoUsuario(u)} className="border-b border-gray-100 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover transition cursor-pointer">
-                                            <td className="px-6 py-4 text-sm font-semibold dark:text-[#EDEDED]">{u.nome}</td>
-                                            <td className="px-6 py-4 text-sm font-bold dark:text-[#EDEDED] text-right">
+                                            <td className="px-6 py-4 text-[13px] font-semibold dark:text-[#EDEDED]">{u.nome}</td>
+                                            <td className="px-6 py-4 text-[13px] font-semibold dark:text-[#EDEDED] text-right">
                                                 <span className={`px-2 py-1 rounded text-[10px] uppercase tracking-wider border ${u.nivel === 'Administrador' ? 'bg-red-50 text-red-600 border-red-200' : u.nivel === 'Financeiro' ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-blue-50 text-blue-600 border-blue-200'}`}>
                                                     {u.nivel}
                                                 </span>
@@ -2859,27 +2859,27 @@ function App() {
                                 <h3 className="font-semibold text-xl tracking-tight">
                                     {pedidoEmEdicao ? 'Editar Ordem de Serviço #' + pedidoEmEdicao.id : 'Nova Ordem de Serviço'}
                                 </h3>
-                                {isModalTrancado && <span className="flex items-center gap-1 text-[11px] font-bold bg-white/20 text-white border border-white/30 px-2 py-0.5 rounded"><Icon name="lock" className="w-3 h-3" /> Trancado</span>}
+                                {isModalTrancado && <span className="flex items-center gap-1 text-[11px] font-semibold bg-white/20 text-white border border-white/30 px-2 py-0.5 rounded"><Icon name="lock" className="w-3 h-3" /> Trancado</span>}
                             </div>
                             <button type="button" onClick={fecharModalOS} className="text-white/70 hover:text-white transition"><Icon name="x" className="w-5 h-5" /></button>
                         </div>
                         
                         <form onSubmit={(e) => salvarOS(e, false)} className="p-8 overflow-y-auto custom-scrollbar flex flex-col gap-6">
-                            {isModalTrancado && <div className="p-3 bg-red-950/20 border border-red-900/50 rounded text-xs text-red-400 mb-2">Nota liquidada. Peça para um Admin ou Financeiro destravar para edições.</div>}
+                            {isModalTrancado && <div className="p-3 bg-red-950/20 border border-red-900/50 rounded text-[11px] text-red-400 mb-2">Nota liquidada. Peça para um Admin ou Financeiro destravar para edições.</div>}
                             
                             <div className="grid grid-cols-3 gap-4 pb-4 border-b border-gray-100 dark:border-darkBorder">
                                 <div>
-                                    <label className="block text-sm font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Data da Venda</label>
-                                    <CustomDatePicker value={novoPedido.data_pedido} onChange={val => setNovoPedido({...novoPedido, data_pedido: val})} disabled={isModalTrancado} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none transition" />
+                                    <label className="block text-[13px] font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Data da Venda</label>
+                                    <CustomDatePicker value={novoPedido.data_pedido} onChange={val => setNovoPedido({...novoPedido, data_pedido: val})} disabled={isModalTrancado} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none transition" />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Prazo</label>
-                                    <CustomDatePicker value={novoPedido.prazo} onChange={val => setNovoPedido({...novoPedido, prazo: val})} disabled={isModalTrancado} placeholder="Data final..." className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none transition" />
+                                    <label className="block text-[13px] font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Prazo</label>
+                                    <CustomDatePicker value={novoPedido.prazo} onChange={val => setNovoPedido({...novoPedido, prazo: val})} disabled={isModalTrancado} placeholder="Data final..." className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none transition" />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Status Inicial</label>
+                                    <label className="block text-[13px] font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Status Inicial</label>
                                     <div className="relative">
-                                        <select required value={novoPedido.status} onChange={e => setNovoPedido({...novoPedido, status: e.target.value})} disabled={isModalTrancado} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2.5 text-sm outline-none focus:border-brand transition dark:text-white font-semibold cursor-pointer appearance-none disabled:opacity-50">
+                                        <select required value={novoPedido.status} onChange={e => setNovoPedido({...novoPedido, status: e.target.value})} disabled={isModalTrancado} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2.5 text-[13px] outline-none focus:border-brand transition dark:text-white font-semibold cursor-pointer appearance-none disabled:opacity-50">
                                             {opcoesStatusPermitidas.map(s => <option key={s} value={s}>{s}</option>)}
                                         </select>
                                         <Icon name="chevron-down" className="absolute right-3 top-3.5 w-4 h-4 text-gray-400 pointer-events-none" />
@@ -2889,37 +2889,37 @@ function App() {
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Resp.</label>
+                                    <label className="block text-[13px] font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Resp.</label>
                                     <MultiSelectDropdown 
                                         value={novoPedido.responsavel} 
                                         options={RESPONSAVEIS} 
                                         onChange={val => setNovoPedido({...novoPedido, responsavel: val})} 
                                         disabled={isModalTrancado} 
-                                        className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand transition dark:text-[#EDEDED]"
+                                        className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand transition dark:text-[#EDEDED]"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Tags Especiais</label>
+                                    <label className="block text-[13px] font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Tags Especiais</label>
                                     <div className="flex items-center gap-2 mt-1">
-                                        <button type="button" onClick={() => setNovoPedido({...novoPedido, entrega: !novoPedido.entrega})} disabled={isModalTrancado} className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded text-xs font-bold transition disabled:opacity-50 ${novoPedido.entrega ? 'text-white bg-orange-500 dark:bg-orange-600 hover:bg-orange-600 dark:hover:bg-orange-700' : 'bg-gray-100 text-gray-500 dark:bg-darkElevated dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-darkHover'}`}><Icon name="package" className="w-4 h-4"/> Entrega</button>
-                                        <button type="button" onClick={() => setNovoPedido({...novoPedido, urgente: !novoPedido.urgente})} disabled={isModalTrancado} className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded text-xs font-bold transition disabled:opacity-50 ${novoPedido.urgente ? 'text-white bg-red-500 dark:bg-red-600 hover:bg-red-600 dark:hover:bg-red-700' : 'bg-gray-100 text-gray-500 dark:bg-darkElevated dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-darkHover'}`}><Icon name="alert-triangle" className="w-3.5 h-3.5"/> Urgente</button>
+                                        <button type="button" onClick={() => setNovoPedido({...novoPedido, entrega: !novoPedido.entrega})} disabled={isModalTrancado} className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded text-[11px] font-semibold transition disabled:opacity-50 ${novoPedido.entrega ? 'text-white bg-orange-500 dark:bg-orange-600 hover:bg-orange-600 dark:hover:bg-orange-700' : 'bg-gray-100 text-gray-500 dark:bg-darkElevated dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-darkHover'}`}><Icon name="package" className="w-4 h-4"/> Entrega</button>
+                                        <button type="button" onClick={() => setNovoPedido({...novoPedido, urgente: !novoPedido.urgente})} disabled={isModalTrancado} className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded text-[11px] font-semibold transition disabled:opacity-50 ${novoPedido.urgente ? 'text-white bg-red-500 dark:bg-red-600 hover:bg-red-600 dark:hover:bg-red-700' : 'bg-gray-100 text-gray-500 dark:bg-darkElevated dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-darkHover'}`}><Icon name="alert-triangle" className="w-3.5 h-3.5"/> Urgente</button>
                                     </div>
                                 </div>
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Cliente / Empresa</label>
+                                <label className="block text-[13px] font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Cliente / Empresa</label>
                                 <div className="flex gap-2">
                                     <div className="relative flex-1">
                                         <input required type="text" value={buscaCliente} disabled={isModalTrancado}
                                             onChange={e => { setBuscaCliente(e.target.value); setNovoPedido({...novoPedido, cliente: e.target.value}); setClienteDropdownAberto(true); }}
                                             onFocus={() => { if(!isModalTrancado) setClienteDropdownAberto(true); }} onBlur={() => setTimeout(() => setClienteDropdownAberto(false), 200)}
-                                            className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand transition dark:text-[#EDEDED] disabled:opacity-50" placeholder="Buscar cliente..." autoComplete="off" />
+                                            className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand transition dark:text-[#EDEDED] disabled:opacity-50" placeholder="Buscar cliente..." autoComplete="off" />
                                         <Icon name="chevron-down" className="absolute right-3 top-2.5 w-4 h-4 text-gray-400 pointer-events-none" />
                                         {clienteDropdownAberto && clientesFiltrados.length > 0 && (
                                             <ul className="absolute z-[60] w-full mt-1 max-h-48 overflow-y-auto bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded shadow-xl custom-scrollbar">
                                                 {clientesFiltrados.map(c => (
-                                                    <li key={c.id} onClick={() => { setBuscaCliente(c.nome); setNovoPedido({...novoPedido, cliente: c.nome}); setClienteDropdownAberto(false); }} className="px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-darkHover cursor-pointer border-b border-gray-100 dark:border-darkBorder last:border-0 flex justify-between items-center transition"><span className="font-medium text-sm text-gray-800 dark:text-[#EDEDED]">{c.nome}</span><span className="text-xs text-gray-500">{c.telefone}</span></li>
+                                                    <li key={c.id} onClick={() => { setBuscaCliente(c.nome); setNovoPedido({...novoPedido, cliente: c.nome}); setClienteDropdownAberto(false); }} className="px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-darkHover cursor-pointer border-b border-gray-100 dark:border-darkBorder last:border-0 flex justify-between items-center transition"><span className="font-medium text-[13px] text-gray-800 dark:text-[#EDEDED]">{c.nome}</span><span className="text-[11px] text-gray-500">{c.telefone}</span></li>
                                                 ))}
                                             </ul>
                                         )}
@@ -2932,26 +2932,26 @@ function App() {
                                     <div className="mt-2 p-2.5 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded flex items-start gap-2.5 text-red-600 dark:text-red-400">
                                         <Icon name="alert-triangle" className="w-5 h-5 shrink-0 mt-0.5" />
                                         <div>
-                                            <span className="text-sm font-bold block">Atenção: Cliente Problemático</span>
-                                            <span className="text-xs">Este cliente possui restrições ou histórico negativo na empresa. Fique atento.</span>
+                                            <span className="text-[13px] font-semibold block">Atenção: Cliente Problemático</span>
+                                            <span className="text-[11px]">Este cliente possui restrições ou histórico negativo na empresa. Fique atento.</span>
                                         </div>
                                     </div>
                                 )}
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium mb-3 text-gray-700 dark:text-[#EDEDED]">Carrinho de Itens do Orçamento</label>
+                                <label className="block text-[13px] font-medium mb-3 text-gray-700 dark:text-[#EDEDED]">Carrinho de Itens do Orçamento</label>
                                 {itensPedido.length > 0 ? (
                                     <div className="mb-4 flex flex-col gap-2">
                                         {itensPedido.map((item, index) => (
                                             <div key={item.id_temp} className="flex justify-between items-center p-3 bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded shadow-sm">
-                                                <div className="flex flex-col"><span className="font-semibold text-sm dark:text-white">{index + 1}. {item.nome || 'Serviço Personalizado'}</span><span className="text-xs text-gray-500 dark:text-[#A1A1AA] whitespace-pre-wrap mt-1">{item.descricao}</span>{item.local_producao && <span className="text-[10px] bg-brand/10 text-brand font-bold px-1.5 py-0.5 rounded mt-1.5 w-max">Local: {item.local_producao}</span>}</div>
-                                                <div className="flex items-center gap-4"><div className="text-right"><span className="font-semibold text-sm dark:text-white">R$ {item.valor}</span>{item.desconto && <span className="block text-[10px] text-brand font-medium">-{item.desconto}% desc</span>}</div><button type="button" disabled={isModalTrancado} onClick={() => removerItemDoCarrinho(item.id_temp)} className="text-gray-400 hover:text-red-500 transition disabled:opacity-30"><Icon name="trash-2" className="w-4 h-4" /></button></div>
+                                                <div className="flex flex-col"><span className="font-semibold text-[13px] dark:text-white">{index + 1}. {item.nome || 'Serviço Personalizado'}</span><span className="text-[11px] text-gray-500 dark:text-[#A1A1AA] whitespace-pre-wrap mt-1">{item.descricao}</span>{item.local_producao && <span className="text-[10px] bg-brand/10 text-brand font-semibold px-1.5 py-0.5 rounded mt-1.5 w-max">Local: {item.local_producao}</span>}</div>
+                                                <div className="flex items-center gap-4"><div className="text-right"><span className="font-semibold text-[13px] dark:text-white">R$ {item.valor}</span>{item.desconto && <span className="block text-[10px] text-brand font-medium">-{item.desconto}% desc</span>}</div><button type="button" disabled={isModalTrancado} onClick={() => removerItemDoCarrinho(item.id_temp)} className="text-gray-400 hover:text-red-500 transition disabled:opacity-30"><Icon name="trash-2" className="w-4 h-4" /></button></div>
                                             </div>
                                         ))}
                                     </div>
                                 ) : (
-                                    <p className="text-xs text-gray-500 dark:text-[#666] mb-4 italic">Nenhum item adicionado de forma estruturada.</p>
+                                    <p className="text-[11px] text-gray-500 dark:text-[#666] mb-4 italic">Nenhum item adicionado de forma estruturada.</p>
                                 )}
 
                                 <div className="p-4 border border-dashed border-gray-300 dark:border-darkBorder rounded bg-transparent">
@@ -2961,7 +2961,7 @@ function App() {
                                                 <input type="text" value={buscaProduto} disabled={isModalTrancado} 
                                                     onChange={e => { setBuscaProduto(e.target.value); setProdutoDropdownAberto(true); }}
                                                     onFocus={() => { if(!isModalTrancado) setProdutoDropdownAberto(true); }} onBlur={() => setTimeout(() => setProdutoDropdownAberto(false), 200)}
-                                                    className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand transition dark:text-[#EDEDED] disabled:opacity-50" placeholder="Puxar item do catálogo (Opcional)..." autoComplete="off" />
+                                                    className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand transition dark:text-[#EDEDED] disabled:opacity-50" placeholder="Puxar item do catálogo (Opcional)..." autoComplete="off" />
                                                 <Icon name="chevron-down" className="absolute right-3 top-3 w-4 h-4 text-gray-400 pointer-events-none" />
                                                 {produtoDropdownAberto && produtosFiltrados.length > 0 && (
                                                     <ul className="absolute z-[60] w-full mt-1 max-h-48 overflow-y-auto bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded shadow-xl custom-scrollbar">
@@ -2971,7 +2971,7 @@ function App() {
                                                                 setItemAtual({ ...itemAtual, nome: p.nome, descricao: p.texto_padrao, valor: formatarMoeda((p.preco_base * 100).toFixed(0).toString()), desconto: '', id_produto: p.id }); 
                                                                 setProdutoDropdownAberto(false); 
                                                             }} className="px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-darkHover cursor-pointer border-b border-gray-100 dark:border-darkBorder last:border-0 flex flex-col transition">
-                                                                <div className="flex justify-between items-center"><span className="font-medium text-sm dark:text-[#EDEDED]">{p.nome}</span><span className="text-xs font-bold text-brand">R$ {formatarValorFinanceiro(Number(p.preco_base))}</span></div>
+                                                                <div className="flex justify-between items-center"><span className="font-medium text-[13px] dark:text-[#EDEDED]">{p.nome}</span><span className="text-[11px] font-semibold text-brand">R$ {formatarValorFinanceiro(Number(p.preco_base))}</span></div>
                                                             </li>
                                                         ))}
                                                     </ul>
@@ -2984,38 +2984,38 @@ function App() {
                                             )}
                                         </div>
 
-                                        <textarea rows="2" value={itemAtual.descricao} disabled={isModalTrancado} onChange={e => setItemAtual({...itemAtual, descricao: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand transition dark:text-[#EDEDED] disabled:opacity-50" placeholder="Especificações do item (Ex: Medida, quantidade, material...)"></textarea>
+                                        <textarea rows="2" value={itemAtual.descricao} disabled={isModalTrancado} onChange={e => setItemAtual({...itemAtual, descricao: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand transition dark:text-[#EDEDED] disabled:opacity-50" placeholder="Especificações do item (Ex: Medida, quantidade, material...)"></textarea>
                                         <div className="grid grid-cols-4 gap-3">
                                             <div className="relative col-span-2">
-                                                <span className="absolute left-3 top-2.5 text-xs text-gray-400 font-medium">Local:</span>
-                                                <select value={itemAtual.local_producao} disabled={isModalTrancado} onChange={e => setItemAtual({...itemAtual, local_producao: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded pl-[52px] pr-8 py-2 text-xs outline-none focus:border-brand transition dark:text-[#EDEDED] font-medium appearance-none disabled:opacity-50">
+                                                <span className="absolute left-3 top-2.5 text-[11px] text-gray-400 font-medium">Local:</span>
+                                                <select value={itemAtual.local_producao} disabled={isModalTrancado} onChange={e => setItemAtual({...itemAtual, local_producao: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded pl-[52px] pr-8 py-2 text-[11px] outline-none focus:border-brand transition dark:text-[#EDEDED] font-medium appearance-none disabled:opacity-50">
                                                     {LOCAIS.map(l => <option key={l} value={l}>{l}</option>)}
                                                 </select>
                                                 <Icon name="chevron-down" className="absolute right-3 top-2.5 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
                                             </div>
                                             <div className="relative">
-                                                <span className="absolute left-2.5 top-2.5 text-xs text-gray-400">R$</span>
-                                                <input type="text" value={itemAtual.valor} disabled={isModalTrancado} onChange={e => setItemAtual({...itemAtual, valor: formatarMoeda(e.target.value)})} className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded pl-7 pr-2 py-2 text-xs outline-none focus:border-brand transition dark:text-[#EDEDED] font-medium disabled:opacity-50" placeholder="Bruto" />
+                                                <span className="absolute left-2.5 top-2.5 text-[11px] text-gray-400">R$</span>
+                                                <input type="text" value={itemAtual.valor} disabled={isModalTrancado} onChange={e => setItemAtual({...itemAtual, valor: formatarMoeda(e.target.value)})} className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded pl-7 pr-2 py-2 text-[11px] outline-none focus:border-brand transition dark:text-[#EDEDED] font-medium disabled:opacity-50" placeholder="Bruto" />
                                             </div>
-                                            <div><input type="text" value={itemAtual.desconto} disabled={isModalTrancado} onChange={e => { let val = e.target.value.replace(/\D/g, ''); if (parseFloat(val) > 100) val = '100'; setItemAtual({...itemAtual, desconto: val}); }} className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-2 py-2 text-xs outline-none focus:border-brand transition dark:text-[#EDEDED] disabled:opacity-50" placeholder="Desc. %" /></div>
+                                            <div><input type="text" value={itemAtual.desconto} disabled={isModalTrancado} onChange={e => { let val = e.target.value.replace(/\D/g, ''); if (parseFloat(val) > 100) val = '100'; setItemAtual({...itemAtual, desconto: val}); }} className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-2 py-2 text-[11px] outline-none focus:border-brand transition dark:text-[#EDEDED] disabled:opacity-50" placeholder="Desc. %" /></div>
                                         </div>
-                                        <button type="button" onClick={adicionarItemAoCarrinho} disabled={!itemAtual.descricao || !itemAtual.valor || isModalTrancado} className="w-full mt-3 px-3 py-2 text-xs font-bold bg-white hover:bg-gray-100 dark:bg-darkHover dark:hover:bg-darkBorder text-gray-800 dark:text-white rounded border border-gray-200 dark:border-darkBorder transition shadow-sm disabled:opacity-50 flex items-center justify-center gap-1.5"><Icon name="plus" className="w-3.5 h-3.5"/> Inserir Item no Orçamento</button>
+                                        <button type="button" onClick={adicionarItemAoCarrinho} disabled={!itemAtual.descricao || !itemAtual.valor || isModalTrancado} className="w-full mt-3 px-3 py-2 text-[11px] font-semibold bg-white hover:bg-gray-100 dark:bg-darkHover dark:hover:bg-darkBorder text-gray-800 dark:text-white rounded border border-gray-200 dark:border-darkBorder transition shadow-sm disabled:opacity-50 flex items-center justify-center gap-1.5"><Icon name="plus" className="w-3.5 h-3.5"/> Inserir Item no Orçamento</button>
                                     </div>
                                 </div>
                             </div>
 
                             <div className="pt-4 border-t border-gray-200 dark:border-darkBorder">
-                                <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-[#EDEDED]">Histórico de Pagamentos</label>
+                                <label className="block text-[13px] font-medium mb-2 text-gray-700 dark:text-[#EDEDED]">Histórico de Pagamentos</label>
                                 {pagamentosPedido.length > 0 && (
                                     <div className="mb-3 flex flex-col gap-2">
                                         {pagamentosPedido.map((pag, idx) => (
                                             <div key={idx} className="flex justify-between items-center bg-gray-50 dark:bg-darkElevated px-3 py-2 rounded border border-gray-100 dark:border-darkBorder">
                                                 <div className="flex flex-col">
-                                                    <span className="text-sm font-medium dark:text-white">{pag.forma} {pag.parcelas > 1 ? `(${pag.parcelas}x)` : ''}</span>
-                                                    <span className="text-xs text-gray-500">{pag.data}</span>
+                                                    <span className="text-[13px] font-medium dark:text-white">{pag.forma} {pag.parcelas > 1 ? `(${pag.parcelas}x)` : ''}</span>
+                                                    <span className="text-[11px] text-gray-500">{pag.data}</span>
                                                 </div>
                                                 <div className="flex items-center gap-3">
-                                                    <span className="font-bold text-sm text-emerald-600 dark:text-emerald-400">R$ {pag.valor}</span>
+                                                    <span className="font-semibold text-[13px] text-emerald-600 dark:text-emerald-400">R$ {pag.valor}</span>
                                                     {!isModalTrancado && (
                                                         <button type="button" onClick={() => setPagamentosPedido(pagamentosPedido.filter((_, i) => i !== idx))} className="text-red-500 hover:text-red-700"><Icon name="trash-2" className="w-4 h-4" /></button>
                                                     )}
@@ -3031,7 +3031,7 @@ function App() {
                                     const saldo = totalOS - totalPago;
                                     return (
                                         <>
-                                            <div className="mb-4 flex justify-between items-center text-sm">
+                                            <div className="mb-4 flex justify-between items-center text-[13px]">
                                                 <span className="text-gray-600 dark:text-gray-400">Total Pago: <strong className="text-emerald-600">R$ {formatarValorFinanceiro(totalPago)}</strong></span>
                                                 <span className="text-gray-600 dark:text-gray-400">Saldo Devedor: <strong className={saldo > 0 ? "text-red-500" : "text-gray-400"}>R$ {formatarValorFinanceiro(saldo)}</strong></span>
                                             </div>
@@ -3039,7 +3039,7 @@ function App() {
                                             {!isModalTrancado && saldo > 0 && (
                                                 <div className="flex flex-col gap-2 p-3 bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded mb-4">
                                                     <div className="grid grid-cols-2 gap-2">
-                                                        <select value={novoPagamento.forma} onChange={e => setNovoPagamento({...novoPagamento, forma: e.target.value})} className="bg-white dark:bg-darkCard border border-gray-300 dark:border-darkBorder rounded px-2 py-1.5 text-xs outline-none">
+                                                        <select value={novoPagamento.forma} onChange={e => setNovoPagamento({...novoPagamento, forma: e.target.value})} className="bg-white dark:bg-darkCard border border-gray-300 dark:border-darkBorder rounded px-2 py-1.5 text-[11px] outline-none">
                                                             <option value="PIX">PIX</option>
                                                             <option value="Cartão de Crédito">Cartão de Crédito</option>
                                                             <option value="Cartão de Débito">Cartão de Débito</option>
@@ -3048,12 +3048,12 @@ function App() {
                                                         </select>
                                                         <div className="relative">
                                                             <span className="absolute left-2 top-2 text-[10px] text-gray-400">R$</span>
-                                                            <input type="text" value={novoPagamento.valor} onChange={e => setNovoPagamento({...novoPagamento, valor: formatarMoeda(e.target.value)})} className="w-full bg-white dark:bg-darkCard border border-gray-300 dark:border-darkBorder rounded pl-6 pr-2 py-1.5 text-xs outline-none" placeholder="Valor" />
+                                                            <input type="text" value={novoPagamento.valor} onChange={e => setNovoPagamento({...novoPagamento, valor: formatarMoeda(e.target.value)})} className="w-full bg-white dark:bg-darkCard border border-gray-300 dark:border-darkBorder rounded pl-6 pr-2 py-1.5 text-[11px] outline-none" placeholder="Valor" />
                                                         </div>
                                                     </div>
                                                     {(novoPagamento.forma === 'PIX' || novoPagamento.forma === 'Link de Pagamento') && (
                                                         <div>
-                                                            <select value={novoPagamento.instituicao} onChange={e => setNovoPagamento({...novoPagamento, instituicao: e.target.value})} className="w-full bg-white dark:bg-darkCard border border-gray-300 dark:border-darkBorder rounded px-2 py-1.5 text-xs outline-none">
+                                                            <select value={novoPagamento.instituicao} onChange={e => setNovoPagamento({...novoPagamento, instituicao: e.target.value})} className="w-full bg-white dark:bg-darkCard border border-gray-300 dark:border-darkBorder rounded px-2 py-1.5 text-[11px] outline-none">
                                                                 <option value="Itaú">Itaú</option>
                                                                 <option value="Infinite Pay">Infinite Pay</option>
                                                                 <option value="Pag Seguro">Pag Seguro</option>
@@ -3062,7 +3062,7 @@ function App() {
                                                     )}
                                                     {(novoPagamento.forma === 'Cartão de Crédito' || novoPagamento.forma === 'Link de Pagamento') && (
                                                         <div>
-                                                            <select value={novoPagamento.parcelas} onChange={e => setNovoPagamento({...novoPagamento, parcelas: parseInt(e.target.value)})} className="w-full bg-white dark:bg-darkCard border border-gray-300 dark:border-darkBorder rounded px-2 py-1.5 text-xs outline-none">
+                                                            <select value={novoPagamento.parcelas} onChange={e => setNovoPagamento({...novoPagamento, parcelas: parseInt(e.target.value)})} className="w-full bg-white dark:bg-darkCard border border-gray-300 dark:border-darkBorder rounded px-2 py-1.5 text-[11px] outline-none">
                                                                 {[1,2,3,4,5,6,7,8,9,10,11,12].map(n => <option key={n} value={n}>{n}x</option>)}
                                                             </select>
                                                         </div>
@@ -3077,7 +3077,7 @@ function App() {
                                                         const saldoRestante = totalOSStr - novoTotalPago;
                                                         
                                                         setNovoPagamento({ valor: saldoRestante > 0 ? formatarMoeda((saldoRestante * 100).toFixed(0).toString()) : '', forma: 'PIX', parcelas: 1, instituicao: 'Itaú' });
-                                                    }} className="w-full bg-brand hover:bg-brandHover text-white py-1.5 rounded text-xs font-bold transition">Registrar Pagamento</button>
+                                                    }} className="w-full bg-brand hover:bg-brandHover text-white py-1.5 rounded text-[11px] font-semibold transition">Registrar Pagamento</button>
                                                 </div>
                                             )}
                                         </>
@@ -3086,14 +3086,14 @@ function App() {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-[#EDEDED]">Observações Gerais ou Texto Complementar</label>
-                                <textarea rows="4" value={novoPedido.servico} onChange={e => setNovoPedido({...novoPedido, servico: e.target.value})} disabled={isModalTrancado} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand transition dark:text-[#EDEDED] custom-scrollbar disabled:opacity-50" placeholder="Prazos de entrega, observações do financeiro ou complementos da O.S..."></textarea>
+                                <label className="block text-[13px] font-medium mb-2 text-gray-700 dark:text-[#EDEDED]">Observações Gerais ou Texto Complementar</label>
+                                <textarea rows="4" value={novoPedido.servico} onChange={e => setNovoPedido({...novoPedido, servico: e.target.value})} disabled={isModalTrancado} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand transition dark:text-[#EDEDED] custom-scrollbar disabled:opacity-50" placeholder="Prazos de entrega, observações do financeiro ou complementos da O.S..."></textarea>
                             </div>
                         </form>
 
                         <div className="px-6 py-4 border-t border-gray-100 dark:border-darkBorder bg-gray-50 dark:bg-darkCard flex flex-col sm:flex-row justify-between items-center gap-4 shrink-0">
                             <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto order-2 sm:order-1">
-                                <button type="button" onClick={fecharModalOS} className="flex-1 sm:flex-none px-4 py-2.5 rounded-md text-sm font-semibold text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-darkHover transition border border-transparent hover:border-gray-300 dark:hover:border-darkBorder">
+                                <button type="button" onClick={fecharModalOS} className="flex-1 sm:flex-none px-4 py-2.5 rounded-md text-[13px] font-semibold text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-darkHover transition border border-transparent hover:border-gray-300 dark:hover:border-darkBorder">
                                     Cancelar
                                 </button>
                                 
@@ -3101,12 +3101,12 @@ function App() {
                                     <>
                                         <div className="hidden sm:block w-px h-6 bg-gray-300 dark:bg-darkBorder mx-1"></div>
                                         
-                                        <button type="button" onClick={(e) => salvarOS(e, false)} disabled={salvandoOS} className="flex-1 sm:flex-none px-4 py-2.5 rounded-md text-sm font-bold bg-white dark:bg-darkElevated text-gray-800 dark:text-white border border-gray-200 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover hover:border-brand shadow-sm transition disabled:opacity-50 flex items-center justify-center gap-2">
+                                        <button type="button" onClick={(e) => salvarOS(e, false)} disabled={salvandoOS} className="flex-1 sm:flex-none px-4 py-2.5 rounded-md text-[13px] font-semibold bg-white dark:bg-darkElevated text-gray-800 dark:text-white border border-gray-200 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover hover:border-brand shadow-sm transition disabled:opacity-50 flex items-center justify-center gap-2">
                                             <Icon name="save" className="w-4 h-4 text-brand" />
                                             {salvandoOS ? 'Salvando...' : pedidoEmEdicao ? 'Atualizar' : 'Salvar'}
                                         </button>
                                         
-                                        <button type="button" onClick={(e) => salvarOS(e, true)} disabled={salvandoOS} className="flex-1 sm:flex-none px-4 py-2.5 rounded-md text-sm font-bold bg-gray-800 dark:bg-white text-white dark:text-black hover:bg-black dark:hover:bg-gray-200 shadow-sm transition disabled:opacity-50 flex items-center justify-center gap-2">
+                                        <button type="button" onClick={(e) => salvarOS(e, true)} disabled={salvandoOS} className="flex-1 sm:flex-none px-4 py-2.5 rounded-md text-[13px] font-semibold bg-gray-800 dark:bg-white text-white dark:text-black hover:bg-black dark:hover:bg-gray-200 shadow-sm transition disabled:opacity-50 flex items-center justify-center gap-2">
                                             <Icon name="printer" className="w-4 h-4" />
                                             {salvandoOS ? 'Salvando...' : 'Salvar e Imprimir'}
                                         </button>
@@ -3121,7 +3121,7 @@ function App() {
                                                 }
                                                 novoPedido.status = 'Finalizado';
                                                 salvarOS(e, false);
-                                            }} disabled={salvandoOS} className="flex-1 sm:flex-none px-4 py-2.5 rounded-md text-sm font-bold bg-emerald-500 hover:bg-emerald-600 text-white shadow-md transition disabled:opacity-50 flex items-center justify-center gap-2 border border-emerald-600">
+                                            }} disabled={salvandoOS} className="flex-1 sm:flex-none px-4 py-2.5 rounded-md text-[13px] font-semibold bg-emerald-500 hover:bg-emerald-600 text-white shadow-md transition disabled:opacity-50 flex items-center justify-center gap-2 border border-emerald-600">
                                                 <Icon name="check" className="w-4 h-4" />
                                                 Finalizar OS
                                             </button>
@@ -3131,10 +3131,10 @@ function App() {
                             </div>
 
                             <div className="flex items-center gap-3 order-1 sm:order-2 w-full sm:w-auto justify-end">
-                                <span className="text-xs font-bold text-gray-500 dark:text-[#888888] uppercase tracking-wider">Total Final:</span>
+                                <span className="text-[11px] font-semibold text-gray-500 dark:text-[#888888] uppercase tracking-wider">Total Final:</span>
                                 <div className="relative w-36">
-                                    <span className="absolute left-0 top-[5px] font-bold text-sm dark:text-gray-400">R$</span>
-                                    <input required type="text" value={novoPedido.valor_total} onChange={e => setNovoPedido({...novoPedido, valor_total: formatarMoeda(e.target.value)})} disabled={isModalTrancado} className="w-full bg-transparent border-none text-left pl-7 pr-0 py-1 font-bold text-xl text-brand outline-none disabled:opacity-50" placeholder="0,00" />
+                                    <span className="absolute left-0 top-[5px] font-semibold text-[13px] dark:text-gray-400">R$</span>
+                                    <input required type="text" value={novoPedido.valor_total} onChange={e => setNovoPedido({...novoPedido, valor_total: formatarMoeda(e.target.value)})} disabled={isModalTrancado} className="w-full bg-transparent border-none text-left pl-7 pr-0 py-1 font-semibold text-xl text-brand outline-none disabled:opacity-50" placeholder="0,00" />
                                 </div>
                             </div>
                         </div>
@@ -3147,10 +3147,10 @@ function App() {
                     <div className="bg-white dark:bg-darkCard w-full max-w-md rounded shadow-2xl overflow-hidden border border-gray-200 dark:border-darkBorder" onClick={(e) => e.stopPropagation()}>
                         <div className="px-6 py-5 border-b border-gray-100 dark:border-darkBorder flex justify-between items-center bg-gray-50 dark:bg-darkCard"><h3 className="font-semibold text-lg dark:text-white tracking-tight">{novoProduto.id ? 'Editar Produto' : 'Novo Produto'}</h3><button onClick={() => setModalProdutoAberto(false)} className="text-gray-400 hover:text-white transition"><Icon name="x" /></button></div>
                         <form onSubmit={salvarProduto} className="p-6 flex flex-col gap-4">
-                            <input required value={novoProduto.nome} onChange={e => setNovoProduto({...novoProduto, nome: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" placeholder="Nome" />
-                            <textarea rows="2" value={novoProduto.texto_padrao} onChange={e => setNovoProduto({...novoProduto, texto_padrao: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" placeholder="Descrição"></textarea>
-                            <input required value={novoProduto.preco_base} onChange={e => setNovoProduto({...novoProduto, preco_base: formatarMoeda(e.target.value)})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white font-medium transition" placeholder="0,00" />
-                            <div className="flex justify-end gap-3"><button type="button" onClick={() => setModalProdutoAberto(false)} className="px-4 py-2 rounded text-sm font-medium text-gray-600 dark:text-[#A1A1AA] hover:bg-gray-100 dark:hover:bg-darkHover transition">Cancelar</button><button type="submit" className="px-5 py-2 rounded text-sm font-medium bg-white text-black hover:bg-gray-200 transition">Salvar</button></div>
+                            <input required value={novoProduto.nome} onChange={e => setNovoProduto({...novoProduto, nome: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition" placeholder="Nome" />
+                            <textarea rows="2" value={novoProduto.texto_padrao} onChange={e => setNovoProduto({...novoProduto, texto_padrao: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition" placeholder="Descrição"></textarea>
+                            <input required value={novoProduto.preco_base} onChange={e => setNovoProduto({...novoProduto, preco_base: formatarMoeda(e.target.value)})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white font-medium transition" placeholder="0,00" />
+                            <div className="flex justify-end gap-3"><button type="button" onClick={() => setModalProdutoAberto(false)} className="px-4 py-2 rounded text-[13px] font-medium text-gray-600 dark:text-[#A1A1AA] hover:bg-gray-100 dark:hover:bg-darkHover transition">Cancelar</button><button type="submit" className="px-5 py-2 rounded text-[13px] font-medium bg-white text-black hover:bg-gray-200 transition">Salvar</button></div>
                         </form>
                     </div>
                 </div>
@@ -3161,14 +3161,14 @@ function App() {
                     <div className="bg-white dark:bg-darkCard w-full max-w-md rounded shadow-2xl overflow-hidden border border-gray-200 dark:border-darkBorder" onClick={(e) => e.stopPropagation()}>
                         <div className="px-6 py-5 border-b border-gray-100 dark:border-darkBorder flex justify-between items-center bg-gray-50 dark:bg-darkCard"><h3 className="font-semibold text-lg dark:text-white tracking-tight">{novoCliente.id ? 'Editar Cliente' : 'Novo Cliente'}</h3><button onClick={() => setModalClienteAberto(false)} className="text-gray-400 hover:text-white transition"><Icon name="x" /></button></div>
                         <form onSubmit={salvarCliente} className="p-6 flex flex-col gap-4">
-                            <input required value={novoCliente.nome} onChange={e => setNovoCliente({...novoCliente, nome: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" placeholder="Nome *" />
-                            <div className="grid grid-cols-2 gap-4"><input value={novoCliente.telefone} onChange={e => setNovoCliente({...novoCliente, telefone: formatarTelefone(e.target.value)})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" placeholder="WhatsApp" /><input type="email" value={novoCliente.email} onChange={e => setNovoCliente({...novoCliente, email: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" placeholder="E-mail" /></div>
-                            <textarea rows="2" value={novoCliente.observacoes} onChange={e => setNovoCliente({...novoCliente, observacoes: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand transition dark:text-[#EDEDED]" placeholder="Observações"></textarea>
+                            <input required value={novoCliente.nome} onChange={e => setNovoCliente({...novoCliente, nome: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition" placeholder="Nome *" />
+                            <div className="grid grid-cols-2 gap-4"><input value={novoCliente.telefone} onChange={e => setNovoCliente({...novoCliente, telefone: formatarTelefone(e.target.value)})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition" placeholder="WhatsApp" /><input type="email" value={novoCliente.email} onChange={e => setNovoCliente({...novoCliente, email: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition" placeholder="E-mail" /></div>
+                            <textarea rows="2" value={novoCliente.observacoes} onChange={e => setNovoCliente({...novoCliente, observacoes: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand transition dark:text-[#EDEDED]" placeholder="Observações"></textarea>
                             <label className="flex items-center gap-2 cursor-pointer mt-1 p-2 border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-950/20 rounded transition hover:bg-red-100 dark:hover:bg-red-900/30">
                                 <input type="checkbox" checked={novoCliente.cliente_problema} onChange={e => setNovoCliente({...novoCliente, cliente_problema: e.target.checked})} className="w-4 h-4 text-red-600 rounded border-red-300 focus:ring-red-500 cursor-pointer accent-red-600" />
-                                <span className="text-sm font-semibold text-red-600 dark:text-red-400 flex items-center gap-1.5"><Icon name="alert-triangle" className="w-4 h-4" /> Sinalizar como Cliente Problema</span>
+                                <span className="text-[13px] font-semibold text-red-600 dark:text-red-400 flex items-center gap-1.5"><Icon name="alert-triangle" className="w-4 h-4" /> Sinalizar como Cliente Problema</span>
                             </label>
-                            <div className="flex justify-end gap-3 mt-2"><button type="button" onClick={() => setModalClienteAberto(false)} className="px-4 py-2 rounded text-sm font-medium text-gray-600 dark:text-[#A1A1AA] hover:bg-gray-100 dark:hover:bg-darkHover transition">Cancelar</button><button type="submit" disabled={salvandoCliente} className="px-5 py-2 rounded text-sm font-medium bg-white text-black hover:bg-gray-200 transition disabled:opacity-50">{salvandoCliente ? 'Salvando...' : 'Salvar'}</button></div>
+                            <div className="flex justify-end gap-3 mt-2"><button type="button" onClick={() => setModalClienteAberto(false)} className="px-4 py-2 rounded text-[13px] font-medium text-gray-600 dark:text-[#A1A1AA] hover:bg-gray-100 dark:hover:bg-darkHover transition">Cancelar</button><button type="submit" disabled={salvandoCliente} className="px-5 py-2 rounded text-[13px] font-medium bg-white text-black hover:bg-gray-200 transition disabled:opacity-50">{salvandoCliente ? 'Salvando...' : 'Salvar'}</button></div>
                         </form>
                     </div>
                 </div>
@@ -3182,21 +3182,21 @@ function App() {
                             <button onClick={() => setModalContaAberto(false)} className="text-gray-400 hover:text-white transition"><Icon name="x" /></button>
                         </div>
                         <form onSubmit={salvarConta} className="p-6 flex flex-col gap-4">
-                            <input required value={novaConta.descricao} onChange={e => setNovaConta({...novaConta, descricao: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" placeholder="Descrição da Despesa" />
+                            <input required value={novaConta.descricao} onChange={e => setNovaConta({...novaConta, descricao: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition" placeholder="Descrição da Despesa" />
                             <div className="grid grid-cols-2 gap-4">
-                                <input required value={novaConta.valor} onChange={e => setNovaConta({...novaConta, valor: formatarMoeda(e.target.value)})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white font-medium transition" placeholder="Valor (R$)" />
-                                <input type="date" required value={novaConta.vencimento} onChange={e => setNovaConta({...novaConta, vencimento: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition text-gray-700" />
+                                <input required value={novaConta.valor} onChange={e => setNovaConta({...novaConta, valor: formatarMoeda(e.target.value)})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white font-medium transition" placeholder="Valor (R$)" />
+                                <input type="date" required value={novaConta.vencimento} onChange={e => setNovaConta({...novaConta, vencimento: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition text-gray-700" />
                             </div>
                             <div className="flex flex-col gap-1">
-                                <label className="text-xs font-bold text-gray-500 uppercase">Status</label>
-                                <select value={novaConta.status} onChange={e => setNovaConta({...novaConta, status: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition">
+                                <label className="text-[11px] font-semibold text-gray-500 uppercase">Status</label>
+                                <select value={novaConta.status} onChange={e => setNovaConta({...novaConta, status: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition">
                                     <option value="Pendente">Pendente</option>
                                     <option value="Pago">Pago</option>
                                 </select>
                             </div>
                             <div className="flex justify-end gap-3 mt-2">
-                                <button type="button" onClick={() => setModalContaAberto(false)} className="px-4 py-2 rounded text-sm font-medium text-gray-600 dark:text-[#A1A1AA] hover:bg-gray-100 dark:hover:bg-darkHover transition">Cancelar</button>
-                                <button type="submit" disabled={salvandoConta} className="px-5 py-2 rounded text-sm font-medium bg-white text-black hover:bg-gray-200 transition disabled:opacity-50">
+                                <button type="button" onClick={() => setModalContaAberto(false)} className="px-4 py-2 rounded text-[13px] font-medium text-gray-600 dark:text-[#A1A1AA] hover:bg-gray-100 dark:hover:bg-darkHover transition">Cancelar</button>
+                                <button type="submit" disabled={salvandoConta} className="px-5 py-2 rounded text-[13px] font-medium bg-white text-black hover:bg-gray-200 transition disabled:opacity-50">
                                     {salvandoConta ? 'Salvando...' : 'Salvar'}
                                 </button>
                             </div>
@@ -3212,35 +3212,35 @@ function App() {
                         <div className="p-6">
                             <div className="grid grid-cols-2 gap-6 mb-6">
                                 <div className="space-y-4 bg-gray-50 dark:bg-darkElevated p-4 rounded border border-gray-100 dark:border-darkBorder">
-                                    <h4 className="font-bold text-sm text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">Dados do Cliente (Link)</h4>
-                                    <div><label className="text-xs text-gray-500">Razão Social</label><div className="flex items-center gap-2"><div className="text-sm dark:text-[#EDEDED] font-medium">{notaFiscalEmEdicao.razao_social || '---'}</div>{notaFiscalEmEdicao.razao_social && <button type="button" onClick={() => navigator.clipboard.writeText(notaFiscalEmEdicao.razao_social)} className="text-gray-400 hover:text-brand transition" title="Copiar"><Icon name="copy" className="w-3.5 h-3.5" /></button>}</div></div>
-                                    <div><label className="text-xs text-gray-500">CNPJ</label><div className="flex items-center gap-2"><div className="text-sm dark:text-[#EDEDED] font-medium">{notaFiscalEmEdicao.cnpj || '---'}</div>{notaFiscalEmEdicao.cnpj && <button type="button" onClick={() => navigator.clipboard.writeText(notaFiscalEmEdicao.cnpj)} className="text-gray-400 hover:text-brand transition" title="Copiar"><Icon name="copy" className="w-3.5 h-3.5" /></button>}</div></div>
-                                    <div><label className="text-xs text-gray-500">Endereço</label><div className="flex items-center gap-2"><div className="text-sm dark:text-[#EDEDED] font-medium">{notaFiscalEmEdicao.endereco || '---'}</div>{notaFiscalEmEdicao.endereco && <button type="button" onClick={() => navigator.clipboard.writeText(notaFiscalEmEdicao.endereco)} className="text-gray-400 hover:text-brand transition" title="Copiar"><Icon name="copy" className="w-3.5 h-3.5" /></button>}</div></div>
-                                    <div><label className="text-xs text-gray-500">Contato</label><div className="text-sm dark:text-[#EDEDED] font-medium">{notaFiscalEmEdicao.contato || '---'}</div></div>
+                                    <h4 className="font-semibold text-[13px] text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">Dados do Cliente (Link)</h4>
+                                    <div><label className="text-[11px] text-gray-500">Razão Social</label><div className="flex items-center gap-2"><div className="text-[13px] dark:text-[#EDEDED] font-medium">{notaFiscalEmEdicao.razao_social || '---'}</div>{notaFiscalEmEdicao.razao_social && <button type="button" onClick={() => navigator.clipboard.writeText(notaFiscalEmEdicao.razao_social)} className="text-gray-400 hover:text-brand transition" title="Copiar"><Icon name="copy" className="w-3.5 h-3.5" /></button>}</div></div>
+                                    <div><label className="text-[11px] text-gray-500">CNPJ</label><div className="flex items-center gap-2"><div className="text-[13px] dark:text-[#EDEDED] font-medium">{notaFiscalEmEdicao.cnpj || '---'}</div>{notaFiscalEmEdicao.cnpj && <button type="button" onClick={() => navigator.clipboard.writeText(notaFiscalEmEdicao.cnpj)} className="text-gray-400 hover:text-brand transition" title="Copiar"><Icon name="copy" className="w-3.5 h-3.5" /></button>}</div></div>
+                                    <div><label className="text-[11px] text-gray-500">Endereço</label><div className="flex items-center gap-2"><div className="text-[13px] dark:text-[#EDEDED] font-medium">{notaFiscalEmEdicao.endereco || '---'}</div>{notaFiscalEmEdicao.endereco && <button type="button" onClick={() => navigator.clipboard.writeText(notaFiscalEmEdicao.endereco)} className="text-gray-400 hover:text-brand transition" title="Copiar"><Icon name="copy" className="w-3.5 h-3.5" /></button>}</div></div>
+                                    <div><label className="text-[11px] text-gray-500">Contato</label><div className="text-[13px] dark:text-[#EDEDED] font-medium">{notaFiscalEmEdicao.contato || '---'}</div></div>
                                 </div>
                                 <form id="formNota" onSubmit={salvarNotaFiscal} className="space-y-4">
-                                    <h4 className="font-bold text-sm text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">Preenchimento Interno</h4>
+                                    <h4 className="font-semibold text-[13px] text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">Preenchimento Interno</h4>
                                     <div>
-                                        <label className="text-xs text-gray-500 mb-1 block">Cliente (Identificação Interna)</label>
-                                        <input value={notaFiscalEmEdicao.cliente || ''} onChange={e => setNotaFiscalEmEdicao({...notaFiscalEmEdicao, cliente: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" placeholder="Nome Fantasia / Cliente" />
+                                        <label className="text-[11px] text-gray-500 mb-1 block">Cliente (Identificação Interna)</label>
+                                        <input value={notaFiscalEmEdicao.cliente || ''} onChange={e => setNotaFiscalEmEdicao({...notaFiscalEmEdicao, cliente: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition" placeholder="Nome Fantasia / Cliente" />
                                     </div>
                                     <div>
-                                        <label className="text-xs text-gray-500 mb-1 block">Serviço Feito</label>
-                                        <input value={notaFiscalEmEdicao.servico_feito || ''} onChange={e => setNotaFiscalEmEdicao({...notaFiscalEmEdicao, servico_feito: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" placeholder="Qual foi o serviço?" />
+                                        <label className="text-[11px] text-gray-500 mb-1 block">Serviço Feito</label>
+                                        <input value={notaFiscalEmEdicao.servico_feito || ''} onChange={e => setNotaFiscalEmEdicao({...notaFiscalEmEdicao, servico_feito: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition" placeholder="Qual foi o serviço?" />
                                     </div>
                                     <div>
-                                        <label className="text-xs text-gray-500 mb-1 block">Valor Pago (R$)</label>
-                                        <input type="text" value={notaFiscalEmEdicao.valor_pago || ''} onChange={e => setNotaFiscalEmEdicao({...notaFiscalEmEdicao, valor_pago: formatarMoeda(e.target.value)})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" placeholder="0,00" />
+                                        <label className="text-[11px] text-gray-500 mb-1 block">Valor Pago (R$)</label>
+                                        <input type="text" value={notaFiscalEmEdicao.valor_pago || ''} onChange={e => setNotaFiscalEmEdicao({...notaFiscalEmEdicao, valor_pago: formatarMoeda(e.target.value)})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition" placeholder="0,00" />
                                     </div>
                                     <div>
-                                        <label className="text-xs text-gray-500 mb-1 block">Observações</label>
-                                        <textarea rows="2" value={notaFiscalEmEdicao.observacoes || ''} onChange={e => setNotaFiscalEmEdicao({...notaFiscalEmEdicao, observacoes: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" placeholder="Anotações internas..."></textarea>
+                                        <label className="text-[11px] text-gray-500 mb-1 block">Observações</label>
+                                        <textarea rows="2" value={notaFiscalEmEdicao.observacoes || ''} onChange={e => setNotaFiscalEmEdicao({...notaFiscalEmEdicao, observacoes: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition" placeholder="Anotações internas..."></textarea>
                                     </div>
                                 </form>
                             </div>
                             <div className="flex justify-end gap-3 pt-4 border-t border-gray-100 dark:border-darkBorder">
-                                <button type="button" onClick={() => setModalNotaFiscalAberto(false)} className="px-4 py-2 rounded text-sm font-medium text-gray-600 dark:text-[#A1A1AA] hover:bg-gray-100 dark:hover:bg-darkHover transition">Cancelar</button>
-                                <button type="submit" form="formNota" disabled={salvandoNotaFiscal} className="px-5 py-2 rounded text-sm font-medium bg-brand text-white hover:bg-brandHover transition disabled:opacity-50">{salvandoNotaFiscal ? 'Salvando...' : 'Salvar Alterações'}</button>
+                                <button type="button" onClick={() => setModalNotaFiscalAberto(false)} className="px-4 py-2 rounded text-[13px] font-medium text-gray-600 dark:text-[#A1A1AA] hover:bg-gray-100 dark:hover:bg-darkHover transition">Cancelar</button>
+                                <button type="submit" form="formNota" disabled={salvandoNotaFiscal} className="px-5 py-2 rounded text-[13px] font-medium bg-brand text-white hover:bg-brandHover transition disabled:opacity-50">{salvandoNotaFiscal ? 'Salvando...' : 'Salvar Alterações'}</button>
                             </div>
                         </div>
                     </div>
@@ -3252,11 +3252,11 @@ function App() {
                     <div className="bg-white dark:bg-darkCard w-full max-w-md rounded shadow-2xl overflow-hidden border border-gray-200 dark:border-darkBorder" onClick={(e) => e.stopPropagation()}>
                         <div className="px-6 py-5 border-b border-gray-100 dark:border-darkBorder flex justify-between items-center bg-gray-50 dark:bg-darkCard"><h3 className="font-semibold text-lg dark:text-white tracking-tight">{novoUsuario.id ? 'Editar Conta' : 'Nova Conta de Acesso'}</h3><button onClick={() => setModalUsuarioAberto(false)} className="text-gray-400 hover:text-white transition"><Icon name="x" /></button></div>
                         <form onSubmit={salvarUsuario} className="p-6 flex flex-col gap-4">
-                            <input required value={novoUsuario.nome} onChange={e => setNovoUsuario({...novoUsuario, nome: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" placeholder="Nome de Acesso" />
-                            <input required type="password" value={novoUsuario.senha} onChange={e => setNovoUsuario({...novoUsuario, senha: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition" placeholder="Senha" />
+                            <input required value={novoUsuario.nome} onChange={e => setNovoUsuario({...novoUsuario, nome: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition" placeholder="Nome de Acesso" />
+                            <input required type="password" value={novoUsuario.senha} onChange={e => setNovoUsuario({...novoUsuario, senha: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition" placeholder="Senha" />
                             
                             <div className="relative">
-                                <select value={novoUsuario.nivel} onChange={e => setNovoUsuario({...novoUsuario, nivel: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-sm outline-none focus:border-brand dark:text-white transition appearance-none cursor-pointer">
+                                <select value={novoUsuario.nivel} onChange={e => setNovoUsuario({...novoUsuario, nivel: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition appearance-none cursor-pointer">
                                     <option value="Produção/Atendimento">Operador de Produção / Atendimento</option>
                                     <option value="Financeiro">Equipe Financeira</option>
                                     <option value="Administrador">Administrador (Total)</option>
@@ -3264,7 +3264,7 @@ function App() {
                                 <Icon name="chevron-down" className="absolute right-3 top-2.5 w-4 h-4 text-gray-400 pointer-events-none" />
                             </div>
                             <p className="text-[10px] text-gray-500 italic mt-1">* Nota: O usuário terá acesso imediato após salvar.</p>
-                            <div className="flex justify-end gap-3 mt-2"><button type="button" onClick={() => setModalUsuarioAberto(false)} className="px-4 py-2 rounded text-sm font-medium text-gray-600 dark:text-[#A1A1AA] hover:bg-gray-100 dark:hover:bg-darkHover transition">Cancelar</button><button type="submit" className="px-5 py-2 rounded text-sm font-medium bg-brand text-white hover:bg-brandHover transition shadow-sm">Salvar Acesso</button></div>
+                            <div className="flex justify-end gap-3 mt-2"><button type="button" onClick={() => setModalUsuarioAberto(false)} className="px-4 py-2 rounded text-[13px] font-medium text-gray-600 dark:text-[#A1A1AA] hover:bg-gray-100 dark:hover:bg-darkHover transition">Cancelar</button><button type="submit" className="px-5 py-2 rounded text-[13px] font-medium bg-brand text-white hover:bg-brandHover transition shadow-sm">Salvar Acesso</button></div>
                         </form>
                     </div>
                 </div>
@@ -3284,9 +3284,9 @@ function App() {
                                         <div className="flex flex-col">
                                             <img src="https://www.berlimgraficarapida.com.br/wp-content/uploads/elementor/thumbs/logosite-rm0erpiqj90gcf7ff4jp8ujys78opflob1b9vn5jjs.png" alt="Berlim Gráfica" className="h-12 object-contain object-left mb-2" />
                                             
-                                            <h2 className="text-xl font-bold uppercase text-gray-800">O.S. #{osParaImprimir.id}</h2>
+                                            <h2 className="text-xl font-semibold uppercase text-gray-800">O.S. #{osParaImprimir.id}</h2>
                                             <div className="flex items-center gap-3 mt-0.5">
-                                                <p className="text-xs text-gray-500 font-medium">Entrada: {formatarDataExibicao(osParaImprimir.data_pedido)}</p>
+                                                <p className="text-[11px] text-gray-500 font-medium">Entrada: {formatarDataExibicao(osParaImprimir.data_pedido)}</p>
                                                 <span className="border border-gray-300 text-gray-400 text-[8px] uppercase tracking-widest px-1.5 py-0.5 rounded">
                                                     {index === 0 ? 'Via da Gráfica' : 'Via do Cliente'}
                                                 </span>
@@ -3307,24 +3307,24 @@ function App() {
                                     <div className="mb-2">
                                         <div className="flex justify-between items-end mb-1">
                                             <div>
-                                                <h3 className="font-bold text-[10px] uppercase text-gray-400 mb-0.5 tracking-wider">Cliente</h3>
-                                                <p className="font-bold text-base uppercase text-gray-900">{osParaImprimir.cliente}</p>
+                                                <h3 className="font-semibold text-[10px] uppercase text-gray-400 mb-0.5 tracking-wider">Cliente</h3>
+                                                <p className="font-semibold text-base uppercase text-gray-900">{osParaImprimir.cliente}</p>
                                             </div>
                                             <div className="text-right">
-                                                <h3 className="font-bold text-[10px] uppercase text-gray-400 mb-0.5 tracking-wider">Contato</h3>
-                                                <p className="font-bold text-sm text-gray-800">{cInfo?.telefone || 'Não informado'}</p>
+                                                <h3 className="font-semibold text-[10px] uppercase text-gray-400 mb-0.5 tracking-wider">Contato</h3>
+                                                <p className="font-semibold text-[13px] text-gray-800">{cInfo?.telefone || 'Não informado'}</p>
                                             </div>
                                         </div>
                                         {cInfo?.observacoes && (
                                             <div className="mt-1">
-                                                <p className="text-xs text-gray-600 italic">" {cInfo.observacoes} "</p>
+                                                <p className="text-[11px] text-gray-600 italic">" {cInfo.observacoes} "</p>
                                             </div>
                                         )}
                                     </div>
                                 </div>
 
                                 <div className="flex-1 overflow-hidden flex flex-col mt-2">
-                                    <table className="w-full text-left text-sm border-collapse">
+                                    <table className="w-full text-left text-[13px] border-collapse">
                                         <thead>
                                             <tr className="border-b border-gray-800 text-gray-800">
                                                 <th className="pb-1 uppercase text-[10px] font-extrabold tracking-wider w-full">Serviços Contratados</th>
@@ -3334,20 +3334,20 @@ function App() {
                                         <tbody>
                                             {desc.itens.length > 0 ? desc.itens.map((item, idx) => (
                                                 <tr key={idx} className="border-b border-gray-100 last:border-0">
-                                                    <td className="py-0.5 text-gray-900 whitespace-pre-wrap pr-4 align-middle text-xs font-medium leading-tight">
+                                                    <td className="py-0.5 text-gray-900 whitespace-pre-wrap pr-4 align-middle text-[11px] font-medium leading-tight">
                                                         {item.descricao || item.nome}
                                                     </td>
-                                                    <td className="py-0.5 text-right whitespace-nowrap align-middle font-bold text-sm">
+                                                    <td className="py-0.5 text-right whitespace-nowrap align-middle font-semibold text-[13px]">
                                                         R$ {item.valor}
                                                         {item.desconto && <span className="block text-[9px] text-gray-400 font-normal mt-0.5">(-{item.desconto}%)</span>}
                                                     </td>
                                                 </tr>
                                             )) : (
                                                 <tr>
-                                                    <td className="py-2 text-gray-500 whitespace-pre-wrap pr-4 align-middle text-xs italic">
+                                                    <td className="py-2 text-gray-500 whitespace-pre-wrap pr-4 align-middle text-[11px] italic">
                                                         Serviço formatado manualmente (Verifique as observações gerais abaixo).
                                                     </td>
-                                                    <td className="py-2 text-right whitespace-nowrap align-middle font-bold text-sm">
+                                                    <td className="py-2 text-right whitespace-nowrap align-middle font-semibold text-[13px]">
                                                         R$ {formatarValorFinanceiro(Number(osParaImprimir.valor_total))}
                                                     </td>
                                                 </tr>
@@ -3363,26 +3363,26 @@ function App() {
                                         <div className="flex-1 max-w-[60%] flex flex-col gap-3">
                                             {desc.pagamentos && desc.pagamentos.length > 0 && (
                                                 <div>
-                                                    <h3 className="font-bold text-[10px] uppercase text-gray-400 mb-1 tracking-wider">Histórico de Pagamentos</h3>
-                                                    <div className="text-xs text-gray-800">
+                                                    <h3 className="font-semibold text-[10px] uppercase text-gray-400 mb-1 tracking-wider">Histórico de Pagamentos</h3>
+                                                    <div className="text-[11px] text-gray-800">
                                                         {desc.pagamentos.map((pag, idx) => (
                                                             <div key={idx} className="flex justify-between items-center border-b border-dashed border-gray-200 py-0.5 last:border-0">
                                                                 <span>{pag.forma} {pag.parcelas > 1 ? `(${pag.parcelas}x)` : ''} {pag.instituicao ? `(${pag.instituicao})` : ''} <span className="text-[10px] text-gray-500">({pag.data})</span></span>
-                                                                <span className="font-bold text-gray-900">R$ {pag.valor}</span>
+                                                                <span className="font-semibold text-gray-900">R$ {pag.valor}</span>
                                                             </div>
                                                         ))}
                                                     </div>
                                                 </div>
                                             )}
                                             <div>
-                                                <h3 className="font-bold text-[10px] uppercase text-gray-400 mb-1.5 tracking-wider">Observações Gerais do Pedido</h3>
-                                                <p className="text-xs text-gray-800 whitespace-pre-wrap leading-snug">
+                                                <h3 className="font-semibold text-[10px] uppercase text-gray-400 mb-1.5 tracking-wider">Observações Gerais do Pedido</h3>
+                                                <p className="text-[11px] text-gray-800 whitespace-pre-wrap leading-snug">
                                                     {desc.observacoes || <span className="italic text-gray-400">Nenhuma observação extra registrada.</span>}
                                                 </p>
                                             </div>
                                         </div>
                                         <div className="text-right shrink-0">
-                                            <span className="text-[10px] uppercase font-bold tracking-widest text-gray-500 block mb-0.5">Total do Pedido</span>
+                                            <span className="text-[10px] uppercase font-semibold tracking-widest text-gray-500 block mb-0.5">Total do Pedido</span>
                                             <h2 className="text-4xl font-black tracking-tight text-gray-900">R$ {formatarValorFinanceiro(Number(osParaImprimir.valor_total))}</h2>
                                         </div>
                                     </div>
