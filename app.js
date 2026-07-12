@@ -1883,16 +1883,16 @@ function App() {
                 )}
                 {abaAtual === 'financeiro' && (
                     <div className="bg-slate-50 dark:bg-darkBg border-b border-gray-200 dark:border-darkBorder px-6 flex gap-6 z-20 overflow-x-auto no-scrollbar-style sticky top-[125px]">
-                        <button onClick={() => setAbaFinanceiro('geral')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitespace-nowrap uppercase tracking-wider ${abaFinanceiro === 'geral' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}>Visão Geral</button>
-                        <button onClick={() => setAbaFinanceiro('vendas_produto')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitespace-nowrap uppercase tracking-wider ${abaFinanceiro === 'vendas_produto' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}>Vendas por Produto</button>
-                        <button onClick={() => setAbaFinanceiro('contas_pagar')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitespace-nowrap uppercase tracking-wider ${abaFinanceiro === 'contas_pagar' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}>Contas a Pagar</button>
+                        <button onClick={() => setAbaFinanceiro('geral')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitespace-nowrap uppercase tracking-wider flex items-center gap-2 ${abaFinanceiro === 'geral' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}><Icon name="pie-chart" className="w-4 h-4" /> Visão Geral</button>
+                        <button onClick={() => setAbaFinanceiro('vendas_produto')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitespace-nowrap uppercase tracking-wider flex items-center gap-2 ${abaFinanceiro === 'vendas_produto' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}><Icon name="tag" className="w-4 h-4" /> Vendas por Produto</button>
+                        <button onClick={() => setAbaFinanceiro('contas_pagar')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitespace-nowrap uppercase tracking-wider flex items-center gap-2 ${abaFinanceiro === 'contas_pagar' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}><Icon name="file-text" className="w-4 h-4" /> Contas a Pagar</button>
                     </div>
                 )}
                 {abaAtual === 'calculadoras' && (
                     <div className="bg-slate-50 dark:bg-darkBg border-b border-gray-200 dark:border-darkBorder px-6 flex gap-6 z-20 overflow-x-auto no-scrollbar-style sticky top-[125px]">
-                        <button onClick={() => setCalculadoraAtiva('banner')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitespace-nowrap uppercase tracking-wider ${calculadoraAtiva === 'banner' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}>Banner / Lona</button>
-                        <button onClick={() => setCalculadoraAtiva('adesivo')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitespace-nowrap uppercase tracking-wider ${calculadoraAtiva === 'adesivo' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}>Adesivos (Vinil)</button>
-                        <button onClick={() => setCalculadoraAtiva('casamento')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitespace-nowrap uppercase tracking-wider ${calculadoraAtiva === 'casamento' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}>Papelaria Casamento</button>
+                        <button onClick={() => setCalculadoraAtiva('banner')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitespace-nowrap uppercase tracking-wider flex items-center gap-2 ${calculadoraAtiva === 'banner' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}><Icon name="image" className="w-4 h-4" /> Banner / Lona</button>
+                        <button onClick={() => setCalculadoraAtiva('adesivo')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitespace-nowrap uppercase tracking-wider flex items-center gap-2 ${calculadoraAtiva === 'adesivo' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}><Icon name="grid" className="w-4 h-4" /> Adesivos (Vinil)</button>
+                        <button onClick={() => setCalculadoraAtiva('casamento')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitespace-nowrap uppercase tracking-wider flex items-center gap-2 ${calculadoraAtiva === 'casamento' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}><Icon name="heart" className="w-4 h-4" /> Papelaria Casamento</button>
                         {/* Se tiver mais calculadoras, elas aparecem aqui */}
                     </div>
                 )}
@@ -2758,13 +2758,13 @@ function App() {
                                             onClick={() => abrirEdicaoProduto(p)} 
                                             className={`border-b border-gray-100 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover transition cursor-pointer group ${draggedProdutoIndex === index ? 'opacity-50' : ''}`}
                                         >
-                                            <td className="px-6 py-4 text-[13px] font-medium text-gray-500 cursor-grab active:cursor-grabbing">
+                                            <td className="px-6 py-4 text-[13px] font-semibold text-gray-900 dark:text-gray-300 cursor-grab active:cursor-grabbing">
                                                 <Icon name="list" className="w-4 h-4 inline-block mr-2 opacity-50" />
                                                 #{p.id}
                                             </td>
-                                            <td className="px-6 py-4 text-[13px] font-semibold dark:text-[#EDEDED]">{p.nome}</td>
-                                            <td className="px-6 py-4 text-[13px] text-gray-600 dark:text-[#A1A1AA] truncate max-w-xs">{p.texto_padrao}</td>
-                                            <td className="px-6 py-4 text-[13px] font-semibold dark:text-[#EDEDED] text-right">R$ {formatarValorFinanceiro(Number(p.preco_base))}</td>
+                                            <td className="px-6 py-4 text-[13px] font-medium text-gray-800 dark:text-white">{p.nome}</td>
+                                            <td className="px-6 py-4 text-[13px] text-gray-600 dark:text-gray-400 truncate max-w-xs">{p.texto_padrao}</td>
+                                            <td className="px-6 py-4 text-[13px] font-semibold text-gray-900 dark:text-gray-300 text-right">R$ {formatarValorFinanceiro(Number(p.preco_base))}</td>
                                             <td className="px-6 py-4 text-center">
                                                 <button type="button" onClick={(e) => excluirProduto(p.id, e)} className="p-2 text-gray-300 hover:text-red-500 dark:text-gray-600 dark:hover:text-red-500 transition rounded hover:bg-red-50 dark:hover:bg-red-950/30 opacity-50 group-hover:opacity-100" title="Excluir Produto">
                                                     <Icon name="trash-2" className="w-4 h-4" />
@@ -2802,7 +2802,7 @@ function App() {
                                 <thead className="bg-gray-50/50 dark:bg-darkHover/50"><tr className="border-b border-gray-200 dark:border-darkBorder text-[13px] font-semibold text-gray-500 dark:text-gray-400 tracking-wide uppercase"><th className="px-6 py-4">Cliente</th><th className="px-6 py-4 w-48">WhatsApp</th><th className="px-6 py-4 w-64">E-mail</th><th className="px-6 py-4">Observações</th></tr></thead>
                                 <tbody>
                                     {clientesPaginados.length > 0 ? clientesPaginados.map(c => (
-                                        <tr key={c.id} onClick={() => abrirEdicaoCliente(c)} className="border-b border-gray-100 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover transition cursor-pointer"><td className={`px-6 py-4 text-[13px] font-semibold ${c.cliente_problema ? 'text-red-600 dark:text-red-400' : 'dark:text-[#EDEDED]'}`}>{c.nome} {c.cliente_problema && <Icon name="alert-triangle" className="w-3.5 h-3.5 inline text-red-500 ml-1" title="Cliente Problema" />}</td><td className="px-6 py-4 text-[13px] text-gray-600 dark:text-[#A1A1AA]">{c.telefone || '---'}</td><td className="px-6 py-4 text-[13px] text-gray-600 dark:text-[#A1A1AA]">{c.email || '---'}</td><td className="px-6 py-4 text-[13px] text-gray-500 dark:text-gray-600 truncate max-w-xs">{c.observacoes || '---'}</td></tr>
+                                        <tr key={c.id} onClick={() => abrirEdicaoCliente(c)} className="border-b border-gray-100 dark:border-darkBorder/50 hover:bg-gray-50/50 dark:hover:bg-darkHover/50 transition cursor-pointer"><td className={`px-6 py-4 text-[13px] font-semibold ${c.cliente_problema ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-gray-300'}`}>{c.nome} {c.cliente_problema && <Icon name="alert-triangle" className="w-3.5 h-3.5 inline text-red-500 ml-1" title="Cliente Problema" />}</td><td className="px-6 py-4 text-[13px] font-medium text-gray-800 dark:text-white">{c.telefone || '---'}</td><td className="px-6 py-4 text-[13px] text-gray-600 dark:text-gray-400">{c.email || '---'}</td><td className="px-6 py-4 text-[13px] text-gray-600 dark:text-gray-400 truncate max-w-xs">{c.observacoes || '---'}</td></tr>
                                     )) : (
                                         <tr><td colSpan="4" className="px-6 py-8 text-center text-gray-500 dark:text-[#A1A1AA]">Nenhum cliente encontrado.</td></tr>
                                     )}
@@ -2930,9 +2930,9 @@ function App() {
                                 <thead className="bg-gray-50/50 dark:bg-darkHover/50"><tr className="border-b border-gray-200 dark:border-darkBorder text-[13px] font-semibold text-gray-500 dark:text-gray-400 tracking-wide uppercase"><th className="px-6 py-4">Nome do Usuário</th><th className="px-6 py-4 w-48 text-right">Nível de Acesso</th></tr></thead>
                                 <tbody>
                                     {usuariosSistema.map(u => (
-                                        <tr key={u.id} onClick={() => abrirEdicaoUsuario(u)} className="border-b border-gray-100 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover transition cursor-pointer">
-                                            <td className="px-6 py-4 text-[13px] font-semibold dark:text-[#EDEDED]">{u.nome}</td>
-                                            <td className="px-6 py-4 text-[13px] font-semibold dark:text-[#EDEDED] text-right">
+                                        <tr key={u.id} onClick={() => abrirEdicaoUsuario(u)} className="border-b border-gray-100 dark:border-darkBorder/50 hover:bg-gray-50/50 dark:hover:bg-darkHover/50 transition cursor-pointer">
+                                            <td className="px-6 py-4 text-[13px] font-semibold text-gray-900 dark:text-gray-300">{u.nome}</td>
+                                            <td className="px-6 py-4 text-[13px] font-semibold text-gray-900 dark:text-gray-300 text-right">
                                                 <span className={`px-2 py-1 rounded text-[10px] uppercase tracking-wider border ${u.nivel === 'Administrador' ? 'bg-red-50 text-red-600 border-red-200' : u.nivel === 'Financeiro' ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-blue-50 text-blue-600 border-blue-200'}`}>
                                                     {u.nivel}
                                                 </span>
