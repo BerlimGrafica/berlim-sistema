@@ -1674,7 +1674,7 @@ function App() {
         <div>
             <div className="flex flex-col min-h-screen no-print">
                 {/* TIER 1: Logo and Profile */}
-                <header className="sticky top-0 z-40 bg-white dark:bg-darkBg px-6 py-4 flex justify-between items-center border-b border-gray-200 dark:border-darkBorder">
+                <header className="sticky top-0 z-40 bg-white dark:bg-darkBg px-6 py-4 flex justify-between items-center">
                     <div className="flex items-center">
                         <img src="https://www.berlimgraficarapida.com.br/wp-content/uploads/elementor/thumbs/logosite-rm0erpiqj90gcf7ff4jp8ujys78opflob1b9vn5jjs.png" alt="Berlim Gráfica" className="h-8 object-contain" />
                     </div>
@@ -1743,46 +1743,46 @@ function App() {
 
                 {/* TIER 2: Main Navigation Bar (Brand Color) */}
                 <nav className="bg-brand text-white px-6 shadow-sm z-30 sticky top-[73px]">
-                    <div className="flex gap-1 overflow-x-auto custom-scrollbar no-scrollbar-style items-end h-[52px]">
+                    <div className="flex gap-1 overflow-x-auto custom-scrollbar no-scrollbar-style items-end pt-2">
                         {(usuario?.nivel === 'Administrador' || usuario?.nivel === 'Produção/Atendimento') && (
-                            <a onClick={() => setAbaAtual('producao')} className={`px-5 py-3 text-[13px] font-bold cursor-pointer transition whitespace-nowrap rounded-t-md h-full flex items-center tracking-wide uppercase ${abaAtual === 'producao' ? 'bg-slate-50 text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
+                            <a onClick={() => setAbaAtual('producao')} className={`px-5 py-2.5 text-[13px] font-bold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center tracking-wide uppercase ${abaAtual === 'producao' ? 'bg-slate-50 text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
                                 Produção
                             </a>
                         )}
-                        <a onClick={() => setAbaAtual('baixa')} className={`px-5 py-3 text-[13px] font-bold cursor-pointer transition whitespace-nowrap rounded-t-md h-full flex items-center tracking-wide uppercase ${abaAtual === 'baixa' ? 'bg-slate-50 text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
+                        <a onClick={() => setAbaAtual('baixa')} className={`px-5 py-2.5 text-[13px] font-bold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center tracking-wide uppercase ${abaAtual === 'baixa' ? 'bg-slate-50 text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
                             Baixa de Notas
                         </a>
-                        <a onClick={() => setAbaAtual('calculadoras')} className={`px-5 py-3 text-[13px] font-bold cursor-pointer transition whitespace-nowrap rounded-t-md h-full flex items-center tracking-wide uppercase ${abaAtual === 'calculadoras' ? 'bg-slate-50 text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
+                        <a onClick={() => setAbaAtual('calculadoras')} className={`px-5 py-2.5 text-[13px] font-bold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center tracking-wide uppercase ${abaAtual === 'calculadoras' ? 'bg-slate-50 text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
                             Calculadoras
                         </a>
                         
                         {(usuario?.nivel === 'Administrador' || usuario?.nivel === 'Financeiro') && (
-                            <a onClick={() => setAbaAtual('financeiro')} className={`px-5 py-3 text-[13px] font-bold cursor-pointer transition whitespace-nowrap rounded-t-md h-full flex items-center tracking-wide uppercase ${abaAtual === 'financeiro' ? 'bg-slate-50 text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
+                            <a onClick={() => setAbaAtual('financeiro')} className={`px-5 py-2.5 text-[13px] font-bold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center tracking-wide uppercase ${abaAtual === 'financeiro' ? 'bg-slate-50 text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
                                 Financeiro
                             </a>
                         )}
                         
                         {(usuario?.nivel === 'Administrador' || usuario?.nivel === 'Financeiro' || usuario?.nivel === 'Produção/Atendimento') && (
-                            <a onClick={() => setAbaAtual('notas_fiscais')} className={`px-5 py-3 text-[13px] font-bold cursor-pointer transition whitespace-nowrap rounded-t-md h-full flex items-center gap-2 tracking-wide uppercase ${abaAtual === 'notas_fiscais' ? 'bg-slate-50 text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
+                            <a onClick={() => setAbaAtual('notas_fiscais')} className={`px-5 py-2.5 text-[13px] font-bold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center gap-2 tracking-wide uppercase ${abaAtual === 'notas_fiscais' ? 'bg-slate-50 text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
                                 Notas Fiscais
                                 {notasFiscais.some(n => !n.concluido) && <span className={`w-2 h-2 rounded-full ${abaAtual === 'notas_fiscais' ? 'bg-emerald-500' : 'bg-white'} shadow`}></span>}
                             </a>
                         )}
                         
                         {isAdmin && (
-                            <a onClick={() => setAbaAtual('produtos')} className={`px-5 py-3 text-[13px] font-bold cursor-pointer transition whitespace-nowrap rounded-t-md h-full flex items-center tracking-wide uppercase ${abaAtual === 'produtos' ? 'bg-slate-50 text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
+                            <a onClick={() => setAbaAtual('produtos')} className={`px-5 py-2.5 text-[13px] font-bold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center tracking-wide uppercase ${abaAtual === 'produtos' ? 'bg-slate-50 text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
                                 Catálogo
                             </a>
                         )}
                         
                         {(usuario?.nivel === 'Administrador' || usuario?.nivel === 'Produção/Atendimento') && (
-                            <a onClick={() => setAbaAtual('clientes')} className={`px-5 py-3 text-[13px] font-bold cursor-pointer transition whitespace-nowrap rounded-t-md h-full flex items-center tracking-wide uppercase ${abaAtual === 'clientes' ? 'bg-slate-50 text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
+                            <a onClick={() => setAbaAtual('clientes')} className={`px-5 py-2.5 text-[13px] font-bold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center tracking-wide uppercase ${abaAtual === 'clientes' ? 'bg-slate-50 text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
                                 Clientes
                             </a>
                         )}
                         
                         {isAdmin && (
-                            <a onClick={() => setAbaAtual('usuarios')} className={`px-5 py-3 text-[13px] font-bold cursor-pointer transition whitespace-nowrap rounded-t-md h-full flex items-center tracking-wide uppercase ${abaAtual === 'usuarios' ? 'bg-slate-50 text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
+                            <a onClick={() => setAbaAtual('usuarios')} className={`px-5 py-2.5 text-[13px] font-bold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center tracking-wide uppercase ${abaAtual === 'usuarios' ? 'bg-slate-50 text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
                                 Usuários
                             </a>
                         )}
