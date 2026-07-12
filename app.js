@@ -1616,7 +1616,7 @@ function App() {
                                 <a onClick={() => setAbaAtual('producao')} className={`transition ${abaAtual === 'producao' ? 'text-gray-900 dark:text-white font-semibold' : 'hover:text-gray-900 dark:hover:text-white'}`}>Produção</a>
                             )}
                             <a onClick={() => setAbaAtual('baixa')} className={`transition ${abaAtual === 'baixa' ? 'text-gray-900 dark:text-white font-semibold' : 'hover:text-gray-900 dark:hover:text-white'}`}>Baixa de Notas</a>
-                            <a onClick={() => setAbaAtual('calculadoras')} className={`transition ${abaAtual === 'calculadoras' ? 'text-gray-900 dark:text-white font-semibold' : 'hover:text-gray-900 dark:hover:text-white'} flex items-center gap-1.5`}><Icon name="calculator" /> Calculadoras</a>
+                            <a onClick={() => setAbaAtual('calculadoras')} className={`transition ${abaAtual === 'calculadoras' ? 'text-gray-900 dark:text-white font-semibold' : 'hover:text-gray-900 dark:hover:text-white'}`}>Calculadoras</a>
                             {(usuario?.nivel === 'Administrador' || usuario?.nivel === 'Financeiro') && (
                                 <>
                                     <a onClick={() => setAbaAtual('financeiro')} className={`transition ${abaAtual === 'financeiro' ? 'text-gray-900 dark:text-white font-semibold' : 'hover:text-gray-900 dark:hover:text-white'}`}>Financeiro</a>
