@@ -37,6 +37,15 @@ function Icon({ name, className = "w-4 h-4" }) {
     if (name === 'edit-3') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>;
     if (name === 'check-circle') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>;
     if (name === 'bell') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>;
+    if (name === 'truck') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>;
+    if (name === 'user') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>;
+    if (name === 'pie-chart') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>;
+    if (name === 'tag') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>;
+    if (name === 'file-text') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>;
+    if (name === 'image') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>;
+    if (name === 'grid') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>;
+    if (name === 'heart') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>;
+    if (name === 'clock') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>;
     return null;
 }
 
@@ -1899,10 +1908,10 @@ function App() {
                 {abaAtual === 'notas_fiscais' && (
                     <div className="bg-slate-50 dark:bg-darkBg border-b border-gray-200 dark:border-darkBorder px-6 flex gap-6 z-20 overflow-x-auto no-scrollbar-style sticky top-[125px]">
                         <button onClick={() => { setFiltroNotas('pendentes'); setPaginaNotasFiscais(1); }} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitespace-nowrap flex items-center gap-2 uppercase tracking-wider ${filtroNotas === 'pendentes' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}>
-                            Pendentes
-                            {notasFiscais.some(n => !n.concluido) && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>}
+                            <Icon name="clock" className="w-4 h-4" /> Pendentes
+                            {notasFiscais.some(n => !n.concluido) && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 ml-1"></span>}
                         </button>
-                        <button onClick={() => { setFiltroNotas('concluidas'); setPaginaNotasFiscais(1); }} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitespace-nowrap uppercase tracking-wider ${filtroNotas === 'concluidas' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}>Concluídas</button>
+                        <button onClick={() => { setFiltroNotas('concluidas'); setPaginaNotasFiscais(1); }} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitespace-nowrap flex items-center gap-2 uppercase tracking-wider ${filtroNotas === 'concluidas' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}><Icon name="check-circle" className="w-4 h-4" /> Concluídas</button>
                     </div>
                 )}
 
@@ -2766,7 +2775,7 @@ function App() {
                                             <td className="px-6 py-4 text-[13px] text-gray-600 dark:text-gray-400 truncate max-w-xs">{p.texto_padrao}</td>
                                             <td className="px-6 py-4 text-[13px] font-semibold text-gray-900 dark:text-gray-300 text-right">R$ {formatarValorFinanceiro(Number(p.preco_base))}</td>
                                             <td className="px-6 py-4 text-center">
-                                                <button type="button" onClick={(e) => excluirProduto(p.id, e)} className="p-2 text-gray-300 hover:text-red-500 dark:text-gray-600 dark:hover:text-red-500 transition rounded hover:bg-red-50 dark:hover:bg-red-950/30 opacity-50 group-hover:opacity-100" title="Excluir Produto">
+                                                <button type="button" onClick={(e) => excluirProduto(p.id, e)} className="p-2 text-red-500 hover:text-red-600 transition rounded hover:bg-red-50 dark:hover:bg-red-950/30" title="Excluir Produto">
                                                     <Icon name="trash-2" className="w-4 h-4" />
                                                 </button>
                                             </td>
@@ -2799,12 +2808,12 @@ function App() {
                                 ))}
                             </div>
                             <table className="w-full text-left border-collapse">
-                                <thead className="bg-gray-50/50 dark:bg-darkHover/50"><tr className="border-b border-gray-200 dark:border-darkBorder text-[13px] font-semibold text-gray-500 dark:text-gray-400 tracking-wide uppercase"><th className="px-6 py-4">Cliente</th><th className="px-6 py-4 w-48">WhatsApp</th><th className="px-6 py-4 w-64">E-mail</th><th className="px-6 py-4">Observações</th></tr></thead>
+                                <thead className="bg-gray-50/50 dark:bg-darkHover/50"><tr className="border-b border-gray-200 dark:border-darkBorder text-[13px] font-semibold text-gray-500 dark:text-gray-400 tracking-wide uppercase"><th className="px-6 py-4">Cliente</th><th className="px-6 py-4 w-48">WhatsApp</th><th className="px-6 py-4 w-64">E-mail</th><th className="px-6 py-4">Observações</th><th className="px-6 py-4 w-24 text-center">Ações</th></tr></thead>
                                 <tbody>
                                     {clientesPaginados.length > 0 ? clientesPaginados.map(c => (
-                                        <tr key={c.id} onClick={() => abrirEdicaoCliente(c)} className="border-b border-gray-100 dark:border-darkBorder/50 hover:bg-gray-50/50 dark:hover:bg-darkHover/50 transition cursor-pointer"><td className={`px-6 py-4 text-[13px] font-semibold ${c.cliente_problema ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-gray-300'}`}>{c.nome} {c.cliente_problema && <Icon name="alert-triangle" className="w-3.5 h-3.5 inline text-red-500 ml-1" title="Cliente Problema" />}</td><td className="px-6 py-4 text-[13px] font-medium text-gray-800 dark:text-white">{c.telefone || '---'}</td><td className="px-6 py-4 text-[13px] text-gray-600 dark:text-gray-400">{c.email || '---'}</td><td className="px-6 py-4 text-[13px] text-gray-600 dark:text-gray-400 truncate max-w-xs">{c.observacoes || '---'}</td></tr>
+                                        <tr key={c.id} onClick={() => abrirEdicaoCliente(c)} className="border-b border-gray-100 dark:border-darkBorder/50 hover:bg-gray-50/50 dark:hover:bg-darkHover/50 transition cursor-pointer"><td className={`px-6 py-4 text-[13px] font-semibold ${c.cliente_problema ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-gray-300'}`}>{c.nome} {c.cliente_problema && <Icon name="alert-triangle" className="w-3.5 h-3.5 inline text-red-500 ml-1" title="Cliente Problema" />}</td><td className="px-6 py-4 text-[13px] font-medium text-gray-800 dark:text-white">{c.telefone || '---'}</td><td className="px-6 py-4 text-[13px] text-gray-600 dark:text-gray-400">{c.email || '---'}</td><td className="px-6 py-4 text-[13px] text-gray-600 dark:text-gray-400 truncate max-w-xs">{c.observacoes || '---'}</td><td className="px-6 py-4 text-center"><button type="button" onClick={(e) => { e.stopPropagation(); if(confirm(`Excluir o cliente ${c.nome}?`)) { supabase.from('clientes').delete().eq('id', c.id).then(() => carregarDados()); } }} className="p-2 text-red-500 hover:text-red-600 transition rounded hover:bg-red-50 dark:hover:bg-red-950/30" title="Excluir Cliente"><Icon name="trash-2" className="w-4 h-4" /></button></td></tr>
                                     )) : (
-                                        <tr><td colSpan="4" className="px-6 py-8 text-center text-gray-500 dark:text-[#A1A1AA]">Nenhum cliente encontrado.</td></tr>
+                                        <tr><td colSpan="5" className="px-6 py-8 text-center text-gray-500 dark:text-[#A1A1AA]">Nenhum cliente encontrado.</td></tr>
                                     )}
                                 </tbody>
                             </table>
@@ -2966,7 +2975,7 @@ function App() {
                                         <th className="px-6 py-4">Nome do Fornecedor / Local</th>
                                         <th className="px-6 py-4">Contato</th>
                                         <th className="px-6 py-4">Observações</th>
-                                        <th className="px-6 py-4 w-24 text-right">Ações</th>
+                                        <th className="px-6 py-4 w-24 text-center">Ações</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -2978,21 +2987,19 @@ function App() {
                                         </tr>
                                     ) : (
                                         fornecedores.map(f => (
-                                            <tr key={f.id} className="border-b border-gray-100 dark:border-darkBorder/50 hover:bg-gray-50/50 dark:hover:bg-darkHover/50 transition">
+                                            <tr key={f.id} onClick={() => { setNovoFornecedor(f); setModalFornecedorAberto(true); }} className="border-b border-gray-100 dark:border-darkBorder/50 hover:bg-gray-50/50 dark:hover:bg-darkHover/50 transition cursor-pointer">
                                                 <td className="px-6 py-4 text-[13px] font-semibold text-gray-900 dark:text-gray-300">#{f.id}</td>
                                                 <td className="px-6 py-4 text-[13px] font-medium text-gray-800 dark:text-white">{f.nome}</td>
                                                 <td className="px-6 py-4 text-[13px] text-gray-600 dark:text-gray-400">{f.contato || '-'}</td>
                                                 <td className="px-6 py-4 text-[13px] text-gray-600 dark:text-gray-400">{f.observacoes || '-'}</td>
-                                                <td className="px-6 py-4 text-right space-x-2">
-                                                    <button onClick={() => { setNovoFornecedor(f); setModalFornecedorAberto(true); }} className="p-1.5 text-gray-400 hover:text-brand dark:hover:text-brand transition rounded">
-                                                        <Icon name="edit-3" className="w-4 h-4" />
-                                                    </button>
-                                                    <button onClick={async () => {
+                                                <td className="px-6 py-4 text-center">
+                                                    <button type="button" onClick={async (e) => {
+                                                        e.stopPropagation();
                                                         if(confirm(`Excluir o fornecedor ${f.nome}?`)) {
                                                             await supabase.from('fornecedores').delete().eq('id', f.id);
                                                             carregarDados();
                                                         }
-                                                    }} className="p-1.5 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition rounded">
+                                                    }} className="p-2 text-red-500 hover:text-red-600 transition rounded hover:bg-red-50 dark:hover:bg-red-950/30" title="Excluir Fornecedor">
                                                         <Icon name="trash-2" className="w-4 h-4" />
                                                     </button>
                                                 </td>
