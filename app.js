@@ -674,21 +674,18 @@ function CalculadoraAdesivo({ produtos }) {
     const [quantidade, setQuantidade] = useState('');
 
     const item15 = produtos?.find(p => Number(p.id) === 15);
+    const item16 = produtos?.find(p => Number(p.id) === 16);
     const item17 = produtos?.find(p => Number(p.id) === 17);
     const item18 = produtos?.find(p => Number(p.id) === 18);
     const item19 = produtos?.find(p => Number(p.id) === 19);
+    const item21 = produtos?.find(p => Number(p.id) === 21);
 
     const preco15 = item15 ? parseFloat(item15.preco_base) : 33.0;
+    const preco16 = item16 ? parseFloat(item16.preco_base) : 33.0;
     const preco17 = item17 ? parseFloat(item17.preco_base) : 90.0;
     const preco18 = item18 ? parseFloat(item18.preco_base) : 130.0;
     const preco19 = item19 ? parseFloat(item19.preco_base) : 115.0;
-
-    const precosVinil = {
-        '17': preco17,
-        '18_brilho': preco18,
-        '18_fosco': preco18,
-        '19': preco19
-    };
+    const preco21 = item21 ? parseFloat(item21.preco_base) : 55.0;
 
     const calculaCabem = (areaW, areaH, adW, adH) => {
         return Math.floor(areaW / adW) * Math.floor(areaH / adH);
@@ -704,49 +701,39 @@ function CalculadoraAdesivo({ produtos }) {
         const l = lRaw + 0.2;
         const a = aRaw + 0.2;
         
-        const valorM2 = precosVinil[tipo] || 90.0;
-        const precoSRA3 = valorM2 * (33.0 / 90.0);
-        const precoMeioMetro = valorM2 * (66.0 / 90.0);
-        const preco1Metro = valorM2;
-
         const qSRA3 = calculaCabem(26, 39, l, a);
         const qMeio = calculaCabem(44, 94, l, a);
         const qMetro = calculaCabem(94, 94, l, a);
 
-        let total = 0;
+        let sra3Price = preco15;
+        let basePrice = preco17;
 
         if (tipo === '17') {
-            if (qSRA3 > 0 && qty <= qSRA3) {
-                total = preco15;
-            } else if (qMeio > 0 && qty <= qMeio) {
-                total = preco17 * 0.6667;
-            } else if (qMetro > 0 && qty <= qMetro) {
-                total = preco17;
-            } else {
-                if (qMetro > 0) {
-                    const metrosNecessarios = qty / qMetro;
-                    total = metrosNecessarios * preco17;
-                } else {
-                    const areaFisica = (l * a) / 10000;
-                    total = (areaFisica * qty) * preco17;
-                }
-            }
+            sra3Price = preco15;
+            basePrice = preco17;
+        } else if (tipo === '18_brilho' || tipo === '18_fosco') {
+            sra3Price = preco21;
+            basePrice = preco18;
+        } else if (tipo === '19') {
+            sra3Price = preco16;
+            basePrice = preco19;
+        }
+
+        let total = 0;
+
+        if (qSRA3 > 0 && qty <= qSRA3) {
+            total = sra3Price;
+        } else if (qMeio > 0 && qty <= qMeio) {
+            total = basePrice * 0.7333;
+        } else if (qMetro > 0 && qty <= qMetro) {
+            total = basePrice;
         } else {
-            if (qSRA3 > 0 && qty <= qSRA3) {
-                total = precoSRA3;
-            } else if (qMeio > 0 && qty <= qMeio) {
-                total = precoMeioMetro;
-            } else if (qMetro > 0 && qty <= qMetro) {
-                total = preco1Metro;
+            if (qMetro > 0) {
+                const metrosNecessarios = qty / qMetro;
+                total = metrosNecessarios * basePrice;
             } else {
-                if (qMetro > 0) {
-                    const metrosNecessarios = qty / qMetro;
-                    total = metrosNecessarios * preco1Metro;
-                } else {
-                    // Adesivo maior que a área útil de 1m, calcula por m² linear/quadrado puro
-                    const areaFisica = (l * a) / 10000;
-                    total = (areaFisica * qty) * preco1Metro;
-                }
+                const areaFisica = (l * a) / 10000;
+                total = (areaFisica * qty) * basePrice;
             }
         }
 
