@@ -3592,19 +3592,15 @@ function App() {
                             </div>
 
                             <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center lg:justify-end gap-2 sm:gap-3 w-full lg:w-auto">
-                                <button type="button" onClick={fecharModalOS} className="w-full sm:w-auto px-4 py-2.5 rounded-lg text-[13px] font-bold text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white hover:bg-gray-200/50 dark:hover:bg-darkHover transition border border-transparent">
-                                    Cancelar
-                                </button>
-                                
                                 {!isModalTrancado && (
                                     <>
-                                        <button type="button" onClick={(e) => salvarOS(e, true)} disabled={salvandoOS} className="w-full sm:w-auto px-4 py-2.5 rounded-lg text-[13px] font-bold bg-white dark:bg-darkCard text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover hover:border-gray-300 dark:hover:border-gray-600 shadow-sm transition disabled:opacity-50 flex items-center justify-center gap-2 whitespace-nowrap">
-                                            <Icon name="printer" className="w-4 h-4" />
+                                        <button type="button" onClick={(e) => salvarOS(e, true)} disabled={salvandoOS} className="w-full sm:w-44 px-2 py-2.5 rounded-lg text-[13px] font-bold bg-white dark:bg-darkCard text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover hover:border-gray-300 dark:hover:border-gray-600 shadow-sm transition disabled:opacity-50 flex items-center justify-center gap-2 whitespace-nowrap">
+                                            <Icon name="printer" className="w-4 h-4 shrink-0" />
                                             {salvandoOS ? 'Salvando...' : 'Salvar e Imprimir'}
                                         </button>
                                         
-                                        <button type="button" onClick={(e) => salvarOS(e, false)} disabled={salvandoOS} className="w-full sm:w-auto px-6 py-2.5 rounded-lg text-[13px] font-bold bg-brand text-white hover:bg-brandHover shadow-md shadow-brand/20 transition disabled:opacity-50 flex items-center justify-center gap-2 whitespace-nowrap">
-                                            <Icon name="save" className="w-4 h-4" />
+                                        <button type="button" onClick={(e) => salvarOS(e, false)} disabled={salvandoOS} className="w-full sm:w-44 px-2 py-2.5 rounded-lg text-[13px] font-bold bg-brand text-white hover:bg-brandHover shadow-md shadow-brand/20 transition disabled:opacity-50 flex items-center justify-center gap-2 whitespace-nowrap">
+                                            <Icon name="save" className="w-4 h-4 shrink-0" />
                                             {salvandoOS ? 'Salvando...' : pedidoEmEdicao ? 'Atualizar' : 'Salvar OS'}
                                         </button>
 
@@ -3618,8 +3614,8 @@ function App() {
                                                 }
                                                 novoPedido.status = 'Finalizado';
                                                 salvarOS(e, false);
-                                            }} disabled={salvandoOS} className="w-full sm:w-auto px-5 py-2.5 rounded-lg text-[13px] font-bold bg-emerald-500 hover:bg-emerald-600 text-white shadow-md shadow-emerald-500/20 transition disabled:opacity-50 flex items-center justify-center gap-2 border border-emerald-600/50 whitespace-nowrap ml-0 sm:ml-2">
-                                                <Icon name="check-circle" className="w-4 h-4" />
+                                            }} disabled={salvandoOS} className="w-full sm:w-44 px-2 py-2.5 rounded-lg text-[13px] font-bold bg-emerald-500 hover:bg-emerald-600 text-white shadow-md shadow-emerald-500/20 transition disabled:opacity-50 flex items-center justify-center gap-2 border border-emerald-600/50 whitespace-nowrap">
+                                                <Icon name="check-circle" className="w-4 h-4 shrink-0" />
                                                 Finalizar OS
                                             </button>
                                         )}
