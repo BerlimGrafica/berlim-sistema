@@ -907,6 +907,9 @@ function App() {
     const [produtos, setProdutos] = useState([]);
     const [draggedProdutoIndex, setDraggedProdutoIndex] = useState(null);
     const [clientes, setClientes] = useState([]);
+    const [clientesCadastrados, setClientesCadastrados] = useState([]);
+    const [totalClientesCad, setTotalClientesCad] = useState(0);
+    const [clientesProblema, setClientesProblema] = useState([]);
     const [fornecedores, setFornecedores] = useState([]);
     const [abaCadastros, setAbaCadastros] = useState('clientes');
     const [abaOS, setAbaOS] = useState('abertas');
@@ -940,6 +943,9 @@ function App() {
     // Paginação
     const [paginaProducao, setPaginaProducao] = useState(1);
     const [paginaHistorico, setPaginaHistorico] = useState(1);
+    const [pedidosHistorico, setPedidosHistorico] = useState([]);
+    const [totalPedidosHistorico, setTotalPedidosHistorico] = useState(0);
+    const [triggerRealtime, setTriggerRealtime] = useState(0);
     const [paginaFinanceiro, setPaginaFinanceiro] = useState(1);
     const itensPorPagina = 50;
     const [dataFiltroInicio, setDataFiltroInicio] = useState('');
@@ -1059,6 +1065,7 @@ function App() {
                         }
 
                         carregarDados(); // Puxa os dados novos invisivelmente
+                        setTriggerRealtime(prev => prev + 1);
                     }
                 )
                 .on(
@@ -1085,6 +1092,7 @@ function App() {
                         }
 
                         carregarDados(); // Puxa os dados novos invisivelmente
+                        setTriggerRealtime(prev => prev + 1);
                     }
                 )
             .subscribe();
@@ -1098,8 +1106,7 @@ function App() {
 
     const isClienteProblema = (nome) => {
         if (!nome) return false;
-        const c = clientes.find(cliente => cliente.nome === nome);
-        return c ? c.cliente_problema : false;
+        return clientesProblema.includes(nome);
     };
 
     async function carregarDados() {
@@ -1108,10 +1115,14 @@ function App() {
         let limit = 1000;
         let fetchMore = true;
         
+        const anoAnteriorStr = (new Date().getFullYear() - 1).toString();
+        const dataCorte = `${anoAnteriorStr}-01-01`;
+
         while (fetchMore) {
             const { data: batch, error } = await supabase
                 .from('pedidos')
                 .select('*')
+                .or(`data_pedido.gte.${dataCorte},status.in.(Produzir,Arte,Impressão,Acabamento,Retirada)`)
                 .order('id', { ascending: false })
                 .range(from, from + limit - 1);
                 
@@ -1175,22 +1186,7 @@ function App() {
         const { data: listaProdutos } = await supabase.from('produtos').select('*').order('ordem', { ascending: true });
         if (listaProdutos) setProdutos(listaProdutos);
         
-        let todosClientes = [];
-        let fetchMoreClientes = true;
-        let fromClientes = 0;
-        const limitClientes = 1000;
-        while (fetchMoreClientes) {
-            const { data: batchClientes, error: errClientes } = await supabase.from('clientes').select('*').order('nome', { ascending: true }).range(fromClientes, fromClientes + limitClientes - 1);
-            if (errClientes) break;
-            if (batchClientes && batchClientes.length > 0) {
-                todosClientes = [...todosClientes, ...batchClientes];
-                if (batchClientes.length < limitClientes) fetchMoreClientes = false;
-                else fromClientes += limitClientes;
-            } else {
-                fetchMoreClientes = false;
-            }
-        }
-        if (todosClientes.length > 0) setClientes(todosClientes);
+        // Clientes não são mais puxados integralmente aqui.
 
         const { data: listaUsuarios } = await supabase.from('usuarios').select('*').order('nome', { ascending: true });
         if (listaUsuarios) setUsuariosSistema(listaUsuarios);
@@ -1208,6 +1204,121 @@ function App() {
     useEffect(() => {
         setPaginaHistorico(1);
     }, [buscaHistoricoText, dataFiltroInicio, dataFiltroFim]);
+
+    useEffect(() => {
+        if (!usuario) return;
+        
+        async function fetchHistorico() {
+            let query = supabase.from('pedidos').select('*', { count: 'exact' });
+            
+            if (abaOS === 'abertas') {
+                query = query.not('status', 'in', '("Concluído","Finalizado","Cancelado","Abandonado")');
+            } else if (abaOS === 'concluidas') {
+                query = query.eq('status', 'Concluído');
+            } else if (abaOS === 'finalizadas') {
+                query = query.eq('status', 'Finalizado');
+            } else if (abaOS === 'canceladas') {
+                query = query.eq('status', 'Cancelado');
+            } else if (abaOS === 'abandonadas') {
+                query = query.eq('status', 'Abandonado');
+            }
+
+            const isOperador = usuario?.nivel === 'Produção/Atendimento';
+            if (isOperador) {
+                query = query.not('status', 'eq', 'Finalizado');
+            }
+
+            if (buscaHistoricoText) {
+                const isNum = !isNaN(buscaHistoricoText);
+                if (isNum) {
+                    query = query.or(`cliente.ilike.%${buscaHistoricoText}%,id.eq.${buscaHistoricoText}`);
+                } else {
+                    query = query.ilike('cliente', `%${buscaHistoricoText}%`);
+                }
+            }
+
+            if (dataFiltroInicio) query = query.gte('data_pedido', dataFiltroInicio);
+            if (dataFiltroFim) query = query.lte('data_pedido', dataFiltroFim);
+
+            query = query.order('id', { ascending: false });
+            
+            const from = (paginaHistorico - 1) * itensPorPagina;
+            const to = from + itensPorPagina - 1;
+            query = query.range(from, to);
+
+            const { data, count, error } = await query;
+            if (!error && data) {
+                setPedidosHistorico(data);
+                if (count !== null) setTotalPedidosHistorico(count);
+            }
+        }
+        
+        const timeout = setTimeout(fetchHistorico, 300);
+        return () => clearTimeout(timeout);
+    }, [usuario, abaOS, paginaHistorico, buscaHistoricoText, dataFiltroInicio, dataFiltroFim, triggerRealtime]);
+
+    useEffect(() => {
+        if (!usuario) return;
+        async function fetchProblemas() {
+            const { data } = await supabase.from('clientes').select('nome').eq('cliente_problema', true);
+            if (data) setClientesProblema(data.map(c => c.nome));
+        }
+        fetchProblemas();
+    }, [usuario, triggerRealtime]);
+
+    useEffect(() => {
+        if (!buscaCliente || buscaCliente.length < 1) {
+            setClientes([]);
+            return;
+        }
+        const timeout = setTimeout(async () => {
+            const isNum = !isNaN(buscaCliente);
+            let query = supabase.from('clientes').select('*').limit(15);
+            if (isNum) {
+                query = query.ilike('telefone', `%${buscaCliente}%`);
+            } else {
+                query = query.ilike('nome', `%${buscaCliente}%`);
+            }
+            const { data } = await query;
+            if (data) setClientes(data);
+        }, 300);
+        return () => clearTimeout(timeout);
+    }, [buscaCliente]);
+
+    useEffect(() => {
+        if (abaAtual !== 'cadastros' || abaCadastros !== 'clientes' || !usuario) return;
+        
+        async function fetchClientesCadastrados() {
+            let query = supabase.from('clientes').select('*', { count: 'exact' });
+            
+            if (letraFiltroCliente) {
+                query = query.ilike('nome', `${letraFiltroCliente}%`);
+            }
+            if (buscaCadClientes) {
+                const isNum = !isNaN(buscaCadClientes);
+                if (isNum) {
+                    query = query.ilike('telefone', `%${buscaCadClientes}%`);
+                } else {
+                    query = query.or(`nome.ilike.%${buscaCadClientes}%,email.ilike.%${buscaCadClientes}%`);
+                }
+            }
+            
+            query = query.order('nome', { ascending: true });
+            
+            const from = (paginaClientes - 1) * itensPorPagina;
+            const to = from + itensPorPagina - 1;
+            query = query.range(from, to);
+            
+            const { data, count } = await query;
+            if (data) {
+                setClientesCadastrados(data);
+                if (count !== null) setTotalClientesCad(count);
+            }
+        }
+        
+        const timeout = setTimeout(fetchClientesCadastrados, 300);
+        return () => clearTimeout(timeout);
+    }, [usuario, abaAtual, abaCadastros, paginaClientes, buscaCadClientes, letraFiltroCliente, triggerRealtime]);
 
     const efetuarLogin = async (e) => {
         e.preventDefault();
@@ -1572,11 +1683,18 @@ function App() {
 
         if (clienteFormatado.telefone && clienteFormatado.telefone.trim() !== '') {
             const telNormalizado = clienteFormatado.telefone.replace(/\D/g, '');
-            const duplicado = clientes.find(c => {
-                if (novoCliente.id && c.id === novoCliente.id) return false;
-                if (!c.telefone) return false;
-                return c.telefone.replace(/\D/g, '') === telNormalizado;
-            });
+            let duplicado = null;
+            if (telNormalizado.length >= 8) {
+                const searchString = `%${telNormalizado.slice(-8)}`;
+                const { data: dupData } = await supabase.from('clientes').select('id,nome,telefone').ilike('telefone', searchString);
+                if (dupData) {
+                    duplicado = dupData.find(c => {
+                        if (novoCliente.id && c.id === novoCliente.id) return false;
+                        if (!c.telefone) return false;
+                        return c.telefone.replace(/\D/g, '') === telNormalizado;
+                    });
+                }
+            }
             
             if (duplicado) {
                 alert('Aviso: Este número de WhatsApp/Telefone já está cadastrado no cliente "' + duplicado.nome + '"!');
@@ -1587,11 +1705,11 @@ function App() {
 
         if (novoCliente.id) {
             const { data, error } = await supabase.from('clientes').update(clienteFormatado).eq('id', novoCliente.id).select();
-            if (!error && data) { setClientes(clientes.map(c => c.id === novoCliente.id ? data[0] : c)); setModalClienteAberto(false); setNovoCliente({ id: null, nome: '', telefone: '', email: '', observacoes: '', cliente_problema: false }); } 
+            if (!error && data) { setTriggerRealtime(prev => prev + 1); setModalClienteAberto(false); setNovoCliente({ id: null, nome: '', telefone: '', email: '', observacoes: '', cliente_problema: false }); } 
             else alert('Falha ao atualizar: ' + error.message);
         } else {
             const { data, error } = await supabase.from('clientes').insert([clienteFormatado]).select();
-            if (!error && data) { setClientes([...clientes, data[0]]); setNovoPedido({...novoPedido, cliente: data[0].nome}); setBuscaCliente(data[0].nome); setModalClienteAberto(false); setNovoCliente({ id: null, nome: '', telefone: '', email: '', observacoes: '', cliente_problema: false }); } 
+            if (!error && data) { setTriggerRealtime(prev => prev + 1); setNovoPedido({...novoPedido, cliente: data[0].nome}); setBuscaCliente(data[0].nome); setModalClienteAberto(false); setNovoCliente({ id: null, nome: '', telefone: '', email: '', observacoes: '', cliente_problema: false }); } 
             else alert('Falha ao salvar: ' + error.message);
         }
         setSalvandoCliente(false);
@@ -1629,12 +1747,16 @@ function App() {
         }
     }
 
-    function imprimirOS(pedido) {
+    async function imprimirOS(pedido) {
         setOsParaImprimir(pedido);
-        setTimeout(() => window.print(), 100);
+        const { data } = await supabase.from('clientes').select('*').eq('nome', pedido.cliente).single();
+        if (data) {
+            setOsParaImprimir(prev => ({...prev, clienteInfo: data}));
+        }
+        setTimeout(() => window.print(), 200);
     }
 
-    const clientesFiltrados = clientes.filter(c => c.nome.toLowerCase().includes(buscaCliente.toLowerCase()) || (c.telefone && c.telefone.includes(buscaCliente)));
+    const clientesFiltrados = clientes;
     // Lógica para elencar os 5 produtos mais vendidos com base no histórico
     const vendasPorProduto = useMemo(() => {
         const mapa = {};
@@ -1680,26 +1802,15 @@ function App() {
         return (a.ordem || 0) - (b.ordem || 0);
     });
     
-    const clientesAbaFiltro = clientes.filter(c => {
-        let matchLetra = true;
-        let matchBusca = true;
-        if (letraFiltroCliente) {
-            matchLetra = c.nome && c.nome.toUpperCase().startsWith(letraFiltroCliente.toUpperCase());
-        }
-        if (buscaCadClientes) {
-            const termo = buscaCadClientes.toLowerCase();
-            matchBusca = (c.nome && c.nome.toLowerCase().includes(termo)) || (c.telefone && c.telefone.includes(termo)) || (c.email && c.email.toLowerCase().includes(termo));
-        }
-        return matchLetra && matchBusca;
-    });
+    // (Filtros locais de Clientes foram substituídos por busca no servidor e paginação)
 
     const produtosCatalogoFiltrados = produtos.filter(p => {
         if (!buscaCadProdutos) return true;
         const termo = buscaCadProdutos.toLowerCase();
         return (p.nome && p.nome.toLowerCase().includes(termo));
     });
-    const clientesPaginados = clientesAbaFiltro.slice((paginaClientes - 1) * itensPorPagina, paginaClientes * itensPorPagina);
-    const totalPaginasClientes = Math.ceil(clientesAbaFiltro.length / itensPorPagina) || 1;
+    const clientesPaginados = clientesCadastrados;
+    const totalPaginasClientes = Math.ceil(totalClientesCad / itensPorPagina) || 1;
 
     // Filtros e paginação da aba Notas Fiscais
     const notasFiscaisAbaFiltro = notasFiscais.filter(n => {
@@ -1728,22 +1839,7 @@ function App() {
         return matchTermo;
     });
 
-    // Filtros aba de Histórico/Baixas
-    const pedidosHistoricoFiltrados = pedidos.filter(p => {
-        if (abaOS === 'abertas' && (p.status === 'Concluído' || p.status === 'Finalizado' || p.status === 'Cancelado' || p.status === 'Abandonado')) return false;
-        if (abaOS === 'concluidas' && p.status !== 'Concluído') return false;
-        if (abaOS === 'finalizadas' && p.status !== 'Finalizado') return false;
-        if (abaOS === 'canceladas' && p.status !== 'Cancelado') return false;
-        if (abaOS === 'abandonadas' && p.status !== 'Abandonado') return false;
-
-        if (isOperador && p.status === 'Finalizado') return false;
-        const termo = buscaHistoricoText.toLowerCase();
-        const matchTermo = !termo || (p.cliente && p.cliente.toLowerCase().includes(termo)) || (p.id && p.id.toString().includes(termo));
-        let matchData = true;
-        if (dataFiltroInicio && (!p.data_pedido || p.data_pedido < dataFiltroInicio)) matchData = false;
-        if (dataFiltroFim && (!p.data_pedido || p.data_pedido > dataFiltroFim)) matchData = false;
-        return matchTermo && matchData;
-    });
+    // (Filtros locais do Histórico foram substituídos por busca no servidor e paginação)
 
     const opcoesStatusPermitidas = isOperador ? [...STATUSES_PRODUCAO, 'Abandonado', 'Concluído'] : [...STATUSES_PRODUCAO, ...STATUSES_FINALIZADOS];
     const isModalTrancado = (pedidoEmEdicao && pedidoEmEdicao.status === 'Finalizado' && isOperador) ? true : false;
@@ -2109,9 +2205,7 @@ function App() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {pedidosHistoricoFiltrados
-                                        .slice((paginaHistorico - 1) * itensPorPagina, paginaHistorico * itensPorPagina)
-                                        .map(p => {
+                                    {pedidosHistorico.map(p => {
                                         const trancado = isOperador && p.status === 'Finalizado';
                                         return (
                                             <tr key={p.id} onClick={() => { if (trancado) return; abrirEdicao(p); }} className={`border-b border-gray-100 dark:border-darkBorder transition ${trancado ? 'opacity-30 bg-[#050505] cursor-not-allowed' : 'cursor-pointer hover:bg-gray-50 dark:hover:bg-darkHover'}`}>
@@ -2135,10 +2229,10 @@ function App() {
                                     })}
                                 </tbody>
                             </table>
-                            {pedidosHistoricoFiltrados.length > itensPorPagina && (
+                            {totalPedidosHistorico > itensPorPagina && (
                                 <div className="flex justify-between items-center p-4 border-t border-gray-200 dark:border-darkBorder bg-white dark:bg-darkCard rounded-b-xl">
                                     <span className="text-[13px] text-gray-500">
-                                        Mostrando {((paginaHistorico - 1) * itensPorPagina) + 1} a {Math.min(paginaHistorico * itensPorPagina, pedidosHistoricoFiltrados.length)} de {pedidosHistoricoFiltrados.length}
+                                        Mostrando {((paginaHistorico - 1) * itensPorPagina) + 1} a {Math.min(paginaHistorico * itensPorPagina, totalPedidosHistorico)} de {totalPedidosHistorico}
                                     </span>
                                     <div className="flex gap-2">
                                         <button 
@@ -2147,8 +2241,8 @@ function App() {
                                             className="px-3 py-1 text-[13px] font-medium bg-gray-100 dark:bg-darkElevated text-gray-700 dark:text-gray-300 rounded hover:bg-gray-200 dark:hover:bg-darkHover disabled:opacity-50 disabled:cursor-not-allowed transition"
                                         >Anterior</button>
                                         <button 
-                                            onClick={() => setPaginaHistorico(p => Math.min(Math.ceil(pedidosHistoricoFiltrados.length / itensPorPagina), p + 1))}
-                                            disabled={paginaHistorico === Math.ceil(pedidosHistoricoFiltrados.length / itensPorPagina)}
+                                            onClick={() => setPaginaHistorico(p => Math.min(Math.ceil(totalPedidosHistorico / itensPorPagina), p + 1))}
+                                            disabled={paginaHistorico === Math.ceil(totalPedidosHistorico / itensPorPagina)}
                                             className="px-3 py-1 text-[13px] font-medium bg-gray-100 dark:bg-darkElevated text-gray-700 dark:text-gray-300 rounded hover:bg-gray-200 dark:hover:bg-darkHover disabled:opacity-50 disabled:cursor-not-allowed transition"
                                         >Próxima</button>
                                     </div>
@@ -3532,7 +3626,7 @@ function App() {
             {osParaImprimir && (
                 <div className="print-only bg-white text-black font-sans flex flex-col w-full h-[286mm] overflow-hidden justify-between select-none">
                     {[1, 2].map((via, index) => {
-                        const cInfo = clientes.find(c => c.nome === osParaImprimir.cliente);
+                        const cInfo = osParaImprimir.clienteInfo;
                         const desc = desconstruirTextoServico(osParaImprimir.servico);
                         
                         return (
