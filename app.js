@@ -3581,23 +3581,31 @@ function App() {
                             </div>
                         </form>
 
-                        <div className="px-6 py-4 border-t border-gray-100 dark:border-darkBorder bg-gray-50 dark:bg-darkCard flex flex-wrap xl:flex-nowrap justify-between gap-4 shrink-0">
+                        <div className="px-6 py-4 border-t border-gray-200 dark:border-darkBorder bg-gray-50/80 dark:bg-darkCard/80 backdrop-blur-md flex flex-col lg:flex-row items-center justify-between gap-6 shrink-0 rounded-b-xl z-20 shadow-[0_-4px_20px_rgb(0,0,0,0.02)] dark:shadow-none">
                             
-                            <div className="flex flex-wrap items-center gap-2 w-full xl:w-auto order-2 xl:order-1">
-                                <button type="button" onClick={fecharModalOS} className="w-full sm:w-auto px-4 py-2.5 rounded-md text-[13px] font-semibold text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-darkHover transition border border-transparent hover:border-gray-300 dark:hover:border-darkBorder sm:mr-2">
+                            <div className="flex items-center gap-3 bg-white dark:bg-darkElevated px-4 py-3 rounded-xl border border-gray-200 dark:border-darkBorder shadow-sm w-full lg:w-auto justify-between lg:justify-start">
+                                <span className="text-[11px] font-bold text-gray-400 dark:text-[#888888] uppercase tracking-widest mt-1">Total Final</span>
+                                <div className="relative flex items-center justify-end">
+                                    <span className="font-bold text-[14px] text-gray-300 dark:text-gray-500 mr-1.5">R$</span>
+                                    <input required type="text" value={novoPedido.valor_total} onChange={e => setNovoPedido({...novoPedido, valor_total: formatarMoeda(e.target.value)})} disabled={isModalTrancado} className="bg-transparent border-none text-right font-black text-2xl text-brand outline-none disabled:opacity-50 w-28 sm:w-32 placeholder-brand/30" placeholder="0,00" />
+                                </div>
+                            </div>
+
+                            <div className="flex flex-col sm:flex-row items-center justify-end gap-2 sm:gap-3 w-full lg:w-auto">
+                                <button type="button" onClick={fecharModalOS} className="w-full sm:w-auto px-4 py-2.5 rounded-lg text-[13px] font-bold text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white hover:bg-gray-200/50 dark:hover:bg-darkHover transition border border-transparent">
                                     Cancelar
                                 </button>
                                 
                                 {!isModalTrancado && (
                                     <>
-                                        <button type="button" onClick={(e) => salvarOS(e, false)} disabled={salvandoOS} className="w-full sm:w-auto px-4 py-2.5 rounded-md text-[13px] font-semibold bg-white dark:bg-darkElevated text-gray-800 dark:text-white border border-gray-200 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover hover:border-brand shadow-sm transition disabled:opacity-50 flex items-center justify-center gap-2 whitespace-nowrap">
-                                            <Icon name="save" className="w-4 h-4 text-brand" />
-                                            {salvandoOS ? 'Salvando...' : pedidoEmEdicao ? 'Atualizar' : 'Salvar'}
-                                        </button>
-                                        
-                                        <button type="button" onClick={(e) => salvarOS(e, true)} disabled={salvandoOS} className="w-full sm:w-auto px-4 py-2.5 rounded-md text-[13px] font-semibold bg-gray-800 dark:bg-white text-white dark:text-black hover:bg-black dark:hover:bg-gray-200 shadow-sm transition disabled:opacity-50 flex items-center justify-center gap-2 whitespace-nowrap">
+                                        <button type="button" onClick={(e) => salvarOS(e, true)} disabled={salvandoOS} className="w-full sm:w-auto px-4 py-2.5 rounded-lg text-[13px] font-bold bg-white dark:bg-darkCard text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover hover:border-gray-300 dark:hover:border-gray-600 shadow-sm transition disabled:opacity-50 flex items-center justify-center gap-2 whitespace-nowrap">
                                             <Icon name="printer" className="w-4 h-4" />
                                             {salvandoOS ? 'Salvando...' : 'Salvar e Imprimir'}
+                                        </button>
+                                        
+                                        <button type="button" onClick={(e) => salvarOS(e, false)} disabled={salvandoOS} className="w-full sm:w-auto px-6 py-2.5 rounded-lg text-[13px] font-bold bg-brand text-white hover:bg-brandHover shadow-md shadow-brand/20 transition disabled:opacity-50 flex items-center justify-center gap-2 whitespace-nowrap">
+                                            <Icon name="save" className="w-4 h-4" />
+                                            {salvandoOS ? 'Salvando...' : pedidoEmEdicao ? 'Atualizar' : 'Salvar OS'}
                                         </button>
 
                                         {novoPedido.status !== 'Finalizado' && (usuario?.nivel === 'Administrador' || usuario?.nivel === 'Financeiro') && (
@@ -3610,21 +3618,13 @@ function App() {
                                                 }
                                                 novoPedido.status = 'Finalizado';
                                                 salvarOS(e, false);
-                                            }} disabled={salvandoOS} className="w-full sm:w-auto px-4 py-2.5 rounded-md text-[13px] font-semibold bg-emerald-500 hover:bg-emerald-600 text-white shadow-md transition disabled:opacity-50 flex items-center justify-center gap-2 border border-emerald-600 whitespace-nowrap">
-                                                <Icon name="check" className="w-4 h-4" />
+                                            }} disabled={salvandoOS} className="w-full sm:w-auto px-5 py-2.5 rounded-lg text-[13px] font-bold bg-emerald-500 hover:bg-emerald-600 text-white shadow-md shadow-emerald-500/20 transition disabled:opacity-50 flex items-center justify-center gap-2 border border-emerald-600/50 whitespace-nowrap ml-0 sm:ml-2">
+                                                <Icon name="check-circle" className="w-4 h-4" />
                                                 Finalizar OS
                                             </button>
                                         )}
                                     </>
                                 )}
-                            </div>
-
-                            <div className="flex items-center justify-between xl:justify-end gap-3 order-1 xl:order-2 w-full xl:w-auto bg-white dark:bg-darkElevated xl:bg-transparent xl:border-0 border border-gray-200 dark:border-darkBorder rounded-md p-3 xl:p-0">
-                                <span className="text-[12px] font-semibold text-gray-500 dark:text-[#888888] uppercase tracking-wider whitespace-nowrap">Total Final:</span>
-                                <div className="relative w-32 sm:w-36">
-                                    <span className="absolute left-0 top-[3px] font-semibold text-[14px] text-gray-500 dark:text-gray-400">R$</span>
-                                    <input required type="text" value={novoPedido.valor_total} onChange={e => setNovoPedido({...novoPedido, valor_total: formatarMoeda(e.target.value)})} disabled={isModalTrancado} className="w-full bg-transparent border-none text-right pl-7 pr-0 py-0.5 font-bold text-xl text-brand outline-none disabled:opacity-50" placeholder="0,00" />
-                                </div>
                             </div>
                         </div>
                     </div>
