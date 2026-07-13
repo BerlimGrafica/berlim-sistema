@@ -667,18 +667,27 @@ function CalculadoraBanner() {
     );
 }
 
-function CalculadoraAdesivo() {
+function CalculadoraAdesivo({ produtos }) {
     const [largura, setLargura] = useState('');
     const [altura, setAltura] = useState('');
-    const [tipo, setTipo] = useState('vinil_branco');
+    const [tipo, setTipo] = useState('17');
     const [quantidade, setQuantidade] = useState('');
 
+    const item15 = produtos?.find(p => Number(p.id) === 15);
+    const item17 = produtos?.find(p => Number(p.id) === 17);
+    const item18 = produtos?.find(p => Number(p.id) === 18);
+    const item19 = produtos?.find(p => Number(p.id) === 19);
+
+    const preco15 = item15 ? parseFloat(item15.preco_base) : 33.0;
+    const preco17 = item17 ? parseFloat(item17.preco_base) : 90.0;
+    const preco18 = item18 ? parseFloat(item18.preco_base) : 130.0;
+    const preco19 = item19 ? parseFloat(item19.preco_base) : 115.0;
+
     const precosVinil = {
-        'vinil_branco': 90.0,
-        'vinil_fosco': 90.0,
-        'vinil_transparente': 115.0,
-        'vinil_laminado_brilho': 130.0,
-        'vinil_laminado_fosco': 130.0
+        '17': preco17,
+        '18_brilho': preco18,
+        '18_fosco': preco18,
+        '19': preco19
     };
 
     const calculaCabem = (areaW, areaH, adW, adH) => {
@@ -706,20 +715,38 @@ function CalculadoraAdesivo() {
 
         let total = 0;
 
-        if (qSRA3 > 0 && qty <= qSRA3) {
-            total = precoSRA3;
-        } else if (qMeio > 0 && qty <= qMeio) {
-            total = precoMeioMetro;
-        } else if (qMetro > 0 && qty <= qMetro) {
-            total = preco1Metro;
-        } else {
-            if (qMetro > 0) {
-                const metrosNecessarios = qty / qMetro;
-                total = metrosNecessarios * preco1Metro;
+        if (tipo === '17') {
+            if (qSRA3 > 0 && qty <= qSRA3) {
+                total = preco15;
+            } else if (qMeio > 0 && qty <= qMeio) {
+                total = preco17 * 0.6667;
+            } else if (qMetro > 0 && qty <= qMetro) {
+                total = preco17;
             } else {
-                // Adesivo maior que a área útil de 1m, calcula por m² linear/quadrado puro
-                const areaFisica = (l * a) / 10000;
-                total = (areaFisica * qty) * preco1Metro;
+                if (qMetro > 0) {
+                    const metrosNecessarios = qty / qMetro;
+                    total = metrosNecessarios * preco17;
+                } else {
+                    const areaFisica = (l * a) / 10000;
+                    total = (areaFisica * qty) * preco17;
+                }
+            }
+        } else {
+            if (qSRA3 > 0 && qty <= qSRA3) {
+                total = precoSRA3;
+            } else if (qMeio > 0 && qty <= qMeio) {
+                total = precoMeioMetro;
+            } else if (qMetro > 0 && qty <= qMetro) {
+                total = preco1Metro;
+            } else {
+                if (qMetro > 0) {
+                    const metrosNecessarios = qty / qMetro;
+                    total = metrosNecessarios * preco1Metro;
+                } else {
+                    // Adesivo maior que a área útil de 1m, calcula por m² linear/quadrado puro
+                    const areaFisica = (l * a) / 10000;
+                    total = (areaFisica * qty) * preco1Metro;
+                }
             }
         }
 
@@ -733,18 +760,18 @@ function CalculadoraAdesivo() {
         if (isNaN(lRaw) || isNaN(aRaw) || lRaw <= 0 || aRaw <= 0 || qty <= 0) return '';
         
         let nomeTipo = 'Vinil';
-        let lam = ' | Sem Laminação (Película de proteção)';
+        let lam = '';
         
-        if (tipo === 'vinil_branco') nomeTipo = 'Vinil Branco Brilho';
-        if (tipo === 'vinil_fosco') nomeTipo = 'Vinil Branco Fosco';
-        if (tipo === 'vinil_transparente') nomeTipo = 'Vinil Transparente';
-        if (tipo === 'vinil_laminado_brilho') {
-            nomeTipo = 'Vinil Branco Brilho';
-            lam = ' | Laminado Brilho ou Fosco';
-        }
-        if (tipo === 'vinil_laminado_fosco') {
-            nomeTipo = 'Vinil Branco Fosco';
-            lam = ' | Laminado Brilho ou Fosco';
+        if (tipo === '17') {
+            nomeTipo = item17 ? item17.nome : 'Adesivo Vinil';
+        } else if (tipo === '18_brilho') {
+            nomeTipo = item18 ? item18.nome : 'Adesivo Laminado';
+            lam = ' | Brilho';
+        } else if (tipo === '18_fosco') {
+            nomeTipo = item18 ? item18.nome : 'Adesivo Laminado';
+            lam = ' | Fosco';
+        } else if (tipo === '19') {
+            nomeTipo = item19 ? item19.nome : 'Adesivo Transparente';
         }
         
         const val = calcular().replace('.', ',');
@@ -780,11 +807,10 @@ function CalculadoraAdesivo() {
                 <div>
                     <label className="block text-[11px] font-semibold text-gray-500 mb-1">Tipo de Adesivo</label>
                     <select value={tipo} onChange={e => setTipo(e.target.value)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition">
-                        <option value="vinil_branco">Vinil Branco Brilho (R$ 90/m²)</option>
-                        <option value="vinil_fosco">Vinil Branco Fosco (R$ 90/m²)</option>
-                        <option value="vinil_transparente">Vinil Transparente (R$ 115/m²)</option>
-                        <option value="vinil_laminado_brilho">Vinil Laminado Brilho (R$ 130/m²)</option>
-                        <option value="vinil_laminado_fosco">Vinil Laminado Fosco (R$ 130/m²)</option>
+                        <option value="17">{item17 ? item17.nome : 'Item 17'}</option>
+                        <option value="18_brilho">{item18 ? item18.nome : 'Item 18'} (Laminado Brilho)</option>
+                        <option value="18_fosco">{item18 ? item18.nome : 'Item 18'} (Laminado Fosco)</option>
+                        <option value="19">{item19 ? item19.nome : 'Item 19'}</option>
                     </select>
                 </div>
                 <div>
@@ -873,7 +899,7 @@ function CalculadoraCasamento() {
     );
 }
 
-function CalculadorasAba({ calculadoraAtiva }) {
+function CalculadorasAba({ calculadoraAtiva, produtos }) {
     return (
         <div className="flex-1 p-6 lg:p-10 mx-auto w-full max-w-3xl fade-in flex flex-col h-[calc(100vh-125px)] overflow-y-auto custom-scrollbar">
             <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 mb-6 border-b border-gray-100 dark:border-darkBorder pb-6 shrink-0">
@@ -885,7 +911,7 @@ function CalculadorasAba({ calculadoraAtiva }) {
 
             <div className="w-full">
                 {calculadoraAtiva === 'banner' && <CalculadoraBanner />}
-                {calculadoraAtiva === 'adesivo' && <CalculadoraAdesivo />}
+                {calculadoraAtiva === 'adesivo' && <CalculadoraAdesivo produtos={produtos} />}
                 {calculadoraAtiva === 'casamento' && <CalculadoraCasamento />}
             </div>
         </div>
@@ -3657,7 +3683,7 @@ function App() {
                         </div>
                     </main>
                 )}
-                {abaAtual === 'calculadoras' && <CalculadorasAba calculadoraAtiva={calculadoraAtiva} />}
+                {abaAtual === 'calculadoras' && <CalculadorasAba calculadoraAtiva={calculadoraAtiva} produtos={produtos} />}
             </div>
 
             {modalAberto && (
