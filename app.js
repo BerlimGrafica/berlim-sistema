@@ -1169,7 +1169,7 @@ function App() {
                 const amanhaStr = amanha.getFullYear() + '-' + String(amanha.getMonth() + 1).padStart(2, '0') + '-' + String(amanha.getDate()).padStart(2, '0');
 
                 const statusIgnorados = ['Concluída', 'Finalizada', 'Cancelada', 'Abandonada'];
-                const pedidosFuturaAmanha = todosPedidos.filter(p => p.local_producao && p.local_producao.toLowerCase() === 'futura' && !statusIgnorados.includes(p.status) && p.prazo && p.prazo.startsWith(amanhaStr));
+                const pedidosFuturaAmanha = todosPedidos.filter(p => p.local_producao && p.local_producao.toLowerCase().includes('futura') && !statusIgnorados.includes(p.status) && p.prazo && p.prazo.startsWith(amanhaStr));
                 if (pedidosFuturaAmanha.length > 0) {
                     setAlertasNaoLidos(prev => {
                         let novosAlertas = [...prev];
@@ -3408,21 +3408,21 @@ function App() {
                             </div>
                         </form>
 
-                        <div className="px-6 py-4 border-t border-gray-100 dark:border-darkBorder bg-gray-50 dark:bg-darkCard flex flex-col md:flex-row justify-between gap-4 shrink-0">
+                        <div className="px-6 py-4 border-t border-gray-100 dark:border-darkBorder bg-gray-50 dark:bg-darkCard flex flex-wrap xl:flex-nowrap justify-between gap-4 shrink-0">
                             
-                            <div className="flex flex-wrap md:flex-nowrap items-center gap-2 w-full md:w-auto order-2 md:order-1">
-                                <button type="button" onClick={fecharModalOS} className="w-full md:w-auto px-4 py-2.5 rounded-md text-[13px] font-semibold text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-darkHover transition border border-transparent hover:border-gray-300 dark:hover:border-darkBorder md:mr-2">
+                            <div className="flex flex-wrap items-center gap-2 w-full xl:w-auto order-2 xl:order-1">
+                                <button type="button" onClick={fecharModalOS} className="w-full sm:w-auto px-4 py-2.5 rounded-md text-[13px] font-semibold text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-darkHover transition border border-transparent hover:border-gray-300 dark:hover:border-darkBorder sm:mr-2">
                                     Cancelar
                                 </button>
                                 
                                 {!isModalTrancado && (
                                     <>
-                                        <button type="button" onClick={(e) => salvarOS(e, false)} disabled={salvandoOS} className="flex-1 md:flex-none px-4 py-2.5 rounded-md text-[13px] font-semibold bg-white dark:bg-darkElevated text-gray-800 dark:text-white border border-gray-200 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover hover:border-brand shadow-sm transition disabled:opacity-50 flex items-center justify-center gap-2">
+                                        <button type="button" onClick={(e) => salvarOS(e, false)} disabled={salvandoOS} className="w-full sm:w-auto px-4 py-2.5 rounded-md text-[13px] font-semibold bg-white dark:bg-darkElevated text-gray-800 dark:text-white border border-gray-200 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover hover:border-brand shadow-sm transition disabled:opacity-50 flex items-center justify-center gap-2 whitespace-nowrap">
                                             <Icon name="save" className="w-4 h-4 text-brand" />
                                             {salvandoOS ? 'Salvando...' : pedidoEmEdicao ? 'Atualizar' : 'Salvar'}
                                         </button>
                                         
-                                        <button type="button" onClick={(e) => salvarOS(e, true)} disabled={salvandoOS} className="flex-1 md:flex-none px-4 py-2.5 rounded-md text-[13px] font-semibold bg-gray-800 dark:bg-white text-white dark:text-black hover:bg-black dark:hover:bg-gray-200 shadow-sm transition disabled:opacity-50 flex items-center justify-center gap-2">
+                                        <button type="button" onClick={(e) => salvarOS(e, true)} disabled={salvandoOS} className="w-full sm:w-auto px-4 py-2.5 rounded-md text-[13px] font-semibold bg-gray-800 dark:bg-white text-white dark:text-black hover:bg-black dark:hover:bg-gray-200 shadow-sm transition disabled:opacity-50 flex items-center justify-center gap-2 whitespace-nowrap">
                                             <Icon name="printer" className="w-4 h-4" />
                                             {salvandoOS ? 'Salvando...' : 'Salvar e Imprimir'}
                                         </button>
@@ -3437,7 +3437,7 @@ function App() {
                                                 }
                                                 novoPedido.status = 'Finalizado';
                                                 salvarOS(e, false);
-                                            }} disabled={salvandoOS} className="w-full md:w-auto px-4 py-2.5 rounded-md text-[13px] font-semibold bg-emerald-500 hover:bg-emerald-600 text-white shadow-md transition disabled:opacity-50 flex items-center justify-center gap-2 border border-emerald-600">
+                                            }} disabled={salvandoOS} className="w-full sm:w-auto px-4 py-2.5 rounded-md text-[13px] font-semibold bg-emerald-500 hover:bg-emerald-600 text-white shadow-md transition disabled:opacity-50 flex items-center justify-center gap-2 border border-emerald-600 whitespace-nowrap">
                                                 <Icon name="check" className="w-4 h-4" />
                                                 Finalizar OS
                                             </button>
@@ -3446,9 +3446,9 @@ function App() {
                                 )}
                             </div>
 
-                            <div className="flex items-center justify-between md:justify-end gap-3 order-1 md:order-2 w-full md:w-auto bg-white dark:bg-darkElevated md:bg-transparent md:border-0 border border-gray-200 dark:border-darkBorder rounded-md p-3 md:p-0">
-                                <span className="text-[12px] font-semibold text-gray-500 dark:text-[#888888] uppercase tracking-wider">Total Final:</span>
-                                <div className="relative w-36">
+                            <div className="flex items-center justify-between xl:justify-end gap-3 order-1 xl:order-2 w-full xl:w-auto bg-white dark:bg-darkElevated xl:bg-transparent xl:border-0 border border-gray-200 dark:border-darkBorder rounded-md p-3 xl:p-0">
+                                <span className="text-[12px] font-semibold text-gray-500 dark:text-[#888888] uppercase tracking-wider whitespace-nowrap">Total Final:</span>
+                                <div className="relative w-32 sm:w-36">
                                     <span className="absolute left-0 top-[3px] font-semibold text-[14px] text-gray-500 dark:text-gray-400">R$</span>
                                     <input required type="text" value={novoPedido.valor_total} onChange={e => setNovoPedido({...novoPedido, valor_total: formatarMoeda(e.target.value)})} disabled={isModalTrancado} className="w-full bg-transparent border-none text-right pl-7 pr-0 py-0.5 font-bold text-xl text-brand outline-none disabled:opacity-50" placeholder="0,00" />
                                 </div>
