@@ -3343,7 +3343,7 @@ function App() {
 
             {modalAberto && (
                 <div onClick={fecharModalOS} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer">
-                    <div onClick={(e) => e.stopPropagation()} className="bg-[#EDEFF0] dark:bg-darkBg w-full max-w-3xl rounded border border-gray-200 dark:border-darkBorder shadow-2xl flex flex-col max-h-[95vh] cursor-default">
+                    <div onClick={(e) => e.stopPropagation()} className="bg-[#EDEFF0] dark:bg-darkBg w-full max-w-3xl rounded border border-gray-200 dark:border-darkBorder shadow-2xl flex flex-col max-h-[95vh] cursor-default overflow-hidden">
                         <div className="px-6 py-5 flex justify-between items-center bg-brand text-white rounded-t">
                             <div className="flex items-center gap-3">
                                 <h3 className="font-semibold text-xl tracking-tight">
@@ -3591,7 +3591,7 @@ function App() {
                                 </div>
                             </div>
 
-                            <div className="flex flex-col sm:flex-row items-center justify-end gap-2 sm:gap-3 w-full lg:w-auto">
+                            <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center lg:justify-end gap-2 sm:gap-3 w-full lg:w-auto">
                                 <button type="button" onClick={fecharModalOS} className="w-full sm:w-auto px-4 py-2.5 rounded-lg text-[13px] font-bold text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white hover:bg-gray-200/50 dark:hover:bg-darkHover transition border border-transparent">
                                     Cancelar
                                 </button>
