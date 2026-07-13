@@ -1080,14 +1080,14 @@ function App() {
 
                         if (payload.eventType === 'INSERT') {
                             if (isAdm || isOpe) {
-                                setAlertasNaoLidos(prev => [...prev, { id: Date.now() + 3, msg: `Nova Nota Fiscal solicitada (${payload.new.cnpj})`, os_id: null, tipo: 'nf_nova' }]);
+                                setAlertasNaoLidos(prev => [...prev, { id: Date.now() + 3, msg: `Nova Nota Fiscal solicitada (${payload.new.cliente || payload.new.cnpj})`, os_id: null, tipo: 'nf_nova' }]);
                             }
                         } else if (payload.eventType === 'UPDATE') {
                             const changedServico = payload.new.servico_feito !== payload.old?.servico_feito && payload.new.servico_feito;
                             const changedValor = payload.new.valor_pago !== payload.old?.valor_pago && payload.new.valor_pago;
                             if (changedServico || changedValor) {
                                 if (isAdm || isFin) {
-                                    setAlertasNaoLidos(prev => [...prev, { id: Date.now() + 4, msg: `Nota Fiscal (${payload.new.cnpj}) preenchida!`, os_id: null, tipo: 'nf_preenchida' }]);
+                                    setAlertasNaoLidos(prev => [...prev, { id: Date.now() + 4, msg: `Nota Fiscal (${payload.new.cliente || payload.new.cnpj}) preenchida!`, os_id: null, tipo: 'nf_preenchida' }]);
                                 }
                             }
                         }
