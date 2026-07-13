@@ -908,6 +908,9 @@ function App() {
     const [clientes, setClientes] = useState([]);
     const [fornecedores, setFornecedores] = useState([]);
     const [abaCadastros, setAbaCadastros] = useState('clientes');
+    const [abaOS, setAbaOS] = useState('abertas');
+    const [buscaCadClientes, setBuscaCadClientes] = useState('');
+    const [buscaCadProdutos, setBuscaCadProdutos] = useState('');
     const [modalFornecedorAberto, setModalFornecedorAberto] = useState(false);
     const [novoFornecedor, setNovoFornecedor] = useState({ id: null, nome: '', contato: '', observacoes: '' });
     const [paginaClientes, setPaginaClientes] = useState(1);
@@ -1659,8 +1662,22 @@ function App() {
     });
     
     const clientesAbaFiltro = clientes.filter(c => {
-        if (!letraFiltroCliente) return true;
-        return c.nome.toUpperCase().startsWith(letraFiltroCliente.toUpperCase());
+        let matchLetra = true;
+        let matchBusca = true;
+        if (letraFiltroCliente) {
+            matchLetra = c.nome.toUpperCase().startsWith(letraFiltroCliente.toUpperCase());
+        }
+        if (buscaCadClientes) {
+            const termo = buscaCadClientes.toLowerCase();
+            matchBusca = (c.nome && c.nome.toLowerCase().includes(termo)) || (c.telefone && c.telefone.includes(termo)) || (c.email && c.email.toLowerCase().includes(termo));
+        }
+        return matchLetra && matchBusca;
+    });
+
+    const produtosFiltrados = produtos.filter(p => {
+        if (!buscaCadProdutos) return true;
+        const termo = buscaCadProdutos.toLowerCase();
+        return (p.nome && p.nome.toLowerCase().includes(termo));
     });
     const clientesPaginados = clientesAbaFiltro.slice((paginaClientes - 1) * itensPorPagina, paginaClientes * itensPorPagina);
     const totalPaginasClientes = Math.ceil(clientesAbaFiltro.length / itensPorPagina) || 1;
@@ -1694,6 +1711,10 @@ function App() {
 
     // Filtros aba de Histórico/Baixas
     const pedidosHistoricoFiltrados = pedidos.filter(p => {
+        if (abaOS === 'abertas' && (p.status === 'Concluído' || p.status === 'Finalizado')) return false;
+        if (abaOS === 'concluidas' && p.status !== 'Concluído') return false;
+        if (abaOS === 'finalizadas' && p.status !== 'Finalizado') return false;
+
         if (isOperador && p.status === 'Finalizado') return false;
         const termo = buscaHistoricoText.toLowerCase();
         const matchTermo = !termo || (p.cliente && p.cliente.toLowerCase().includes(termo)) || (p.id && p.id.toString().includes(termo));
@@ -1842,7 +1863,7 @@ function App() {
                             </a>
                         )}
                         <a onClick={() => setAbaAtual('baixa')} className={`px-5 py-2.5 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center tracking-wide uppercase ${abaAtual === 'baixa' ? 'bg-slate-50 text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
-                            Baixa de Notas
+                            O.S.
                         </a>
                         <a onClick={() => setAbaAtual('calculadoras')} className={`px-5 py-2.5 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center tracking-wide uppercase ${abaAtual === 'calculadoras' ? 'bg-slate-50 text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
                             Calculadoras
@@ -2018,6 +2039,13 @@ function App() {
                     </main>
                 )}
 
+                {abaAtual === 'baixa' && (
+                    <div className="bg-slate-50 dark:bg-darkBg border-b border-gray-200 dark:border-darkBorder px-6 flex gap-6 z-20 overflow-x-auto no-scrollbar-style sticky top-[125px]">
+                        <button onClick={() => setAbaOS('abertas')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitespace-nowrap flex items-center gap-2 ${abaOS === 'abertas' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}>Abertas</button>
+                        <button onClick={() => setAbaOS('concluidas')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitespace-nowrap flex items-center gap-2 ${abaOS === 'concluidas' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}>Concluídas</button>
+                        <button onClick={() => setAbaOS('finalizadas')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitespace-nowrap flex items-center gap-2 ${abaOS === 'finalizadas' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}>Finalizadas</button>
+                    </div>
+                )}
                 {abaAtual === 'baixa' && (
                     <main className="flex-1 p-6 lg:p-10 max-w-[1400px] mx-auto w-full fade-in">
                         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 mb-6 border-b border-gray-100 dark:border-darkBorder pb-6">
@@ -2740,6 +2768,10 @@ function App() {
                                 <p className="text-[13px] text-gray-500 dark:text-[#888888] mt-1">Gerencie os serviços, itens e preços base para orçamentos.</p>
                             </div>
                             <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
+                                <div className="relative">
+                                    <Icon name="search" className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
+                                    <input type="text" value={buscaCadProdutos} onChange={e => setBuscaCadProdutos(e.target.value)} placeholder="Buscar produto..." className="w-56 bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-md pl-9 pr-3 py-2 text-[13px] outline-none focus:border-brand transition dark:text-[#EDEDED]" />
+                                </div>
                                 <button onClick={() => { setNovoProduto({ id: null, nome: '', texto_padrao: '', preco_base: '' }); setModalProdutoAberto(true); }} className="bg-brand hover:bg-brandHover text-white h-[38px] px-4 text-[13px] rounded-md font-semibold shadow-sm transition flex items-center gap-2">
                                     <Icon name="plus" className="w-4 h-4" /> Novo Produto
                                 </button>
@@ -2757,7 +2789,7 @@ function App() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {produtos.map((p, index) => (
+                                    {produtosFiltrados.map((p, index) => (
                                         <tr 
                                             key={p.id} 
                                             draggable
@@ -2795,6 +2827,10 @@ function App() {
                                 <p className="text-[13px] text-gray-500 dark:text-[#888888] mt-1">Base de dados e informações de contato dos seus clientes.</p>
                             </div>
                             <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
+                                <div className="relative">
+                                    <Icon name="search" className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
+                                    <input type="text" value={buscaCadClientes} onChange={e => setBuscaCadClientes(e.target.value)} placeholder="Buscar cliente..." className="w-56 bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-md pl-9 pr-3 py-2 text-[13px] outline-none focus:border-brand transition dark:text-[#EDEDED]" />
+                                </div>
                                 <button onClick={() => { setNovoCliente({ id: null, nome: '', telefone: '', email: '', observacoes: '', cliente_problema: false }); setModalClienteAberto(true); }} className="bg-brand hover:bg-brandHover text-white h-[38px] px-4 text-[13px] rounded-md font-semibold shadow-sm transition flex items-center gap-2">
                                     <Icon name="plus" className="w-4 h-4" /> Novo Cliente
                                 </button>
@@ -3016,7 +3052,7 @@ function App() {
 
             {modalAberto && (
                 <div onClick={fecharModalOS} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer">
-                    <div onClick={(e) => e.stopPropagation()} className="bg-white dark:bg-darkCard w-full max-w-3xl rounded border border-gray-200 dark:border-darkBorder shadow-2xl flex flex-col max-h-[95vh] cursor-default">
+                    <div onClick={(e) => e.stopPropagation()} className="bg-slate-50 dark:bg-darkBg w-full max-w-3xl rounded border border-gray-200 dark:border-darkBorder shadow-2xl flex flex-col max-h-[95vh] cursor-default">
                         <div className="px-6 py-5 flex justify-between items-center bg-brand text-white rounded-t">
                             <div className="flex items-center gap-3">
                                 <h3 className="font-semibold text-xl tracking-tight">
@@ -3307,7 +3343,7 @@ function App() {
 
             {modalProdutoAberto && (
                 <div onClick={() => setModalProdutoAberto(false)} className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer">
-                    <div className="bg-white dark:bg-darkCard w-full max-w-md rounded shadow-2xl overflow-hidden border border-gray-200 dark:border-darkBorder" onClick={(e) => e.stopPropagation()}>
+                    <div className="bg-slate-50 dark:bg-darkBg w-full max-w-md rounded shadow-2xl overflow-hidden border border-gray-200 dark:border-darkBorder" onClick={(e) => e.stopPropagation()}>
                         <div className="px-6 py-5 border-b border-gray-100 dark:border-darkBorder flex justify-between items-center bg-gray-50 dark:bg-darkCard"><h3 className="font-semibold text-lg dark:text-white tracking-tight">{novoProduto.id ? 'Editar Produto' : 'Novo Produto'}</h3><button onClick={() => setModalProdutoAberto(false)} className="text-gray-400 hover:text-white transition"><Icon name="x" /></button></div>
                         <form onSubmit={salvarProduto} className="p-6 flex flex-col gap-4">
                             <input required value={novoProduto.nome} onChange={e => setNovoProduto({...novoProduto, nome: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition" placeholder="Nome" />
@@ -3320,7 +3356,7 @@ function App() {
             )}
             {modalFornecedorAberto && (
                 <div onClick={() => setModalFornecedorAberto(false)} className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer">
-                    <div onClick={e => e.stopPropagation()} className="bg-white dark:bg-darkCard rounded shadow-2xl w-full max-w-md overflow-hidden cursor-default border border-gray-100 dark:border-darkBorder animate-fade-in-up">
+                    <div onClick={e => e.stopPropagation()} className="bg-slate-50 dark:bg-darkBg rounded shadow-2xl w-full max-w-md overflow-hidden cursor-default border border-gray-100 dark:border-darkBorder animate-fade-in-up">
                         <div className="px-6 py-4 border-b border-gray-100 dark:border-darkBorder bg-gray-50/50 dark:bg-darkHover/30 flex justify-between items-center">
                             <div>
                                 <h3 className="text-[14px] font-semibold text-gray-900 dark:text-white tracking-wide">{novoFornecedor.id ? 'Editar Fornecedor' : 'Novo Fornecedor'}</h3>
@@ -3358,7 +3394,7 @@ function App() {
             
             {modalClienteAberto && (
                 <div onClick={() => setModalClienteAberto(false)} className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer">
-                    <div className="bg-white dark:bg-darkCard w-full max-w-md rounded shadow-2xl overflow-hidden border border-gray-200 dark:border-darkBorder" onClick={(e) => e.stopPropagation()}>
+                    <div className="bg-slate-50 dark:bg-darkBg w-full max-w-md rounded shadow-2xl overflow-hidden border border-gray-200 dark:border-darkBorder" onClick={(e) => e.stopPropagation()}>
                         <div className="px-6 py-5 border-b border-gray-100 dark:border-darkBorder flex justify-between items-center bg-gray-50 dark:bg-darkCard"><h3 className="font-semibold text-lg dark:text-white tracking-tight">{novoCliente.id ? 'Editar Cliente' : 'Novo Cliente'}</h3><button onClick={() => setModalClienteAberto(false)} className="text-gray-400 hover:text-white transition"><Icon name="x" /></button></div>
                         <form onSubmit={salvarCliente} className="p-6 flex flex-col gap-4">
                             <input required value={novoCliente.nome} onChange={e => setNovoCliente({...novoCliente, nome: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition" placeholder="Nome *" />
@@ -3376,7 +3412,7 @@ function App() {
 
             {modalContaAberto && (
                 <div onClick={() => setModalContaAberto(false)} className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer">
-                    <div className="bg-white dark:bg-darkCard w-full max-w-md rounded shadow-2xl overflow-hidden border border-gray-200 dark:border-darkBorder" onClick={(e) => e.stopPropagation()}>
+                    <div className="bg-slate-50 dark:bg-darkBg w-full max-w-md rounded shadow-2xl overflow-hidden border border-gray-200 dark:border-darkBorder" onClick={(e) => e.stopPropagation()}>
                         <div className="px-6 py-5 border-b border-gray-100 dark:border-darkBorder flex justify-between items-center bg-gray-50 dark:bg-darkCard">
                             <h3 className="font-semibold text-lg dark:text-white tracking-tight">{novaConta.id ? 'Editar Conta a Pagar' : 'Nova Conta a Pagar'}</h3>
                             <button onClick={() => setModalContaAberto(false)} className="text-gray-400 hover:text-white transition"><Icon name="x" /></button>
@@ -3407,7 +3443,7 @@ function App() {
 
             {modalNotaFiscalAberto && notaFiscalEmEdicao && (
                 <div onClick={() => setModalNotaFiscalAberto(false)} className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer">
-                    <div className="bg-white dark:bg-darkCard w-full max-w-2xl rounded shadow-2xl overflow-hidden border border-gray-200 dark:border-darkBorder" onClick={(e) => e.stopPropagation()}>
+                    <div className="bg-slate-50 dark:bg-darkBg w-full max-w-2xl rounded shadow-2xl overflow-hidden border border-gray-200 dark:border-darkBorder" onClick={(e) => e.stopPropagation()}>
                         <div className="px-6 py-5 border-b border-gray-100 dark:border-darkBorder flex justify-between items-center bg-gray-50 dark:bg-darkCard"><h3 className="font-semibold text-lg dark:text-white tracking-tight">Detalhes e Edição da Nota Fiscal</h3><button onClick={() => setModalNotaFiscalAberto(false)} className="text-gray-400 hover:text-white transition"><Icon name="x" /></button></div>
                         <div className="p-6">
                             <div className="grid grid-cols-2 gap-6 mb-6">
@@ -3449,7 +3485,7 @@ function App() {
 
             {modalUsuarioAberto && (
                 <div onClick={() => setModalUsuarioAberto(false)} className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer">
-                    <div className="bg-white dark:bg-darkCard w-full max-w-md rounded shadow-2xl overflow-hidden border border-gray-200 dark:border-darkBorder" onClick={(e) => e.stopPropagation()}>
+                    <div className="bg-slate-50 dark:bg-darkBg w-full max-w-md rounded shadow-2xl overflow-hidden border border-gray-200 dark:border-darkBorder" onClick={(e) => e.stopPropagation()}>
                         <div className="px-6 py-5 border-b border-gray-100 dark:border-darkBorder flex justify-between items-center bg-gray-50 dark:bg-darkCard"><h3 className="font-semibold text-lg dark:text-white tracking-tight">{novoUsuario.id ? 'Editar Conta' : 'Nova Conta de Acesso'}</h3><button onClick={() => setModalUsuarioAberto(false)} className="text-gray-400 hover:text-white transition"><Icon name="x" /></button></div>
                         <form onSubmit={salvarUsuario} className="p-6 flex flex-col gap-4">
                             <input required value={novoUsuario.nome} onChange={e => setNovoUsuario({...novoUsuario, nome: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition" placeholder="Nome de Acesso" />
