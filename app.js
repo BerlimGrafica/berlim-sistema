@@ -1169,13 +1169,21 @@ function App() {
                 const amanhaStr = amanha.getFullYear() + '-' + String(amanha.getMonth() + 1).padStart(2, '0') + '-' + String(amanha.getDate()).padStart(2, '0');
 
                 const statusIgnorados = ['Concluída', 'Finalizada', 'Cancelada', 'Abandonada'];
-                const pedidosFuturaAmanha = todosPedidos.filter(p => p.local_producao && p.local_producao.toLowerCase().includes('futura') && !statusIgnorados.includes(p.status) && p.prazo && p.prazo.startsWith(amanhaStr));
-                if (pedidosFuturaAmanha.length > 0) {
+                
+                const hojeStr = hoje.getFullYear() + '-' + String(hoje.getMonth() + 1).padStart(2, '0') + '-' + String(hoje.getDate()).padStart(2, '0');
+                
+                const pedidosFuturaAlertar = todosPedidos.filter(p => p.local_producao && p.local_producao.toLowerCase().includes('futura') && !statusIgnorados.includes(p.status) && p.prazo && p.prazo <= amanhaStr);
+                
+                if (pedidosFuturaAlertar.length > 0) {
                     setAlertasNaoLidos(prev => {
                         let novosAlertas = [...prev];
-                        pedidosFuturaAmanha.forEach(p => {
+                        pedidosFuturaAlertar.forEach(p => {
                             if (!novosAlertas.some(a => a.os_id === p.id && a.tipo === 'alerta_futura')) {
-                                novosAlertas.push({ id: Date.now() + Math.random(), msg: `Prazo da Futura termina amanhã (O.S. #${p.id}). Retirar!`, os_id: p.id, tipo: 'alerta_futura' });
+                                let msg = `Prazo da Futura termina amanhã (O.S. #${p.id}). Retirar!`;
+                                if (p.prazo === hojeStr) msg = `Prazo da Futura é HOJE (O.S. #${p.id}). Retirar o quanto antes!`;
+                                else if (p.prazo < hojeStr) msg = `Prazo da Futura VENCIDO (O.S. #${p.id}). Verifique imediatamente!`;
+                                
+                                novosAlertas.push({ id: Date.now() + Math.random(), msg, os_id: p.id, tipo: 'alerta_futura' });
                             }
                         });
                         return novosAlertas;
