@@ -1665,7 +1665,7 @@ function App() {
         let matchLetra = true;
         let matchBusca = true;
         if (letraFiltroCliente) {
-            matchLetra = c.nome.toUpperCase().startsWith(letraFiltroCliente.toUpperCase());
+            matchLetra = c.nome && c.nome.toUpperCase().startsWith(letraFiltroCliente.toUpperCase());
         }
         if (buscaCadClientes) {
             const termo = buscaCadClientes.toLowerCase();
@@ -1674,7 +1674,7 @@ function App() {
         return matchLetra && matchBusca;
     });
 
-    const produtosFiltrados = produtos.filter(p => {
+    const produtosCatalogoFiltrados = produtos.filter(p => {
         if (!buscaCadProdutos) return true;
         const termo = buscaCadProdutos.toLowerCase();
         return (p.nome && p.nome.toLowerCase().includes(termo));
@@ -2789,7 +2789,7 @@ function App() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {produtosFiltrados.map((p, index) => (
+                                    {produtosCatalogoFiltrados.map((p, index) => (
                                         <tr 
                                             key={p.id} 
                                             draggable
