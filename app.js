@@ -2041,9 +2041,9 @@ function App() {
 
                 {abaAtual === 'baixa' && (
                     <div className="bg-slate-50 dark:bg-darkBg border-b border-gray-200 dark:border-darkBorder px-6 flex gap-6 z-20 overflow-x-auto no-scrollbar-style sticky top-[125px]">
-                        <button onClick={() => setAbaOS('abertas')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitespace-nowrap flex items-center gap-2 ${abaOS === 'abertas' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}>Abertas</button>
-                        <button onClick={() => setAbaOS('concluidas')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitespace-nowrap flex items-center gap-2 ${abaOS === 'concluidas' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}>Concluídas</button>
-                        <button onClick={() => setAbaOS('finalizadas')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitespace-nowrap flex items-center gap-2 ${abaOS === 'finalizadas' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}>Finalizadas</button>
+                        <button onClick={() => setAbaOS('abertas')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitespace-nowrap flex items-center gap-2 ${abaOS === 'abertas' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}><Icon name="list" className="w-4 h-4" /> Abertas</button>
+                        <button onClick={() => setAbaOS('concluidas')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitespace-nowrap flex items-center gap-2 ${abaOS === 'concluidas' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}><Icon name="check-circle" className="w-4 h-4" /> Concluídas</button>
+                        <button onClick={() => setAbaOS('finalizadas')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitespace-nowrap flex items-center gap-2 ${abaOS === 'finalizadas' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}><Icon name="check-square" className="w-4 h-4" /> Finalizadas</button>
                     </div>
                 )}
                 {abaAtual === 'baixa' && (
@@ -2076,7 +2076,7 @@ function App() {
                                 <thead className="bg-gray-50/50 dark:bg-darkHover/50">
                                     <tr className="border-b border-gray-200 dark:border-darkBorder text-[13px] font-semibold text-gray-500 dark:text-gray-400 tracking-wide uppercase">
                                         <th className="px-6 py-4 w-24">OS Nº</th>
-                                        {isAdmin && <th className="px-6 py-4 w-48">Criado Por</th>}
+                                        {isAdmin && <th className="px-6 py-4 w-32">Criado Por</th>}
                                         <th className="px-6 py-4 w-32">Data</th>
                                         <th className="px-6 py-4">Cliente</th>
                                         <th className="px-6 py-4">Serviço (Resumo)</th>
