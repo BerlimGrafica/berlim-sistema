@@ -2060,7 +2060,7 @@ function App() {
                     <main className="flex-1 p-6 lg:p-10 max-w-[1400px] mx-auto w-full fade-in flex flex-col gap-8">
                         
                         {/* HERO SECTION */}
-                        <div className="relative rounded-2xl overflow-hidden bg-gradient-to-r from-brand to-brandHover text-white p-8 lg:p-10 shadow-lg shadow-brand/20 border border-white/10 shrink-0">
+                        <div className="relative rounded-md overflow-hidden bg-gradient-to-r from-brand to-brandHover text-white p-8 lg:p-10 shadow-lg shadow-brand/20 border border-white/10 shrink-0">
                             <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDM0djIwaDJWMzRoLTI2djIwaDJWMzRoMjB2MjBoMnYtMjBoLTI2di0yaDI2di0yMGgydjIwaC0yNlYxMGgydjIwaDIwVjEwaDJ2MjBoLTI2em0tMjYtMnYtMmgyNnYyaC0yNnptMC00VjEwaDJ2MThoLTI2em0yNiAwaC0yNnYtMmg4YTIgMiAwIDAgMSA0IDBoMTR2MnptLTI2IDEydjIwaDJ2LTIwaC0yNnptMjYgMHYyMGgydi0yMGgtMjZ6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-20"></div>
                             
                             <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
@@ -2068,7 +2068,7 @@ function App() {
                                     <h1 className="text-3xl lg:text-4xl font-extrabold tracking-tight mb-2 drop-shadow-sm">Olá, {usuario?.nome?.split(' ')[0]}!</h1>
                                     <p className="text-white/80 font-medium text-[15px]">Aqui está o seu resumo de tarefas e atividades do dia.</p>
                                 </div>
-                                <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl px-5 py-3 flex items-center gap-3 shadow-inner">
+                                <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-md px-5 py-3 flex items-center gap-3 shadow-inner">
                                     <Icon name="calendar" className="w-5 h-5 text-white/90" />
                                     <div className="flex flex-col">
                                         <span className="text-[11px] uppercase tracking-wider font-semibold text-white/70">Hoje</span>
@@ -2086,7 +2086,7 @@ function App() {
                             {/* KPIs */}
                             {(() => {
                                 const statusIgnorados = ['Concluída', 'Finalizada', 'Cancelada', 'Abandonada'];
-                                const minhasTarefas = pedidos.filter(p => p.local_producao && p.local_producao.toLowerCase().includes(usuario?.nome?.toLowerCase()) && !statusIgnorados.includes(p.status));
+                                const minhasTarefas = pedidos.filter(p => p.responsavel && p.responsavel.toLowerCase().includes(usuario?.nome?.toLowerCase()) && !statusIgnorados.includes(p.status));
                                 const tarefasAtrasadas = minhasTarefas.filter(p => {
                                     if(!p.prazo) return false;
                                     const prazo = new Date(p.prazo + 'T23:59:59');
@@ -2095,26 +2095,26 @@ function App() {
 
                                 return (
                                     <>
-                                        <div className="bg-white dark:bg-darkCard border border-gray-100 dark:border-darkBorder rounded-2xl p-6 shadow-[0_4px_20px_rgb(0,0,0,0.03)] dark:shadow-none flex flex-col justify-between hover:shadow-lg transition hover:-translate-y-1">
+                                        <div className="bg-white dark:bg-darkCard border border-gray-100 dark:border-darkBorder rounded-md p-6 shadow-[0_4px_20px_rgb(0,0,0,0.03)] dark:shadow-none flex flex-col justify-between hover:shadow-lg transition hover:-translate-y-1">
                                             <div className="flex justify-between items-start mb-4">
                                                 <div>
                                                     <h3 className="text-gray-500 dark:text-[#888888] font-bold text-[11px] uppercase tracking-wider mb-1">Minhas Tarefas</h3>
                                                     <p className="text-4xl font-black text-gray-800 dark:text-gray-100 tracking-tight">{minhasTarefas.length}</p>
                                                 </div>
-                                                <div className="bg-blue-50 dark:bg-blue-500/10 p-3 rounded-xl border border-blue-100 dark:border-blue-500/20">
+                                                <div className="bg-blue-50 dark:bg-blue-500/10 p-3 rounded-md border border-blue-100 dark:border-blue-500/20">
                                                     <Icon name="layout-dashboard" className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                                                 </div>
                                             </div>
                                             <p className="text-[13px] font-medium text-gray-500 dark:text-gray-400">Tarefas em andamento designadas a você.</p>
                                         </div>
 
-                                        <div className="bg-white dark:bg-darkCard border border-gray-100 dark:border-darkBorder rounded-2xl p-6 shadow-[0_4px_20px_rgb(0,0,0,0.03)] dark:shadow-none flex flex-col justify-between hover:shadow-lg transition hover:-translate-y-1">
+                                        <div className="bg-white dark:bg-darkCard border border-gray-100 dark:border-darkBorder rounded-md p-6 shadow-[0_4px_20px_rgb(0,0,0,0.03)] dark:shadow-none flex flex-col justify-between hover:shadow-lg transition hover:-translate-y-1">
                                             <div className="flex justify-between items-start mb-4">
                                                 <div>
                                                     <h3 className="text-gray-500 dark:text-[#888888] font-bold text-[11px] uppercase tracking-wider mb-1">Atrasadas</h3>
                                                     <p className="text-4xl font-black text-rose-600 dark:text-rose-400 tracking-tight">{tarefasAtrasadas.length}</p>
                                                 </div>
-                                                <div className="bg-rose-50 dark:bg-rose-500/10 p-3 rounded-xl border border-rose-100 dark:border-rose-500/20">
+                                                <div className="bg-rose-50 dark:bg-rose-500/10 p-3 rounded-md border border-rose-100 dark:border-rose-500/20">
                                                     <Icon name="clock" className="w-6 h-6 text-rose-600 dark:text-rose-400" />
                                                 </div>
                                             </div>
@@ -2125,7 +2125,7 @@ function App() {
                             })()}
 
                             {/* ALERTS WALL */}
-                            <div className="bg-white dark:bg-darkCard border border-gray-100 dark:border-darkBorder rounded-2xl p-0 shadow-[0_4px_20px_rgb(0,0,0,0.03)] dark:shadow-none flex flex-col overflow-hidden hover:shadow-lg transition lg:col-span-1 row-span-2 relative">
+                            <div className="bg-white dark:bg-darkCard border border-gray-100 dark:border-darkBorder rounded-md p-0 shadow-[0_4px_20px_rgb(0,0,0,0.03)] dark:shadow-none flex flex-col overflow-hidden hover:shadow-lg transition lg:col-span-1 row-span-2 relative">
                                 <div className="px-6 py-5 border-b border-gray-100 dark:border-darkBorder bg-gray-50/50 dark:bg-darkHover/30 flex justify-between items-center shrink-0">
                                     <h3 className="font-bold text-[13px] uppercase tracking-wider text-gray-700 dark:text-gray-300 flex items-center gap-2">
                                         <Icon name="bell" className="w-4 h-4 text-brand" /> Mural de Avisos
@@ -2162,7 +2162,7 @@ function App() {
                             </div>
 
                             {/* MINHAS TAREFAS LIST */}
-                            <div className="bg-white dark:bg-darkCard border border-gray-100 dark:border-darkBorder rounded-2xl shadow-[0_4px_20px_rgb(0,0,0,0.03)] dark:shadow-none lg:col-span-2 overflow-hidden flex flex-col hover:shadow-lg transition">
+                            <div className="bg-white dark:bg-darkCard border border-gray-100 dark:border-darkBorder rounded-md shadow-[0_4px_20px_rgb(0,0,0,0.03)] dark:shadow-none lg:col-span-2 overflow-hidden flex flex-col hover:shadow-lg transition">
                                 <div className="px-6 py-5 border-b border-gray-100 dark:border-darkBorder bg-gray-50/50 dark:bg-darkHover/30 flex justify-between items-center shrink-0">
                                     <h3 className="font-bold text-[13px] uppercase tracking-wider text-gray-700 dark:text-gray-300 flex items-center gap-2">
                                         <Icon name="list" className="w-4 h-4 text-brand" /> Fila de Produção
@@ -2186,7 +2186,7 @@ function App() {
                                         <tbody>
                                             {(() => {
                                                 const statusIgnorados = ['Concluída', 'Finalizada', 'Cancelada', 'Abandonada'];
-                                                const minhasTarefas = pedidos.filter(p => p.local_producao && p.local_producao.toLowerCase().includes(usuario?.nome?.toLowerCase()) && !statusIgnorados.includes(p.status)).slice(0, 5);
+                                                const minhasTarefas = pedidos.filter(p => p.responsavel && p.responsavel.toLowerCase().includes(usuario?.nome?.toLowerCase()) && !statusIgnorados.includes(p.status)).slice(0, 5);
 
                                                 if (minhasTarefas.length === 0) {
                                                     return (
