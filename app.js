@@ -1041,6 +1041,13 @@ function App() {
                                 }
                             }
 
+                            // Alerta: Avisar Cliente (para Atendimento/Admin)
+                            if (payload.new.status === 'Avisar Cliente' && payload.old?.status !== 'Avisar Cliente') {
+                                if (isAdm || isOpe) {
+                                    setAlertasNaoLidos(prev => [...prev, { id: Date.now() + 5, msg: `Avisar o cliente da O.S. #${payload.new.id}`, os_id: payload.new.id, tipo: 'avisar_cliente' }]);
+                                }
+                            }
+
                             // Alerta: Serviço de Urgência (para Operacional/Admin)
                             if (payload.new.urgente && !payload.old?.urgente) {
                                 if (isAdm || isOpe) {
