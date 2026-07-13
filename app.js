@@ -1969,13 +1969,25 @@ function App() {
                             <Icon name={darkMode ? "sun" : "moon"} className="w-5 h-5" />
                         </button>
                         
-                        {/* SEPARADOR FUTURA IM */}
+                        {/* SEPARADOR ATALHOS */}
                         <div className="hidden sm:block w-[1px] h-8 bg-gray-200 dark:border-darkBorder"></div>
 
-                        {/* LINK FUTURA IM */}
-                        <a href="https://www.futuraim.com.br/" target="_blank" rel="noopener noreferrer" className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-darkHover transition flex items-center justify-center" title="Acessar Futura IM">
-                            <img src="https://www.google.com/s2/favicons?domain=futuraim.com.br&sz=64" alt="Futura IM" className="w-5 h-5 object-contain rounded-sm" />
-                        </a>
+                        <div className="flex items-center gap-1.5">
+                            {/* LINK FUTURA IM */}
+                            <a href="https://www.futuraim.com.br/" target="_blank" rel="noopener noreferrer" className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-darkHover transition flex items-center justify-center" title="Acessar Futura IM">
+                                <img src="https://www.google.com/s2/favicons?domain=futuraim.com.br&sz=64" alt="Futura IM" className="w-5 h-5 object-contain rounded-sm" />
+                            </a>
+                            
+                            {/* LINK ATUAL CARD */}
+                            <a href="https://oferta.atualcard.com.br/" target="_blank" rel="noopener noreferrer" className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-darkHover transition flex items-center justify-center" title="Acessar Atual Card">
+                                <img src="https://www.google.com/s2/favicons?domain=atualcard.com.br&sz=64" alt="Atual Card" className="w-5 h-5 object-contain rounded-sm" />
+                            </a>
+                            
+                            {/* LINK ALVO PRINT */}
+                            <a href="https://www.alvoprint.com.br/" target="_blank" rel="noopener noreferrer" className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-darkHover transition flex items-center justify-center" title="Acessar Alvo Print">
+                                <img src="https://www.google.com/s2/favicons?domain=alvoprint.com.br&sz=64" alt="Alvo Print" className="w-5 h-5 object-contain rounded-sm" />
+                            </a>
+                        </div>
 
                         {/* SEPARADOR VERTICAL DE ELEGÂNCIA */}
                         <div className="hidden sm:block w-[1px] h-8 bg-gray-200 dark:border-darkBorder"></div>
