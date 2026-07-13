@@ -1166,9 +1166,10 @@ function App() {
                 const hoje = new Date();
                 const amanha = new Date(hoje);
                 amanha.setDate(amanha.getDate() + 1);
-                const amanhaStr = amanha.toISOString().split('T')[0];
+                const amanhaStr = amanha.getFullYear() + '-' + String(amanha.getMonth() + 1).padStart(2, '0') + '-' + String(amanha.getDate()).padStart(2, '0');
 
-                const pedidosFuturaAmanha = todosPedidos.filter(p => p.local_producao === 'Futura' && p.status !== 'Concluído' && p.prazo && p.prazo.startsWith(amanhaStr));
+                const statusIgnorados = ['Concluída', 'Finalizada', 'Cancelada', 'Abandonada'];
+                const pedidosFuturaAmanha = todosPedidos.filter(p => p.local_producao && p.local_producao.toLowerCase() === 'futura' && !statusIgnorados.includes(p.status) && p.prazo && p.prazo.startsWith(amanhaStr));
                 if (pedidosFuturaAmanha.length > 0) {
                     setAlertasNaoLidos(prev => {
                         let novosAlertas = [...prev];
@@ -1975,31 +1976,31 @@ function App() {
                 <nav className="bg-brand text-white px-6 shadow-sm z-30 sticky top-[73px]">
                     <div className="flex gap-1 overflow-x-auto custom-scrollbar no-scrollbar-style items-end pt-2">
                         {(usuario?.nivel === 'Administrador' || usuario?.nivel === 'Produção/Atendimento') && (
-                            <a onClick={() => setAbaAtual('producao')} className={`px-5 py-2.5 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center tracking-wide uppercase ${abaAtual === 'producao' ? 'bg-slate-50 text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
+                            <a onClick={() => setAbaAtual('producao')} className={`px-5 py-2.5 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center tracking-wide uppercase ${abaAtual === 'producao' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
                                 Produção
                             </a>
                         )}
-                        <a onClick={() => setAbaAtual('baixa')} className={`px-5 py-2.5 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center tracking-wide uppercase ${abaAtual === 'baixa' ? 'bg-slate-50 text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
+                        <a onClick={() => setAbaAtual('baixa')} className={`px-5 py-2.5 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center tracking-wide uppercase ${abaAtual === 'baixa' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
                             O.S.
                         </a>
-                        <a onClick={() => setAbaAtual('calculadoras')} className={`px-5 py-2.5 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center tracking-wide uppercase ${abaAtual === 'calculadoras' ? 'bg-slate-50 text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
+                        <a onClick={() => setAbaAtual('calculadoras')} className={`px-5 py-2.5 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center tracking-wide uppercase ${abaAtual === 'calculadoras' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
                             Calculadoras
                         </a>
                         
                         {(usuario?.nivel === 'Administrador' || usuario?.nivel === 'Financeiro') && (
-                            <a onClick={() => setAbaAtual('financeiro')} className={`px-5 py-2.5 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center tracking-wide uppercase ${abaAtual === 'financeiro' ? 'bg-slate-50 text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
+                            <a onClick={() => setAbaAtual('financeiro')} className={`px-5 py-2.5 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center tracking-wide uppercase ${abaAtual === 'financeiro' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
                                 Financeiro
                             </a>
                         )}
                         
                         {(usuario?.nivel === 'Administrador' || usuario?.nivel === 'Financeiro' || usuario?.nivel === 'Produção/Atendimento') && (
-                            <a onClick={() => setAbaAtual('notas_fiscais')} className={`px-5 py-2.5 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center gap-2 tracking-wide uppercase ${abaAtual === 'notas_fiscais' ? 'bg-slate-50 text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
+                            <a onClick={() => setAbaAtual('notas_fiscais')} className={`px-5 py-2.5 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center gap-2 tracking-wide uppercase ${abaAtual === 'notas_fiscais' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
                                 Notas Fiscais
                                 {notasFiscais.some(n => !n.concluido) && <span className={`w-2 h-2 rounded-full ${abaAtual === 'notas_fiscais' ? 'bg-emerald-500' : 'bg-white'} shadow`}></span>}
                             </a>
                         )}
                         
-                        <a onClick={() => setAbaAtual('cadastros')} className={`px-5 py-2.5 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center tracking-wide uppercase ${abaAtual === 'cadastros' ? 'bg-slate-50 text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
+                        <a onClick={() => setAbaAtual('cadastros')} className={`px-5 py-2.5 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center tracking-wide uppercase ${abaAtual === 'cadastros' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
                             Cadastros
                         </a>
                     </div>
@@ -2007,7 +2008,7 @@ function App() {
 
                 {/* TIER 3: Submenus */}
                 {abaAtual === 'cadastros' && (
-                    <div className="bg-slate-50 dark:bg-darkBg border-b border-gray-200 dark:border-darkBorder px-6 flex gap-6 z-20 overflow-x-auto no-scrollbar-style sticky top-[125px]">
+                    <div className="bg-[#EDEFF0] dark:bg-darkBg border-b border-gray-200 dark:border-darkBorder px-6 flex gap-6 z-20 overflow-x-auto no-scrollbar-style sticky top-[125px]">
                         {(usuario?.nivel === 'Administrador' || usuario?.nivel === 'Produção/Atendimento') && (
                             <a onClick={() => setAbaCadastros('clientes')} className={`py-3 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap border-b-[3px] flex items-center gap-2 ${abaCadastros === 'clientes' ? 'border-brand text-brand' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'}`}>
                                 <Icon name="users" className="w-4 h-4" /> Clientes
@@ -2029,14 +2030,14 @@ function App() {
                     </div>
                 )}
                 {abaAtual === 'financeiro' && (
-                    <div className="bg-slate-50 dark:bg-darkBg border-b border-gray-200 dark:border-darkBorder px-6 flex gap-6 z-20 overflow-x-auto no-scrollbar-style sticky top-[125px]">
+                    <div className="bg-[#EDEFF0] dark:bg-darkBg border-b border-gray-200 dark:border-darkBorder px-6 flex gap-6 z-20 overflow-x-auto no-scrollbar-style sticky top-[125px]">
                         <button onClick={() => setAbaFinanceiro('geral')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitespace-nowrap flex items-center gap-2 ${abaFinanceiro === 'geral' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}><Icon name="pie-chart" className="w-4 h-4" /> Visão Geral</button>
                         <button onClick={() => setAbaFinanceiro('vendas_produto')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitespace-nowrap flex items-center gap-2 ${abaFinanceiro === 'vendas_produto' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}><Icon name="tag" className="w-4 h-4" /> Vendas por Produto</button>
                         <button onClick={() => setAbaFinanceiro('contas_pagar')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitespace-nowrap flex items-center gap-2 ${abaFinanceiro === 'contas_pagar' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}><Icon name="file-text" className="w-4 h-4" /> Contas a Pagar</button>
                     </div>
                 )}
                 {abaAtual === 'calculadoras' && (
-                    <div className="bg-slate-50 dark:bg-darkBg border-b border-gray-200 dark:border-darkBorder px-6 flex gap-6 z-20 overflow-x-auto no-scrollbar-style sticky top-[125px]">
+                    <div className="bg-[#EDEFF0] dark:bg-darkBg border-b border-gray-200 dark:border-darkBorder px-6 flex gap-6 z-20 overflow-x-auto no-scrollbar-style sticky top-[125px]">
                         <button onClick={() => setCalculadoraAtiva('banner')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitespace-nowrap flex items-center gap-2 ${calculadoraAtiva === 'banner' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}><Icon name="image" className="w-4 h-4" /> Banner / Lona</button>
                         <button onClick={() => setCalculadoraAtiva('adesivo')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitespace-nowrap flex items-center gap-2 ${calculadoraAtiva === 'adesivo' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}><Icon name="grid" className="w-4 h-4" /> Adesivos (Vinil)</button>
                         <button onClick={() => setCalculadoraAtiva('casamento')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitespace-nowrap flex items-center gap-2 ${calculadoraAtiva === 'casamento' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}><Icon name="heart" className="w-4 h-4" /> Papelaria Casamento</button>
@@ -2044,7 +2045,7 @@ function App() {
                     </div>
                 )}
                 {abaAtual === 'notas_fiscais' && (
-                    <div className="bg-slate-50 dark:bg-darkBg border-b border-gray-200 dark:border-darkBorder px-6 flex gap-6 z-20 overflow-x-auto no-scrollbar-style sticky top-[125px]">
+                    <div className="bg-[#EDEFF0] dark:bg-darkBg border-b border-gray-200 dark:border-darkBorder px-6 flex gap-6 z-20 overflow-x-auto no-scrollbar-style sticky top-[125px]">
                         <button onClick={() => { setFiltroNotas('pendentes'); setPaginaNotasFiscais(1); }} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitespace-nowrap flex items-center gap-2 ${filtroNotas === 'pendentes' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}>
                             <Icon name="clock" className="w-4 h-4" /> Pendentes
                             {notasFiscais.some(n => !n.concluido) && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 ml-1"></span>}
@@ -2157,7 +2158,7 @@ function App() {
                 )}
 
                 {abaAtual === 'baixa' && (
-                    <div className="bg-slate-50 dark:bg-darkBg border-b border-gray-200 dark:border-darkBorder px-6 flex gap-6 z-20 overflow-x-auto no-scrollbar-style sticky top-[125px]">
+                    <div className="bg-[#EDEFF0] dark:bg-darkBg border-b border-gray-200 dark:border-darkBorder px-6 flex gap-6 z-20 overflow-x-auto no-scrollbar-style sticky top-[125px]">
                         <button onClick={() => setAbaOS('abertas')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitespace-nowrap flex items-center gap-2 ${abaOS === 'abertas' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}><Icon name="list" className="w-4 h-4" /> Abertas</button>
                         <button onClick={() => setAbaOS('concluidas')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitespace-nowrap flex items-center gap-2 ${abaOS === 'concluidas' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}><Icon name="check-circle" className="w-4 h-4" /> Concluídas</button>
                         <button onClick={() => setAbaOS('finalizadas')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitespace-nowrap flex items-center gap-2 ${abaOS === 'finalizadas' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}><Icon name="check-square" className="w-4 h-4" /> Finalizadas</button>
@@ -3169,7 +3170,7 @@ function App() {
 
             {modalAberto && (
                 <div onClick={fecharModalOS} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer">
-                    <div onClick={(e) => e.stopPropagation()} className="bg-slate-50 dark:bg-darkBg w-full max-w-3xl rounded border border-gray-200 dark:border-darkBorder shadow-2xl flex flex-col max-h-[95vh] cursor-default">
+                    <div onClick={(e) => e.stopPropagation()} className="bg-[#EDEFF0] dark:bg-darkBg w-full max-w-3xl rounded border border-gray-200 dark:border-darkBorder shadow-2xl flex flex-col max-h-[95vh] cursor-default">
                         <div className="px-6 py-5 flex justify-between items-center bg-brand text-white rounded-t">
                             <div className="flex items-center gap-3">
                                 <h3 className="font-semibold text-xl tracking-tight">
@@ -3407,22 +3408,21 @@ function App() {
                             </div>
                         </form>
 
-                        <div className="px-6 py-4 border-t border-gray-100 dark:border-darkBorder bg-gray-50 dark:bg-darkCard flex flex-col sm:flex-row justify-between items-center gap-4 shrink-0">
-                            <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto order-2 sm:order-1">
-                                <button type="button" onClick={fecharModalOS} className="flex-1 sm:flex-none px-4 py-2.5 rounded-md text-[13px] font-semibold text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-darkHover transition border border-transparent hover:border-gray-300 dark:hover:border-darkBorder">
+                        <div className="px-6 py-4 border-t border-gray-100 dark:border-darkBorder bg-gray-50 dark:bg-darkCard flex flex-col md:flex-row justify-between gap-4 shrink-0">
+                            
+                            <div className="flex flex-wrap md:flex-nowrap items-center gap-2 w-full md:w-auto order-2 md:order-1">
+                                <button type="button" onClick={fecharModalOS} className="w-full md:w-auto px-4 py-2.5 rounded-md text-[13px] font-semibold text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-darkHover transition border border-transparent hover:border-gray-300 dark:hover:border-darkBorder md:mr-2">
                                     Cancelar
                                 </button>
                                 
                                 {!isModalTrancado && (
                                     <>
-                                        <div className="hidden sm:block w-px h-6 bg-gray-300 dark:bg-darkBorder mx-1"></div>
-                                        
-                                        <button type="button" onClick={(e) => salvarOS(e, false)} disabled={salvandoOS} className="flex-1 sm:flex-none px-4 py-2.5 rounded-md text-[13px] font-semibold bg-white dark:bg-darkElevated text-gray-800 dark:text-white border border-gray-200 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover hover:border-brand shadow-sm transition disabled:opacity-50 flex items-center justify-center gap-2">
+                                        <button type="button" onClick={(e) => salvarOS(e, false)} disabled={salvandoOS} className="flex-1 md:flex-none px-4 py-2.5 rounded-md text-[13px] font-semibold bg-white dark:bg-darkElevated text-gray-800 dark:text-white border border-gray-200 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover hover:border-brand shadow-sm transition disabled:opacity-50 flex items-center justify-center gap-2">
                                             <Icon name="save" className="w-4 h-4 text-brand" />
                                             {salvandoOS ? 'Salvando...' : pedidoEmEdicao ? 'Atualizar' : 'Salvar'}
                                         </button>
                                         
-                                        <button type="button" onClick={(e) => salvarOS(e, true)} disabled={salvandoOS} className="flex-1 sm:flex-none px-4 py-2.5 rounded-md text-[13px] font-semibold bg-gray-800 dark:bg-white text-white dark:text-black hover:bg-black dark:hover:bg-gray-200 shadow-sm transition disabled:opacity-50 flex items-center justify-center gap-2">
+                                        <button type="button" onClick={(e) => salvarOS(e, true)} disabled={salvandoOS} className="flex-1 md:flex-none px-4 py-2.5 rounded-md text-[13px] font-semibold bg-gray-800 dark:bg-white text-white dark:text-black hover:bg-black dark:hover:bg-gray-200 shadow-sm transition disabled:opacity-50 flex items-center justify-center gap-2">
                                             <Icon name="printer" className="w-4 h-4" />
                                             {salvandoOS ? 'Salvando...' : 'Salvar e Imprimir'}
                                         </button>
@@ -3437,7 +3437,7 @@ function App() {
                                                 }
                                                 novoPedido.status = 'Finalizado';
                                                 salvarOS(e, false);
-                                            }} disabled={salvandoOS} className="flex-1 sm:flex-none px-4 py-2.5 rounded-md text-[13px] font-semibold bg-emerald-500 hover:bg-emerald-600 text-white shadow-md transition disabled:opacity-50 flex items-center justify-center gap-2 border border-emerald-600">
+                                            }} disabled={salvandoOS} className="w-full md:w-auto px-4 py-2.5 rounded-md text-[13px] font-semibold bg-emerald-500 hover:bg-emerald-600 text-white shadow-md transition disabled:opacity-50 flex items-center justify-center gap-2 border border-emerald-600">
                                                 <Icon name="check" className="w-4 h-4" />
                                                 Finalizar OS
                                             </button>
@@ -3446,11 +3446,11 @@ function App() {
                                 )}
                             </div>
 
-                            <div className="flex items-center gap-3 order-1 sm:order-2 w-full sm:w-auto justify-end">
-                                <span className="text-[11px] font-semibold text-gray-500 dark:text-[#888888] uppercase tracking-wider">Total Final:</span>
+                            <div className="flex items-center justify-between md:justify-end gap-3 order-1 md:order-2 w-full md:w-auto bg-white dark:bg-darkElevated md:bg-transparent md:border-0 border border-gray-200 dark:border-darkBorder rounded-md p-3 md:p-0">
+                                <span className="text-[12px] font-semibold text-gray-500 dark:text-[#888888] uppercase tracking-wider">Total Final:</span>
                                 <div className="relative w-36">
-                                    <span className="absolute left-0 top-[5px] font-semibold text-[13px] dark:text-gray-400">R$</span>
-                                    <input required type="text" value={novoPedido.valor_total} onChange={e => setNovoPedido({...novoPedido, valor_total: formatarMoeda(e.target.value)})} disabled={isModalTrancado} className="w-full bg-transparent border-none text-left pl-7 pr-0 py-1 font-semibold text-xl text-brand outline-none disabled:opacity-50" placeholder="0,00" />
+                                    <span className="absolute left-0 top-[3px] font-semibold text-[14px] text-gray-500 dark:text-gray-400">R$</span>
+                                    <input required type="text" value={novoPedido.valor_total} onChange={e => setNovoPedido({...novoPedido, valor_total: formatarMoeda(e.target.value)})} disabled={isModalTrancado} className="w-full bg-transparent border-none text-right pl-7 pr-0 py-0.5 font-bold text-xl text-brand outline-none disabled:opacity-50" placeholder="0,00" />
                                 </div>
                             </div>
                         </div>
@@ -3460,7 +3460,7 @@ function App() {
 
             {modalProdutoAberto && (
                 <div onClick={() => setModalProdutoAberto(false)} className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer">
-                    <div className="bg-slate-50 dark:bg-darkBg w-full max-w-md rounded shadow-2xl overflow-hidden border border-gray-200 dark:border-darkBorder" onClick={(e) => e.stopPropagation()}>
+                    <div className="bg-[#EDEFF0] dark:bg-darkBg w-full max-w-md rounded shadow-2xl overflow-hidden border border-gray-200 dark:border-darkBorder" onClick={(e) => e.stopPropagation()}>
                         <div className="px-6 py-5 border-b border-gray-100 dark:border-darkBorder flex justify-between items-center bg-gray-50 dark:bg-darkCard"><h3 className="font-semibold text-lg dark:text-white tracking-tight">{novoProduto.id ? 'Editar Produto' : 'Novo Produto'}</h3><button onClick={() => setModalProdutoAberto(false)} className="text-gray-400 hover:text-white transition"><Icon name="x" /></button></div>
                         <form onSubmit={salvarProduto} className="p-6 flex flex-col gap-4">
                             <input required value={novoProduto.nome} onChange={e => setNovoProduto({...novoProduto, nome: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition" placeholder="Nome" />
@@ -3473,7 +3473,7 @@ function App() {
             )}
             {modalFornecedorAberto && (
                 <div onClick={() => setModalFornecedorAberto(false)} className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer">
-                    <div onClick={e => e.stopPropagation()} className="bg-slate-50 dark:bg-darkBg rounded shadow-2xl w-full max-w-md overflow-hidden cursor-default border border-gray-100 dark:border-darkBorder animate-fade-in-up">
+                    <div onClick={e => e.stopPropagation()} className="bg-[#EDEFF0] dark:bg-darkBg rounded shadow-2xl w-full max-w-md overflow-hidden cursor-default border border-gray-100 dark:border-darkBorder animate-fade-in-up">
                         <div className="px-6 py-4 border-b border-gray-100 dark:border-darkBorder bg-gray-50/50 dark:bg-darkHover/30 flex justify-between items-center">
                             <div>
                                 <h3 className="text-[14px] font-semibold text-gray-900 dark:text-white tracking-wide">{novoFornecedor.id ? 'Editar Fornecedor' : 'Novo Fornecedor'}</h3>
@@ -3511,7 +3511,7 @@ function App() {
             
             {modalClienteAberto && (
                 <div onClick={() => setModalClienteAberto(false)} className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer">
-                    <div className="bg-slate-50 dark:bg-darkBg w-full max-w-md rounded shadow-2xl overflow-hidden border border-gray-200 dark:border-darkBorder" onClick={(e) => e.stopPropagation()}>
+                    <div className="bg-[#EDEFF0] dark:bg-darkBg w-full max-w-md rounded shadow-2xl overflow-hidden border border-gray-200 dark:border-darkBorder" onClick={(e) => e.stopPropagation()}>
                         <div className="px-6 py-5 border-b border-gray-100 dark:border-darkBorder flex justify-between items-center bg-gray-50 dark:bg-darkCard"><h3 className="font-semibold text-lg dark:text-white tracking-tight">{novoCliente.id ? 'Editar Cliente' : 'Novo Cliente'}</h3><button onClick={() => setModalClienteAberto(false)} className="text-gray-400 hover:text-white transition"><Icon name="x" /></button></div>
                         <form onSubmit={salvarCliente} className="p-6 flex flex-col gap-4">
                             <input required value={novoCliente.nome} onChange={e => setNovoCliente({...novoCliente, nome: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition" placeholder="Nome *" />
@@ -3529,7 +3529,7 @@ function App() {
 
             {modalContaAberto && (
                 <div onClick={() => setModalContaAberto(false)} className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer">
-                    <div className="bg-slate-50 dark:bg-darkBg w-full max-w-md rounded shadow-2xl overflow-hidden border border-gray-200 dark:border-darkBorder" onClick={(e) => e.stopPropagation()}>
+                    <div className="bg-[#EDEFF0] dark:bg-darkBg w-full max-w-md rounded shadow-2xl overflow-hidden border border-gray-200 dark:border-darkBorder" onClick={(e) => e.stopPropagation()}>
                         <div className="px-6 py-5 border-b border-gray-100 dark:border-darkBorder flex justify-between items-center bg-gray-50 dark:bg-darkCard">
                             <h3 className="font-semibold text-lg dark:text-white tracking-tight">{novaConta.id ? 'Editar Conta a Pagar' : 'Nova Conta a Pagar'}</h3>
                             <button onClick={() => setModalContaAberto(false)} className="text-gray-400 hover:text-white transition"><Icon name="x" /></button>
@@ -3560,7 +3560,7 @@ function App() {
 
             {modalNotaFiscalAberto && notaFiscalEmEdicao && (
                 <div onClick={() => setModalNotaFiscalAberto(false)} className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer">
-                    <div className="bg-slate-50 dark:bg-darkBg w-full max-w-2xl rounded shadow-2xl overflow-hidden border border-gray-200 dark:border-darkBorder" onClick={(e) => e.stopPropagation()}>
+                    <div className="bg-[#EDEFF0] dark:bg-darkBg w-full max-w-2xl rounded shadow-2xl overflow-hidden border border-gray-200 dark:border-darkBorder" onClick={(e) => e.stopPropagation()}>
                         <div className="px-6 py-5 border-b border-gray-100 dark:border-darkBorder flex justify-between items-center bg-gray-50 dark:bg-darkCard"><h3 className="font-semibold text-lg dark:text-white tracking-tight">Detalhes e Edição da Nota Fiscal</h3><button onClick={() => setModalNotaFiscalAberto(false)} className="text-gray-400 hover:text-white transition"><Icon name="x" /></button></div>
                         <div className="p-6">
                             <div className="grid grid-cols-2 gap-6 mb-6">
@@ -3602,7 +3602,7 @@ function App() {
 
             {modalUsuarioAberto && (
                 <div onClick={() => setModalUsuarioAberto(false)} className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer">
-                    <div className="bg-slate-50 dark:bg-darkBg w-full max-w-md rounded shadow-2xl overflow-hidden border border-gray-200 dark:border-darkBorder" onClick={(e) => e.stopPropagation()}>
+                    <div className="bg-[#EDEFF0] dark:bg-darkBg w-full max-w-md rounded shadow-2xl overflow-hidden border border-gray-200 dark:border-darkBorder" onClick={(e) => e.stopPropagation()}>
                         <div className="px-6 py-5 border-b border-gray-100 dark:border-darkBorder flex justify-between items-center bg-gray-50 dark:bg-darkCard"><h3 className="font-semibold text-lg dark:text-white tracking-tight">{novoUsuario.id ? 'Editar Conta' : 'Nova Conta de Acesso'}</h3><button onClick={() => setModalUsuarioAberto(false)} className="text-gray-400 hover:text-white transition"><Icon name="x" /></button></div>
                         <form onSubmit={salvarUsuario} className="p-6 flex flex-col gap-4">
                             <input required value={novoUsuario.nome} onChange={e => setNovoUsuario({...novoUsuario, nome: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition" placeholder="Nome de Acesso" />
