@@ -2158,7 +2158,7 @@ function App() {
                 </header>
 
                 {/* TIER 2: Main Navigation Bar (Brand Color) */}
-                <nav className="bg-brand text-white px-6 shadow-sm z-30 sticky top-[73px]">
+                <nav className="bg-brand text-white px-6 shadow-sm z-30 sticky top-[64px]">
                     <div className="flex gap-1 overflow-x-auto custom-scrollbar no-scrollbar-style items-end pt-2">
                         <a onClick={() => setAbaAtual('dashboard')} className={`px-5 py-2.5 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center tracking-wide uppercase ${abaAtual === 'dashboard' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
                             Início
