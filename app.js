@@ -2174,7 +2174,7 @@ function App() {
                                 
                                 <div className="flex-1 overflow-x-auto">
                                     <table className="w-full text-left border-collapse whitespace-nowrap">
-                                        <thead className="bg-gray-50/50 dark:bg-darkHover/50">
+                                        <thead className="bg-gray-50/50 dark:bg-darkHover/50 border-t-2 border-brand">
                                             <tr className="border-b border-gray-100 dark:border-darkBorder text-[11px] font-bold text-gray-500 dark:text-gray-400 tracking-wide uppercase">
                                                 <th className="px-6 py-4">O.S.</th>
                                                 <th className="px-6 py-4">Cliente</th>
@@ -2204,8 +2204,8 @@ function App() {
                                                 return minhasTarefas.map(t => (
                                                     <tr key={t.id} className="border-b border-gray-50 dark:border-darkBorder/50 hover:bg-gray-50/80 dark:hover:bg-darkHover/80 transition group">
                                                         <td className="px-6 py-4 text-[13px] font-bold text-gray-900 dark:text-gray-200">#{t.id}</td>
-                                                        <td className="px-6 py-4 text-[13px] font-semibold text-gray-700 dark:text-gray-300 max-w-[200px] truncate">{t.cliente_nome}</td>
-                                                        <td className="px-6 py-4 text-[13px] font-medium text-gray-600 dark:text-gray-400 max-w-[250px] truncate">{t.servico}</td>
+                                                        <td className="px-6 py-4 text-[13px] font-semibold text-gray-700 dark:text-gray-300 max-w-[200px] truncate">{t.cliente}</td>
+                                                        <td className="px-6 py-4 text-[13px] font-medium text-gray-600 dark:text-gray-400 max-w-[250px] truncate">{obterResumoServicos(t.servico)}</td>
                                                         <td className="px-6 py-4">
                                                             <span className="text-[11px] font-bold px-2.5 py-1.5 bg-gray-100 dark:bg-darkElevated text-gray-700 dark:text-gray-300 rounded border border-gray-200 dark:border-darkBorder shadow-sm">
                                                                 {t.prazo ? t.prazo.split('-').reverse().join('/') : '-'}
@@ -2249,7 +2249,7 @@ function App() {
                         <div className="flex-1 bg-white dark:bg-darkCard rounded border border-gray-200 dark:border-darkBorder overflow-hidden flex flex-col">
                             <div className="overflow-auto custom-scrollbar flex-1">
                                 <table className="w-full text-left border-collapse whitespace-nowrap">
-                                    <thead className="sticky top-0 z-10 bg-gray-50/50 dark:bg-darkHover/50">
+                                    <thead className="sticky top-0 z-10 bg-gray-50/50 dark:bg-darkHover/50 border-t-2 border-brand">
                                         <tr className="border-b border-gray-200 dark:border-darkBorder text-[13px] font-semibold text-gray-500 dark:text-gray-400 tracking-wide uppercase text-center">
                                             <th className="px-6 py-4 w-24">ID</th>
                                             <th className="px-6 py-4 w-32">Prazo</th>
@@ -2366,7 +2366,7 @@ function App() {
                         </div>
                         <div className="bg-white dark:bg-darkCard rounded border border-gray-200 dark:border-darkBorder overflow-hidden">
                             <table className="w-full text-left border-collapse">
-                                <thead className="bg-gray-50/50 dark:bg-darkHover/50">
+                                <thead className="bg-gray-50/50 dark:bg-darkHover/50 border-t-2 border-brand">
                                     <tr className="border-b border-gray-200 dark:border-darkBorder text-[13px] font-semibold text-gray-500 dark:text-gray-400 tracking-wide uppercase">
                                         <th className="px-6 py-4 w-24">OS Nº</th>
                                         {isAdmin && <th className="px-6 py-4 w-32">Criado Por</th>}
@@ -3011,7 +3011,7 @@ function App() {
                                             </div>
                                             <div className="overflow-x-auto">
                                                 <table className="w-full text-left text-[13px] text-gray-600 dark:text-[#888888]">
-                                                    <thead className="text-[11px] uppercase bg-gray-50 dark:bg-darkElevated text-gray-700 dark:text-white">
+                                                    <thead className="text-[11px] uppercase bg-gray-50 dark:bg-darkElevated text-gray-700 dark:text-white border-t-2 border-brand">
                                                         <tr>
                                                             <th className="px-4 py-3 rounded-tl-lg font-semibold">Vencimento</th>
                                                             <th className="px-4 py-3 font-semibold">Descrição</th>
@@ -3070,7 +3070,7 @@ function App() {
                         </div>
                         <div className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded overflow-hidden">
                             <table className="w-full text-left border-collapse">
-                                <thead className="bg-gray-50/50 dark:bg-darkHover/50">
+                                <thead className="bg-gray-50/50 dark:bg-darkHover/50 border-t-2 border-brand">
                                     <tr className="border-b border-gray-200 dark:border-darkBorder text-[13px] font-semibold text-gray-500 dark:text-gray-400 tracking-wide uppercase">
                                         <th className="px-6 py-4 w-24">ID</th>
                                         <th className="px-6 py-4">Nome do Produto</th>
@@ -3135,7 +3135,7 @@ function App() {
                                 ))}
                             </div>
                             <table className="w-full text-left border-collapse">
-                                <thead className="bg-gray-50/50 dark:bg-darkHover/50"><tr className="border-b border-gray-200 dark:border-darkBorder text-[13px] font-semibold text-gray-500 dark:text-gray-400 tracking-wide uppercase"><th className="px-6 py-4">Cliente</th><th className="px-6 py-4 w-48">WhatsApp</th><th className="px-6 py-4 w-64">E-mail</th><th className="px-6 py-4">Observações</th><th className="px-6 py-4 w-24 text-center">Ações</th></tr></thead>
+                                <thead className="bg-gray-50/50 dark:bg-darkHover/50 border-t-2 border-brand"><tr className="border-b border-gray-200 dark:border-darkBorder text-[13px] font-semibold text-gray-500 dark:text-gray-400 tracking-wide uppercase"><th className="px-6 py-4">Cliente</th><th className="px-6 py-4 w-48">WhatsApp</th><th className="px-6 py-4 w-64">E-mail</th><th className="px-6 py-4">Observações</th><th className="px-6 py-4 w-24 text-center">Ações</th></tr></thead>
                                 <tbody>
                                     {clientesPaginados.length > 0 ? clientesPaginados.map(c => (
                                         <tr key={c.id} onClick={() => abrirEdicaoCliente(c)} className="border-b border-gray-100 dark:border-darkBorder/50 hover:bg-gray-50/50 dark:hover:bg-darkHover/50 transition cursor-pointer"><td className={`px-6 py-4 text-[13px] font-semibold ${c.cliente_problema ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-gray-300'}`}>{c.nome} {c.cliente_problema && <Icon name="alert-triangle" className="w-3.5 h-3.5 inline text-red-500 ml-1" title="Cliente Problema" />}</td><td className="px-6 py-4 text-[13px] font-medium text-gray-800 dark:text-white">{c.telefone || '---'}</td><td className="px-6 py-4 text-[13px] text-gray-600 dark:text-gray-400">{c.email || '---'}</td><td className="px-6 py-4 text-[13px] text-gray-600 dark:text-gray-400 truncate max-w-xs">{c.observacoes || '---'}</td><td className="px-6 py-4 text-center"><button type="button" onClick={(e) => { e.stopPropagation(); if(confirm(`Excluir o cliente ${c.nome}?`)) { supabase.from('clientes').delete().eq('id', c.id).then(() => carregarDados()); } }} className="p-2 text-red-500 hover:text-red-600 transition rounded hover:bg-red-50 dark:hover:bg-red-950/30" title="Excluir Cliente"><Icon name="trash-2" className="w-4 h-4" /></button></td></tr>
@@ -3187,7 +3187,7 @@ function App() {
                         <div className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded overflow-hidden">
                             <div className="overflow-x-auto custom-scrollbar">
                                 <table className="w-full text-left border-collapse min-w-[800px]">
-                                    <thead className="bg-gray-50/50 dark:bg-darkHover/50">
+                                    <thead className="bg-gray-50/50 dark:bg-darkHover/50 border-t-2 border-brand">
                                         <tr className="border-b border-gray-200 dark:border-darkBorder text-[13px] font-semibold text-gray-500 dark:text-gray-400 tracking-wide uppercase">
                                             <th className="px-6 py-4 w-28">Data</th>
                                             <th className="px-6 py-4 w-48">Cliente / Razão Social</th>
@@ -3263,7 +3263,7 @@ function App() {
                         </div>
                         <div className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded overflow-hidden">
                             <table className="w-full text-left border-collapse">
-                                <thead className="bg-gray-50/50 dark:bg-darkHover/50"><tr className="border-b border-gray-200 dark:border-darkBorder text-[13px] font-semibold text-gray-500 dark:text-gray-400 tracking-wide uppercase"><th className="px-6 py-4">Nome do Usuário</th><th className="px-6 py-4 w-48 text-right">Nível de Acesso</th></tr></thead>
+                                <thead className="bg-gray-50/50 dark:bg-darkHover/50 border-t-2 border-brand"><tr className="border-b border-gray-200 dark:border-darkBorder text-[13px] font-semibold text-gray-500 dark:text-gray-400 tracking-wide uppercase"><th className="px-6 py-4">Nome do Usuário</th><th className="px-6 py-4 w-48 text-right">Nível de Acesso</th></tr></thead>
                                 <tbody>
                                     {usuariosSistema.map(u => (
                                         <tr key={u.id} onClick={() => abrirEdicaoUsuario(u)} className="border-b border-gray-100 dark:border-darkBorder/50 hover:bg-gray-50/50 dark:hover:bg-darkHover/50 transition cursor-pointer">
@@ -3296,7 +3296,7 @@ function App() {
                         </div>
                         <div className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded overflow-hidden">
                             <table className="w-full text-left border-collapse">
-                                <thead className="bg-gray-50/50 dark:bg-darkHover/50">
+                                <thead className="bg-gray-50/50 dark:bg-darkHover/50 border-t-2 border-brand">
                                     <tr className="border-b border-gray-200 dark:border-darkBorder text-[13px] font-semibold text-gray-500 dark:text-gray-400 tracking-wide uppercase">
                                         <th className="px-6 py-4 w-24">ID</th>
                                         <th className="px-6 py-4">Nome do Fornecedor / Local</th>
