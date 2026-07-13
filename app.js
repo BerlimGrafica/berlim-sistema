@@ -964,6 +964,7 @@ function App() {
     const [modalContaAberto, setModalContaAberto] = useState(false);
     const [novaConta, setNovaConta] = useState({ id: null, descricao: '', valor: '', vencimento: '', status: 'Pendente' });
     const [alertasNaoLidos, setAlertasNaoLidos] = useState([]);
+    const alertasFuturaDisparados = useRef(new Set());
     const [modalAlertasAberto, setModalAlertasAberto] = useState(false);
 
     const [modalAberto, setModalAberto] = useState(false);
@@ -1178,12 +1179,13 @@ function App() {
                     setAlertasNaoLidos(prev => {
                         let novosAlertas = [...prev];
                         pedidosFuturaAlertar.forEach(p => {
-                            if (!novosAlertas.some(a => a.os_id === p.id && a.tipo === 'alerta_futura')) {
+                            if (!novosAlertas.some(a => a.os_id === p.id && a.tipo === 'alerta_futura') && !alertasFuturaDisparados.current.has(p.id)) {
                                 let msg = `Prazo da Futura termina amanhã (O.S. #${p.id}). Retirar!`;
                                 if (p.prazo === hojeStr) msg = `Prazo da Futura é HOJE (O.S. #${p.id}). Retirar o quanto antes!`;
                                 else if (p.prazo < hojeStr) msg = `Prazo da Futura VENCIDO (O.S. #${p.id}). Verifique imediatamente!`;
                                 
                                 novosAlertas.push({ id: Date.now() + Math.random(), msg, os_id: p.id, tipo: 'alerta_futura' });
+                                alertasFuturaDisparados.current.add(p.id);
                             }
                         });
                         return novosAlertas;
