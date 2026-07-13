@@ -1044,7 +1044,7 @@ function App() {
                             // Alerta: Avisar Cliente (para Atendimento/Admin)
                             if (payload.new.status === 'Avisar Cliente' && payload.old?.status !== 'Avisar Cliente') {
                                 if (isAdm || isOpe) {
-                                    setAlertasNaoLidos(prev => [...prev, { id: Date.now() + 5, msg: `Avisar o cliente da O.S. #${payload.new.id}`, os_id: payload.new.id, tipo: 'avisar_cliente' }]);
+                                    setAlertasNaoLidos(prev => [...prev, { id: Date.now() + 5, msg: `Avisar cliente: ${payload.new.cliente} (O.S. #${payload.new.id})`, os_id: payload.new.id, tipo: 'avisar_cliente' }]);
                                 }
                             }
 
@@ -1968,6 +1968,14 @@ function App() {
                             <Icon name={darkMode ? "sun" : "moon"} className="w-5 h-5" />
                         </button>
                         
+                        {/* SEPARADOR FUTURA IM */}
+                        <div className="hidden sm:block w-[1px] h-8 bg-gray-200 dark:border-darkBorder"></div>
+
+                        {/* LINK FUTURA IM */}
+                        <a href="https://www.futuraim.com.br/" target="_blank" rel="noopener noreferrer" className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-darkHover transition flex items-center justify-center" title="Acessar Futura IM">
+                            <img src="https://www.futuraim.com.br/favicon.ico" alt="Futura IM" className="w-5 h-5 object-contain" />
+                        </a>
+
                         {/* SEPARADOR VERTICAL DE ELEGÂNCIA */}
                         <div className="hidden sm:block w-[1px] h-8 bg-gray-200 dark:border-darkBorder"></div>
 
