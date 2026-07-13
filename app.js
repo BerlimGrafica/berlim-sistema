@@ -56,7 +56,7 @@ const STATUSES_PRODUCAO = [
     'Etiqueta Escolar', 'Produzir', 'Produção', 'Avisar Cliente', 'Retirada'
 ];
 const STATUSES_FINALIZADOS = ['Abandonado', 'Cancelado', 'Concluído', 'Finalizado'];
-const RESPONSAVEIS = ['Gi', 'Murilo', 'Bruno', 'Nicole', 'Hellen', 'Jessica', 'Vini'];
+const RESPONSAVEIS = ['Giovana', 'Murilo', 'Bruno', 'Nicole', 'Hellen', 'Jessica', 'Vini'];
 
 
 // ==== MAPEAMENTO DE CORES DOS STATUS ====
@@ -1702,13 +1702,14 @@ function App() {
             const telNormalizado = clienteFormatado.telefone.replace(/\D/g, '');
             let duplicado = null;
             if (telNormalizado.length >= 8) {
-                const searchString = `%${telNormalizado.slice(-8)}`;
+                const searchString = `%${telNormalizado.slice(-4)}%`;
                 const { data: dupData } = await supabase.from('clientes').select('id,nome,telefone').ilike('telefone', searchString);
                 if (dupData) {
                     duplicado = dupData.find(c => {
                         if (novoCliente.id && c.id === novoCliente.id) return false;
                         if (!c.telefone) return false;
-                        return c.telefone.replace(/\D/g, '') === telNormalizado;
+                        const cTelNorm = c.telefone.replace(/\D/g, '');
+                        return cTelNorm.endsWith(telNormalizado) || telNormalizado.endsWith(cTelNorm);
                     });
                 }
             }
@@ -1973,7 +1974,7 @@ function App() {
 
                         {/* LINK FUTURA IM */}
                         <a href="https://www.futuraim.com.br/" target="_blank" rel="noopener noreferrer" className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-darkHover transition flex items-center justify-center" title="Acessar Futura IM">
-                            <img src="https://www.futuraim.com.br/favicon.ico" alt="Futura IM" className="w-5 h-5 object-contain" />
+                            <img src="https://www.google.com/s2/favicons?domain=futuraim.com.br&sz=64" alt="Futura IM" className="w-5 h-5 object-contain rounded-sm" />
                         </a>
 
                         {/* SEPARADOR VERTICAL DE ELEGÂNCIA */}
