@@ -1,0 +1,141 @@
+{modalOrcamentoPreAberto && (
+                <div onClick={() => setModalOrcamentoPreAberto(false)} className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer">
+                    <div className="bg-[#EDEFF0] dark:bg-darkBg w-full max-w-md rounded shadow-2xl overflow-hidden border border-gray-200 dark:border-darkBorder" onClick={(e) => e.stopPropagation()}>
+                        <div className="px-6 py-5 border-b border-gray-100 dark:border-darkBorder flex justify-between items-center bg-gray-50 dark:bg-darkCard"><h3 className="font-semibold text-lg dark:text-white tracking-tight">{novoOrcamentoPre.id ? 'Editar Modelo' : 'Novo Modelo'}</h3><button onClick={() => setModalOrcamentoPreAberto(false)} className="text-gray-400 hover:text-white transition"><Icon name="x" /></button></div>
+                        <form onSubmit={salvarOrcamentoPre} className="p-6 flex flex-col gap-4">
+                            <input required value={novoOrcamentoPre.titulo} onChange={e => setNovoOrcamentoPre({...novoOrcamentoPre, titulo: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition" placeholder="Título (Ex: Adesivos Redondos)" />
+                            <textarea rows="6" required value={novoOrcamentoPre.texto} onChange={e => setNovoOrcamentoPre({...novoOrcamentoPre, texto: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition custom-scrollbar" placeholder="Cole aqui o texto do orçamento..."></textarea>
+                            <div className="flex justify-end gap-3"><button type="button" onClick={() => setModalOrcamentoPreAberto(false)} className="px-4 py-2 rounded text-[13px] font-medium text-gray-600 dark:text-[#A1A1AA] hover:bg-gray-100 dark:hover:bg-darkHover transition">Cancelar</button><button type="submit" className="px-5 py-2 rounded text-[13px] font-medium bg-brand text-white hover:bg-brandHover transition shadow-sm">Salvar</button></div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {modalOrcamentoFormalizadoAberto && (
+                <div onClick={() => setModalOrcamentoFormalizadoAberto(false)} className="fixed inset-0 z-[60] flex items-start justify-center p-0 md:p-6 bg-slate-900/60 dark:bg-black/80 glass no-print transition-all cursor-pointer overflow-y-auto">
+                    <div onClick={e => e.stopPropagation()} className="bg-[#EDEFF0] dark:bg-darkBg md:rounded shadow-2xl w-full max-w-[1400px] my-auto overflow-hidden cursor-default border border-gray-200 dark:border-darkBorder flex flex-col h-[100dvh] md:h-[90vh]">
+                        {/* Header Modal Orçamento */}
+                        <div className="px-6 py-4 border-b border-gray-200 dark:border-darkBorder bg-gray-50 dark:bg-darkCard flex justify-between items-center sticky top-0 z-20 shrink-0 shadow-sm">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-brand/10 rounded-lg">
+                                    <Icon name="file-text" className="w-5 h-5 text-brand" />
+                                </div>
+                                <div>
+                                    <h2 className="text-xl font-black text-gray-900 dark:text-white tracking-tight">
+                                        {orcamentoFormalizadoEmEdicao ? 'Editar Orçamento Formalizado' : 'Novo Orçamento Formalizado'}
+                                    </h2>
+                                </div>
+                            </div>
+                            <button type="button" onClick={() => setModalOrcamentoFormalizadoAberto(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-white transition p-1 bg-white dark:bg-darkElevated rounded-md border border-gray-200 dark:border-darkBorder shadow-sm">
+                                <Icon name="x" className="w-5 h-5" />
+                            </button>
+                        </div>
+                        
+                        <div className="flex-1 overflow-y-auto flex flex-col xl:flex-row divide-y xl:divide-y-0 xl:divide-x divide-gray-200 dark:divide-darkBorder custom-scrollbar bg-white dark:bg-darkBg">
+                            {/* Lado Esquerdo - Calculadoras */}
+                            <div className="w-full xl:w-[480px] shrink-0 bg-gray-50/50 dark:bg-darkElevated flex flex-col">
+                                <CalculadorasAba
+                                    abaLateral={abaLateral}
+                                    setAbaLateral={setAbaLateral}
+                                    produtos={produtos}
+                                    buscaProduto={buscaProduto}
+                                    setBuscaProduto={setBuscaProduto}
+                                    produtoDropdownAberto={produtoDropdownAberto}
+                                    setProdutoDropdownAberto={setProdutoDropdownAberto}
+                                    itemAtual={itemAtual}
+                                    setItemAtual={setItemAtual}
+                                    adicionarItemAoCarrinho={adicionarItemAoCarrinho}
+                                    fornecedores={fornecedores}
+                                />
+                            </div>
+                            
+                            {/* Lado Direito - Orçamento */}
+                            <div className="flex-1 flex flex-col p-6 xl:p-8 bg-[#EDEFF0] dark:bg-darkBg">
+                                <div className="space-y-6">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                        <div>
+                                            <label className="block text-[13px] font-bold text-gray-700 dark:text-gray-200 mb-1.5 flex items-center gap-2"><Icon name="user" className="w-3.5 h-3.5"/>Cliente *</label>
+                                            <div className="relative">
+                                                <input type="text" value={buscaCliente} onChange={e => { setBuscaCliente(e.target.value); setNovoPedido({...novoPedido, cliente: e.target.value}); setClienteDropdownAberto(true); }} onFocus={() => setClienteDropdownAberto(true)} onBlur={() => setTimeout(() => setClienteDropdownAberto(false), 200)} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand transition dark:text-[#EDEDED]" placeholder="Buscar ou digitar cliente" />
+                                                {clienteDropdownAberto && (
+                                                    <ul className="absolute z-50 w-full mt-1 bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded shadow-lg max-h-48 overflow-y-auto custom-scrollbar">
+                                                        {clientesCadastrados.filter(c => c.nome.toLowerCase().includes(buscaCliente.toLowerCase())).map(c => (
+                                                            <li key={c.id} className="px-3 py-2 text-[12px] hover:bg-gray-100 dark:hover:bg-darkHover cursor-pointer dark:text-[#EDEDED]" onClick={() => { setBuscaCliente(c.nome); setNovoPedido({...novoPedido, cliente: c.nome}); setClienteDropdownAberto(false); }}>
+                                                                {c.nome} {c.telefone && <span className="text-gray-400">({c.telefone})</span>}
+                                                            </li>
+                                                        ))}
+                                                        {clientesCadastrados.filter(c => c.nome.toLowerCase().includes(buscaCliente.toLowerCase())).length === 0 && (
+                                                            <li className="px-3 py-2 text-[12px] text-gray-500">Nenhum cliente encontrado.</li>
+                                                        )}
+                                                    </ul>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Lista de Itens do Orçamento */}
+                                    <div className="bg-white dark:bg-darkElevated rounded-lg border border-gray-200 dark:border-darkBorder overflow-hidden shadow-sm">
+                                        <div className="bg-gray-50 dark:bg-darkHover/30 px-4 py-2 border-b border-gray-200 dark:border-darkBorder flex items-center gap-2">
+                                            <Icon name="shopping-cart" className="w-4 h-4 text-gray-500" />
+                                            <span className="text-[12px] font-bold text-gray-700 dark:text-gray-300 uppercase tracking-widest">Itens do Orçamento</span>
+                                        </div>
+                                        <div className="p-3">
+                                            {itensPedido.length === 0 ? (
+                                                <p className="text-[12px] text-gray-400 text-center py-4">Nenhum item adicionado.</p>
+                                            ) : (
+                                                <div className="space-y-2">
+                                                    {itensPedido.map(item => (
+                                                        <div key={item.id_temp} className="flex justify-between items-center bg-gray-50/50 dark:bg-darkBg border border-gray-100 dark:border-darkBorder rounded p-2 relative pr-8">
+                                                            <div>
+                                                                <div className="text-[13px] font-bold text-gray-800 dark:text-gray-200 flex items-center gap-2">
+                                                                    {item.nome || 'Serviço Personalizado'} {item.id_produto && <span className="text-[10px] bg-brand/10 text-brand px-1 rounded">#{item.id_produto}</span>}
+                                                                </div>
+                                                                <div className="text-[11px] text-gray-500 mt-0.5 whitespace-pre-wrap">{item.descricao}</div>
+                                                            </div>
+                                                            <div className="text-right flex items-center gap-2 shrink-0">
+                                                                <div className="flex flex-col items-end">
+                                                                    {item.desconto ? (
+                                                                        <div className="flex flex-col items-end">
+                                                                            <span className="text-[10px] text-red-400 line-through">R$ {item.valor_original}</span>
+                                                                            <span className="text-[13px] font-bold text-gray-900 dark:text-gray-100">R$ {item.valor} <span className="text-emerald-500 text-[10px] font-bold">(-{item.desconto}%)</span></span>
+                                                                        </div>
+                                                                    ) : (
+                                                                        <span className="text-[13px] font-bold text-gray-900 dark:text-gray-100">R$ {item.valor}</span>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                            <button type="button" onClick={() => removerItemDoCarrinho(item.id_temp)} className="absolute top-1/2 -translate-y-1/2 right-2 text-gray-400 hover:text-red-500 transition p-1"><Icon name="trash-2" className="w-4 h-4" /></button>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                    
+                                    <div>
+                                        <label className="block text-[13px] font-medium mb-2 text-gray-700 dark:text-[#EDEDED]">Observações Gerais ou Texto Complementar</label>
+                                        <textarea rows="4" value={novoPedido.servico} onChange={e => setNovoPedido({...novoPedido, servico: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand transition dark:text-[#EDEDED] custom-scrollbar" placeholder="Detalhes adicionais, garantias, etc..."></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="px-6 py-4 border-t border-gray-200 dark:border-darkBorder bg-gray-50/80 dark:bg-darkCard/80 backdrop-blur-md flex flex-col lg:flex-row items-center justify-between gap-6 shrink-0 z-20 shadow-[0_-4px_20px_rgb(0,0,0,0.02)] dark:shadow-none">
+                            <div className="flex items-center gap-3 bg-white dark:bg-darkElevated px-4 py-3 rounded-xl border border-gray-200 dark:border-darkBorder shadow-sm w-full lg:w-auto justify-between lg:justify-start">
+                                <span className="text-[11px] font-bold text-gray-400 dark:text-[#888888] uppercase tracking-widest mt-1">Total Final</span>
+                                <div className="relative flex items-center justify-end">
+                                    <span className="font-bold text-[14px] text-gray-300 dark:text-gray-500 mr-1.5">R$</span>
+                                    <input required type="text" value={novoPedido.valor_total} onChange={e => setNovoPedido({...novoPedido, valor_total: formatarMoeda(e.target.value)})} className="bg-transparent border-none text-right font-black text-2xl text-brand outline-none w-28 sm:w-32 placeholder-brand/30" placeholder="0,00" />
+                                </div>
+                            </div>
+
+                            <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center lg:justify-end gap-2 sm:gap-3 w-full lg:w-auto">
+                                <button type="button" onClick={salvarOrcamentoFormalizado} className="w-full sm:w-44 px-2 py-2.5 rounded-lg text-[13px] font-bold bg-brand text-white hover:bg-brandHover shadow-md shadow-brand/20 transition flex items-center justify-center gap-2 whitespace-nowrap">
+                                    <Icon name="save" className="w-4 h-4 shrink-0" />
+                                    {orcamentoFormalizadoEmEdicao ? 'Atualizar Orçamento' : 'Salvar Orçamento'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
