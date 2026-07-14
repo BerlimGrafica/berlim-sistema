@@ -6,9 +6,9 @@ import Icon from '@/components/Icon';
 
 function extrairItens(orc) {
     if (!orc.descricao) return [];
-    const match = orc.descricao.match(/\[ITENS_JSON\]\n(.*)/);
+    const match = orc.descricao.match(/\[ITENS_JSON\]\n([\s\S]*)/);
     if (match) {
-        try { return JSON.parse(match[1]); } catch(e) {}
+        try { return JSON.parse(match[1]); } catch(e) { console.error(e) }
     }
     return desconstruirTextoServico(orc.descricao).itens;
 }
@@ -159,19 +159,21 @@ function PrintOrcamento({ orc }) {
         <div className="print-only bg-white text-black font-sans flex flex-col w-full h-[286mm] overflow-hidden relative select-none">
             {/* Header */}
             <div className="flex justify-between items-start pt-16 px-16">
-                {/* SVG Logo exact replica of 4 stairs and blue text */}
                 <div className="flex items-center gap-4">
-                    <svg width="100" height="75" viewBox="0 0 110 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <rect x="0" y="55" width="28" height="15" fill="#F37021" />
-                        <rect x="20" y="37" width="28" height="15" fill="#F37021" />
-                        <rect x="40" y="19" width="28" height="15" fill="#F37021" />
-                        <rect x="60" y="1" width="28" height="15" fill="#F37021" />
-                        <rect x="87" y="-12" width="1.5" height="13" fill="#F37021" />
+                    <svg width="240" height="70" viewBox="0 0 350 115" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        {/* 7 Stairs descending from left to right */}
+                        <rect x="0" y="0" width="45" height="12" fill="#F37021" />
+                        <rect x="20" y="16" width="45" height="12" fill="#F37021" />
+                        <rect x="40" y="32" width="45" height="12" fill="#F37021" />
+                        <rect x="60" y="48" width="45" height="12" fill="#F37021" />
+                        <rect x="80" y="64" width="45" height="12" fill="#F37021" />
+                        <rect x="100" y="80" width="45" height="12" fill="#F37021" />
+                        <rect x="120" y="96" width="45" height="12" fill="#F37021" />
+                        
+                        {/* Text aligned with the bottom 2 stairs */}
+                        <text x="175" y="92" fontFamily="Arial, sans-serif" fontWeight="900" fontSize="42" fill="#00579D">BERLIM</text>
+                        <text x="177" y="109" fontFamily="Arial, sans-serif" fontWeight="600" fontSize="16.5" fill="#00579D" letterSpacing="0">GRÁFICA RÁPIDA</text>
                     </svg>
-                    <div className="flex flex-col justify-end pb-3 mt-1">
-                        <span className="text-[#00579D] font-black text-3xl leading-none tracking-tighter">BERLIM</span>
-                        <span className="text-[#00579D] font-medium text-xl leading-none tracking-tight mt-0.5">GRÁFICA RÁPIDA</span>
-                    </div>
                 </div>
                 <div className="text-right flex flex-col justify-center h-[90px] pb-3 gap-0.5">
                     <p className="text-[18px] font-bold text-[#00579D] tracking-tighter">CNPJ 36.117.136/0001-23</p>
