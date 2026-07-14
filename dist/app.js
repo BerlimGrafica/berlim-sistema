@@ -4544,74 +4544,155 @@ function App() {
           children: [/*#__PURE__*/_jsxDEV("div", {
             children: [/*#__PURE__*/_jsxDEV("h1", {
               className: "text-3xl font-semibold dark:text-white tracking-tight",
-              children: "Dashboard Financeiro"
+              children: abaFinanceiro === 'geral' || abaFinanceiro === 'vendas_produto' ? 'Dashboard Financeiro' : abaFinanceiro === 'contas_pagar' ? 'Contas a Pagar' : abaFinanceiro === 'contas_receber' ? 'Contas a Receber' : abaFinanceiro === 'empresas_aprovadas' ? 'Faturamento Aprovado' : abaFinanceiro === 'notas_fiscais' ? `Notas Fiscais ${filtroNotas === 'pendentes' ? 'Pendentes' : 'Concluídas'}` : ''
             }, void 0, false), /*#__PURE__*/_jsxDEV("p", {
               className: "text-[13px] text-gray-500 dark:text-[#888888] mt-1",
-              children: "Análise de Receitas, Centros de Custo e Performance."
+              children: abaFinanceiro === 'geral' || abaFinanceiro === 'vendas_produto' ? 'Análise de Receitas, Centros de Custo e Performance.' : abaFinanceiro === 'contas_pagar' ? 'Gerencie as despesas da empresa.' : abaFinanceiro === 'contas_receber' ? 'Pedidos com pagamento via Boleto.' : abaFinanceiro === 'empresas_aprovadas' ? 'Gerencie as empresas com faturamento aprovado.' : abaFinanceiro === 'notas_fiscais' ? filtroNotas === 'pendentes' ? 'Notas enviadas pelos clientes aguardando processamento.' : 'Histórico de notas já emitidas e processadas.' : ''
             }, void 0, false)]
           }, void 0, true), /*#__PURE__*/_jsxDEV("div", {
             className: "flex flex-wrap items-end gap-3 w-full lg:w-auto",
-            children: [/*#__PURE__*/_jsxDEV("div", {
-              className: "flex flex-col w-36",
-              children: [/*#__PURE__*/_jsxDEV("span", {
-                className: "text-[10px] font-semibold text-gray-500 dark:text-[#888888] uppercase mb-1",
-                children: "Período De:"
-              }, void 0, false), /*#__PURE__*/_jsxDEV(CustomDatePicker, {
-                value: dataFiltroFinInicio,
-                onChange: setDataFiltroFinInicio,
-                placeholder: "Início",
-                className: "bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-md px-3 py-2 text-[13px] outline-none hover:border-brand transition"
-              }, void 0, false)]
-            }, void 0, true), /*#__PURE__*/_jsxDEV("div", {
-              className: "flex flex-col w-36",
-              children: [/*#__PURE__*/_jsxDEV("span", {
-                className: "text-[10px] font-semibold text-gray-500 dark:text-[#888888] uppercase mb-1",
-                children: "Período Até:"
-              }, void 0, false), /*#__PURE__*/_jsxDEV(CustomDatePicker, {
-                value: dataFiltroFinFim,
-                onChange: setDataFiltroFinFim,
-                placeholder: "Fim",
-                className: "bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-md px-3 py-2 text-[13px] outline-none hover:border-brand transition"
-              }, void 0, false)]
-            }, void 0, true), (dataFiltroFinInicio || dataFiltroFinFim) && /*#__PURE__*/_jsxDEV("button", {
-              type: "button",
+            children: [(abaFinanceiro === 'geral' || abaFinanceiro === 'vendas_produto') && /*#__PURE__*/_jsxDEV(_Fragment, {
+              children: [/*#__PURE__*/_jsxDEV("div", {
+                className: "flex flex-col w-36",
+                children: [/*#__PURE__*/_jsxDEV("span", {
+                  className: "text-[10px] font-semibold text-gray-500 dark:text-[#888888] uppercase mb-1",
+                  children: "Período De:"
+                }, void 0, false), /*#__PURE__*/_jsxDEV(CustomDatePicker, {
+                  value: dataFiltroFinInicio,
+                  onChange: setDataFiltroFinInicio,
+                  placeholder: "Início",
+                  className: "bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-md px-3 py-2 text-[13px] outline-none hover:border-brand transition"
+                }, void 0, false)]
+              }, void 0, true), /*#__PURE__*/_jsxDEV("div", {
+                className: "flex flex-col w-36",
+                children: [/*#__PURE__*/_jsxDEV("span", {
+                  className: "text-[10px] font-semibold text-gray-500 dark:text-[#888888] uppercase mb-1",
+                  children: "Período Até:"
+                }, void 0, false), /*#__PURE__*/_jsxDEV(CustomDatePicker, {
+                  value: dataFiltroFinFim,
+                  onChange: setDataFiltroFinFim,
+                  placeholder: "Fim",
+                  className: "bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-md px-3 py-2 text-[13px] outline-none hover:border-brand transition"
+                }, void 0, false)]
+              }, void 0, true), (dataFiltroFinInicio || dataFiltroFinFim) && /*#__PURE__*/_jsxDEV("button", {
+                type: "button",
+                onClick: () => {
+                  setDataFiltroFinInicio('');
+                  setDataFiltroFinFim('');
+                },
+                className: "w-[38px] h-[38px] flex items-center justify-center bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-md hover:bg-gray-100 dark:hover:bg-darkElevated transition text-gray-400 hover:text-brand",
+                title: "Limpar Filtros",
+                children: /*#__PURE__*/_jsxDEV(Icon, {
+                  name: "x",
+                  className: "w-4 h-4"
+                }, void 0, false)
+              }, void 0, false), /*#__PURE__*/_jsxDEV("button", {
+                type: "button",
+                onClick: () => {
+                  const pedidosExport = pedidos.filter(p => {
+                    let match = true;
+                    if (dataFiltroFinInicio && (!p.data_pedido || p.data_pedido < dataFiltroFinInicio)) match = false;
+                    if (dataFiltroFinFim && (!p.data_pedido || p.data_pedido > dataFiltroFinFim)) match = false;
+                    return match;
+                  });
+                  const cabecalho = "ID;Data;Cliente;Responsavel;Local;Status;Valor\n";
+                  const linhas = pedidosExport.map(p => `${p.id};${p.data_pedido};${p.cliente};${p.responsavel};${p.local_producao};${p.status};${p.valor_total}`).join("\n");
+                  const blob = new Blob([cabecalho + linhas], {
+                    type: 'text/csv;charset=utf-8;'
+                  });
+                  const url = URL.createObjectURL(blob);
+                  const link = document.createElement("a");
+                  link.setAttribute("href", url);
+                  link.setAttribute("download", `relatorio_financeiro_${obterDataAtual()}.csv`);
+                  document.body.appendChild(link);
+                  link.click();
+                  document.body.removeChild(link);
+                },
+                className: "bg-brand hover:bg-brandHover text-white h-[38px] px-4 text-[13px] rounded-md font-semibold shadow-sm transition flex items-center gap-2",
+                children: [/*#__PURE__*/_jsxDEV(Icon, {
+                  name: "printer",
+                  className: "w-4 h-4"
+                }, void 0, false), " Exportar CSV"]
+              }, void 0, true)]
+            }, void 0, true), abaFinanceiro === 'contas_pagar' && /*#__PURE__*/_jsxDEV("button", {
               onClick: () => {
-                setDataFiltroFinInicio('');
-                setDataFiltroFinFim('');
-              },
-              className: "w-[38px] h-[38px] flex items-center justify-center bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-md hover:bg-gray-100 dark:hover:bg-darkElevated transition text-gray-400 hover:text-brand",
-              title: "Limpar Filtros",
-              children: /*#__PURE__*/_jsxDEV(Icon, {
-                name: "x",
-                className: "w-4 h-4"
-              }, void 0, false)
-            }, void 0, false), /*#__PURE__*/_jsxDEV("button", {
-              type: "button",
-              onClick: () => {
-                const pedidosExport = pedidos.filter(p => {
-                  let match = true;
-                  if (dataFiltroFinInicio && (!p.data_pedido || p.data_pedido < dataFiltroFinInicio)) match = false;
-                  if (dataFiltroFinFim && (!p.data_pedido || p.data_pedido > dataFiltroFinFim)) match = false;
-                  return match;
+                setNovaConta({
+                  id: null,
+                  descricao: '',
+                  valor: '',
+                  vencimento: '',
+                  status: 'Pendente',
+                  recorrente: false
                 });
-                const cabecalho = "ID;Data;Cliente;Responsavel;Local;Status;Valor\n";
-                const linhas = pedidosExport.map(p => `${p.id};${p.data_pedido};${p.cliente};${p.responsavel};${p.local_producao};${p.status};${p.valor_total}`).join("\n");
-                const blob = new Blob([cabecalho + linhas], {
-                  type: 'text/csv;charset=utf-8;'
-                });
-                const url = URL.createObjectURL(blob);
-                const link = document.createElement("a");
-                link.setAttribute("href", url);
-                link.setAttribute("download", `relatorio_financeiro_${obterDataAtual()}.csv`);
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
+                setModalContaAberto(true);
               },
               className: "bg-brand hover:bg-brandHover text-white h-[38px] px-4 text-[13px] rounded-md font-semibold shadow-sm transition flex items-center gap-2",
               children: [/*#__PURE__*/_jsxDEV(Icon, {
-                name: "printer",
+                name: "plus",
                 className: "w-4 h-4"
-              }, void 0, false), " Exportar CSV"]
+              }, void 0, false), " Nova Conta"]
+            }, void 0, true), abaFinanceiro === 'empresas_aprovadas' && /*#__PURE__*/_jsxDEV("button", {
+              onClick: () => setModalEmpresaFaturamentoAberto(true),
+              className: "bg-brand hover:bg-brandHover text-white h-[38px] px-4 text-[13px] rounded-md font-semibold shadow-sm transition flex items-center gap-2",
+              children: [/*#__PURE__*/_jsxDEV(Icon, {
+                name: "plus",
+                className: "w-4 h-4"
+              }, void 0, false), " Adicionar Empresa"]
+            }, void 0, true), abaFinanceiro === 'notas_fiscais' && /*#__PURE__*/_jsxDEV(_Fragment, {
+              children: [/*#__PURE__*/_jsxDEV("div", {
+                className: "relative w-full lg:w-64",
+                children: [/*#__PURE__*/_jsxDEV(Icon, {
+                  name: "search",
+                  className: "w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                }, void 0, false), /*#__PURE__*/_jsxDEV("input", {
+                  type: "text",
+                  placeholder: "Buscar por nome, razão ou CNPJ...",
+                  value: buscaNotaFiscal,
+                  onChange: e => {
+                    setBuscaNotaFiscal(e.target.value);
+                    setPaginaNotasFiscais(1);
+                  },
+                  className: "w-full pl-9 pr-4 py-1.5 h-[38px] text-[13px] border border-gray-200 dark:border-darkBorder bg-white dark:bg-darkCard rounded-md focus:outline-none focus:ring-2 focus:ring-brand dark:text-white transition"
+                }, void 0, false)]
+              }, void 0, true), /*#__PURE__*/_jsxDEV("div", {
+                className: "flex bg-gray-100/50 dark:bg-darkHover/50 p-1 rounded-lg border border-gray-200 dark:border-darkBorder w-full lg:w-auto mt-3 lg:mt-0",
+                children: [/*#__PURE__*/_jsxDEV("button", {
+                  onClick: () => {
+                    setFiltroNotas('pendentes');
+                    setPaginaNotasFiscais(1);
+                  },
+                  className: `px-4 py-1.5 text-[12px] font-semibold rounded-md transition flex items-center gap-2 ${filtroNotas === 'pendentes' ? 'bg-white dark:bg-darkCard text-brand shadow-sm border border-gray-200 dark:border-darkBorder' : 'text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white'}`,
+                  children: ["Pendentes ", notasFiscais.some(n => !n.concluido) && /*#__PURE__*/_jsxDEV("span", {
+                    className: "w-1.5 h-1.5 rounded-full bg-emerald-500 ml-1"
+                  }, void 0, false)]
+                }, void 0, true), /*#__PURE__*/_jsxDEV("button", {
+                  onClick: () => {
+                    setFiltroNotas('concluidas');
+                    setPaginaNotasFiscais(1);
+                  },
+                  className: `px-4 py-1.5 text-[12px] font-semibold rounded-md transition flex items-center gap-2 ${filtroNotas === 'concluidas' ? 'bg-white dark:bg-darkCard text-brand shadow-sm border border-gray-200 dark:border-darkBorder' : 'text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white'}`,
+                  children: "Concluídas"
+                }, void 0, false)]
+              }, void 0, true), /*#__PURE__*/_jsxDEV("div", {
+                className: "flex rounded-md shadow-sm",
+                children: [/*#__PURE__*/_jsxDEV("a", {
+                  href: "/solicitar-nota.html",
+                  target: "_blank",
+                  className: "bg-brand hover:bg-brandHover text-white h-[38px] px-4 text-[13px] rounded-l-md font-semibold transition flex items-center gap-2 border border-brand border-r-0",
+                  children: [/*#__PURE__*/_jsxDEV(Icon, {
+                    name: "external-link",
+                    className: "w-4 h-4"
+                  }, void 0, false), " Formulário"]
+                }, void 0, true), /*#__PURE__*/_jsxDEV("button", {
+                  onClick: () => window.open('/solicitar-nota.html', '_blank', 'width=800,height=600'),
+                  className: "bg-brand hover:bg-brandHover text-white h-[38px] px-3 rounded-r-md border-l border-white/20 transition flex items-center justify-center",
+                  title: "Abrir como Pop-up",
+                  children: /*#__PURE__*/_jsxDEV(Icon, {
+                    name: "maximize-2",
+                    className: "w-3.5 h-3.5"
+                  }, void 0, false)
+                }, void 0, false)]
+              }, void 0, true)]
             }, void 0, true)]
           }, void 0, true)]
         }, void 0, true), (() => {
@@ -5263,36 +5344,8 @@ function App() {
               }, void 0, false)]
             }, void 0, true), abaFinanceiro === 'contas_pagar' && /*#__PURE__*/_jsxDEV("div", {
               className: "bg-white dark:bg-darkCard p-6 rounded-xl border border-gray-200 dark:border-darkBorder flex flex-col gap-4 fade-in",
-              children: [/*#__PURE__*/_jsxDEV("div", {
-                className: "flex justify-between items-center mb-4",
-                children: [/*#__PURE__*/_jsxDEV("div", {
-                  children: [/*#__PURE__*/_jsxDEV("h3", {
-                    className: "font-semibold text-[13px] text-gray-800 dark:text-white uppercase tracking-wider",
-                    children: "Contas a Pagar"
-                  }, void 0, false), /*#__PURE__*/_jsxDEV("p", {
-                    className: "text-[11px] text-gray-400 mt-0.5",
-                    children: "Gerencie as despesas da empresa."
-                  }, void 0, false)]
-                }, void 0, true), /*#__PURE__*/_jsxDEV("button", {
-                  onClick: () => {
-                    setNovaConta({
-                      id: null,
-                      descricao: '',
-                      valor: '',
-                      vencimento: '',
-                      status: 'Pendente',
-                      recorrente: false
-                    });
-                    setModalContaAberto(true);
-                  },
-                  className: "bg-brand hover:bg-brandHover text-white h-[38px] px-4 text-[13px] rounded-md font-semibold shadow-sm transition flex items-center gap-2",
-                  children: [/*#__PURE__*/_jsxDEV(Icon, {
-                    name: "plus",
-                    className: "w-4 h-4"
-                  }, void 0, false), " Nova Conta"]
-                }, void 0, true)]
-              }, void 0, true), /*#__PURE__*/_jsxDEV("div", {
-                className: "bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded overflow-hidden mt-4",
+              children: /*#__PURE__*/_jsxDEV("div", {
+                className: "bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded overflow-hidden",
                 children: /*#__PURE__*/_jsxDEV("div", {
                   className: "overflow-x-auto min-h-[300px]",
                   children: /*#__PURE__*/_jsxDEV("table", {
@@ -5373,24 +5426,10 @@ function App() {
                     }, void 0, false)]
                   }, void 0, true)
                 }, void 0, false)
-              }, void 0, false)]
-            }, void 0, true), abaFinanceiro === 'contas_receber' && /*#__PURE__*/_jsxDEV("div", {
+              }, void 0, false)
+            }, void 0, false), abaFinanceiro === 'contas_receber' && /*#__PURE__*/_jsxDEV("div", {
               className: "fade-in",
-              children: [/*#__PURE__*/_jsxDEV("div", {
-                className: "flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6",
-                children: /*#__PURE__*/_jsxDEV("div", {
-                  children: [/*#__PURE__*/_jsxDEV("h2", {
-                    className: "text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2",
-                    children: [/*#__PURE__*/_jsxDEV(Icon, {
-                      name: "dollar-sign",
-                      className: "w-5 h-5 text-emerald-500"
-                    }, void 0, false), " Contas a Receber"]
-                  }, void 0, true), /*#__PURE__*/_jsxDEV("p", {
-                    className: "text-[13px] text-gray-500 mt-1",
-                    children: "Pedidos com pagamento via Boleto"
-                  }, void 0, false)]
-                }, void 0, true)
-              }, void 0, false), /*#__PURE__*/_jsxDEV("div", {
+              children: /*#__PURE__*/_jsxDEV("div", {
                 className: "bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded overflow-hidden",
                 children: /*#__PURE__*/_jsxDEV("div", {
                   className: "overflow-x-auto min-h-[300px]",
@@ -5494,30 +5533,10 @@ function App() {
                     }, void 0, false)]
                   }, void 0, true)
                 }, void 0, false)
-              }, void 0, false)]
-            }, void 0, true), abaFinanceiro === 'empresas_aprovadas' && /*#__PURE__*/_jsxDEV("div", {
+              }, void 0, false)
+            }, void 0, false), abaFinanceiro === 'empresas_aprovadas' && /*#__PURE__*/_jsxDEV("div", {
               className: "fade-in",
-              children: [/*#__PURE__*/_jsxDEV("div", {
-                className: "flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6",
-                children: [/*#__PURE__*/_jsxDEV("div", {
-                  children: [/*#__PURE__*/_jsxDEV("h2", {
-                    className: "text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2",
-                    children: [/*#__PURE__*/_jsxDEV(Icon, {
-                      name: "check-circle",
-                      className: "w-5 h-5 text-blue-500"
-                    }, void 0, false), " Faturamento Aprovado"]
-                  }, void 0, true), /*#__PURE__*/_jsxDEV("p", {
-                    className: "text-[13px] text-gray-500 mt-1",
-                    children: "Gerencie as empresas com faturamento aprovado"
-                  }, void 0, false)]
-                }, void 0, true), /*#__PURE__*/_jsxDEV("button", {
-                  onClick: () => setModalEmpresaFaturamentoAberto(true),
-                  className: "bg-brand hover:bg-brandHover text-white px-4 py-2 text-[13px] rounded-md font-semibold shadow-sm transition flex items-center gap-2",
-                  children: [/*#__PURE__*/_jsxDEV(Icon, {
-                    name: "plus"
-                  }, void 0, false), " Adicionar Empresa"]
-                }, void 0, true)]
-              }, void 0, true), /*#__PURE__*/_jsxDEV("div", {
+              children: /*#__PURE__*/_jsxDEV("div", {
                 className: "bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded overflow-hidden",
                 children: /*#__PURE__*/_jsxDEV("div", {
                   className: "overflow-x-auto min-h-[300px]",
@@ -5590,8 +5609,8 @@ function App() {
                     }, void 0, false)]
                   }, void 0, true)
                 }, void 0, false)
-              }, void 0, false)]
-            }, void 0, true), abaFinanceiro === 'notas_fiscais' && /*#__PURE__*/_jsxDEV("div", {
+              }, void 0, false)
+            }, void 0, false), abaFinanceiro === 'notas_fiscais' && /*#__PURE__*/_jsxDEV("div", {
               className: "fade-in",
               children: [/*#__PURE__*/_jsxDEV("div", {
                 className: "flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 mb-6 border-b border-gray-100 dark:border-darkBorder pb-6 shrink-0",
