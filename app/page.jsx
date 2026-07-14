@@ -11,6 +11,7 @@ import CadastrosTab from '@/components/CadastrosTab';
 import Notas_fiscaisTab from '@/components/Notas_fiscaisTab';
 import Modals from '@/components/Modals';
 import Navbar from '@/components/Navbar';
+import PrintLayout from '@/components/PrintLayout';
 
 function MainContent() {
     const { abaAtual } = useAppContext();
@@ -29,6 +30,7 @@ function MainContent() {
                 {abaAtual === 'notas_fiscais' && <Notas_fiscaisTab />}
             </div>
             <Modals />
+            <PrintLayout />
         </div>
     );
 }
