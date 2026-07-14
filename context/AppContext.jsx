@@ -1008,6 +1008,12 @@ export const AppProvider = ({ children }) => {
         }
     }
 
+    async function excluirConta(id) {
+        if (!confirm('Deseja excluir esta conta?')) return;
+        const { error } = await supabase.from('contas_pagar').delete().eq('id', id);
+        if (!error) setContasPagar(contasPagar.filter(x => x.id !== id));
+    }
+
     async function handleDragStartProduto(e, index) {
         setDraggedProdutoIndex(index);
         e.dataTransfer.effectAllowed = "move";
@@ -1448,9 +1454,6 @@ export const AppProvider = ({ children }) => {
         isModalTrancado,
         renderBarHorizontal,
         carregarDados,
-        fetchHistorico,
-        fetchProblemas,
-        fetchClientesCadastrados,
         atualizarCampoInline,
         fecharModalOS,
         abrirEdicao,
@@ -1480,8 +1483,7 @@ export const AppProvider = ({ children }) => {
         salvarCliente,
         salvarNotaFiscal,
         concluirNotaFiscal,
-        imprimirOS,
-        excluirUsuario
+        imprimirOS
     };
 
     return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
