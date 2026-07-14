@@ -2,11 +2,11 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useAppContext } from '@/context/AppContext';
 import Icon from '@/components/Icon';
-import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS, RESPONSAVEIS, obterCorStatus, formatarValorFinanceiro, formatarMoeda, formatarTelefone, obterDataAtual, formatarDataExibicao, formatarMçõesAno, CustomDatePicker, InlineDropdown, MultiSelectDropdown, dçõesconstruirTextoServico, obterRçõesumoServicos, ItensChecklist, StackedCards, CalculadoraBanner, CalculadoraAdçõesivo, CalculadoraCasamento, CalculadorasAba } from '@/lib/utils';
+import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS, RESPONSAVEIS, obterCorStatus, formatarValorFinanceiro, formatarMoeda, formatarTelefone, obterDataAtual, formatarDataExibicao, formatarMesAno, CustomDatePicker, InlineDropdown, MultiSelectDropdown, desconstruirTextoServico, obterResumoServicos, ItensChecklist, StackedCards, CalculadoraBanner, CalculadoraAdesivo, CalculadoraCasamento, CalculadorasAba } from '@/lib/utils';
 
 
 export default function ProducaoTab() {
-    const { buscaProducaoText, setBuscaProducaoText, setPedidoEmEdicao, setModalAberto, pedidosProducaoAtivos, isClienteProblema, opcoçõesStatusPermitidas, abrirEdicao, atualizarCampoInline } = useAppContext();
+    const { buscaProducaoText, setBuscaProducaoText, setPedidoEmEdicao, setModalAberto, pedidosProducaoAtivos, isClienteProblema, opcoesStatusPermitidas, abrirEdicao, atualizarCampoInline } = useAppContext();
 
     return (
         <>
@@ -15,12 +15,12 @@ export default function ProducaoTab() {
                         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 mb-6 border-b border-gray-100 dark:border-darkBorder pb-6 shrink-0">
                             <div>
                                 <h1 className="text-3xl font-semibold dark:text-white tracking-tight">Produção</h1>
-                                <p className="text-[13px] text-gray-500 dark:text-[#888888] mt-1">Gerencie a çõesteira de pedidos ativos.</p>
+                                <p className="text-[13px] text-gray-500 dark:text-[#888888] mt-1">Gerencie a esteira de pedidos ativos.</p>
                             </div>
                             <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
                                 <div className="relative flex-1 min-w-[300px]">
                                     <Icon name="search" className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
-                                    <input type="text" value={buscaProducaoText} onChange={e => setBuscaProducaoText(e.target.value)} placeholder="Pçõesquisar por cliente, OS ou rçõesponsável..." className="w-full bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-md pl-9 pr-3 py-2 text-[13px] outline-none focus:border-brand transition dark:text-[#EDEDED]" />
+                                    <input type="text" value={buscaProducaoText} onChange={e => setBuscaProducaoText(e.target.value)} placeholder="Pesquisar por cliente, OS ou responsável..." className="w-full bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-md pl-9 pr-3 py-2 text-[13px] outline-none focus:border-brand transition dark:text-[#EDEDED]" />
                                 </div>
                                 {buscaProducaoText && (
                                     <button type="button" onClick={() => setBuscaProducaoText('')} className="w-[38px] h-[38px] flex items-center justify-center bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-md hover:bg-gray-100 dark:hover:bg-darkElevated transition text-gray-400 hover:text-brand" title="Limpar Busca"><Icon name="x" className="w-4 h-4" /></button>
@@ -31,15 +31,15 @@ export default function ProducaoTab() {
 
                         <div className="flex-1 bg-white dark:bg-darkCard rounded border border-gray-200 dark:border-darkBorder overflow-hidden flex flex-col">
                             <div className="overflow-auto custom-scrollbar flex-1">
-                                <table className="w-full text-left border-collapse whitçõespace-nowrap">
+                                <table className="w-full text-left border-collapse whitespace-nowrap">
                                     <thead className="sticky top-0 z-10 bg-gray-50/50 dark:bg-darkHover/50 border-t-2 border-brand">
                                         <tr className="border-b border-gray-200 dark:border-darkBorder text-[13px] font-semibold text-gray-500 dark:text-gray-400 tracking-wide uppercase text-center">
                                             <th className="px-6 py-4 w-24">ID</th>
                                             <th className="px-6 py-4 w-32">Prazo</th>
-                                            <th className="px-6 py-4 w-32">Rçõesp.</th>
+                                            <th className="px-6 py-4 w-32">Resp.</th>
                                             <th className="px-6 py-4">Cliente</th>
                                             <th className="px-6 py-4 w-full min-w-[300px] text-left">Serviço</th>
-                                            <th className="px-6 py-4 w-32">Açõções</th>
+                                            <th className="px-6 py-4 w-32">Ações</th>
                                             <th className="px-6 py-4 w-40">Status</th>
                                             <th className="px-6 py-4 w-32">Local</th>
                                             <th className="px-6 py-4 w-24 text-right">Concluir</th>
@@ -71,7 +71,7 @@ export default function ProducaoTab() {
                                                             <tr key={p.id} className="border-b border-gray-100 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover transition group text-[13px]">
                                                                 <td className="px-4 py-3 font-medium text-gray-400 dark:text-gray-600 text-center"><button type="button" onClick={() => abrirEdicao(p)} className="hover:text-brand transition">#{p.id}</button></td>
                                                                 <td className="px-4 py-3"><CustomDatePicker value={p.prazo || ''} onChange={val => atualizarCampoInline(p.id, 'prazo', val)} placeholder="Definir prazo..." className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-2.5 py-1.5 text-[11px] outline-none hover:border-brand transition text-gray-700 dark:text-[#EDEDED]" /></td>
-                                                                <td className="px-4 py-3"><MultiSelectDropdown value={p.rçõesponsavel} options={RESPONSAVEIS} onChange={(val) => atualizarCampoInline(p.id, 'rçõesponsavel', val)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-2.5 py-1.5 text-[11px] outline-none hover:border-brand" /></td>
+                                                                <td className="px-4 py-3"><MultiSelectDropdown value={p.responsavel} options={RESPONSAVEIS} onChange={(val) => atualizarCampoInline(p.id, 'responsavel', val)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-2.5 py-1.5 text-[11px] outline-none hover:border-brand" /></td>
                                                                 <td className={`px-4 py-3 font-semibold truncate max-w-[12rem] ${isClienteProblema(p.cliente) ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-white'}`}>
                                                                     <div className="flex items-center gap-1.5">{p.cliente} {isClienteProblema(p.cliente) && <Icon name="alert-triangle" className="w-3.5 h-3.5 text-red-500 shrink-0" title="Cliente Problema" />}</div>
                                                                 </td>
@@ -89,7 +89,7 @@ export default function ProducaoTab() {
                                                                         </button>
                                                                     </div>
                                                                 </td>
-                                                                <td className="px-4 py-3"><InlineDropdown value={p.status} options={opcoçõesStatusPermitidas} onChange={(val) => atualizarCampoInline(p.id, 'status', val)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-2.5 py-1.5 text-[11px] outline-none hover:border-brand" /></td>
+                                                                <td className="px-4 py-3"><InlineDropdown value={p.status} options={opcoesStatusPermitidas} onChange={(val) => atualizarCampoInline(p.id, 'status', val)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-2.5 py-1.5 text-[11px] outline-none hover:border-brand" /></td>
                                                                 <td className="px-4 py-3 align-middle">
                                                                     <div className="flex items-center justify-center min-h-[32px]">
                                                                         <span className="text-[11px] font-semibold px-2 py-1 bg-gray-100 dark:bg-darkElevated text-gray-700 dark:text-[#EDEDED] rounded border border-gray-200 dark:border-darkBorder truncate max-w-[150px] inline-block" title={p.local_producao || 'Berlim'}>{p.local_producao || 'Berlim'}</span>

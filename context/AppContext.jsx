@@ -2,9 +2,9 @@
 import React, { createContext, useContext, useState, useEffect, useRef, useMemo } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import Icon from '@/components/Icon';
-import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS, RESPONSAVEIS, obterCorStatus, formatarValorFinanceiro, formatarMoeda, formatarTelefone, obterDataAtual, formatarDataExibicao, formatarMçõesAno, CustomDatePicker, InlineDropdown, MultiSelectDropdown, dçõesconstruirTextoServico, obterRçõesumoServicos, ItensChecklist, StackedCards, CalculadoraBanner, CalculadoraAdçõesivo, CalculadoraCasamento, CalculadorasAba } from '@/lib/utils';
+import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS, RESPONSAVEIS, obterCorStatus, formatarValorFinanceiro, formatarMoeda, formatarTelefone, obterDataAtual, formatarDataExibicao, formatarMesAno, CustomDatePicker, InlineDropdown, MultiSelectDropdown, desconstruirTextoServico, obterResumoServicos, ItensChecklist, StackedCards, CalculadoraBanner, CalculadoraAdesivo, CalculadoraCasamento, CalculadorasAba } from '@/lib/utils';
 
-export const supabase = createClient('https://xbanoipgoleuahwbqksy.supabase.co', 'sb_publishable_RSQ4odG0wxy8ZucJHu_WvQ_0JfM8jbh');
+const supabase = createClient('https://xbanoipgoleuahwbqksy.supabase.co', 'sb_publishable_RSQ4odG0wxy8ZucJHu_WvQ_0JfM8jbh');
 
 export const AppContext = createContext();
 
@@ -31,22 +31,22 @@ export const AppProvider = ({ children }) => {
     const [modalOrcamentoFormalizadoAberto, setModalOrcamentoFormalizadoAberto] = useState(false);
     const [orcamentoFormalizadoEmEdicao, setOrcamentoFormalizadoEmEdicao] = useState(null);
     
-    const [clientções, setClientções] = useState([]);
-    const [clientçõesCadastrados, setClientçõesCadastrados] = useState([]);
-    const [totalClientçõesCad, setTotalClientçõesCad] = useState(0);
-    const [clientçõesProblema, setClientçõesProblema] = useState([]);
-    const [fornecedorções, setFornecedorções] = useState([]);
-    const [abaCadastros, setAbaCadastros] = useState('clientções');
+    const [clientes, setClientes] = useState([]);
+    const [clientesCadastrados, setClientesCadastrados] = useState([]);
+    const [totalClientesCad, setTotalClientesCad] = useState(0);
+    const [clientesProblema, setClientesProblema] = useState([]);
+    const [fornecedores, setFornecedores] = useState([]);
+    const [abaCadastros, setAbaCadastros] = useState('clientes');
     const [abaOS, setAbaOS] = useState('abertas');
-    const [buscaCadClientções, setBuscaCadClientções] = useState('');
+    const [buscaCadClientes, setBuscaCadClientes] = useState('');
     const [buscaCadProdutos, setBuscaCadProdutos] = useState('');
     const [modalFornecedorAberto, setModalFornecedorAberto] = useState(false);
-    const [novoFornecedor, setNovoFornecedor] = useState({ id: null, nome: '', contato: '', observacoções: '' });
-    const [paginaClientções, setPaginaClientções] = useState(1);
+    const [novoFornecedor, setNovoFornecedor] = useState({ id: null, nome: '', contato: '', observacoes: '' });
+    const [paginaClientes, setPaginaClientes] = useState(1);
     const [letraFiltroCliente, setLetraFiltroCliente] = useState('');
     
     const [notasFiscais, setNotasFiscais] = useState([]);
-    const [filtroNotas, setFiltroNotas] = useState('pendentções');
+    const [filtroNotas, setFiltroNotas] = useState('pendentes');
     const [buscaNotaFiscal, setBuscaNotaFiscal] = useState('');
     const [paginaNotasFiscais, setPaginaNotasFiscais] = useState(1);
     const [modalNotaFiscalAberto, setModalNotaFiscalAberto] = useState(false);
@@ -87,11 +87,11 @@ export const AppProvider = ({ children }) => {
     const [contasPagar, setContasPagar] = useState([]);
     const [calculadoraAtiva, setCalculadoraAtiva] = useState('banner');
     const [modalContaAberto, setModalContaAberto] = useState(false);
-    const [novaConta, setNovaConta] = useState({ id: null, dçõescricao: '', valor: '', vencimento: '', status: 'Pendente', recorrente: false });
+    const [novaConta, setNovaConta] = useState({ id: null, descricao: '', valor: '', vencimento: '', status: 'Pendente', recorrente: false });
     
-    const [emprçõesasFaturamento, setEmprçõesasFaturamento] = useState([]);
-    const [modalEmprçõesaFaturamentoAberto, setModalEmprçõesaFaturamentoAberto] = useState(false);
-    const [novaEmprçõesaFaturamento, setNovaEmprçõesaFaturamento] = useState({ id: null, nome: '', cnpj: '', status: 'Aprovado' });
+    const [empresasFaturamento, setEmpresasFaturamento] = useState([]);
+    const [modalEmpresaFaturamentoAberto, setModalEmpresaFaturamentoAberto] = useState(false);
+    const [novaEmpresaFaturamento, setNovaEmpresaFaturamento] = useState({ id: null, nome: '', cnpj: '', status: 'Aprovado' });
     const [alertasNaoLidos, setAlertasNaoLidos] = useState([]);
     const alertasFuturaDisparados = useRef(new Set());
     const alertasBoletoDisparados = useRef(new Set());
@@ -104,7 +104,7 @@ export const AppProvider = ({ children }) => {
     const [idOrcamentoOrigem, setIdOrcamentoOrigem] = useState(null);
 
     const [itensPedido, setItensPedido] = useState([]);
-    const [itemAtual, setItemAtual] = useState({ nome: '', dçõescricao: '', valor: '', dçõesconto: '', local_producao: 'Berlim', id_produto: null });
+    const [itemAtual, setItemAtual] = useState({ nome: '', descricao: '', valor: '', desconto: '', local_producao: 'Berlim', id_produto: null });
 
     const [buscaCliente, setBuscaCliente] = useState('');
     const [clienteDropdownAberto, setClienteDropdownAberto] = useState(false);
@@ -117,7 +117,7 @@ export const AppProvider = ({ children }) => {
     const [novoPedido, setNovoPedido] = useState({ 
         cliente: '', servico: '', valor_total: '', 
         status: 'Produzir', data_pedido: obterDataAtual(),
-        prazo: '', rçõesponsavel: '', local_producao: 'Berlim', aprovado: false,
+        prazo: '', responsavel: '', local_producao: 'Berlim', aprovado: false,
         entrega: false, urgente: false
     });
     
@@ -127,7 +127,7 @@ export const AppProvider = ({ children }) => {
 
     const [modalClienteAberto, setModalClienteAberto] = useState(false);
     const [salvandoCliente, setSalvandoCliente] = useState(false);
-    const [novoCliente, setNovoCliente] = useState({ id: null, nome: '', telefone: '', email: '', observacoções: '', cliente_problema: false });
+    const [novoCliente, setNovoCliente] = useState({ id: null, nome: '', telefone: '', email: '', observacoes: '', cliente_problema: false });
 
     const [modalUsuarioAberto, setModalUsuarioAberto] = useState(false);
     const [novoUsuario, setNovoUsuario] = useState({ id: null, nome: '', senha: '', nivel: 'Produção/Atendimento' });
@@ -140,7 +140,7 @@ export const AppProvider = ({ children }) => {
             const canalRealTime = supabase
                 .channel('mudancas-banco')
                 .on(
-                    'postgrções_changções', 
+                    'postgres_changes', 
                     { event: '*', schema: 'public', table: 'pedidos' }, 
                     (payload) => {
                         console.log('Atualização em tempo real (pedidos) recebida!', payload);
@@ -150,18 +150,18 @@ export const AppProvider = ({ children }) => {
                         
                         // Lógica de alerta
                         if (payload.eventType === 'UPDATE') {
-                            const oldRçõesponsavel = payload.old?.rçõesponsavel || '';
-                            const newRçõesponsavel = payload.new?.rçõesponsavel || '';
+                            const oldResponsavel = payload.old?.responsavel || '';
+                            const newResponsavel = payload.new?.responsavel || '';
                             
-                            const oldList = oldRçõesponsavel.split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
-                            const newList = newRçõesponsavel.split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+                            const oldList = oldResponsavel.split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+                            const newList = newResponsavel.split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
 
                             const nomeUsuario = (usuario.nome || '').trim().toLowerCase();
 
-                            if (!oldList.includções(nomeUsuario) && newList.includções(nomeUsuario)) {
+                            if (!oldList.includes(nomeUsuario) && newList.includes(nomeUsuario)) {
                                 setAlertasNaoLidos(prev => {
                                     if(prev.some(a => a.os_id === payload.new.id && a.tipo === 'atribuicao')) return prev;
-                                    return [...prev, { id: Date.now(), msg: `Você foi dçõesignado para a O.S. #${payload.new.id}`, os_id: payload.new.id, tipo: 'atribuicao' }];
+                                    return [...prev, { id: Date.now(), msg: `Você foi designado para a O.S. #${payload.new.id}`, os_id: payload.new.id, tipo: 'atribuicao' }];
                                 });
                             }
 
@@ -187,11 +187,11 @@ export const AppProvider = ({ children }) => {
                             }
 
                         } else if (payload.eventType === 'INSERT') {
-                            const newRçõesponsavel = payload.new?.rçõesponsavel || '';
-                            const newList = newRçõesponsavel.split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+                            const newResponsavel = payload.new?.responsavel || '';
+                            const newList = newResponsavel.split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
                             const nomeUsuario = (usuario.nome || '').trim().toLowerCase();
                             
-                            if (newList.includções(nomeUsuario)) {
+                            if (newList.includes(nomeUsuario)) {
                                 setAlertasNaoLidos(prev => [...prev, { id: Date.now(), msg: `Nova O.S. #${payload.new.id} atribuída a você`, os_id: payload.new.id, tipo: 'atribuicao' }]);
                             }
                             
@@ -208,7 +208,7 @@ export const AppProvider = ({ children }) => {
                     }
                 )
                 .on(
-                    'postgrções_changções', 
+                    'postgres_changes', 
                     { event: '*', schema: 'public', table: 'notas_fiscais' }, 
                     (payload) => {
                         console.log('Atualização em tempo real (notas_fiscais) recebida!', payload);
@@ -236,7 +236,7 @@ export const AppProvider = ({ children }) => {
                 )
             .subscribe();
 
-            // Dçõesliga o radar se o usuário fizer logoff
+            // Desliga o radar se o usuário fizer logoff
             return () => {
                 supabase.removeChannel(canalRealTime);
             };
@@ -245,7 +245,7 @@ export const AppProvider = ({ children }) => {
 
     const isClienteProblema = (nome) => {
         if (!nome) return false;
-        return clientçõesProblema.includções(nome);
+        return clientesProblema.includes(nome);
     };
 
     async function carregarDados() {
@@ -261,7 +261,7 @@ export const AppProvider = ({ children }) => {
             const { data: batch, error } = await supabase
                 .from('pedidos')
                 .select('*')
-                .or(`data_pedido.gte.${dataCorte},status.in.(Produzir,Arte,Imprçõessão,Acabamento,Retirada)`)
+                .or(`data_pedido.gte.${dataCorte},status.in.(Produzir,Arte,Impressão,Acabamento,Retirada)`)
                 .order('id', { ascending: false })
                 .range(from, from + limit - 1);
                 
@@ -286,9 +286,9 @@ export const AppProvider = ({ children }) => {
             hoje.setHours(0, 0, 0, 0);
             const pedidosParaAbandonar = todosPedidos.filter(p => {
                 if (p.status !== 'Retirada' || !p.prazo) return false;
-                const partções = p.prazo.split('-');
-                if(partções.length !== 3) return false;
-                const dataPrazo = new Date(partções[0], partções[1] - 1, partções[2]);
+                const partes = p.prazo.split('-');
+                if(partes.length !== 3) return false;
+                const dataPrazo = new Date(partes[0], partes[1] - 1, partes[2]);
                 dataPrazo.setDate(dataPrazo.getDate() + 15);
                 return dataPrazo < hoje;
             });
@@ -311,7 +311,7 @@ export const AppProvider = ({ children }) => {
                 
                 const hojeStr = hoje.getFullYear() + '-' + String(hoje.getMonth() + 1).padStart(2, '0') + '-' + String(hoje.getDate()).padStart(2, '0');
                 
-                const pedidosFuturaAlertar = todosPedidos.filter(p => p.local_producao && p.local_producao.toLowerCase().includções('futura') && !statusIgnorados.includções(p.status) && p.prazo && p.prazo <= amanhaStr);
+                const pedidosFuturaAlertar = todosPedidos.filter(p => p.local_producao && p.local_producao.toLowerCase().includes('futura') && !statusIgnorados.includes(p.status) && p.prazo && p.prazo <= amanhaStr);
                 
                 if (pedidosFuturaAlertar.length > 0) {
                     setAlertasNaoLidos(prev => {
@@ -319,7 +319,7 @@ export const AppProvider = ({ children }) => {
                         pedidosFuturaAlertar.forEach(p => {
                             if (!novosAlertas.some(a => a.os_id === p.id && a.tipo === 'alerta_futura') && !alertasFuturaDisparados.current.has(p.id)) {
                                 let msg = `Prazo da Futura termina amanhã (O.S. #${p.id}). Retirar!`;
-                                if (p.prazo === hojeStr) msg = `Prazo da Futura é HOJE (O.S. #${p.id}). Retirar o quanto antções!`;
+                                if (p.prazo === hojeStr) msg = `Prazo da Futura é HOJE (O.S. #${p.id}). Retirar o quanto antes!`;
                                 else if (p.prazo < hojeStr) msg = `Prazo da Futura VENCIDO (O.S. #${p.id}). Verifique imediatamente!`;
                                 
                                 novosAlertas.push({ id: Date.now() + Math.random(), msg, os_id: p.id, tipo: 'alerta_futura' });
@@ -330,7 +330,7 @@ export const AppProvider = ({ children }) => {
                     });
                 }
                 
-                const pedidosComBoleto = todosPedidos.filter(p => !statusIgnorados.includções(p.status) && Array.isArray(p.pagamentos));
+                const pedidosComBoleto = todosPedidos.filter(p => !statusIgnorados.includes(p.status) && Array.isArray(p.pagamentos));
                 if (pedidosComBoleto.length > 0) {
                     let novosAlertasBoleto = [];
                     pedidosComBoleto.forEach(p => {
@@ -368,7 +368,7 @@ export const AppProvider = ({ children }) => {
         const { data: listaProdutos } = await supabase.from('produtos').select('*').order('ordem', { ascending: true });
         if (listaProdutos) setProdutos(listaProdutos);
         
-        // Clientções não são mais puxados integralmente aqui.
+        // Clientes não são mais puxados integralmente aqui.
 
         const { data: listaUsuarios } = await supabase.from('usuarios').select('*').order('nome', { ascending: true });
         if (listaUsuarios) setUsuariosSistema(listaUsuarios);
@@ -376,14 +376,14 @@ export const AppProvider = ({ children }) => {
         const { data: listaNotas } = await supabase.from('notas_fiscais').select('*').order('created_at', { ascending: false });
         if (listaNotas) setNotasFiscais(listaNotas);
         
-        const { data: listaEmprçõesasFaturamento } = await supabase.from('emprçõesas_faturamento').select('*').order('nome', { ascending: true });
-        if (listaEmprçõesasFaturamento) setEmprçõesasFaturamento(listaEmprçõesasFaturamento);
+        const { data: listaEmpresasFaturamento } = await supabase.from('empresas_faturamento').select('*').order('nome', { ascending: true });
+        if (listaEmpresasFaturamento) setEmpresasFaturamento(listaEmpresasFaturamento);
 
         const { data: listaContas, error: erroContas } = await supabase.from('contas_pagar').select('*').order('vencimento', { ascending: true });
         if (!erroContas && listaContas) setContasPagar(listaContas);
 
-        const { data: listaFornecedorções } = await supabase.from('fornecedorções').select('*').order('nome', { ascending: true });
-        if (listaFornecedorções) setFornecedorções(listaFornecedorções);
+        const { data: listaFornecedores } = await supabase.from('fornecedores').select('*').order('nome', { ascending: true });
+        if (listaFornecedores) setFornecedores(listaFornecedores);
 
         const { data: listaOrcF } = await supabase.from('orcamentos_formalizados').select('*').order('created_at', { ascending: false });
         if (listaOrcF) setOrcamentosFormalizados(listaOrcF);
@@ -451,65 +451,65 @@ export const AppProvider = ({ children }) => {
     useEffect(() => {
         if (!usuario) return;
         async function fetchProblemas() {
-            const { data } = await supabase.from('clientções').select('nome').eq('cliente_problema', true);
-            if (data) setClientçõesProblema(data.map(c => c.nome));
+            const { data } = await supabase.from('clientes').select('nome').eq('cliente_problema', true);
+            if (data) setClientesProblema(data.map(c => c.nome));
         }
         fetchProblemas();
     }, [usuario, triggerRealtime]);
 
     useEffect(() => {
         if (!buscaCliente || buscaCliente.length < 1) {
-            setClientções([]);
+            setClientes([]);
             return;
         }
         const timeout = setTimeout(async () => {
             const isNum = !isNaN(buscaCliente);
-            let query = supabase.from('clientções').select('*').limit(15);
+            let query = supabase.from('clientes').select('*').limit(15);
             if (isNum) {
                 query = query.ilike('telefone', `%${buscaCliente}%`);
             } else {
                 query = query.ilike('nome', `%${buscaCliente}%`);
             }
             const { data } = await query;
-            if (data) setClientções(data);
+            if (data) setClientes(data);
         }, 300);
         return () => clearTimeout(timeout);
     }, [buscaCliente]);
 
     useEffect(() => {
-        if (abaAtual !== 'cadastros' || abaCadastros !== 'clientções' || !usuario) return;
+        if (abaAtual !== 'cadastros' || abaCadastros !== 'clientes' || !usuario) return;
         
-        async function fetchClientçõesCadastrados() {
-            let query = supabase.from('clientções').select('*', { count: 'exact' });
+        async function fetchClientesCadastrados() {
+            let query = supabase.from('clientes').select('*', { count: 'exact' });
             
             if (letraFiltroCliente) {
                 query = query.ilike('nome', `${letraFiltroCliente}%`);
             }
-            if (buscaCadClientções) {
-                const isNum = !isNaN(buscaCadClientções);
+            if (buscaCadClientes) {
+                const isNum = !isNaN(buscaCadClientes);
                 if (isNum) {
-                    query = query.ilike('telefone', `%${buscaCadClientções}%`);
+                    query = query.ilike('telefone', `%${buscaCadClientes}%`);
                 } else {
-                    query = query.or(`nome.ilike.%${buscaCadClientções}%,email.ilike.%${buscaCadClientções}%`);
+                    query = query.or(`nome.ilike.%${buscaCadClientes}%,email.ilike.%${buscaCadClientes}%`);
                 }
             }
             
             query = query.order('nome', { ascending: true });
             
-            const from = (paginaClientções - 1) * itensPorPagina;
+            const from = (paginaClientes - 1) * itensPorPagina;
             const to = from + itensPorPagina - 1;
             query = query.range(from, to);
             
             const { data, count } = await query;
             if (data) {
-                setClientçõesCadastrados(data);
-                if (count !== null) setTotalClientçõesCad(count);
+                setClientesCadastrados(data);
+                if (count !== null) setTotalClientesCad(count);
             }
         }
         
-        const timeout = setTimeout(fetchClientçõesCadastrados, 300);
+        const timeout = setTimeout(fetchClientesCadastrados, 300);
         return () => clearTimeout(timeout);
-    }, [usuario, abaAtual, abaCadastros, paginaClientções, buscaCadClientções, letraFiltroCliente, triggerRealtime]);
+    }, [usuario, abaAtual, abaCadastros, paginaClientes, buscaCadClientes, letraFiltroCliente, triggerRealtime]);
 
     const efetuarLogin = async (e) => {
         e.preventDefault();
@@ -518,12 +518,12 @@ export const AppProvider = ({ children }) => {
 
         if (error) {
             console.error("Erro do Supabase:", error);
-            setErroLogin('Erro de conexão: ' + error.mçõessage);
+            setErroLogin('Erro de conexão: ' + error.message);
             return;
         }
 
         if (!data || data.length === 0) {
-            setErroLogin('Tabela inacçõessível. Verifique se o RLS çõestá dçõesativado no Supabase.');
+            setErroLogin('Tabela inacessível. Verifique se o RLS está desativado no Supabase.');
             return;
         }
 
@@ -562,7 +562,7 @@ export const AppProvider = ({ children }) => {
 
         const { error } = await supabase.from('pedidos').update(payload).eq('id', id);
         if (error) {
-            alert('Erro ao atualizar: ' + error.mçõessage);
+            alert('Erro ao atualizar: ' + error.message);
             carregarDados(); 
         }
     }
@@ -576,39 +576,39 @@ export const AppProvider = ({ children }) => {
         setItensPedido([]); 
         setPagamentosPedido([]);
         setNovoPagamento({ valor: '', forma: 'PIX', parcelas: 1, instituicao: 'Itaú', vencimento_boleto: '' });
-        setItemAtual({ nome: '', dçõescricao: '', valor: '', dçõesconto: '', local_producao: 'Berlim', id_produto: null });
+        setItemAtual({ nome: '', descricao: '', valor: '', desconto: '', local_producao: 'Berlim', id_produto: null });
         setNovoPedido({ 
             cliente: '', servico: '', valor_total: '', 
             status: 'Produzir', data_pedido: obterDataAtual(),
-            prazo: '', rçõesponsavel: '', local_producao: 'Berlim', aprovado: false,
+            prazo: '', responsavel: '', local_producao: 'Berlim', aprovado: false,
             entrega: false, urgente: false
         });
     }
 
     function abrirEdicao(pedido) {
-        const dadosDçõesconstruidos = dçõesconstruirTextoServico(pedido.servico);
+        const dadosDesconstruidos = desconstruirTextoServico(pedido.servico);
         setPedidoEmEdicao(pedido);
         setBuscaCliente(pedido.cliente);
-        setItensPedido(dadosDçõesconstruidos.itens); 
-        const pagamentosRecuperados = dadosDçõesconstruidos.pagamentos || [];
+        setItensPedido(dadosDesconstruidos.itens); 
+        const pagamentosRecuperados = dadosDesconstruidos.pagamentos || [];
         setPagamentosPedido(pagamentosRecuperados);
         
         const totalPago = pagamentosRecuperados.reduce((acc, p) => acc + (parseFloat(String(p.valor).replace(/\./g, '').replace(',', '.')) || 0), 0);
         const totalOSStr = parseFloat(String(pedido.valor_total).replace(/\./g, '').replace(',', '.')) || 0;
-        const saldoRçõestante = totalOSStr - totalPago;
+        const saldoRestante = totalOSStr - totalPago;
         
         setNovoPagamento({ 
-            valor: saldoRçõestante > 0 ? formatarMoeda((saldoRçõestante * 100).toFixed(0).toString()) : '', 
+            valor: saldoRestante > 0 ? formatarMoeda((saldoRestante * 100).toFixed(0).toString()) : '', 
             forma: 'PIX', parcelas: 1, instituicao: 'Itaú' 
         });
         setNovoPedido({
             cliente: pedido.cliente,
-            servico: dadosDçõesconstruidos.observacoções,
+            servico: dadosDesconstruidos.observacoes,
             status: pedido.status,
             valor_total: formatarMoeda((pedido.valor_total * 100).toFixed(0).toString()),
             data_pedido: pedido.data_pedido || null,
             prazo: pedido.prazo || null,
-            rçõesponsavel: pedido.rçõesponsavel || '',
+            responsavel: pedido.responsavel || '',
             local_producao: pedido.local_producao || 'Berlim',
             aprovado: pedido.aprovado || false,
             entrega: pedido.entrega || false,
@@ -623,7 +623,7 @@ export const AppProvider = ({ children }) => {
     }
 
     function abrirEdicaoCliente(cliente) {
-        setNovoCliente({ id: cliente.id, nome: cliente.nome, telefone: cliente.telefone, email: cliente.email, observacoções: cliente.observacoções, cliente_problema: cliente.cliente_problema || false });
+        setNovoCliente({ id: cliente.id, nome: cliente.nome, telefone: cliente.telefone, email: cliente.email, observacoes: cliente.observacoes, cliente_problema: cliente.cliente_problema || false });
         setModalClienteAberto(true);
     }
 
@@ -639,7 +639,7 @@ export const AppProvider = ({ children }) => {
         if (novoUsuario.id) {
             const { data, error } = await supabase.from('usuarios').update(usuarioFormatado).eq('id', novoUsuario.id).select();
             if (error) {
-                alert('Falha ao atualizar usuário: ' + error.mçõessage);
+                alert('Falha ao atualizar usuário: ' + error.message);
             } else if (data && data.length > 0) {
                 setUsuariosSistema(usuariosSistema.map(u => u.id === novoUsuario.id ? data[0] : u));
                 setModalUsuarioAberto(false);
@@ -650,7 +650,7 @@ export const AppProvider = ({ children }) => {
         } else {
             const { data, error } = await supabase.from('usuarios').insert([usuarioFormatado]).select();
             if (error) {
-                alert('Falha ao salvar usuário: ' + error.mçõessage);
+                alert('Falha ao salvar usuário: ' + error.message);
             } else if (data && data.length > 0) {
                 setUsuariosSistema([...usuariosSistema, data[0]]);
                 setModalUsuarioAberto(false);
@@ -662,10 +662,10 @@ export const AppProvider = ({ children }) => {
     }
 
     function adicionarItemAoCarrinho() {
-        if (!itemAtual.dçõescricao || !itemAtual.valor) return;
-        const pctDçõesconto = parseFloat(itemAtual.dçõesconto) || 0;
+        if (!itemAtual.descricao || !itemAtual.valor) return;
+        const pctDesconto = parseFloat(itemAtual.desconto) || 0;
         const numOriginal = parseFloat(itemAtual.valor.replace(/\./g, '').replace(',', '.')) || 0;
-        const valorFinalCalculadoNum = numOriginal * (1 - pctDçõesconto / 100);
+        const valorFinalCalculadoNum = numOriginal * (1 - pctDesconto / 100);
         const valorFinalCalculadoStr = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(valorFinalCalculadoNum);
         
         const novoItemEmpacotado = { 
@@ -679,7 +679,7 @@ export const AppProvider = ({ children }) => {
         novosItens.forEach(i => { totalGeralOS += parseFloat(i.valor.replace(/\./g, '').replace(',', '.')) || 0; });
         setNovoPedido({...novoPedido, valor_total: formatarMoeda((totalGeralOS * 100).toFixed(0).toString())});
         
-        setItemAtual({ nome: '', dçõescricao: '', valor: '', dçõesconto: '', local_producao: 'Berlim', id_produto: null });
+        setItemAtual({ nome: '', descricao: '', valor: '', desconto: '', local_producao: 'Berlim', id_produto: null });
         setBuscaProduto('');
     }
 
@@ -698,11 +698,11 @@ export const AppProvider = ({ children }) => {
         let textoFinalServico = '';
         if (itensPedido.length > 0) {
             const itensTextoArray = itensPedido.map(i => {
-                const strDçõesconto = i.dçõesconto ? ' (-' + i.dçõesconto + '%)' : '';
+                const strDesconto = i.desconto ? ' (-' + i.desconto + '%)' : '';
                 const strNome = i.nome ? '• ' + (i.id_produto ? `[#${i.id_produto}] ` : '') + i.nome : '• Serviço Personalizado';
                 const strLocal = i.local_producao ? '\n  Local: ' + i.local_producao : '\n  Local: Berlim';
                 const strConcluido = i.concluido ? '\n  [✓] Concluído' : '';
-                return strNome + '\n  ' + i.dçõescricao + '\n  Valor: R$ ' + i.valor + strDçõesconto + strLocal + strConcluido;
+                return strNome + '\n  ' + i.descricao + '\n  Valor: R$ ' + i.valor + strDesconto + strLocal + strConcluido;
             });
             textoFinalServico += itensTextoArray.join('\n\n') + '\n\n';
             if (novoPedido.servico) textoFinalServico += '[OBSERVAÇÕES GERAIS]\n' + novoPedido.servico;
@@ -726,7 +726,7 @@ export const AppProvider = ({ children }) => {
             valor_total: valorNumericoFinal,
             data_pedido: novoPedido.data_pedido || null,
             prazo: novoPedido.prazo || null,
-            rçõesponsavel: novoPedido.rçõesponsavel,
+            responsavel: novoPedido.responsavel,
             local_producao: locaisOS,
             aprovado: novoPedido.aprovado,
             entrega: novoPedido.entrega,
@@ -741,13 +741,13 @@ export const AppProvider = ({ children }) => {
             const { data, error } = await supabase.from('pedidos').update(payload).eq('id', pedidoEmEdicao.id).select();
             
             if (error) {
-                alert('Erro ao atualizar OS: ' + error.mçõessage);
+                alert('Erro ao atualizar OS: ' + error.message);
             } else if (data && data.length > 0) {
                 setPedidos(pedidos.map(p => p.id === data[0].id ? data[0] : p)); 
                 fecharModalOS(); 
                 if (querImprimir) imprimirOS(data[0]); 
             } else {
-                // Se a rçõesposta for vazia, puxa as informaçõções limpas e fecha sem travar
+                // Se a resposta for vazia, puxa as informações limpas e fecha sem travar
                 carregarDados();
                 fecharModalOS();
                 if (querImprimir) imprimirOS({ ...pedidoEmEdicao, ...payload });
@@ -755,11 +755,11 @@ export const AppProvider = ({ children }) => {
         } else {
             const novoId = pedidos.length > 0 ? Math.max(...pedidos.map(p => p.id)) + 1 : 1;
             payload.id = novoId;
-            payload.criado_por = usuario?.nome || 'Dçõesconhecido';
+            payload.criado_por = usuario?.nome || 'Desconhecido';
             const { data, error } = await supabase.from('pedidos').insert([payload]).select();
             
             if (error) {
-                alert('Erro ao salvar OS: ' + error.mçõessage);
+                alert('Erro ao salvar OS: ' + error.message);
             } else if (data && data.length > 0) {
                 setPedidos([data[0], ...pedidos]); 
                 if (idOrcamentoOrigem) {
@@ -770,7 +770,7 @@ export const AppProvider = ({ children }) => {
                 fecharModalOS(); 
                 if (querImprimir) imprimirOS(data[0]); 
             } else {
-                // Se a rçõesposta for vazia, puxa as informaçõções limpas e fecha sem travar
+                // Se a resposta for vazia, puxa as informações limpas e fecha sem travar
                 if (idOrcamentoOrigem) {
                     supabase.from('orcamentos_formalizados').delete().eq('id', idOrcamentoOrigem).then(({ error }) => {
                         if (!error) setOrcamentosFormalizados(prev => prev.filter(o => o.id !== idOrcamentoOrigem));
@@ -778,7 +778,7 @@ export const AppProvider = ({ children }) => {
                 }
                 carregarDados();
                 fecharModalOS();
-                if (querImprimir) alert('Pedido atualizado com sucçõesso! Para evitar lentidão, inicie a imprçõessão manualmente através do Histórico.');
+                if (querImprimir) alert('Pedido atualizado com sucesso! Para evitar lentidão, inicie a impressão manualmente através do Histórico.');
             }
         }
         setSalvandoOS(false);
@@ -793,21 +793,21 @@ export const AppProvider = ({ children }) => {
             if (!error && data) {
                 setOrcamentosPreProntos(orcamentosPreProntos.map(o => o.id === novoOrcamentoPre.id ? data[0] : o));
                 setModalOrcamentoPreAberto(false);
-            } else alert('Erro: ' + error?.mçõessage);
+            } else alert('Erro: ' + error?.message);
         } else {
             const { data, error } = await supabase.from('orcamentos_pre_prontos').insert([payload]).select();
             if (!error && data) {
                 setOrcamentosPreProntos([data[0], ...orcamentosPreProntos]);
                 setModalOrcamentoPreAberto(false);
-            } else alert('Erro: ' + error?.mçõessage);
+            } else alert('Erro: ' + error?.message);
         }
     }
     
     async function excluirOrcamentoPre(id) {
-        if (!confirm('Excluir çõeste modelo pré-pronto?')) return;
+        if (!confirm('Excluir este modelo pré-pronto?')) return;
         const { error } = await supabase.from('orcamentos_pre_prontos').delete().eq('id', id);
         if (!error) setOrcamentosPreProntos(orcamentosPreProntos.filter(o => o.id !== id));
-        else alert('Erro: ' + error.mçõessage);
+        else alert('Erro: ' + error.message);
     }
 
     // === FUNÇÕES ORÇAMENTOS FORMALIZADOS ===
@@ -817,10 +817,10 @@ export const AppProvider = ({ children }) => {
         let textoFinalServico = '';
         if (itensPedido.length > 0) {
             const itensTextoArray = itensPedido.map(i => {
-                const strDçõesconto = i.dçõesconto ? ' (-' + i.dçõesconto + '%)' : '';
+                const strDesconto = i.desconto ? ' (-' + i.desconto + '%)' : '';
                 const strNome = i.nome ? '• ' + (i.id_produto ? `[#${i.id_produto}] ` : '') + i.nome : '• Serviço Personalizado';
                 const strLocal = i.local_producao ? '\n  Local: ' + i.local_producao : '\n  Local: Berlim';
-                return strNome + '\n  ' + i.dçõescricao + '\n  Valor: R$ ' + i.valor + strDçõesconto + strLocal;
+                return strNome + '\n  ' + i.descricao + '\n  Valor: R$ ' + i.valor + strDesconto + strLocal;
             });
             textoFinalServico += itensTextoArray.join('\n\n') + '\n\n';
             if (novoPedido.servico) textoFinalServico += '[OBSERVAÇÕES GERAIS]\n' + novoPedido.servico;
@@ -832,18 +832,18 @@ export const AppProvider = ({ children }) => {
 
         const payload = {
             cliente: novoPedido.cliente,
-            telefone: clientções.find(c => c.nome === novoPedido.cliente)?.telefone || '',
+            telefone: clientes.find(c => c.nome === novoPedido.cliente)?.telefone || '',
             produto: itensPedido.map(i => i.nome).join(', ') || 'Serviços Diversos',
-            dçõescricao: textoFinalServico + (itensPedido.length > 0 ? '\n\n[ITENS_JSON]\n' + JSON.stringify(itensPedido) : ''),
+            descricao: textoFinalServico + (itensPedido.length > 0 ? '\n\n[ITENS_JSON]\n' + JSON.stringify(itensPedido) : ''),
             quantidade: 1,
             valor: valorNumericoFinal,
-            observacoções: novoPedido.servico,
-            criado_por: usuario?.nome || 'Dçõesconhecido'
+            observacoes: novoPedido.servico,
+            criado_por: usuario?.nome || 'Desconhecido'
         };
 
         if (orcamentoFormalizadoEmEdicao) {
             const { data, error } = await supabase.from('orcamentos_formalizados').update(payload).eq('id', orcamentoFormalizadoEmEdicao.id).select();
-            if (error) alert('Erro: ' + error.mçõessage);
+            if (error) alert('Erro: ' + error.message);
             else if (data && data.length > 0) {
                 setOrcamentosFormalizados(orcamentosFormalizados.map(o => o.id === data[0].id ? data[0] : o));
                 setModalOrcamentoFormalizadoAberto(false);
@@ -851,7 +851,7 @@ export const AppProvider = ({ children }) => {
             }
         } else {
             const { data, error } = await supabase.from('orcamentos_formalizados').insert([payload]).select();
-            if (error) alert('Erro: ' + error.mçõessage);
+            if (error) alert('Erro: ' + error.message);
             else if (data && data.length > 0) {
                 setOrcamentosFormalizados([data[0], ...orcamentosFormalizados]);
                 setModalOrcamentoFormalizadoAberto(false);
@@ -861,21 +861,21 @@ export const AppProvider = ({ children }) => {
     }
 
     function baixarPDFOrcamento(orc) {
-        alert("A função de gerar e baixar o PDF do orçamento çõestá em dçõesenvolvimento!");
+        alert("A função de gerar e baixar o PDF do orçamento está em desenvolvimento!");
     }
     
     function extrairItensOrcamento(orc) {
-        if (!orc.dçõescricao) return [];
-        const match = orc.dçõescricao.match(/\[ITENS_JSON\]\n(.*)/);
+        if (!orc.descricao) return [];
+        const match = orc.descricao.match(/\[ITENS_JSON\]\n(.*)/);
         if (match) {
             try { return JSON.parse(match[1]); } catch(e) {}
         }
-        return dçõesconstruirTextoServico(orc.dçõescricao).itens;
+        return desconstruirTextoServico(orc.descricao).itens;
     }
 
     function abrirEdicaoOrcamento(orcamento) {
         const itensCarregados = extrairItensOrcamento(orcamento);
-        const obs = orcamento.observacoções || (orcamento.dçõescricao ? dçõesconstruirTextoServico(orcamento.dçõescricao.split('\n\n[ITENS_JSON]')[0]).observacoções : '');
+        const obs = orcamento.observacoes || (orcamento.descricao ? desconstruirTextoServico(orcamento.descricao.split('\n\n[ITENS_JSON]')[0]).observacoes : '');
         
         setOrcamentoFormalizadoEmEdicao(orcamento);
         setBuscaCliente(orcamento.cliente);
@@ -887,7 +887,7 @@ export const AppProvider = ({ children }) => {
             status: 'Orçamento',
             data_pedido: obterDataAtual(),
             prazo: '',
-            rçõesponsavel: usuario?.nome || '',
+            responsavel: usuario?.nome || '',
             entrega: false,
             urgente: false
         });
@@ -906,7 +906,7 @@ export const AppProvider = ({ children }) => {
             status: 'Produzir',
             data_pedido: obterDataAtual(),
             prazo: '',
-            rçõesponsavel: usuario?.nome || '',
+            responsavel: usuario?.nome || '',
             entrega: false,
             urgente: false
         });
@@ -915,10 +915,10 @@ export const AppProvider = ({ children }) => {
     }
     
     async function excluirOrcamentoFormalizado(id) {
-        if (!confirm('Excluir çõeste orçamento formalizado?')) return;
+        if (!confirm('Excluir este orçamento formalizado?')) return;
         const { error } = await supabase.from('orcamentos_formalizados').delete().eq('id', id);
         if (!error) setOrcamentosFormalizados(orcamentosFormalizados.filter(o => o.id !== id));
-        else alert('Erro: ' + error.mçõessage);
+        else alert('Erro: ' + error.message);
     }
 
     async function salvarProduto(e) {
@@ -929,11 +929,11 @@ export const AppProvider = ({ children }) => {
         if (novoProduto.id) {
             const { data, error } = await supabase.from('produtos').update(produtoFormatado).eq('id', novoProduto.id).select();
             if (!error && data) { setProdutos(produtos.map(p => p.id === novoProduto.id ? data[0] : p)); setModalProdutoAberto(false); setNovoProduto({ id: null, nome: '', texto_padrao: '', preco_base: '' }); } 
-            else alert('Falha ao atualizar: ' + error.mçõessage);
+            else alert('Falha ao atualizar: ' + error.message);
         } else {
             const { data, error } = await supabase.from('produtos').insert([produtoFormatado]).select();
             if (!error && data) { setProdutos([...produtos, data[0]]); setModalProdutoAberto(false); setNovoProduto({ id: null, nome: '', texto_padrao: '', preco_base: '' }); } 
-            else alert('Falha ao salvar: ' + error.mçõessage);
+            else alert('Falha ao salvar: ' + error.message);
         }
         setSalvandoProduto(false);
     }
@@ -943,7 +943,7 @@ export const AppProvider = ({ children }) => {
         e.preventDefault();
         setSalvandoConta(true);
         const contaFormatada = { 
-            dçõescricao: novaConta.dçõescricao, 
+            descricao: novaConta.descricao, 
             valor: parseFloat(String(novaConta.valor).replace(/\./g, '').replace(',', '.')) || 0,
             vencimento: novaConta.vencimento,
             status: novaConta.status,
@@ -956,7 +956,7 @@ export const AppProvider = ({ children }) => {
                 setContasPagar(contasPagar.map(c => c.id === novaConta.id ? data[0] : c)); 
                 setModalContaAberto(false); 
             } else {
-                alert('Falha ao atualizar (Tabela contas_pagar existe no Supabase?): ' + (error?.mçõessage || 'Erro dçõesconhecido'));
+                alert('Falha ao atualizar (Tabela contas_pagar existe no Supabase?): ' + (error?.message || 'Erro desconhecido'));
             }
         } else {
             const { data, error } = await supabase.from('contas_pagar').insert([contaFormatada]).select();
@@ -964,45 +964,45 @@ export const AppProvider = ({ children }) => {
                 setContasPagar([...contasPagar, data[0]]); 
                 setModalContaAberto(false); 
             } else {
-                alert('Falha ao salvar (Tabela contas_pagar existe no Supabase?): ' + (error?.mçõessage || 'Erro dçõesconhecido'));
+                alert('Falha ao salvar (Tabela contas_pagar existe no Supabase?): ' + (error?.message || 'Erro desconhecido'));
             }
         }
         setSalvandoConta(false);
     }
 
-    const [salvandoEmprçõesa, setSalvandoEmprçõesa] = useState(false);
-    async function salvarEmprçõesaFaturamento(e) {
+    const [salvandoEmpresa, setSalvandoEmpresa] = useState(false);
+    async function salvarEmpresaFaturamento(e) {
         e.preventDefault();
-        setSalvandoEmprçõesa(true);
-        const payload = { nome: novaEmprçõesaFaturamento.nome, cnpj: novaEmprçõesaFaturamento.cnpj, status: novaEmprçõesaFaturamento.status };
-        if (novaEmprçõesaFaturamento.id) {
-            const { data, error } = await supabase.from('emprçõesas_faturamento').update(payload).eq('id', novaEmprçõesaFaturamento.id).select();
-            if (!error && data) setEmprçõesasFaturamento(emprçõesasFaturamento.map(x => x.id === data[0].id ? data[0] : x));
-            else if (error) alert('Falha ao atualizar (A tabela emprçõesas_faturamento foi criada?): ' + error.mçõessage);
+        setSalvandoEmpresa(true);
+        const payload = { nome: novaEmpresaFaturamento.nome, cnpj: novaEmpresaFaturamento.cnpj, status: novaEmpresaFaturamento.status };
+        if (novaEmpresaFaturamento.id) {
+            const { data, error } = await supabase.from('empresas_faturamento').update(payload).eq('id', novaEmpresaFaturamento.id).select();
+            if (!error && data) setEmpresasFaturamento(empresasFaturamento.map(x => x.id === data[0].id ? data[0] : x));
+            else if (error) alert('Falha ao atualizar (A tabela empresas_faturamento foi criada?): ' + error.message);
         } else {
-            const { data, error } = await supabase.from('emprçõesas_faturamento').insert([payload]).select();
-            if (!error && data) setEmprçõesasFaturamento([...emprçõesasFaturamento, data[0]]);
-            else if (error) alert('Falha ao salvar (A tabela emprçõesas_faturamento foi criada?): ' + error.mçõessage);
+            const { data, error } = await supabase.from('empresas_faturamento').insert([payload]).select();
+            if (!error && data) setEmpresasFaturamento([...empresasFaturamento, data[0]]);
+            else if (error) alert('Falha ao salvar (A tabela empresas_faturamento foi criada?): ' + error.message);
         }
-        setModalEmprçõesaFaturamentoAberto(false);
-        setSalvandoEmprçõesa(false);
+        setModalEmpresaFaturamentoAberto(false);
+        setSalvandoEmpresa(false);
     }
 
-    async function excluirEmprçõesaFaturamento(id) {
-        if (!confirm('Dçõeseja excluir çõesta emprçõesa?')) return;
-        const { error } = await supabase.from('emprçõesas_faturamento').delete().eq('id', id);
-        if (!error) setEmprçõesasFaturamento(emprçõesasFaturamento.filter(x => x.id !== id));
+    async function excluirEmpresaFaturamento(id) {
+        if (!confirm('Deseja excluir esta empresa?')) return;
+        const { error } = await supabase.from('empresas_faturamento').delete().eq('id', id);
+        if (!error) setEmpresasFaturamento(empresasFaturamento.filter(x => x.id !== id));
     }
 
     async function excluirProduto(id, e) {
         e.stopPropagation(); // Evita que o clique no lixo abra a tela de edição
         
-        if (!window.confirm("Tem certeza que dçõeseja excluir çõeste produto do catálogo?")) return;
+        if (!window.confirm("Tem certeza que deseja excluir este produto do catálogo?")) return;
 
         const { error } = await supabase.from('produtos').delete().eq('id', id);
         
         if (error) {
-            alert('Erro ao excluir produto: ' + error.mçõessage);
+            alert('Erro ao excluir produto: ' + error.message);
         } else {
             setProdutos(produtos.filter(p => p.id !== id));
         }
@@ -1036,21 +1036,21 @@ export const AppProvider = ({ children }) => {
         const { error } = await supabase.from('produtos').upsert(payloadSupabase);
         if (error) {
             console.error("Erro ao reordenar produtos:", error);
-            alert("Erro ao reordenar produtos: " + error.mçõessage);
+            alert("Erro ao reordenar produtos: " + error.message);
         }
     }
 
     async function salvarCliente(e) {
         e.preventDefault();
         setSalvandoCliente(true);
-        const clienteFormatado = { nome: novoCliente.nome, telefone: novoCliente.telefone, email: novoCliente.email, observacoções: novoCliente.observacoções, cliente_problema: novoCliente.cliente_problema || false };
+        const clienteFormatado = { nome: novoCliente.nome, telefone: novoCliente.telefone, email: novoCliente.email, observacoes: novoCliente.observacoes, cliente_problema: novoCliente.cliente_problema || false };
 
         if (clienteFormatado.telefone && clienteFormatado.telefone.trim() !== '') {
             const telNormalizado = clienteFormatado.telefone.replace(/\D/g, '');
             let duplicado = null;
             if (telNormalizado.length >= 8) {
                 const searchString = `%${telNormalizado.slice(-4)}%`;
-                const { data: dupData } = await supabase.from('clientções').select('id,nome,telefone').ilike('telefone', searchString);
+                const { data: dupData } = await supabase.from('clientes').select('id,nome,telefone').ilike('telefone', searchString);
                 if (dupData) {
                     duplicado = dupData.find(c => {
                         if (novoCliente.id && c.id === novoCliente.id) return false;
@@ -1062,20 +1062,20 @@ export const AppProvider = ({ children }) => {
             }
             
             if (duplicado) {
-                alert('Aviso: Este número de WhatsApp/Telefone já çõestá cadastrado no cliente "' + duplicado.nome + '"!');
+                alert('Aviso: Este número de WhatsApp/Telefone já está cadastrado no cliente "' + duplicado.nome + '"!');
                 setSalvandoCliente(false);
                 return;
             }
         }
 
         if (novoCliente.id) {
-            const { data, error } = await supabase.from('clientções').update(clienteFormatado).eq('id', novoCliente.id).select();
-            if (!error && data) { setTriggerRealtime(prev => prev + 1); setModalClienteAberto(false); setNovoCliente({ id: null, nome: '', telefone: '', email: '', observacoções: '', cliente_problema: false }); } 
-            else alert('Falha ao atualizar: ' + error.mçõessage);
+            const { data, error } = await supabase.from('clientes').update(clienteFormatado).eq('id', novoCliente.id).select();
+            if (!error && data) { setTriggerRealtime(prev => prev + 1); setModalClienteAberto(false); setNovoCliente({ id: null, nome: '', telefone: '', email: '', observacoes: '', cliente_problema: false }); } 
+            else alert('Falha ao atualizar: ' + error.message);
         } else {
-            const { data, error } = await supabase.from('clientções').insert([clienteFormatado]).select();
-            if (!error && data) { setTriggerRealtime(prev => prev + 1); setNovoPedido({...novoPedido, cliente: data[0].nome}); setBuscaCliente(data[0].nome); setModalClienteAberto(false); setNovoCliente({ id: null, nome: '', telefone: '', email: '', observacoções: '', cliente_problema: false }); } 
-            else alert('Falha ao salvar: ' + error.mçõessage);
+            const { data, error } = await supabase.from('clientes').insert([clienteFormatado]).select();
+            if (!error && data) { setTriggerRealtime(prev => prev + 1); setNovoPedido({...novoPedido, cliente: data[0].nome}); setBuscaCliente(data[0].nome); setModalClienteAberto(false); setNovoCliente({ id: null, nome: '', telefone: '', email: '', observacoes: '', cliente_problema: false }); } 
+            else alert('Falha ao salvar: ' + error.message);
         }
         setSalvandoCliente(false);
     }
@@ -1089,7 +1089,7 @@ export const AppProvider = ({ children }) => {
         const payload = { 
             servico_feito: notaFiscalEmEdicao.servico_feito, 
             valor_pago: valorNumerico, 
-            observacoções: notaFiscalEmEdicao.observacoções,
+            observacoes: notaFiscalEmEdicao.observacoes,
             cliente: notaFiscalEmEdicao.cliente,
             tipo_nota: notaFiscalEmEdicao.tipo_nota
         };
@@ -1098,37 +1098,37 @@ export const AppProvider = ({ children }) => {
             setNotasFiscais(notasFiscais.map(n => n.id === notaFiscalEmEdicao.id ? data[0] : n)); 
             setModalNotaFiscalAberto(false); 
         } else {
-            alert('Falha ao atualizar nota: ' + error.mçõessage);
+            alert('Falha ao atualizar nota: ' + error.message);
         }
         setSalvandoNotaFiscal(false);
     }
 
     async function concluirNotaFiscal(id) {
-        if (!confirm('Dçõeseja realmente marcar çõesta nota como concluída? Ela não aparecerá mais nçõesta lista.')) return;
+        if (!confirm('Deseja realmente marcar esta nota como concluída? Ela não aparecerá mais nesta lista.')) return;
         const { data, error } = await supabase.from('notas_fiscais').update({ concluido: true }).eq('id', id).select();
         if (!error && data) {
             setNotasFiscais(notasFiscais.map(n => n.id === id ? data[0] : n));
         } else {
-            alert('Falha ao concluir: ' + error.mçõessage);
+            alert('Falha ao concluir: ' + error.message);
         }
     }
 
     async function imprimirOS(pedido) {
         setOsParaImprimir(pedido);
-        const { data } = await supabase.from('clientções').select('*').eq('nome', pedido.cliente).single();
+        const { data } = await supabase.from('clientes').select('*').eq('nome', pedido.cliente).single();
         if (data) {
             setOsParaImprimir(prev => ({...prev, clienteInfo: data}));
         }
         setTimeout(() => window.print(), 200);
     }
 
-    const clientçõesFiltrados = clientções;
+    const clientesFiltrados = clientes;
     // Lógica para elencar os 5 produtos mais vendidos com base no histórico
     const vendasPorProduto = useMemo(() => {
         const mapa = {};
         pedidos.forEach(p => {
             if (!p.servico) return;
-            const { itens } = dçõesconstruirTextoServico(p.servico);
+            const { itens } = desconstruirTextoServico(p.servico);
             
             itens.forEach(item => {
                 const id_produto_match = item.id_produto;
@@ -1149,14 +1149,14 @@ export const AppProvider = ({ children }) => {
     }, [pedidos]);
 
     const top5Produtos = useMemo(() => {
-        return Object.entrições(vendasPorProduto)
+        return Object.entries(vendasPorProduto)
             .sort((a, b) => b[1] - a[1])
             .slice(0, 5)
             .map(entry => entry[0]);
     }, [vendasPorProduto]);
 
-    const produtosFiltrados = produtos.filter(p => p.nome.toLowerCase().includções(buscaProduto.toLowerCase()) || p.id.toString().includções(buscaProduto)).sort((a, b) => {
-        // Prioriza os top 5 vendidos se não houver busca ativa (ou mçõesmo se houver, os que sobrarem da busca ainda terão prioridade)
+    const produtosFiltrados = produtos.filter(p => p.nome.toLowerCase().includes(buscaProduto.toLowerCase()) || p.id.toString().includes(buscaProduto)).sort((a, b) => {
+        // Prioriza os top 5 vendidos se não houver busca ativa (ou mesmo se houver, os que sobrarem da busca ainda terão prioridade)
         const indexA = top5Produtos.indexOf(a.nome);
         const indexB = top5Produtos.indexOf(b.nome);
         
@@ -1168,46 +1168,46 @@ export const AppProvider = ({ children }) => {
         return (a.ordem || 0) - (b.ordem || 0);
     });
     
-    // (Filtros locais de Clientções foram substituídos por busca no servidor e paginação)
+    // (Filtros locais de Clientes foram substituídos por busca no servidor e paginação)
 
     const produtosCatalogoFiltrados = produtos.filter(p => {
         if (!buscaCadProdutos) return true;
         const termo = buscaCadProdutos.toLowerCase();
-        return (p.nome && p.nome.toLowerCase().includções(termo));
+        return (p.nome && p.nome.toLowerCase().includes(termo));
     });
-    const clientçõesPaginados = clientçõesCadastrados;
-    const totalPaginasClientções = Math.ceil(totalClientçõesCad / itensPorPagina) || 1;
+    const clientesPaginados = clientesCadastrados;
+    const totalPaginasClientes = Math.ceil(totalClientesCad / itensPorPagina) || 1;
 
     // Filtros e paginação da aba Notas Fiscais
     const notasFiscaisAbaFiltro = notasFiscais.filter(n => {
-        const checkStatus = filtroNotas === 'pendentções' ? !n.concluido : n.concluido;
+        const checkStatus = filtroNotas === 'pendentes' ? !n.concluido : n.concluido;
         if (!checkStatus) return false;
         if (!buscaNotaFiscal) return true;
         const termo = buscaNotaFiscal.toLowerCase();
-        return (n.cliente && n.cliente.toLowerCase().includções(termo)) || 
-               (n.razao_social && n.razao_social.toLowerCase().includções(termo)) || 
-               (n.cnpj && n.cnpj.toLowerCase().includções(termo));
+        return (n.cliente && n.cliente.toLowerCase().includes(termo)) || 
+               (n.razao_social && n.razao_social.toLowerCase().includes(termo)) || 
+               (n.cnpj && n.cnpj.toLowerCase().includes(termo));
     });
     const notasFiscaisPaginadas = notasFiscaisAbaFiltro.slice((paginaNotasFiscais - 1) * itensPorPagina, paginaNotasFiscais * itensPorPagina);
     const totalPaginasNotasFiscais = Math.ceil(notasFiscaisAbaFiltro.length / itensPorPagina) || 1;
     
     // Filtro Produção Aprimorado (Sem data e buscando em MultiSelect)
     const pedidosProducaoAtivos = pedidos.filter(p => {
-        const statusPermitido = STATUSES_PRODUCAO.includções(p.status);
+        const statusPermitido = STATUSES_PRODUCAO.includes(p.status);
         if (!statusPermitido) return false;
 
         const termo = buscaProducaoText.toLowerCase();
         const matchTermo = !termo || 
-            (p.cliente && p.cliente.toLowerCase().includções(termo)) || 
-            (p.id && p.id.toString().includções(termo)) || 
-            (p.rçõesponsavel && p.rçõesponsavel.toLowerCase().includções(termo));
+            (p.cliente && p.cliente.toLowerCase().includes(termo)) || 
+            (p.id && p.id.toString().includes(termo)) || 
+            (p.responsavel && p.responsavel.toLowerCase().includes(termo));
         
         return matchTermo;
     });
 
     // (Filtros locais do Histórico foram substituídos por busca no servidor e paginação)
 
-    const opcoçõesStatusPermitidas = isOperador ? [...STATUSES_PRODUCAO, 'Abandonado', 'Concluído'] : [...STATUSES_PRODUCAO, ...STATUSES_FINALIZADOS];
+    const opcoesStatusPermitidas = isOperador ? [...STATUSES_PRODUCAO, 'Abandonado', 'Concluído'] : [...STATUSES_PRODUCAO, ...STATUSES_FINALIZADOS];
     const isModalTrancado = (pedidoEmEdicao && pedidoEmEdicao.status === 'Finalizado' && isOperador) ? true : false;
 
     // Render de barras para o Financeiro
@@ -1234,7 +1234,7 @@ export const AppProvider = ({ children }) => {
                 <div className="w-full max-w-sm bg-white border border-gray-200 rounded-xl p-8 shadow-sm flex flex-col gap-6">
                     <div className="text-center flex flex-col items-center">
                         <img src="https://www.berlimgraficarapida.com.br/wp-content/uploads/elementor/thumbs/logosite-rm0erpiqj90gcf7ff4jp8ujys78opflob1b9vn5jjs.png" alt="Berlim Gráfica" className="h-12 object-contain mb-3" />
-                        <p className="text-[11px] text-gray-400 mt-1">Insira suas credenciais para acçõessar o ERP</p>
+                        <p className="text-[11px] text-gray-400 mt-1">Insira suas credenciais para acessar o ERP</p>
                     </div>
                     
                     <form onSubmit={efetuarLogin} className="flex flex-col gap-4">
@@ -1292,30 +1292,30 @@ export const AppProvider = ({ children }) => {
         setModalOrcamentoFormalizadoAberto,
         orcamentoFormalizadoEmEdicao,
         setOrcamentoFormalizadoEmEdicao,
-        clientções,
-        setClientções,
-        clientçõesCadastrados,
-        setClientçõesCadastrados,
-        totalClientçõesCad,
-        setTotalClientçõesCad,
-        clientçõesProblema,
-        setClientçõesProblema,
-        fornecedorções,
-        setFornecedorções,
+        clientes,
+        setClientes,
+        clientesCadastrados,
+        setClientesCadastrados,
+        totalClientesCad,
+        setTotalClientesCad,
+        clientesProblema,
+        setClientesProblema,
+        fornecedores,
+        setFornecedores,
         abaCadastros,
         setAbaCadastros,
         abaOS,
         setAbaOS,
-        buscaCadClientções,
-        setBuscaCadClientções,
+        buscaCadClientes,
+        setBuscaCadClientes,
         buscaCadProdutos,
         setBuscaCadProdutos,
         modalFornecedorAberto,
         setModalFornecedorAberto,
         novoFornecedor,
         setNovoFornecedor,
-        paginaClientções,
-        setPaginaClientções,
+        paginaClientes,
+        setPaginaClientes,
         letraFiltroCliente,
         setLetraFiltroCliente,
         notasFiscais,
@@ -1370,12 +1370,12 @@ export const AppProvider = ({ children }) => {
         setModalContaAberto,
         novaConta,
         setNovaConta,
-        emprçõesasFaturamento,
-        setEmprçõesasFaturamento,
-        modalEmprçõesaFaturamentoAberto,
-        setModalEmprçõesaFaturamentoAberto,
-        novaEmprçõesaFaturamento,
-        setNovaEmprçõesaFaturamento,
+        empresasFaturamento,
+        setEmpresasFaturamento,
+        modalEmpresaFaturamentoAberto,
+        setModalEmpresaFaturamentoAberto,
+        novaEmpresaFaturamento,
+        setNovaEmpresaFaturamento,
         alertasNaoLidos,
         setAlertasNaoLidos,
         alertasFuturaDisparados,
@@ -1431,26 +1431,26 @@ export const AppProvider = ({ children }) => {
         toggleDarkMode,
         salvandoConta,
         setSalvandoConta,
-        salvandoEmprçõesa,
-        setSalvandoEmprçõesa,
-        clientçõesFiltrados,
+        salvandoEmpresa,
+        setSalvandoEmpresa,
+        clientesFiltrados,
         vendasPorProduto,
         top5Produtos,
         produtosFiltrados,
         produtosCatalogoFiltrados,
-        clientçõesPaginados,
-        totalPaginasClientções,
+        clientesPaginados,
+        totalPaginasClientes,
         notasFiscaisAbaFiltro,
         notasFiscaisPaginadas,
         totalPaginasNotasFiscais,
         pedidosProducaoAtivos,
-        opcoçõesStatusPermitidas,
+        opcoesStatusPermitidas,
         isModalTrancado,
         renderBarHorizontal,
         carregarDados,
         fetchHistorico,
         fetchProblemas,
-        fetchClientçõesCadastrados,
+        fetchClientesCadastrados,
         atualizarCampoInline,
         fecharModalOS,
         abrirEdicao,
@@ -1471,8 +1471,8 @@ export const AppProvider = ({ children }) => {
         excluirOrcamentoFormalizado,
         salvarProduto,
         salvarConta,
-        salvarEmprçõesaFaturamento,
-        excluirEmprçõesaFaturamento,
+        salvarEmpresaFaturamento,
+        excluirEmpresaFaturamento,
         excluirConta,
         excluirProduto,
         handleDragStartProduto,

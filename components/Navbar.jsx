@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useAppContext } from "@/context/AppContext";
 import Icon from "@/components/Icon";
-import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS, RESPONSAVEIS, obterCorStatus, formatarValorFinanceiro, formatarMoeda, formatarTelefone, obterDataAtual, formatarDataExibicao, formatarMçõesAno, CustomDatePicker, InlineDropdown, MultiSelectDropdown, dçõesconstruirTextoServico, obterRçõesumoServicos, ItensChecklist, StackedCards, CalculadoraBanner, CalculadoraAdçõesivo, CalculadoraCasamento, CalculadorasAba } from '@/lib/utils';
+import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS, RESPONSAVEIS, obterCorStatus, formatarValorFinanceiro, formatarMoeda, formatarTelefone, obterDataAtual, formatarDataExibicao, formatarMesAno, CustomDatePicker, InlineDropdown, MultiSelectDropdown, desconstruirTextoServico, obterResumoServicos, ItensChecklist, StackedCards, CalculadoraBanner, CalculadoraAdesivo, CalculadoraCasamento, CalculadorasAba } from '@/lib/utils';
 
 export default function Navbar() {
     const { setModalAlertasAberto, modalAlertasAberto, alertasNaoLidos, setAlertasNaoLidos, setAbaAtual, pedidos, abrirEdicao, toggleDarkMode, darkMode, usuario, setUsuario, abaAtual } = useAppContext();
@@ -26,7 +26,7 @@ export default function Navbar() {
                             {modalAlertasAberto && (
                                 <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded-lg shadow-lg py-2 z-50 fade-in">
                                     <div className="px-4 py-2 border-b border-gray-100 dark:border-darkBorder flex justify-between items-center">
-                                        <h3 className="font-semibold text-[13px] dark:text-white">Notificaçõções</h3>
+                                        <h3 className="font-semibold text-[13px] dark:text-white">Notificações</h3>
                                         {alertasNaoLidos.length > 0 && (
                                             <button onClick={() => setAlertasNaoLidos([])} className="text-[11px] text-brand hover:underline">Limpar</button>
                                         )}
@@ -71,17 +71,17 @@ export default function Navbar() {
 
                         <div className="flex items-center gap-1.5">
                             {/* LINK FUTURA IM */}
-                            <a href="https://www.futuraim.com.br/" target="_blank" rel="noopener noreferrer" className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-darkHover transition flex items-center justify-center" title="Acçõessar Futura IM">
+                            <a href="https://www.futuraim.com.br/" target="_blank" rel="noopener noreferrer" className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-darkHover transition flex items-center justify-center" title="Acessar Futura IM">
                                 <img src="https://www.google.com/s2/favicons?domain=futuraim.com.br&sz=64" alt="Futura IM" className="w-5 h-5 object-contain rounded-sm" />
                             </a>
                             
                             {/* LINK ATUAL CARD */}
-                            <a href="https://oferta.atualcard.com.br/" target="_blank" rel="noopener noreferrer" className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-darkHover transition flex items-center justify-center" title="Acçõessar Atual Card">
+                            <a href="https://oferta.atualcard.com.br/" target="_blank" rel="noopener noreferrer" className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-darkHover transition flex items-center justify-center" title="Acessar Atual Card">
                                 <img src="https://www.google.com/s2/favicons?domain=atualcard.com.br&sz=64" alt="Atual Card" className="w-5 h-5 object-contain rounded-sm" />
                             </a>
                             
                             {/* LINK ALVO PRINT */}
-                            <a href="https://www.alvoprint.com.br/" target="_blank" rel="noopener noreferrer" className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-darkHover transition flex items-center justify-center" title="Acçõessar Alvo Print">
+                            <a href="https://www.alvoprint.com.br/" target="_blank" rel="noopener noreferrer" className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-darkHover transition flex items-center justify-center" title="Acessar Alvo Print">
                                 <img src="https://www.google.com/s2/favicons?domain=alvoprint.com.br&sz=64" alt="Alvo Print" className="w-5 h-5 object-contain rounded-sm" />
                             </a>
                         </div>
@@ -107,25 +107,25 @@ export default function Navbar() {
                 </header>
             <nav className="bg-brand text-white px-6 shadow-sm z-30 sticky top-[64px] h-[48px]">
                     <div className="flex gap-1 overflow-x-auto custom-scrollbar no-scrollbar-style items-end pt-2 h-full">
-                        <a onClick={() => setAbaAtual('dashboard')} className={`px-5 py-3 text-[13px] font-semibold cursor-pointer transition whitçõespace-nowrap rounded-t-md flex items-center tracking-wide uppercase ${abaAtual === 'dashboard' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
+                        <a onClick={() => setAbaAtual('dashboard')} className={`px-5 py-3 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center tracking-wide uppercase ${abaAtual === 'dashboard' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
                             Início
                         </a>
                         {(usuario?.nivel === 'Administrador' || usuario?.nivel === 'Produção/Atendimento') && (
-                            <a onClick={() => setAbaAtual('producao')} className={`px-5 py-3 text-[13px] font-semibold cursor-pointer transition whitçõespace-nowrap rounded-t-md flex items-center tracking-wide uppercase ${abaAtual === 'producao' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
+                            <a onClick={() => setAbaAtual('producao')} className={`px-5 py-3 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center tracking-wide uppercase ${abaAtual === 'producao' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
                                 Produção
                             </a>
                         )}
-                        <a onClick={() => setAbaAtual('baixa')} className={`px-5 py-3 text-[13px] font-semibold cursor-pointer transition whitçõespace-nowrap rounded-t-md flex items-center tracking-wide uppercase ${abaAtual === 'baixa' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
+                        <a onClick={() => setAbaAtual('baixa')} className={`px-5 py-3 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center tracking-wide uppercase ${abaAtual === 'baixa' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
                             O.S.
                         </a>
                         {usuario?.nivel !== 'Financeiro' && (
-                            <a onClick={() => setAbaAtual('calculadoras')} className={`px-5 py-3 text-[13px] font-semibold cursor-pointer transition whitçõespace-nowrap rounded-t-md flex items-center tracking-wide uppercase ${abaAtual === 'calculadoras' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
+                            <a onClick={() => setAbaAtual('calculadoras')} className={`px-5 py-3 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center tracking-wide uppercase ${abaAtual === 'calculadoras' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
                                 Calculadoras
                             </a>
                         )}
                         
                         {(usuario?.nivel === 'Administrador' || usuario?.nivel === 'Financeiro') && (
-                            <a onClick={() => setAbaAtual('financeiro')} className={`px-5 py-3 text-[13px] font-semibold cursor-pointer transition whitçõespace-nowrap rounded-t-md flex items-center tracking-wide uppercase ${abaAtual === 'financeiro' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
+                            <a onClick={() => setAbaAtual('financeiro')} className={`px-5 py-3 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center tracking-wide uppercase ${abaAtual === 'financeiro' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
                                 Financeiro
                             </a>
                         )}
@@ -133,13 +133,13 @@ export default function Navbar() {
 
 
                         {usuario?.nivel !== 'Financeiro' && (
-                            <a onClick={() => setAbaAtual('orcamentos')} className={`px-5 py-3 text-[13px] font-semibold cursor-pointer transition whitçõespace-nowrap rounded-t-md flex items-center tracking-wide uppercase ${abaAtual === 'orcamentos' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
+                            <a onClick={() => setAbaAtual('orcamentos')} className={`px-5 py-3 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center tracking-wide uppercase ${abaAtual === 'orcamentos' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
                                 Orçamentos
                             </a>
                         )}
                         
                         {usuario?.nivel !== 'Financeiro' && (
-                            <a onClick={() => setAbaAtual('cadastros')} className={`px-5 py-2.5 text-[13px] font-semibold cursor-pointer transition whitçõespace-nowrap rounded-t-md flex items-center tracking-wide uppercase ${abaAtual === 'cadastros' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
+                            <a onClick={() => setAbaAtual('cadastros')} className={`px-5 py-2.5 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center tracking-wide uppercase ${abaAtual === 'cadastros' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
                                 Cadastros
                             </a>
                         )}
