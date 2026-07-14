@@ -741,7 +741,7 @@ export default function FinanceiroTab() {
                                                                             </td>
                                                                             <td className="px-6 py-4 text-[13px] text-center text-gray-500">{formatarDataExibicao(p.data_pedido)}</td>
                                                                             <td className="px-6 py-4 text-center">
-                                                                                <span className={`whitespace-nowrap px-2.5 py-1 text-[11px] font-semibold rounded border ${statusColors[p.status] || 'bg-gray-50 border-gray-200 text-gray-600 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300'}`}>
+                                                                                <span className={`whitespace-nowrap px-2.5 py-1 text-[11px] font-semibold rounded border ${obterCorStatus(p.status)}`}>
                                                                                     {p.status}
                                                                                 </span>
                                                                             </td>

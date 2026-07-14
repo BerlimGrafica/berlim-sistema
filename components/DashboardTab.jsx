@@ -6,7 +6,7 @@ import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS, RESPONSAVEIS, obterCorStatus, 
 
 
 export default function DashboardTab() {
-    const { usuario, pedidos, alertasNaoLidos, setAbaAtual, setBuscaProducaoText } = useAppContext();
+    const { usuario, pedidos, alertasNaoLidos, setAbaAtual, setBuscaProducaoText, abrirEdicao } = useAppContext();
 
     return (
         <>
@@ -166,7 +166,7 @@ export default function DashboardTab() {
                                                             </span>
                                                         </td>
                                                         <td className="px-6 py-4 text-right">
-                                                            <button onClick={() => abrirModalOS(t)} className="opacity-0 group-hover:opacity-100 transition p-2 bg-brand hover:bg-brandHover text-white rounded-md shadow-sm" title="Abrir OS">
+                                                            <button onClick={() => abrirEdicao(t)} className="opacity-0 group-hover:opacity-100 transition p-2 bg-brand hover:bg-brandHover text-white rounded-md shadow-sm" title="Abrir OS">
                                                                 <Icon name="edit-3" className="w-4 h-4" />
                                                             </button>
                                                         </td>
