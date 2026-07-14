@@ -711,42 +711,57 @@ function CalculadoraAdesivo({ produtos }) {
         const qMeio = calculaCabem(44, 94, l, a);
         const qMetro = calculaCabem(94, 94, l, a);
 
-        let sra3Price = preco15;
-        let basePrice = preco17;
-        let nomeTipo = 'Vinil';
-        let lam = '';
+        let texto = '';
 
         if (tipo === '17') {
-            sra3Price = preco15;
-            basePrice = preco17;
-            nomeTipo = item17 ? item17.nome : 'Adesivo Vinil';
-        } else if (tipo === '18_brilho') {
-            sra3Price = preco21;
-            basePrice = preco18;
-            nomeTipo = item18 ? item18.nome : 'Adesivo Laminado';
-            lam = ' | Brilho';
-        } else if (tipo === '18_fosco') {
-            sra3Price = preco21;
-            basePrice = preco18;
-            nomeTipo = item18 ? item18.nome : 'Adesivo Laminado';
-            lam = ' | Fosco';
-        } else if (tipo === '19') {
-            sra3Price = preco16;
-            basePrice = preco19;
-            nomeTipo = item19 ? item19.nome : 'Adesivo Transparente';
-        }
+            const qtd1 = Math.floor(qSRA3 / 10) * 10;
+            const qtd2 = Math.floor(qMeio / 10) * 10;
+            const qtd3 = Math.floor(qMetro / 10) * 10;
 
-        let texto = `Orçamento ${nomeTipo}${lam}\n`;
-        texto += `Tamanho: ${lRawNum}x${aRawNum}cm | 1/2 corte\n\n`;
-        
-        if (qSRA3 > 0) {
-            texto += `- ${qSRA3} unids (SRA3): R$ ${sra3Price.toFixed(2).replace('.', ',')}\n`;
-        }
-        if (qMeio > 0) {
-            texto += `- ${qMeio} unids (1/2 m²): R$ ${(basePrice * 0.7333).toFixed(2).replace('.', ',')}\n`;
-        }
-        if (qMetro > 0) {
-            texto += `- ${qMetro} unids (1 m²): R$ ${basePrice.toFixed(2).replace('.', ',')}\n`;
+            if (qtd1 > 0) {
+                texto += `${qtd1} Adesivos | ${lRawNum}x${aRawNum}cm | Adesivo Vinil Branco | Impressão Laser ou Látex | Sem Laminação | 1/2 corte | Entregue em folha A3 - R$ ${preco15.toFixed(2).replace('.', ',')}\n\n`;
+            }
+            if (qtd2 > 0) {
+                texto += `${qtd2} Adesivos | ${lRawNum}x${aRawNum}cm | Adesivo Vinil Branco | Impressão Laser ou Látex | Sem Laminação | 1/2 corte | Entregue em folha A3 ou 1/2 metro - R$ ${(preco17 * 0.7333).toFixed(2).replace('.', ',')}\n\n`;
+            }
+            if (qtd3 > 0) {
+                texto += `${qtd3} Adesivos | ${lRawNum}x${aRawNum}cm | Adesivo Vinil Branco | Impressão Látex | Sem Laminação | 1/2 corte | Entregue em folha de 1/2 metro - R$ ${preco17.toFixed(2).replace('.', ',')}\n\n`;
+            }
+            texto = texto.trim();
+        } else {
+            let sra3Price = preco15;
+            let basePrice = preco17;
+            let nomeTipo = 'Vinil';
+            let lam = '';
+
+            if (tipo === '18_brilho') {
+                sra3Price = preco21;
+                basePrice = preco18;
+                nomeTipo = item18 ? item18.nome : 'Adesivo Laminado';
+                lam = ' | Brilho';
+            } else if (tipo === '18_fosco') {
+                sra3Price = preco21;
+                basePrice = preco18;
+                nomeTipo = item18 ? item18.nome : 'Adesivo Laminado';
+                lam = ' | Fosco';
+            } else if (tipo === '19') {
+                sra3Price = preco16;
+                basePrice = preco19;
+                nomeTipo = item19 ? item19.nome : 'Adesivo Transparente';
+            }
+
+            texto = `Orçamento ${nomeTipo}${lam}\n`;
+            texto += `Tamanho: ${lRawNum}x${aRawNum}cm | 1/2 corte\n\n`;
+            
+            if (qSRA3 > 0) {
+                texto += `- ${qSRA3} unids (SRA3): R$ ${sra3Price.toFixed(2).replace('.', ',')}\n`;
+            }
+            if (qMeio > 0) {
+                texto += `- ${qMeio} unids (1/2 m²): R$ ${(basePrice * 0.7333).toFixed(2).replace('.', ',')}\n`;
+            }
+            if (qMetro > 0) {
+                texto += `- ${qMetro} unids (1 m²): R$ ${basePrice.toFixed(2).replace('.', ',')}\n`;
+            }
         }
 
         navigator.clipboard.writeText(texto);
