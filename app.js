@@ -1792,7 +1792,8 @@ function App() {
             descricao: textoFinalServico + (itensPedido.length > 0 ? '\n\n[ITENS_JSON]\n' + JSON.stringify(itensPedido) : ''),
             quantidade: 1,
             valor: valorNumericoFinal,
-            observacoes: novoPedido.servico
+            observacoes: novoPedido.servico,
+            criado_por: usuario?.nome || 'Desconhecido'
         };
 
         if (orcamentoFormalizadoEmEdicao) {
@@ -3344,39 +3345,46 @@ function App() {
                                                     <Icon name="plus" className="w-4 h-4" /> Nova Conta
                                                 </button>
                                             </div>
-                                            <div className="overflow-x-auto">
-                                                <table className="w-full text-left text-[13px] text-gray-600 dark:text-[#888888]">
-                                                    <thead className="text-[11px] uppercase bg-gray-50 dark:bg-darkElevated text-gray-700 dark:text-white border-t-2 border-brand">
-                                                        <tr>
-                                                            <th className="px-4 py-3 rounded-tl-lg font-semibold">Vencimento</th>
-                                                            <th className="px-4 py-3 font-semibold">Descrição</th>
-                                                            <th className="px-4 py-3 font-semibold">Valor</th>
-                                                            <th className="px-4 py-3 font-semibold">Status</th>
-                                                            <th className="px-4 py-3 rounded-tr-lg font-semibold text-right">Ações</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        {contasPagar.length === 0 ? (
-                                                            <tr><td colSpan="5" className="text-center py-8 text-gray-400">Nenhuma conta a pagar registrada.</td></tr>
-                                                        ) : (
-                                                            contasPagar.map(conta => (
-                                                                <tr key={conta.id} className="border-b border-gray-100 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover transition">
-                                                                    <td className="px-4 py-3">{formatarDataExibicao(conta.vencimento)}</td>
-                                                                    <td className="px-4 py-3 font-medium text-gray-800 dark:text-white">{conta.descricao}</td>
-                                                                    <td className="px-4 py-3 font-semibold">R$ {formatarValorFinanceiro(conta.valor)}</td>
-                                                                    <td className="px-4 py-3">
-                                                                        <span className={`px-2 py-1 text-[11px] font-semibold rounded-full ${conta.status === 'Pago' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'}`}>
-                                                                            {conta.status}
-                                                                        </span>
-                                                                    </td>
-                                                                    <td className="px-4 py-3 text-right">
-                                                                        <button onClick={() => { setNovaConta(conta); setModalContaAberto(true); }} className="text-brand hover:underline text-[11px]">Editar</button>
-                                                                    </td>
-                                                                </tr>
-                                                            ))
-                                                        )}
-                                                    </tbody>
-                                                </table>
+                                            <div className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded overflow-hidden mt-4">
+                                                <div className="overflow-x-auto min-h-[300px]">
+                                                    <table className="w-full text-left border-collapse">
+                                                        <thead className="bg-gray-50/50 dark:bg-darkHover/50 border-t-2 border-brand">
+                                                            <tr className="border-b border-gray-200 dark:border-darkBorder text-[13px] font-semibold text-gray-500 dark:text-gray-400 tracking-wide uppercase">
+                                                                <th className="px-6 py-4">Vencimento</th>
+                                                                <th className="px-6 py-4">Descrição</th>
+                                                                <th className="px-6 py-4">Valor</th>
+                                                                <th className="px-6 py-4">Status</th>
+                                                                <th className="px-6 py-4 text-right">Ações</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody className="divide-y divide-gray-100 dark:divide-darkBorder">
+                                                            {contasPagar.length === 0 ? (
+                                                                <tr><td colSpan="5" className="text-center py-8 text-gray-400">Nenhuma conta a pagar registrada.</td></tr>
+                                                            ) : (
+                                                                contasPagar.map(conta => (
+                                                                    <tr key={conta.id} className="hover:bg-gray-50 dark:hover:bg-darkHover/50 transition-colors group">
+                                                                        <td className="px-6 py-4 text-[13px] text-gray-600 dark:text-[#A1A1AA]">{formatarDataExibicao(conta.vencimento)}</td>
+                                                                        <td className="px-6 py-4 text-[13px] font-medium text-gray-900 dark:text-gray-300">{conta.descricao}</td>
+                                                                        <td className="px-6 py-4 text-[13px] font-medium text-emerald-600 dark:text-emerald-400">R$ {formatarValorFinanceiro(conta.valor)}</td>
+                                                                        <td className="px-6 py-4 text-[13px]">
+                                                                            <span className={`whitespace-nowrap px-2.5 py-1 text-[11px] font-semibold rounded border ${conta.status === 'Pago' ? 'bg-emerald-50 border-emerald-200 text-emerald-600 dark:bg-emerald-900/20 dark:border-emerald-800/50 dark:text-emerald-400' : 'bg-red-50 border-red-200 text-red-600 dark:bg-red-900/20 dark:border-red-800/50 dark:text-red-400'}`}>
+                                                                                {conta.status}
+                                                                            </span>
+                                                                        </td>
+                                                                        <td className="px-6 py-4 text-[13px] text-right flex justify-end gap-2">
+                                                                            <button onClick={() => { setNovaConta(conta); setModalContaAberto(true); }} className="p-1.5 text-gray-400 hover:text-brand hover:bg-gray-100 dark:hover:bg-darkHover rounded transition opacity-0 group-hover:opacity-100" title="Editar">
+                                                                                <Icon name="edit-2" className="w-4 h-4" />
+                                                                            </button>
+                                                                            <button onClick={() => excluirConta(conta.id)} className="p-1.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded transition opacity-0 group-hover:opacity-100" title="Excluir">
+                                                                                <Icon name="trash-2" className="w-4 h-4" />
+                                                                            </button>
+                                                                        </td>
+                                                                    </tr>
+                                                                ))
+                                                            )}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
                                             </div>
                                         </div>
                                     )}
@@ -3424,9 +3432,10 @@ function App() {
                                     <thead className="bg-gray-50/50 dark:bg-darkHover/50 border-t-2 border-brand">
                                         <tr className="border-b border-gray-200 dark:border-darkBorder text-[13px] font-semibold text-gray-500 dark:text-gray-400 tracking-wide uppercase">
                                             <th className="px-6 py-4">ID</th>
+                                            <th className="px-6 py-4">Criado por</th>
                                             <th className="px-6 py-4">Cliente</th>
                                             <th className="px-6 py-4">Valor</th>
-                                            <th className="px-6 py-4">Data</th>
+                                            <th className="px-6 py-4 text-center">Imprimir</th>
                                             <th className="px-6 py-4 text-right">Ações</th>
                                         </tr>
                                     </thead>
@@ -3434,16 +3443,19 @@ function App() {
                                         {orcamentosFormalizados.map(orc => (
                                             <tr key={orc.id} onClick={() => abrirEdicaoOrcamento(orc)} className="hover:bg-gray-50 dark:hover:bg-darkHover/50 transition-colors cursor-pointer group">
                                                 <td className="px-6 py-4 text-[13px] font-medium text-gray-900 dark:text-gray-300">#{orc.id}</td>
+                                                <td className="px-6 py-4">
+                                                    <div className="text-[13px] font-semibold text-gray-800 dark:text-[#EDEDED]">{orc.criado_por || '---'}</div>
+                                                    <div className="text-[11px] text-gray-400 mt-0.5">{new Date(orc.created_at).toLocaleDateString('pt-BR')}</div>
+                                                </td>
                                                 <td className="px-6 py-4 text-[13px] font-medium text-gray-900 dark:text-gray-300">{orc.cliente}</td>
                                                 <td className="px-6 py-4 text-[13px] font-medium text-emerald-600 dark:text-emerald-400">R$ {formatarMoeda((orc.valor * 100).toFixed(0).toString())}</td>
-                                                <td className="px-6 py-4 text-[13px] text-gray-500 dark:text-gray-400">{new Date(orc.created_at).toLocaleDateString('pt-BR')}</td>
+                                                <td className="px-6 py-4 text-center">
+                                                    <button type="button" onClick={(e) => { e.stopPropagation(); imprimirOrcamento(orc); }} className="p-2 text-orange-500 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/30 transition rounded inline-block" title="Imprimir Orçamento"><Icon name="printer" className="w-5 h-5 inline-block" /></button>
+                                                </td>
                                                 <td className="px-6 py-4 text-[13px] text-right flex justify-end gap-2">
                                                     <button onClick={(e) => { e.stopPropagation(); transformarEmOS(orc); }} className="px-3 py-1.5 text-[11px] font-bold bg-orange-500 hover:bg-orange-600 text-white rounded transition flex items-center gap-1.5 shadow-sm" title="Transformar em O.S.">
                                                         <Icon name="arrow-right-circle" className="w-3.5 h-3.5" />
                                                         Transformar em O.S.
-                                                    </button>
-                                                    <button onClick={(e) => { e.stopPropagation(); imprimirOrcamento(orc); }} className="p-1.5 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-darkHover rounded transition opacity-0 group-hover:opacity-100" title="Imprimir">
-                                                        <Icon name="printer" className="w-4 h-4" />
                                                     </button>
                                                     <button onClick={(e) => { e.stopPropagation(); abrirEdicaoOrcamento(orc); }} className="p-1.5 text-gray-400 hover:text-brand hover:bg-gray-100 dark:hover:bg-darkHover rounded transition opacity-0 group-hover:opacity-100" title="Editar">
                                                         <Icon name="edit-2" className="w-4 h-4" />
@@ -3456,7 +3468,7 @@ function App() {
                                         ))}
                                         {orcamentosFormalizados.length === 0 && (
                                             <tr>
-                                                <td colSpan="5" className="px-4 py-12 text-center text-[13px] text-gray-400">Nenhum orçamento formalizado encontrado.</td>
+                                                <td colSpan="6" className="px-4 py-12 text-center text-[13px] text-gray-400">Nenhum orçamento formalizado encontrado.</td>
                                             </tr>
                                         )}
                                     </tbody>
