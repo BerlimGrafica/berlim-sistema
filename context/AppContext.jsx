@@ -1232,8 +1232,10 @@ export const AppProvider = ({ children }) => {
     const salvarRequisicao = async () => {
         let payload = { ...novaRequisicao };
         if (!payload.id) {
+            delete payload.id;
             payload.criado_por = usuario?.nome || '';
             const { data, error } = await supabase.from('requisicoes_material').insert([payload]).select();
+            if (error) console.error("Erro ao salvar requisicao:", error);
             if (!error && data) setRequisicoesMaterial([data[0], ...requisicoesMaterial]);
         } else {
             const { id, ...rest } = payload;
@@ -1251,12 +1253,15 @@ export const AppProvider = ({ children }) => {
     const salvarTarefa = async () => {
         let payload = { ...novaTarefa };
         if (!payload.id) {
+            delete payload.id;
             payload.criado_por = usuario?.nome || '';
             const { data, error } = await supabase.from('tarefas_internas').insert([payload]).select();
+            if (error) console.error("Erro ao salvar tarefa:", error);
             if (!error && data) setTarefasInternas([data[0], ...tarefasInternas]);
         } else {
             const { id, ...rest } = payload;
             const { data, error } = await supabase.from('tarefas_internas').update(rest).eq('id', id).select();
+            if (error) console.error("Erro ao atualizar tarefa:", error);
             if (!error && data) setTarefasInternas(tarefasInternas.map(t => t.id === id ? data[0] : t));
         }
         setModalTarefaAberto(false);
@@ -1270,8 +1275,10 @@ export const AppProvider = ({ children }) => {
     const salvarLink = async () => {
         let payload = { ...novoLink };
         if (!payload.id) {
+            delete payload.id;
             payload.criado_por = usuario?.nome || '';
             const { data, error } = await supabase.from('links_pagamento').insert([payload]).select();
+            if (error) console.error("Erro ao salvar link:", error);
             if (!error && data) setLinksPagamento([data[0], ...linksPagamento]);
         } else {
             const { id, ...rest } = payload;
