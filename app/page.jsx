@@ -17,7 +17,8 @@ function MainContent() {
     const { abaAtual } = useAppContext();
 
     return (
-        <div className="flex flex-col min-h-screen no-print bg-white dark:bg-darkBg">
+        <>
+            <div className="flex flex-col min-h-screen no-print bg-white dark:bg-darkBg">
             <Navbar />
             <div className="flex-1 bg-gray-50 dark:bg-darkBg relative">
                 {abaAtual === 'dashboard' && <DashboardTab />}
@@ -30,8 +31,9 @@ function MainContent() {
                 {abaAtual === 'notas_fiscais' && <Notas_fiscaisTab />}
             </div>
             <Modals />
+            </div>
             <PrintLayout />
-        </div>
+        </>
     );
 }
 
