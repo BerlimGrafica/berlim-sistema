@@ -137,15 +137,6 @@ export default function SolicitarNota() {
                             <textarea name="endereco" required value={form.endereco} onChange={handleChange} rows={3} className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 text-sm text-gray-800 focus:outline-none focus:border-brand transition" placeholder="Rua, Número, Bairro, Cidade, Estado, CEP" />
                         </div>
 
-                        <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-1">Tipo de Nota *</label>
-                            <select name="tipo_nota" required value={form.tipo_nota} onChange={handleChange} className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 text-sm text-gray-800 focus:outline-none focus:border-brand transition">
-                                <option value="" disabled>Selecione uma opção</option>
-                                <option value="DANFE">DANFE (Produto)</option>
-                                <option value="Serviço">Serviço (NFS-e)</option>
-                            </select>
-                        </div>
-
                         <button type="submit" disabled={loading} className="w-full bg-brand hover:bg-brandHover text-gray-800 font-bold py-3 px-4 rounded-lg shadow-lg transition mt-4">
                             {loading ? 'Enviando...' : 'Enviar Dados'}
                         </button>

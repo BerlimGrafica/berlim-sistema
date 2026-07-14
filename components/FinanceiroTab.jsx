@@ -825,7 +825,13 @@ export default function FinanceiroTab() {
                                     </thead>
                                     <tbody>
                                         {notasFiscaisPaginadas.map(n => (
-                                            <tr key={n.id} className="border-b border-gray-100 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover transition">
+                                            <tr key={n.id} onClick={() => { 
+                                                setNotaFiscalEmEdicao({
+                                                    ...n,
+                                                    valor_pago: n.valor_pago ? formatarMoeda((n.valor_pago * 100).toFixed(0).toString()) : ''
+                                                }); 
+                                                setModalNotaFiscalAberto(true); 
+                                            }} className="border-b border-gray-100 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover transition cursor-pointer">
                                                 <td className="px-4 py-3 text-[13px] dark:text-[#EDEDED] whitespace-nowrap">{new Date(n.created_at).toLocaleDateString('pt-BR')}</td>
                                                 <td className="px-4 py-3">
                                                     <div className="text-[13px] font-semibold dark:text-[#EDEDED]">{n.cliente || 'Sem Identificação'}</div>
@@ -843,19 +849,9 @@ export default function FinanceiroTab() {
                                                 </td>
                                                 <td className="px-4 py-3 text-right">
                                                     <div className="flex items-center justify-end gap-2">
-                                                        {!n.concluido && (
-                                                            <button onClick={() => { 
-                                                                setNotaFiscalEmEdicao({
-                                                                    ...n,
-                                                                    valor_pago: n.valor_pago ? formatarMoeda((n.valor_pago * 100).toFixed(0).toString()) : ''
-                                                                }); 
-                                                                setModalNotaFiscalAberto(true); 
-                                                            }} className="p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded transition" title="Editar / Ver Detalhes">
-                                                                <Icon name="edit-3" className="w-4 h-4" />
-                                                            </button>
-                                                        )}
+
                                                         {!n.concluido && (usuario?.nivel === 'Administrador' || usuario?.nivel === 'Financeiro') && (
-                                                            <button onClick={() => concluirNotaFiscal(n.id)} className="p-2 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded transition" title="Concluir Nota">
+                                                            <button onClick={(e) => { e.stopPropagation(); concluirNotaFiscal(n.id); }} className="p-2 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded transition" title="Concluir Nota">
                                                                 <Icon name="check-circle" className="w-4 h-4" />
                                                             </button>
                                                         )}
