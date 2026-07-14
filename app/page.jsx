@@ -18,7 +18,7 @@ function MainContent() {
     return (
         <div className="flex flex-col min-h-screen no-print bg-white dark:bg-darkBg">
             <Navbar />
-            <div className="flex-1 overflow-auto bg-gray-50 dark:bg-darkBg p-6 relative">
+            <div className="flex-1 bg-gray-50 dark:bg-darkBg relative">
                 {abaAtual === 'dashboard' && <DashboardTab />}
                 {abaAtual === 'producao' && <ProducaoTab />}
                 {abaAtual === 'baixa' && <BaixaTab />}

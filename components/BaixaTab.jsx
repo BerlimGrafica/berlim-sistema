@@ -6,7 +6,7 @@ import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS, RESPONSAVEIS, obterCorStatus, 
 
 
 export default function BaixaTab() {
-    const { setAbaOS, abaOS, buscaHistoricoText, setBuscaHistoricoText, dataFiltroInicio, setDataFiltroInicio, dataFiltroFim, setDataFiltroFim, isAdmin, pedidosHistorico, isOperador, isClienteProblema, totalPedidosHistorico, itensPorPagina, paginaHistorico, setPaginaHistorico } = useAppContext();
+    const { setAbaOS, abaOS, buscaHistoricoText, setBuscaHistoricoText, dataFiltroInicio, setDataFiltroInicio, dataFiltroFim, setDataFiltroFim, isAdmin, pedidosHistorico, isOperador, isClienteProblema, totalPedidosHistorico, itensPorPagina, paginaHistorico, setPaginaHistorico, abrirEdicao, imprimirOS } = useAppContext();
 
     return (
         <>

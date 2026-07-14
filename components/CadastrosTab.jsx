@@ -6,7 +6,7 @@ import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS, RESPONSAVEIS, obterCorStatus, 
 
 
 export default function CadastrosTab() {
-    const { usuario, setAbaCadastros, abaCadastros, isAdmin, abaAtual, buscaCadClientes, setBuscaCadClientes, setNovoCliente, setModalClienteAberto, setLetraFiltroCliente, setPaginaClientes, letraFiltroCliente, clientesPaginados, totalPaginasClientes, paginaClientes } = useAppContext();
+    const { usuario, setAbaCadastros, abaCadastros, isAdmin, abaAtual, buscaCadClientes, setBuscaCadClientes, setNovoCliente, setModalClienteAberto, setLetraFiltroCliente, setPaginaClientes, letraFiltroCliente, clientesPaginados, totalPaginasClientes, paginaClientes, abrirEdicaoCliente, carregarDados } = useAppContext();
 
     return (
         <>
