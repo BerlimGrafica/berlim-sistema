@@ -345,7 +345,14 @@ export const AppProvider = ({ children }) => {
                     });
                 }
                 
-                const pedidosComBoleto = todosPedidos.filter(p => !statusIgnorados.includes(p.status) && Array.isArray(p.pagamentos));
+                const pedidosComBoleto = todosPedidos.map(p => {
+                    const pagamentosStr = p.servico && p.servico.split('\n\n[PAGAMENTOS]\n')[1];
+                    let pagamentos = [];
+                    if (pagamentosStr) {
+                        try { pagamentos = JSON.parse(pagamentosStr); } catch(e) {}
+                    }
+                    return { ...p, pagamentos };
+                }).filter(p => !statusIgnorados.includes(p.status) && p.pagamentos.some(pag => pag.forma === 'Boleto'));
                 if (pedidosComBoleto.length > 0) {
                     let novosAlertasBoleto = [];
                     pedidosComBoleto.forEach(p => {

@@ -724,7 +724,14 @@ export default function FinanceiroTab() {
                                                         </thead>
                                                         <tbody className="divide-y divide-gray-100 dark:divide-darkBorder">
                                                             {(() => {
-                                                                const pedidosBoleto = pedidos.filter(p => Array.isArray(p.pagamentos) && p.pagamentos.some(pag => pag.forma === 'Boleto'));
+                                                                const pedidosBoleto = pedidos.map(p => {
+                                                                    const pagamentosStr = p.servico && p.servico.split('\n\n[PAGAMENTOS]\n')[1];
+                                                                    let pagamentos = [];
+                                                                    if (pagamentosStr) {
+                                                                        try { pagamentos = JSON.parse(pagamentosStr); } catch(e) {}
+                                                                    }
+                                                                    return { ...p, pagamentos };
+                                                                }).filter(p => p.pagamentos.some(pag => pag.forma === 'Boleto'));
                                                                 if (pedidosBoleto.length === 0) return (
                                                                     <tr><td colSpan="6" className="px-4 py-12 text-center text-[13px] text-gray-400">Nenhum pedido com boleto encontrado.</td></tr>
                                                                 );
