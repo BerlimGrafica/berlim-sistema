@@ -1,7 +1,6 @@
 "use client";
 import React from 'react';
 import { AppProvider, useAppContext } from '@/context/AppContext';
-import Sidebar from '@/components/Sidebar';
 import DashboardTab from '@/components/DashboardTab';
 import ProducaoTab from '@/components/ProducaoTab';
 import BaixaTab from '@/components/BaixaTab';
@@ -11,13 +10,14 @@ import OrcamentosTab from '@/components/OrcamentosTab';
 import CadastrosTab from '@/components/CadastrosTab';
 import Notas_fiscaisTab from '@/components/Notas_fiscaisTab';
 import Modals from '@/components/Modals';
+import Navbar from '@/components/Navbar';
 
 function MainContent() {
     const { abaAtual } = useAppContext();
 
     return (
         <div className="flex flex-col min-h-screen no-print bg-white dark:bg-darkBg">
-            <Sidebar />
+            <Navbar />
             <div className="flex-1 overflow-auto bg-gray-50 dark:bg-darkBg p-6 relative">
                 {abaAtual === 'dashboard' && <DashboardTab />}
                 {abaAtual === 'producao' && <ProducaoTab />}
