@@ -691,7 +691,71 @@ function CalculadoraAdesivo({ produtos }) {
         return Math.floor(areaW / adW) * Math.floor(areaH / adH);
     };
 
+    const lRawNum = parseFloat(String(largura).replace(',', '.'));
+    const aRawNum = parseFloat(String(altura).replace(',', '.'));
+    const isTamanhoInvalido = (lRawNum > 0 && lRawNum < 3) || (aRawNum > 0 && aRawNum < 3);
+
+    const copiarMaximos = () => {
+        if (isNaN(lRawNum) || isNaN(aRawNum) || lRawNum <= 0 || aRawNum <= 0) {
+            alert('Preencha largura e altura para calcular.');
+            return;
+        }
+        if (isTamanhoInvalido) {
+            alert('O tamanho mínimo permitido é 3x3cm.');
+            return;
+        }
+
+        const l = lRawNum + 0.2;
+        const a = aRawNum + 0.2;
+        const qSRA3 = calculaCabem(26, 39, l, a);
+        const qMeio = calculaCabem(44, 94, l, a);
+        const qMetro = calculaCabem(94, 94, l, a);
+
+        let sra3Price = preco15;
+        let basePrice = preco17;
+        let nomeTipo = 'Vinil';
+        let lam = '';
+
+        if (tipo === '17') {
+            sra3Price = preco15;
+            basePrice = preco17;
+            nomeTipo = item17 ? item17.nome : 'Adesivo Vinil';
+        } else if (tipo === '18_brilho') {
+            sra3Price = preco21;
+            basePrice = preco18;
+            nomeTipo = item18 ? item18.nome : 'Adesivo Laminado';
+            lam = ' | Brilho';
+        } else if (tipo === '18_fosco') {
+            sra3Price = preco21;
+            basePrice = preco18;
+            nomeTipo = item18 ? item18.nome : 'Adesivo Laminado';
+            lam = ' | Fosco';
+        } else if (tipo === '19') {
+            sra3Price = preco16;
+            basePrice = preco19;
+            nomeTipo = item19 ? item19.nome : 'Adesivo Transparente';
+        }
+
+        let texto = `Orçamento ${nomeTipo}${lam}\n`;
+        texto += `Tamanho: ${lRawNum}x${aRawNum}cm | 1/2 corte\n\n`;
+        
+        if (qSRA3 > 0) {
+            texto += `- ${qSRA3} unids (SRA3): R$ ${sra3Price.toFixed(2).replace('.', ',')}\n`;
+        }
+        if (qMeio > 0) {
+            texto += `- ${qMeio} unids (1/2 m²): R$ ${(basePrice * 0.7333).toFixed(2).replace('.', ',')}\n`;
+        }
+        if (qMetro > 0) {
+            texto += `- ${qMetro} unids (1 m²): R$ ${basePrice.toFixed(2).replace('.', ',')}\n`;
+        }
+
+        navigator.clipboard.writeText(texto);
+        alert('Orçamentos de quantidades máximas copiados!');
+    };
+
     const calcular = () => {
+        if (isTamanhoInvalido) return '0,00';
+        
         const lRaw = parseFloat(largura.replace(',', '.'));
         const aRaw = parseFloat(altura.replace(',', '.'));
         const qty = parseInt(quantidade) || 0;
@@ -741,6 +805,8 @@ function CalculadoraAdesivo({ produtos }) {
     };
 
     const gerarTextoCopia = () => {
+        if (isTamanhoInvalido) return '';
+        
         const lRaw = parseFloat(largura.replace(',', '.'));
         const aRaw = parseFloat(altura.replace(',', '.'));
         const qty = parseInt(quantidade) || 0;
@@ -780,8 +846,16 @@ function CalculadoraAdesivo({ produtos }) {
     };
 
     return (
-        <div className="bg-white dark:bg-darkCard p-6 rounded border border-gray-200 dark:border-darkBorder">
+        <div className="bg-white dark:bg-darkCard p-6 rounded border border-gray-200 dark:border-darkBorder relative">
             <h3 className="text-lg font-semibold dark:text-white mb-4">Calculadora de Adesivos (Vinil)</h3>
+            
+            {isTamanhoInvalido && (
+                <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-[12px] rounded border border-red-200 dark:border-red-900/50 flex items-center gap-2 font-medium">
+                    <Icon name="alert-triangle" className="w-4 h-4 shrink-0" />
+                    O tamanho mínimo permitido para adesivos é de 3x3cm.
+                </div>
+            )}
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                 <div>
                     <label className="block text-[11px] font-semibold text-gray-500 mb-1">Largura Unitária (cm)</label>
@@ -802,7 +876,12 @@ function CalculadoraAdesivo({ produtos }) {
                 </div>
                 <div>
                     <label className="block text-[11px] font-semibold text-gray-500 mb-1">Quantidade</label>
-                    <input type="number" min="1" value={quantidade} onChange={e => setQuantidade(e.target.value)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition" />
+                    <div className="flex gap-2">
+                        <input type="number" min="1" value={quantidade} onChange={e => setQuantidade(e.target.value)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition" />
+                        <button onClick={copiarMaximos} className="bg-brand text-white px-3 rounded flex items-center justify-center hover:bg-brand/90 transition shadow-sm" title="Copiar orçamentos de quantidades máximas">
+                            <Icon name="copy" className="w-4 h-4" />
+                        </button>
+                    </div>
                 </div>
             </div>
 
