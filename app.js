@@ -621,26 +621,35 @@ function CalculadoraBanner() {
                 </div>
                 <div>
                     <label className="block text-[11px] font-semibold text-gray-500 mb-1">Tipo de Lona</label>
-                    <select value={tipo} onChange={e => setTipo(e.target.value)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition">
-                        <option value="simples">Lona 440g Brilho (R$ 90/m²)</option>
-                        <option value="laminado">Lona 440g Brilho Laminada (R$ 130/m²)</option>
-                    </select>
+                    <div className="relative">
+                        <select value={tipo} onChange={e => setTipo(e.target.value)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded pl-3 pr-8 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition appearance-none cursor-pointer">
+                            <option value="simples">Lona 440g Brilho (R$ 90/m²)</option>
+                            <option value="laminado">Lona 440g Brilho Laminada (R$ 130/m²)</option>
+                        </select>
+                        <Icon name="chevron-down" className="absolute right-3 top-3 w-4 h-4 text-gray-400 pointer-events-none" />
+                    </div>
                 </div>
                 <div>
                     <label className="block text-[11px] font-semibold text-gray-500 mb-1">Acabamento</label>
-                    <select value={acabamento} onChange={e => setAcabamento(e.target.value)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition">
-                        <option value="bastao_corda">Bastão e Corda</option>
-                        <option value="ilhos">Ilhós (Argolas de ferro)</option>
-                        <option value="sem_acabamento">Sem Acabamento (- R$ 10/m²)</option>
-                    </select>
+                    <div className="relative">
+                        <select value={acabamento} onChange={e => setAcabamento(e.target.value)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded pl-3 pr-8 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition appearance-none cursor-pointer">
+                            <option value="bastao_corda">Bastão e Corda</option>
+                            <option value="ilhos">Ilhós (Argolas de ferro)</option>
+                            <option value="sem_acabamento">Sem Acabamento (- R$ 10/m²)</option>
+                        </select>
+                        <Icon name="chevron-down" className="absolute right-3 top-3 w-4 h-4 text-gray-400 pointer-events-none" />
+                    </div>
                 </div>
                 <div>
                     <label className="block text-[11px] font-semibold text-gray-500 mb-1">Prazo de Entrega</label>
-                    <select value={prazo} onChange={e => setPrazo(e.target.value)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition">
-                        <option value="padrao">Padrão</option>
-                        <option value="outro_dia">Para outro dia (+30%)</option>
-                        <option value="mesmo_dia">Para o mesmo dia (+60%)</option>
-                    </select>
+                    <div className="relative">
+                        <select value={prazo} onChange={e => setPrazo(e.target.value)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded pl-3 pr-8 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition appearance-none cursor-pointer">
+                            <option value="padrao">Padrão</option>
+                            <option value="outro_dia">Para outro dia (+30%)</option>
+                            <option value="mesmo_dia">Para o mesmo dia (+60%)</option>
+                        </select>
+                        <Icon name="chevron-down" className="absolute right-3 top-3 w-4 h-4 text-gray-400 pointer-events-none" />
+                    </div>
                 </div>
                 <div>
                     <label className="block text-[11px] font-semibold text-gray-500 mb-1">Quantidade</label>
@@ -876,11 +885,14 @@ function CalculadoraAdesivo({ produtos }) {
                 </div>
                 <div>
                     <label className="block text-[11px] font-semibold text-gray-500 mb-1">Tipo de Adesivo</label>
-                    <select value={tipo} onChange={e => setTipo(e.target.value)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition">
-                        <option value="17">{item17 ? item17.nome : 'Item 17'}</option>
-                        <option value="18">{item18 ? item18.nome : 'Item 18'} (Laminado Brilho/Fosco)</option>
-                        <option value="19">{item19 ? item19.nome : 'Item 19'}</option>
-                    </select>
+                    <div className="relative">
+                        <select value={tipo} onChange={e => setTipo(e.target.value)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded pl-3 pr-8 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition appearance-none cursor-pointer">
+                            <option value="17">{item17 ? item17.nome : 'Item 17'}</option>
+                            <option value="18">{item18 ? item18.nome : 'Item 18'} (Laminado Brilho/Fosco)</option>
+                            <option value="19">{item19 ? item19.nome : 'Item 19'}</option>
+                        </select>
+                        <Icon name="chevron-down" className="absolute right-3 top-3 w-4 h-4 text-gray-400 pointer-events-none" />
+                    </div>
                 </div>
                 <div>
                     <label className="block text-[11px] font-semibold text-gray-500 mb-1">Quantidade</label>
@@ -1754,7 +1766,7 @@ function App() {
     }
 
     // === FUNÇÕES ORÇAMENTOS FORMALIZADOS ===
-    async function salvarOrcamentoFormalizado(e) {
+    async function salvarOrcamentoFormalizado(e, querImprimir = false) {
         if (e) e.preventDefault();
         
         let textoFinalServico = '';
@@ -1789,6 +1801,7 @@ function App() {
             else if (data && data.length > 0) {
                 setOrcamentosFormalizados(orcamentosFormalizados.map(o => o.id === data[0].id ? data[0] : o));
                 setModalOrcamentoFormalizadoAberto(false);
+                if (querImprimir) imprimirOrcamento(data[0]);
             }
         } else {
             const { data, error } = await supabase.from('orcamentos_formalizados').insert([payload]).select();
@@ -1796,10 +1809,15 @@ function App() {
             else if (data && data.length > 0) {
                 setOrcamentosFormalizados([data[0], ...orcamentosFormalizados]);
                 setModalOrcamentoFormalizadoAberto(false);
+                if (querImprimir) imprimirOrcamento(data[0]);
             }
         }
     }
 
+    function imprimirOrcamento(orc) {
+        alert("Função de PDF do Orçamento está em desenvolvimento. O novo layout será aplicado na próxima versão!");
+    }
+    
     function abrirEdicaoOrcamento(orcamento) {
         const dadosDesconstruidos = desconstruirTextoServico(orcamento.descricao);
         setOrcamentoFormalizadoEmEdicao(orcamento);
@@ -3408,8 +3426,9 @@ function App() {
                                                 <td className="px-6 py-4 text-[13px] font-medium text-emerald-600 dark:text-emerald-400">R$ {formatarMoeda((orc.valor * 100).toFixed(0).toString())}</td>
                                                 <td className="px-6 py-4 text-[13px] text-gray-500 dark:text-gray-400">{new Date(orc.created_at).toLocaleDateString('pt-BR')}</td>
                                                 <td className="px-6 py-4 text-[13px] text-right flex justify-end gap-2">
-                                                    <button onClick={(e) => { e.stopPropagation(); transformarEmOS(orc); }} className="p-1.5 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded transition" title="Transformar em O.S.">
-                                                        <Icon name="check-circle" className="w-4 h-4" />
+                                                    <button onClick={(e) => { e.stopPropagation(); transformarEmOS(orc); }} className="px-3 py-1.5 text-[11px] font-bold bg-orange-500 hover:bg-orange-600 text-white rounded transition flex items-center gap-1.5 shadow-sm" title="Transformar em O.S.">
+                                                        <Icon name="arrow-right-circle" className="w-3.5 h-3.5" />
+                                                        Transformar em O.S.
                                                     </button>
                                                     <button onClick={(e) => { e.stopPropagation(); abrirEdicaoOrcamento(orc); }} className="p-1.5 text-gray-400 hover:text-brand hover:bg-gray-100 dark:hover:bg-darkHover rounded transition opacity-0 group-hover:opacity-100" title="Editar">
                                                         <Icon name="edit-2" className="w-4 h-4" />
