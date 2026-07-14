@@ -1325,7 +1325,6 @@ function App() {
                         });
                         return novosAlertas;
                     });
-                    });
                 }
                 
                 const pedidosComBoleto = todosPedidos.filter(p => !statusIgnorados.includes(p.status) && Array.isArray(p.pagamentos));
