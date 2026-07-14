@@ -74,8 +74,10 @@ export default function CadastrosTab() {
                                             className={`border-b border-gray-100 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover transition cursor-pointer group ${draggedProdutoIndex === index ? 'opacity-50' : ''}`}
                                         >
                                             <td className="px-6 py-4 text-[13px] font-semibold text-gray-900 dark:text-gray-300 cursor-grab active:cursor-grabbing">
-                                                <Icon name="list" className="w-4 h-4 inline-block mr-2 opacity-50" />
-                                                #{p.id}
+                                                <div className="flex items-center gap-2 whitespace-nowrap">
+                                                    <Icon name="list" className="w-4 h-4 opacity-50" />
+                                                    <span>#{p.id}</span>
+                                                </div>
                                             </td>
                                             <td className="px-6 py-4 text-[13px] font-medium text-gray-800 dark:text-white">{p.nome}</td>
                                             <td className="px-6 py-4 text-[13px] text-gray-600 dark:text-gray-400 truncate max-w-xs">{p.texto_padrao}</td>
