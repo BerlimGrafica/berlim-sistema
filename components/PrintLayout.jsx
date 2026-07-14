@@ -155,33 +155,47 @@ function PrintOrcamento({ orc }) {
         <div className="print-only bg-white text-black font-sans flex flex-col w-full h-[286mm] overflow-hidden relative select-none">
             {/* Header */}
             <div className="flex justify-between items-start pt-16 px-16">
-                <img src="https://www.berlimgraficarapida.com.br/wp-content/uploads/elementor/thumbs/logosite-rm0erpiqj90gcf7ff4jp8ujys78opflob1b9vn5jjs.png" alt="Berlim Gráfica" className="h-32 object-contain" />
-                <div className="text-right flex flex-col justify-end mt-4 gap-1">
-                    <p className="text-[28px] font-bold text-[#00579D] tracking-tighter">CNPJ 36.117.136/0001-23</p>
-                    <p className="text-[24px] text-[#559bd6] tracking-tight">{date}</p>
+                {/* SVG Logo extracted from PDF concept */}
+                <div className="flex items-center gap-3">
+                    <svg width="120" height="120" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        {/* Orange Stairs */}
+                        <rect x="0" y="80" width="40" height="15" fill="#F37021" />
+                        <rect x="25" y="62" width="40" height="15" fill="#F37021" />
+                        <rect x="50" y="44" width="40" height="15" fill="#F37021" />
+                        <rect x="75" y="26" width="40" height="15" fill="#F37021" />
+                        <rect x="100" y="8" width="40" height="15" fill="#F37021" />
+                    </svg>
+                    <div className="flex flex-col justify-end pb-3">
+                        <span className="text-[#00579D] font-black text-4xl leading-none tracking-tighter">BERLIM</span>
+                        <span className="text-[#00579D] font-semibold text-2xl leading-none tracking-tighter mt-1">GRÁFICA RÁPIDA</span>
+                    </div>
+                </div>
+                <div className="text-right flex flex-col justify-center h-[120px] pb-3 gap-1">
+                    <p className="text-[22px] font-bold text-[#00579D] tracking-tighter">CNPJ 36.117.136/0001-23</p>
+                    <p className="text-[20px] text-[#559bd6] tracking-tight">{date}</p>
                 </div>
             </div>
 
             {/* Client Info */}
-            <div className="px-16 mt-14 mb-8">
-                <p className="text-[24px] text-[#00579D]">
+            <div className="px-16 mt-10 mb-6">
+                <p className="text-[20px] text-[#00579D]">
                     <span className="font-bold">Cliente:</span> {orc.cliente}{telefone ? ` - ${telefone}` : ''}
                 </p>
             </div>
 
             {/* Title */}
-            <div className="text-center mb-10">
-                <h1 className="text-[32px] font-black text-[#00579D] uppercase tracking-wide">ORÇAMENTO:</h1>
+            <div className="text-center mb-8">
+                <h1 className="text-[28px] font-black text-[#00579D] uppercase tracking-wide">ORÇAMENTO:</h1>
             </div>
 
             {/* Items */}
-            <div className="px-16 flex-1 flex flex-col gap-5 text-[20px] text-gray-800 font-medium">
+            <div className="px-16 flex-1 flex flex-col gap-4 text-[16px] text-gray-800 font-medium">
                 {itens.map((item, idx) => {
                     const desc = item.descricao || item.nome;
                     const preco = `R$ ${item.valor}`;
                     return (
-                        <div key={idx} className="flex items-start gap-4">
-                            <span className="text-[#F37021] text-3xl leading-none pt-0.5">•</span>
+                        <div key={idx} className="flex items-start gap-3">
+                            <span className="text-[#F37021] text-2xl leading-none pt-0.5">•</span>
                             <p className="leading-snug">
                                 {desc} | <span className="font-bold text-[#F37021]">{preco}</span>
                             </p>
@@ -191,8 +205,8 @@ function PrintOrcamento({ orc }) {
             </div>
 
             {/* Rules */}
-            <div className="px-16 mb-8">
-                <div className="text-[12px] text-gray-500 italic flex flex-col gap-1.5 font-medium">
+            <div className="px-16 mb-6">
+                <div className="text-[11px] text-gray-500 italic flex flex-col gap-1.5 font-medium">
                     <p>• Retirada na nossa loja: Rua Alencastro, 42 - Bairro Silveira - Santo André (SP);</p>
                     <p>• Forma de pagamento: 50% de sinal e 50% na retirada, podendo ser via pix, dinheiro ou cartão, ou 100% antecipado via link de pagamento;</p>
                     <p>• Não trabalhamos com fidelidade de cor, por isso as cores podem variar conforme o material;</p>
@@ -203,30 +217,30 @@ function PrintOrcamento({ orc }) {
             {/* Footer Totals */}
             <div className="px-16 pb-12 flex justify-between items-end">
                 <div className="flex flex-col pt-2">
-                    <p className="text-[#F37021] text-[26px] font-bold leading-tight">Prazo de Produção:</p>
-                    <p className="text-[#F37021] text-[24px] leading-tight">2-3 dias úteis</p>
-                    <p className="text-[#F37021] text-[24px] italic leading-tight">(Após o pagamento)</p>
+                    <p className="text-[#F37021] text-[20px] font-bold leading-tight">Prazo de Produção:</p>
+                    <p className="text-[#F37021] text-[18px] leading-tight">2-3 dias úteis</p>
+                    <p className="text-[#F37021] text-[18px] italic leading-tight">(Após o pagamento)</p>
                 </div>
                 
-                <div className="w-[3px] bg-[#00579D] h-28 mx-10 self-center rounded"></div>
+                <div className="w-[3px] bg-[#00579D] h-20 mx-10 self-center rounded"></div>
 
                 <div className="flex-1 flex flex-col justify-end text-left pt-2">
-                    <p className="text-[#F37021] text-[26px] font-black italic uppercase leading-none mb-1">Total:</p>
-                    <p className="text-[#00579D] text-[48px] font-black italic leading-none tracking-tight">R$ {formatarValorFinanceiro(Number(orc.valor))}</p>
+                    <p className="text-[#F37021] text-[20px] font-black italic uppercase leading-none mb-1">Total:</p>
+                    <p className="text-[#00579D] text-[36px] font-black italic leading-none tracking-tight">R$ {formatarValorFinanceiro(Number(orc.valor))}</p>
                 </div>
             </div>
 
             {/* Orange Footer Bar */}
-            <div className="bg-[#F37021] print-color-adjust-exact h-[100px] w-full flex justify-between items-center px-16 text-white shrink-0">
-                <div className="flex flex-col text-[14px] font-semibold gap-1">
+            <div className="bg-[#F37021] print-color-adjust-exact h-[80px] w-full flex justify-between items-center px-16 text-white shrink-0">
+                <div className="flex flex-col text-[12px] font-semibold gap-1">
                     <p className="flex items-center gap-2"><Icon name="phone" className="w-4 h-4" /> (11) 95471-6011</p>
                     <p className="flex items-center gap-2"><Icon name="phone" className="w-4 h-4" /> (11) 2677-6057</p>
                     <p className="flex items-center gap-2"><Icon name="instagram" className="w-4 h-4" /> @berlimgraficarapida</p>
                 </div>
                 
                 {/* SVG for Stairs in white */}
-                <div className="opacity-90 mt-2">
-                     <svg width="75" height="50" viewBox="0 0 100 80" fill="white">
+                <div className="opacity-90">
+                     <svg width="60" height="40" viewBox="0 0 100 80" fill="white">
                         <rect x="0" y="64" width="30" height="16" />
                         <rect x="15" y="48" width="30" height="16" />
                         <rect x="30" y="32" width="30" height="16" />
@@ -235,7 +249,7 @@ function PrintOrcamento({ orc }) {
                      </svg>
                 </div>
 
-                <div className="flex flex-col text-[14px] font-semibold gap-1 text-right">
+                <div className="flex flex-col text-[12px] font-semibold gap-1 text-right">
                     <p className="flex items-center justify-end gap-2">contato@berlimgraficarapida.com.br <Icon name="mail" className="w-4 h-4" /></p>
                     <p className="flex items-center justify-end gap-2 mt-1">Rua Alencastro, 42 - Bairro Silveira<br/>Santo André - SP <Icon name="map-pin" className="w-4 h-4" /></p>
                 </div>
