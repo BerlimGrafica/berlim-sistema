@@ -9,6 +9,7 @@ import FinanceiroTab from '@/components/FinanceiroTab';
 import OrcamentosTab from '@/components/OrcamentosTab';
 import CadastrosTab from '@/components/CadastrosTab';
 import Notas_fiscaisTab from '@/components/Notas_fiscaisTab';
+import ComunicacaoInternaTab from '@/components/ComunicacaoInternaTab';
 import Modals from '@/components/Modals';
 import Navbar from '@/components/Navbar';
 import PrintLayout from '@/components/PrintLayout';
@@ -29,6 +30,7 @@ function MainContent() {
                 {abaAtual === 'orcamentos' && <OrcamentosTab />}
                 {abaAtual === 'cadastros' && <CadastrosTab />}
                 {abaAtual === 'notas_fiscais' && <Notas_fiscaisTab />}
+                {abaAtual === 'comunicacao' && <ComunicacaoInternaTab />}
             </div>
             <Modals />
             </div>

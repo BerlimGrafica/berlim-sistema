@@ -143,6 +143,9 @@ export default function Navbar() {
                                 Cadastros
                             </a>
                         )}
+                        <a onClick={() => setAbaAtual('comunicacao')} className={`px-5 py-3 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center tracking-wide uppercase ${abaAtual === 'comunicacao' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
+                            Comunicação
+                        </a>
                     </div>
                 </nav>
         </>

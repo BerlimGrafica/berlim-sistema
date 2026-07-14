@@ -97,6 +97,21 @@ export const AppProvider = ({ children }) => {
     const alertasBoletoDisparados = useRef(new Set());
     const [modalAlertasAberto, setModalAlertasAberto] = useState(false);
 
+    // === COMUNICAÇÃO INTERNA ===
+    const [abaComunicacao, setAbaComunicacao] = useState('requisicoes');
+    const [requisicoesMaterial, setRequisicoesMaterial] = useState([]);
+    const [tarefasInternas, setTarefasInternas] = useState([]);
+    const [linksPagamento, setLinksPagamento] = useState([]);
+    
+    const [modalRequisicaoAberto, setModalRequisicaoAberto] = useState(false);
+    const [novaRequisicao, setNovaRequisicao] = useState({ id: null, itens: '', observacoes: '', status: 'Pendente' });
+    
+    const [modalTarefaAberto, setModalTarefaAberto] = useState(false);
+    const [novaTarefa, setNovaTarefa] = useState({ id: null, titulo: '', descricao: '', responsavel: '', prazo: '', status: 'Pendente' });
+    
+    const [modalLinkAberto, setModalLinkAberto] = useState(false);
+    const [novoLink, setNovoLink] = useState({ id: null, titulo: '', link: '', valor: '', cliente: '', status: 'Ativo' });
+
     const [modalAberto, setModalAberto] = useState(false);
     const [salvandoOS, setSalvandoOS] = useState(false);
     const [osParaImprimir, setOsParaImprimir] = useState(null);
@@ -390,6 +405,15 @@ export const AppProvider = ({ children }) => {
 
         const { data: listaOrcPP } = await supabase.from('orcamentos_pre_prontos').select('*').order('created_at', { ascending: false });
         if (listaOrcPP) setOrcamentosPreProntos(listaOrcPP);
+
+        const { data: listaReq } = await supabase.from('requisicoes_material').select('*').order('created_at', { ascending: false });
+        if (listaReq) setRequisicoesMaterial(listaReq);
+
+        const { data: listaTar } = await supabase.from('tarefas_internas').select('*').order('created_at', { ascending: false });
+        if (listaTar) setTarefasInternas(listaTar);
+
+        const { data: listaLnk } = await supabase.from('links_pagamento').select('*').order('created_at', { ascending: false });
+        if (listaLnk) setLinksPagamento(listaLnk);
     }
     
     useEffect(() => {
@@ -1197,6 +1221,65 @@ export const AppProvider = ({ children }) => {
     const notasFiscaisPaginadas = notasFiscaisAbaFiltro.slice((paginaNotasFiscais - 1) * itensPorPagina, paginaNotasFiscais * itensPorPagina);
     const totalPaginasNotasFiscais = Math.ceil(notasFiscaisAbaFiltro.length / itensPorPagina) || 1;
     
+    // === COMUNICAÇÃO INTERNA CRUD ===
+    const salvarRequisicao = async () => {
+        let payload = { ...novaRequisicao };
+        if (!payload.id) {
+            payload.criado_por = usuario?.nome || '';
+            const { data, error } = await supabase.from('requisicoes_material').insert([payload]).select();
+            if (!error && data) setRequisicoesMaterial([data[0], ...requisicoesMaterial]);
+        } else {
+            const { id, ...rest } = payload;
+            const { data, error } = await supabase.from('requisicoes_material').update(rest).eq('id', id).select();
+            if (!error && data) setRequisicoesMaterial(requisicoesMaterial.map(r => r.id === id ? data[0] : r));
+        }
+        setModalRequisicaoAberto(false);
+    };
+    const excluirRequisicao = async (id) => {
+        if(confirm('Tem certeza que deseja excluir esta requisição?')) {
+            const { error } = await supabase.from('requisicoes_material').delete().eq('id', id);
+            if (!error) setRequisicoesMaterial(requisicoesMaterial.filter(r => r.id !== id));
+        }
+    };
+    const salvarTarefa = async () => {
+        let payload = { ...novaTarefa };
+        if (!payload.id) {
+            payload.criado_por = usuario?.nome || '';
+            const { data, error } = await supabase.from('tarefas_internas').insert([payload]).select();
+            if (!error && data) setTarefasInternas([data[0], ...tarefasInternas]);
+        } else {
+            const { id, ...rest } = payload;
+            const { data, error } = await supabase.from('tarefas_internas').update(rest).eq('id', id).select();
+            if (!error && data) setTarefasInternas(tarefasInternas.map(t => t.id === id ? data[0] : t));
+        }
+        setModalTarefaAberto(false);
+    };
+    const excluirTarefa = async (id) => {
+        if(confirm('Tem certeza que deseja excluir esta tarefa?')) {
+            const { error } = await supabase.from('tarefas_internas').delete().eq('id', id);
+            if (!error) setTarefasInternas(tarefasInternas.filter(t => t.id !== id));
+        }
+    };
+    const salvarLink = async () => {
+        let payload = { ...novoLink };
+        if (!payload.id) {
+            payload.criado_por = usuario?.nome || '';
+            const { data, error } = await supabase.from('links_pagamento').insert([payload]).select();
+            if (!error && data) setLinksPagamento([data[0], ...linksPagamento]);
+        } else {
+            const { id, ...rest } = payload;
+            const { data, error } = await supabase.from('links_pagamento').update(rest).eq('id', id).select();
+            if (!error && data) setLinksPagamento(linksPagamento.map(l => l.id === id ? data[0] : l));
+        }
+        setModalLinkAberto(false);
+    };
+    const excluirLink = async (id) => {
+        if(confirm('Tem certeza que deseja excluir este link?')) {
+            const { error } = await supabase.from('links_pagamento').delete().eq('id', id);
+            if (!error) setLinksPagamento(linksPagamento.filter(l => l.id !== id));
+        }
+    };
+
     // Filtro Produção Aprimorado (Sem data e buscando em MultiSelect)
     const pedidosProducaoAtivos = pedidos.filter(p => {
         const statusPermitido = STATUSES_PRODUCAO.includes(p.status);
@@ -1453,6 +1536,19 @@ export const AppProvider = ({ children }) => {
         opcoesStatusPermitidas,
         isModalTrancado,
         renderBarHorizontal,
+        abaComunicacao, setAbaComunicacao,
+        requisicoesMaterial, setRequisicoesMaterial,
+        tarefasInternas, setTarefasInternas,
+        linksPagamento, setLinksPagamento,
+        modalRequisicaoAberto, setModalRequisicaoAberto,
+        novaRequisicao, setNovaRequisicao,
+        modalTarefaAberto, setModalTarefaAberto,
+        novaTarefa, setNovaTarefa,
+        modalLinkAberto, setModalLinkAberto,
+        novoLink, setNovoLink,
+        salvarRequisicao, excluirRequisicao,
+        salvarTarefa, excluirTarefa,
+        salvarLink, excluirLink,
         carregarDados,
         atualizarCampoInline,
         fecharModalOS,
