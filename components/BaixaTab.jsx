@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useAppContext } from '@/context/AppContext';
 import Icon from '@/components/Icon';
-import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS, RESPONSAVEIS, obterCorStatus, formatarValorFinanceiro, formatarMoeda, formatarTelefone, obterDataAtual, formatarDataExibicao, formatarMesAno, CustomDatePicker, InlineDropdown, MultiSelectDropdown, desconstruirTextoServico, obterResumoServicos, ItensChecklist, StackedCards, CalculadoraBanner, CalculadoraAdesivo, CalculadoraCasamento, CalculadorasAba } from '@/lib/utils';
+import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS, RESPONSAVEIS, obterCorStatus, formatarValorFinanceiro, formatarMoeda, formatarTelefone, obterDataAtual, formatarDataExibicao, formatarMçõesAno, CustomDatePicker, InlineDropdown, MultiSelectDropdown, dçõesconstruirTextoServico, obterRçõesumoServicos, ItensChecklist, StackedCards, CalculadoraBanner, CalculadoraAdçõesivo, CalculadoraCasamento, CalculadorasAba } from '@/lib/utils';
 
 
 export default function BaixaTab() {
@@ -12,11 +12,11 @@ export default function BaixaTab() {
         <>
             { (
                     <div className="bg-[#EDEFF0] dark:bg-darkBg border-b border-gray-200 dark:border-darkBorder px-6 flex gap-6 z-20 overflow-x-auto no-scrollbar-style sticky top-[112px]">
-                        <button onClick={() => setAbaOS('abertas')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitespace-nowrap flex items-center gap-2 ${abaOS === 'abertas' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}><Icon name="list" className="w-4 h-4" /> Abertas</button>
-                        <button onClick={() => setAbaOS('concluidas')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitespace-nowrap flex items-center gap-2 ${abaOS === 'concluidas' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}><Icon name="check-circle" className="w-4 h-4" /> Concluídas</button>
-                        <button onClick={() => setAbaOS('finalizadas')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitespace-nowrap flex items-center gap-2 ${abaOS === 'finalizadas' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}><Icon name="check-square" className="w-4 h-4" /> Finalizadas</button>
-                        <button onClick={() => setAbaOS('canceladas')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitespace-nowrap flex items-center gap-2 ${abaOS === 'canceladas' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}><Icon name="x-circle" className="w-4 h-4" /> Canceladas</button>
-                        <button onClick={() => setAbaOS('abandonadas')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitespace-nowrap flex items-center gap-2 ${abaOS === 'abandonadas' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}><Icon name="alert-triangle" className="w-4 h-4" /> Abandonadas</button>
+                        <button onClick={() => setAbaOS('abertas')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitçõespace-nowrap flex items-center gap-2 ${abaOS === 'abertas' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}><Icon name="list" className="w-4 h-4" /> Abertas</button>
+                        <button onClick={() => setAbaOS('concluidas')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitçõespace-nowrap flex items-center gap-2 ${abaOS === 'concluidas' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}><Icon name="check-circle" className="w-4 h-4" /> Concluídas</button>
+                        <button onClick={() => setAbaOS('finalizadas')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitçõespace-nowrap flex items-center gap-2 ${abaOS === 'finalizadas' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}><Icon name="check-square" className="w-4 h-4" /> Finalizadas</button>
+                        <button onClick={() => setAbaOS('canceladas')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitçõespace-nowrap flex items-center gap-2 ${abaOS === 'canceladas' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}><Icon name="x-circle" className="w-4 h-4" /> Canceladas</button>
+                        <button onClick={() => setAbaOS('abandonadas')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitçõespace-nowrap flex items-center gap-2 ${abaOS === 'abandonadas' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}><Icon name="alert-triangle" className="w-4 h-4" /> Abandonadas</button>
                     </div>
                 )}
 { (
@@ -52,7 +52,7 @@ export default function BaixaTab() {
                                         {isAdmin && <th className="px-6 py-4 w-32">Criado Por</th>}
                                         <th className="px-6 py-4 w-32">Data</th>
                                         <th className="px-6 py-4">Cliente</th>
-                                        <th className="px-6 py-4">Serviço (Resumo)</th>
+                                        <th className="px-6 py-4">Serviço (Rçõesumo)</th>
                                         <th className="px-6 py-4 w-48">Status</th>
                                         <th className="px-6 py-4 w-36 text-right">Valor Final</th>
                                         <th className="px-6 py-4 w-24 text-center">Imprimir</th>
@@ -74,8 +74,8 @@ export default function BaixaTab() {
                                                 <td className={`px-6 py-4 font-semibold text-[13px] ${isClienteProblema(p.cliente) ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-[#EDEDED]'}`}>
                                                     <div className="flex items-center gap-1.5">{p.cliente} {isClienteProblema(p.cliente) && <Icon name="alert-triangle" className="w-4 h-4 text-red-500 shrink-0" title="Cliente Problema" />}</div>
                                                 </td>
-                                                <td className="px-6 py-4 text-[13px] text-gray-600 dark:text-[#A1A1AA] truncate max-w-xs">{obterResumoServicos(p.servico)}</td>
-                                                <td className="px-6 py-4"><span className={`whitespace-nowrap px-2.5 py-1 text-[11px] font-semibold rounded border bg-gray-50 border-gray-200 dark:bg-darkElevated dark:border-darkBorder ${obterCorStatus(p.status)}`}>{p.status}</span></td>
+                                                <td className="px-6 py-4 text-[13px] text-gray-600 dark:text-[#A1A1AA] truncate max-w-xs">{obterRçõesumoServicos(p.servico)}</td>
+                                                <td className="px-6 py-4"><span className={`whitçõespace-nowrap px-2.5 py-1 text-[11px] font-semibold rounded border bg-gray-50 border-gray-200 dark:bg-darkElevated dark:border-darkBorder ${obterCorStatus(p.status)}`}>{p.status}</span></td>
                                                 <td className="px-6 py-4 font-semibold text-[13px] text-right text-gray-900 dark:text-[#EDEDED]">R$ {formatarValorFinanceiro(Number(p.valor_total))}</td>
                                                 <td className="px-6 py-4 text-center"><button type="button" onClick={(e) => { e.stopPropagation(); imprimirOS(p); }} className="p-2 text-orange-500 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/30 transition rounded inline-block" title="Imprimir O.S."><Icon name="printer" className="w-5 h-5 inline-block" /></button></td>
                                             </tr>

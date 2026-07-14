@@ -2,22 +2,22 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useAppContext } from '@/context/AppContext';
 import Icon from '@/components/Icon';
-import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS, RESPONSAVEIS, obterCorStatus, formatarValorFinanceiro, formatarMoeda, formatarTelefone, obterDataAtual, formatarDataExibicao, formatarMesAno, CustomDatePicker, InlineDropdown, MultiSelectDropdown, desconstruirTextoServico, obterResumoServicos, ItensChecklist, StackedCards, CalculadoraBanner, CalculadoraAdesivo, CalculadoraCasamento, CalculadorasAba } from '@/lib/utils';
+import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS, RESPONSAVEIS, obterCorStatus, formatarValorFinanceiro, formatarMoeda, formatarTelefone, obterDataAtual, formatarDataExibicao, formatarMçõesAno, CustomDatePicker, InlineDropdown, MultiSelectDropdown, dçõesconstruirTextoServico, obterRçõesumoServicos, ItensChecklist, StackedCards, CalculadoraBanner, CalculadoraAdçõesivo, CalculadoraCasamento, CalculadorasAba } from '@/lib/utils';
 
 
 export default function FinanceiroTab() {
-    const { setAbaFinanceiro, abaFinanceiro, notasFiscais, usuario, filtroNotas, dataFiltroFinInicio, setDataFiltroFinInicio, dataFiltroFinFim, setDataFiltroFinFim, pedidos, setNovaConta, setModalContaAberto, setModalEmpresaFaturamentoAberto, buscaNotaFiscal, setBuscaNotaFiscal, setPaginaNotasFiscais, setFiltroNotas, renderBarHorizontal, produtos, produtosSelecionadosGrafico, setProdutosSelecionadosGrafico, contasPagar, empresasFaturamento, setNovaEmpresaFaturamento, notasFiscaisPaginadas, setNotaFiscalEmEdicao, setModalNotaFiscalAberto, totalPaginasNotasFiscais, paginaNotasFiscais, excluirConta, abrirEdicao, excluirEmpresaFaturamento, concluirNotaFiscal } = useAppContext();
+    const { setAbaFinanceiro, abaFinanceiro, notasFiscais, usuario, filtroNotas, dataFiltroFinInicio, setDataFiltroFinInicio, dataFiltroFinFim, setDataFiltroFinFim, pedidos, setNovaConta, setModalContaAberto, setModalEmprçõesaFaturamentoAberto, buscaNotaFiscal, setBuscaNotaFiscal, setPaginaNotasFiscais, setFiltroNotas, renderBarHorizontal, produtos, produtosSelecionadosGrafico, setProdutosSelecionadosGrafico, contasPagar, emprçõesasFaturamento, setNovaEmprçõesaFaturamento, notasFiscaisPaginadas, setNotaFiscalEmEdicao, setModalNotaFiscalAberto, totalPaginasNotasFiscais, paginaNotasFiscais, excluirConta, abrirEdicao, excluirEmprçõesaFaturamento, concluirNotaFiscal } = useAppContext();
 
     return (
         <>
             { (
                     <div className="bg-[#EDEFF0] dark:bg-darkBg border-b border-gray-200 dark:border-darkBorder px-6 flex gap-6 z-20 overflow-x-auto no-scrollbar-style sticky top-[112px]">
-                        <button onClick={() => setAbaFinanceiro('geral')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitespace-nowrap flex items-center gap-2 ${abaFinanceiro === 'geral' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}><Icon name="pie-chart" className="w-4 h-4" /> Visão Geral</button>
-                        <button onClick={() => setAbaFinanceiro('vendas_produto')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitespace-nowrap flex items-center gap-2 ${abaFinanceiro === 'vendas_produto' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}><Icon name="tag" className="w-4 h-4" /> Vendas por Produto</button>
-                        <button onClick={() => setAbaFinanceiro('contas_pagar')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitespace-nowrap flex items-center gap-2 ${abaFinanceiro === 'contas_pagar' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}><Icon name="file-text" className="w-4 h-4" /> Contas a Pagar</button>
-                        <button onClick={() => setAbaFinanceiro('contas_receber')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitespace-nowrap flex items-center gap-2 ${abaFinanceiro === 'contas_receber' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}><Icon name="dollar-sign" className="w-4 h-4" /> Contas a Receber</button>
-                        <button onClick={() => setAbaFinanceiro('empresas_aprovadas')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitespace-nowrap flex items-center gap-2 ${abaFinanceiro === 'empresas_aprovadas' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}><Icon name="check-circle" className="w-4 h-4" /> Faturamento Aprovado</button>
-                        <button onClick={() => setAbaFinanceiro('notas_fiscais')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitespace-nowrap flex items-center gap-2 ${abaFinanceiro === 'notas_fiscais' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}>
+                        <button onClick={() => setAbaFinanceiro('geral')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitçõespace-nowrap flex items-center gap-2 ${abaFinanceiro === 'geral' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}><Icon name="pie-chart" className="w-4 h-4" /> Visão Geral</button>
+                        <button onClick={() => setAbaFinanceiro('vendas_produto')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitçõespace-nowrap flex items-center gap-2 ${abaFinanceiro === 'vendas_produto' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}><Icon name="tag" className="w-4 h-4" /> Vendas por Produto</button>
+                        <button onClick={() => setAbaFinanceiro('contas_pagar')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitçõespace-nowrap flex items-center gap-2 ${abaFinanceiro === 'contas_pagar' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}><Icon name="file-text" className="w-4 h-4" /> Contas a Pagar</button>
+                        <button onClick={() => setAbaFinanceiro('contas_receber')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitçõespace-nowrap flex items-center gap-2 ${abaFinanceiro === 'contas_receber' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}><Icon name="dollar-sign" className="w-4 h-4" /> Contas a Receber</button>
+                        <button onClick={() => setAbaFinanceiro('emprçõesas_aprovadas')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitçõespace-nowrap flex items-center gap-2 ${abaFinanceiro === 'emprçõesas_aprovadas' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}><Icon name="check-circle" className="w-4 h-4" /> Faturamento Aprovado</button>
+                        <button onClick={() => setAbaFinanceiro('notas_fiscais')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitçõespace-nowrap flex items-center gap-2 ${abaFinanceiro === 'notas_fiscais' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}>
                             <Icon name="file-text" className="w-4 h-4" /> Notas Fiscais
                             {notasFiscais.some(n => !n.concluido) && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 ml-1"></span>}
                         </button>
@@ -31,15 +31,15 @@ export default function FinanceiroTab() {
                                     {abaFinanceiro === 'geral' || abaFinanceiro === 'vendas_produto' ? 'Dashboard Financeiro' :
                                      abaFinanceiro === 'contas_pagar' ? 'Contas a Pagar' :
                                      abaFinanceiro === 'contas_receber' ? 'Contas a Receber' :
-                                     abaFinanceiro === 'empresas_aprovadas' ? 'Faturamento Aprovado' :
-                                     abaFinanceiro === 'notas_fiscais' ? `Notas Fiscais ${filtroNotas === 'pendentes' ? 'Pendentes' : 'Concluídas'}` : ''}
+                                     abaFinanceiro === 'emprçõesas_aprovadas' ? 'Faturamento Aprovado' :
+                                     abaFinanceiro === 'notas_fiscais' ? `Notas Fiscais ${filtroNotas === 'pendentções' ? 'Pendentções' : 'Concluídas'}` : ''}
                                 </h1>
                                 <p className="text-[13px] text-gray-500 dark:text-[#888888] mt-1">
                                     {abaFinanceiro === 'geral' || abaFinanceiro === 'vendas_produto' ? 'Análise de Receitas, Centros de Custo e Performance.' :
-                                     abaFinanceiro === 'contas_pagar' ? 'Gerencie as despesas da empresa.' :
+                                     abaFinanceiro === 'contas_pagar' ? 'Gerencie as dçõespçõesas da emprçõesa.' :
                                      abaFinanceiro === 'contas_receber' ? 'Pedidos com pagamento via Boleto.' :
-                                     abaFinanceiro === 'empresas_aprovadas' ? 'Gerencie as empresas com faturamento aprovado.' :
-                                     abaFinanceiro === 'notas_fiscais' ? (filtroNotas === 'pendentes' ? 'Notas enviadas pelos clientes aguardando processamento.' : 'Histórico de notas já emitidas e processadas.') : ''}
+                                     abaFinanceiro === 'emprçõesas_aprovadas' ? 'Gerencie as emprçõesas com faturamento aprovado.' :
+                                     abaFinanceiro === 'notas_fiscais' ? (filtroNotas === 'pendentções' ? 'Notas enviadas pelos clientções aguardando procçõessamento.' : 'Histórico de notas já emitidas e procçõessadas.') : ''}
                                 </p>
                             </div>
                             
@@ -64,8 +64,8 @@ export default function FinanceiroTab() {
                                                     if (dataFiltroFinFim && (!p.data_pedido || p.data_pedido > dataFiltroFinFim)) match = false;
                                                     return match;
                                                 });
-                                                const cabecalho = "ID;Data;Cliente;Responsavel;Local;Status;Valor\n";
-                                                const linhas = pedidosExport.map(p => `${p.id};${p.data_pedido};${p.cliente};${p.responsavel};${p.local_producao};${p.status};${p.valor_total}`).join("\n");
+                                                const cabecalho = "ID;Data;Cliente;Rçõesponsavel;Local;Status;Valor\n";
+                                                const linhas = pedidosExport.map(p => `${p.id};${p.data_pedido};${p.cliente};${p.rçõesponsavel};${p.local_producao};${p.status};${p.valor_total}`).join("\n");
                                                 const blob = new Blob([cabecalho + linhas], { type: 'text/csv;charset=utf-8;' });
                                                 const url = URL.createObjectURL(blob);
                                                 const link = document.createElement("a");
@@ -83,14 +83,14 @@ export default function FinanceiroTab() {
                                 )}
                                 
                                 {abaFinanceiro === 'contas_pagar' && (
-                                    <button onClick={() => { setNovaConta({ id: null, descricao: '', valor: '', vencimento: '', status: 'Pendente', recorrente: false }); setModalContaAberto(true); }} className="bg-brand hover:bg-brandHover text-white h-[38px] px-4 text-[13px] rounded-md font-semibold shadow-sm transition flex items-center gap-2">
+                                    <button onClick={() => { setNovaConta({ id: null, dçõescricao: '', valor: '', vencimento: '', status: 'Pendente', recorrente: false }); setModalContaAberto(true); }} className="bg-brand hover:bg-brandHover text-white h-[38px] px-4 text-[13px] rounded-md font-semibold shadow-sm transition flex items-center gap-2">
                                         <Icon name="plus" className="w-4 h-4" /> Nova Conta
                                     </button>
                                 )}
                                 
-                                {abaFinanceiro === 'empresas_aprovadas' && (
-                                    <button onClick={() => setModalEmpresaFaturamentoAberto(true)} className="bg-brand hover:bg-brandHover text-white h-[38px] px-4 text-[13px] rounded-md font-semibold shadow-sm transition flex items-center gap-2">
-                                        <Icon name="plus" className="w-4 h-4" /> Adicionar Empresa
+                                {abaFinanceiro === 'emprçõesas_aprovadas' && (
+                                    <button onClick={() => setModalEmprçõesaFaturamentoAberto(true)} className="bg-brand hover:bg-brandHover text-white h-[38px] px-4 text-[13px] rounded-md font-semibold shadow-sm transition flex items-center gap-2">
+                                        <Icon name="plus" className="w-4 h-4" /> Adicionar Emprçõesa
                                     </button>
                                 )}
                                 
@@ -107,7 +107,7 @@ export default function FinanceiroTab() {
                                             />
                                         </div>
                                         <div className="flex bg-gray-100/50 dark:bg-darkHover/50 p-1 rounded-lg border border-gray-200 dark:border-darkBorder w-full lg:w-auto mt-3 lg:mt-0">
-                                            <button onClick={() => { setFiltroNotas('pendentes'); setPaginaNotasFiscais(1); }} className={`px-4 py-1.5 text-[12px] font-semibold rounded-md transition flex items-center gap-2 ${filtroNotas === 'pendentes' ? 'bg-white dark:bg-darkCard text-brand shadow-sm border border-gray-200 dark:border-darkBorder' : 'text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white'}`}>Pendentes {notasFiscais.some(n => !n.concluido) && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 ml-1"></span>}</button>
+                                            <button onClick={() => { setFiltroNotas('pendentções'); setPaginaNotasFiscais(1); }} className={`px-4 py-1.5 text-[12px] font-semibold rounded-md transition flex items-center gap-2 ${filtroNotas === 'pendentções' ? 'bg-white dark:bg-darkCard text-brand shadow-sm border border-gray-200 dark:border-darkBorder' : 'text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white'}`}>Pendentções {notasFiscais.some(n => !n.concluido) && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 ml-1"></span>}</button>
                                             <button onClick={() => { setFiltroNotas('concluidas'); setPaginaNotasFiscais(1); }} className={`px-4 py-1.5 text-[12px] font-semibold rounded-md transition flex items-center gap-2 ${filtroNotas === 'concluidas' ? 'bg-white dark:bg-darkCard text-brand shadow-sm border border-gray-200 dark:border-darkBorder' : 'text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white'}`}>Concluídas</button>
                                         </div>
                                         <div className="flex rounded-md shadow-sm">
@@ -162,7 +162,7 @@ export default function FinanceiroTab() {
                             
                             const totalAnoAtual = pedidos.filter(p => p.data_pedido && p.data_pedido.startsWith(anoAtualStr)).reduce((a, b) => a + (Number(b.valor_total)||0), 0);
                             const totalAnoAnterior = pedidos.filter(p => p.data_pedido && p.data_pedido.startsWith(anoAnteriorStr)).reduce((a, b) => a + (Number(b.valor_total)||0), 0);
-                            const crescimentoPercentual = totalAnoAnterior > 0 ? ((totalAnoAtual - totalAnoAnterior) / totalAnoAnterior) * 100 : (totalAnoAtual > 0 ? 100 : 0);
+                            const crçõescimentoPercentual = totalAnoAnterior > 0 ? ((totalAnoAtual - totalAnoAnterior) / totalAnoAnterior) * 100 : (totalAnoAtual > 0 ? 100 : 0);
 
                             const agrupadoPorDia = pedidosFin.reduce((acc, p) => {
                                 if (!p.data_pedido) return acc;
@@ -171,32 +171,32 @@ export default function FinanceiroTab() {
                                 acc[dia].bruto += (Number(p.valor_total) || 0);
                                 return acc;
                             }, {});
-                            const diasOrdenados = Object.values(agrupadoPorDia).sort((a, b) => b.dia.localeCompare(a.dia)).slice(0, 15);
+                            const diasOrdenados = Object.valuções(agrupadoPorDia).sort((a, b) => b.dia.localeCompare(a.dia)).slice(0, 15);
                             const maxBrutoDia = Math.max(...diasOrdenados.map(d => d.bruto), 1);
 
-                            const agrupadoPorMesAno = pedidosFin.reduce((acc, p) => {
+                            const agrupadoPorMçõesAno = pedidosFin.reduce((acc, p) => {
                                 if (!p.data_pedido) return acc;
-                                const mesAno = p.data_pedido.substring(0, 7);
-                                if (!acc[mesAno]) acc[mesAno] = { mesAno, bruto: 0, recebido: 0 };
+                                const mçõesAno = p.data_pedido.substring(0, 7);
+                                if (!acc[mçõesAno]) acc[mçõesAno] = { mçõesAno, bruto: 0, recebido: 0 };
                                 const val = Number(p.valor_total) || 0;
-                                acc[mesAno].bruto += val;
-                                if (p.status === 'Concluído' || p.status === 'Finalizado') acc[mesAno].recebido += val;
+                                acc[mçõesAno].bruto += val;
+                                if (p.status === 'Concluído' || p.status === 'Finalizado') acc[mçõesAno].recebido += val;
                                 return acc;
                             }, {});
-                            const mesesOrdenados = Object.values(agrupadoPorMesAno).sort((a, b) => b.mesAno.localeCompare(a.mesAno)).slice(0, 15);
-                            const maxBrutoMes = Math.max(...mesesOrdenados.map(m => m.bruto), 1);
+                            const mçõesçõesOrdenados = Object.valuções(agrupadoPorMçõesAno).sort((a, b) => b.mçõesAno.localeCompare(a.mçõesAno)).slice(0, 15);
+                            const maxBrutoMções = Math.max(...mçõesçõesOrdenados.map(m => m.bruto), 1);
 
-                            const agrupadoResp = pedidosFin.reduce((acc, p) => {
-                                if(!p.responsavel) return acc;
-                                const resps = p.responsavel.split(',').map(s=>s.trim()).filter(Boolean);
-                                resps.forEach(r => {
+                            const agrupadoRçõesp = pedidosFin.reduce((acc, p) => {
+                                if(!p.rçõesponsavel) return acc;
+                                const rçõesps = p.rçõesponsavel.split(',').map(s=>s.trim()).filter(Boolean);
+                                rçõesps.forEach(r => {
                                     if(!acc[r]) acc[r] = 0;
-                                    acc[r] += (Number(p.valor_total) || 0) / resps.length; 
+                                    acc[r] += (Number(p.valor_total) || 0) / rçõesps.length; 
                                 });
                                 return acc;
                             }, {});
-                            const rankingResp = Object.entries(agrupadoResp).sort((a,b) => b[1] - a[1]);
-                            const maxResp = Math.max(...rankingResp.map(r => r[1]), 1);
+                            const rankingRçõesp = Object.entrições(agrupadoRçõesp).sort((a,b) => b[1] - a[1]);
+                            const maxRçõesp = Math.max(...rankingRçõesp.map(r => r[1]), 1);
 
                             const agrupadoLocal = pedidosFin.reduce((acc, p) => {
                                 if(!p.local_producao) return acc;
@@ -207,7 +207,7 @@ export default function FinanceiroTab() {
                                 });
                                 return acc;
                             }, {});
-                            const rankingLocal = Object.entries(agrupadoLocal).sort((a,b) => b[1] - a[1]);
+                            const rankingLocal = Object.entrições(agrupadoLocal).sort((a,b) => b[1] - a[1]);
                             const maxLocal = Math.max(...rankingLocal.map(l => l[1]), 1);
 
                             const colorsRank = ['bg-blue-500', 'bg-indigo-500', 'bg-purple-500', 'bg-fuchsia-500', 'bg-rose-500', 'bg-red-500'];
@@ -232,7 +232,7 @@ export default function FinanceiroTab() {
                                 acc[p.forma] += p.valor;
                                 return acc;
                             }, {});
-                            const rankingForma = Object.entries(agrupadoForma).sort((a,b) => b[1] - a[1]);
+                            const rankingForma = Object.entrições(agrupadoForma).sort((a,b) => b[1] - a[1]);
                             const maxForma = Math.max(...rankingForma.map(f => f[1]), 1);
 
                             const agrupadoInstituicao = pagamentosExtraidos.reduce((acc, p) => {
@@ -243,21 +243,21 @@ export default function FinanceiroTab() {
                                 }
                                 return acc;
                             }, {});
-                            const rankingInstituicao = Object.entries(agrupadoInstituicao).sort((a,b) => b[1] - a[1]);
+                            const rankingInstituicao = Object.entrições(agrupadoInstituicao).sort((a,b) => b[1] - a[1]);
                             const maxInstituicao = Math.max(...rankingInstituicao.map(i => i[1]), 1);
 
                             // --- CONTEXTUAL DATE NAMES ---
                             const anoAtual = new Date().getFullYear();
                             const objData = new Date();
-                            const nomeMesAtualRaw = objData.toLocaleString('pt-BR', { month: 'long' });
-                            const nomeMesAtual = nomeMesAtualRaw.charAt(0).toUpperCase() + nomeMesAtualRaw.slice(1);
+                            const nomeMçõesAtualRaw = objData.toLocaleString('pt-BR', { month: 'long' });
+                            const nomeMçõesAtual = nomeMçõesAtualRaw.charAt(0).toUpperCase() + nomeMçõesAtualRaw.slice(1);
                             const diaAtual = formatarDataExibicao(obterDataAtual()).substring(0, 5);
 
                             // --- MÊS ATUAL METRICS (for layers 2, 3, 4) ---
-                            const mesAtualString = obterDataAtual().substring(0, 7); // yyyy-mm
-                            const pedidosMesAtual = pedidosFin.filter(p => p.data_pedido && p.data_pedido.startsWith(mesAtualString));
+                            const mçõesAtualString = obterDataAtual().substring(0, 7); // yyyy-mm
+                            const pedidosMçõesAtual = pedidosFin.filter(p => p.data_pedido && p.data_pedido.startsWith(mçõesAtualString));
 
-                            const agrupadoLocalMesAtual = pedidosMesAtual.reduce((acc, p) => {
+                            const agrupadoLocalMçõesAtual = pedidosMçõesAtual.reduce((acc, p) => {
                                 if(!p.local_producao) return acc;
                                 const locais = p.local_producao.split(',').map(s=>s.trim()).filter(Boolean);
                                 locais.forEach(l => {
@@ -266,10 +266,10 @@ export default function FinanceiroTab() {
                                 });
                                 return acc;
                             }, {});
-                            const rankingLocalMesAtual = Object.entries(agrupadoLocalMesAtual).sort((a,b) => b[1] - a[1]);
-                            const maxLocalMesAtual = Math.max(...rankingLocalMesAtual.map(l => l[1]), 1);
+                            const rankingLocalMçõesAtual = Object.entrições(agrupadoLocalMçõesAtual).sort((a,b) => b[1] - a[1]);
+                            const maxLocalMçõesAtual = Math.max(...rankingLocalMçõesAtual.map(l => l[1]), 1);
 
-                            const pagamentosExtraidosMesAtual = pedidosMesAtual.flatMap(p => {
+                            const pagamentosExtraidosMçõesAtual = pedidosMçõesAtual.flatMap(p => {
                                 const pagamentosStr = p.servico && p.servico.split('\n\n[PAGAMENTOS]\n')[1];
                                 if (!pagamentosStr) return [];
                                 try {
@@ -281,15 +281,15 @@ export default function FinanceiroTab() {
                                 } catch (e) { return []; }
                             });
 
-                            const agrupadoFormaMesAtual = pagamentosExtraidosMesAtual.reduce((acc, p) => {
+                            const agrupadoFormaMçõesAtual = pagamentosExtraidosMçõesAtual.reduce((acc, p) => {
                                 if (!acc[p.forma]) acc[p.forma] = 0;
                                 acc[p.forma] += p.valor;
                                 return acc;
                             }, {});
-                            const rankingFormaMesAtual = Object.entries(agrupadoFormaMesAtual).sort((a,b) => b[1] - a[1]);
-                            const maxFormaMesAtual = Math.max(...rankingFormaMesAtual.map(f => f[1]), 1);
+                            const rankingFormaMçõesAtual = Object.entrições(agrupadoFormaMçõesAtual).sort((a,b) => b[1] - a[1]);
+                            const maxFormaMçõesAtual = Math.max(...rankingFormaMçõesAtual.map(f => f[1]), 1);
 
-                            const agrupadoInstituicaoMesAtual = pagamentosExtraidosMesAtual.reduce((acc, p) => {
+                            const agrupadoInstituicaoMçõesAtual = pagamentosExtraidosMçõesAtual.reduce((acc, p) => {
                                 if (p.forma === 'PIX' || p.forma === 'Link de Pagamento' || p.forma === 'Boleto') {
                                     const inst = p.instituicao;
                                     if (!acc[inst]) acc[inst] = 0;
@@ -297,20 +297,20 @@ export default function FinanceiroTab() {
                                 }
                                 return acc;
                             }, {});
-                            const rankingInstituicaoMesAtual = Object.entries(agrupadoInstituicaoMesAtual).sort((a,b) => b[1] - a[1]);
-                            const maxInstituicaoMesAtual = Math.max(...rankingInstituicaoMesAtual.map(i => i[1]), 1);
+                            const rankingInstituicaoMçõesAtual = Object.entrições(agrupadoInstituicaoMçõesAtual).sort((a,b) => b[1] - a[1]);
+                            const maxInstituicaoMçõesAtual = Math.max(...rankingInstituicaoMçõesAtual.map(i => i[1]), 1);
 
                             const renderLayer2 = () => {
-                                if (rankingLocalMesAtual.length === 0) return <p className="text-[11px] text-gray-500 italic">Nenhum local registrado no mês.</p>;
-                                return rankingLocalMesAtual.map((loc, index) => renderBarHorizontal(loc[0], loc[1], maxLocalMesAtual, false, colorsLocal[index % colorsLocal.length]));
+                                if (rankingLocalMçõesAtual.length === 0) return <p className="text-[11px] text-gray-500 italic">Nenhum local registrado no mês.</p>;
+                                return rankingLocalMçõesAtual.map((loc, index) => renderBarHorizontal(loc[0], loc[1], maxLocalMçõesAtual, false, colorsLocal[index % colorsLocal.length]));
                             };
                             const renderLayer3 = () => {
-                                if (rankingFormaMesAtual.length === 0) return <p className="text-[11px] text-gray-500 italic">Nenhum pagamento registrado no mês.</p>;
-                                return rankingFormaMesAtual.map((f, index) => renderBarHorizontal(f[0], f[1], maxFormaMesAtual, false, colorsForma[index % colorsForma.length]));
+                                if (rankingFormaMçõesAtual.length === 0) return <p className="text-[11px] text-gray-500 italic">Nenhum pagamento registrado no mês.</p>;
+                                return rankingFormaMçõesAtual.map((f, index) => renderBarHorizontal(f[0], f[1], maxFormaMçõesAtual, false, colorsForma[index % colorsForma.length]));
                             };
                             const renderLayer4 = () => {
-                                if (rankingInstituicaoMesAtual.length === 0) return <p className="text-[11px] text-gray-500 italic">Nenhuma instituição no mês.</p>;
-                                return rankingInstituicaoMesAtual.map((i, index) => renderBarHorizontal(i[0], i[1], maxInstituicaoMesAtual, false, colorsInst[index % colorsInst.length]));
+                                if (rankingInstituicaoMçõesAtual.length === 0) return <p className="text-[11px] text-gray-500 italic">Nenhuma instituição no mês.</p>;
+                                return rankingInstituicaoMçõesAtual.map((i, index) => renderBarHorizontal(i[0], i[1], maxInstituicaoMçõesAtual, false, colorsInst[index % colorsInst.length]));
                             };
 
                             // --- ANUAL METRICS ---
@@ -321,7 +321,7 @@ export default function FinanceiroTab() {
                                 acc[ano].bruto += (Number(p.valor_total) || 0);
                                 return acc;
                             }, {});
-                            const anosOrdenados = Object.values(agrupadoPorAno).sort((a, b) => b.ano.localeCompare(a.ano)).slice(0, 15);
+                            const anosOrdenados = Object.valuções(agrupadoPorAno).sort((a, b) => b.ano.localeCompare(a.ano)).slice(0, 15);
                             const maxBrutoAno = Math.max(...anosOrdenados.map(a => a.bruto), 1);
 
                             return (
@@ -331,13 +331,13 @@ export default function FinanceiroTab() {
                                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                                         <div className="bg-white dark:bg-darkCard p-5 rounded-xl border border-gray-200 dark:border-darkBorder shadow-sm relative overflow-hidden flex flex-col justify-between">
                                             <div>
-                                                <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider block mb-1">Crescimento (YoY)</span>
+                                                <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider block mb-1">Crçõescimento (YoY)</span>
                                                 <h2 className="text-xl font-black text-gray-900 dark:text-white">R$ {formatarValorFinanceiro(totalAnoAtual)}</h2>
                                             </div>
                                             <div className="mt-2">
-                                                <div className={`inline-flex items-center gap-1 text-[11px] font-semibold px-1.5 py-0.5 rounded ${crescimentoPercentual >= 0 ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-red-50 text-red-600 dark:bg-red-900/30 dark:text-red-400'}`}>
-                                                    <Icon name={crescimentoPercentual >= 0 ? 'trending-up' : 'trending-down'} className="w-3 h-3" />
-                                                    {Math.abs(crescimentoPercentual).toFixed(1)}%
+                                                <div className={`inline-flex items-center gap-1 text-[11px] font-semibold px-1.5 py-0.5 rounded ${crçõescimentoPercentual >= 0 ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-red-50 text-red-600 dark:bg-red-900/30 dark:text-red-400'}`}>
+                                                    <Icon name={crçõescimentoPercentual >= 0 ? 'trending-up' : 'trending-down'} className="w-3 h-3" />
+                                                    {Math.abs(crçõescimentoPercentual).toFixed(1)}%
                                                 </div>
                                             </div>
                                         </div>
@@ -379,7 +379,7 @@ export default function FinanceiroTab() {
                                         <StackedCards 
                                             title="Visão Anual" 
                                             icon="calendar"
-                                            description="Evolução e Análise (Anos)"
+                                            dçõescription="Evolução e Análise (Anos)"
                                             cards={[
                                                 { title: "Faturamento Histórico", content: anosOrdenados.length === 0 ? <p className="text-[11px] text-gray-500 italic">Sem dados.</p> : anosOrdenados.map(a => renderBarHorizontal(a.ano, a.bruto, maxBrutoAno, false, 'bg-blue-500')) },
                                                 { title: `Local de Produção (${anoAtual})`, content: renderLayer2() },
@@ -390,20 +390,20 @@ export default function FinanceiroTab() {
                                         <StackedCards 
                                             title="Visão Mensal" 
                                             icon="layout-dashboard"
-                                            description="Evolução e Análise (Meses)"
+                                            dçõescription="Evolução e Análise (Mçõesções)"
                                             cards={[
-                                                { title: `Faturamento (${anoAtual})`, content: mesesOrdenados.length === 0 ? <p className="text-[11px] text-gray-500 italic">Sem dados.</p> : mesesOrdenados.map(m => renderBarHorizontal(formatarMesAno(m.mesAno), m.bruto, maxBrutoMes, false, 'bg-emerald-500')) },
-                                                { title: `Local de Produção (${nomeMesAtual})`, content: renderLayer2() },
-                                                { title: `Formas de Pagamento (${nomeMesAtual})`, content: renderLayer3() },
-                                                { title: `Vendas por Instituição (${nomeMesAtual})`, content: renderLayer4() }
+                                                { title: `Faturamento (${anoAtual})`, content: mçõesçõesOrdenados.length === 0 ? <p className="text-[11px] text-gray-500 italic">Sem dados.</p> : mçõesçõesOrdenados.map(m => renderBarHorizontal(formatarMçõesAno(m.mçõesAno), m.bruto, maxBrutoMções, false, 'bg-emerald-500')) },
+                                                { title: `Local de Produção (${nomeMçõesAtual})`, content: renderLayer2() },
+                                                { title: `Formas de Pagamento (${nomeMçõesAtual})`, content: renderLayer3() },
+                                                { title: `Vendas por Instituição (${nomeMçõesAtual})`, content: renderLayer4() }
                                             ]}
                                         />
                                         <StackedCards 
                                             title="Visão Diária" 
                                             icon="list"
-                                            description="Evolução e Análise (Dias)"
+                                            dçõescription="Evolução e Análise (Dias)"
                                             cards={[
-                                                { title: `Faturamento (${nomeMesAtual})`, content: diasOrdenados.length === 0 ? <p className="text-[11px] text-gray-500 italic">Sem dados.</p> : diasOrdenados.map(d => renderBarHorizontal(formatarDataExibicao(d.dia).substring(0,5), d.bruto, maxBrutoDia, false, 'bg-purple-500')) },
+                                                { title: `Faturamento (${nomeMçõesAtual})`, content: diasOrdenados.length === 0 ? <p className="text-[11px] text-gray-500 italic">Sem dados.</p> : diasOrdenados.map(d => renderBarHorizontal(formatarDataExibicao(d.dia).substring(0,5), d.bruto, maxBrutoDia, false, 'bg-purple-500')) },
                                                 { title: `Local de Produção (${diaAtual})`, content: renderLayer2() },
                                                 { title: `Formas de Pagamento (${diaAtual})`, content: renderLayer3() },
                                                 { title: `Vendas por Instituição (${diaAtual})`, content: renderLayer4() }
@@ -427,7 +427,7 @@ export default function FinanceiroTab() {
                                         <div className="bg-white dark:bg-darkCard p-6 rounded-xl border border-gray-200 dark:border-darkBorder flex flex-col gap-4">
                                             <div>
                                                 <h3 className="font-semibold text-[13px] text-gray-800 dark:text-white uppercase tracking-wider">Formas de Pagamento (Geral)</h3>
-                                                <p className="text-[11px] text-gray-400 mt-0.5">Como os clientes pagaram no período filtrado.</p>
+                                                <p className="text-[11px] text-gray-400 mt-0.5">Como os clientções pagaram no período filtrado.</p>
                                             </div>
                                             <div className="flex flex-col gap-3 mt-2 overflow-y-auto max-h-64 custom-scrollbar pr-2">
                                                 {rankingForma.length === 0 ? <p className="text-[11px] text-gray-500 italic">Nenhum pagamento registrado.</p> :
@@ -438,7 +438,7 @@ export default function FinanceiroTab() {
 
                                         <div className="bg-white dark:bg-darkCard p-6 rounded-xl border border-gray-200 dark:border-darkBorder flex flex-col gap-4">
                                             <div>
-                                                <h3 className="font-semibold text-[13px] text-gray-800 dark:text-white uppercase tracking-wider">Instituições (Geral)</h3>
+                                                <h3 className="font-semibold text-[13px] text-gray-800 dark:text-white uppercase tracking-wider">Instituiçõções (Geral)</h3>
                                                 <p className="text-[11px] text-gray-400 mt-0.5">Volume por conta no período filtrado.</p>
                                             </div>
                                             <div className="flex flex-col gap-3 mt-2 overflow-y-auto max-h-64 custom-scrollbar pr-2">
@@ -456,13 +456,13 @@ export default function FinanceiroTab() {
                                         <div className="bg-white dark:bg-darkCard p-6 rounded-xl border border-gray-200 dark:border-darkBorder flex flex-col gap-4 fade-in">
                                             <div>
                                                 <h3 className="font-semibold text-[13px] text-gray-800 dark:text-white uppercase tracking-wider">Vendas por Produto (Catálogo)</h3>
-                                                <p className="text-[11px] text-gray-400 mt-0.5">Visão expandida de vendas baseadas nos produtos do sistema referentes ao período filtrado.</p>
+                                                <p className="text-[11px] text-gray-400 mt-0.5">Visão expandida de vendas baseadas nos produtos do sistema referentções ao período filtrado.</p>
                                             </div>
                                             <div className="flex flex-col gap-3 mt-4">
                                                 {(() => {
                                                     const agrupadoPorProduto = pedidosFin.reduce((acc, p) => {
                                                         if (!p.servico) return acc;
-                                                        const { itens } = desconstruirTextoServico(p.servico);
+                                                        const { itens } = dçõesconstruirTextoServico(p.servico);
                                                         
                                                         itens.forEach(item => {
                                                             const id_produto_match = item.id_produto;
@@ -480,28 +480,28 @@ export default function FinanceiroTab() {
                                                         return acc;
                                                     }, {});
                                                     
-                                                    const rankingProduto = Object.entries(agrupadoPorProduto).sort((a,b) => b[1] - a[1]);
+                                                    const rankingProduto = Object.entrições(agrupadoPorProduto).sort((a,b) => b[1] - a[1]);
                                                     const maxProduto = Math.max(...rankingProduto.map(r => r[1]), 1);
                                                     
                                                     if (rankingProduto.length === 0) return <p className="text-[11px] text-gray-500 italic">Nenhum produto do catálogo faturado no período.</p>;
                                                     
-                                                    const top5Nomes = rankingProduto.slice(0, 5).map(r => r[0]);
-                                                    const selecionadosAtuais = produtosSelecionadosGrafico || top5Nomes;
+                                                    const top5Nomções = rankingProduto.slice(0, 5).map(r => r[0]);
+                                                    const selecionadosAtuais = produtosSelecionadosGrafico || top5Nomções;
 
-                                                    const mesesGrafico = [];
+                                                    const mçõesçõesGrafico = [];
                                                     const dataAtualGrafico = new Date();
                                                     for (let i = 11; i >= 0; i--) {
                                                         const d = new Date(dataAtualGrafico.getFullYear(), dataAtualGrafico.getMonth() - i, 1);
                                                         const m = String(d.getMonth() + 1).padStart(2, '0');
                                                         const y = d.getFullYear();
-                                                        mesesGrafico.push(`${y}-${m}`);
+                                                        mçõesçõesGrafico.push(`${y}-${m}`);
                                                     }
 
-                                                    const limiteData = mesesGrafico[0] + '-01';
-                                                    const dadosMesProduto = {}; 
+                                                    const limiteData = mçõesçõesGrafico[0] + '-01';
+                                                    const dadosMçõesProduto = {}; 
                                                     selecionadosAtuais.forEach(prod => {
-                                                        dadosMesProduto[prod] = {};
-                                                        mesesGrafico.forEach(m => dadosMesProduto[prod][m] = 0);
+                                                        dadosMçõesProduto[prod] = {};
+                                                        mçõesçõesGrafico.forEach(m => dadosMçõesProduto[prod][m] = 0);
                                                     });
 
                                                     pedidos.forEach(p => {
@@ -509,27 +509,27 @@ export default function FinanceiroTab() {
                                                         if (p.status === 'Cancelado') return;
                                                         if (!p.servico) return;
 
-                                                        const mesAno = p.data_pedido.substring(0, 7);
-                                                        if (!mesesGrafico.includes(mesAno)) return;
+                                                        const mçõesAno = p.data_pedido.substring(0, 7);
+                                                        if (!mçõesçõesGrafico.includções(mçõesAno)) return;
 
-                                                        const { itens } = desconstruirTextoServico(p.servico);
+                                                        const { itens } = dçõesconstruirTextoServico(p.servico);
                                                         itens.forEach(item => {
                                                             const nomeLimpo = item.nome.trim();
                                                             const id_match = item.id_produto;
                                                             const prod = id_match ? produtos.find(pr => String(pr.id) === String(id_match)) : produtos.find(pr => pr.nome.toLowerCase() === nomeLimpo.toLowerCase());
                                                             const finalName = prod ? prod.nome : nomeLimpo;
 
-                                                            if (selecionadosAtuais.includes(finalName)) {
+                                                            if (selecionadosAtuais.includções(finalName)) {
                                                                 const valorNum = parseFloat(item.valor.replace(/\./g, '').replace(',', '.')) || 0;
-                                                                dadosMesProduto[finalName][mesAno] += valorNum;
+                                                                dadosMçõesProduto[finalName][mçõesAno] += valorNum;
                                                             }
                                                         });
                                                     });
 
                                                     let maxYGrafico = 1;
                                                     selecionadosAtuais.forEach(prod => {
-                                                        mesesGrafico.forEach(m => {
-                                                            if (dadosMesProduto[prod][m] > maxYGrafico) maxYGrafico = dadosMesProduto[prod][m];
+                                                        mçõesçõesGrafico.forEach(m => {
+                                                            if (dadosMçõesProduto[prod][m] > maxYGrafico) maxYGrafico = dadosMçõesProduto[prod][m];
                                                         });
                                                     });
                                                     maxYGrafico = maxYGrafico * 1.1;
@@ -538,7 +538,7 @@ export default function FinanceiroTab() {
                                                     const svgHeight = 250;
                                                     const padX = 70;
                                                     const padY = 20;
-                                                    const stepX = (svgWidth - padX * 2) / (mesesGrafico.length - 1 || 1);
+                                                    const stepX = (svgWidth - padX * 2) / (mçõesçõesGrafico.length - 1 || 1);
                                                     const hexColors = ["#2D3349", "#76AB3C", "#3b82f6", "#F37020", "#8b5cf6", "#ec4899", "#f59e0b", "#06b6d4", "#f43f5e", "#84cc16"];
                                                     
                                                     const renderSVG = () => (
@@ -565,34 +565,34 @@ export default function FinanceiroTab() {
                                                                                 </g>
                                                                             )
                                                                         })}
-                                                                        {mesesGrafico.map((m, i) => {
+                                                                        {mçõesçõesGrafico.map((m, i) => {
                                                                             const x = padX + i * stepX;
-                                                                            const [ano, mes] = m.split('-');
+                                                                            const [ano, mções] = m.split('-');
                                                                             return (
                                                                                 <g key={m}>
-                                                                                    {i > 0 && i < mesesGrafico.length - 1 && (
+                                                                                    {i > 0 && i < mçõesçõesGrafico.length - 1 && (
                                                                                         <line x1={x} y1={padY} x2={x} y2={svgHeight - padY} stroke="currentColor" className="text-gray-200/50 dark:text-gray-800/50" strokeDasharray="2 4" />
                                                                                     )}
                                                                                     <text x={x} y={svgHeight} textAnchor="middle" fontSize="11" fill="currentColor" className="text-gray-400 dark:text-gray-500 font-semibold">
-                                                                                        {mes}/{ano.substring(2)}
+                                                                                        {mções}/{ano.substring(2)}
                                                                                     </text>
                                                                                 </g>
                                                                             );
                                                                         })}
                                                                         {selecionadosAtuais.map((prod, i) => {
                                                                             const color = hexColors[i % hexColors.length];
-                                                                            const points = mesesGrafico.map((m, mi) => {
+                                                                            const points = mçõesçõesGrafico.map((m, mi) => {
                                                                                 const x = padX + mi * stepX;
-                                                                                const val = dadosMesProduto[prod][m] || 0;
+                                                                                const val = dadosMçõesProduto[prod][m] || 0;
                                                                                 const y = svgHeight - padY - (val / maxYGrafico) * (svgHeight - padY * 2);
                                                                                 return `${x},${y}`;
                                                                             }).join(" ");
                                                                             return (
                                                                                 <g key={prod}>
                                                                                     <polyline points={points} fill="none" stroke={color} strokeWidth="2.5" strokeLinejoin="round" className="drop-shadow-sm transition-all duration-500 ease-out" />
-                                                                                    {mesesGrafico.map((m, mi) => {
+                                                                                    {mçõesçõesGrafico.map((m, mi) => {
                                                                                         const x = padX + mi * stepX;
-                                                                                        const val = dadosMesProduto[prod][m] || 0;
+                                                                                        const val = dadosMçõesProduto[prod][m] || 0;
                                                                                         const y = svgHeight - padY - (val / maxYGrafico) * (svgHeight - padY * 2);
                                                                                         return <circle key={m} cx={x} cy={y} r="3.5" fill="white" stroke={color} strokeWidth="2" className="transition-all duration-500 ease-out" />;
                                                                                     })}
@@ -609,7 +609,7 @@ export default function FinanceiroTab() {
 
                                                     const toggleProduto = (nome) => {
                                                         let list = [...selecionadosAtuais];
-                                                        if (list.includes(nome)) {
+                                                        if (list.includções(nome)) {
                                                             list = list.filter(n => n !== nome);
                                                         } else {
                                                             list.push(nome);
@@ -622,7 +622,7 @@ export default function FinanceiroTab() {
                                                             {renderSVG()}
                                                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-3">
                                                                 {rankingProduto.map((r, index) => {
-                                                                    const isSelected = selecionadosAtuais.includes(r[0]);
+                                                                    const isSelected = selecionadosAtuais.includções(r[0]);
                                                                     const selectedIndex = selecionadosAtuais.indexOf(r[0]);
                                                                     const colorIndicator = isSelected ? hexColors[selectedIndex % hexColors.length] : 'transparent';
                                                                     
@@ -635,7 +635,7 @@ export default function FinanceiroTab() {
                                                                                     </div>
                                                                                     <div className="text-[11px] font-semibold text-gray-700 dark:text-gray-200 truncate" title={r[0]}>{r[0]}</div>
                                                                                 </div>
-                                                                                <div className="text-right text-[11px] font-black text-gray-900 dark:text-white whitespace-nowrap">R$ {formatarValorFinanceiro(r[1])}</div>
+                                                                                <div className="text-right text-[11px] font-black text-gray-900 dark:text-white whitçõespace-nowrap">R$ {formatarValorFinanceiro(r[1])}</div>
                                                                             </div>
                                                                             <div className="w-full bg-gray-200 dark:bg-darkBg rounded-full h-1.5 overflow-hidden relative">
                                                                                 <div className={`h-full transition-all duration-1000 ease-out opacity-90`} style={{ width: `${(r[1] / maxProduto) * 100}%`, backgroundColor: isSelected ? colorIndicator : '#9ca3af' }}></div>
@@ -660,10 +660,10 @@ export default function FinanceiroTab() {
                                                         <thead className="bg-gray-50/50 dark:bg-darkHover/50 border-t-2 border-brand">
                                                             <tr className="border-b border-gray-200 dark:border-darkBorder text-[13px] font-semibold text-gray-500 dark:text-gray-400 tracking-wide uppercase">
                                                                 <th className="px-6 py-4">Vencimento</th>
-                                                                <th className="px-6 py-4">Descrição</th>
+                                                                <th className="px-6 py-4">Dçõescrição</th>
                                                                 <th className="px-6 py-4">Valor</th>
                                                                 <th className="px-6 py-4">Status</th>
-                                                                <th className="px-6 py-4 text-right">Ações</th>
+                                                                <th className="px-6 py-4 text-right">Açõções</th>
                                                             </tr>
                                                         </thead>
                                                         <tbody className="divide-y divide-gray-100 dark:divide-darkBorder">
@@ -674,12 +674,12 @@ export default function FinanceiroTab() {
                                                                     <tr key={conta.id} className="hover:bg-gray-50 dark:hover:bg-darkHover/50 transition-colors group">
                                                                         <td className="px-6 py-4 text-[13px] text-gray-600 dark:text-[#A1A1AA]">{formatarDataExibicao(conta.vencimento)}</td>
                                                                         <td className="px-6 py-4 text-[13px] font-medium text-gray-900 dark:text-gray-300">
-                                                                            {conta.descricao}
+                                                                            {conta.dçõescricao}
                                                                             {conta.recorrente && <span className="ml-2 px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">Recorrente</span>}
                                                                         </td>
                                                                         <td className="px-6 py-4 text-[13px] font-medium text-emerald-600 dark:text-emerald-400">R$ {formatarValorFinanceiro(conta.valor)}</td>
                                                                         <td className="px-6 py-4 text-[13px]">
-                                                                            <span className={`whitespace-nowrap px-2.5 py-1 text-[11px] font-semibold rounded border ${conta.status === 'Pago' ? 'bg-emerald-50 border-emerald-200 text-emerald-600 dark:bg-emerald-900/20 dark:border-emerald-800/50 dark:text-emerald-400' : 'bg-red-50 border-red-200 text-red-600 dark:bg-red-900/20 dark:border-red-800/50 dark:text-red-400'}`}>
+                                                                            <span className={`whitçõespace-nowrap px-2.5 py-1 text-[11px] font-semibold rounded border ${conta.status === 'Pago' ? 'bg-emerald-50 border-emerald-200 text-emerald-600 dark:bg-emerald-900/20 dark:border-emerald-800/50 dark:text-emerald-400' : 'bg-red-50 border-red-200 text-red-600 dark:bg-red-900/20 dark:border-red-800/50 dark:text-red-400'}`}>
                                                                                 {conta.status}
                                                                             </span>
                                                                         </td>
@@ -741,7 +741,7 @@ export default function FinanceiroTab() {
                                                                             </td>
                                                                             <td className="px-6 py-4 text-[13px] text-center text-gray-500">{formatarDataExibicao(p.data_pedido)}</td>
                                                                             <td className="px-6 py-4 text-center">
-                                                                                <span className={`whitespace-nowrap px-2.5 py-1 text-[11px] font-semibold rounded border ${statusColors[p.status] || 'bg-gray-50 border-gray-200 text-gray-600 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300'}`}>
+                                                                                <span className={`whitçõespace-nowrap px-2.5 py-1 text-[11px] font-semibold rounded border ${obterCorStatus(p.status)}`}>
                                                                                     {p.status}
                                                                                 </span>
                                                                             </td>
@@ -751,7 +751,7 @@ export default function FinanceiroTab() {
                                                                                     <span className="text-[11px] font-bold text-gray-500 dark:text-gray-400">{totalPago >= totalGeral ? 'Pago' : `${Math.floor(pagoPercent)}%`}</span>
                                                                                 </div>
                                                                             </td>
-                                                                            <td className="px-6 py-4 text-[13px] font-bold text-gray-900 dark:text-white text-right whitespace-nowrap">R$ {p.valor_total}</td>
+                                                                            <td className="px-6 py-4 text-[13px] font-bold text-gray-900 dark:text-white text-right whitçõespace-nowrap">R$ {p.valor_total}</td>
                                                                         </tr>
                                                                     );
                                                                 });
@@ -763,7 +763,7 @@ export default function FinanceiroTab() {
                                         </div>
                                     )}
 
-                                    {abaFinanceiro === 'empresas_aprovadas' && (
+                                    {abaFinanceiro === 'emprçõesas_aprovadas' && (
                                         <div className="fade-in">
 
 
@@ -772,30 +772,30 @@ export default function FinanceiroTab() {
                                                     <table className="w-full text-left border-collapse">
                                                         <thead className="bg-gray-50/50 dark:bg-darkHover/50 border-t-2 border-brand">
                                                             <tr className="border-b border-gray-200 dark:border-darkBorder text-[13px] font-semibold text-gray-500 dark:text-gray-400 tracking-wide uppercase">
-                                                                <th className="px-6 py-4">Empresa</th>
+                                                                <th className="px-6 py-4">Emprçõesa</th>
                                                                 <th className="px-6 py-4">CNPJ/CPF</th>
                                                                 <th className="px-6 py-4 text-center">Status</th>
-                                                                <th className="px-6 py-4 text-right">Ações</th>
+                                                                <th className="px-6 py-4 text-right">Açõções</th>
                                                             </tr>
                                                         </thead>
                                                         <tbody className="divide-y divide-gray-100 dark:divide-darkBorder">
-                                                            {empresasFaturamento.length === 0 ? (
-                                                                <tr><td colSpan="4" className="px-4 py-12 text-center text-[13px] text-gray-400">Nenhuma empresa cadastrada.</td></tr>
+                                                            {emprçõesasFaturamento.length === 0 ? (
+                                                                <tr><td colSpan="4" className="px-4 py-12 text-center text-[13px] text-gray-400">Nenhuma emprçõesa cadastrada.</td></tr>
                                                             ) : (
-                                                                empresasFaturamento.map(emp => (
+                                                                emprçõesasFaturamento.map(emp => (
                                                                     <tr key={emp.id} className="hover:bg-gray-50 dark:hover:bg-darkHover/50 transition-colors group">
                                                                         <td className="px-6 py-4 text-[13px] font-semibold text-gray-900 dark:text-white">{emp.nome}</td>
                                                                         <td className="px-6 py-4 text-[13px] text-gray-600 dark:text-gray-400">{emp.cnpj}</td>
                                                                         <td className="px-6 py-4 text-center">
-                                                                            <span className={`whitespace-nowrap px-2.5 py-1 text-[11px] font-semibold rounded border ${emp.status === 'Aprovado' ? 'bg-emerald-50 border-emerald-200 text-emerald-600 dark:bg-emerald-900/20 dark:border-emerald-800/50 dark:text-emerald-400' : 'bg-red-50 border-red-200 text-red-600 dark:bg-red-900/20 dark:border-red-800/50 dark:text-red-400'}`}>
+                                                                            <span className={`whitçõespace-nowrap px-2.5 py-1 text-[11px] font-semibold rounded border ${emp.status === 'Aprovado' ? 'bg-emerald-50 border-emerald-200 text-emerald-600 dark:bg-emerald-900/20 dark:border-emerald-800/50 dark:text-emerald-400' : 'bg-red-50 border-red-200 text-red-600 dark:bg-red-900/20 dark:border-red-800/50 dark:text-red-400'}`}>
                                                                                 {emp.status}
                                                                             </span>
                                                                         </td>
                                                                         <td className="px-6 py-4 text-[13px] text-right flex justify-end gap-2">
-                                                                            <button onClick={() => { setNovaEmpresaFaturamento(emp); setModalEmpresaFaturamentoAberto(true); }} className="p-1.5 text-gray-400 hover:text-brand hover:bg-gray-100 dark:hover:bg-darkHover rounded transition opacity-0 group-hover:opacity-100" title="Editar">
+                                                                            <button onClick={() => { setNovaEmprçõesaFaturamento(emp); setModalEmprçõesaFaturamentoAberto(true); }} className="p-1.5 text-gray-400 hover:text-brand hover:bg-gray-100 dark:hover:bg-darkHover rounded transition opacity-0 group-hover:opacity-100" title="Editar">
                                                                                 <Icon name="edit-2" className="w-4 h-4" />
                                                                             </button>
-                                                                            <button onClick={() => excluirEmpresaFaturamento(emp.id)} className="p-1.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded transition opacity-0 group-hover:opacity-100" title="Excluir">
+                                                                            <button onClick={() => excluirEmprçõesaFaturamento(emp.id)} className="p-1.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded transition opacity-0 group-hover:opacity-100" title="Excluir">
                                                                                 <Icon name="trash-2" className="w-4 h-4" />
                                                                             </button>
                                                                         </td>
@@ -820,18 +820,18 @@ export default function FinanceiroTab() {
                                             <th className="px-6 py-4 w-36">CPF / CNPJ</th>
                                             <th className="px-6 py-4 w-32">Tipo Nota</th>
                                             <th className="px-6 py-4 min-w-[300px]">Serviço / Valor</th>
-                                            <th className="px-6 py-4 w-24 text-right">Ações</th>
+                                            <th className="px-6 py-4 w-24 text-right">Açõções</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {notasFiscaisPaginadas.map(n => (
                                             <tr key={n.id} className="border-b border-gray-100 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover transition">
-                                                <td className="px-4 py-3 text-[13px] dark:text-[#EDEDED] whitespace-nowrap">{new Date(n.created_at).toLocaleDateString('pt-BR')}</td>
+                                                <td className="px-4 py-3 text-[13px] dark:text-[#EDEDED] whitçõespace-nowrap">{new Date(n.created_at).toLocaleDateString('pt-BR')}</td>
                                                 <td className="px-4 py-3">
                                                     <div className="text-[13px] font-semibold dark:text-[#EDEDED]">{n.cliente || 'Sem Identificação'}</div>
                                                     <div className="text-[11px] text-gray-500 dark:text-[#A1A1AA]">{n.razao_social}</div>
                                                 </td>
-                                                <td className="px-4 py-3 text-[13px] dark:text-[#EDEDED] whitespace-nowrap">{n.cnpj}</td>
+                                                <td className="px-4 py-3 text-[13px] dark:text-[#EDEDED] whitçõespace-nowrap">{n.cnpj}</td>
                                                 <td className="px-4 py-3 text-[13px] font-medium text-gray-600 dark:text-gray-400">
                                                     <span className={`px-2 py-1 rounded text-[11px] font-bold ${n.tipo_nota === 'DANFE' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' : (n.tipo_nota === 'Serviço' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400')}`}>
                                                         {n.tipo_nota || 'N/A'}
@@ -850,7 +850,7 @@ export default function FinanceiroTab() {
                                                                     valor_pago: n.valor_pago ? formatarMoeda((n.valor_pago * 100).toFixed(0).toString()) : ''
                                                                 }); 
                                                                 setModalNotaFiscalAberto(true); 
-                                                            }} className="p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded transition" title="Editar / Ver Detalhes">
+                                                            }} className="p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded transition" title="Editar / Ver Detalhções">
                                                                 <Icon name="edit-3" className="w-4 h-4" />
                                                             </button>
                                                         )}

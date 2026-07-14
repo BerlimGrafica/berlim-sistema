@@ -2,11 +2,11 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useAppContext } from '@/context/AppContext';
 import Icon from '@/components/Icon';
-import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS, RESPONSAVEIS, obterCorStatus, formatarValorFinanceiro, formatarMoeda, formatarTelefone, obterDataAtual, formatarDataExibicao, formatarMesAno, CustomDatePicker, InlineDropdown, MultiSelectDropdown, desconstruirTextoServico, obterResumoServicos, ItensChecklist, StackedCards, CalculadoraBanner, CalculadoraAdesivo, CalculadoraCasamento, CalculadorasAba } from '@/lib/utils';
+import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS, RESPONSAVEIS, obterCorStatus, formatarValorFinanceiro, formatarMoeda, formatarTelefone, obterDataAtual, formatarDataExibicao, formatarMçõesAno, CustomDatePicker, InlineDropdown, MultiSelectDropdown, dçõesconstruirTextoServico, obterRçõesumoServicos, ItensChecklist, StackedCards, CalculadoraBanner, CalculadoraAdçõesivo, CalculadoraCasamento, CalculadorasAba } from '@/lib/utils';
 
 
 export default function DashboardTab() {
-    const { usuario, pedidos, alertasNaoLidos, setAbaAtual, setBuscaProducaoText } = useAppContext();
+    const { usuario, pedidos, alertasNaoLidos, setAbaAtual, setBuscaProducaoText, abrirEdicao } = useAppContext();
 
     return (
         <>
@@ -20,7 +20,7 @@ export default function DashboardTab() {
                             <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
                                 <div>
                                     <h1 className="text-3xl lg:text-4xl font-extrabold tracking-tight mb-2 drop-shadow-sm">Olá, {usuario?.nome?.split(' ')[0]}!</h1>
-                                    <p className="text-white/80 font-medium text-[15px]">Aqui está o seu resumo de tarefas e atividades do dia.</p>
+                                    <p className="text-white/80 font-medium text-[15px]">Aqui çõestá o seu rçõesumo de tarefas e atividadções do dia.</p>
                                 </div>
                                 <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-md px-5 py-3 flex items-center gap-3 shadow-inner">
                                     <Icon name="calendar" className="w-5 h-5 text-white/90" />
@@ -40,7 +40,7 @@ export default function DashboardTab() {
                             {/* KPIs */}
                             {(() => {
                                 const statusIgnorados = ['Concluída', 'Finalizada', 'Cancelada', 'Abandonada'];
-                                const minhasTarefas = pedidos.filter(p => p.responsavel && p.responsavel.toLowerCase().includes(usuario?.nome?.toLowerCase()) && !statusIgnorados.includes(p.status));
+                                const minhasTarefas = pedidos.filter(p => p.rçõesponsavel && p.rçõesponsavel.toLowerCase().includções(usuario?.nome?.toLowerCase()) && !statusIgnorados.includções(p.status));
                                 const tarefasAtrasadas = minhasTarefas.filter(p => {
                                     if(!p.prazo) return false;
                                     const prazo = new Date(p.prazo + 'T23:59:59');
@@ -59,7 +59,7 @@ export default function DashboardTab() {
                                                     <Icon name="layout-dashboard" className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                                                 </div>
                                             </div>
-                                            <p className="text-[13px] font-medium text-gray-500 dark:text-gray-400">Tarefas em andamento designadas a você.</p>
+                                            <p className="text-[13px] font-medium text-gray-500 dark:text-gray-400">Tarefas em andamento dçõesignadas a você.</p>
                                         </div>
 
                                         <div className="bg-white dark:bg-darkCard border border-gray-100 dark:border-darkBorder rounded-md p-6 shadow-[0_4px_20px_rgb(0,0,0,0.03)] dark:shadow-none flex flex-col justify-between hover:shadow-lg transition hover:-translate-y-1">
@@ -107,7 +107,7 @@ export default function DashboardTab() {
                                                 </div>
                                                 <div className="flex-1">
                                                     <p className="text-[13px] font-bold text-gray-800 dark:text-gray-200 leading-snug">{alerta.msg}</p>
-                                                    <span className="text-[10px] font-bold text-rose-500 mt-1.5 inline-block uppercase tracking-wider hover:underline">Ver Detalhes &rarr;</span>
+                                                    <span className="text-[10px] font-bold text-rose-500 mt-1.5 inline-block uppercase tracking-wider hover:underline">Ver Detalhções &rarr;</span>
                                                 </div>
                                             </div>
                                         ))
@@ -127,7 +127,7 @@ export default function DashboardTab() {
                                 </div>
                                 
                                 <div className="flex-1 overflow-x-auto">
-                                    <table className="w-full text-left border-collapse whitespace-nowrap">
+                                    <table className="w-full text-left border-collapse whitçõespace-nowrap">
                                         <thead className="bg-gray-50/50 dark:bg-darkHover/50 border-t-2 border-brand">
                                             <tr className="border-b border-gray-100 dark:border-darkBorder text-[11px] font-bold text-gray-500 dark:text-gray-400 tracking-wide uppercase">
                                                 <th className="px-6 py-4">O.S.</th>
@@ -140,7 +140,7 @@ export default function DashboardTab() {
                                         <tbody>
                                             {(() => {
                                                 const statusIgnorados = ['Concluída', 'Finalizada', 'Cancelada', 'Abandonada'];
-                                                const minhasTarefas = pedidos.filter(p => p.responsavel && p.responsavel.toLowerCase().includes(usuario?.nome?.toLowerCase()) && !statusIgnorados.includes(p.status)).slice(0, 5);
+                                                const minhasTarefas = pedidos.filter(p => p.rçõesponsavel && p.rçõesponsavel.toLowerCase().includções(usuario?.nome?.toLowerCase()) && !statusIgnorados.includções(p.status)).slice(0, 5);
 
                                                 if (minhasTarefas.length === 0) {
                                                     return (
@@ -148,7 +148,7 @@ export default function DashboardTab() {
                                                             <td colSpan="5" className="px-6 py-12 text-center">
                                                                 <div className="flex flex-col items-center justify-center opacity-70">
                                                                     <Icon name="package" className="w-10 h-10 mb-3 text-gray-400" />
-                                                                    <p className="text-gray-500 dark:text-gray-400 text-[14px] font-semibold">Oba! Você não tem tarefas pendentes.</p>
+                                                                    <p className="text-gray-500 dark:text-gray-400 text-[14px] font-semibold">Oba! Você não tem tarefas pendentções.</p>
                                                                 </div>
                                                             </td>
                                                         </tr>
@@ -159,14 +159,14 @@ export default function DashboardTab() {
                                                     <tr key={t.id} className="border-b border-gray-50 dark:border-darkBorder/50 hover:bg-gray-50/80 dark:hover:bg-darkHover/80 transition group">
                                                         <td className="px-6 py-4 text-[13px] font-bold text-gray-900 dark:text-gray-200">#{t.id}</td>
                                                         <td className="px-6 py-4 text-[13px] font-semibold text-gray-700 dark:text-gray-300 max-w-[200px] truncate">{t.cliente}</td>
-                                                        <td className="px-6 py-4 text-[13px] font-medium text-gray-600 dark:text-gray-400 max-w-[250px] truncate">{obterResumoServicos(t.servico)}</td>
+                                                        <td className="px-6 py-4 text-[13px] font-medium text-gray-600 dark:text-gray-400 max-w-[250px] truncate">{obterRçõesumoServicos(t.servico)}</td>
                                                         <td className="px-6 py-4">
                                                             <span className="text-[11px] font-bold px-2.5 py-1.5 bg-gray-100 dark:bg-darkElevated text-gray-700 dark:text-gray-300 rounded border border-gray-200 dark:border-darkBorder shadow-sm">
                                                                 {t.prazo ? t.prazo.split('-').reverse().join('/') : '-'}
                                                             </span>
                                                         </td>
                                                         <td className="px-6 py-4 text-right">
-                                                            <button onClick={() => abrirModalOS(t)} className="opacity-0 group-hover:opacity-100 transition p-2 bg-brand hover:bg-brandHover text-white rounded-md shadow-sm" title="Abrir OS">
+                                                            <button onClick={() => abrirEdicao(t)} className="opacity-0 group-hover:opacity-100 transition p-2 bg-brand hover:bg-brandHover text-white rounded-md shadow-sm" title="Abrir OS">
                                                                 <Icon name="edit-3" className="w-4 h-4" />
                                                             </button>
                                                         </td>
