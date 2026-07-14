@@ -1789,7 +1789,7 @@ function App() {
             cliente: novoPedido.cliente,
             telefone: clientes.find(c => c.nome === novoPedido.cliente)?.telefone || '',
             produto: itensPedido.map(i => i.nome).join(', ') || 'Serviços Diversos',
-            descricao: textoFinalServico,
+            descricao: textoFinalServico + (itensPedido.length > 0 ? '\n\n[ITENS_JSON]\n' + JSON.stringify(itensPedido) : ''),
             quantidade: 1,
             valor: valorNumericoFinal,
             observacoes: novoPedido.servico
@@ -1818,14 +1818,25 @@ function App() {
         alert("Função de PDF do Orçamento está em desenvolvimento. O novo layout será aplicado na próxima versão!");
     }
     
+    function extrairItensOrcamento(orc) {
+        if (!orc.descricao) return [];
+        const match = orc.descricao.match(/\[ITENS_JSON\]\n(.*)/);
+        if (match) {
+            try { return JSON.parse(match[1]); } catch(e) {}
+        }
+        return desconstruirTextoServico(orc.descricao).itens;
+    }
+
     function abrirEdicaoOrcamento(orcamento) {
-        const dadosDesconstruidos = desconstruirTextoServico(orcamento.descricao);
+        const itensCarregados = extrairItensOrcamento(orcamento);
+        const obs = orcamento.observacoes || (orcamento.descricao ? desconstruirTextoServico(orcamento.descricao.split('\n\n[ITENS_JSON]')[0]).observacoes : '');
+        
         setOrcamentoFormalizadoEmEdicao(orcamento);
         setBuscaCliente(orcamento.cliente);
-        setItensPedido(dadosDesconstruidos.itens);
+        setItensPedido(itensCarregados);
         setNovoPedido({
             cliente: orcamento.cliente,
-            servico: dadosDesconstruidos.observacoes || '',
+            servico: obs || '',
             valor_total: formatarMoeda((orcamento.valor * 100).toFixed(0).toString()),
             status: 'Orçamento',
             data_pedido: obterDataAtual(),
@@ -1838,9 +1849,10 @@ function App() {
     }
     
     function transformarEmOS(orcamento) {
+        const itensCarregados = extrairItensOrcamento(orcamento);
         setPedidoEmEdicao(null);
         setBuscaCliente(orcamento.cliente);
-        setItensPedido(typeof orcamento.itens === 'string' ? JSON.parse(orcamento.itens) : (orcamento.itens || []));
+        setItensPedido(itensCarregados);
         setNovoPedido({
             cliente: orcamento.cliente,
             servico: '',
@@ -3430,6 +3442,9 @@ function App() {
                                                         <Icon name="arrow-right-circle" className="w-3.5 h-3.5" />
                                                         Transformar em O.S.
                                                     </button>
+                                                    <button onClick={(e) => { e.stopPropagation(); imprimirOrcamento(orc); }} className="p-1.5 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-darkHover rounded transition opacity-0 group-hover:opacity-100" title="Imprimir">
+                                                        <Icon name="printer" className="w-4 h-4" />
+                                                    </button>
                                                     <button onClick={(e) => { e.stopPropagation(); abrirEdicaoOrcamento(orc); }} className="p-1.5 text-gray-400 hover:text-brand hover:bg-gray-100 dark:hover:bg-darkHover rounded transition opacity-0 group-hover:opacity-100" title="Editar">
                                                         <Icon name="edit-2" className="w-4 h-4" />
                                                     </button>
@@ -4228,7 +4243,11 @@ function App() {
                             </div>
 
                             <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center lg:justify-end gap-2 sm:gap-3 w-full lg:w-auto">
-                                <button type="button" onClick={salvarOrcamentoFormalizado} className="w-full sm:w-44 px-2 py-2.5 rounded-lg text-[13px] font-bold bg-brand text-white hover:bg-brandHover shadow-md shadow-brand/20 transition flex items-center justify-center gap-2 whitespace-nowrap">
+                                <button type="button" onClick={(e) => salvarOrcamentoFormalizado(e, true)} className="w-full sm:w-44 px-2 py-2.5 rounded-lg text-[13px] font-bold bg-white dark:bg-darkCard text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover hover:border-gray-300 dark:hover:border-gray-600 shadow-sm transition flex items-center justify-center gap-2 whitespace-nowrap">
+                                    <Icon name="printer" className="w-4 h-4 shrink-0" />
+                                    Salvar e Imprimir
+                                </button>
+                                <button type="button" onClick={(e) => salvarOrcamentoFormalizado(e, false)} className="w-full sm:w-44 px-2 py-2.5 rounded-lg text-[13px] font-bold bg-brand text-white hover:bg-brandHover shadow-md shadow-brand/20 transition flex items-center justify-center gap-2 whitespace-nowrap">
                                     <Icon name="save" className="w-4 h-4 shrink-0" />
                                     {orcamentoFormalizadoEmEdicao ? 'Atualizar Orçamento' : 'Salvar Orçamento'}
                                 </button>
