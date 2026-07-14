@@ -10,6 +10,7 @@ import FinanceiroTab from '@/components/FinanceiroTab';
 import OrcamentosTab from '@/components/OrcamentosTab';
 import CadastrosTab from '@/components/CadastrosTab';
 import Notas_fiscaisTab from '@/components/Notas_fiscaisTab';
+import Modals from '@/components/Modals';
 
 function MainContent() {
     const { abaAtual } = useAppContext();
@@ -27,6 +28,7 @@ function MainContent() {
                 {abaAtual === 'cadastros' && <CadastrosTab />}
                 {abaAtual === 'notas_fiscais' && <Notas_fiscaisTab />}
             </div>
+            <Modals />
         </div>
     );
 }

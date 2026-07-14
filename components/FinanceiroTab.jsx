@@ -111,10 +111,10 @@ export default function FinanceiroTab() {
                                             <button onClick={() => { setFiltroNotas('concluidas'); setPaginaNotasFiscais(1); }} className={`px-4 py-1.5 text-[12px] font-semibold rounded-md transition flex items-center gap-2 ${filtroNotas === 'concluidas' ? 'bg-white dark:bg-darkCard text-brand shadow-sm border border-gray-200 dark:border-darkBorder' : 'text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white'}`}>Concluídas</button>
                                         </div>
                                         <div className="flex rounded-md shadow-sm">
-                                            <a href="/solicitar-nota.html" target="_blank" className="bg-brand hover:bg-brandHover text-white h-[38px] px-4 text-[13px] rounded-l-md font-semibold transition flex items-center gap-2 border border-brand border-r-0">
+                                            <button onClick={() => window.open('/solicitar-nota', '_blank')} className="bg-brand hover:bg-brandHover text-white h-[38px] px-4 text-[13px] rounded-l-md font-semibold transition flex items-center gap-2 border border-brand border-r-0">
                                                 <Icon name="external-link" className="w-4 h-4" /> Formulário
-                                            </a>
-                                            <button onClick={() => window.open('/solicitar-nota.html', '_blank', 'width=800,height=600')} className="bg-brand hover:bg-brandHover text-white h-[38px] px-3 rounded-r-md border-l border-white/20 transition flex items-center justify-center" title="Abrir como Pop-up">
+                                            </button>
+                                            <button onClick={() => window.open('/solicitar-nota', '_blank', 'width=800,height=600')} className="bg-brand hover:bg-brandHover text-white h-[38px] px-3 rounded-r-md border-l border-white/20 transition flex items-center justify-center" title="Abrir como Pop-up">
                                                 <Icon name="maximize-2" className="w-3.5 h-3.5" />
                                             </button>
                                         </div>
