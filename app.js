@@ -2147,7 +2147,7 @@ function App() {
         <div>
             <div className="flex flex-col min-h-screen no-print">
                 {/* TIER 1: Logo and Profile */}
-                <header className="sticky top-0 z-40 bg-white dark:bg-darkBg px-6 py-4 flex justify-between items-center">
+                <header className="sticky top-0 z-40 bg-white dark:bg-darkBg px-6 h-[64px] flex justify-between items-center">
                     <div className="flex items-center">
                         <img src="https://www.berlimgraficarapida.com.br/wp-content/uploads/elementor/thumbs/logosite-rm0erpiqj90gcf7ff4jp8ujys78opflob1b9vn5jjs.png" alt="Berlim Gráfica" className="h-8 object-contain" />
                     </div>
@@ -2245,8 +2245,8 @@ function App() {
                 </header>
 
                 {/* TIER 2: Main Navigation Bar (Brand Color) */}
-                <nav className="bg-brand text-white px-6 shadow-sm z-30 sticky top-[64px]">
-                    <div className="flex gap-1 overflow-x-auto custom-scrollbar no-scrollbar-style items-end pt-2">
+                <nav className="bg-brand text-white px-6 shadow-sm z-30 sticky top-[64px] h-[48px]">
+                    <div className="flex gap-1 overflow-x-auto custom-scrollbar no-scrollbar-style items-end pt-2 h-full">
                         <a onClick={() => setAbaAtual('dashboard')} className={`px-5 py-2.5 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center tracking-wide uppercase ${abaAtual === 'dashboard' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
                             Início
                         </a>
