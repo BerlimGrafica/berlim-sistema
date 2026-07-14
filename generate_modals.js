@@ -16,7 +16,7 @@ if (!availableVars.includes('fecharModalOS')) availableVars.push('fecharModalOS'
 
 let combinedCode = '';
 modals.forEach(m => {
-    combinedCode += m.code + '\n';
+    combinedCode += '{' + m.code + '}\n';
 });
 
 let usedVars = [];
@@ -45,4 +45,4 @@ const utilsImports = "import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS, RESPONSA
 const componentCode = '"use client";\nimport React, { useState, useEffect, useRef, useMemo } from "react";\nimport { useAppContext } from "@/context/AppContext";\nimport Icon from "@/components/Icon";\n' + utilsImports + '\n\nexport default function Modals() {\n    ' + destructure + '\n\n    return (\n        <>\n            ' + combinedCode + '\n        </>\n    );\n}\n';
 
 fs.writeFileSync('components/Modals.jsx', componentCode);
-console.log('Created components/Modals.jsx');
+console.log('Created components/Modals.jsx with curly braces');
