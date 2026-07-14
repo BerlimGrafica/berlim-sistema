@@ -139,7 +139,7 @@ export default function Navbar() {
                         )}
                         
                         {usuario?.nivel !== 'Financeiro' && (
-                            <a onClick={() => setAbaAtual('cadastros')} className={`px-5 py-2.5 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center tracking-wide uppercase ${abaAtual === 'cadastros' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
+                            <a onClick={() => setAbaAtual('cadastros')} className={`px-5 py-3 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center tracking-wide uppercase ${abaAtual === 'cadastros' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
                                 Cadastros
                             </a>
                         )}
