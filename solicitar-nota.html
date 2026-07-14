@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
@@ -103,6 +103,15 @@
             <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-1">Endereço Completo *</label>
                 <textarea id="endereco" required rows="3" class="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 text-sm text-gray-800 focus:outline-none focus:border-brand transition" placeholder="Rua, Número, Bairro, Cidade, Estado, CEP"></textarea>
+            </div>
+
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1">Tipo de Nota *</label>
+                <select id="tipo_nota" required class="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 text-sm text-gray-800 focus:outline-none focus:border-brand transition">
+                    <option value="" disabled selected>Selecione uma opção</option>
+                    <option value="DANFE">DANFE (Produto)</option>
+                    <option value="Serviço">Serviço (NFS-e)</option>
+                </select>
             </div>
 
             <button type="submit" id="btnSubmit" class="w-full bg-brand hover:bg-brandHover text-gray-800 font-bold py-3 px-4 rounded-lg shadow-lg transition mt-4">
@@ -218,7 +227,8 @@
                     razao_social: document.getElementById('razao_social').value,
                     cnpj: document.getElementById('cnpj').value,
                     contato: document.getElementById('contato').value,
-                    endereco: document.getElementById('endereco').value
+                    endereco: document.getElementById('endereco').value,
+                    tipo_nota: document.getElementById('tipo_nota').value
                 };
 
                 try {
