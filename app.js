@@ -3459,7 +3459,7 @@ function App() {
                                     )}
 
                                     {abaFinanceiro === 'contas_pagar' && (
-                                        <div className="bg-white dark:bg-darkCard p-6 rounded-xl border border-gray-200 dark:border-darkBorder flex flex-col gap-4 fade-in">
+                                        <div className="fade-in">
 
                                             <div className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded overflow-hidden">
                                                 <div className="overflow-x-auto min-h-[300px]">
@@ -3617,36 +3617,6 @@ function App() {
                                     )}
                                     {abaFinanceiro === 'notas_fiscais' && (
                                         <div className="fade-in">
-                        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 mb-6 border-b border-gray-100 dark:border-darkBorder pb-6 shrink-0">
-                            <div>
-                                <h1 className="text-3xl font-semibold dark:text-white tracking-tight">Notas Fiscais {filtroNotas === 'pendentes' ? 'Pendentes' : 'Concluídas'}</h1>
-                                <p className="text-[13px] text-gray-500 dark:text-[#888888] mt-1">{filtroNotas === 'pendentes' ? 'Notas enviadas pelos clientes aguardando processamento.' : 'Histórico de notas já emitidas e processadas.'}</p>
-                            </div>
-                            <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
-                                <div className="relative w-full lg:w-64">
-                                    <Icon name="search" className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                                    <input 
-                                        type="text" 
-                                        placeholder="Buscar por nome, razão ou CNPJ..." 
-                                        value={buscaNotaFiscal} 
-                                        onChange={(e) => { setBuscaNotaFiscal(e.target.value); setPaginaNotasFiscais(1); }}
-                                        className="w-full pl-9 pr-4 py-1.5 h-[38px] text-[13px] border border-gray-200 dark:border-darkBorder bg-white dark:bg-darkCard rounded-md focus:outline-none focus:ring-2 focus:ring-brand dark:text-white transition"
-                                    />
-                                </div>
-                                <div className="flex bg-gray-100/50 dark:bg-darkHover/50 p-1 rounded-lg border border-gray-200 dark:border-darkBorder w-full lg:w-auto mt-3 lg:mt-0">
-                                                <button onClick={() => { setFiltroNotas('pendentes'); setPaginaNotasFiscais(1); }} className={`px-4 py-1.5 text-[12px] font-semibold rounded-md transition flex items-center gap-2 ${filtroNotas === 'pendentes' ? 'bg-white dark:bg-darkCard text-brand shadow-sm border border-gray-200 dark:border-darkBorder' : 'text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white'}`}>Pendentes {notasFiscais.some(n => !n.concluido) && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 ml-1"></span>}</button>
-                                                <button onClick={() => { setFiltroNotas('concluidas'); setPaginaNotasFiscais(1); }} className={`px-4 py-1.5 text-[12px] font-semibold rounded-md transition flex items-center gap-2 ${filtroNotas === 'concluidas' ? 'bg-white dark:bg-darkCard text-brand shadow-sm border border-gray-200 dark:border-darkBorder' : 'text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white'}`}>Concluídas</button>
-                                            </div>
-                                <div className="flex rounded-md shadow-sm">
-                                    <a href="/solicitar-nota.html" target="_blank" className="bg-brand hover:bg-brandHover text-white h-[38px] px-4 text-[13px] rounded-l-md font-semibold transition flex items-center gap-2 border border-brand border-r-0">
-                                        <Icon name="external-link" className="w-4 h-4" /> Formulário
-                                    </a>
-                                    <button onClick={() => { navigator.clipboard.writeText(window.location.origin + '/solicitar-nota.html'); alert('Link copiado!'); }} className="bg-brand hover:bg-brandHover text-white h-[38px] px-3 rounded-r-md font-semibold transition flex items-center gap-2 border border-brand border-l border-l-white/20" title="Copiar Link">
-                                        <Icon name="copy" className="w-4 h-4" />
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
                         <div className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded overflow-hidden">
                             <div className="overflow-x-auto custom-scrollbar">
                                 <table className="w-full text-left border-collapse min-w-[800px]">
