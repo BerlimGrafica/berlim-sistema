@@ -1085,8 +1085,13 @@ function App() {
     const [calculadoraAtiva, setCalculadoraAtiva] = useState('banner');
     const [modalContaAberto, setModalContaAberto] = useState(false);
     const [novaConta, setNovaConta] = useState({ id: null, descricao: '', valor: '', vencimento: '', status: 'Pendente' });
+    
+    const [empresasFaturamento, setEmpresasFaturamento] = useState([]);
+    const [modalEmpresaFaturamentoAberto, setModalEmpresaFaturamentoAberto] = useState(false);
+    const [novaEmpresaFaturamento, setNovaEmpresaFaturamento] = useState({ id: null, nome: '', cnpj: '', status: 'Aprovado' });
     const [alertasNaoLidos, setAlertasNaoLidos] = useState([]);
     const alertasFuturaDisparados = useRef(new Set());
+    const alertasBoletoDisparados = useRef(new Set());
     const [modalAlertasAberto, setModalAlertasAberto] = useState(false);
 
     const [modalAberto, setModalAberto] = useState(false);
@@ -1104,7 +1109,7 @@ function App() {
     const [produtoDropdownAberto, setProdutoDropdownAberto] = useState(false);
 
     const [pagamentosPedido, setPagamentosPedido] = useState([]);
-    const [novoPagamento, setNovoPagamento] = useState({ valor: '', forma: 'PIX', parcelas: 1, instituicao: 'Itaú' });
+    const [novoPagamento, setNovoPagamento] = useState({ valor: '', forma: 'PIX', parcelas: 1, instituicao: 'Itaú', vencimento_boleto: '' });
 
     const [novoPedido, setNovoPedido] = useState({ 
         cliente: '', servico: '', valor_total: '', 
@@ -1320,6 +1325,40 @@ function App() {
                         });
                         return novosAlertas;
                     });
+                    });
+                }
+                
+                const pedidosComBoleto = todosPedidos.filter(p => !statusIgnorados.includes(p.status) && Array.isArray(p.pagamentos));
+                if (pedidosComBoleto.length > 0) {
+                    let novosAlertasBoleto = [];
+                    pedidosComBoleto.forEach(p => {
+                        p.pagamentos.forEach(pag => {
+                            if (pag.forma === 'Boleto' && pag.vencimento_boleto) {
+                                if (pag.vencimento_boleto === hojeStr || pag.vencimento_boleto === amanhaStr) {
+                                    const alertId = `${p.id}_${pag.vencimento_boleto}`;
+                                    if (!alertasBoletoDisparados.current.has(alertId)) {
+                                        let msg = `O boleto da O.S. #${p.id} vence amanhã!`;
+                                        if (pag.vencimento_boleto === hojeStr) msg = `O boleto da O.S. #${p.id} vence HOJE!`;
+                                        
+                                        novosAlertasBoleto.push({ id: Date.now() + Math.random(), msg, os_id: p.id, tipo: 'alerta_boleto' });
+                                        alertasBoletoDisparados.current.add(alertId);
+                                    }
+                                }
+                            }
+                        });
+                    });
+                    
+                    if (novosAlertasBoleto.length > 0) {
+                        setAlertasNaoLidos(prev => {
+                            let mergeAlertas = [...prev];
+                            novosAlertasBoleto.forEach(n => {
+                                if (!mergeAlertas.some(a => a.msg === n.msg && a.os_id === n.os_id)) {
+                                    mergeAlertas.push(n);
+                                }
+                            });
+                            return mergeAlertas;
+                        });
+                    }
                 }
             }
         }
@@ -1334,6 +1373,9 @@ function App() {
 
         const { data: listaNotas } = await supabase.from('notas_fiscais').select('*').order('created_at', { ascending: false });
         if (listaNotas) setNotasFiscais(listaNotas);
+        
+        const { data: listaEmpresasFaturamento } = await supabase.from('empresas_faturamento').select('*').order('nome', { ascending: true });
+        if (listaEmpresasFaturamento) setEmpresasFaturamento(listaEmpresasFaturamento);
 
         const { data: listaContas, error: erroContas } = await supabase.from('contas_pagar').select('*').order('vencimento', { ascending: true });
         if (!erroContas && listaContas) setContasPagar(listaContas);
@@ -1530,7 +1572,7 @@ function App() {
         setBuscaProduto('');
         setItensPedido([]); 
         setPagamentosPedido([]);
-        setNovoPagamento({ valor: '', forma: 'PIX', parcelas: 1, instituicao: 'Itaú' });
+        setNovoPagamento({ valor: '', forma: 'PIX', parcelas: 1, instituicao: 'Itaú', vencimento_boleto: '' });
         setItemAtual({ nome: '', descricao: '', valor: '', desconto: '', local_producao: 'Berlim', id_produto: null });
         setNovoPedido({ 
             cliente: '', servico: '', valor_total: '', 
@@ -1922,6 +1964,30 @@ function App() {
             }
         }
         setSalvandoConta(false);
+    }
+
+    const [salvandoEmpresa, setSalvandoEmpresa] = useState(false);
+    async function salvarEmpresaFaturamento(e) {
+        e.preventDefault();
+        setSalvandoEmpresa(true);
+        const payload = { nome: novaEmpresaFaturamento.nome, cnpj: novaEmpresaFaturamento.cnpj, status: novaEmpresaFaturamento.status };
+        if (novaEmpresaFaturamento.id) {
+            const { data, error } = await supabase.from('empresas_faturamento').update(payload).eq('id', novaEmpresaFaturamento.id).select();
+            if (!error && data) setEmpresasFaturamento(empresasFaturamento.map(x => x.id === data[0].id ? data[0] : x));
+            else if (error) alert('Falha ao atualizar (A tabela empresas_faturamento foi criada?): ' + error.message);
+        } else {
+            const { data, error } = await supabase.from('empresas_faturamento').insert([payload]).select();
+            if (!error && data) setEmpresasFaturamento([...empresasFaturamento, data[0]]);
+            else if (error) alert('Falha ao salvar (A tabela empresas_faturamento foi criada?): ' + error.message);
+        }
+        setModalEmpresaFaturamentoAberto(false);
+        setSalvandoEmpresa(false);
+    }
+
+    async function excluirEmpresaFaturamento(id) {
+        if (!confirm('Deseja excluir esta empresa?')) return;
+        const { error } = await supabase.from('empresas_faturamento').delete().eq('id', id);
+        if (!error) setEmpresasFaturamento(empresasFaturamento.filter(x => x.id !== id));
     }
 
     async function excluirProduto(id, e) {
@@ -2372,6 +2438,8 @@ function App() {
                         <button onClick={() => setAbaFinanceiro('geral')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitespace-nowrap flex items-center gap-2 ${abaFinanceiro === 'geral' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}><Icon name="pie-chart" className="w-4 h-4" /> Visão Geral</button>
                         <button onClick={() => setAbaFinanceiro('vendas_produto')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitespace-nowrap flex items-center gap-2 ${abaFinanceiro === 'vendas_produto' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}><Icon name="tag" className="w-4 h-4" /> Vendas por Produto</button>
                         <button onClick={() => setAbaFinanceiro('contas_pagar')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitespace-nowrap flex items-center gap-2 ${abaFinanceiro === 'contas_pagar' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}><Icon name="file-text" className="w-4 h-4" /> Contas a Pagar</button>
+                        <button onClick={() => setAbaFinanceiro('contas_receber')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitespace-nowrap flex items-center gap-2 ${abaFinanceiro === 'contas_receber' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}><Icon name="dollar-sign" className="w-4 h-4" /> Contas a Receber</button>
+                        <button onClick={() => setAbaFinanceiro('empresas_aprovadas')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitespace-nowrap flex items-center gap-2 ${abaFinanceiro === 'empresas_aprovadas' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}><Icon name="check-circle" className="w-4 h-4" /> Faturamento Aprovado</button>
                     </div>
                 )}
                 {abaAtual === 'calculadoras' && (
@@ -2919,7 +2987,7 @@ function App() {
                             const maxForma = Math.max(...rankingForma.map(f => f[1]), 1);
 
                             const agrupadoInstituicao = pagamentosExtraidos.reduce((acc, p) => {
-                                if (p.forma === 'PIX' || p.forma === 'Link de Pagamento') {
+                                if (p.forma === 'PIX' || p.forma === 'Link de Pagamento' || p.forma === 'Boleto') {
                                     const inst = p.instituicao;
                                     if (!acc[inst]) acc[inst] = 0;
                                     acc[inst] += p.valor;
@@ -2973,7 +3041,7 @@ function App() {
                             const maxFormaMesAtual = Math.max(...rankingFormaMesAtual.map(f => f[1]), 1);
 
                             const agrupadoInstituicaoMesAtual = pagamentosExtraidosMesAtual.reduce((acc, p) => {
-                                if (p.forma === 'PIX' || p.forma === 'Link de Pagamento') {
+                                if (p.forma === 'PIX' || p.forma === 'Link de Pagamento' || p.forma === 'Boleto') {
                                     const inst = p.instituicao;
                                     if (!acc[inst]) acc[inst] = 0;
                                     acc[inst] += p.valor;
@@ -3376,6 +3444,127 @@ function App() {
                                                                                 <Icon name="edit-2" className="w-4 h-4" />
                                                                             </button>
                                                                             <button onClick={() => excluirConta(conta.id)} className="p-1.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded transition opacity-0 group-hover:opacity-100" title="Excluir">
+                                                                                <Icon name="trash-2" className="w-4 h-4" />
+                                                                            </button>
+                                                                        </td>
+                                                                    </tr>
+                                                                ))
+                                                            )}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {abaFinanceiro === 'contas_receber' && (
+                                        <div className="fade-in">
+                                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                                                <div>
+                                                    <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2"><Icon name="dollar-sign" className="w-5 h-5 text-emerald-500" /> Contas a Receber</h2>
+                                                    <p className="text-[13px] text-gray-500 mt-1">Pedidos com pagamento via Boleto</p>
+                                                </div>
+                                            </div>
+
+                                            <div className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded overflow-hidden">
+                                                <div className="overflow-x-auto min-h-[300px]">
+                                                    <table className="w-full text-left border-collapse">
+                                                        <thead className="bg-gray-50/50 dark:bg-darkHover/50 border-t-2 border-brand">
+                                                            <tr className="border-b border-gray-200 dark:border-darkBorder text-[13px] font-semibold text-gray-500 dark:text-gray-400 tracking-wide uppercase">
+                                                                <th className="px-6 py-4">O.S. / Cliente</th>
+                                                                <th className="px-6 py-4">Serviço</th>
+                                                                <th className="px-6 py-4 text-center">Data Pedido</th>
+                                                                <th className="px-6 py-4 text-center">Status</th>
+                                                                <th className="px-6 py-4">Status Pagamento</th>
+                                                                <th className="px-6 py-4 text-right">Valor Total</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody className="divide-y divide-gray-100 dark:divide-darkBorder">
+                                                            {(() => {
+                                                                const pedidosBoleto = pedidos.filter(p => Array.isArray(p.pagamentos) && p.pagamentos.some(pag => pag.forma === 'Boleto'));
+                                                                if (pedidosBoleto.length === 0) return (
+                                                                    <tr><td colSpan="6" className="px-4 py-12 text-center text-[13px] text-gray-400">Nenhum pedido com boleto encontrado.</td></tr>
+                                                                );
+                                                                return pedidosBoleto.map(p => {
+                                                                    const totalPago = p.pagamentos.reduce((acc, pg) => acc + (parseFloat(String(pg.valor).replace(/\./g, '').replace(',', '.')) || 0), 0);
+                                                                    const totalGeral = parseFloat(String(p.valor_total).replace(/\./g, '').replace(',', '.')) || 0;
+                                                                    const pagoPercent = totalGeral > 0 ? (totalPago / totalGeral) * 100 : 0;
+                                                                    return (
+                                                                        <tr key={p.id} onClick={() => abrirEdicao(p)} className="hover:bg-gray-50 dark:hover:bg-darkHover/50 transition-colors cursor-pointer group">
+                                                                            <td className="px-6 py-4">
+                                                                                <div className="flex items-center gap-2">
+                                                                                    <span className="text-[12px] font-bold text-gray-400 dark:text-gray-500 w-8">#{p.id}</span>
+                                                                                    <span className="text-[13px] font-semibold text-gray-800 dark:text-[#EDEDED] truncate max-w-[200px]" title={p.cliente}>{p.cliente}</span>
+                                                                                </div>
+                                                                            </td>
+                                                                            <td className="px-6 py-4">
+                                                                                <div className="text-[13px] text-gray-600 dark:text-gray-400 truncate max-w-[250px]" title={p.servico}>{p.servico}</div>
+                                                                            </td>
+                                                                            <td className="px-6 py-4 text-[13px] text-center text-gray-500">{formatarDataExibicao(p.data_pedido)}</td>
+                                                                            <td className="px-6 py-4 text-center">
+                                                                                <span className={`whitespace-nowrap px-2.5 py-1 text-[11px] font-semibold rounded border ${statusColors[p.status] || 'bg-gray-50 border-gray-200 text-gray-600 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300'}`}>
+                                                                                    {p.status}
+                                                                                </span>
+                                                                            </td>
+                                                                            <td className="px-6 py-4 text-[13px]">
+                                                                                <div className="flex items-center gap-2">
+                                                                                    <div className="w-16 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden shrink-0"><div className="h-full bg-emerald-500" style={{ width: `${Math.min(100, pagoPercent)}%` }}></div></div>
+                                                                                    <span className="text-[11px] font-bold text-gray-500 dark:text-gray-400">{totalPago >= totalGeral ? 'Pago' : `${Math.floor(pagoPercent)}%`}</span>
+                                                                                </div>
+                                                                            </td>
+                                                                            <td className="px-6 py-4 text-[13px] font-bold text-gray-900 dark:text-white text-right whitespace-nowrap">R$ {p.valor_total}</td>
+                                                                        </tr>
+                                                                    );
+                                                                });
+                                                            })()}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {abaFinanceiro === 'empresas_aprovadas' && (
+                                        <div className="fade-in">
+                                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                                                <div>
+                                                    <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2"><Icon name="check-circle" className="w-5 h-5 text-blue-500" /> Faturamento Aprovado</h2>
+                                                    <p className="text-[13px] text-gray-500 mt-1">Gerencie as empresas com faturamento aprovado</p>
+                                                </div>
+                                                <button onClick={() => setModalEmpresaFaturamentoAberto(true)} className="bg-brand hover:bg-brandHover text-white px-4 py-2 text-[13px] rounded-md font-semibold shadow-sm transition flex items-center gap-2">
+                                                    <Icon name="plus" /> Adicionar Empresa
+                                                </button>
+                                            </div>
+
+                                            <div className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded overflow-hidden">
+                                                <div className="overflow-x-auto min-h-[300px]">
+                                                    <table className="w-full text-left border-collapse">
+                                                        <thead className="bg-gray-50/50 dark:bg-darkHover/50 border-t-2 border-brand">
+                                                            <tr className="border-b border-gray-200 dark:border-darkBorder text-[13px] font-semibold text-gray-500 dark:text-gray-400 tracking-wide uppercase">
+                                                                <th className="px-6 py-4">Empresa</th>
+                                                                <th className="px-6 py-4">CNPJ/CPF</th>
+                                                                <th className="px-6 py-4 text-center">Status</th>
+                                                                <th className="px-6 py-4 text-right">Ações</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody className="divide-y divide-gray-100 dark:divide-darkBorder">
+                                                            {empresasFaturamento.length === 0 ? (
+                                                                <tr><td colSpan="4" className="px-4 py-12 text-center text-[13px] text-gray-400">Nenhuma empresa cadastrada.</td></tr>
+                                                            ) : (
+                                                                empresasFaturamento.map(emp => (
+                                                                    <tr key={emp.id} className="hover:bg-gray-50 dark:hover:bg-darkHover/50 transition-colors group">
+                                                                        <td className="px-6 py-4 text-[13px] font-semibold text-gray-900 dark:text-white">{emp.nome}</td>
+                                                                        <td className="px-6 py-4 text-[13px] text-gray-600 dark:text-gray-400">{emp.cnpj}</td>
+                                                                        <td className="px-6 py-4 text-center">
+                                                                            <span className={`whitespace-nowrap px-2.5 py-1 text-[11px] font-semibold rounded border ${emp.status === 'Aprovado' ? 'bg-emerald-50 border-emerald-200 text-emerald-600 dark:bg-emerald-900/20 dark:border-emerald-800/50 dark:text-emerald-400' : 'bg-red-50 border-red-200 text-red-600 dark:bg-red-900/20 dark:border-red-800/50 dark:text-red-400'}`}>
+                                                                                {emp.status}
+                                                                            </span>
+                                                                        </td>
+                                                                        <td className="px-6 py-4 text-[13px] text-right flex justify-end gap-2">
+                                                                            <button onClick={() => { setNovaEmpresaFaturamento(emp); setModalEmpresaFaturamentoAberto(true); }} className="p-1.5 text-gray-400 hover:text-brand hover:bg-gray-100 dark:hover:bg-darkHover rounded transition opacity-0 group-hover:opacity-100" title="Editar">
+                                                                                <Icon name="edit-2" className="w-4 h-4" />
+                                                                            </button>
+                                                                            <button onClick={() => excluirEmpresaFaturamento(emp.id)} className="p-1.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded transition opacity-0 group-hover:opacity-100" title="Excluir">
                                                                                 <Icon name="trash-2" className="w-4 h-4" />
                                                                             </button>
                                                                         </td>
@@ -3977,7 +4166,10 @@ function App() {
                                             <div key={idx} className="flex justify-between items-center bg-gray-50 dark:bg-darkElevated px-3 py-2 rounded border border-gray-100 dark:border-darkBorder">
                                                 <div className="flex flex-col">
                                                     <span className="text-[13px] font-medium dark:text-white">{pag.forma} {pag.parcelas > 1 ? `(${pag.parcelas}x)` : ''}</span>
-                                                    <span className="text-[11px] text-gray-500">{pag.data}</span>
+                                                    {pag.vencimento_boleto && (
+                                                        <span className="text-[11px] text-orange-500 font-semibold ml-2">Vencimento: {pag.vencimento_boleto.split('-').reverse().join('/')}</span>
+                                                    )}
+                                                    <span className="text-[11px] text-gray-500 ml-2">{pag.data}</span>
                                                 </div>
                                                 <div className="flex items-center gap-3">
                                                     <span className="font-semibold text-[13px] text-emerald-600 dark:text-emerald-400">R$ {pag.valor}</span>
@@ -4006,6 +4198,7 @@ function App() {
                                                     <div className="grid grid-cols-2 gap-2">
                                                         <select value={novoPagamento.forma} onChange={e => setNovoPagamento({...novoPagamento, forma: e.target.value})} className="bg-white dark:bg-darkCard border border-gray-300 dark:border-darkBorder rounded px-2 py-1.5 text-[11px] outline-none">
                                                             <option value="PIX">PIX</option>
+                                                            <option value="Boleto">Boleto</option>
                                                             <option value="Cartão de Crédito">Cartão de Crédito</option>
                                                             <option value="Cartão de Débito">Cartão de Débito</option>
                                                             <option value="Dinheiro">Dinheiro</option>
@@ -4032,6 +4225,11 @@ function App() {
                                                             </select>
                                                         </div>
                                                     )}
+                                                    {novoPagamento.forma === 'Boleto' && (
+                                                        <div>
+                                                            <input type="date" value={novoPagamento.vencimento_boleto} onChange={e => setNovoPagamento({...novoPagamento, vencimento_boleto: e.target.value})} className="w-full bg-white dark:bg-darkCard border border-gray-300 dark:border-darkBorder rounded px-2 py-1.5 text-[11px] outline-none text-gray-600 dark:text-gray-300" />
+                                                        </div>
+                                                    )}
                                                     <button type="button" onClick={() => {
                                                         if (!novoPagamento.valor) return;
                                                         setPagamentosPedido([...pagamentosPedido, { ...novoPagamento, data: obterDataAtual() }]);
@@ -4041,7 +4239,7 @@ function App() {
                                                         const totalOSStr = parseFloat(String(novoPedido.valor_total).replace(/\./g, '').replace(',', '.')) || 0;
                                                         const saldoRestante = totalOSStr - novoTotalPago;
                                                         
-                                                        setNovoPagamento({ valor: saldoRestante > 0 ? formatarMoeda((saldoRestante * 100).toFixed(0).toString()) : '', forma: 'PIX', parcelas: 1, instituicao: 'Itaú' });
+                                                        setNovoPagamento({ valor: saldoRestante > 0 ? formatarMoeda((saldoRestante * 100).toFixed(0).toString()) : '', forma: 'PIX', parcelas: 1, instituicao: 'Itaú', vencimento_boleto: '' });
                                                     }} className="w-full bg-brand hover:bg-brandHover text-white py-1.5 rounded text-[11px] font-semibold transition">Registrar Pagamento</button>
                                                 </div>
                                             )}
@@ -4320,6 +4518,46 @@ function App() {
                                 <span className="text-[13px] font-semibold text-red-600 dark:text-red-400 flex items-center gap-1.5"><Icon name="alert-triangle" className="w-4 h-4" /> Sinalizar como Cliente Problema</span>
                             </label>
                             <div className="flex justify-end gap-3 mt-2"><button type="button" onClick={() => setModalClienteAberto(false)} className="px-4 py-2 rounded text-[13px] font-medium text-gray-600 dark:text-[#A1A1AA] hover:bg-gray-100 dark:hover:bg-darkHover transition">Cancelar</button><button type="submit" disabled={salvandoCliente} className="px-5 py-2 rounded text-[13px] font-medium bg-white text-black hover:bg-gray-200 transition disabled:opacity-50">{salvandoCliente ? 'Salvando...' : 'Salvar'}</button></div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {modalEmpresaFaturamentoAberto && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+                    <div className="bg-white dark:bg-darkCard rounded-xl shadow-2xl w-full max-w-md overflow-hidden fade-in border border-gray-100 dark:border-darkBorder">
+                        <div className="px-6 py-4 border-b border-gray-100 dark:border-darkBorder flex justify-between items-center bg-gray-50/50 dark:bg-darkHover/50">
+                            <h2 className="text-[15px] font-bold text-gray-800 dark:text-[#EDEDED] flex items-center gap-2">
+                                <Icon name="check-circle" className="w-4 h-4 text-blue-500" />
+                                {novaEmpresaFaturamento.id ? 'Editar Empresa' : 'Adicionar Empresa'}
+                            </h2>
+                            <button onClick={() => setModalEmpresaFaturamentoAberto(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors p-1"><Icon name="x" className="w-5 h-5" /></button>
+                        </div>
+                        <form onSubmit={salvarEmpresaFaturamento} className="p-6">
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-[11px] font-semibold text-gray-600 dark:text-[#888888] mb-1.5 uppercase tracking-wider">Nome da Empresa</label>
+                                    <input type="text" required value={novaEmpresaFaturamento.nome} onChange={e => setNovaEmpresaFaturamento({...novaEmpresaFaturamento, nome: e.target.value})} className="w-full bg-white dark:bg-darkHover border border-gray-200 dark:border-darkBorder rounded-lg px-3 py-2.5 text-[13px] text-gray-800 dark:text-[#EDEDED] outline-none focus:border-brand dark:focus:border-brand focus:ring-1 focus:ring-brand transition-shadow" placeholder="Razão Social ou Fantasia" />
+                                </div>
+                                <div>
+                                    <label className="block text-[11px] font-semibold text-gray-600 dark:text-[#888888] mb-1.5 uppercase tracking-wider">CNPJ/CPF</label>
+                                    <input type="text" required value={novaEmpresaFaturamento.cnpj} onChange={e => setNovaEmpresaFaturamento({...novaEmpresaFaturamento, cnpj: e.target.value})} className="w-full bg-white dark:bg-darkHover border border-gray-200 dark:border-darkBorder rounded-lg px-3 py-2.5 text-[13px] text-gray-800 dark:text-[#EDEDED] outline-none focus:border-brand dark:focus:border-brand focus:ring-1 focus:ring-brand transition-shadow" placeholder="00.000.000/0000-00" />
+                                </div>
+                                <div>
+                                    <label className="block text-[11px] font-semibold text-gray-600 dark:text-[#888888] mb-1.5 uppercase tracking-wider">Status</label>
+                                    <select required value={novaEmpresaFaturamento.status} onChange={e => setNovaEmpresaFaturamento({...novaEmpresaFaturamento, status: e.target.value})} className="w-full bg-white dark:bg-darkHover border border-gray-200 dark:border-darkBorder rounded-lg px-3 py-2.5 text-[13px] text-gray-800 dark:text-[#EDEDED] outline-none focus:border-brand dark:focus:border-brand focus:ring-1 focus:ring-brand transition-shadow">
+                                        <option value="Aprovado">Aprovado</option>
+                                        <option value="Bloqueado">Bloqueado</option>
+                                        <option value="Em Análise">Em Análise</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div className="mt-8 flex justify-end gap-3">
+                                <button type="button" onClick={() => setModalEmpresaFaturamentoAberto(false)} className="px-4 py-2 rounded-lg text-[13px] font-semibold text-gray-600 dark:text-[#888888] hover:bg-gray-100 dark:hover:bg-darkHover transition">Cancelar</button>
+                                <button type="submit" disabled={salvandoEmpresa} className="px-6 py-2 rounded-lg text-[13px] font-bold bg-brand text-white hover:bg-brandHover shadow-md shadow-brand/20 transition disabled:opacity-50">
+                                    {salvandoEmpresa ? 'Salvando...' : 'Salvar Empresa'}
+                                </button>
+                            </div>
                         </form>
                     </div>
                 </div>
