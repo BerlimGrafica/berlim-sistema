@@ -6,7 +6,7 @@ import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS, RESPONSAVEIS, obterCorStatus, 
 
 
 export default function DashboardTab() {
-    const { usuario, pedidos, alertasNaoLidos, setAbaAtual, setBuscaProducaoText, abrirEdicao } = useAppContext();
+    const { usuario, pedidos, alertasNaoLidos, setAbaAtual, setBuscaProducaoText, abrirEdicao, tarefasInternas, setModalTarefaAberto, setNovaTarefa } = useAppContext();
 
     return (
         <>
@@ -167,6 +167,75 @@ export default function DashboardTab() {
                                                         </td>
                                                         <td className="px-6 py-4 text-right">
                                                             <button onClick={() => abrirEdicao(t)} className="opacity-0 group-hover:opacity-100 transition p-2 bg-brand hover:bg-brandHover text-white rounded-md shadow-sm" title="Abrir OS">
+                                                                <Icon name="edit-3" className="w-4 h-4" />
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                ));
+                                            })()}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            {/* TAREFAS INTERNAS LIST */}
+                            <div className="bg-white dark:bg-darkCard border border-gray-100 dark:border-darkBorder rounded-md shadow-[0_4px_20px_rgb(0,0,0,0.03)] dark:shadow-none lg:col-span-2 overflow-hidden flex flex-col hover:shadow-lg transition mt-8">
+                                <div className="px-6 py-5 border-b border-gray-100 dark:border-darkBorder bg-gray-50/50 dark:bg-darkHover/30 flex justify-between items-center shrink-0">
+                                    <h3 className="font-bold text-[13px] uppercase tracking-wider text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                                        <Icon name="check-square" className="w-4 h-4 text-brand" /> Minhas Tarefas Internas
+                                    </h3>
+                                    <button onClick={() => {
+                                        setNovaTarefa({ id: null, titulo: '', descricao: '', responsavel: usuario?.nome || '', prazo: '', status: 'Pendente' });
+                                        setModalTarefaAberto(true);
+                                    }} className="text-[11px] font-bold text-brand hover:text-brandHover uppercase tracking-wider transition">
+                                        + Nova Tarefa
+                                    </button>
+                                </div>
+                                
+                                <div className="flex-1 overflow-x-auto">
+                                    <table className="w-full text-left border-collapse whitespace-nowrap">
+                                        <thead className="bg-gray-50/50 dark:bg-darkHover/50 border-t-2 border-brand">
+                                            <tr className="border-b border-gray-100 dark:border-darkBorder text-[11px] font-bold text-gray-500 dark:text-gray-400 tracking-wide uppercase">
+                                                <th className="px-6 py-4">Título</th>
+                                                <th className="px-6 py-4">Descrição</th>
+                                                <th className="px-6 py-4">Prazo</th>
+                                                <th className="px-6 py-4">Status</th>
+                                                <th className="px-6 py-4 text-right">Ação</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {(() => {
+                                                const minhasTarefasInt = tarefasInternas.filter(t => t.responsavel && t.responsavel.toLowerCase().includes(usuario?.nome?.toLowerCase()) && t.status !== 'Concluída');
+
+                                                if (minhasTarefasInt.length === 0) {
+                                                    return (
+                                                        <tr>
+                                                            <td colSpan="5" className="px-6 py-12 text-center">
+                                                                <div className="flex flex-col items-center justify-center opacity-70">
+                                                                    <Icon name="check-circle" className="w-10 h-10 mb-3 text-gray-400" />
+                                                                    <p className="text-gray-500 dark:text-gray-400 text-[14px] font-semibold">Tudo limpo! Nenhuma tarefa interna pendente.</p>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                }
+
+                                                return minhasTarefasInt.map(t => (
+                                                    <tr key={t.id} className="border-b border-gray-50 dark:border-darkBorder/50 hover:bg-gray-50/80 dark:hover:bg-darkHover/80 transition group">
+                                                        <td className="px-6 py-4 text-[13px] font-bold text-gray-900 dark:text-gray-200">{t.titulo}</td>
+                                                        <td className="px-6 py-4 text-[13px] font-medium text-gray-600 dark:text-gray-400 max-w-[250px] truncate" title={t.descricao}>{t.descricao || '-'}</td>
+                                                        <td className="px-6 py-4">
+                                                            <span className="text-[11px] font-bold px-2.5 py-1.5 bg-gray-100 dark:bg-darkElevated text-gray-700 dark:text-gray-300 rounded border border-gray-200 dark:border-darkBorder shadow-sm">
+                                                                {t.prazo ? formatarDataExibicao(t.prazo) : '-'}
+                                                            </span>
+                                                        </td>
+                                                        <td className="px-6 py-4">
+                                                            <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full ${t.status === 'Pendente' ? 'bg-orange-100 text-orange-700 dark:bg-orange-500/20 dark:text-orange-400' : 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400'}`}>
+                                                                {t.status}
+                                                            </span>
+                                                        </td>
+                                                        <td className="px-6 py-4 text-right">
+                                                            <button onClick={() => { setNovaTarefa(t); setModalTarefaAberto(true); }} className="opacity-0 group-hover:opacity-100 transition p-2 bg-brand hover:bg-brandHover text-white rounded-md shadow-sm" title="Editar Tarefa">
                                                                 <Icon name="edit-3" className="w-4 h-4" />
                                                             </button>
                                                         </td>
