@@ -79,7 +79,7 @@ export default function DashboardTab() {
                             })()}
 
                             {/* ALERTS WALL */}
-                            <div className="bg-white dark:bg-darkCard border border-gray-100 dark:border-darkBorder rounded-md p-0 shadow-[0_4px_20px_rgb(0,0,0,0.03)] dark:shadow-none flex flex-col overflow-hidden hover:shadow-lg transition lg:col-span-1 row-span-2 relative">
+                            <div className="bg-white dark:bg-darkCard border border-gray-100 dark:border-darkBorder rounded-md p-0 shadow-[0_4px_20px_rgb(0,0,0,0.03)] dark:shadow-none flex flex-col overflow-hidden hover:shadow-lg transition lg:col-span-1 row-span-2 relative h-[350px]">
                                 <div className="px-6 py-5 border-b border-gray-100 dark:border-darkBorder bg-gray-50/50 dark:bg-darkHover/30 flex justify-between items-center shrink-0">
                                     <h3 className="font-bold text-[13px] uppercase tracking-wider text-gray-700 dark:text-gray-300 flex items-center gap-2">
                                         <Icon name="bell" className="w-4 h-4 text-brand" /> Mural de Avisos
@@ -88,7 +88,7 @@ export default function DashboardTab() {
                                         <span className="bg-rose-500 text-white text-[11px] font-bold px-2 py-0.5 rounded-full shadow-sm">{alertasNaoLidos.length}</span>
                                     )}
                                 </div>
-                                <div className="flex-1 p-4 overflow-y-auto custom-scrollbar flex flex-col gap-3 min-h-[250px]">
+                                <div className="flex-1 p-4 overflow-y-auto custom-scrollbar flex flex-col gap-3">
                                     {alertasNaoLidos.length === 0 ? (
                                         <div className="flex-1 flex flex-col items-center justify-center text-center opacity-60">
                                             <Icon name="check-circle" className="w-10 h-10 mb-2 text-emerald-500" />
