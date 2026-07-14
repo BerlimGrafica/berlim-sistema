@@ -728,40 +728,36 @@ function CalculadoraAdesivo({ produtos }) {
                 texto += `${qtd3} Adesivos | ${lRawNum}x${aRawNum}cm | Adesivo Vinil Branco | Impressão Látex | Sem Laminação | 1/2 corte | Entregue em folha de 1/2 metro - R$ ${preco17.toFixed(2).replace('.', ',')}\n\n`;
             }
             texto = texto.trim();
-        } else {
-            let sra3Price = preco15;
-            let basePrice = preco17;
-            let nomeTipo = 'Vinil';
-            let lam = '';
+        } else if (tipo === '18') {
+            const qtd1 = Math.floor(qSRA3 / 10) * 10;
+            const qtd2 = Math.floor(qMeio / 10) * 10;
+            const qtd3 = Math.floor(qMetro / 10) * 10;
 
-            if (tipo === '18_brilho') {
-                sra3Price = preco21;
-                basePrice = preco18;
-                nomeTipo = item18 ? item18.nome : 'Adesivo Laminado';
-                lam = ' | Brilho';
-            } else if (tipo === '18_fosco') {
-                sra3Price = preco21;
-                basePrice = preco18;
-                nomeTipo = item18 ? item18.nome : 'Adesivo Laminado';
-                lam = ' | Fosco';
-            } else if (tipo === '19') {
-                sra3Price = preco16;
-                basePrice = preco19;
-                nomeTipo = item19 ? item19.nome : 'Adesivo Transparente';
+            if (qtd1 > 0) {
+                texto += `${qtd1} Adesivos | ${lRawNum}x${aRawNum}cm | Adesivo Vinil Branco | Impressão Laser ou Látex | Laminado Brilho/Fosco | 1/2 corte | Entregue em folha A3 - R$ ${preco21.toFixed(2).replace('.', ',')}\n\n`;
             }
+            if (qtd2 > 0) {
+                texto += `${qtd2} Adesivos | ${lRawNum}x${aRawNum}cm | Adesivo Vinil Branco | Impressão Laser ou Látex | Laminado Brilho/Fosco | 1/2 corte | Entregue em folha A3 ou 1/2 metro - R$ ${(preco18 * 0.7333).toFixed(2).replace('.', ',')}\n\n`;
+            }
+            if (qtd3 > 0) {
+                texto += `${qtd3} Adesivos | ${lRawNum}x${aRawNum}cm | Adesivo Vinil Branco | Impressão Látex | Laminado Brilho/Fosco | 1/2 corte | Entregue em folha de 1/2 metro - R$ ${preco18.toFixed(2).replace('.', ',')}\n\n`;
+            }
+            texto = texto.trim();
+        } else if (tipo === '19') {
+            const qtd1 = Math.floor(qSRA3 / 10) * 10;
+            const qtd2 = Math.floor(qMeio / 10) * 10;
+            const qtd3 = Math.floor(qMetro / 10) * 10;
 
-            texto = `Orçamento ${nomeTipo}${lam}\n`;
-            texto += `Tamanho: ${lRawNum}x${aRawNum}cm | 1/2 corte\n\n`;
-            
-            if (qSRA3 > 0) {
-                texto += `- ${qSRA3} unids (SRA3): R$ ${sra3Price.toFixed(2).replace('.', ',')}\n`;
+            if (qtd1 > 0) {
+                texto += `${qtd1} Adesivos | ${lRawNum}x${aRawNum}cm | Adesivo Vinil Transparente | Impressão Laser ou Látex | 1/2 corte | Entregue em folha A3 - R$ ${preco16.toFixed(2).replace('.', ',')}\n\n`;
             }
-            if (qMeio > 0) {
-                texto += `- ${qMeio} unids (1/2 m²): R$ ${(basePrice * 0.7333).toFixed(2).replace('.', ',')}\n`;
+            if (qtd2 > 0) {
+                texto += `${qtd2} Adesivos | ${lRawNum}x${aRawNum}cm | Adesivo Vinil Transparente | Impressão Laser ou Látex | 1/2 corte | Entregue em folha A3 ou 1/2 metro - R$ ${(preco19 * 0.7333).toFixed(2).replace('.', ',')}\n\n`;
             }
-            if (qMetro > 0) {
-                texto += `- ${qMetro} unids (1 m²): R$ ${basePrice.toFixed(2).replace('.', ',')}\n`;
+            if (qtd3 > 0) {
+                texto += `${qtd3} Adesivos | ${lRawNum}x${aRawNum}cm | Adesivo Vinil Transparente | Impressão Látex | 1/2 corte | Entregue em folha de 1/2 metro - R$ ${preco19.toFixed(2).replace('.', ',')}\n\n`;
             }
+            texto = texto.trim();
         }
 
         navigator.clipboard.writeText(texto);
@@ -790,7 +786,7 @@ function CalculadoraAdesivo({ produtos }) {
         if (tipo === '17') {
             sra3Price = preco15;
             basePrice = preco17;
-        } else if (tipo === '18_brilho' || tipo === '18_fosco') {
+        } else if (tipo === '18') {
             sra3Price = preco21;
             basePrice = preco18;
         } else if (tipo === '19') {
@@ -831,15 +827,13 @@ function CalculadoraAdesivo({ produtos }) {
         let lam = '';
         
         if (tipo === '17') {
-            nomeTipo = item17 ? item17.nome : 'Adesivo Vinil';
-        } else if (tipo === '18_brilho') {
-            nomeTipo = item18 ? item18.nome : 'Adesivo Laminado';
-            lam = ' | Brilho';
-        } else if (tipo === '18_fosco') {
-            nomeTipo = item18 ? item18.nome : 'Adesivo Laminado';
-            lam = ' | Fosco';
+            nomeTipo = item17 ? item17.nome : 'Adesivo Vinil Branco';
+            lam = ' | Sem Laminação';
+        } else if (tipo === '18') {
+            nomeTipo = item18 ? item18.nome : 'Adesivo Vinil Branco';
+            lam = ' | Laminado Brilho/Fosco';
         } else if (tipo === '19') {
-            nomeTipo = item19 ? item19.nome : 'Adesivo Transparente';
+            nomeTipo = item19 ? item19.nome : 'Adesivo Vinil Transparente';
         }
         
         const val = calcular().replace('.', ',');
@@ -884,8 +878,7 @@ function CalculadoraAdesivo({ produtos }) {
                     <label className="block text-[11px] font-semibold text-gray-500 mb-1">Tipo de Adesivo</label>
                     <select value={tipo} onChange={e => setTipo(e.target.value)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition">
                         <option value="17">{item17 ? item17.nome : 'Item 17'}</option>
-                        <option value="18_brilho">{item18 ? item18.nome : 'Item 18'} (Laminado Brilho)</option>
-                        <option value="18_fosco">{item18 ? item18.nome : 'Item 18'} (Laminado Fosco)</option>
+                        <option value="18">{item18 ? item18.nome : 'Item 18'} (Laminado Brilho/Fosco)</option>
                         <option value="19">{item19 ? item19.nome : 'Item 19'}</option>
                     </select>
                 </div>
@@ -982,7 +975,7 @@ function CalculadoraCasamento() {
 
 function CalculadorasAba({ calculadoraAtiva, produtos }) {
     return (
-        <div className="flex-1 p-6 lg:p-10 mx-auto w-full max-w-3xl fade-in flex flex-col h-[calc(100vh-125px)] overflow-y-auto custom-scrollbar">
+        <div className="flex-1 p-6 lg:p-10 mx-auto w-full max-w-3xl fade-in flex flex-col h-[calc(100vh-112px)] overflow-y-auto custom-scrollbar">
             <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 mb-6 border-b border-gray-100 dark:border-darkBorder pb-6 shrink-0">
                 <div>
                     <h1 className="text-3xl font-semibold dark:text-white tracking-tight">Calculadoras</h1>
@@ -2300,7 +2293,7 @@ function App() {
 
                 {/* TIER 3: Submenus */}
                 {abaAtual === 'orcamentos' && (
-                    <div className="bg-[#EDEFF0] dark:bg-darkBg border-b border-gray-200 dark:border-darkBorder px-6 flex gap-6 z-20 overflow-x-auto no-scrollbar-style sticky top-[125px]">
+                    <div className="bg-[#EDEFF0] dark:bg-darkBg border-b border-gray-200 dark:border-darkBorder px-6 flex gap-6 z-20 overflow-x-auto no-scrollbar-style sticky top-[112px]">
                         <a onClick={() => setAbaOrcamentos('formalizados')} className={`py-3 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap border-b-[3px] flex items-center gap-2 ${abaOrcamentos === 'formalizados' ? 'border-brand text-brand' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'}`}>
                             <Icon name="file-text" className="w-4 h-4" /> Formalizados
                         </a>
@@ -2311,7 +2304,7 @@ function App() {
                 )}
                 
                 {abaAtual === 'cadastros' && (
-                    <div className="bg-[#EDEFF0] dark:bg-darkBg border-b border-gray-200 dark:border-darkBorder px-6 flex gap-6 z-20 overflow-x-auto no-scrollbar-style sticky top-[125px]">
+                    <div className="bg-[#EDEFF0] dark:bg-darkBg border-b border-gray-200 dark:border-darkBorder px-6 flex gap-6 z-20 overflow-x-auto no-scrollbar-style sticky top-[112px]">
                         {(usuario?.nivel === 'Administrador' || usuario?.nivel === 'Produção/Atendimento') && (
                             <a onClick={() => setAbaCadastros('clientes')} className={`py-3 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap border-b-[3px] flex items-center gap-2 ${abaCadastros === 'clientes' ? 'border-brand text-brand' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'}`}>
                                 <Icon name="users" className="w-4 h-4" /> Clientes
@@ -2333,14 +2326,14 @@ function App() {
                     </div>
                 )}
                 {abaAtual === 'financeiro' && (
-                    <div className="bg-[#EDEFF0] dark:bg-darkBg border-b border-gray-200 dark:border-darkBorder px-6 flex gap-6 z-20 overflow-x-auto no-scrollbar-style sticky top-[125px]">
+                    <div className="bg-[#EDEFF0] dark:bg-darkBg border-b border-gray-200 dark:border-darkBorder px-6 flex gap-6 z-20 overflow-x-auto no-scrollbar-style sticky top-[112px]">
                         <button onClick={() => setAbaFinanceiro('geral')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitespace-nowrap flex items-center gap-2 ${abaFinanceiro === 'geral' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}><Icon name="pie-chart" className="w-4 h-4" /> Visão Geral</button>
                         <button onClick={() => setAbaFinanceiro('vendas_produto')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitespace-nowrap flex items-center gap-2 ${abaFinanceiro === 'vendas_produto' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}><Icon name="tag" className="w-4 h-4" /> Vendas por Produto</button>
                         <button onClick={() => setAbaFinanceiro('contas_pagar')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitespace-nowrap flex items-center gap-2 ${abaFinanceiro === 'contas_pagar' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}><Icon name="file-text" className="w-4 h-4" /> Contas a Pagar</button>
                     </div>
                 )}
                 {abaAtual === 'calculadoras' && (
-                    <div className="bg-[#EDEFF0] dark:bg-darkBg border-b border-gray-200 dark:border-darkBorder px-6 flex gap-6 z-20 overflow-x-auto no-scrollbar-style sticky top-[125px]">
+                    <div className="bg-[#EDEFF0] dark:bg-darkBg border-b border-gray-200 dark:border-darkBorder px-6 flex gap-6 z-20 overflow-x-auto no-scrollbar-style sticky top-[112px]">
                         <button onClick={() => setCalculadoraAtiva('banner')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitespace-nowrap flex items-center gap-2 ${calculadoraAtiva === 'banner' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}><Icon name="image" className="w-4 h-4" /> Banner / Lona</button>
                         <button onClick={() => setCalculadoraAtiva('adesivo')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitespace-nowrap flex items-center gap-2 ${calculadoraAtiva === 'adesivo' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}><Icon name="grid" className="w-4 h-4" /> Adesivos (Vinil)</button>
                         <button onClick={() => setCalculadoraAtiva('casamento')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitespace-nowrap flex items-center gap-2 ${calculadoraAtiva === 'casamento' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}><Icon name="heart" className="w-4 h-4" /> Papelaria Casamento</button>
@@ -2348,7 +2341,7 @@ function App() {
                     </div>
                 )}
                 {abaAtual === 'notas_fiscais' && (
-                    <div className="bg-[#EDEFF0] dark:bg-darkBg border-b border-gray-200 dark:border-darkBorder px-6 flex gap-6 z-20 overflow-x-auto no-scrollbar-style sticky top-[125px]">
+                    <div className="bg-[#EDEFF0] dark:bg-darkBg border-b border-gray-200 dark:border-darkBorder px-6 flex gap-6 z-20 overflow-x-auto no-scrollbar-style sticky top-[112px]">
                         <button onClick={() => { setFiltroNotas('pendentes'); setPaginaNotasFiscais(1); }} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitespace-nowrap flex items-center gap-2 ${filtroNotas === 'pendentes' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}>
                             <Icon name="clock" className="w-4 h-4" /> Pendentes
                             {notasFiscais.some(n => !n.concluido) && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 ml-1"></span>}
@@ -2632,7 +2625,7 @@ function App() {
                 )}
 
                 {abaAtual === 'baixa' && (
-                    <div className="bg-[#EDEFF0] dark:bg-darkBg border-b border-gray-200 dark:border-darkBorder px-6 flex gap-6 z-20 overflow-x-auto no-scrollbar-style sticky top-[125px]">
+                    <div className="bg-[#EDEFF0] dark:bg-darkBg border-b border-gray-200 dark:border-darkBorder px-6 flex gap-6 z-20 overflow-x-auto no-scrollbar-style sticky top-[112px]">
                         <button onClick={() => setAbaOS('abertas')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitespace-nowrap flex items-center gap-2 ${abaOS === 'abertas' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}><Icon name="list" className="w-4 h-4" /> Abertas</button>
                         <button onClick={() => setAbaOS('concluidas')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitespace-nowrap flex items-center gap-2 ${abaOS === 'concluidas' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}><Icon name="check-circle" className="w-4 h-4" /> Concluídas</button>
                         <button onClick={() => setAbaOS('finalizadas')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitespace-nowrap flex items-center gap-2 ${abaOS === 'finalizadas' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}><Icon name="check-square" className="w-4 h-4" /> Finalizadas</button>
