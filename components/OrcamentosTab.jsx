@@ -79,7 +79,7 @@ export default function OrcamentosTab() {
                                                         <Icon name="arrow-right-circle" className="w-3.5 h-3.5" />
                                                         Transformar em O.S.
                                                     </button>
-                                                    <button onClick={(e) => { e.stopPropagation(); baixarPDFOrcamento(orc); }} className="p-2 text-blue-500 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded transition inline-block" title="Imprimir Orçamento">
+                                                    <button onClick={(e) => { e.stopPropagation(); baixarPDFOrcamento(orc); }} className="p-2 text-orange-500 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/30 rounded transition inline-block" title="Imprimir Orçamento">
                                                         <Icon name="printer" className="w-5 h-5 inline-block" />
                                                     </button>
                                                     <button onClick={(e) => { e.stopPropagation(); abrirEdicaoOrcamento(orc); }} className="p-2 text-gray-400 hover:text-brand hover:bg-gray-100 dark:hover:bg-darkHover rounded transition opacity-0 group-hover:opacity-100" title="Editar">
