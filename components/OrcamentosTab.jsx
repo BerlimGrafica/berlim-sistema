@@ -74,16 +74,15 @@ export default function OrcamentosTab() {
                                                 </td>
                                                 <td className="px-6 py-4 text-[13px] font-medium text-gray-900 dark:text-gray-300">{orc.cliente}</td>
                                                 <td className="px-6 py-4 text-[13px] font-medium text-emerald-600 dark:text-emerald-400">R$ {formatarMoeda((orc.valor * 100).toFixed(0).toString())}</td>
-                                                <td className="px-6 py-4 text-[13px] text-right flex justify-end gap-2">
-                                                    <button onClick={(e) => { e.stopPropagation(); transformarEmOS(orc); }} className="px-3 py-1.5 text-[11px] font-bold bg-orange-500 hover:bg-orange-600 text-white rounded transition flex items-center gap-1.5 shadow-sm" title="Transformar em O.S.">
-                                                        <Icon name="arrow-right-circle" className="w-3.5 h-3.5" />
-                                                        Transformar em O.S.
+                                                <td className="px-6 py-4 text-[13px] text-right flex justify-end gap-1">
+                                                    <button onClick={(e) => { e.stopPropagation(); transformarEmOS(orc); }} className="p-2 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded transition inline-block" title="Aprovar e Transformar em O.S.">
+                                                        <Icon name="check-circle" className="w-5 h-5 inline-block" />
                                                     </button>
                                                     <button onClick={(e) => { e.stopPropagation(); baixarPDFOrcamento(orc); }} className="p-2 text-orange-500 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/30 rounded transition inline-block" title="Imprimir Orçamento">
                                                         <Icon name="printer" className="w-5 h-5 inline-block" />
                                                     </button>
-                                                    <button onClick={(e) => { e.stopPropagation(); abrirEdicaoOrcamento(orc); }} className="p-2 text-gray-400 hover:text-brand hover:bg-gray-100 dark:hover:bg-darkHover rounded transition opacity-0 group-hover:opacity-100" title="Editar">
-                                                        <Icon name="edit-2" className="w-4 h-4" />
+                                                    <button onClick={(e) => { e.stopPropagation(); abrirEdicaoOrcamento(orc); }} className="p-2 text-gray-400 hover:text-brand hover:bg-gray-100 dark:hover:bg-darkHover rounded transition inline-block" title="Editar">
+                                                        <Icon name="edit-3" className="w-5 h-5 inline-block" />
                                                     </button>
                                                     <button onClick={(e) => { e.stopPropagation(); excluirOrcamentoFormalizado(orc.id); }} className="p-2 text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded transition inline-block" title="Excluir">
                                                         <Icon name="trash-2" className="w-5 h-5 inline-block" />
