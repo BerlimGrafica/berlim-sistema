@@ -1081,6 +1081,7 @@ function App() {
     const [salvandoOS, setSalvandoOS] = useState(false);
     const [osParaImprimir, setOsParaImprimir] = useState(null);
     const [pedidoEmEdicao, setPedidoEmEdicao] = useState(null); 
+    const [idOrcamentoOrigem, setIdOrcamentoOrigem] = useState(null);
 
     const [itensPedido, setItensPedido] = useState([]);
     const [itemAtual, setItemAtual] = useState({ nome: '', descricao: '', valor: '', desconto: '', local_producao: 'Berlim', id_produto: null });
@@ -1512,6 +1513,7 @@ function App() {
     function fecharModalOS() {
         setModalAberto(false);
         setPedidoEmEdicao(null);
+        setIdOrcamentoOrigem(null);
         setBuscaCliente('');
         setBuscaProduto('');
         setItensPedido([]); 
@@ -1703,10 +1705,20 @@ function App() {
                 alert('Erro ao salvar OS: ' + error.message);
             } else if (data && data.length > 0) {
                 setPedidos([data[0], ...pedidos]); 
+                if (idOrcamentoOrigem) {
+                    supabase.from('orcamentos_formalizados').delete().eq('id', idOrcamentoOrigem).then(({ error }) => {
+                        if (!error) setOrcamentosFormalizados(prev => prev.filter(o => o.id !== idOrcamentoOrigem));
+                    });
+                }
                 fecharModalOS(); 
                 if (querImprimir) imprimirOS(data[0]); 
             } else {
                 // Se a resposta for vazia, puxa as informações limpas e fecha sem travar
+                if (idOrcamentoOrigem) {
+                    supabase.from('orcamentos_formalizados').delete().eq('id', idOrcamentoOrigem).then(({ error }) => {
+                        if (!error) setOrcamentosFormalizados(prev => prev.filter(o => o.id !== idOrcamentoOrigem));
+                    });
+                }
                 carregarDados();
                 fecharModalOS();
                 if (querImprimir) alert('Pedido atualizado com sucesso! Para evitar lentidão, inicie a impressão manualmente através do Histórico.');
@@ -1808,13 +1820,12 @@ function App() {
     }
     
     function transformarEmOS(orcamento) {
-        const dadosDesconstruidos = desconstruirTextoServico(orcamento.descricao);
         setPedidoEmEdicao(null);
         setBuscaCliente(orcamento.cliente);
-        setItensPedido(dadosDesconstruidos.itens);
+        setItensPedido(typeof orcamento.itens === 'string' ? JSON.parse(orcamento.itens) : (orcamento.itens || []));
         setNovoPedido({
             cliente: orcamento.cliente,
-            servico: dadosDesconstruidos.observacoes || '',
+            servico: '',
             valor_total: formatarMoeda((orcamento.valor * 100).toFixed(0).toString()),
             status: 'Produzir',
             data_pedido: obterDataAtual(),
@@ -1823,7 +1834,7 @@ function App() {
             entrega: false,
             urgente: false
         });
-        // We set id_orcamento_origem so we can mark it as converted later if needed
+        setIdOrcamentoOrigem(orcamento.id);
         setModalAberto(true);
     }
     
@@ -2247,38 +2258,38 @@ function App() {
                 {/* TIER 2: Main Navigation Bar (Brand Color) */}
                 <nav className="bg-brand text-white px-6 shadow-sm z-30 sticky top-[64px] h-[48px]">
                     <div className="flex gap-1 overflow-x-auto custom-scrollbar no-scrollbar-style items-end pt-2 h-full">
-                        <a onClick={() => setAbaAtual('dashboard')} className={`px-5 py-2.5 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center tracking-wide uppercase ${abaAtual === 'dashboard' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
+                        <a onClick={() => setAbaAtual('dashboard')} className={`px-5 py-3 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center tracking-wide uppercase ${abaAtual === 'dashboard' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
                             Início
                         </a>
                         {(usuario?.nivel === 'Administrador' || usuario?.nivel === 'Produção/Atendimento') && (
-                            <a onClick={() => setAbaAtual('producao')} className={`px-5 py-2.5 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center tracking-wide uppercase ${abaAtual === 'producao' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
+                            <a onClick={() => setAbaAtual('producao')} className={`px-5 py-3 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center tracking-wide uppercase ${abaAtual === 'producao' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
                                 Produção
                             </a>
                         )}
-                        <a onClick={() => setAbaAtual('baixa')} className={`px-5 py-2.5 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center tracking-wide uppercase ${abaAtual === 'baixa' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
+                        <a onClick={() => setAbaAtual('baixa')} className={`px-5 py-3 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center tracking-wide uppercase ${abaAtual === 'baixa' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
                             O.S.
                         </a>
                         {usuario?.nivel !== 'Financeiro' && (
-                            <a onClick={() => setAbaAtual('calculadoras')} className={`px-5 py-2.5 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center tracking-wide uppercase ${abaAtual === 'calculadoras' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
+                            <a onClick={() => setAbaAtual('calculadoras')} className={`px-5 py-3 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center tracking-wide uppercase ${abaAtual === 'calculadoras' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
                                 Calculadoras
                             </a>
                         )}
                         
                         {(usuario?.nivel === 'Administrador' || usuario?.nivel === 'Financeiro') && (
-                            <a onClick={() => setAbaAtual('financeiro')} className={`px-5 py-2.5 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center tracking-wide uppercase ${abaAtual === 'financeiro' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
+                            <a onClick={() => setAbaAtual('financeiro')} className={`px-5 py-3 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center tracking-wide uppercase ${abaAtual === 'financeiro' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
                                 Financeiro
                             </a>
                         )}
                         
                         {(usuario?.nivel === 'Administrador' || usuario?.nivel === 'Financeiro' || usuario?.nivel === 'Produção/Atendimento') && (
-                            <a onClick={() => setAbaAtual('notas_fiscais')} className={`px-5 py-2.5 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center gap-2 tracking-wide uppercase ${abaAtual === 'notas_fiscais' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
+                            <a onClick={() => setAbaAtual('notas_fiscais')} className={`px-5 py-3 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center gap-2 tracking-wide uppercase ${abaAtual === 'notas_fiscais' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
                                 Notas Fiscais
                                 {notasFiscais.some(n => !n.concluido) && <span className={`w-2 h-2 rounded-full ${abaAtual === 'notas_fiscais' ? 'bg-emerald-500' : 'bg-white'} shadow`}></span>}
                             </a>
                         )}
 
                         {usuario?.nivel !== 'Financeiro' && (
-                            <a onClick={() => setAbaAtual('orcamentos')} className={`px-5 py-2.5 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center tracking-wide uppercase ${abaAtual === 'orcamentos' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
+                            <a onClick={() => setAbaAtual('orcamentos')} className={`px-5 py-3 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center tracking-wide uppercase ${abaAtual === 'orcamentos' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
                                 Orçamentos
                             </a>
                         )}
@@ -3377,33 +3388,33 @@ function App() {
                             </div>
                         </div>
 
-                        <div className="bg-white dark:bg-darkCard rounded-xl shadow-sm border border-gray-200 dark:border-darkBorder overflow-hidden">
+                        <div className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded overflow-hidden">
                             <div className="overflow-x-auto min-h-[300px]">
                                 <table className="w-full text-left border-collapse">
-                                    <thead>
-                                        <tr className="bg-gray-50 dark:bg-darkHover/30 border-b border-gray-200 dark:border-darkBorder">
-                                            <th className="px-4 py-3 text-[11px] font-bold text-gray-500 uppercase tracking-widest whitespace-nowrap">ID</th>
-                                            <th className="px-4 py-3 text-[11px] font-bold text-gray-500 uppercase tracking-widest whitespace-nowrap">Cliente</th>
-                                            <th className="px-4 py-3 text-[11px] font-bold text-gray-500 uppercase tracking-widest whitespace-nowrap">Valor</th>
-                                            <th className="px-4 py-3 text-[11px] font-bold text-gray-500 uppercase tracking-widest whitespace-nowrap">Data</th>
-                                            <th className="px-4 py-3 text-[11px] font-bold text-gray-500 uppercase tracking-widest whitespace-nowrap text-right">Ações</th>
+                                    <thead className="bg-gray-50/50 dark:bg-darkHover/50 border-t-2 border-brand">
+                                        <tr className="border-b border-gray-200 dark:border-darkBorder text-[13px] font-semibold text-gray-500 dark:text-gray-400 tracking-wide uppercase">
+                                            <th className="px-6 py-4">ID</th>
+                                            <th className="px-6 py-4">Cliente</th>
+                                            <th className="px-6 py-4">Valor</th>
+                                            <th className="px-6 py-4">Data</th>
+                                            <th className="px-6 py-4 text-right">Ações</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-100 dark:divide-darkBorder">
                                         {orcamentosFormalizados.map(orc => (
-                                            <tr key={orc.id} className="hover:bg-gray-50 dark:hover:bg-darkHover/50 transition-colors">
-                                                <td className="px-4 py-3 text-[13px] font-medium text-gray-900 dark:text-gray-300">#{orc.id}</td>
-                                                <td className="px-4 py-3 text-[13px] font-medium text-gray-900 dark:text-gray-300">{orc.cliente}</td>
-                                                <td className="px-4 py-3 text-[13px] font-medium text-emerald-600 dark:text-emerald-400">R$ {formatarMoeda((orc.valor * 100).toFixed(0).toString())}</td>
-                                                <td className="px-4 py-3 text-[13px] text-gray-500 dark:text-gray-400">{new Date(orc.created_at).toLocaleDateString('pt-BR')}</td>
-                                                <td className="px-4 py-3 text-[13px] text-right flex justify-end gap-2">
-                                                    <button onClick={() => transformarEmOS(orc)} className="p-1.5 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded transition" title="Transformar em O.S.">
+                                            <tr key={orc.id} onClick={() => abrirEdicaoOrcamento(orc)} className="hover:bg-gray-50 dark:hover:bg-darkHover/50 transition-colors cursor-pointer group">
+                                                <td className="px-6 py-4 text-[13px] font-medium text-gray-900 dark:text-gray-300">#{orc.id}</td>
+                                                <td className="px-6 py-4 text-[13px] font-medium text-gray-900 dark:text-gray-300">{orc.cliente}</td>
+                                                <td className="px-6 py-4 text-[13px] font-medium text-emerald-600 dark:text-emerald-400">R$ {formatarMoeda((orc.valor * 100).toFixed(0).toString())}</td>
+                                                <td className="px-6 py-4 text-[13px] text-gray-500 dark:text-gray-400">{new Date(orc.created_at).toLocaleDateString('pt-BR')}</td>
+                                                <td className="px-6 py-4 text-[13px] text-right flex justify-end gap-2">
+                                                    <button onClick={(e) => { e.stopPropagation(); transformarEmOS(orc); }} className="p-1.5 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded transition" title="Transformar em O.S.">
                                                         <Icon name="check-circle" className="w-4 h-4" />
                                                     </button>
-                                                    <button onClick={() => abrirEdicaoOrcamento(orc)} className="p-1.5 text-gray-400 hover:text-brand hover:bg-gray-100 dark:hover:bg-darkHover rounded transition" title="Editar">
+                                                    <button onClick={(e) => { e.stopPropagation(); abrirEdicaoOrcamento(orc); }} className="p-1.5 text-gray-400 hover:text-brand hover:bg-gray-100 dark:hover:bg-darkHover rounded transition opacity-0 group-hover:opacity-100" title="Editar">
                                                         <Icon name="edit-2" className="w-4 h-4" />
                                                     </button>
-                                                    <button onClick={() => excluirOrcamentoFormalizado(orc.id)} className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded transition" title="Excluir">
+                                                    <button onClick={(e) => { e.stopPropagation(); excluirOrcamentoFormalizado(orc.id); }} className="p-1.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded transition" title="Excluir">
                                                         <Icon name="trash-2" className="w-4 h-4" />
                                                     </button>
                                                 </td>
@@ -4073,115 +4084,122 @@ function App() {
             )}
 
             {modalOrcamentoFormalizadoAberto && (
-                <div onClick={() => setModalOrcamentoFormalizadoAberto(false)} className="fixed inset-0 z-[60] flex items-start justify-center p-0 md:p-6 bg-slate-900/60 dark:bg-black/80 glass no-print transition-all cursor-pointer overflow-y-auto">
-                    <div onClick={e => e.stopPropagation()} className="bg-[#EDEFF0] dark:bg-darkBg md:rounded shadow-2xl w-full max-w-[1400px] my-auto overflow-hidden cursor-default border border-gray-200 dark:border-darkBorder flex flex-col h-[100dvh] md:h-[90vh]">
-                        {/* Header Modal Orçamento */}
-                        <div className="px-6 py-4 border-b border-gray-200 dark:border-darkBorder bg-gray-50 dark:bg-darkCard flex justify-between items-center sticky top-0 z-20 shrink-0 shadow-sm">
+                <div onClick={() => setModalOrcamentoFormalizadoAberto(false)} className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer">
+                    <div onClick={(e) => e.stopPropagation()} className="bg-[#EDEFF0] dark:bg-darkBg w-full max-w-3xl rounded border border-gray-200 dark:border-darkBorder shadow-2xl flex flex-col max-h-[95vh] cursor-default overflow-hidden">
+                        <div className="px-6 py-5 flex justify-between items-center bg-brand text-white rounded-t">
                             <div className="flex items-center gap-3">
-                                <div className="p-2 bg-brand/10 rounded-lg">
-                                    <Icon name="file-text" className="w-5 h-5 text-brand" />
-                                </div>
-                                <div>
-                                    <h2 className="text-xl font-black text-gray-900 dark:text-white tracking-tight">
-                                        {orcamentoFormalizadoEmEdicao ? 'Editar Orçamento Formalizado' : 'Novo Orçamento Formalizado'}
-                                    </h2>
-                                </div>
+                                <h3 className="font-semibold text-xl tracking-tight">
+                                    {orcamentoFormalizadoEmEdicao ? 'Editar Orçamento Formalizado' : 'Novo Orçamento Formalizado'}
+                                </h3>
                             </div>
-                            <button type="button" onClick={() => setModalOrcamentoFormalizadoAberto(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-white transition p-1 bg-white dark:bg-darkElevated rounded-md border border-gray-200 dark:border-darkBorder shadow-sm">
-                                <Icon name="x" className="w-5 h-5" />
-                            </button>
+                            <button type="button" onClick={() => setModalOrcamentoFormalizadoAberto(false)} className="text-white/70 hover:text-white transition"><Icon name="x" className="w-5 h-5" /></button>
                         </div>
                         
-                        <div className="flex-1 overflow-y-auto flex flex-col xl:flex-row divide-y xl:divide-y-0 xl:divide-x divide-gray-200 dark:divide-darkBorder custom-scrollbar bg-white dark:bg-darkBg">
-                            {/* Lado Esquerdo - Calculadoras */}
-                            <div className="w-full xl:w-[480px] shrink-0 bg-gray-50/50 dark:bg-darkElevated flex flex-col">
-                                <CalculadorasAba
-                                    abaLateral={abaLateral}
-                                    setAbaLateral={setAbaLateral}
-                                    produtos={produtos}
-                                    buscaProduto={buscaProduto}
-                                    setBuscaProduto={setBuscaProduto}
-                                    produtoDropdownAberto={produtoDropdownAberto}
-                                    setProdutoDropdownAberto={setProdutoDropdownAberto}
-                                    itemAtual={itemAtual}
-                                    setItemAtual={setItemAtual}
-                                    adicionarItemAoCarrinho={adicionarItemAoCarrinho}
-                                    fornecedores={fornecedores}
-                                />
-                            </div>
-                            
-                            {/* Lado Direito - Orçamento */}
-                            <div className="flex-1 flex flex-col p-6 xl:p-8 bg-[#EDEFF0] dark:bg-darkBg">
-                                <div className="space-y-6">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <form className="p-8 overflow-y-auto custom-scrollbar flex flex-col gap-6">
+                            <div>
+                                <label className="block text-[13px] font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Cliente / Empresa</label>
+                                <div className="flex gap-2">
+                                    <div className="relative flex-1">
+                                        <input required type="text" value={buscaCliente}
+                                            onChange={e => { setBuscaCliente(e.target.value); setNovoPedido({...novoPedido, cliente: e.target.value}); setClienteDropdownAberto(true); }}
+                                            onFocus={() => { setClienteDropdownAberto(true); }} onBlur={() => setTimeout(() => setClienteDropdownAberto(false), 200)}
+                                            className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand transition dark:text-[#EDEDED]" placeholder="Buscar cliente..." autoComplete="off" />
+                                        <Icon name="chevron-down" className="absolute right-3 top-2.5 w-4 h-4 text-gray-400 pointer-events-none" />
+                                        {clienteDropdownAberto && clientesFiltrados.length > 0 && (
+                                            <ul className="absolute z-[60] w-full mt-1 max-h-48 overflow-y-auto bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded shadow-xl custom-scrollbar">
+                                                {clientesFiltrados.map(c => (
+                                                    <li key={c.id} onClick={() => { setBuscaCliente(c.nome); setNovoPedido({...novoPedido, cliente: c.nome}); setClienteDropdownAberto(false); }} className="px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-darkHover cursor-pointer border-b border-gray-100 dark:border-darkBorder last:border-0 flex justify-between items-center transition"><span className="font-medium text-[13px] text-gray-800 dark:text-[#EDEDED]">{c.nome}</span><span className="text-[11px] text-gray-500">{c.telefone}</span></li>
+                                                ))}
+                                            </ul>
+                                        )}
+                                    </div>
+                                    <button type="button" onClick={() => { setNovoCliente({ id: null, nome: '', telefone: '', email: '', observacoes: '', cliente_problema: false }); setModalClienteAberto(true); }} className="shrink-0 w-[38px] h-[38px] flex items-center justify-center bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded hover:bg-darkHover transition" title="Novo Cliente">
+                                        <Icon name="plus" className="w-4 h-4 text-brand" />
+                                    </button>
+                                </div>
+                                {isClienteProblema(novoPedido.cliente) && (
+                                    <div className="mt-2 p-2.5 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded flex items-start gap-2.5 text-red-600 dark:text-red-400">
+                                        <Icon name="alert-triangle" className="w-5 h-5 shrink-0 mt-0.5" />
                                         <div>
-                                            <label className="block text-[13px] font-bold text-gray-700 dark:text-gray-200 mb-1.5 flex items-center gap-2"><Icon name="user" className="w-3.5 h-3.5"/>Cliente *</label>
-                                            <div className="relative">
-                                                <input type="text" value={buscaCliente} onChange={e => { setBuscaCliente(e.target.value); setNovoPedido({...novoPedido, cliente: e.target.value}); setClienteDropdownAberto(true); }} onFocus={() => setClienteDropdownAberto(true)} onBlur={() => setTimeout(() => setClienteDropdownAberto(false), 200)} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand transition dark:text-[#EDEDED]" placeholder="Buscar ou digitar cliente" />
-                                                {clienteDropdownAberto && (
-                                                    <ul className="absolute z-50 w-full mt-1 bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded shadow-lg max-h-48 overflow-y-auto custom-scrollbar">
-                                                        {clientesCadastrados.filter(c => c.nome.toLowerCase().includes(buscaCliente.toLowerCase())).map(c => (
-                                                            <li key={c.id} className="px-3 py-2 text-[12px] hover:bg-gray-100 dark:hover:bg-darkHover cursor-pointer dark:text-[#EDEDED]" onClick={() => { setBuscaCliente(c.nome); setNovoPedido({...novoPedido, cliente: c.nome}); setClienteDropdownAberto(false); }}>
-                                                                {c.nome} {c.telefone && <span className="text-gray-400">({c.telefone})</span>}
+                                            <span className="text-[13px] font-semibold block">Atenção: Cliente Problemático</span>
+                                            <span className="text-[11px]">Este cliente possui restrições ou histórico negativo na empresa. Fique atento.</span>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div>
+                                <label className="block text-[13px] font-medium mb-3 text-gray-700 dark:text-[#EDEDED]">Carrinho de Itens do Orçamento</label>
+                                {itensPedido.length > 0 ? (
+                                    <div className="mb-4 flex flex-col gap-2">
+                                        {itensPedido.map((item, index) => (
+                                            <div key={item.id_temp} className="flex justify-between items-center p-3 bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded shadow-sm">
+                                                <div className="flex flex-col"><span className="font-semibold text-[13px] dark:text-white">{index + 1}. {item.nome || 'Serviço Personalizado'}</span><span className="text-[11px] text-gray-500 dark:text-[#A1A1AA] whitespace-pre-wrap mt-1">{item.descricao}</span>{item.local_producao && <span className="text-[10px] bg-brand/10 text-brand font-semibold px-1.5 py-0.5 rounded mt-1.5 w-max">Local: {item.local_producao}</span>}</div>
+                                                <div className="flex items-center gap-4"><div className="text-right"><span className="font-semibold text-[13px] dark:text-white">R$ {item.valor}</span>{item.desconto && <span className="block text-[10px] text-brand font-medium">-{item.desconto}% desc</span>}</div><button type="button" onClick={() => removerItemDoCarrinho(item.id_temp)} className="text-gray-400 hover:text-red-500 transition"><Icon name="trash-2" className="w-4 h-4" /></button></div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <p className="text-[11px] text-gray-500 dark:text-[#666] mb-4 italic">Nenhum item adicionado de forma estruturada.</p>
+                                )}
+
+                                <div className="p-4 border border-dashed border-gray-300 dark:border-darkBorder rounded bg-transparent">
+                                    <div className="flex flex-col gap-3">
+                                        <div className="flex gap-2">
+                                            <div className="relative flex-1">
+                                                <input type="text" value={buscaProduto} 
+                                                    onChange={e => { setBuscaProduto(e.target.value); setProdutoDropdownAberto(true); }}
+                                                    onFocus={() => { setProdutoDropdownAberto(true); }} onBlur={() => setTimeout(() => setProdutoDropdownAberto(false), 200)}
+                                                    className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand transition dark:text-[#EDEDED]" placeholder="Puxar item do catálogo (Opcional)..." autoComplete="off" />
+                                                <Icon name="chevron-down" className="absolute right-3 top-3 w-4 h-4 text-gray-400 pointer-events-none" />
+                                                {produtoDropdownAberto && produtosFiltrados.length > 0 && (
+                                                    <ul className="absolute z-[60] w-full mt-1 max-h-48 overflow-y-auto bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded shadow-xl custom-scrollbar">
+                                                        {produtosFiltrados.map(p => (
+                                                            <li key={p.id} onClick={() => { 
+                                                                setBuscaProduto(p.nome);
+                                                                setItemAtual({ ...itemAtual, nome: p.nome, descricao: p.texto_padrao, valor: formatarMoeda((p.preco_base * 100).toFixed(0).toString()), desconto: '', id_produto: p.id }); 
+                                                                setProdutoDropdownAberto(false); 
+                                                            }} className="px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-darkHover cursor-pointer border-b border-gray-100 dark:border-darkBorder last:border-0 flex flex-col transition">
+                                                                <div className="flex justify-between items-center"><span className="font-medium text-[13px] dark:text-[#EDEDED]">{p.nome}</span><span className="text-[11px] font-semibold text-brand">R$ {formatarValorFinanceiro(Number(p.preco_base))}</span></div>
                                                             </li>
                                                         ))}
-                                                        {clientesCadastrados.filter(c => c.nome.toLowerCase().includes(buscaCliente.toLowerCase())).length === 0 && (
-                                                            <li className="px-3 py-2 text-[12px] text-gray-500">Nenhum cliente encontrado.</li>
-                                                        )}
                                                     </ul>
                                                 )}
                                             </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Lista de Itens do Orçamento */}
-                                    <div className="bg-white dark:bg-darkElevated rounded-lg border border-gray-200 dark:border-darkBorder overflow-hidden shadow-sm">
-                                        <div className="bg-gray-50 dark:bg-darkHover/30 px-4 py-2 border-b border-gray-200 dark:border-darkBorder flex items-center gap-2">
-                                            <Icon name="shopping-cart" className="w-4 h-4 text-gray-500" />
-                                            <span className="text-[12px] font-bold text-gray-700 dark:text-gray-300 uppercase tracking-widest">Itens do Orçamento</span>
-                                        </div>
-                                        <div className="p-3">
-                                            {itensPedido.length === 0 ? (
-                                                <p className="text-[12px] text-gray-400 text-center py-4">Nenhum item adicionado.</p>
-                                            ) : (
-                                                <div className="space-y-2">
-                                                    {itensPedido.map(item => (
-                                                        <div key={item.id_temp} className="flex justify-between items-center bg-gray-50/50 dark:bg-darkBg border border-gray-100 dark:border-darkBorder rounded p-2 relative pr-8">
-                                                            <div>
-                                                                <div className="text-[13px] font-bold text-gray-800 dark:text-gray-200 flex items-center gap-2">
-                                                                    {item.nome || 'Serviço Personalizado'} {item.id_produto && <span className="text-[10px] bg-brand/10 text-brand px-1 rounded">#{item.id_produto}</span>}
-                                                                </div>
-                                                                <div className="text-[11px] text-gray-500 mt-0.5 whitespace-pre-wrap">{item.descricao}</div>
-                                                            </div>
-                                                            <div className="text-right flex items-center gap-2 shrink-0">
-                                                                <div className="flex flex-col items-end">
-                                                                    {item.desconto ? (
-                                                                        <div className="flex flex-col items-end">
-                                                                            <span className="text-[10px] text-red-400 line-through">R$ {item.valor_original}</span>
-                                                                            <span className="text-[13px] font-bold text-gray-900 dark:text-gray-100">R$ {item.valor} <span className="text-emerald-500 text-[10px] font-bold">(-{item.desconto}%)</span></span>
-                                                                        </div>
-                                                                    ) : (
-                                                                        <span className="text-[13px] font-bold text-gray-900 dark:text-gray-100">R$ {item.valor}</span>
-                                                                    )}
-                                                                </div>
-                                                            </div>
-                                                            <button type="button" onClick={() => removerItemDoCarrinho(item.id_temp)} className="absolute top-1/2 -translate-y-1/2 right-2 text-gray-400 hover:text-red-500 transition p-1"><Icon name="trash-2" className="w-4 h-4" /></button>
-                                                        </div>
-                                                    ))}
-                                                </div>
+                                            {isAdmin && (
+                                                <button type="button" onClick={() => { setNovoProduto({ id: null, nome: '', texto_padrao: '', preco_base: '' }); setModalProdutoAberto(true); }} className="shrink-0 w-[38px] h-[38px] flex items-center justify-center bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded hover:bg-darkHover transition" title="Novo Produto">
+                                                    <Icon name="plus" className="w-4 h-4 text-brand" />
+                                                </button>
                                             )}
                                         </div>
-                                    </div>
-                                    
-                                    <div>
-                                        <label className="block text-[13px] font-medium mb-2 text-gray-700 dark:text-[#EDEDED]">Observações Gerais ou Texto Complementar</label>
-                                        <textarea rows="4" value={novoPedido.servico} onChange={e => setNovoPedido({...novoPedido, servico: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand transition dark:text-[#EDEDED] custom-scrollbar" placeholder="Detalhes adicionais, garantias, etc..."></textarea>
+
+                                        <textarea rows="2" value={itemAtual.descricao} onChange={e => setItemAtual({...itemAtual, descricao: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand transition dark:text-[#EDEDED]" placeholder="Especificações do item (Ex: Medida, quantidade, material...)"></textarea>
+                                        <div className="grid grid-cols-4 gap-3">
+                                            <div className="relative col-span-2">
+                                                <span className="absolute left-3 top-2.5 text-[11px] text-gray-400 font-medium">Local:</span>
+                                                <select value={itemAtual.local_producao} onChange={e => setItemAtual({...itemAtual, local_producao: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded pl-[52px] pr-8 py-2 text-[11px] outline-none focus:border-brand transition dark:text-[#EDEDED] font-medium appearance-none">
+                                                    {(fornecedores.length > 0 ? fornecedores.map(f => f.nome) : ['Berlim']).map(l => <option key={l} value={l}>{l}</option>)}
+                                                </select>
+                                                <Icon name="chevron-down" className="absolute right-3 top-2.5 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+                                            </div>
+                                            <div className="relative">
+                                                <span className="absolute left-2.5 top-2.5 text-[11px] text-gray-400">R$</span>
+                                                <input type="text" value={itemAtual.valor} onChange={e => setItemAtual({...itemAtual, valor: formatarMoeda(e.target.value)})} className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded pl-7 pr-2 py-2 text-[11px] outline-none focus:border-brand transition dark:text-[#EDEDED] font-medium" placeholder="Bruto" />
+                                            </div>
+                                            <div><input type="text" value={itemAtual.desconto} onChange={e => { let val = e.target.value.replace(/\D/g, ''); if (parseFloat(val) > 100) val = '100'; setItemAtual({...itemAtual, desconto: val}); }} className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-2 py-2 text-[11px] outline-none focus:border-brand transition dark:text-[#EDEDED]" placeholder="Desc. %" /></div>
+                                        </div>
+                                        <button type="button" onClick={adicionarItemAoCarrinho} disabled={!itemAtual.descricao || !itemAtual.valor} className="w-full mt-3 px-3 py-2 text-[11px] font-semibold bg-white hover:bg-gray-100 dark:bg-darkHover dark:hover:bg-darkBorder text-gray-800 dark:text-white rounded border border-gray-200 dark:border-darkBorder transition shadow-sm disabled:opacity-50 flex items-center justify-center gap-1.5"><Icon name="plus" className="w-3.5 h-3.5"/> Inserir Item no Orçamento</button>
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <div className="px-6 py-4 border-t border-gray-200 dark:border-darkBorder bg-gray-50/80 dark:bg-darkCard/80 backdrop-blur-md flex flex-col lg:flex-row items-center justify-between gap-6 shrink-0 z-20 shadow-[0_-4px_20px_rgb(0,0,0,0.02)] dark:shadow-none">
+                            <div className="pt-4 border-t border-gray-200 dark:border-darkBorder">
+                                <label className="block text-[13px] font-medium mb-2 text-gray-700 dark:text-[#EDEDED]">Observações Gerais ou Texto Complementar</label>
+                                <textarea rows="4" value={novoPedido.servico} onChange={e => setNovoPedido({...novoPedido, servico: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand transition dark:text-[#EDEDED] custom-scrollbar" placeholder="Detalhes adicionais, garantias, etc..."></textarea>
+                            </div>
+                        </form>
+
+                        <div className="px-6 py-4 border-t border-gray-200 dark:border-darkBorder bg-gray-50/80 dark:bg-darkCard/80 backdrop-blur-md flex flex-col lg:flex-row items-center justify-between gap-6 shrink-0 rounded-b-xl z-20 shadow-[0_-4px_20px_rgb(0,0,0,0.02)] dark:shadow-none">
                             <div className="flex items-center gap-3 bg-white dark:bg-darkElevated px-4 py-3 rounded-xl border border-gray-200 dark:border-darkBorder shadow-sm w-full lg:w-auto justify-between lg:justify-start">
                                 <span className="text-[11px] font-bold text-gray-400 dark:text-[#888888] uppercase tracking-widest mt-1">Total Final</span>
                                 <div className="relative flex items-center justify-end">
