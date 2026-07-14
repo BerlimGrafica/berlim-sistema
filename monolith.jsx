@@ -1,4 +1,2219 @@
-return (
+"use client";
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { createClient } from '@supabase/supabase-js';
+import Icon from '@/components/Icon';
+
+const supabase = createClient(
+    'https://xbanoipgoleuahwbqksy.supabase.co',
+    'sb_publishable_RSQ4odG0wxy8ZucJHu_WvQ_0JfM8jbh'
+);
+
+
+
+
+// ==== LISTAS GLOBAIS DE ESTADOS ====
+const STATUSES_PRODUCAO = [
+    'Aguardando Pagamento', 'Aguardando Retorno', 'Desenvolvimento de Arte', 
+    'Etiqueta Escolar', 'Produzir', 'Produção', 'Avisar Cliente', 'Retirada'
+];
+const STATUSES_FINALIZADOS = ['Abandonado', 'Cancelado', 'Concluído', 'Finalizado'];
+const RESPONSAVEIS = ['Giovana', 'Murilo', 'Bruno', 'Nicole', 'Hellen', 'Jessica', 'Vini'];
+
+
+// ==== MAPEAMENTO DE CORES DOS STATUS ====
+const obterCorStatus = (status) => {
+    switch (status) {
+        case 'Aguardando Pagamento': return 'text-emerald-500 dark:text-emerald-400';
+        case 'Aguardando Retorno': return 'text-lime-500 dark:text-lime-400';
+        case 'Desenvolvimento de Arte': return 'text-cyan-500 dark:text-cyan-400';
+        case 'Etiqueta Escolar': return 'text-blue-600 dark:text-blue-500';
+        case 'Produzir': return 'text-purple-500 dark:text-purple-400';
+        case 'Produção': return 'text-gray-500 dark:text-gray-400';
+        case 'Avisar Cliente': return 'text-pink-500 dark:text-pink-400';
+        case 'Retirada': return 'text-sky-500 dark:text-sky-400';
+        case 'Abandonado': return 'text-yellow-600 dark:text-yellow-400';
+        case 'Cancelado': return 'text-red-500 dark:text-red-400';
+        case 'Concluído': return 'text-orange-500 dark:text-orange-400';
+        case 'Finalizado': return 'text-indigo-500 dark:text-indigo-400';
+        default: return 'text-gray-700 dark:text-[#EDEDED]';
+    }
+};
+
+// ==== FORMATADORES ====
+const formatarValorFinanceiro = (valor) => {
+    if (valor == null || isNaN(valor)) return '0,00';
+    return new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(valor);
+};
+
+const formatarMoeda = (valor) => {
+    if (!valor) return '';
+    const numeroLimpo = valor.toString().replace(/\D/g, ''); 
+    if (numeroLimpo === '') return '';
+    return new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(parseInt(numeroLimpo) / 100);
+};
+
+const formatarTelefone = (valor) => {
+    if (!valor) return '';
+    let v = valor.replace(/\D/g, ''); 
+    if (v.length > 11) v = v.substring(0, 11); 
+    if (v.length > 2) v = `(${v.substring(0, 2)}) ${v.substring(2)}`;
+    if (v.length > 10) v = `${v.substring(0, 10)}-${v.substring(10)}`;
+    return v;
+};
+
+const obterDataAtual = () => new Date().toISOString().split('T')[0];
+
+const formatarDataExibicao = (dataISO) => {
+    if (!dataISO) return '---';
+    const partes = dataISO.split('-');
+    if (partes.length !== 3) return dataISO;
+    return `${partes[2]}/${partes[1]}/${partes[0]}`;
+};
+
+const formatarMesAno = (str) => {
+    if(!str) return '';
+    const [y, m] = str.split('-');
+    const mesesNomes = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+    return `${mesesNomes[parseInt(m)-1]}/${y}`;
+};
+
+// ==== COMPONENTE DE DATA CUSTOMIZADO ====
+function CustomDatePicker({ value, onChange, placeholder, disabled, className }) {
+    const [isOpen, setIsOpen] = useState(false);
+    const [viewDate, setViewDate] = useState(new Date());
+    const [openUpwards, setOpenUpwards] = useState(false);
+    const containerRef = useRef(null);
+
+    useEffect(() => {
+        if (value && isOpen) {
+            const [y, m, d] = value.split('-');
+            setViewDate(new Date(y, m - 1, d));
+        } else if (isOpen) {
+            setViewDate(new Date());
+        }
+    }, [isOpen, value]);
+
+    const changeMonth = (e, offset) => {
+        e.stopPropagation();
+        const newDate = new Date(viewDate);
+        newDate.setMonth(newDate.getMonth() + offset);
+        setViewDate(newDate);
+    };
+
+    const selectDate = (day) => {
+        const yyyy = viewDate.getFullYear();
+        const mm = String(viewDate.getMonth() + 1).padStart(2, '0');
+        const dd = String(day).padStart(2, '0');
+        onChange(`${yyyy}-${mm}-${dd}`);
+        setIsOpen(false);
+    };
+
+    const toggleDropdown = () => {
+        if (disabled) return;
+        if (!isOpen && containerRef.current) {
+            const rect = containerRef.current.getBoundingClientRect();
+            // Se o espaço abaixo for menor que a altura do calendário (~320px), abre pra cima
+            setOpenUpwards(window.innerHeight - rect.bottom < 320);
+        }
+        setIsOpen(!isOpen);
+    };
+
+    const diasSemana = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+    const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+
+    const renderDias = () => {
+        const year = viewDate.getFullYear();
+        const month = viewDate.getMonth();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        const firstDayOfMonth = new Date(year, month, 1).getDay();
+
+        let days = [];
+        for (let i = 0; i < firstDayOfMonth; i++) {
+            days.push(<div key={`empty-${i}`} className="w-8 h-8"></div>);
+        }
+
+        for (let d = 1; d <= daysInMonth; d++) {
+            const dataAtualStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+            const isSelected = value === dataAtualStr;
+            const isToday = dataAtualStr === obterDataAtual();
+
+            days.push(
+                <div 
+                    key={d} 
+                    onClick={(e) => { e.stopPropagation(); selectDate(d); }}
+                    className={`w-8 h-8 flex items-center justify-center rounded-md text-[13px] cursor-pointer transition
+                        ${isSelected ? 'bg-brand text-white font-semibold' : 
+                          isToday ? 'bg-gray-100 dark:bg-darkElevated text-brand font-semibold hover:bg-gray-200 dark:hover:bg-darkHover' : 
+                          'text-gray-700 dark:text-[#EDEDED] hover:bg-gray-100 dark:hover:bg-darkHover'}`}
+                >
+                    {d}
+                </div>
+            );
+        }
+        return days;
+    };
+
+    return (
+        <div className="relative" ref={containerRef}>
+            <div 
+                onClick={toggleDropdown} 
+                className={`flex justify-between items-center cursor-pointer select-none ${className} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+                <span className={value ? "text-gray-900 dark:text-[#EDEDED]" : "text-gray-400 dark:text-gray-600 truncate"}>
+                    {value ? formatarDataExibicao(value) : placeholder}
+                </span>
+                <Icon name="calendar" className="w-4 h-4 text-gray-400 shrink-0 ml-1" />
+            </div>
+            {isOpen && (
+                <>
+                    <div className="fixed inset-0 z-[55]" onClick={(e) => { e.stopPropagation(); setIsOpen(false); }}></div>
+                    <div className={`absolute left-0 z-[60] bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-lg shadow-2xl p-4 w-72 ${openUpwards ? 'bottom-full mb-2' : 'top-full mt-2'}`}>
+                        <div className="flex justify-between items-center mb-4">
+                            <button type="button" onClick={(e) => changeMonth(e, -1)} className="p-1 hover:bg-gray-100 dark:hover:bg-darkElevated rounded text-gray-500 dark:text-gray-400"><Icon name="chevron-left" /></button>
+                            <span className="font-semibold text-[13px] dark:text-white">{meses[viewDate.getMonth()]} de {viewDate.getFullYear()}</span>
+                            <button type="button" onClick={(e) => changeMonth(e, 1)} className="p-1 hover:bg-gray-100 dark:hover:bg-darkElevated rounded text-gray-500 dark:text-gray-400"><Icon name="chevron-right" /></button>
+                        </div>
+                        <div className="grid grid-cols-7 mb-2">
+                            {diasSemana.map(d => <div key={d} className="w-8 h-8 flex items-center justify-center text-[10px] font-semibold text-gray-400">{d}</div>)}
+                        </div>
+                        <div className="grid grid-cols-7 gap-y-1">
+                            {renderDias()}
+                        </div>
+                    </div>
+                </>
+            )}
+        </div>
+    );
+}
+
+// ==== COMPONENTE DE DROPDOWN CUSTOMIZADO ====
+// ==== COMPONENTE DE DROPDOWN CUSTOMIZADO ====
+function InlineDropdown({ value, options, onChange, className, hasIndefinido = false }) {
+    const [isOpen, setIsOpen] = useState(false);
+    const [openUpwards, setOpenUpwards] = useState(false);
+    const containerRef = useRef(null);
+    const getTextColor = (val) => obterCorStatus(val);
+
+    const toggleDropdown = () => {
+        if (!isOpen && containerRef.current) {
+            const rect = containerRef.current.getBoundingClientRect();
+            // Calcula se há espaço para baixo. Se não, abre para cima
+            setOpenUpwards(window.innerHeight - rect.bottom < 250);
+        }
+        setIsOpen(!isOpen);
+    };
+
+    return (
+        <div className="relative" ref={containerRef}>
+            <div 
+                onClick={toggleDropdown}
+                className={`flex items-center justify-between cursor-pointer transition ${className} ${isOpen ? 'border-brand ring-1 ring-brand/20' : ''}`}
+            >
+                <div className="flex items-center gap-1.5 truncate">
+                    <span className={`truncate font-medium ${getTextColor(value)}`}>{value || 'Indefinido'}</span>
+                </div>
+                <Icon name="chevron-down" className={`w-3 h-3 text-gray-400 shrink-0 ml-1 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+            </div>
+            {isOpen && (
+                <>
+                    <div className="fixed inset-0 z-[55]" onClick={(e) => { e.stopPropagation(); setIsOpen(false); }}></div>
+                    <ul className={`absolute left-0 z-[60] w-full min-w-[160px] max-h-48 overflow-y-auto bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded shadow-xl custom-scrollbar text-[11px] ${openUpwards ? 'bottom-full mb-1' : 'top-full mt-1'}`}>
+                        {hasIndefinido && (
+                            <li 
+                                onClick={(e) => { e.stopPropagation(); onChange(''); setIsOpen(false); }}
+                                className="px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-darkHover cursor-pointer border-b border-gray-100 dark:border-darkBorder text-gray-500 dark:text-gray-400 transition"
+                            >
+                                Indefinido
+                            </li>
+                        )}
+                        {options.map(opt => (
+                            <li 
+                                key={opt}
+                                onClick={(e) => { e.stopPropagation(); onChange(opt); setIsOpen(false); }}
+                                className={`px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-darkHover cursor-pointer border-b border-gray-100 dark:border-darkBorder last:border-0 transition font-medium flex items-center justify-between ${getTextColor(opt)}`}
+                            >
+                                {opt}
+                                {value === opt && <div className="w-1.5 h-1.5 rounded-full bg-brand"></div>}
+                            </li>
+                        ))}
+                    </ul>
+                </>
+            )}
+        </div>
+    );
+}
+
+// ==== COMPONENTE DE DROPDOWN MULTI-SELECT ====
+function MultiSelectDropdown({ value, options, onChange, className, disabled, placeholder = "Indefinido" }) {
+    const [isOpen, setIsOpen] = useState(false);
+    const [openUpwards, setOpenUpwards] = useState(false);
+    const containerRef = useRef(null);
+    const selectedArr = value ? value.split(',').map(s => s.trim()).filter(Boolean) : [];
+
+    const toggleOption = (opt, e) => {
+        e.stopPropagation();
+        let newArr;
+        if (selectedArr.includes(opt)) {
+            newArr = selectedArr.filter(item => item !== opt);
+        } else {
+            newArr = [...selectedArr, opt];
+        }
+        onChange(newArr.join(', '));
+    };
+
+    const toggleDropdown = () => {
+        if (disabled) return;
+        if (!isOpen && containerRef.current) {
+            const rect = containerRef.current.getBoundingClientRect();
+            // Calcula o espaço. Se faltar espaço em baixo, abre o pop-up para cima.
+            setOpenUpwards(window.innerHeight - rect.bottom < 250);
+        }
+        setIsOpen(!isOpen);
+    };
+
+    return (
+        <div className="relative w-full" ref={containerRef}>
+            <div 
+                onClick={toggleDropdown}
+                className={`flex items-center justify-between cursor-pointer transition ${className} ${isOpen ? 'border-brand ring-1 ring-brand/20' : ''} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+                <div className="flex items-center gap-1.5 truncate">
+                    <span className={`truncate font-medium ${selectedArr.length > 0 ? 'text-brand dark:text-brand' : 'text-gray-500 dark:text-gray-400'}`}>
+                        {selectedArr.length > 0 ? selectedArr.join(', ') : placeholder}
+                    </span>
+                </div>
+                <Icon name="chevron-down" className={`w-3 h-3 text-gray-400 shrink-0 ml-1 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+            </div>
+            {isOpen && (
+                <>
+                    <div className="fixed inset-0 z-[55]" onClick={(e) => { e.stopPropagation(); setIsOpen(false); }}></div>
+                    <ul className={`absolute left-0 z-[60] w-full min-w-[160px] max-h-48 overflow-y-auto bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded shadow-xl custom-scrollbar text-[11px] ${openUpwards ? 'bottom-full mb-1' : 'top-full mt-1'}`}>
+                        {options.map(opt => {
+                            const isSelected = selectedArr.includes(opt);
+                            return (
+                                <li 
+                                    key={opt}
+                                    onClick={(e) => toggleOption(opt, e)}
+                                    className={`px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-darkHover cursor-pointer border-b border-gray-100 dark:border-darkBorder last:border-0 transition font-medium flex items-center justify-between ${isSelected ? 'text-brand bg-brand/5 dark:bg-brand/10' : 'text-gray-700 dark:text-[#EDEDED]'}`}
+                                >
+                                    {opt}
+                                    {isSelected ? <Icon name="check-square" className="w-3.5 h-3.5" /> : <Icon name="square" className="w-3.5 h-3.5 text-gray-300 dark:text-gray-600" />}
+                                </li>
+                            );
+                        })}
+                    </ul>
+                </>
+            )}
+        </div>
+    );
+}
+
+// DESTRUTURADOR E RESUMO DE SERVIÇO
+function desconstruirTextoServico(texto) {
+    if (!texto) return { itens: [], observacoes: '', pagamentos: [] };
+    
+    let partesPagamento = texto.split('\n\n[PAGAMENTOS]\n');
+    let textoSemPagamento = partesPagamento[0];
+    let pagamentosStr = partesPagamento[1] || '[]';
+    let pagamentos = [];
+    try { pagamentos = JSON.parse(pagamentosStr); } catch (e) { pagamentos = []; }
+
+    let partes = textoSemPagamento.split('\n\n[OBSERVAÇÕES GERAIS]\n');
+    let blocoItens = partes[0];
+    let obs = partes[1] || '';
+    if (!blocoItens.startsWith('• ') && partes.length === 1) return { itens: [], observacoes: textoSemPagamento, pagamentos };
+    
+    let itensTraduzidos = [];
+    let blocosIndividuais = blocoItens.split('\n\n');
+    
+    for (let bloco of blocosIndividuais) {
+        if (!bloco.startsWith('• ')) { obs = obs ? obs + '\n' + bloco : bloco; continue; }
+        let lines = bloco.split('\n');
+        if (lines.length < 3) { obs = obs ? obs + '\n' + bloco : bloco; continue; }
+        
+        let nomeBruto = lines[0].replace('• ', '').replace('  ', '').trim();
+        let id_produto = null;
+        let matchId = nomeBruto.match(/^\[#(\d+)\]\s(.*)$/);
+        if (matchId) {
+            id_produto = parseInt(matchId[1]);
+            nomeBruto = matchId[2];
+        }
+        let nome = nomeBruto;
+        let AppValor = '0,00';
+        let local_producao = 'Berlim'; // fallback/default
+        let descLines = [];
+        let concluido = false;
+        
+        for (let i = 1; i < lines.length; i++) {
+            let line = lines[i].trim();
+            if (line.startsWith('Valor: R$ ')) {
+                AppValor = line.replace('Valor: R$ ', '');
+            } else if (line.startsWith('Local: ')) {
+                local_producao = line.replace('Local: ', '');
+            } else if (line === '[✓] Concluído') {
+                concluido = true;
+            } else {
+                descLines.push(lines[i].replace(/^  /, ''));
+            }
+        }
+        
+        let descricao = descLines.join('\n').trim();
+        
+        let valor = AppValor; let desconto = '';
+        let matchDesconto = AppValor.match(/\s\(-(\d+)%\)$/);
+        if (matchDesconto) { desconto = matchDesconto[1]; valor = AppValor.replace(matchDesconto[0], '').trim(); }
+        
+        itensTraduzidos.push({ id_produto, nome, descricao, valor, desconto, local_producao, concluido, id_temp: Math.random() + Date.now() });
+    }
+    return { itens: itensTraduzidos, observacoes: obs, pagamentos };
+}
+
+function obterResumoServicos(texto) {
+    const desc = desconstruirTextoServico(texto);
+    if (desc.itens.length > 0) {
+        return desc.itens.map(i => i.nome).join(' + ');
+    }
+    return texto ? texto.substring(0, 40) + '...' : '---';
+}
+
+function ItensChecklist({ pedido, atualizarCampoInline }) {
+    const { itens, observacoes, pagamentos } = desconstruirTextoServico(pedido.servico);
+    
+    if (itens.length === 0) {
+        return <span className="truncate max-w-[18rem] block">{pedido.servico ? pedido.servico.substring(0, 40) + '...' : '---'}</span>;
+    }
+
+    const toggleItem = (idx) => {
+        const novosItens = [...itens];
+        novosItens[idx].concluido = !novosItens[idx].concluido;
+        
+        let textoFinal = '';
+        const itensTextoArray = novosItens.map(i => {
+            const strDesconto = i.desconto ? ' (-' + i.desconto + '%)' : '';
+            const strNome = i.nome ? '• ' + (i.id_produto ? `[#${i.id_produto}] ` : '') + i.nome : '• Serviço Personalizado';
+            const strLocal = i.local_producao ? '\n  Local: ' + i.local_producao : '\n  Local: Berlim';
+            const strConcluido = i.concluido ? '\n  [✓] Concluído' : '';
+            return strNome + '\n  ' + i.descricao + '\n  Valor: R$ ' + i.valor + strDesconto + strLocal + strConcluido;
+        });
+        textoFinal += itensTextoArray.join('\n\n') + '\n\n';
+        if (observacoes) textoFinal += '[OBSERVAÇÕES GERAIS]\n' + observacoes;
+        if (pagamentos.length > 0) textoFinal += '\n\n[PAGAMENTOS]\n' + JSON.stringify(pagamentos);
+        
+        atualizarCampoInline(pedido.id, 'servico', textoFinal);
+    };
+
+    return (
+        <div className="flex flex-wrap gap-1.5 items-center w-full min-w-[300px]">
+            {itens.map((item, idx) => (
+                <button
+                    key={idx}
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); toggleItem(idx); }}
+                    className={`flex items-center gap-1 px-2 py-1 text-[10px] uppercase font-semibold rounded shadow-sm transition transform hover:scale-105 ${
+                        item.concluido
+                            ? 'bg-emerald-500 text-white border border-emerald-600'
+                            : 'bg-gray-100 dark:bg-darkElevated text-gray-500 dark:text-[#A1A1AA] border border-gray-200 dark:border-darkBorder hover:bg-gray-200 dark:hover:bg-darkHover'
+                    }`}
+                    title={item.concluido ? 'Marcar como pendente' : 'Marcar como concluído'}
+                >
+                    {item.concluido && <Icon name="check" className="w-3 h-3" />}
+                    <span className="truncate max-w-[100px]">{item.nome}</span>
+                </button>
+            ))}
+        </div>
+    );
+}
+
+function StackedCards({ title, description, icon, cards }) {
+    const [ativo, setAtivo] = useState(0);
+    const nextCard = () => setAtivo((prev) => (prev + 1) % cards.length);
+
+    return (
+        <div className="flex flex-col relative" style={{ minHeight: '420px' }}>
+            <div className="relative flex-1 mt-2">
+                {cards.map((card, i) => {
+                    const isFront = i === ativo;
+                    const pos = (i - ativo + cards.length) % cards.length;
+                    
+                    let translate = 0;
+                    let scale = 1;
+                    let zIndex = 0;
+                    let opacity = 1;
+
+                    if (isFront) {
+                        translate = 0;
+                        scale = 1;
+                        zIndex = 30;
+                    } else if (pos === 1) {
+                        translate = 12;
+                        scale = 0.95;
+                        zIndex = 20;
+                        opacity = 0.8;
+                    } else if (pos === 2) {
+                        translate = 24;
+                        scale = 0.90;
+                        zIndex = 10;
+                        opacity = 0.6;
+                    } else {
+                        opacity = 0;
+                        zIndex = 0;
+                    }
+
+                    const isFirstCard = i === 0;
+                    const cardBgClass = isFirstCard 
+                        ? "bg-white dark:bg-darkCard bg-gradient-to-br from-brand/5 to-transparent dark:from-brand/10 border-brand/20 dark:border-brand/30" 
+                        : "bg-white dark:bg-darkCard border-gray-100 dark:border-darkBorder";
+                        
+                    const titleClass = isFirstCard
+                        ? "text-brand dark:text-brand"
+                        : "text-gray-600 dark:text-gray-300";
+
+                    return (
+                        <div 
+                            key={i}
+                            className={`absolute top-0 left-0 w-full h-full shadow-md rounded-2xl transition-all duration-300 ease-in-out flex flex-col p-5 cursor-pointer hover:border-brand/40 border ${cardBgClass}`}
+                            style={{
+                                transform: `translateY(${translate}px) scale(${scale})`,
+                                zIndex,
+                                opacity,
+                                pointerEvents: isFront ? 'auto' : 'none'
+                            }}
+                            onClick={nextCard}
+                        >
+                            {/* CABEÇALHO INTEGRADO */}
+                            <div className="flex justify-between items-center mb-4 pb-3 border-b border-gray-100 dark:border-darkBorder/50">
+                                <div className="flex items-center gap-3">
+                                    {icon && (
+                                        <div className="w-8 h-8 rounded-full bg-white dark:bg-darkCard flex items-center justify-center shadow-sm text-brand border border-gray-100 dark:border-darkBorder/50">
+                                            <Icon name={icon} className="w-4 h-4" />
+                                        </div>
+                                    )}
+                                    <div>
+                                        <h3 className="font-extrabold text-[13px] text-gray-900 dark:text-white capitalize leading-tight">{title}</h3>
+                                    </div>
+                                </div>
+                                {cards.length > 1 && (
+                                    <span className="text-[10px] font-semibold text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-darkBorder/30 border border-gray-200 dark:border-darkBorder px-2 py-1 rounded-full">
+                                        {i + 1}/{cards.length}
+                                    </span>
+                                )}
+                            </div>
+
+                            <div className="flex justify-between items-center mb-3">
+                                <h4 className={`text-[11px] font-semibold flex items-center ${titleClass}`}>
+                                    {isFirstCard && <i className="fas fa-crown mr-1.5 opacity-70"></i>}
+                                    {card.title}
+                                </h4>
+                            </div>
+                            <div className="flex flex-col gap-3 overflow-y-auto custom-scrollbar pr-2 flex-1">
+                                {card.content}
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+        </div>
+    );
+}
+// ==== CALCULADORAS ====
+function CalculadoraBanner() {
+    const [largura, setLargura] = useState('');
+    const [altura, setAltura] = useState('');
+    const [tipo, setTipo] = useState('simples');
+    const [acabamento, setAcabamento] = useState('bastao_corda');
+    const [prazo, setPrazo] = useState('padrao');
+    const [quantidade, setQuantidade] = useState(1);
+
+    const calcular = () => {
+        const l = parseFloat(largura.replace(',', '.'));
+        const a = parseFloat(altura.replace(',', '.'));
+        if (isNaN(l) || isNaN(a) || l <= 0 || a <= 0) return '0,00';
+        
+        let valorM2 = tipo === 'simples' ? 90.0 : 130.0;
+        
+        if (acabamento === 'sem_acabamento') {
+            valorM2 -= 10.0;
+        }
+
+        let precoUnitario = 0;
+        
+        if (l <= 1 && a <= 1) { // none is > 1
+            const areaFisica = l * a;
+            if (areaFisica <= 0.5) precoUnitario = 65.0;
+            else precoUnitario = valorM2;
+        } else {
+            const areaCobrada = Math.max(l, 1) * Math.max(a, 1);
+            precoUnitario = areaCobrada * valorM2;
+        }
+        
+        // Multiplicador de prazo
+        let multiplicadorPrazo = 1.0;
+        if (prazo === 'outro_dia') multiplicadorPrazo = 1.3; // +30%
+        if (prazo === 'mesmo_dia') multiplicadorPrazo = 1.6; // +60%
+        
+        return ((precoUnitario * multiplicadorPrazo) * quantidade).toFixed(2);
+    };
+
+    const gerarTextoCopia = () => {
+        const l = parseFloat(largura.replace(',', '.'));
+        const a = parseFloat(altura.replace(',', '.'));
+        if (isNaN(l) || isNaN(a) || l <= 0 || a <= 0) return '';
+        
+        const textTipo = tipo === 'simples' ? 'Lona 440g Brilho | Sem Laminação (Película de proteção)' : 'Lona 440g Brilho | Laminado Brilho ou Fosco';
+        const textAcab = acabamento === 'bastao_corda' ? 'Acabamento em Bastão e Corda' : acabamento === 'ilhos' ? 'Acabamento em Ilhós (Argolas de Ferro)' : 'Sem Acabamento';
+        const val = calcular().replace('.', ',');
+        const dim = `${Math.round(l * 100)}x${Math.round(a * 100)}cm`;
+        
+        const plural = quantidade > 1 ? 'Banners' : 'Banner';
+        return `${quantidade} ${plural} | ${dim} | ${textTipo} | ${textAcab} - R$ ${val}`;
+    };
+
+    return (
+        <div className="bg-white dark:bg-darkCard p-6 rounded border border-gray-200 dark:border-darkBorder">
+            <h3 className="text-lg font-semibold dark:text-white mb-4">Calculadora de Banner / Lona</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                <div>
+                    <label className="block text-[11px] font-semibold text-gray-500 mb-1">Largura (m)</label>
+                    <input type="text" value={largura} onChange={e => setLargura(e.target.value)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition" placeholder="Ex: 1,50" />
+                </div>
+                <div>
+                    <label className="block text-[11px] font-semibold text-gray-500 mb-1">Altura (m)</label>
+                    <input type="text" value={altura} onChange={e => setAltura(e.target.value)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition" placeholder="Ex: 2,00" />
+                </div>
+                <div>
+                    <label className="block text-[11px] font-semibold text-gray-500 mb-1">Tipo de Lona</label>
+                    <div className="relative">
+                        <select value={tipo} onChange={e => setTipo(e.target.value)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded pl-3 pr-8 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition appearance-none cursor-pointer">
+                            <option value="simples">Lona 440g Brilho (R$ 90/m²)</option>
+                            <option value="laminado">Lona 440g Brilho Laminada (R$ 130/m²)</option>
+                        </select>
+                        <Icon name="chevron-down" className="absolute right-3 top-3 w-4 h-4 text-gray-400 pointer-events-none" />
+                    </div>
+                </div>
+                <div>
+                    <label className="block text-[11px] font-semibold text-gray-500 mb-1">Acabamento</label>
+                    <div className="relative">
+                        <select value={acabamento} onChange={e => setAcabamento(e.target.value)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded pl-3 pr-8 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition appearance-none cursor-pointer">
+                            <option value="bastao_corda">Bastão e Corda</option>
+                            <option value="ilhos">Ilhós (Argolas de ferro)</option>
+                            <option value="sem_acabamento">Sem Acabamento (- R$ 10/m²)</option>
+                        </select>
+                        <Icon name="chevron-down" className="absolute right-3 top-3 w-4 h-4 text-gray-400 pointer-events-none" />
+                    </div>
+                </div>
+                <div>
+                    <label className="block text-[11px] font-semibold text-gray-500 mb-1">Prazo de Entrega</label>
+                    <div className="relative">
+                        <select value={prazo} onChange={e => setPrazo(e.target.value)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded pl-3 pr-8 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition appearance-none cursor-pointer">
+                            <option value="padrao">Padrão</option>
+                            <option value="outro_dia">Para outro dia (+30%)</option>
+                            <option value="mesmo_dia">Para o mesmo dia (+60%)</option>
+                        </select>
+                        <Icon name="chevron-down" className="absolute right-3 top-3 w-4 h-4 text-gray-400 pointer-events-none" />
+                    </div>
+                </div>
+                <div>
+                    <label className="block text-[11px] font-semibold text-gray-500 mb-1">Quantidade</label>
+                    <input type="number" min="1" value={quantidade} onChange={e => setQuantidade(parseInt(e.target.value) || 1)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition" />
+                </div>
+            </div>
+            
+            <div className="flex flex-col md:flex-row gap-4 mb-4">
+                <div className="flex-1 bg-gray-50 dark:bg-darkElevated p-3 rounded border border-gray-100 dark:border-darkBorder flex items-center gap-3 shadow-sm">
+                    <div className="text-[11px] text-gray-600 dark:text-[#A1A1AA] flex-1 font-mono break-all line-clamp-2">
+                        {gerarTextoCopia() || 'Preencha as medidas para gerar o texto da proposta...'}
+                    </div>
+                    <button onClick={() => { if(gerarTextoCopia()) navigator.clipboard.writeText(gerarTextoCopia()) }} className="w-8 h-8 flex items-center justify-center shrink-0 bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded hover:text-brand transition shadow-sm" title="Copiar Texto">
+                        <Icon name="copy" className="w-4 h-4" />
+                    </button>
+                </div>
+            </div>
+
+            <div className="bg-brand/10 p-4 rounded-lg flex items-center justify-between border border-brand/20">
+                <span className="font-semibold text-brand">Total Estimado</span>
+                <span className="text-2xl font-black text-brand">R$ {calcular().replace('.', ',')}</span>
+            </div>
+        </div>
+    );
+}
+
+function CalculadoraAdesivo({ produtos }) {
+    const [largura, setLargura] = useState('');
+    const [altura, setAltura] = useState('');
+    const [tipo, setTipo] = useState('17');
+    const [quantidade, setQuantidade] = useState('');
+
+    const item15 = produtos?.find(p => Number(p.id) === 15);
+    const item16 = produtos?.find(p => Number(p.id) === 16);
+    const item17 = produtos?.find(p => Number(p.id) === 17);
+    const item18 = produtos?.find(p => Number(p.id) === 18);
+    const item19 = produtos?.find(p => Number(p.id) === 19);
+    const item21 = produtos?.find(p => Number(p.id) === 21);
+
+    const preco15 = item15 ? parseFloat(item15.preco_base) : 33.0;
+    const preco16 = item16 ? parseFloat(item16.preco_base) : 33.0;
+    const preco17 = item17 ? parseFloat(item17.preco_base) : 90.0;
+    const preco18 = item18 ? parseFloat(item18.preco_base) : 130.0;
+    const preco19 = item19 ? parseFloat(item19.preco_base) : 115.0;
+    const preco21 = item21 ? parseFloat(item21.preco_base) : 55.0;
+
+    const calculaCabem = (areaW, areaH, adW, adH) => {
+        return Math.floor(areaW / adW) * Math.floor(areaH / adH);
+    };
+
+    const lRawNum = parseFloat(String(largura).replace(',', '.'));
+    const aRawNum = parseFloat(String(altura).replace(',', '.'));
+    const isTamanhoInvalido = (lRawNum > 0 && lRawNum < 3) || (aRawNum > 0 && aRawNum < 3);
+
+    const copiarMaximos = () => {
+        if (isNaN(lRawNum) || isNaN(aRawNum) || lRawNum <= 0 || aRawNum <= 0) {
+            alert('Preencha largura e altura para calcular.');
+            return;
+        }
+        if (isTamanhoInvalido) {
+            alert('O tamanho mínimo permitido é 3x3cm.');
+            return;
+        }
+
+        const l = lRawNum + 0.2;
+        const a = aRawNum + 0.2;
+        const qSRA3 = calculaCabem(26, 39, l, a);
+        const qMeio = calculaCabem(44, 94, l, a);
+        const qMetro = calculaCabem(94, 94, l, a);
+
+        let texto = '';
+
+        if (tipo === '17') {
+            const qtd1 = Math.floor(qSRA3 / 10) * 10;
+            const qtd2 = Math.floor(qMeio / 10) * 10;
+            const qtd3 = Math.floor(qMetro / 10) * 10;
+
+            if (qtd1 > 0) {
+                texto += `${qtd1} Adesivos | ${lRawNum}x${aRawNum}cm | Adesivo Vinil Branco | Impressão Laser ou Látex | Sem Laminação | 1/2 corte | Entregue em folha A3 - R$ ${preco15.toFixed(2).replace('.', ',')}\n\n`;
+            }
+            if (qtd2 > 0) {
+                texto += `${qtd2} Adesivos | ${lRawNum}x${aRawNum}cm | Adesivo Vinil Branco | Impressão Laser ou Látex | Sem Laminação | 1/2 corte | Entregue em folha A3 ou 1/2 metro - R$ ${(preco17 * 0.7333).toFixed(2).replace('.', ',')}\n\n`;
+            }
+            if (qtd3 > 0) {
+                texto += `${qtd3} Adesivos | ${lRawNum}x${aRawNum}cm | Adesivo Vinil Branco | Impressão Látex | Sem Laminação | 1/2 corte | Entregue em folha de 1/2 metro - R$ ${preco17.toFixed(2).replace('.', ',')}\n\n`;
+            }
+            texto = texto.trim();
+        } else if (tipo === '18') {
+            const qtd1 = Math.floor(qSRA3 / 10) * 10;
+            const qtd2 = Math.floor(qMeio / 10) * 10;
+            const qtd3 = Math.floor(qMetro / 10) * 10;
+
+            if (qtd1 > 0) {
+                texto += `${qtd1} Adesivos | ${lRawNum}x${aRawNum}cm | Adesivo Vinil Branco | Impressão Laser ou Látex | Laminado Brilho/Fosco | 1/2 corte | Entregue em folha A3 - R$ ${preco21.toFixed(2).replace('.', ',')}\n\n`;
+            }
+            if (qtd2 > 0) {
+                texto += `${qtd2} Adesivos | ${lRawNum}x${aRawNum}cm | Adesivo Vinil Branco | Impressão Laser ou Látex | Laminado Brilho/Fosco | 1/2 corte | Entregue em folha A3 ou 1/2 metro - R$ ${(preco18 * 0.7333).toFixed(2).replace('.', ',')}\n\n`;
+            }
+            if (qtd3 > 0) {
+                texto += `${qtd3} Adesivos | ${lRawNum}x${aRawNum}cm | Adesivo Vinil Branco | Impressão Látex | Laminado Brilho/Fosco | 1/2 corte | Entregue em folha de 1/2 metro - R$ ${preco18.toFixed(2).replace('.', ',')}\n\n`;
+            }
+            texto = texto.trim();
+        } else if (tipo === '19') {
+            const qtd1 = Math.floor(qSRA3 / 10) * 10;
+            const qtd2 = Math.floor(qMeio / 10) * 10;
+            const qtd3 = Math.floor(qMetro / 10) * 10;
+
+            if (qtd1 > 0) {
+                texto += `${qtd1} Adesivos | ${lRawNum}x${aRawNum}cm | Adesivo Vinil Transparente | Impressão Laser ou Látex | 1/2 corte | Entregue em folha A3 - R$ ${preco16.toFixed(2).replace('.', ',')}\n\n`;
+            }
+            if (qtd2 > 0) {
+                texto += `${qtd2} Adesivos | ${lRawNum}x${aRawNum}cm | Adesivo Vinil Transparente | Impressão Laser ou Látex | 1/2 corte | Entregue em folha A3 ou 1/2 metro - R$ ${(preco19 * 0.7333).toFixed(2).replace('.', ',')}\n\n`;
+            }
+            if (qtd3 > 0) {
+                texto += `${qtd3} Adesivos | ${lRawNum}x${aRawNum}cm | Adesivo Vinil Transparente | Impressão Látex | 1/2 corte | Entregue em folha de 1/2 metro - R$ ${preco19.toFixed(2).replace('.', ',')}\n\n`;
+            }
+            texto = texto.trim();
+        }
+
+        navigator.clipboard.writeText(texto);
+        alert('Orçamentos de quantidades máximas copiados!');
+    };
+
+    const calcular = () => {
+        if (isTamanhoInvalido) return '0,00';
+        
+        const lRaw = parseFloat(largura.replace(',', '.'));
+        const aRaw = parseFloat(altura.replace(',', '.'));
+        const qty = parseInt(quantidade) || 0;
+        if (isNaN(lRaw) || isNaN(aRaw) || lRaw <= 0 || aRaw <= 0 || qty <= 0) return '0,00';
+        
+        // Sangria de 0,2cm
+        const l = lRaw + 0.2;
+        const a = aRaw + 0.2;
+        
+        const qSRA3 = calculaCabem(26, 39, l, a);
+        const qMeio = calculaCabem(44, 94, l, a);
+        const qMetro = calculaCabem(94, 94, l, a);
+
+        let sra3Price = preco15;
+        let basePrice = preco17;
+
+        if (tipo === '17') {
+            sra3Price = preco15;
+            basePrice = preco17;
+        } else if (tipo === '18') {
+            sra3Price = preco21;
+            basePrice = preco18;
+        } else if (tipo === '19') {
+            sra3Price = preco16;
+            basePrice = preco19;
+        }
+
+        let total = 0;
+
+        if (qSRA3 > 0 && qty <= qSRA3) {
+            total = sra3Price;
+        } else if (qMeio > 0 && qty <= qMeio) {
+            total = basePrice * 0.7333;
+        } else if (qMetro > 0 && qty <= qMetro) {
+            total = basePrice;
+        } else {
+            if (qMetro > 0) {
+                const metrosNecessarios = qty / qMetro;
+                total = metrosNecessarios * basePrice;
+            } else {
+                const areaFisica = (l * a) / 10000;
+                total = (areaFisica * qty) * basePrice;
+            }
+        }
+
+        return total.toFixed(2);
+    };
+
+    const gerarTextoCopia = () => {
+        if (isTamanhoInvalido) return '';
+        
+        const lRaw = parseFloat(largura.replace(',', '.'));
+        const aRaw = parseFloat(altura.replace(',', '.'));
+        const qty = parseInt(quantidade) || 0;
+        if (isNaN(lRaw) || isNaN(aRaw) || lRaw <= 0 || aRaw <= 0 || qty <= 0) return '';
+        
+        let nomeTipo = 'Vinil';
+        let lam = '';
+        
+        if (tipo === '17') {
+            nomeTipo = item17 ? item17.nome : 'Adesivo Vinil Branco';
+            lam = ' | Sem Laminação';
+        } else if (tipo === '18') {
+            nomeTipo = item18 ? item18.nome : 'Adesivo Vinil Branco';
+            lam = ' | Laminado Brilho/Fosco';
+        } else if (tipo === '19') {
+            nomeTipo = item19 ? item19.nome : 'Adesivo Vinil Transparente';
+        }
+        
+        const val = calcular().replace('.', ',');
+        
+        // Calcular onde coube para gerar o texto de entrega
+        const l = lRaw + 0.2;
+        const a = aRaw + 0.2;
+        const qSRA3 = Math.floor(26 / l) * Math.floor(39 / a);
+        
+        let entregaStr = '';
+        if (qSRA3 > 0 && qty <= qSRA3) {
+            entregaStr = ' | Entregue em folha A3';
+        } else {
+            entregaStr = ' | Entregue em folha de 1/2 metro';
+        }
+        
+        const plural = qty > 1 ? 'Adesivos' : 'Adesivo';
+        return `${qty} ${plural} | ${lRaw}x${aRaw}cm | ${nomeTipo}${lam} | 1/2 corte${entregaStr} - R$ ${val}`;
+    };
+
+    return (
+        <div className="bg-white dark:bg-darkCard p-6 rounded border border-gray-200 dark:border-darkBorder relative">
+            <h3 className="text-lg font-semibold dark:text-white mb-4">Calculadora de Adesivos (Vinil)</h3>
+            
+            {isTamanhoInvalido && (
+                <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-[12px] rounded border border-red-200 dark:border-red-900/50 flex items-center gap-2 font-medium">
+                    <Icon name="alert-triangle" className="w-4 h-4 shrink-0" />
+                    O tamanho mínimo permitido para adesivos é de 3x3cm.
+                </div>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div>
+                    <label className="block text-[11px] font-semibold text-gray-500 mb-1">Largura Unitária (cm)</label>
+                    <input type="text" value={largura} onChange={e => setLargura(e.target.value)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition" placeholder="Ex: 5" />
+                </div>
+                <div>
+                    <label className="block text-[11px] font-semibold text-gray-500 mb-1">Altura Unitária (cm)</label>
+                    <input type="text" value={altura} onChange={e => setAltura(e.target.value)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition" placeholder="Ex: 5" />
+                </div>
+                <div>
+                    <label className="block text-[11px] font-semibold text-gray-500 mb-1">Tipo de Adesivo</label>
+                    <div className="relative">
+                        <select value={tipo} onChange={e => setTipo(e.target.value)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded pl-3 pr-8 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition appearance-none cursor-pointer">
+                            <option value="17">{item17 ? item17.nome : 'Item 17'}</option>
+                            <option value="18">{item18 ? item18.nome : 'Item 18'} (Laminado Brilho/Fosco)</option>
+                            <option value="19">{item19 ? item19.nome : 'Item 19'}</option>
+                        </select>
+                        <Icon name="chevron-down" className="absolute right-3 top-3 w-4 h-4 text-gray-400 pointer-events-none" />
+                    </div>
+                </div>
+                <div>
+                    <label className="block text-[11px] font-semibold text-gray-500 mb-1">Quantidade</label>
+                    <div className="flex gap-2">
+                        <input type="number" min="1" value={quantidade} onChange={e => setQuantidade(e.target.value)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition" />
+                        <button onClick={copiarMaximos} className="bg-brand text-white px-3 rounded flex items-center justify-center hover:bg-brand/90 transition shadow-sm" title="Copiar orçamentos de quantidades máximas">
+                            <Icon name="copy" className="w-4 h-4" />
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div className="flex flex-col md:flex-row gap-4 mb-4">
+                <div className="flex-1 bg-gray-50 dark:bg-darkElevated p-3 rounded border border-gray-100 dark:border-darkBorder flex items-center gap-3 shadow-sm">
+                    <div className="text-[11px] text-gray-600 dark:text-[#A1A1AA] flex-1 font-mono break-all line-clamp-2">
+                        {gerarTextoCopia() || 'Preencha as medidas para gerar o texto da proposta...'}
+                    </div>
+                    <button onClick={() => { if(gerarTextoCopia()) navigator.clipboard.writeText(gerarTextoCopia()) }} className="w-8 h-8 flex items-center justify-center shrink-0 bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded hover:text-brand transition shadow-sm" title="Copiar Texto">
+                        <Icon name="copy" className="w-4 h-4" />
+                    </button>
+                </div>
+            </div>
+
+            <div className="bg-brand/10 p-4 rounded-lg flex items-center justify-between border border-brand/20">
+                <span className="font-semibold text-brand">Total Estimado</span>
+                <span className="text-2xl font-black text-brand">R$ {calcular().replace('.', ',')}</span>
+            </div>
+        </div>
+    );
+}
+
+function CalculadoraCasamento() {
+    const [itens, setItens] = useState([{ id: 1, nome: 'Convite Principal', quantidade: 100, valorUnitario: '4,50' }]);
+
+    const adicionarItem = () => {
+        setItens([...itens, { id: Date.now(), nome: '', quantidade: 1, valorUnitario: '' }]);
+    };
+
+    const removerItem = (id) => {
+        setItens(itens.filter(i => i.id !== id));
+    };
+
+    const atualizarItem = (id, campo, valor) => {
+        setItens(itens.map(i => i.id === id ? { ...i, [campo]: valor } : i));
+    };
+
+    const calcularTotal = () => {
+        return itens.reduce((acc, item) => {
+            const v = parseFloat(String(item.valorUnitario).replace(',', '.'));
+            const q = parseInt(item.quantidade) || 0;
+            if (!isNaN(v) && q > 0) return acc + (v * q);
+            return acc;
+        }, 0).toFixed(2);
+    };
+
+    return (
+        <div className="bg-white dark:bg-darkCard p-6 rounded border border-gray-200 dark:border-darkBorder">
+            <h3 className="text-lg font-semibold dark:text-white mb-4">Calculadora de Papelaria de Casamento</h3>
+            
+            <div className="space-y-4 mb-6">
+                {itens.map((item, index) => (
+                    <div key={item.id} className="flex gap-4 items-end bg-gray-50 dark:bg-darkElevated p-3 rounded border border-gray-100 dark:border-darkBorder">
+                        <div className="flex-1">
+                            <label className="block text-[10px] uppercase font-semibold text-gray-500 mb-1">Item {index + 1}</label>
+                            <input type="text" value={item.nome} onChange={e => atualizarItem(item.id, 'nome', e.target.value)} placeholder="Ex: Menu, Lágrimas de Alegria..." className="w-full bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition" />
+                        </div>
+                        <div className="w-24">
+                            <label className="block text-[10px] uppercase font-semibold text-gray-500 mb-1">Qtd</label>
+                            <input type="number" min="1" value={item.quantidade} onChange={e => atualizarItem(item.id, 'quantidade', e.target.value)} className="w-full bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition" />
+                        </div>
+                        <div className="w-32">
+                            <label className="block text-[10px] uppercase font-semibold text-gray-500 mb-1">Valor Un. (R$)</label>
+                            <input type="text" value={item.valorUnitario} onChange={e => atualizarItem(item.id, 'valorUnitario', e.target.value)} className="w-full bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition" placeholder="0,00" />
+                        </div>
+                        <button onClick={() => removerItem(item.id)} className="w-[38px] h-[38px] flex items-center justify-center bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition shrink-0" title="Remover">
+                            <Icon name="trash-2" className="w-4 h-4" />
+                        </button>
+                    </div>
+                ))}
+                <button onClick={adicionarItem} className="text-[13px] font-semibold text-brand hover:text-brandHover flex items-center gap-1 transition">
+                    <Icon name="plus" className="w-4 h-4" /> Adicionar Outro Item
+                </button>
+            </div>
+
+            <div className="bg-brand/10 p-4 rounded-lg flex items-center justify-between border border-brand/20">
+                <span className="font-semibold text-brand">Total do Pacote</span>
+                <span className="text-2xl font-black text-brand">R$ {calcularTotal().replace('.', ',')}</span>
+            </div>
+        </div>
+    );
+}
+
+function CalculadorasAba({ calculadoraAtiva, produtos }) {
+    return (
+        <div className="flex-1 p-6 lg:p-10 mx-auto w-full max-w-3xl fade-in flex flex-col h-[calc(100vh-112px)] overflow-y-auto custom-scrollbar">
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 mb-6 border-b border-gray-100 dark:border-darkBorder pb-6 shrink-0">
+                <div>
+                    <h1 className="text-3xl font-semibold dark:text-white tracking-tight">Calculadoras</h1>
+                    <p className="text-[13px] text-gray-500 dark:text-[#888888] mt-1">Ferramentas para auxiliar em orçamentos rápidos.</p>
+                </div>
+            </div>
+
+            <div className="w-full">
+                {calculadoraAtiva === 'banner' && <CalculadoraBanner />}
+                {calculadoraAtiva === 'adesivo' && <CalculadoraAdesivo produtos={produtos} />}
+                {calculadoraAtiva === 'casamento' && <CalculadoraCasamento />}
+            </div>
+        </div>
+    );
+}
+
+// ================= APLICAÇÃO PRINCIPAL =================
+function App() {
+    /// ==== CONTROLE DE SESSÃO E USUÁRIOS ====
+    const [usuariosSistema, setUsuariosSistema] = useState([]);
+    const [usuario, setUsuario] = useState(null);
+    
+    const [loginInput, setLoginInput] = useState('');
+    const [senhaInput, setSenhaInput] = useState('');
+    const [erroLogin, setErroLogin] = useState('');
+
+    const [abaAtual, setAbaAtual] = useState('dashboard');
+    const [pedidos, setPedidos] = useState([]);
+    const [produtos, setProdutos] = useState([]);
+    const [draggedProdutoIndex, setDraggedProdutoIndex] = useState(null);
+    
+    // ESTADOS ORÇAMENTOS
+    const [abaOrcamentos, setAbaOrcamentos] = useState('formalizados'); // 'formalizados' | 'pre_prontos'
+    const [orcamentosFormalizados, setOrcamentosFormalizados] = useState([]);
+    const [orcamentosPreProntos, setOrcamentosPreProntos] = useState([]);
+    const [modalOrcamentoPreAberto, setModalOrcamentoPreAberto] = useState(false);
+    const [novoOrcamentoPre, setNovoOrcamentoPre] = useState({ id: null, titulo: '', texto: '' });
+    const [modalOrcamentoFormalizadoAberto, setModalOrcamentoFormalizadoAberto] = useState(false);
+    const [orcamentoFormalizadoEmEdicao, setOrcamentoFormalizadoEmEdicao] = useState(null);
+    
+    const [clientes, setClientes] = useState([]);
+    const [clientesCadastrados, setClientesCadastrados] = useState([]);
+    const [totalClientesCad, setTotalClientesCad] = useState(0);
+    const [clientesProblema, setClientesProblema] = useState([]);
+    const [fornecedores, setFornecedores] = useState([]);
+    const [abaCadastros, setAbaCadastros] = useState('clientes');
+    const [abaOS, setAbaOS] = useState('abertas');
+    const [buscaCadClientes, setBuscaCadClientes] = useState('');
+    const [buscaCadProdutos, setBuscaCadProdutos] = useState('');
+    const [modalFornecedorAberto, setModalFornecedorAberto] = useState(false);
+    const [novoFornecedor, setNovoFornecedor] = useState({ id: null, nome: '', contato: '', observacoes: '' });
+    const [paginaClientes, setPaginaClientes] = useState(1);
+    const [letraFiltroCliente, setLetraFiltroCliente] = useState('');
+    
+    const [notasFiscais, setNotasFiscais] = useState([]);
+    const [filtroNotas, setFiltroNotas] = useState('pendentes');
+    const [buscaNotaFiscal, setBuscaNotaFiscal] = useState('');
+    const [paginaNotasFiscais, setPaginaNotasFiscais] = useState(1);
+    const [modalNotaFiscalAberto, setModalNotaFiscalAberto] = useState(false);
+    const [notaFiscalEmEdicao, setNotaFiscalEmEdicao] = useState(null);
+    const [salvandoNotaFiscal, setSalvandoNotaFiscal] = useState(false);
+
+    const [darkMode, setDarkMode] = useState(false); 
+    
+    useEffect(() => {
+        if (darkMode) { document.documentElement.classList.add('dark'); }
+        else { document.documentElement.classList.remove('dark'); }
+    }, [darkMode]);
+    const isAdmin = usuario?.nivel === 'Administrador';
+    const isOperador = usuario?.nivel === 'Produção/Atendimento';
+    
+    // Filtros
+    const [buscaHistoricoText, setBuscaHistoricoText] = useState('');
+    
+    // Paginação
+    const [paginaProducao, setPaginaProducao] = useState(1);
+    const [paginaHistorico, setPaginaHistorico] = useState(1);
+    const [pedidosHistorico, setPedidosHistorico] = useState([]);
+    const [totalPedidosHistorico, setTotalPedidosHistorico] = useState(0);
+    const [triggerRealtime, setTriggerRealtime] = useState(0);
+    const [paginaFinanceiro, setPaginaFinanceiro] = useState(1);
+    const itensPorPagina = 50;
+    const [dataFiltroInicio, setDataFiltroInicio] = useState('');
+    const [dataFiltroFim, setDataFiltroFim] = useState('');
+
+    const [buscaProducaoText, setBuscaProducaoText] = useState('');
+
+    const [dataFiltroFinInicio, setDataFiltroFinInicio] = useState('');
+    const [dataFiltroFinFim, setDataFiltroFinFim] = useState('');
+    
+    // Financeiro Expandido e Alertas
+    const [abaFinanceiro, setAbaFinanceiro] = useState('geral');
+    const [produtosSelecionadosGrafico, setProdutosSelecionadosGrafico] = useState(null);
+    const [contasPagar, setContasPagar] = useState([]);
+    const [calculadoraAtiva, setCalculadoraAtiva] = useState('banner');
+    const [modalContaAberto, setModalContaAberto] = useState(false);
+    const [novaConta, setNovaConta] = useState({ id: null, descricao: '', valor: '', vencimento: '', status: 'Pendente', recorrente: false });
+    
+    const [empresasFaturamento, setEmpresasFaturamento] = useState([]);
+    const [modalEmpresaFaturamentoAberto, setModalEmpresaFaturamentoAberto] = useState(false);
+    const [novaEmpresaFaturamento, setNovaEmpresaFaturamento] = useState({ id: null, nome: '', cnpj: '', status: 'Aprovado' });
+    const [alertasNaoLidos, setAlertasNaoLidos] = useState([]);
+    const alertasFuturaDisparados = useRef(new Set());
+    const alertasBoletoDisparados = useRef(new Set());
+    const [modalAlertasAberto, setModalAlertasAberto] = useState(false);
+
+    const [modalAberto, setModalAberto] = useState(false);
+    const [salvandoOS, setSalvandoOS] = useState(false);
+    const [osParaImprimir, setOsParaImprimir] = useState(null);
+    const [pedidoEmEdicao, setPedidoEmEdicao] = useState(null); 
+    const [idOrcamentoOrigem, setIdOrcamentoOrigem] = useState(null);
+
+    const [itensPedido, setItensPedido] = useState([]);
+    const [itemAtual, setItemAtual] = useState({ nome: '', descricao: '', valor: '', desconto: '', local_producao: 'Berlim', id_produto: null });
+
+    const [buscaCliente, setBuscaCliente] = useState('');
+    const [clienteDropdownAberto, setClienteDropdownAberto] = useState(false);
+    const [buscaProduto, setBuscaProduto] = useState('');
+    const [produtoDropdownAberto, setProdutoDropdownAberto] = useState(false);
+
+    const [pagamentosPedido, setPagamentosPedido] = useState([]);
+    const [novoPagamento, setNovoPagamento] = useState({ valor: '', forma: 'PIX', parcelas: 1, instituicao: 'Itaú', vencimento_boleto: '' });
+
+    const [novoPedido, setNovoPedido] = useState({ 
+        cliente: '', servico: '', valor_total: '', 
+        status: 'Produzir', data_pedido: obterDataAtual(),
+        prazo: '', responsavel: '', local_producao: 'Berlim', aprovado: false,
+        entrega: false, urgente: false
+    });
+    
+    const [modalProdutoAberto, setModalProdutoAberto] = useState(false);
+    const [salvandoProduto, setSalvandoProduto] = useState(false);
+    const [novoProduto, setNovoProduto] = useState({ id: null, nome: '', texto_padrao: '', preco_base: '' });
+
+    const [modalClienteAberto, setModalClienteAberto] = useState(false);
+    const [salvandoCliente, setSalvandoCliente] = useState(false);
+    const [novoCliente, setNovoCliente] = useState({ id: null, nome: '', telefone: '', email: '', observacoes: '', cliente_problema: false });
+
+    const [modalUsuarioAberto, setModalUsuarioAberto] = useState(false);
+    const [novoUsuario, setNovoUsuario] = useState({ id: null, nome: '', senha: '', nivel: 'Produção/Atendimento' });
+
+    useEffect(() => { 
+        if(usuario) {
+            carregarDados(); 
+            
+            // LIGA O RADAR DE TEMPO REAL DO SUPABASE
+            const canalRealTime = supabase
+                .channel('mudancas-banco')
+                .on(
+                    'postgres_changes', 
+                    { event: '*', schema: 'public', table: 'pedidos' }, 
+                    (payload) => {
+                        console.log('Atualização em tempo real (pedidos) recebida!', payload);
+                        const isAdm = usuario?.nivel === 'Administrador';
+                        const isFin = usuario?.nivel === 'Financeiro';
+                        const isOpe = usuario?.nivel === 'Produção/Atendimento';
+                        
+                        // Lógica de alerta
+                        if (payload.eventType === 'UPDATE') {
+                            const oldResponsavel = payload.old?.responsavel || '';
+                            const newResponsavel = payload.new?.responsavel || '';
+                            
+                            const oldList = oldResponsavel.split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+                            const newList = newResponsavel.split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+
+                            const nomeUsuario = (usuario.nome || '').trim().toLowerCase();
+
+                            if (!oldList.includes(nomeUsuario) && newList.includes(nomeUsuario)) {
+                                setAlertasNaoLidos(prev => {
+                                    if(prev.some(a => a.os_id === payload.new.id && a.tipo === 'atribuicao')) return prev;
+                                    return [...prev, { id: Date.now(), msg: `Você foi designado para a O.S. #${payload.new.id}`, os_id: payload.new.id, tipo: 'atribuicao' }];
+                                });
+                            }
+
+                            // Alerta: Serviço Concluído (para Financeiro/Admin)
+                            if (payload.new.status === 'Concluído' && payload.old?.status !== 'Concluído') {
+                                if (isAdm || isFin) {
+                                    setAlertasNaoLidos(prev => [...prev, { id: Date.now() + 1, msg: `Serviço O.S. #${payload.new.id} concluído!`, os_id: payload.new.id, tipo: 'concluido' }]);
+                                }
+                            }
+
+                            // Alerta: Avisar Cliente (para Atendimento/Admin)
+                            if (payload.new.status === 'Avisar Cliente' && payload.old?.status !== 'Avisar Cliente') {
+                                if (isAdm || isOpe) {
+                                    setAlertasNaoLidos(prev => [...prev, { id: Date.now() + 5, msg: `Avisar cliente: ${payload.new.cliente} (O.S. #${payload.new.id})`, os_id: payload.new.id, tipo: 'avisar_cliente' }]);
+                                }
+                            }
+
+                            // Alerta: Serviço de Urgência (para Operacional/Admin)
+                            if (payload.new.urgente && !payload.old?.urgente) {
+                                if (isAdm || isOpe) {
+                                    setAlertasNaoLidos(prev => [...prev, { id: Date.now() + 2, msg: `Urgência marcada na O.S. #${payload.new.id}!`, os_id: payload.new.id, tipo: 'urgencia' }]);
+                                }
+                            }
+
+                        } else if (payload.eventType === 'INSERT') {
+                            const newResponsavel = payload.new?.responsavel || '';
+                            const newList = newResponsavel.split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+                            const nomeUsuario = (usuario.nome || '').trim().toLowerCase();
+                            
+                            if (newList.includes(nomeUsuario)) {
+                                setAlertasNaoLidos(prev => [...prev, { id: Date.now(), msg: `Nova O.S. #${payload.new.id} atribuída a você`, os_id: payload.new.id, tipo: 'atribuicao' }]);
+                            }
+                            
+                            // Alerta: Serviço de Urgência no cadastro
+                            if (payload.new.urgente) {
+                                if (isAdm || isOpe) {
+                                    setAlertasNaoLidos(prev => [...prev, { id: Date.now() + 2, msg: `Urgência na nova O.S. #${payload.new.id}!`, os_id: payload.new.id, tipo: 'urgencia' }]);
+                                }
+                            }
+                        }
+
+                        carregarDados(); // Puxa os dados novos invisivelmente
+                        setTriggerRealtime(prev => prev + 1);
+                    }
+                )
+                .on(
+                    'postgres_changes', 
+                    { event: '*', schema: 'public', table: 'notas_fiscais' }, 
+                    (payload) => {
+                        console.log('Atualização em tempo real (notas_fiscais) recebida!', payload);
+                        const isAdm = usuario?.nivel === 'Administrador';
+                        const isFin = usuario?.nivel === 'Financeiro';
+                        const isOpe = usuario?.nivel === 'Produção/Atendimento';
+
+                        if (payload.eventType === 'INSERT') {
+                            if (isAdm || isOpe) {
+                                setAlertasNaoLidos(prev => [...prev, { id: Date.now() + 3, msg: `Nova Nota Fiscal solicitada (${payload.new.cliente || payload.new.cnpj})`, os_id: null, tipo: 'nf_nova' }]);
+                            }
+                        } else if (payload.eventType === 'UPDATE') {
+                            const changedServico = payload.new.servico_feito !== payload.old?.servico_feito && payload.new.servico_feito;
+                            const changedValor = payload.new.valor_pago !== payload.old?.valor_pago && payload.new.valor_pago;
+                            if (changedServico || changedValor) {
+                                if (isAdm || isFin) {
+                                    setAlertasNaoLidos(prev => [...prev, { id: Date.now() + 4, msg: `Nota Fiscal (${payload.new.cliente || payload.new.cnpj}) preenchida!`, os_id: null, tipo: 'nf_preenchida' }]);
+                                }
+                            }
+                        }
+
+                        carregarDados(); // Puxa os dados novos invisivelmente
+                        setTriggerRealtime(prev => prev + 1);
+                    }
+                )
+            .subscribe();
+
+            // Desliga o radar se o usuário fizer logoff
+            return () => {
+                supabase.removeChannel(canalRealTime);
+            };
+        }
+    }, [usuario]);
+
+    const isClienteProblema = (nome) => {
+        if (!nome) return false;
+        return clientesProblema.includes(nome);
+    };
+
+    async function carregarDados() {
+        let todosPedidos = [];
+        let from = 0;
+        let limit = 1000;
+        let fetchMore = true;
+        
+        const anoAnteriorStr = (new Date().getFullYear() - 1).toString();
+        const dataCorte = `${anoAnteriorStr}-01-01`;
+
+        while (fetchMore) {
+            const { data: batch, error } = await supabase
+                .from('pedidos')
+                .select('*')
+                .or(`data_pedido.gte.${dataCorte},status.in.(Produzir,Arte,Impressão,Acabamento,Retirada)`)
+                .order('id', { ascending: false })
+                .range(from, from + limit - 1);
+                
+            if (error) {
+                console.error('Erro ao buscar pedidos:', error);
+                break;
+            }
+            if (batch && batch.length > 0) {
+                todosPedidos = [...todosPedidos, ...batch];
+                if (batch.length < limit) {
+                    fetchMore = false;
+                } else {
+                    from += limit;
+                }
+            } else {
+                fetchMore = false;
+            }
+        }
+        if (todosPedidos.length > 0) {
+            // Regra de pedidos Abandonados (Em Retirada a mais de 15 dias após o prazo)
+            const hoje = new Date();
+            hoje.setHours(0, 0, 0, 0);
+            const pedidosParaAbandonar = todosPedidos.filter(p => {
+                if (p.status !== 'Retirada' || !p.prazo) return false;
+                const partes = p.prazo.split('-');
+                if(partes.length !== 3) return false;
+                const dataPrazo = new Date(partes[0], partes[1] - 1, partes[2]);
+                dataPrazo.setDate(dataPrazo.getDate() + 15);
+                return dataPrazo < hoje;
+            });
+            if (pedidosParaAbandonar.length > 0) {
+                pedidosParaAbandonar.forEach(async p => {
+                    await supabase.from('pedidos').update({status: 'Abandonado'}).eq('id', p.id);
+                });
+                pedidosParaAbandonar.forEach(p => p.status = 'Abandonado');
+            }
+
+            setPedidos(todosPedidos);
+
+            if (usuario?.nivel === 'Administrador') {
+                const hoje = new Date();
+                const amanha = new Date(hoje);
+                amanha.setDate(amanha.getDate() + 1);
+                const amanhaStr = amanha.getFullYear() + '-' + String(amanha.getMonth() + 1).padStart(2, '0') + '-' + String(amanha.getDate()).padStart(2, '0');
+
+                const statusIgnorados = ['Concluída', 'Finalizada', 'Cancelada', 'Abandonada'];
+                
+                const hojeStr = hoje.getFullYear() + '-' + String(hoje.getMonth() + 1).padStart(2, '0') + '-' + String(hoje.getDate()).padStart(2, '0');
+                
+                const pedidosFuturaAlertar = todosPedidos.filter(p => p.local_producao && p.local_producao.toLowerCase().includes('futura') && !statusIgnorados.includes(p.status) && p.prazo && p.prazo <= amanhaStr);
+                
+                if (pedidosFuturaAlertar.length > 0) {
+                    setAlertasNaoLidos(prev => {
+                        let novosAlertas = [...prev];
+                        pedidosFuturaAlertar.forEach(p => {
+                            if (!novosAlertas.some(a => a.os_id === p.id && a.tipo === 'alerta_futura') && !alertasFuturaDisparados.current.has(p.id)) {
+                                let msg = `Prazo da Futura termina amanhã (O.S. #${p.id}). Retirar!`;
+                                if (p.prazo === hojeStr) msg = `Prazo da Futura é HOJE (O.S. #${p.id}). Retirar o quanto antes!`;
+                                else if (p.prazo < hojeStr) msg = `Prazo da Futura VENCIDO (O.S. #${p.id}). Verifique imediatamente!`;
+                                
+                                novosAlertas.push({ id: Date.now() + Math.random(), msg, os_id: p.id, tipo: 'alerta_futura' });
+                                alertasFuturaDisparados.current.add(p.id);
+                            }
+                        });
+                        return novosAlertas;
+                    });
+                }
+                
+                const pedidosComBoleto = todosPedidos.filter(p => !statusIgnorados.includes(p.status) && Array.isArray(p.pagamentos));
+                if (pedidosComBoleto.length > 0) {
+                    let novosAlertasBoleto = [];
+                    pedidosComBoleto.forEach(p => {
+                        p.pagamentos.forEach(pag => {
+                            if (pag.forma === 'Boleto' && pag.vencimento_boleto) {
+                                if (pag.vencimento_boleto === hojeStr || pag.vencimento_boleto === amanhaStr) {
+                                    const alertId = `${p.id}_${pag.vencimento_boleto}`;
+                                    if (!alertasBoletoDisparados.current.has(alertId)) {
+                                        let msg = `O boleto da O.S. #${p.id} vence amanhã!`;
+                                        if (pag.vencimento_boleto === hojeStr) msg = `O boleto da O.S. #${p.id} vence HOJE!`;
+                                        
+                                        novosAlertasBoleto.push({ id: Date.now() + Math.random(), msg, os_id: p.id, tipo: 'alerta_boleto' });
+                                        alertasBoletoDisparados.current.add(alertId);
+                                    }
+                                }
+                            }
+                        });
+                    });
+                    
+                    if (novosAlertasBoleto.length > 0) {
+                        setAlertasNaoLidos(prev => {
+                            let mergeAlertas = [...prev];
+                            novosAlertasBoleto.forEach(n => {
+                                if (!mergeAlertas.some(a => a.msg === n.msg && a.os_id === n.os_id)) {
+                                    mergeAlertas.push(n);
+                                }
+                            });
+                            return mergeAlertas;
+                        });
+                    }
+                }
+            }
+        }
+        
+        const { data: listaProdutos } = await supabase.from('produtos').select('*').order('ordem', { ascending: true });
+        if (listaProdutos) setProdutos(listaProdutos);
+        
+        // Clientes não são mais puxados integralmente aqui.
+
+        const { data: listaUsuarios } = await supabase.from('usuarios').select('*').order('nome', { ascending: true });
+        if (listaUsuarios) setUsuariosSistema(listaUsuarios);
+
+        const { data: listaNotas } = await supabase.from('notas_fiscais').select('*').order('created_at', { ascending: false });
+        if (listaNotas) setNotasFiscais(listaNotas);
+        
+        const { data: listaEmpresasFaturamento } = await supabase.from('empresas_faturamento').select('*').order('nome', { ascending: true });
+        if (listaEmpresasFaturamento) setEmpresasFaturamento(listaEmpresasFaturamento);
+
+        const { data: listaContas, error: erroContas } = await supabase.from('contas_pagar').select('*').order('vencimento', { ascending: true });
+        if (!erroContas && listaContas) setContasPagar(listaContas);
+
+        const { data: listaFornecedores } = await supabase.from('fornecedores').select('*').order('nome', { ascending: true });
+        if (listaFornecedores) setFornecedores(listaFornecedores);
+
+        const { data: listaOrcF } = await supabase.from('orcamentos_formalizados').select('*').order('created_at', { ascending: false });
+        if (listaOrcF) setOrcamentosFormalizados(listaOrcF);
+
+        const { data: listaOrcPP } = await supabase.from('orcamentos_pre_prontos').select('*').order('created_at', { ascending: false });
+        if (listaOrcPP) setOrcamentosPreProntos(listaOrcPP);
+    }
+    
+    useEffect(() => {
+        setPaginaHistorico(1);
+    }, [buscaHistoricoText, dataFiltroInicio, dataFiltroFim]);
+
+    useEffect(() => {
+        if (!usuario) return;
+        
+        async function fetchHistorico() {
+            let query = supabase.from('pedidos').select('*', { count: 'exact' });
+            
+            if (abaOS === 'abertas') {
+                query = query.not('status', 'in', '("Concluído","Finalizado","Cancelado","Abandonado")');
+            } else if (abaOS === 'concluidas') {
+                query = query.eq('status', 'Concluído');
+            } else if (abaOS === 'finalizadas') {
+                query = query.eq('status', 'Finalizado');
+            } else if (abaOS === 'canceladas') {
+                query = query.eq('status', 'Cancelado');
+            } else if (abaOS === 'abandonadas') {
+                query = query.eq('status', 'Abandonado');
+            }
+
+            const isOperador = usuario?.nivel === 'Produção/Atendimento';
+            if (isOperador) {
+                query = query.not('status', 'eq', 'Finalizado');
+            }
+
+            if (buscaHistoricoText) {
+                const isNum = !isNaN(buscaHistoricoText);
+                if (isNum) {
+                    query = query.or(`cliente.ilike.%${buscaHistoricoText}%,id.eq.${buscaHistoricoText}`);
+                } else {
+                    query = query.ilike('cliente', `%${buscaHistoricoText}%`);
+                }
+            }
+
+            if (dataFiltroInicio) query = query.gte('data_pedido', dataFiltroInicio);
+            if (dataFiltroFim) query = query.lte('data_pedido', dataFiltroFim);
+
+            query = query.order('id', { ascending: false });
+            
+            const from = (paginaHistorico - 1) * itensPorPagina;
+            const to = from + itensPorPagina - 1;
+            query = query.range(from, to);
+
+            const { data, count, error } = await query;
+            if (!error && data) {
+                setPedidosHistorico(data);
+                if (count !== null) setTotalPedidosHistorico(count);
+            }
+        }
+        
+        const timeout = setTimeout(fetchHistorico, 300);
+        return () => clearTimeout(timeout);
+    }, [usuario, abaOS, paginaHistorico, buscaHistoricoText, dataFiltroInicio, dataFiltroFim, triggerRealtime]);
+
+    useEffect(() => {
+        if (!usuario) return;
+        async function fetchProblemas() {
+            const { data } = await supabase.from('clientes').select('nome').eq('cliente_problema', true);
+            if (data) setClientesProblema(data.map(c => c.nome));
+        }
+        fetchProblemas();
+    }, [usuario, triggerRealtime]);
+
+    useEffect(() => {
+        if (!buscaCliente || buscaCliente.length < 1) {
+            setClientes([]);
+            return;
+        }
+        const timeout = setTimeout(async () => {
+            const isNum = !isNaN(buscaCliente);
+            let query = supabase.from('clientes').select('*').limit(15);
+            if (isNum) {
+                query = query.ilike('telefone', `%${buscaCliente}%`);
+            } else {
+                query = query.ilike('nome', `%${buscaCliente}%`);
+            }
+            const { data } = await query;
+            if (data) setClientes(data);
+        }, 300);
+        return () => clearTimeout(timeout);
+    }, [buscaCliente]);
+
+    useEffect(() => {
+        if (abaAtual !== 'cadastros' || abaCadastros !== 'clientes' || !usuario) return;
+        
+        async function fetchClientesCadastrados() {
+            let query = supabase.from('clientes').select('*', { count: 'exact' });
+            
+            if (letraFiltroCliente) {
+                query = query.ilike('nome', `${letraFiltroCliente}%`);
+            }
+            if (buscaCadClientes) {
+                const isNum = !isNaN(buscaCadClientes);
+                if (isNum) {
+                    query = query.ilike('telefone', `%${buscaCadClientes}%`);
+                } else {
+                    query = query.or(`nome.ilike.%${buscaCadClientes}%,email.ilike.%${buscaCadClientes}%`);
+                }
+            }
+            
+            query = query.order('nome', { ascending: true });
+            
+            const from = (paginaClientes - 1) * itensPorPagina;
+            const to = from + itensPorPagina - 1;
+            query = query.range(from, to);
+            
+            const { data, count } = await query;
+            if (data) {
+                setClientesCadastrados(data);
+                if (count !== null) setTotalClientesCad(count);
+            }
+        }
+        
+        const timeout = setTimeout(fetchClientesCadastrados, 300);
+        return () => clearTimeout(timeout);
+    }, [usuario, abaAtual, abaCadastros, paginaClientes, buscaCadClientes, letraFiltroCliente, triggerRealtime]);
+
+    const efetuarLogin = async (e) => {
+        e.preventDefault();
+        setErroLogin('Conectando ao banco de dados...');
+        const { data, error } = await supabase.from('usuarios').select('*');
+
+        if (error) {
+            console.error("Erro do Supabase:", error);
+            setErroLogin('Erro de conexão: ' + error.message);
+            return;
+        }
+
+        if (!data || data.length === 0) {
+            setErroLogin('Tabela inacessível. Verifique se o RLS está desativado no Supabase.');
+            return;
+        }
+
+        const conta = data.find(u => u.nome.toLowerCase() === loginInput.toLowerCase().trim() && String(u.senha) === senhaInput.trim());
+        
+        if (conta) {
+            setUsuario(conta);
+            setErroLogin('');
+            setLoginInput('');
+            setSenhaInput('');
+            setAbaAtual('dashboard');
+        } else {
+            setErroLogin('Usuário ou senha incorretos.');
+        }
+    };
+
+    const toggleDarkMode = () => {
+        if (darkMode) { document.documentElement.classList.remove('dark'); } 
+        else { document.documentElement.classList.add('dark'); }
+        setDarkMode(!darkMode);
+    };
+
+    async function atualizarCampoInline(id, campo, valor) {
+        let payload = { [campo]: valor };
+        if (campo === 'status' && valor === 'Concluído') {
+            payload.prazo = obterDataAtual();
+        }
+
+        setPedidos(pedidos.map(p => {
+            if (p.id === id) {
+                return { ...p, ...payload };
+            }
+            return p;
+        }));
+
+        const { error } = await supabase.from('pedidos').update(payload).eq('id', id);
+        if (error) {
+            alert('Erro ao atualizar: ' + error.message);
+            carregarDados(); 
+        }
+    }
+
+    function fecharModalOS() {
+        setModalAberto(false);
+        setPedidoEmEdicao(null);
+        setIdOrcamentoOrigem(null);
+        setBuscaCliente('');
+        setBuscaProduto('');
+        setItensPedido([]); 
+        setPagamentosPedido([]);
+        setNovoPagamento({ valor: '', forma: 'PIX', parcelas: 1, instituicao: 'Itaú', vencimento_boleto: '' });
+        setItemAtual({ nome: '', descricao: '', valor: '', desconto: '', local_producao: 'Berlim', id_produto: null });
+        setNovoPedido({ 
+            cliente: '', servico: '', valor_total: '', 
+            status: 'Produzir', data_pedido: obterDataAtual(),
+            prazo: '', responsavel: '', local_producao: 'Berlim', aprovado: false,
+            entrega: false, urgente: false
+        });
+    }
+
+    function abrirEdicao(pedido) {
+        const dadosDesconstruidos = desconstruirTextoServico(pedido.servico);
+        setPedidoEmEdicao(pedido);
+        setBuscaCliente(pedido.cliente);
+        setItensPedido(dadosDesconstruidos.itens); 
+        const pagamentosRecuperados = dadosDesconstruidos.pagamentos || [];
+        setPagamentosPedido(pagamentosRecuperados);
+        
+        const totalPago = pagamentosRecuperados.reduce((acc, p) => acc + (parseFloat(String(p.valor).replace(/\./g, '').replace(',', '.')) || 0), 0);
+        const totalOSStr = parseFloat(String(pedido.valor_total).replace(/\./g, '').replace(',', '.')) || 0;
+        const saldoRestante = totalOSStr - totalPago;
+        
+        setNovoPagamento({ 
+            valor: saldoRestante > 0 ? formatarMoeda((saldoRestante * 100).toFixed(0).toString()) : '', 
+            forma: 'PIX', parcelas: 1, instituicao: 'Itaú' 
+        });
+        setNovoPedido({
+            cliente: pedido.cliente,
+            servico: dadosDesconstruidos.observacoes,
+            status: pedido.status,
+            valor_total: formatarMoeda((pedido.valor_total * 100).toFixed(0).toString()),
+            data_pedido: pedido.data_pedido || null,
+            prazo: pedido.prazo || null,
+            responsavel: pedido.responsavel || '',
+            local_producao: pedido.local_producao || 'Berlim',
+            aprovado: pedido.aprovado || false,
+            entrega: pedido.entrega || false,
+            urgente: pedido.urgente || false
+        });
+        setModalAberto(true);
+    }
+
+    function abrirEdicaoProduto(produto) {
+        setNovoProduto({ id: produto.id, nome: produto.nome, texto_padrao: produto.texto_padrao, preco_base: formatarMoeda((produto.preco_base * 100).toFixed(0).toString()) });
+        setModalProdutoAberto(true);
+    }
+
+    function abrirEdicaoCliente(cliente) {
+        setNovoCliente({ id: cliente.id, nome: cliente.nome, telefone: cliente.telefone, email: cliente.email, observacoes: cliente.observacoes, cliente_problema: cliente.cliente_problema || false });
+        setModalClienteAberto(true);
+    }
+
+    function abrirEdicaoUsuario(usr) {
+        setNovoUsuario({ id: usr.id, nome: usr.nome, senha: usr.senha, nivel: usr.nivel });
+        setModalUsuarioAberto(true);
+    }
+
+    async function salvarUsuario(e) {
+        e.preventDefault();
+        const usuarioFormatado = { nome: novoUsuario.nome, senha: novoUsuario.senha, nivel: novoUsuario.nivel };
+
+        if (novoUsuario.id) {
+            const { data, error } = await supabase.from('usuarios').update(usuarioFormatado).eq('id', novoUsuario.id).select();
+            if (error) {
+                alert('Falha ao atualizar usuário: ' + error.message);
+            } else if (data && data.length > 0) {
+                setUsuariosSistema(usuariosSistema.map(u => u.id === novoUsuario.id ? data[0] : u));
+                setModalUsuarioAberto(false);
+            } else {
+                carregarDados();
+                setModalUsuarioAberto(false);
+            }
+        } else {
+            const { data, error } = await supabase.from('usuarios').insert([usuarioFormatado]).select();
+            if (error) {
+                alert('Falha ao salvar usuário: ' + error.message);
+            } else if (data && data.length > 0) {
+                setUsuariosSistema([...usuariosSistema, data[0]]);
+                setModalUsuarioAberto(false);
+            } else {
+                carregarDados();
+                setModalUsuarioAberto(false);
+            }
+        }
+    }
+
+    function adicionarItemAoCarrinho() {
+        if (!itemAtual.descricao || !itemAtual.valor) return;
+        const pctDesconto = parseFloat(itemAtual.desconto) || 0;
+        const numOriginal = parseFloat(itemAtual.valor.replace(/\./g, '').replace(',', '.')) || 0;
+        const valorFinalCalculadoNum = numOriginal * (1 - pctDesconto / 100);
+        const valorFinalCalculadoStr = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(valorFinalCalculadoNum);
+        
+        const novoItemEmpacotado = { 
+            ...itemAtual, valor_original: itemAtual.valor, valor: valorFinalCalculadoStr, id_temp: Math.random() + Date.now() 
+        };
+
+        const novosItens = [...itensPedido, novoItemEmpacotado];
+        setItensPedido(novosItens); 
+        
+        let totalGeralOS = 0;
+        novosItens.forEach(i => { totalGeralOS += parseFloat(i.valor.replace(/\./g, '').replace(',', '.')) || 0; });
+        setNovoPedido({...novoPedido, valor_total: formatarMoeda((totalGeralOS * 100).toFixed(0).toString())});
+        
+        setItemAtual({ nome: '', descricao: '', valor: '', desconto: '', local_producao: 'Berlim', id_produto: null });
+        setBuscaProduto('');
+    }
+
+    function removerItemDoCarrinho(id_temp) {
+        const novosItens = itensPedido.filter(i => i.id_temp !== id_temp);
+        setItensPedido(novosItens);
+        let totalGeralOS = 0;
+        novosItens.forEach(i => { totalGeralOS += parseFloat(i.valor.replace(/\./g, '').replace(',', '.')) || 0; });
+        setNovoPedido({...novoPedido, valor_total: formatarMoeda((totalGeralOS * 100).toFixed(0).toString())});
+    }
+
+    async function salvarOS(e, querImprimir = false) {
+        if (e) e.preventDefault();
+        setSalvandoOS(true);
+        
+        let textoFinalServico = '';
+        if (itensPedido.length > 0) {
+            const itensTextoArray = itensPedido.map(i => {
+                const strDesconto = i.desconto ? ' (-' + i.desconto + '%)' : '';
+                const strNome = i.nome ? '• ' + (i.id_produto ? `[#${i.id_produto}] ` : '') + i.nome : '• Serviço Personalizado';
+                const strLocal = i.local_producao ? '\n  Local: ' + i.local_producao : '\n  Local: Berlim';
+                const strConcluido = i.concluido ? '\n  [✓] Concluído' : '';
+                return strNome + '\n  ' + i.descricao + '\n  Valor: R$ ' + i.valor + strDesconto + strLocal + strConcluido;
+            });
+            textoFinalServico += itensTextoArray.join('\n\n') + '\n\n';
+            if (novoPedido.servico) textoFinalServico += '[OBSERVAÇÕES GERAIS]\n' + novoPedido.servico;
+        } else {
+            textoFinalServico = novoPedido.servico;
+        }
+
+        if (pagamentosPedido.length > 0) {
+            textoFinalServico += '\n\n[PAGAMENTOS]\n' + JSON.stringify(pagamentosPedido);
+        }
+
+        const valorNumericoFinal = parseFloat(String(novoPedido.valor_total).replace(/\./g, '').replace(',', '.')) || 0;
+
+        // Calcular locais unicos da OS a partir dos itens
+        const locaisOS = [...new Set(itensPedido.map(i => i.local_producao || 'Berlim'))].join(', ');
+
+        const payload = {
+            cliente: novoPedido.cliente,
+            servico: textoFinalServico,
+            status: novoPedido.status,
+            valor_total: valorNumericoFinal,
+            data_pedido: novoPedido.data_pedido || null,
+            prazo: novoPedido.prazo || null,
+            responsavel: novoPedido.responsavel,
+            local_producao: locaisOS,
+            aprovado: novoPedido.aprovado,
+            entrega: novoPedido.entrega,
+            urgente: novoPedido.urgente
+        };
+
+        if (novoPedido.status === 'Concluído' && (!pedidoEmEdicao || pedidoEmEdicao.status !== 'Concluído')) {
+            payload.prazo = obterDataAtual();
+        }
+
+        if (pedidoEmEdicao) {
+            const { data, error } = await supabase.from('pedidos').update(payload).eq('id', pedidoEmEdicao.id).select();
+            
+            if (error) {
+                alert('Erro ao atualizar OS: ' + error.message);
+            } else if (data && data.length > 0) {
+                setPedidos(pedidos.map(p => p.id === data[0].id ? data[0] : p)); 
+                fecharModalOS(); 
+                if (querImprimir) imprimirOS(data[0]); 
+            } else {
+                // Se a resposta for vazia, puxa as informações limpas e fecha sem travar
+                carregarDados();
+                fecharModalOS();
+                if (querImprimir) imprimirOS({ ...pedidoEmEdicao, ...payload });
+            }
+        } else {
+            const novoId = pedidos.length > 0 ? Math.max(...pedidos.map(p => p.id)) + 1 : 1;
+            payload.id = novoId;
+            payload.criado_por = usuario?.nome || 'Desconhecido';
+            const { data, error } = await supabase.from('pedidos').insert([payload]).select();
+            
+            if (error) {
+                alert('Erro ao salvar OS: ' + error.message);
+            } else if (data && data.length > 0) {
+                setPedidos([data[0], ...pedidos]); 
+                if (idOrcamentoOrigem) {
+                    supabase.from('orcamentos_formalizados').delete().eq('id', idOrcamentoOrigem).then(({ error }) => {
+                        if (!error) setOrcamentosFormalizados(prev => prev.filter(o => o.id !== idOrcamentoOrigem));
+                    });
+                }
+                fecharModalOS(); 
+                if (querImprimir) imprimirOS(data[0]); 
+            } else {
+                // Se a resposta for vazia, puxa as informações limpas e fecha sem travar
+                if (idOrcamentoOrigem) {
+                    supabase.from('orcamentos_formalizados').delete().eq('id', idOrcamentoOrigem).then(({ error }) => {
+                        if (!error) setOrcamentosFormalizados(prev => prev.filter(o => o.id !== idOrcamentoOrigem));
+                    });
+                }
+                carregarDados();
+                fecharModalOS();
+                if (querImprimir) alert('Pedido atualizado com sucesso! Para evitar lentidão, inicie a impressão manualmente através do Histórico.');
+            }
+        }
+        setSalvandoOS(false);
+    }
+    
+    // === FUNÇÕES ORÇAMENTOS PRÉ PRONTOS ===
+    async function salvarOrcamentoPre(e) {
+        e.preventDefault();
+        const payload = { titulo: novoOrcamentoPre.titulo, texto: novoOrcamentoPre.texto };
+        if (novoOrcamentoPre.id) {
+            const { data, error } = await supabase.from('orcamentos_pre_prontos').update(payload).eq('id', novoOrcamentoPre.id).select();
+            if (!error && data) {
+                setOrcamentosPreProntos(orcamentosPreProntos.map(o => o.id === novoOrcamentoPre.id ? data[0] : o));
+                setModalOrcamentoPreAberto(false);
+            } else alert('Erro: ' + error?.message);
+        } else {
+            const { data, error } = await supabase.from('orcamentos_pre_prontos').insert([payload]).select();
+            if (!error && data) {
+                setOrcamentosPreProntos([data[0], ...orcamentosPreProntos]);
+                setModalOrcamentoPreAberto(false);
+            } else alert('Erro: ' + error?.message);
+        }
+    }
+    
+    async function excluirOrcamentoPre(id) {
+        if (!confirm('Excluir este modelo pré-pronto?')) return;
+        const { error } = await supabase.from('orcamentos_pre_prontos').delete().eq('id', id);
+        if (!error) setOrcamentosPreProntos(orcamentosPreProntos.filter(o => o.id !== id));
+        else alert('Erro: ' + error.message);
+    }
+
+    // === FUNÇÕES ORÇAMENTOS FORMALIZADOS ===
+    async function salvarOrcamentoFormalizado(e, querImprimir = false) {
+        if (e) e.preventDefault();
+        
+        let textoFinalServico = '';
+        if (itensPedido.length > 0) {
+            const itensTextoArray = itensPedido.map(i => {
+                const strDesconto = i.desconto ? ' (-' + i.desconto + '%)' : '';
+                const strNome = i.nome ? '• ' + (i.id_produto ? `[#${i.id_produto}] ` : '') + i.nome : '• Serviço Personalizado';
+                const strLocal = i.local_producao ? '\n  Local: ' + i.local_producao : '\n  Local: Berlim';
+                return strNome + '\n  ' + i.descricao + '\n  Valor: R$ ' + i.valor + strDesconto + strLocal;
+            });
+            textoFinalServico += itensTextoArray.join('\n\n') + '\n\n';
+            if (novoPedido.servico) textoFinalServico += '[OBSERVAÇÕES GERAIS]\n' + novoPedido.servico;
+        } else {
+            textoFinalServico = novoPedido.servico;
+        }
+
+        const valorNumericoFinal = parseFloat(String(novoPedido.valor_total).replace(/\./g, '').replace(',', '.')) || 0;
+
+        const payload = {
+            cliente: novoPedido.cliente,
+            telefone: clientes.find(c => c.nome === novoPedido.cliente)?.telefone || '',
+            produto: itensPedido.map(i => i.nome).join(', ') || 'Serviços Diversos',
+            descricao: textoFinalServico + (itensPedido.length > 0 ? '\n\n[ITENS_JSON]\n' + JSON.stringify(itensPedido) : ''),
+            quantidade: 1,
+            valor: valorNumericoFinal,
+            observacoes: novoPedido.servico,
+            criado_por: usuario?.nome || 'Desconhecido'
+        };
+
+        if (orcamentoFormalizadoEmEdicao) {
+            const { data, error } = await supabase.from('orcamentos_formalizados').update(payload).eq('id', orcamentoFormalizadoEmEdicao.id).select();
+            if (error) alert('Erro: ' + error.message);
+            else if (data && data.length > 0) {
+                setOrcamentosFormalizados(orcamentosFormalizados.map(o => o.id === data[0].id ? data[0] : o));
+                setModalOrcamentoFormalizadoAberto(false);
+                if (querImprimir) baixarPDFOrcamento(data[0]);
+            }
+        } else {
+            const { data, error } = await supabase.from('orcamentos_formalizados').insert([payload]).select();
+            if (error) alert('Erro: ' + error.message);
+            else if (data && data.length > 0) {
+                setOrcamentosFormalizados([data[0], ...orcamentosFormalizados]);
+                setModalOrcamentoFormalizadoAberto(false);
+                if (querImprimir) baixarPDFOrcamento(data[0]);
+            }
+        }
+    }
+
+    function baixarPDFOrcamento(orc) {
+        alert("A função de gerar e baixar o PDF do orçamento está em desenvolvimento!");
+    }
+    
+    function extrairItensOrcamento(orc) {
+        if (!orc.descricao) return [];
+        const match = orc.descricao.match(/\[ITENS_JSON\]\n(.*)/);
+        if (match) {
+            try { return JSON.parse(match[1]); } catch(e) {}
+        }
+        return desconstruirTextoServico(orc.descricao).itens;
+    }
+
+    function abrirEdicaoOrcamento(orcamento) {
+        const itensCarregados = extrairItensOrcamento(orcamento);
+        const obs = orcamento.observacoes || (orcamento.descricao ? desconstruirTextoServico(orcamento.descricao.split('\n\n[ITENS_JSON]')[0]).observacoes : '');
+        
+        setOrcamentoFormalizadoEmEdicao(orcamento);
+        setBuscaCliente(orcamento.cliente);
+        setItensPedido(itensCarregados);
+        setNovoPedido({
+            cliente: orcamento.cliente,
+            servico: obs || '',
+            valor_total: formatarMoeda((orcamento.valor * 100).toFixed(0).toString()),
+            status: 'Orçamento',
+            data_pedido: obterDataAtual(),
+            prazo: '',
+            responsavel: usuario?.nome || '',
+            entrega: false,
+            urgente: false
+        });
+        setModalOrcamentoFormalizadoAberto(true);
+    }
+    
+    function transformarEmOS(orcamento) {
+        const itensCarregados = extrairItensOrcamento(orcamento);
+        setPedidoEmEdicao(null);
+        setBuscaCliente(orcamento.cliente);
+        setItensPedido(itensCarregados);
+        setNovoPedido({
+            cliente: orcamento.cliente,
+            servico: '',
+            valor_total: formatarMoeda((orcamento.valor * 100).toFixed(0).toString()),
+            status: 'Produzir',
+            data_pedido: obterDataAtual(),
+            prazo: '',
+            responsavel: usuario?.nome || '',
+            entrega: false,
+            urgente: false
+        });
+        setIdOrcamentoOrigem(orcamento.id);
+        setModalAberto(true);
+    }
+    
+    async function excluirOrcamentoFormalizado(id) {
+        if (!confirm('Excluir este orçamento formalizado?')) return;
+        const { error } = await supabase.from('orcamentos_formalizados').delete().eq('id', id);
+        if (!error) setOrcamentosFormalizados(orcamentosFormalizados.filter(o => o.id !== id));
+        else alert('Erro: ' + error.message);
+    }
+
+    async function salvarProduto(e) {
+        e.preventDefault();
+        setSalvandoProduto(true);
+        const produtoFormatado = { nome: novoProduto.nome, texto_padrao: novoProduto.texto_padrao, preco_base: parseFloat(novoProduto.preco_base.replace(/\./g, '').replace(',', '.')) || 0 };
+
+        if (novoProduto.id) {
+            const { data, error } = await supabase.from('produtos').update(produtoFormatado).eq('id', novoProduto.id).select();
+            if (!error && data) { setProdutos(produtos.map(p => p.id === novoProduto.id ? data[0] : p)); setModalProdutoAberto(false); setNovoProduto({ id: null, nome: '', texto_padrao: '', preco_base: '' }); } 
+            else alert('Falha ao atualizar: ' + error.message);
+        } else {
+            const { data, error } = await supabase.from('produtos').insert([produtoFormatado]).select();
+            if (!error && data) { setProdutos([...produtos, data[0]]); setModalProdutoAberto(false); setNovoProduto({ id: null, nome: '', texto_padrao: '', preco_base: '' }); } 
+            else alert('Falha ao salvar: ' + error.message);
+        }
+        setSalvandoProduto(false);
+    }
+
+    const [salvandoConta, setSalvandoConta] = useState(false);
+    async function salvarConta(e) {
+        e.preventDefault();
+        setSalvandoConta(true);
+        const contaFormatada = { 
+            descricao: novaConta.descricao, 
+            valor: parseFloat(String(novaConta.valor).replace(/\./g, '').replace(',', '.')) || 0,
+            vencimento: novaConta.vencimento,
+            status: novaConta.status,
+            recorrente: novaConta.recorrente
+        };
+
+        if (novaConta.id) {
+            const { data, error } = await supabase.from('contas_pagar').update(contaFormatada).eq('id', novaConta.id).select();
+            if (!error && data) { 
+                setContasPagar(contasPagar.map(c => c.id === novaConta.id ? data[0] : c)); 
+                setModalContaAberto(false); 
+            } else {
+                alert('Falha ao atualizar (Tabela contas_pagar existe no Supabase?): ' + (error?.message || 'Erro desconhecido'));
+            }
+        } else {
+            const { data, error } = await supabase.from('contas_pagar').insert([contaFormatada]).select();
+            if (!error && data) { 
+                setContasPagar([...contasPagar, data[0]]); 
+                setModalContaAberto(false); 
+            } else {
+                alert('Falha ao salvar (Tabela contas_pagar existe no Supabase?): ' + (error?.message || 'Erro desconhecido'));
+            }
+        }
+        setSalvandoConta(false);
+    }
+
+    const [salvandoEmpresa, setSalvandoEmpresa] = useState(false);
+    async function salvarEmpresaFaturamento(e) {
+        e.preventDefault();
+        setSalvandoEmpresa(true);
+        const payload = { nome: novaEmpresaFaturamento.nome, cnpj: novaEmpresaFaturamento.cnpj, status: novaEmpresaFaturamento.status };
+        if (novaEmpresaFaturamento.id) {
+            const { data, error } = await supabase.from('empresas_faturamento').update(payload).eq('id', novaEmpresaFaturamento.id).select();
+            if (!error && data) setEmpresasFaturamento(empresasFaturamento.map(x => x.id === data[0].id ? data[0] : x));
+            else if (error) alert('Falha ao atualizar (A tabela empresas_faturamento foi criada?): ' + error.message);
+        } else {
+            const { data, error } = await supabase.from('empresas_faturamento').insert([payload]).select();
+            if (!error && data) setEmpresasFaturamento([...empresasFaturamento, data[0]]);
+            else if (error) alert('Falha ao salvar (A tabela empresas_faturamento foi criada?): ' + error.message);
+        }
+        setModalEmpresaFaturamentoAberto(false);
+        setSalvandoEmpresa(false);
+    }
+
+    async function excluirEmpresaFaturamento(id) {
+        if (!confirm('Deseja excluir esta empresa?')) return;
+        const { error } = await supabase.from('empresas_faturamento').delete().eq('id', id);
+        if (!error) setEmpresasFaturamento(empresasFaturamento.filter(x => x.id !== id));
+    }
+
+    async function excluirProduto(id, e) {
+        e.stopPropagation(); // Evita que o clique no lixo abra a tela de edição
+        
+        if (!window.confirm("Tem certeza que deseja excluir este produto do catálogo?")) return;
+
+        const { error } = await supabase.from('produtos').delete().eq('id', id);
+        
+        if (error) {
+            alert('Erro ao excluir produto: ' + error.message);
+        } else {
+            setProdutos(produtos.filter(p => p.id !== id));
+        }
+    }
+
+    async function handleDragStartProduto(e, index) {
+        setDraggedProdutoIndex(index);
+        e.dataTransfer.effectAllowed = "move";
+    }
+
+    async function handleDropProduto(e, targetIndex) {
+        e.preventDefault();
+        if (draggedProdutoIndex === null || draggedProdutoIndex === targetIndex) return;
+
+        const novaLista = [...produtos];
+        const [itemArrastado] = novaLista.splice(draggedProdutoIndex, 1);
+        novaLista.splice(targetIndex, 0, itemArrastado);
+
+        const listaComOrdem = novaLista.map((prod, idx) => ({ ...prod, ordem: idx }));
+        setProdutos(listaComOrdem);
+        setDraggedProdutoIndex(null);
+
+        const payloadSupabase = listaComOrdem.map(p => ({
+            id: p.id,
+            nome: p.nome,
+            texto_padrao: p.texto_padrao,
+            preco_base: p.preco_base,
+            ordem: p.ordem
+        }));
+        
+        const { error } = await supabase.from('produtos').upsert(payloadSupabase);
+        if (error) {
+            console.error("Erro ao reordenar produtos:", error);
+            alert("Erro ao reordenar produtos: " + error.message);
+        }
+    }
+
+    async function salvarCliente(e) {
+        e.preventDefault();
+        setSalvandoCliente(true);
+        const clienteFormatado = { nome: novoCliente.nome, telefone: novoCliente.telefone, email: novoCliente.email, observacoes: novoCliente.observacoes, cliente_problema: novoCliente.cliente_problema || false };
+
+        if (clienteFormatado.telefone && clienteFormatado.telefone.trim() !== '') {
+            const telNormalizado = clienteFormatado.telefone.replace(/\D/g, '');
+            let duplicado = null;
+            if (telNormalizado.length >= 8) {
+                const searchString = `%${telNormalizado.slice(-4)}%`;
+                const { data: dupData } = await supabase.from('clientes').select('id,nome,telefone').ilike('telefone', searchString);
+                if (dupData) {
+                    duplicado = dupData.find(c => {
+                        if (novoCliente.id && c.id === novoCliente.id) return false;
+                        if (!c.telefone) return false;
+                        const cTelNorm = c.telefone.replace(/\D/g, '');
+                        return cTelNorm.endsWith(telNormalizado) || telNormalizado.endsWith(cTelNorm);
+                    });
+                }
+            }
+            
+            if (duplicado) {
+                alert('Aviso: Este número de WhatsApp/Telefone já está cadastrado no cliente "' + duplicado.nome + '"!');
+                setSalvandoCliente(false);
+                return;
+            }
+        }
+
+        if (novoCliente.id) {
+            const { data, error } = await supabase.from('clientes').update(clienteFormatado).eq('id', novoCliente.id).select();
+            if (!error && data) { setTriggerRealtime(prev => prev + 1); setModalClienteAberto(false); setNovoCliente({ id: null, nome: '', telefone: '', email: '', observacoes: '', cliente_problema: false }); } 
+            else alert('Falha ao atualizar: ' + error.message);
+        } else {
+            const { data, error } = await supabase.from('clientes').insert([clienteFormatado]).select();
+            if (!error && data) { setTriggerRealtime(prev => prev + 1); setNovoPedido({...novoPedido, cliente: data[0].nome}); setBuscaCliente(data[0].nome); setModalClienteAberto(false); setNovoCliente({ id: null, nome: '', telefone: '', email: '', observacoes: '', cliente_problema: false }); } 
+            else alert('Falha ao salvar: ' + error.message);
+        }
+        setSalvandoCliente(false);
+    }
+
+    async function salvarNotaFiscal(e) {
+        e.preventDefault();
+        setSalvandoNotaFiscal(true);
+
+        const valorNumerico = notaFiscalEmEdicao.valor_pago ? parseFloat(String(notaFiscalEmEdicao.valor_pago).replace(/\./g, '').replace(',', '.')) : null;
+
+        const payload = { 
+            servico_feito: notaFiscalEmEdicao.servico_feito, 
+            valor_pago: valorNumerico, 
+            observacoes: notaFiscalEmEdicao.observacoes,
+            cliente: notaFiscalEmEdicao.cliente,
+            tipo_nota: notaFiscalEmEdicao.tipo_nota
+        };
+        const { data, error } = await supabase.from('notas_fiscais').update(payload).eq('id', notaFiscalEmEdicao.id).select();
+        if (!error && data) { 
+            setNotasFiscais(notasFiscais.map(n => n.id === notaFiscalEmEdicao.id ? data[0] : n)); 
+            setModalNotaFiscalAberto(false); 
+        } else {
+            alert('Falha ao atualizar nota: ' + error.message);
+        }
+        setSalvandoNotaFiscal(false);
+    }
+
+    async function concluirNotaFiscal(id) {
+        if (!confirm('Deseja realmente marcar esta nota como concluída? Ela não aparecerá mais nesta lista.')) return;
+        const { data, error } = await supabase.from('notas_fiscais').update({ concluido: true }).eq('id', id).select();
+        if (!error && data) {
+            setNotasFiscais(notasFiscais.map(n => n.id === id ? data[0] : n));
+        } else {
+            alert('Falha ao concluir: ' + error.message);
+        }
+    }
+
+    async function imprimirOS(pedido) {
+        setOsParaImprimir(pedido);
+        const { data } = await supabase.from('clientes').select('*').eq('nome', pedido.cliente).single();
+        if (data) {
+            setOsParaImprimir(prev => ({...prev, clienteInfo: data}));
+        }
+        setTimeout(() => window.print(), 200);
+    }
+
+    const clientesFiltrados = clientes;
+    // Lógica para elencar os 5 produtos mais vendidos com base no histórico
+    const vendasPorProduto = useMemo(() => {
+        const mapa = {};
+        pedidos.forEach(p => {
+            if (!p.servico) return;
+            const { itens } = desconstruirTextoServico(p.servico);
+            
+            itens.forEach(item => {
+                const id_produto_match = item.id_produto;
+                const nomeLimpo = item.nome.trim();
+                const valorNum = parseFloat(item.valor.replace(/\./g, '').replace(',', '.')) || 0;
+                
+                const prod = id_produto_match 
+                    ? produtos.find(p => String(p.id) === String(id_produto_match)) 
+                    : produtos.find(prod => prod.nome.toLowerCase() === nomeLimpo.toLowerCase());
+
+                const finalName = prod ? prod.nome : nomeLimpo;
+
+                if (mapa[finalName]) mapa[finalName] += valorNum;
+                else mapa[finalName] = valorNum;
+            });
+        });
+        return mapa;
+    }, [pedidos]);
+
+    const top5Produtos = useMemo(() => {
+        return Object.entries(vendasPorProduto)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 5)
+            .map(entry => entry[0]);
+    }, [vendasPorProduto]);
+
+    const produtosFiltrados = produtos.filter(p => p.nome.toLowerCase().includes(buscaProduto.toLowerCase()) || p.id.toString().includes(buscaProduto)).sort((a, b) => {
+        // Prioriza os top 5 vendidos se não houver busca ativa (ou mesmo se houver, os que sobrarem da busca ainda terão prioridade)
+        const indexA = top5Produtos.indexOf(a.nome);
+        const indexB = top5Produtos.indexOf(b.nome);
+        
+        if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+        if (indexA !== -1) return -1;
+        if (indexB !== -1) return 1;
+        
+        // Se nenhum for top 5, mantém a ordenação original do catálogo
+        return (a.ordem || 0) - (b.ordem || 0);
+    });
+    
+    // (Filtros locais de Clientes foram substituídos por busca no servidor e paginação)
+
+    const produtosCatalogoFiltrados = produtos.filter(p => {
+        if (!buscaCadProdutos) return true;
+        const termo = buscaCadProdutos.toLowerCase();
+        return (p.nome && p.nome.toLowerCase().includes(termo));
+    });
+    const clientesPaginados = clientesCadastrados;
+    const totalPaginasClientes = Math.ceil(totalClientesCad / itensPorPagina) || 1;
+
+    // Filtros e paginação da aba Notas Fiscais
+    const notasFiscaisAbaFiltro = notasFiscais.filter(n => {
+        const checkStatus = filtroNotas === 'pendentes' ? !n.concluido : n.concluido;
+        if (!checkStatus) return false;
+        if (!buscaNotaFiscal) return true;
+        const termo = buscaNotaFiscal.toLowerCase();
+        return (n.cliente && n.cliente.toLowerCase().includes(termo)) || 
+               (n.razao_social && n.razao_social.toLowerCase().includes(termo)) || 
+               (n.cnpj && n.cnpj.toLowerCase().includes(termo));
+    });
+    const notasFiscaisPaginadas = notasFiscaisAbaFiltro.slice((paginaNotasFiscais - 1) * itensPorPagina, paginaNotasFiscais * itensPorPagina);
+    const totalPaginasNotasFiscais = Math.ceil(notasFiscaisAbaFiltro.length / itensPorPagina) || 1;
+    
+    // Filtro Produção Aprimorado (Sem data e buscando em MultiSelect)
+    const pedidosProducaoAtivos = pedidos.filter(p => {
+        const statusPermitido = STATUSES_PRODUCAO.includes(p.status);
+        if (!statusPermitido) return false;
+
+        const termo = buscaProducaoText.toLowerCase();
+        const matchTermo = !termo || 
+            (p.cliente && p.cliente.toLowerCase().includes(termo)) || 
+            (p.id && p.id.toString().includes(termo)) || 
+            (p.responsavel && p.responsavel.toLowerCase().includes(termo));
+        
+        return matchTermo;
+    });
+
+    // (Filtros locais do Histórico foram substituídos por busca no servidor e paginação)
+
+    const opcoesStatusPermitidas = isOperador ? [...STATUSES_PRODUCAO, 'Abandonado', 'Concluído'] : [...STATUSES_PRODUCAO, ...STATUSES_FINALIZADOS];
+    const isModalTrancado = (pedidoEmEdicao && pedidoEmEdicao.status === 'Finalizado' && isOperador) ? true : false;
+
+    // Render de barras para o Financeiro
+    const renderBarHorizontal = (label, valor, maxVal, isCaixa = false, customColor = null) => {
+        const pct = maxVal > 0 ? (valor / maxVal) * 100 : 0;
+        const barColor = customColor || (isCaixa ? 'bg-emerald-500' : 'bg-brand');
+        return (
+            <div key={label} className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 text-[11px] group">
+                <span className="w-24 sm:w-32 font-medium truncate text-gray-700 dark:text-gray-300">{label}</span>
+                <div className="flex-1 bg-gray-100 dark:bg-darkElevated h-6 rounded overflow-hidden relative border dark:border-darkBorder">
+                    <div className={`${barColor} h-full transition-all duration-500 opacity-80 group-hover:opacity-100`} style={{ width: `${Math.max(pct, 1)}%` }}></div>
+                </div>
+                <span className="w-24 text-right font-semibold text-gray-900 dark:text-[#EDEDED]">
+                    R$ {formatarValorFinanceiro(valor)}
+                </span>
+            </div>
+        )
+    };
+
+    // ==== TELA DE LOGIN ====
+    if (!usuario) {
+        return (
+            <div className="flex min-h-screen items-center justify-center bg-[#EDEFF0] text-[#454545] p-4 select-none font-sans">
+                <div className="w-full max-w-sm bg-white border border-gray-200 rounded-xl p-8 shadow-sm flex flex-col gap-6">
+                    <div className="text-center flex flex-col items-center">
+                        <img src="https://www.berlimgraficarapida.com.br/wp-content/uploads/elementor/thumbs/logosite-rm0erpiqj90gcf7ff4jp8ujys78opflob1b9vn5jjs.png" alt="Berlim Gráfica" className="h-12 object-contain mb-3" />
+                        <p className="text-[11px] text-gray-400 mt-1">Insira suas credenciais para acessar o ERP</p>
+                    </div>
+                    
+                    <form onSubmit={efetuarLogin} className="flex flex-col gap-4">
+                        <div>
+                            <label className="block text-[10px] font-semibold uppercase tracking-wider text-gray-500 mb-1.5">Usuário</label>
+                            <input required type="text" value={loginInput} onChange={e => setLoginInput(e.target.value)} className="w-full bg-white border border-gray-200 rounded px-3 py-2 text-[13px] outline-none focus:border-brand transition text-gray-800" placeholder="Ex: admin, gi, financeiro..." autoComplete="off" />
+                        </div>
+                        <div>
+                            <label className="block text-[10px] font-semibold uppercase tracking-wider text-gray-500 mb-1.5">Senha</label>
+                            <input required type="password" value={senhaInput} onChange={e => setSenhaInput(e.target.value)} className="w-full bg-white border border-gray-200 rounded px-3 py-2 text-[13px] outline-none focus:border-brand transition text-gray-800" placeholder="••••••" />
+                        </div>
+                        {erroLogin && <p className="text-[11px] text-red-500 font-medium text-center">{erroLogin}</p>}
+                        <button type="submit" className="w-full bg-brand hover:bg-brandHover text-white py-2 rounded text-[13px] font-semibold shadow transition mt-2">
+                            Entrar no Sistema
+                        </button>
+                    </form>
+                </div>
+            </div>
+        );
+    }
+
+    return (
         <div>
             <div className="flex flex-col min-h-screen no-print">
                 {/* TIER 1: Logo and Profile */}

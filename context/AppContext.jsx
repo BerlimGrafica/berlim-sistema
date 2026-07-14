@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import React, { createContext, useContext, useState, useEffect, useRef, useMemo } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import Icon from '@/components/Icon';
@@ -9,7 +9,7 @@ const supabase = createClient('https://xbanoipgoleuahwbqksy.supabase.co', 'sb_pu
 export const AppContext = createContext();
 
 export const AppProvider = ({ children }) => {
-/// ==== CONTROLE DE SESSÃƒO E USUÃRIOS ====
+/// ==== CONTROLE DE SESSÃO E USUÁRIOS ====
     const [usuariosSistema, setUsuariosSistema] = useState([]);
     const [usuario, setUsuario] = useState(null);
     
@@ -22,7 +22,7 @@ export const AppProvider = ({ children }) => {
     const [produtos, setProdutos] = useState([]);
     const [draggedProdutoIndex, setDraggedProdutoIndex] = useState(null);
     
-    // ESTADOS ORÃ‡AMENTOS
+    // ESTADOS ORÇAMENTOS
     const [abaOrcamentos, setAbaOrcamentos] = useState('formalizados'); // 'formalizados' | 'pre_prontos'
     const [orcamentosFormalizados, setOrcamentosFormalizados] = useState([]);
     const [orcamentosPreProntos, setOrcamentosPreProntos] = useState([]);
@@ -60,12 +60,12 @@ export const AppProvider = ({ children }) => {
         else { document.documentElement.classList.remove('dark'); }
     }, [darkMode]);
     const isAdmin = usuario?.nivel === 'Administrador';
-    const isOperador = usuario?.nivel === 'ProduÃ§Ã£o/Atendimento';
+    const isOperador = usuario?.nivel === 'Produção/Atendimento';
     
     // Filtros
     const [buscaHistoricoText, setBuscaHistoricoText] = useState('');
     
-    // PaginaÃ§Ã£o
+    // Paginação
     const [paginaProducao, setPaginaProducao] = useState(1);
     const [paginaHistorico, setPaginaHistorico] = useState(1);
     const [pedidosHistorico, setPedidosHistorico] = useState([]);
@@ -112,7 +112,7 @@ export const AppProvider = ({ children }) => {
     const [produtoDropdownAberto, setProdutoDropdownAberto] = useState(false);
 
     const [pagamentosPedido, setPagamentosPedido] = useState([]);
-    const [novoPagamento, setNovoPagamento] = useState({ valor: '', forma: 'PIX', parcelas: 1, instituicao: 'ItaÃº', vencimento_boleto: '' });
+    const [novoPagamento, setNovoPagamento] = useState({ valor: '', forma: 'PIX', parcelas: 1, instituicao: 'Itaú', vencimento_boleto: '' });
 
     const [novoPedido, setNovoPedido] = useState({ 
         cliente: '', servico: '', valor_total: '', 
@@ -130,7 +130,7 @@ export const AppProvider = ({ children }) => {
     const [novoCliente, setNovoCliente] = useState({ id: null, nome: '', telefone: '', email: '', observacoes: '', cliente_problema: false });
 
     const [modalUsuarioAberto, setModalUsuarioAberto] = useState(false);
-    const [novoUsuario, setNovoUsuario] = useState({ id: null, nome: '', senha: '', nivel: 'ProduÃ§Ã£o/Atendimento' });
+    const [novoUsuario, setNovoUsuario] = useState({ id: null, nome: '', senha: '', nivel: 'Produção/Atendimento' });
 
     useEffect(() => { 
         if(usuario) {
@@ -143,12 +143,12 @@ export const AppProvider = ({ children }) => {
                     'postgres_changes', 
                     { event: '*', schema: 'public', table: 'pedidos' }, 
                     (payload) => {
-                        console.log('AtualizaÃ§Ã£o em tempo real (pedidos) recebida!', payload);
+                        console.log('Atualização em tempo real (pedidos) recebida!', payload);
                         const isAdm = usuario?.nivel === 'Administrador';
                         const isFin = usuario?.nivel === 'Financeiro';
-                        const isOpe = usuario?.nivel === 'ProduÃ§Ã£o/Atendimento';
+                        const isOpe = usuario?.nivel === 'Produção/Atendimento';
                         
-                        // LÃ³gica de alerta
+                        // Lógica de alerta
                         if (payload.eventType === 'UPDATE') {
                             const oldResponsavel = payload.old?.responsavel || '';
                             const newResponsavel = payload.new?.responsavel || '';
@@ -161,14 +161,14 @@ export const AppProvider = ({ children }) => {
                             if (!oldList.includes(nomeUsuario) && newList.includes(nomeUsuario)) {
                                 setAlertasNaoLidos(prev => {
                                     if(prev.some(a => a.os_id === payload.new.id && a.tipo === 'atribuicao')) return prev;
-                                    return [...prev, { id: Date.now(), msg: `VocÃª foi designado para a O.S. #${payload.new.id}`, os_id: payload.new.id, tipo: 'atribuicao' }];
+                                    return [...prev, { id: Date.now(), msg: `Você foi designado para a O.S. #${payload.new.id}`, os_id: payload.new.id, tipo: 'atribuicao' }];
                                 });
                             }
 
-                            // Alerta: ServiÃ§o ConcluÃ­do (para Financeiro/Admin)
-                            if (payload.new.status === 'ConcluÃ­do' && payload.old?.status !== 'ConcluÃ­do') {
+                            // Alerta: Serviço Concluído (para Financeiro/Admin)
+                            if (payload.new.status === 'Concluído' && payload.old?.status !== 'Concluído') {
                                 if (isAdm || isFin) {
-                                    setAlertasNaoLidos(prev => [...prev, { id: Date.now() + 1, msg: `ServiÃ§o O.S. #${payload.new.id} concluÃ­do!`, os_id: payload.new.id, tipo: 'concluido' }]);
+                                    setAlertasNaoLidos(prev => [...prev, { id: Date.now() + 1, msg: `Serviço O.S. #${payload.new.id} concluído!`, os_id: payload.new.id, tipo: 'concluido' }]);
                                 }
                             }
 
@@ -179,10 +179,10 @@ export const AppProvider = ({ children }) => {
                                 }
                             }
 
-                            // Alerta: ServiÃ§o de UrgÃªncia (para Operacional/Admin)
+                            // Alerta: Serviço de Urgência (para Operacional/Admin)
                             if (payload.new.urgente && !payload.old?.urgente) {
                                 if (isAdm || isOpe) {
-                                    setAlertasNaoLidos(prev => [...prev, { id: Date.now() + 2, msg: `UrgÃªncia marcada na O.S. #${payload.new.id}!`, os_id: payload.new.id, tipo: 'urgencia' }]);
+                                    setAlertasNaoLidos(prev => [...prev, { id: Date.now() + 2, msg: `Urgência marcada na O.S. #${payload.new.id}!`, os_id: payload.new.id, tipo: 'urgencia' }]);
                                 }
                             }
 
@@ -192,13 +192,13 @@ export const AppProvider = ({ children }) => {
                             const nomeUsuario = (usuario.nome || '').trim().toLowerCase();
                             
                             if (newList.includes(nomeUsuario)) {
-                                setAlertasNaoLidos(prev => [...prev, { id: Date.now(), msg: `Nova O.S. #${payload.new.id} atribuÃ­da a vocÃª`, os_id: payload.new.id, tipo: 'atribuicao' }]);
+                                setAlertasNaoLidos(prev => [...prev, { id: Date.now(), msg: `Nova O.S. #${payload.new.id} atribuída a você`, os_id: payload.new.id, tipo: 'atribuicao' }]);
                             }
                             
-                            // Alerta: ServiÃ§o de UrgÃªncia no cadastro
+                            // Alerta: Serviço de Urgência no cadastro
                             if (payload.new.urgente) {
                                 if (isAdm || isOpe) {
-                                    setAlertasNaoLidos(prev => [...prev, { id: Date.now() + 2, msg: `UrgÃªncia na nova O.S. #${payload.new.id}!`, os_id: payload.new.id, tipo: 'urgencia' }]);
+                                    setAlertasNaoLidos(prev => [...prev, { id: Date.now() + 2, msg: `Urgência na nova O.S. #${payload.new.id}!`, os_id: payload.new.id, tipo: 'urgencia' }]);
                                 }
                             }
                         }
@@ -211,10 +211,10 @@ export const AppProvider = ({ children }) => {
                     'postgres_changes', 
                     { event: '*', schema: 'public', table: 'notas_fiscais' }, 
                     (payload) => {
-                        console.log('AtualizaÃ§Ã£o em tempo real (notas_fiscais) recebida!', payload);
+                        console.log('Atualização em tempo real (notas_fiscais) recebida!', payload);
                         const isAdm = usuario?.nivel === 'Administrador';
                         const isFin = usuario?.nivel === 'Financeiro';
-                        const isOpe = usuario?.nivel === 'ProduÃ§Ã£o/Atendimento';
+                        const isOpe = usuario?.nivel === 'Produção/Atendimento';
 
                         if (payload.eventType === 'INSERT') {
                             if (isAdm || isOpe) {
@@ -236,7 +236,7 @@ export const AppProvider = ({ children }) => {
                 )
             .subscribe();
 
-            // Desliga o radar se o usuÃ¡rio fizer logoff
+            // Desliga o radar se o usuário fizer logoff
             return () => {
                 supabase.removeChannel(canalRealTime);
             };
@@ -261,7 +261,7 @@ export const AppProvider = ({ children }) => {
             const { data: batch, error } = await supabase
                 .from('pedidos')
                 .select('*')
-                .or(`data_pedido.gte.${dataCorte},status.in.(Produzir,Arte,ImpressÃ£o,Acabamento,Retirada)`)
+                .or(`data_pedido.gte.${dataCorte},status.in.(Produzir,Arte,Impressão,Acabamento,Retirada)`)
                 .order('id', { ascending: false })
                 .range(from, from + limit - 1);
                 
@@ -281,7 +281,7 @@ export const AppProvider = ({ children }) => {
             }
         }
         if (todosPedidos.length > 0) {
-            // Regra de pedidos Abandonados (Em Retirada a mais de 15 dias apÃ³s o prazo)
+            // Regra de pedidos Abandonados (Em Retirada a mais de 15 dias após o prazo)
             const hoje = new Date();
             hoje.setHours(0, 0, 0, 0);
             const pedidosParaAbandonar = todosPedidos.filter(p => {
@@ -307,7 +307,7 @@ export const AppProvider = ({ children }) => {
                 amanha.setDate(amanha.getDate() + 1);
                 const amanhaStr = amanha.getFullYear() + '-' + String(amanha.getMonth() + 1).padStart(2, '0') + '-' + String(amanha.getDate()).padStart(2, '0');
 
-                const statusIgnorados = ['ConcluÃ­da', 'Finalizada', 'Cancelada', 'Abandonada'];
+                const statusIgnorados = ['Concluída', 'Finalizada', 'Cancelada', 'Abandonada'];
                 
                 const hojeStr = hoje.getFullYear() + '-' + String(hoje.getMonth() + 1).padStart(2, '0') + '-' + String(hoje.getDate()).padStart(2, '0');
                 
@@ -318,8 +318,8 @@ export const AppProvider = ({ children }) => {
                         let novosAlertas = [...prev];
                         pedidosFuturaAlertar.forEach(p => {
                             if (!novosAlertas.some(a => a.os_id === p.id && a.tipo === 'alerta_futura') && !alertasFuturaDisparados.current.has(p.id)) {
-                                let msg = `Prazo da Futura termina amanhÃ£ (O.S. #${p.id}). Retirar!`;
-                                if (p.prazo === hojeStr) msg = `Prazo da Futura Ã© HOJE (O.S. #${p.id}). Retirar o quanto antes!`;
+                                let msg = `Prazo da Futura termina amanhã (O.S. #${p.id}). Retirar!`;
+                                if (p.prazo === hojeStr) msg = `Prazo da Futura é HOJE (O.S. #${p.id}). Retirar o quanto antes!`;
                                 else if (p.prazo < hojeStr) msg = `Prazo da Futura VENCIDO (O.S. #${p.id}). Verifique imediatamente!`;
                                 
                                 novosAlertas.push({ id: Date.now() + Math.random(), msg, os_id: p.id, tipo: 'alerta_futura' });
@@ -339,7 +339,7 @@ export const AppProvider = ({ children }) => {
                                 if (pag.vencimento_boleto === hojeStr || pag.vencimento_boleto === amanhaStr) {
                                     const alertId = `${p.id}_${pag.vencimento_boleto}`;
                                     if (!alertasBoletoDisparados.current.has(alertId)) {
-                                        let msg = `O boleto da O.S. #${p.id} vence amanhÃ£!`;
+                                        let msg = `O boleto da O.S. #${p.id} vence amanhã!`;
                                         if (pag.vencimento_boleto === hojeStr) msg = `O boleto da O.S. #${p.id} vence HOJE!`;
                                         
                                         novosAlertasBoleto.push({ id: Date.now() + Math.random(), msg, os_id: p.id, tipo: 'alerta_boleto' });
@@ -368,7 +368,7 @@ export const AppProvider = ({ children }) => {
         const { data: listaProdutos } = await supabase.from('produtos').select('*').order('ordem', { ascending: true });
         if (listaProdutos) setProdutos(listaProdutos);
         
-        // Clientes nÃ£o sÃ£o mais puxados integralmente aqui.
+        // Clientes não são mais puxados integralmente aqui.
 
         const { data: listaUsuarios } = await supabase.from('usuarios').select('*').order('nome', { ascending: true });
         if (listaUsuarios) setUsuariosSistema(listaUsuarios);
@@ -403,9 +403,9 @@ export const AppProvider = ({ children }) => {
             let query = supabase.from('pedidos').select('*', { count: 'exact' });
             
             if (abaOS === 'abertas') {
-                query = query.not('status', 'in', '("ConcluÃ­do","Finalizado","Cancelado","Abandonado")');
+                query = query.not('status', 'in', '("Concluído","Finalizado","Cancelado","Abandonado")');
             } else if (abaOS === 'concluidas') {
-                query = query.eq('status', 'ConcluÃ­do');
+                query = query.eq('status', 'Concluído');
             } else if (abaOS === 'finalizadas') {
                 query = query.eq('status', 'Finalizado');
             } else if (abaOS === 'canceladas') {
@@ -414,7 +414,7 @@ export const AppProvider = ({ children }) => {
                 query = query.eq('status', 'Abandonado');
             }
 
-            const isOperador = usuario?.nivel === 'ProduÃ§Ã£o/Atendimento';
+            const isOperador = usuario?.nivel === 'Produção/Atendimento';
             if (isOperador) {
                 query = query.not('status', 'eq', 'Finalizado');
             }
@@ -518,12 +518,12 @@ export const AppProvider = ({ children }) => {
 
         if (error) {
             console.error("Erro do Supabase:", error);
-            setErroLogin('Erro de conexÃ£o: ' + error.message);
+            setErroLogin('Erro de conexão: ' + error.message);
             return;
         }
 
         if (!data || data.length === 0) {
-            setErroLogin('Tabela inacessÃ­vel. Verifique se o RLS estÃ¡ desativado no Supabase.');
+            setErroLogin('Tabela inacessível. Verifique se o RLS está desativado no Supabase.');
             return;
         }
 
@@ -536,7 +536,7 @@ export const AppProvider = ({ children }) => {
             setSenhaInput('');
             setAbaAtual('dashboard');
         } else {
-            setErroLogin('UsuÃ¡rio ou senha incorretos.');
+            setErroLogin('Usuário ou senha incorretos.');
         }
     };
 
@@ -548,7 +548,7 @@ export const AppProvider = ({ children }) => {
 
     async function atualizarCampoInline(id, campo, valor) {
         let payload = { [campo]: valor };
-        if (campo === 'status' && valor === 'ConcluÃ­do') {
+        if (campo === 'status' && valor === 'Concluído') {
             payload.prazo = obterDataAtual();
         }
 
@@ -574,7 +574,7 @@ export const AppProvider = ({ children }) => {
         setBuscaProduto('');
         setItensPedido([]); 
         setPagamentosPedido([]);
-        setNovoPagamento({ valor: '', forma: 'PIX', parcelas: 1, instituicao: 'ItaÃº', vencimento_boleto: '' });
+        setNovoPagamento({ valor: '', forma: 'PIX', parcelas: 1, instituicao: 'Itaú', vencimento_boleto: '' });
         setItemAtual({ nome: '', descricao: '', valor: '', desconto: '', local_producao: 'Berlim', id_produto: null });
         setNovoPedido({ 
             cliente: '', servico: '', valor_total: '', 
@@ -598,7 +598,7 @@ export const AppProvider = ({ children }) => {
         
         setNovoPagamento({ 
             valor: saldoRestante > 0 ? formatarMoeda((saldoRestante * 100).toFixed(0).toString()) : '', 
-            forma: 'PIX', parcelas: 1, instituicao: 'ItaÃº' 
+            forma: 'PIX', parcelas: 1, instituicao: 'Itaú' 
         });
         setNovoPedido({
             cliente: pedido.cliente,
@@ -638,7 +638,7 @@ export const AppProvider = ({ children }) => {
         if (novoUsuario.id) {
             const { data, error } = await supabase.from('usuarios').update(usuarioFormatado).eq('id', novoUsuario.id).select();
             if (error) {
-                alert('Falha ao atualizar usuÃ¡rio: ' + error.message);
+                alert('Falha ao atualizar usuário: ' + error.message);
             } else if (data && data.length > 0) {
                 setUsuariosSistema(usuariosSistema.map(u => u.id === novoUsuario.id ? data[0] : u));
                 setModalUsuarioAberto(false);
@@ -649,7 +649,7 @@ export const AppProvider = ({ children }) => {
         } else {
             const { data, error } = await supabase.from('usuarios').insert([usuarioFormatado]).select();
             if (error) {
-                alert('Falha ao salvar usuÃ¡rio: ' + error.message);
+                alert('Falha ao salvar usuário: ' + error.message);
             } else if (data && data.length > 0) {
                 setUsuariosSistema([...usuariosSistema, data[0]]);
                 setModalUsuarioAberto(false);
@@ -698,13 +698,13 @@ export const AppProvider = ({ children }) => {
         if (itensPedido.length > 0) {
             const itensTextoArray = itensPedido.map(i => {
                 const strDesconto = i.desconto ? ' (-' + i.desconto + '%)' : '';
-                const strNome = i.nome ? 'â€¢ ' + (i.id_produto ? `[#${i.id_produto}] ` : '') + i.nome : 'â€¢ ServiÃ§o Personalizado';
+                const strNome = i.nome ? '• ' + (i.id_produto ? `[#${i.id_produto}] ` : '') + i.nome : '• Serviço Personalizado';
                 const strLocal = i.local_producao ? '\n  Local: ' + i.local_producao : '\n  Local: Berlim';
-                const strConcluido = i.concluido ? '\n  [âœ“] ConcluÃ­do' : '';
+                const strConcluido = i.concluido ? '\n  [✓] Concluído' : '';
                 return strNome + '\n  ' + i.descricao + '\n  Valor: R$ ' + i.valor + strDesconto + strLocal + strConcluido;
             });
             textoFinalServico += itensTextoArray.join('\n\n') + '\n\n';
-            if (novoPedido.servico) textoFinalServico += '[OBSERVAÃ‡Ã•ES GERAIS]\n' + novoPedido.servico;
+            if (novoPedido.servico) textoFinalServico += '[OBSERVAÇÕES GERAIS]\n' + novoPedido.servico;
         } else {
             textoFinalServico = novoPedido.servico;
         }
@@ -732,7 +732,7 @@ export const AppProvider = ({ children }) => {
             urgente: novoPedido.urgente
         };
 
-        if (novoPedido.status === 'ConcluÃ­do' && (!pedidoEmEdicao || pedidoEmEdicao.status !== 'ConcluÃ­do')) {
+        if (novoPedido.status === 'Concluído' && (!pedidoEmEdicao || pedidoEmEdicao.status !== 'Concluído')) {
             payload.prazo = obterDataAtual();
         }
 
@@ -746,7 +746,7 @@ export const AppProvider = ({ children }) => {
                 fecharModalOS(); 
                 if (querImprimir) imprimirOS(data[0]); 
             } else {
-                // Se a resposta for vazia, puxa as informaÃ§Ãµes limpas e fecha sem travar
+                // Se a resposta for vazia, puxa as informações limpas e fecha sem travar
                 carregarDados();
                 fecharModalOS();
                 if (querImprimir) imprimirOS({ ...pedidoEmEdicao, ...payload });
@@ -769,7 +769,7 @@ export const AppProvider = ({ children }) => {
                 fecharModalOS(); 
                 if (querImprimir) imprimirOS(data[0]); 
             } else {
-                // Se a resposta for vazia, puxa as informaÃ§Ãµes limpas e fecha sem travar
+                // Se a resposta for vazia, puxa as informações limpas e fecha sem travar
                 if (idOrcamentoOrigem) {
                     supabase.from('orcamentos_formalizados').delete().eq('id', idOrcamentoOrigem).then(({ error }) => {
                         if (!error) setOrcamentosFormalizados(prev => prev.filter(o => o.id !== idOrcamentoOrigem));
@@ -777,13 +777,13 @@ export const AppProvider = ({ children }) => {
                 }
                 carregarDados();
                 fecharModalOS();
-                if (querImprimir) alert('Pedido atualizado com sucesso! Para evitar lentidÃ£o, inicie a impressÃ£o manualmente atravÃ©s do HistÃ³rico.');
+                if (querImprimir) alert('Pedido atualizado com sucesso! Para evitar lentidão, inicie a impressão manualmente através do Histórico.');
             }
         }
         setSalvandoOS(false);
     }
     
-    // === FUNÃ‡Ã•ES ORÃ‡AMENTOS PRÃ‰ PRONTOS ===
+    // === FUNÇÕES ORÇAMENTOS PRÉ PRONTOS ===
     async function salvarOrcamentoPre(e) {
         e.preventDefault();
         const payload = { titulo: novoOrcamentoPre.titulo, texto: novoOrcamentoPre.texto };
@@ -803,13 +803,13 @@ export const AppProvider = ({ children }) => {
     }
     
     async function excluirOrcamentoPre(id) {
-        if (!confirm('Excluir este modelo prÃ©-pronto?')) return;
+        if (!confirm('Excluir este modelo pré-pronto?')) return;
         const { error } = await supabase.from('orcamentos_pre_prontos').delete().eq('id', id);
         if (!error) setOrcamentosPreProntos(orcamentosPreProntos.filter(o => o.id !== id));
         else alert('Erro: ' + error.message);
     }
 
-    // === FUNÃ‡Ã•ES ORÃ‡AMENTOS FORMALIZADOS ===
+    // === FUNÇÕES ORÇAMENTOS FORMALIZADOS ===
     async function salvarOrcamentoFormalizado(e, querImprimir = false) {
         if (e) e.preventDefault();
         
@@ -817,12 +817,12 @@ export const AppProvider = ({ children }) => {
         if (itensPedido.length > 0) {
             const itensTextoArray = itensPedido.map(i => {
                 const strDesconto = i.desconto ? ' (-' + i.desconto + '%)' : '';
-                const strNome = i.nome ? 'â€¢ ' + (i.id_produto ? `[#${i.id_produto}] ` : '') + i.nome : 'â€¢ ServiÃ§o Personalizado';
+                const strNome = i.nome ? '• ' + (i.id_produto ? `[#${i.id_produto}] ` : '') + i.nome : '• Serviço Personalizado';
                 const strLocal = i.local_producao ? '\n  Local: ' + i.local_producao : '\n  Local: Berlim';
                 return strNome + '\n  ' + i.descricao + '\n  Valor: R$ ' + i.valor + strDesconto + strLocal;
             });
             textoFinalServico += itensTextoArray.join('\n\n') + '\n\n';
-            if (novoPedido.servico) textoFinalServico += '[OBSERVAÃ‡Ã•ES GERAIS]\n' + novoPedido.servico;
+            if (novoPedido.servico) textoFinalServico += '[OBSERVAÇÕES GERAIS]\n' + novoPedido.servico;
         } else {
             textoFinalServico = novoPedido.servico;
         }
@@ -832,7 +832,7 @@ export const AppProvider = ({ children }) => {
         const payload = {
             cliente: novoPedido.cliente,
             telefone: clientes.find(c => c.nome === novoPedido.cliente)?.telefone || '',
-            produto: itensPedido.map(i => i.nome).join(', ') || 'ServiÃ§os Diversos',
+            produto: itensPedido.map(i => i.nome).join(', ') || 'Serviços Diversos',
             descricao: textoFinalServico + (itensPedido.length > 0 ? '\n\n[ITENS_JSON]\n' + JSON.stringify(itensPedido) : ''),
             quantidade: 1,
             valor: valorNumericoFinal,
@@ -860,7 +860,7 @@ export const AppProvider = ({ children }) => {
     }
 
     function baixarPDFOrcamento(orc) {
-        alert("A funÃ§Ã£o de gerar e baixar o PDF do orÃ§amento estÃ¡ em desenvolvimento!");
+        alert("A função de gerar e baixar o PDF do orçamento está em desenvolvimento!");
     }
     
     function extrairItensOrcamento(orc) {
@@ -883,7 +883,7 @@ export const AppProvider = ({ children }) => {
             cliente: orcamento.cliente,
             servico: obs || '',
             valor_total: formatarMoeda((orcamento.valor * 100).toFixed(0).toString()),
-            status: 'OrÃ§amento',
+            status: 'Orçamento',
             data_pedido: obterDataAtual(),
             prazo: '',
             responsavel: usuario?.nome || '',
@@ -914,7 +914,7 @@ export const AppProvider = ({ children }) => {
     }
     
     async function excluirOrcamentoFormalizado(id) {
-        if (!confirm('Excluir este orÃ§amento formalizado?')) return;
+        if (!confirm('Excluir este orçamento formalizado?')) return;
         const { error } = await supabase.from('orcamentos_formalizados').delete().eq('id', id);
         if (!error) setOrcamentosFormalizados(orcamentosFormalizados.filter(o => o.id !== id));
         else alert('Erro: ' + error.message);
@@ -994,9 +994,9 @@ export const AppProvider = ({ children }) => {
     }
 
     async function excluirProduto(id, e) {
-        e.stopPropagation(); // Evita que o clique no lixo abra a tela de ediÃ§Ã£o
+        e.stopPropagation(); // Evita que o clique no lixo abra a tela de edição
         
-        if (!window.confirm("Tem certeza que deseja excluir este produto do catÃ¡logo?")) return;
+        if (!window.confirm("Tem certeza que deseja excluir este produto do catálogo?")) return;
 
         const { error } = await supabase.from('produtos').delete().eq('id', id);
         
@@ -1061,7 +1061,7 @@ export const AppProvider = ({ children }) => {
             }
             
             if (duplicado) {
-                alert('Aviso: Este nÃºmero de WhatsApp/Telefone jÃ¡ estÃ¡ cadastrado no cliente "' + duplicado.nome + '"!');
+                alert('Aviso: Este número de WhatsApp/Telefone já está cadastrado no cliente "' + duplicado.nome + '"!');
                 setSalvandoCliente(false);
                 return;
             }
@@ -1103,7 +1103,7 @@ export const AppProvider = ({ children }) => {
     }
 
     async function concluirNotaFiscal(id) {
-        if (!confirm('Deseja realmente marcar esta nota como concluÃ­da? Ela nÃ£o aparecerÃ¡ mais nesta lista.')) return;
+        if (!confirm('Deseja realmente marcar esta nota como concluída? Ela não aparecerá mais nesta lista.')) return;
         const { data, error } = await supabase.from('notas_fiscais').update({ concluido: true }).eq('id', id).select();
         if (!error && data) {
             setNotasFiscais(notasFiscais.map(n => n.id === id ? data[0] : n));
@@ -1122,7 +1122,7 @@ export const AppProvider = ({ children }) => {
     }
 
     const clientesFiltrados = clientes;
-    // LÃ³gica para elencar os 5 produtos mais vendidos com base no histÃ³rico
+    // Lógica para elencar os 5 produtos mais vendidos com base no histórico
     const vendasPorProduto = useMemo(() => {
         const mapa = {};
         pedidos.forEach(p => {
@@ -1155,7 +1155,7 @@ export const AppProvider = ({ children }) => {
     }, [vendasPorProduto]);
 
     const produtosFiltrados = produtos.filter(p => p.nome.toLowerCase().includes(buscaProduto.toLowerCase()) || p.id.toString().includes(buscaProduto)).sort((a, b) => {
-        // Prioriza os top 5 vendidos se nÃ£o houver busca ativa (ou mesmo se houver, os que sobrarem da busca ainda terÃ£o prioridade)
+        // Prioriza os top 5 vendidos se não houver busca ativa (ou mesmo se houver, os que sobrarem da busca ainda terão prioridade)
         const indexA = top5Produtos.indexOf(a.nome);
         const indexB = top5Produtos.indexOf(b.nome);
         
@@ -1163,11 +1163,11 @@ export const AppProvider = ({ children }) => {
         if (indexA !== -1) return -1;
         if (indexB !== -1) return 1;
         
-        // Se nenhum for top 5, mantÃ©m a ordenaÃ§Ã£o original do catÃ¡logo
+        // Se nenhum for top 5, mantém a ordenação original do catálogo
         return (a.ordem || 0) - (b.ordem || 0);
     });
     
-    // (Filtros locais de Clientes foram substituÃ­dos por busca no servidor e paginaÃ§Ã£o)
+    // (Filtros locais de Clientes foram substituídos por busca no servidor e paginação)
 
     const produtosCatalogoFiltrados = produtos.filter(p => {
         if (!buscaCadProdutos) return true;
@@ -1177,7 +1177,7 @@ export const AppProvider = ({ children }) => {
     const clientesPaginados = clientesCadastrados;
     const totalPaginasClientes = Math.ceil(totalClientesCad / itensPorPagina) || 1;
 
-    // Filtros e paginaÃ§Ã£o da aba Notas Fiscais
+    // Filtros e paginação da aba Notas Fiscais
     const notasFiscaisAbaFiltro = notasFiscais.filter(n => {
         const checkStatus = filtroNotas === 'pendentes' ? !n.concluido : n.concluido;
         if (!checkStatus) return false;
@@ -1190,7 +1190,7 @@ export const AppProvider = ({ children }) => {
     const notasFiscaisPaginadas = notasFiscaisAbaFiltro.slice((paginaNotasFiscais - 1) * itensPorPagina, paginaNotasFiscais * itensPorPagina);
     const totalPaginasNotasFiscais = Math.ceil(notasFiscaisAbaFiltro.length / itensPorPagina) || 1;
     
-    // Filtro ProduÃ§Ã£o Aprimorado (Sem data e buscando em MultiSelect)
+    // Filtro Produção Aprimorado (Sem data e buscando em MultiSelect)
     const pedidosProducaoAtivos = pedidos.filter(p => {
         const statusPermitido = STATUSES_PRODUCAO.includes(p.status);
         if (!statusPermitido) return false;
@@ -1204,9 +1204,9 @@ export const AppProvider = ({ children }) => {
         return matchTermo;
     });
 
-    // (Filtros locais do HistÃ³rico foram substituÃ­dos por busca no servidor e paginaÃ§Ã£o)
+    // (Filtros locais do Histórico foram substituídos por busca no servidor e paginação)
 
-    const opcoesStatusPermitidas = isOperador ? [...STATUSES_PRODUCAO, 'Abandonado', 'ConcluÃ­do'] : [...STATUSES_PRODUCAO, ...STATUSES_FINALIZADOS];
+    const opcoesStatusPermitidas = isOperador ? [...STATUSES_PRODUCAO, 'Abandonado', 'Concluído'] : [...STATUSES_PRODUCAO, ...STATUSES_FINALIZADOS];
     const isModalTrancado = (pedidoEmEdicao && pedidoEmEdicao.status === 'Finalizado' && isOperador) ? true : false;
 
     // Render de barras para o Financeiro
@@ -1232,18 +1232,18 @@ export const AppProvider = ({ children }) => {
             <div className="flex min-h-screen items-center justify-center bg-[#EDEFF0] text-[#454545] p-4 select-none font-sans">
                 <div className="w-full max-w-sm bg-white border border-gray-200 rounded-xl p-8 shadow-sm flex flex-col gap-6">
                     <div className="text-center flex flex-col items-center">
-                        <img src="https://www.berlimgraficarapida.com.br/wp-content/uploads/elementor/thumbs/logosite-rm0erpiqj90gcf7ff4jp8ujys78opflob1b9vn5jjs.png" alt="Berlim GrÃ¡fica" className="h-12 object-contain mb-3" />
+                        <img src="https://www.berlimgraficarapida.com.br/wp-content/uploads/elementor/thumbs/logosite-rm0erpiqj90gcf7ff4jp8ujys78opflob1b9vn5jjs.png" alt="Berlim Gráfica" className="h-12 object-contain mb-3" />
                         <p className="text-[11px] text-gray-400 mt-1">Insira suas credenciais para acessar o ERP</p>
                     </div>
                     
                     <form onSubmit={efetuarLogin} className="flex flex-col gap-4">
                         <div>
-                            <label className="block text-[10px] font-semibold uppercase tracking-wider text-gray-500 mb-1.5">UsuÃ¡rio</label>
+                            <label className="block text-[10px] font-semibold uppercase tracking-wider text-gray-500 mb-1.5">Usuário</label>
                             <input required type="text" value={loginInput} onChange={e => setLoginInput(e.target.value)} className="w-full bg-white border border-gray-200 rounded px-3 py-2 text-[13px] outline-none focus:border-brand transition text-gray-800" placeholder="Ex: admin, gi, financeiro..." autoComplete="off" />
                         </div>
                         <div>
                             <label className="block text-[10px] font-semibold uppercase tracking-wider text-gray-500 mb-1.5">Senha</label>
-                            <input required type="password" value={senhaInput} onChange={e => setSenhaInput(e.target.value)} className="w-full bg-white border border-gray-200 rounded px-3 py-2 text-[13px] outline-none focus:border-brand transition text-gray-800" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢" />
+                            <input required type="password" value={senhaInput} onChange={e => setSenhaInput(e.target.value)} className="w-full bg-white border border-gray-200 rounded px-3 py-2 text-[13px] outline-none focus:border-brand transition text-gray-800" placeholder="••••••" />
                         </div>
                         {erroLogin && <p className="text-[11px] text-red-500 font-medium text-center">{erroLogin}</p>}
                         <button type="submit" className="w-full bg-brand hover:bg-brandHover text-white py-2 rounded text-[13px] font-semibold shadow transition mt-2">
@@ -1443,4 +1443,3 @@ export const AppProvider = ({ children }) => {
 };
 
 export const useAppContext = () => useContext(AppContext);
-
