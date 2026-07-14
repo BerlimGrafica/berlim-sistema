@@ -78,8 +78,8 @@ export default function OrcamentosTab() {
                                                     <button onClick={(e) => { e.stopPropagation(); transformarEmOS(orc); }} className="p-2 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded transition inline-block" title="Aprovar e Transformar em O.S.">
                                                         <Icon name="check-circle" className="w-5 h-5 inline-block" />
                                                     </button>
-                                                    <button onClick={(e) => { e.stopPropagation(); baixarPDFOrcamento(orc); }} className="p-2 text-orange-500 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/30 rounded transition inline-block" title="Imprimir Orçamento">
-                                                        <Icon name="printer" className="w-5 h-5 inline-block" />
+                                                    <button onClick={(e) => { e.stopPropagation(); baixarPDFOrcamento(orc); }} className="p-2 text-blue-500 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded transition inline-block" title="Imprimir Orçamento">
+                                                        <Icon name="file-text" className="w-5 h-5 inline-block" />
                                                     </button>
 
                                                     <button onClick={(e) => { e.stopPropagation(); excluirOrcamentoFormalizado(orc.id); }} className="p-2 text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded transition inline-block" title="Excluir">

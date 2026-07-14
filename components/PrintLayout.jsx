@@ -2,11 +2,25 @@
 import React from 'react';
 import { useAppContext } from '@/context/AppContext';
 import { formatarDataExibicao, formatarValorFinanceiro, desconstruirTextoServico } from '@/lib/utils';
+import Icon from '@/components/Icon';
+
+function extrairItens(orc) {
+    if (!orc.descricao) return [];
+    const match = orc.descricao.match(/\[ITENS_JSON\]\n(.*)/);
+    if (match) {
+        try { return JSON.parse(match[1]); } catch(e) {}
+    }
+    return desconstruirTextoServico(orc.descricao).itens;
+}
 
 export default function PrintLayout() {
-    const { osParaImprimir } = useAppContext();
+    const { osParaImprimir, orcamentoParaImprimir } = useAppContext();
 
-    if (!osParaImprimir) return null;
+    if (!osParaImprimir && !orcamentoParaImprimir) return null;
+
+    if (orcamentoParaImprimir) {
+        return <PrintOrcamento orc={orcamentoParaImprimir} />;
+    }
 
     return (
         <div className="print-only bg-white text-black font-sans flex flex-col w-full h-[286mm] overflow-hidden justify-between select-none">
@@ -128,6 +142,114 @@ export default function PrintLayout() {
                     </div>
                 );
             })}
+        </div>
+    );
+}
+
+function PrintOrcamento({ orc }) {
+    const itens = extrairItens(orc);
+    const telefone = orc.clienteInfo?.telefone || '';
+    const date = new Date(orc.created_at).toLocaleDateString('pt-BR');
+    
+    return (
+        <div className="print-only bg-white text-black font-sans flex flex-col w-full h-[286mm] overflow-hidden relative select-none">
+            {/* Header */}
+            <div className="flex justify-between items-start pt-16 px-16">
+                <img src="https://www.berlimgraficarapida.com.br/wp-content/uploads/elementor/thumbs/logosite-rm0erpiqj90gcf7ff4jp8ujys78opflob1b9vn5jjs.png" alt="Berlim Gráfica" className="h-32 object-contain" />
+                <div className="text-right flex flex-col justify-end mt-4 gap-1">
+                    <p className="text-[28px] font-bold text-[#00579D] tracking-tighter">CNPJ 36.117.136/0001-23</p>
+                    <p className="text-[24px] text-[#559bd6] tracking-tight">{date}</p>
+                </div>
+            </div>
+
+            {/* Client Info */}
+            <div className="px-16 mt-14 mb-8">
+                <p className="text-[24px] text-[#00579D]">
+                    <span className="font-bold">Cliente:</span> {orc.cliente}{telefone ? ` - ${telefone}` : ''}
+                </p>
+            </div>
+
+            {/* Title */}
+            <div className="text-center mb-10">
+                <h1 className="text-[32px] font-black text-[#00579D] uppercase tracking-wide">ORÇAMENTO:</h1>
+            </div>
+
+            {/* Items */}
+            <div className="px-16 flex-1 flex flex-col gap-5 text-[20px] text-gray-800 font-medium">
+                {itens.map((item, idx) => {
+                    const desc = item.descricao || item.nome;
+                    const preco = `R$ ${item.valor}`;
+                    return (
+                        <div key={idx} className="flex items-start gap-4">
+                            <span className="text-[#F37021] text-3xl leading-none pt-0.5">•</span>
+                            <p className="leading-snug">
+                                {desc} | <span className="font-bold text-[#F37021]">{preco}</span>
+                            </p>
+                        </div>
+                    );
+                })}
+            </div>
+
+            {/* Rules */}
+            <div className="px-16 mb-8">
+                <div className="text-[12px] text-gray-500 italic flex flex-col gap-1.5 font-medium">
+                    <p>• Retirada na nossa loja: Rua Alencastro, 42 - Bairro Silveira - Santo André (SP);</p>
+                    <p>• Forma de pagamento: 50% de sinal e 50% na retirada, podendo ser via pix, dinheiro ou cartão, ou 100% antecipado via link de pagamento;</p>
+                    <p>• Não trabalhamos com fidelidade de cor, por isso as cores podem variar conforme o material;</p>
+                    <p>• O corte é aproximado, pois buscamos aproveitamento do material.</p>
+                </div>
+            </div>
+
+            {/* Footer Totals */}
+            <div className="px-16 pb-12 flex justify-between items-end">
+                <div className="flex flex-col pt-2">
+                    <p className="text-[#F37021] text-[26px] font-bold leading-tight">Prazo de Produção:</p>
+                    <p className="text-[#F37021] text-[24px] leading-tight">2-3 dias úteis</p>
+                    <p className="text-[#F37021] text-[24px] italic leading-tight">(Após o pagamento)</p>
+                </div>
+                
+                <div className="w-[3px] bg-[#00579D] h-28 mx-10 self-center rounded"></div>
+
+                <div className="flex-1 flex flex-col justify-end text-left pt-2">
+                    <p className="text-[#F37021] text-[26px] font-black italic uppercase leading-none mb-1">Total:</p>
+                    <p className="text-[#00579D] text-[48px] font-black italic leading-none tracking-tight">R$ {formatarValorFinanceiro(Number(orc.valor))}</p>
+                </div>
+            </div>
+
+            {/* Orange Footer Bar */}
+            <div className="bg-[#F37021] print-color-adjust-exact h-[100px] w-full flex justify-between items-center px-16 text-white shrink-0">
+                <div className="flex flex-col text-[14px] font-semibold gap-1">
+                    <p className="flex items-center gap-2"><Icon name="phone" className="w-4 h-4" /> (11) 95471-6011</p>
+                    <p className="flex items-center gap-2"><Icon name="phone" className="w-4 h-4" /> (11) 2677-6057</p>
+                    <p className="flex items-center gap-2"><Icon name="instagram" className="w-4 h-4" /> @berlimgraficarapida</p>
+                </div>
+                
+                {/* SVG for Stairs in white */}
+                <div className="opacity-90 mt-2">
+                     <svg width="75" height="50" viewBox="0 0 100 80" fill="white">
+                        <rect x="0" y="64" width="30" height="16" />
+                        <rect x="15" y="48" width="30" height="16" />
+                        <rect x="30" y="32" width="30" height="16" />
+                        <rect x="45" y="16" width="30" height="16" />
+                        <rect x="60" y="0" width="30" height="16" />
+                     </svg>
+                </div>
+
+                <div className="flex flex-col text-[14px] font-semibold gap-1 text-right">
+                    <p className="flex items-center justify-end gap-2">contato@berlimgraficarapida.com.br <Icon name="mail" className="w-4 h-4" /></p>
+                    <p className="flex items-center justify-end gap-2 mt-1">Rua Alencastro, 42 - Bairro Silveira<br/>Santo André - SP <Icon name="map-pin" className="w-4 h-4" /></p>
+                </div>
+            </div>
+            
+            {/* Embedded CSS for Exact Color Printing Support */}
+            <style dangerouslySetInnerHTML={{__html: `
+                @media print {
+                    .print-color-adjust-exact {
+                        -webkit-print-color-adjust: exact !important;
+                        print-color-adjust: exact !important;
+                    }
+                }
+            `}} />
         </div>
     );
 }

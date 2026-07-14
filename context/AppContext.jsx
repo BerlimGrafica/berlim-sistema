@@ -115,6 +115,7 @@ export const AppProvider = ({ children }) => {
     const [modalAberto, setModalAberto] = useState(false);
     const [salvandoOS, setSalvandoOS] = useState(false);
     const [osParaImprimir, setOsParaImprimir] = useState(null);
+    const [orcamentoParaImprimir, setOrcamentoParaImprimir] = useState(null);
     const [pedidoEmEdicao, setPedidoEmEdicao] = useState(null); 
     const [idOrcamentoOrigem, setIdOrcamentoOrigem] = useState(null);
 
@@ -891,8 +892,16 @@ export const AppProvider = ({ children }) => {
         }
     }
 
-    function baixarPDFOrcamento(orc) {
-        alert("A função de gerar e baixar o PDF do orçamento está em desenvolvimento!");
+    async function baixarPDFOrcamento(orc) {
+        setOsParaImprimir(null);
+        setOrcamentoParaImprimir(orc);
+        
+        const { data } = await supabase.from('clientes').select('*').eq('nome', orc.cliente).single();
+        if (data) {
+            setOrcamentoParaImprimir(prev => ({...prev, clienteInfo: data}));
+        }
+        
+        setTimeout(() => window.print(), 200);
     }
     
     function extrairItensOrcamento(orc) {
@@ -1151,6 +1160,7 @@ export const AppProvider = ({ children }) => {
     }
 
     async function imprimirOS(pedido) {
+        setOrcamentoParaImprimir(null);
         setOsParaImprimir(pedido);
         const { data } = await supabase.from('clientes').select('*').eq('nome', pedido.cliente).single();
         if (data) {
@@ -1491,6 +1501,8 @@ export const AppProvider = ({ children }) => {
         setSalvandoOS,
         osParaImprimir,
         setOsParaImprimir,
+        orcamentoParaImprimir,
+        setOrcamentoParaImprimir,
         pedidoEmEdicao,
         setPedidoEmEdicao,
         idOrcamentoOrigem,
