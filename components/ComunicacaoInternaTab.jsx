@@ -11,6 +11,7 @@ export default function ComunicacaoInternaTab() {
         setModalTarefaAberto, setNovaTarefa,
         setModalLinkAberto, setNovoLink,
         excluirRequisicao, excluirTarefa, excluirLink,
+        concluirRequisicao, concluirTarefa, concluirLink,
         usuario, isAdmin
     } = useAppContext();
 
@@ -58,38 +59,35 @@ export default function ComunicacaoInternaTab() {
                         </div>
                     </div>
 
-                    <div className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded overflow-hidden">
-                        <table className="w-full text-left border-collapse">
-                            <thead className="bg-gray-50/50 dark:bg-darkHover/50 border-t-2 border-brand">
-                                <tr className="border-b border-gray-200 dark:border-darkBorder text-[13px] font-semibold text-gray-500 dark:text-gray-400 tracking-wide uppercase">
-                                    <th className="px-6 py-4">Data</th>
-                                    <th className="px-6 py-4">Solicitante</th>
-                                    <th className="px-6 py-4">Itens</th>
-                                    <th className="px-6 py-4">Status</th>
-                                    <th className="px-6 py-4 text-right">Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-100 dark:divide-darkBorder">
-                                {requisicoesVisiveis.length > 0 ? requisicoesVisiveis.map(r => (
-                                    <tr key={r.id} onClick={() => { setNovaRequisicao(r); setModalRequisicaoAberto(true); }} className="hover:bg-gray-50 dark:hover:bg-darkHover/50 transition-colors cursor-pointer">
-                                        <td className="px-6 py-4 text-[13px] text-gray-700 dark:text-gray-300">{new Date(r.created_at).toLocaleDateString('pt-BR')}</td>
-                                        <td className="px-6 py-4 text-[13px] font-medium text-gray-900 dark:text-white">{r.criado_por}</td>
-                                        <td className="px-6 py-4 text-[13px] text-gray-700 dark:text-gray-300 max-w-xs truncate">{r.itens}</td>
-                                        <td className="px-6 py-4">
-                                            <span className={`px-2 py-1 text-[11px] font-bold rounded ${
-                                                r.status === 'Pendente' ? 'bg-yellow-100 text-yellow-800' :
-                                                r.status === 'Comprado' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'
-                                            }`}>{r.status}</span>
-                                        </td>
-                                        <td className="px-6 py-4 text-right flex justify-end gap-2">
-                                            <button onClick={(e) => { e.stopPropagation(); excluirRequisicao(r.id); }} className="p-1.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded transition" title="Excluir"><Icon name="trash-2" className="w-4 h-4" /></button>
-                                        </td>
-                                    </tr>
-                                )) : (
-                                    <tr><td colSpan="5" className="px-4 py-12 text-center text-[13px] text-gray-400">Nenhuma requisição encontrada.</td></tr>
-                                )}
-                            </tbody>
-                        </table>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {requisicoesVisiveis.length > 0 ? requisicoesVisiveis.map(r => (
+                            <div key={r.id} onClick={() => { setNovaRequisicao(r); setModalRequisicaoAberto(true); }} className={`bg-white dark:bg-darkCard rounded-xl shadow-sm border p-5 flex flex-col gap-3 cursor-pointer hover:border-brand/50 transition-colors ${r.status === 'Comprado' ? 'opacity-60 border-gray-200 dark:border-darkBorder' : 'border-gray-200 dark:border-darkBorder'}`}>
+                                <div className="flex justify-between items-start">
+                                    <div>
+                                        <h3 className={`font-bold ${r.status === 'Comprado' ? 'line-through text-gray-500' : 'text-gray-900 dark:text-white'}`}>Requisição #{r.id}</h3>
+                                        <p className="text-[11px] font-semibold text-brand mt-1">{new Date(r.created_at).toLocaleDateString('pt-BR')}</p>
+                                    </div>
+                                    <div className="flex gap-1">
+                                        {r.status !== 'Comprado' && (
+                                            <button onClick={(e) => { e.stopPropagation(); concluirRequisicao(r.id); }} className="p-1 text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded" title="Concluir"><Icon name="check-circle" className="w-4 h-4" /></button>
+                                        )}
+                                        <button onClick={(e) => { e.stopPropagation(); excluirRequisicao(r.id); }} className="p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded" title="Excluir"><Icon name="trash-2" className="w-4 h-4" /></button>
+                                    </div>
+                                </div>
+                                <p className="text-[13px] text-gray-600 dark:text-[#A1A1AA] mt-1 line-clamp-3" title={r.itens}>{r.itens}</p>
+                                <div className="mt-auto pt-3 border-t border-gray-100 dark:border-darkBorder flex justify-between items-center">
+                                    <div className="flex items-center gap-1.5 text-[11px] font-semibold text-gray-500">
+                                        <Icon name="user" className="w-3.5 h-3.5" /> {r.criado_por}
+                                    </div>
+                                    <span className={`px-2 py-1 text-[10px] font-bold uppercase rounded ${
+                                        r.status === 'Pendente' ? 'bg-yellow-100 text-yellow-800' :
+                                        r.status === 'Comprado' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'
+                                    }`}>{r.status}</span>
+                                </div>
+                            </div>
+                        )) : (
+                            <div className="col-span-full py-12 text-center text-gray-400 text-[13px]">Nenhuma requisição encontrada.</div>
+                        )}
                     </div>
                 </main>
             )}
@@ -122,6 +120,9 @@ export default function ComunicacaoInternaTab() {
                                 <div className="flex justify-between items-start">
                                     <h3 className={`font-bold ${t.status === 'Concluída' ? 'line-through text-gray-500' : 'text-gray-900 dark:text-white'}`}>{t.titulo}</h3>
                                     <div className="flex gap-1">
+                                        {t.status !== 'Concluída' && (
+                                            <button onClick={(e) => { e.stopPropagation(); concluirTarefa(t.id); }} className="p-1 text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded" title="Concluir"><Icon name="check-circle" className="w-4 h-4" /></button>
+                                        )}
                                         <button onClick={(e) => { e.stopPropagation(); excluirTarefa(t.id); }} className="p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded" title="Excluir"><Icon name="trash-2" className="w-4 h-4" /></button>
                                     </div>
                                 </div>
@@ -170,7 +171,10 @@ export default function ComunicacaoInternaTab() {
                                         <h3 className="font-bold text-gray-900 dark:text-white">{l.titulo}</h3>
                                         <p className="text-[11px] font-semibold text-brand mt-1">{l.cliente}</p>
                                     </div>
-                                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <div className="flex gap-1">
+                                        {l.status !== 'Pago' && l.status !== 'Concluído' && (
+                                            <button onClick={(e) => { e.stopPropagation(); concluirLink(l.id); }} className="p-1 text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded" title="Concluir"><Icon name="check-circle" className="w-4 h-4" /></button>
+                                        )}
                                         <button onClick={(e) => { e.stopPropagation(); excluirLink(l.id); }} className="p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded" title="Excluir"><Icon name="trash-2" className="w-4 h-4" /></button>
                                     </div>
                                 </div>

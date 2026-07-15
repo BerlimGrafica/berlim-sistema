@@ -1160,6 +1160,24 @@ export const AppProvider = ({ children }) => {
         }
     }
 
+    async function concluirRequisicao(id) {
+        if (!confirm('Deseja marcar esta requisição como comprada/concluída?')) return;
+        const { data, error } = await supabase.from('requisicoes_material').update({ status: 'Comprado' }).eq('id', id).select();
+        if (!error && data) setRequisicoesMaterial(requisicoesMaterial.map(x => x.id === id ? data[0] : x));
+    }
+
+    async function concluirTarefa(id) {
+        if (!confirm('Deseja marcar esta tarefa como concluída?')) return;
+        const { data, error } = await supabase.from('tarefas_internas').update({ status: 'Concluída' }).eq('id', id).select();
+        if (!error && data) setTarefasInternas(tarefasInternas.map(x => x.id === id ? data[0] : x));
+    }
+
+    async function concluirLink(id) {
+        if (!confirm('Deseja marcar este link como pago/concluído?')) return;
+        const { data, error } = await supabase.from('links_pagamento').update({ status: 'Pago' }).eq('id', id).select();
+        if (!error && data) setLinksPagamento(linksPagamento.map(x => x.id === id ? data[0] : x));
+    }
+
     async function imprimirOS(pedido) {
         setOrcamentoParaImprimir(null);
         setOsParaImprimir(pedido);
@@ -1634,6 +1652,9 @@ export const AppProvider = ({ children }) => {
         salvarCliente,
         salvarNotaFiscal,
         concluirNotaFiscal,
+        concluirRequisicao,
+        concluirTarefa,
+        concluirLink,
         imprimirOS
     };
 
