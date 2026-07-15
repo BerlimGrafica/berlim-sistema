@@ -108,25 +108,25 @@ export default function Navbar() {
             <nav className="bg-brand text-white px-6 shadow-sm z-30 sticky top-[64px] h-[48px]">
                     <div className="flex gap-1 overflow-x-auto custom-scrollbar no-scrollbar-style items-end pt-2 h-full">
                         <a onClick={() => setAbaAtual('dashboard')} className={`px-5 py-3 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center gap-2 tracking-wide uppercase ${abaAtual === 'dashboard' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
-                            <Icon name="home" className="w-4 h-4" /> Início
+                            Início
                         </a>
                         {(usuario?.nivel === 'Administrador' || usuario?.nivel === 'Produção/Atendimento') && (
                             <a onClick={() => setAbaAtual('producao')} className={`px-5 py-3 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center gap-2 tracking-wide uppercase ${abaAtual === 'producao' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
-                                <Icon name="tool" className="w-4 h-4" /> Produção
+                                Produção
                             </a>
                         )}
                         <a onClick={() => setAbaAtual('baixa')} className={`px-5 py-3 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center gap-2 tracking-wide uppercase ${abaAtual === 'baixa' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
-                            <Icon name="clipboard" className="w-4 h-4" /> O.S.
+                            O.S.
                         </a>
                         {usuario?.nivel !== 'Financeiro' && (
                             <a onClick={() => setAbaAtual('calculadoras')} className={`px-5 py-3 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center gap-2 tracking-wide uppercase ${abaAtual === 'calculadoras' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
-                                <Icon name="percent" className="w-4 h-4" /> Calculadoras
+                                Calculadoras
                             </a>
                         )}
                         
                         {(usuario?.nivel === 'Administrador' || usuario?.nivel === 'Financeiro') && (
                             <a onClick={() => setAbaAtual('financeiro')} className={`px-5 py-3 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center gap-2 tracking-wide uppercase ${abaAtual === 'financeiro' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
-                                <Icon name="dollar-sign" className="w-4 h-4" /> Financeiro
+                                Financeiro
                             </a>
                         )}
                         
@@ -134,17 +134,17 @@ export default function Navbar() {
 
                         {usuario?.nivel !== 'Financeiro' && (
                             <a onClick={() => setAbaAtual('orcamentos')} className={`px-5 py-3 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center gap-2 tracking-wide uppercase ${abaAtual === 'orcamentos' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
-                                <Icon name="file-text" className="w-4 h-4" /> Orçamentos
+                                Orçamentos
                             </a>
                         )}
                         
                         {usuario?.nivel !== 'Financeiro' && (
                             <a onClick={() => setAbaAtual('cadastros')} className={`px-5 py-3 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center gap-2 tracking-wide uppercase ${abaAtual === 'cadastros' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
-                                <Icon name="database" className="w-4 h-4" /> Cadastros
+                                Cadastros
                             </a>
                         )}
                         <a onClick={() => setAbaAtual('comunicacao')} className={`px-5 py-3 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center gap-2 tracking-wide uppercase ${abaAtual === 'comunicacao' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
-                            <Icon name="message-circle" className="w-4 h-4" /> Comunicação
+                            Comunicação
                         </a>
                     </div>
                 </nav>
