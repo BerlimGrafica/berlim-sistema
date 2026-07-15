@@ -1384,6 +1384,10 @@ export const AppProvider = ({ children }) => {
                     alert(`Novo link de pagamento registrado para: ${payload.new.cliente}`);
                 }
             })
+            // Atualiza os dados da tela em tempo real para qualquer alteração no banco
+            .on('postgres_changes', { event: '*', schema: 'public' }, () => {
+                carregarDados();
+            })
             .subscribe();
 
         return () => {
