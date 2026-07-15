@@ -819,7 +819,7 @@ export const AppProvider = ({ children }) => {
     // === FUNÇÕES ORÇAMENTOS PRÉ PRONTOS ===
     async function salvarOrcamentoPre(e) {
         e.preventDefault();
-        const payload = { titulo: novoOrcamentoPre.titulo, texto: novoOrcamentoPre.texto };
+        const payload = { titulo: novoOrcamentoPre.titulo, texto: novoOrcamentoPre.texto, empresa: novoOrcamentoPre.empresa || 'Berlim' };
         if (novoOrcamentoPre.id) {
             const { data, error } = await supabase.from('orcamentos_pre_prontos').update(payload).eq('id', novoOrcamentoPre.id).select();
             if (!error && data) {

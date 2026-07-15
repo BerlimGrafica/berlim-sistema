@@ -122,7 +122,7 @@ export default function OrcamentosTab() {
                             {isAdmin && (
                                 <div className="flex gap-2">
                                     <button onClick={() => {
-                                        setNovoOrcamentoPre({ id: null, titulo: '', texto: '' });
+                                        setNovoOrcamentoPre({ id: null, titulo: '', texto: '', empresa: 'Berlim' });
                                         setModalOrcamentoPreAberto(true);
                                     }} className="bg-brand hover:bg-brandHover text-white px-4 py-2 text-[13px] rounded-md font-semibold shadow-sm transition flex items-center gap-2">
                                         <Icon name="plus" /> Novo Texto
@@ -149,13 +149,22 @@ export default function OrcamentosTab() {
                         ) : (
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {orcsFiltrados.map(orc => (
-                                    <div key={orc.id} className="bg-white dark:bg-darkCard rounded-xl shadow-sm border border-gray-200 dark:border-darkBorder p-5 flex flex-col gap-3 group">
-                                        <div className="flex justify-between items-start">
-                                            <h3 className="font-bold text-gray-900 dark:text-white">{orc.titulo}</h3>
+                                    <div key={orc.id} className="bg-white dark:bg-darkCard rounded-xl shadow-sm border border-gray-200 dark:border-darkBorder p-5 flex flex-col gap-3 group relative">
+                                        <div className="flex justify-between items-start gap-3">
+                                            <div className="flex flex-col gap-1.5 flex-1">
+                                                <div className="flex items-center gap-2">
+                                                    <h3 className="font-bold text-gray-900 dark:text-white leading-tight">{orc.titulo}</h3>
+                                                    {orc.empresa === 'Futura' ? (
+                                                        <span className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">Futura</span>
+                                                    ) : (
+                                                        <span className="bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">Berlim</span>
+                                                    )}
+                                                </div>
+                                            </div>
                                             {isAdmin && (
-                                                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <button onClick={() => { setNovoOrcamentoPre(orc); setModalOrcamentoPreAberto(true); }} className="p-1 text-gray-400 hover:text-brand"><Icon name="edit-2" className="w-4 h-4" /></button>
-                                                    <button onClick={() => excluirOrcamentoPre(orc.id)} className="p-1 text-gray-400 hover:text-red-500"><Icon name="trash-2" className="w-4 h-4" /></button>
+                                                <div className="flex gap-1 shrink-0">
+                                                    <button onClick={() => { setNovoOrcamentoPre(orc); setModalOrcamentoPreAberto(true); }} className="p-1 text-gray-400 hover:text-brand transition-colors"><Icon name="edit-2" className="w-4 h-4" /></button>
+                                                    <button onClick={() => excluirOrcamentoPre(orc.id)} className="p-1 text-gray-400 hover:text-red-500 transition-colors"><Icon name="trash-2" className="w-4 h-4" /></button>
                                                 </div>
                                             )}
                                         </div>
