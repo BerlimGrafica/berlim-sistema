@@ -149,7 +149,7 @@ export default function OrcamentosTab() {
                         ) : (
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {orcsFiltrados.map(orc => (
-                                    <div key={orc.id} className="bg-white dark:bg-darkCard rounded-xl shadow-sm border border-gray-200 dark:border-darkBorder p-5 flex flex-col gap-3 group relative">
+                                    <div key={orc.id} onClick={() => { setNovoOrcamentoPre(orc); setModalOrcamentoPreAberto(true); }} className="bg-white dark:bg-darkCard rounded-xl shadow-sm border border-gray-200 dark:border-darkBorder p-5 flex flex-col gap-3 group relative cursor-pointer hover:border-brand/50 transition-colors">
                                         <div className="flex justify-between items-start gap-3">
                                             <div className="flex flex-col gap-1.5 flex-1">
                                                 <div className="flex items-center gap-2">
@@ -163,15 +163,15 @@ export default function OrcamentosTab() {
                                             </div>
                                             {isAdmin && (
                                                 <div className="flex gap-1 shrink-0">
-                                                    <button onClick={() => { setNovoOrcamentoPre(orc); setModalOrcamentoPreAberto(true); }} className="p-1 text-blue-500 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded transition-colors"><Icon name="edit-3" className="w-4 h-4" /></button>
-                                                    <button onClick={() => excluirOrcamentoPre(orc.id)} className="p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded transition-colors"><Icon name="trash-2" className="w-4 h-4" /></button>
+                                                    <button onClick={(e) => { e.stopPropagation(); excluirOrcamentoPre(orc.id); }} className="p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded transition-colors"><Icon name="trash-2" className="w-4 h-4" /></button>
                                                 </div>
                                             )}
                                         </div>
                                         <pre className="text-[13px] text-gray-600 dark:text-[#A1A1AA] whitespace-pre-wrap font-sans bg-gray-50 dark:bg-darkElevated p-3 rounded-lg flex-1">
                                             {orc.texto}
                                         </pre>
-                                        <button onClick={() => {
+                                        <button onClick={(e) => {
+                                            e.stopPropagation();
                                             navigator.clipboard.writeText(orc.texto);
                                             alert('Texto copiado!');
                                         }} className="mt-2 text-[11px] font-semibold text-brand hover:underline flex items-center gap-1 self-start">

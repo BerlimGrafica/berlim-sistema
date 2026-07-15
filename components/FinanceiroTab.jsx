@@ -697,7 +697,7 @@ export default function FinanceiroTab() {
                                                                 <tr><td colSpan="5" className="text-center py-8 text-gray-400">Nenhuma conta a pagar registrada.</td></tr>
                                                             ) : (
                                                                 contasPagar.filter(c => mostrarContasPagas ? true : c.status !== 'Pago').map(conta => (
-                                                                    <tr key={conta.id} className="hover:bg-gray-50 dark:hover:bg-darkHover/50 transition-colors group">
+                                                                    <tr key={conta.id} onClick={() => { setNovaConta(conta); setModalContaAberto(true); }} className="hover:bg-gray-50 dark:hover:bg-darkHover/50 transition-colors group cursor-pointer">
                                                                         <td className="px-6 py-4 text-[13px] text-gray-600 dark:text-[#A1A1AA]">{formatarDataExibicao(conta.vencimento)}</td>
                                                                         <td className="px-6 py-4 text-[13px] font-medium text-gray-900 dark:text-gray-300">
                                                                             {conta.descricao}
@@ -710,10 +710,7 @@ export default function FinanceiroTab() {
                                                                             </span>
                                                                         </td>
                                                                         <td className="px-6 py-4 text-[13px] text-right flex justify-end gap-2">
-                                                                            <button onClick={() => { setNovaConta(conta); setModalContaAberto(true); }} className="p-1 text-blue-500 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded" title="Editar Conta">
-                                                                                <Icon name="edit-3" className="w-4 h-4" />
-                                                                            </button>
-                                                                            <button onClick={() => excluirConta(conta.id)} className="p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded" title="Excluir Conta">
+                                                                            <button onClick={(e) => { e.stopPropagation(); excluirConta(conta.id); }} className="p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded" title="Excluir Conta">
                                                                                 <Icon name="trash-2" className="w-4 h-4" />
                                                                             </button>
                                                                         </td>
@@ -816,7 +813,7 @@ export default function FinanceiroTab() {
                                                                 <tr><td colSpan="4" className="px-4 py-12 text-center text-[13px] text-gray-400">Nenhuma empresa cadastrada.</td></tr>
                                                             ) : (
                                                                 empresasFaturamento.map(emp => (
-                                                                    <tr key={emp.id} className="hover:bg-gray-50 dark:hover:bg-darkHover/50 transition-colors group">
+                                                                    <tr key={emp.id} onClick={() => { setNovaEmpresaFaturamento(emp); setModalEmpresaFaturamentoAberto(true); }} className="hover:bg-gray-50 dark:hover:bg-darkHover/50 transition-colors group cursor-pointer">
                                                                         <td className="px-6 py-4 text-[13px] font-semibold text-gray-900 dark:text-white">{emp.nome}</td>
                                                                         <td className="px-6 py-4 text-[13px] text-gray-600 dark:text-gray-400">{emp.cnpj}</td>
                                                                         <td className="px-6 py-4 text-center">
@@ -825,10 +822,7 @@ export default function FinanceiroTab() {
                                                                             </span>
                                                                         </td>
                                                                         <td className="px-6 py-4 text-[13px] text-right flex justify-end gap-2">
-                                                                            <button onClick={() => { setNovaEmpresaFaturamento(emp); setModalEmpresaFaturamentoAberto(true); }} className="p-1 text-blue-500 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded" title="Editar">
-                                                                                <Icon name="edit-3" className="w-4 h-4" />
-                                                                            </button>
-                                                                            <button onClick={() => excluirEmpresaFaturamento(emp.id)} className="p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded" title="Excluir">
+                                                                            <button onClick={(e) => { e.stopPropagation(); excluirEmpresaFaturamento(emp.id); }} className="p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded" title="Excluir">
                                                                                 <Icon name="trash-2" className="w-4 h-4" />
                                                                             </button>
                                                                         </td>

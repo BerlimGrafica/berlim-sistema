@@ -155,7 +155,7 @@ export default function DashboardTab() {
                                                 }
 
                                                 return minhasTarefas.map(t => (
-                                                    <tr key={t.id} className="border-b border-gray-50 dark:border-darkBorder/50 hover:bg-gray-50/80 dark:hover:bg-darkHover/80 transition group">
+                                                    <tr key={t.id} onClick={() => abrirEdicao(t)} className="border-b border-gray-50 dark:border-darkBorder/50 hover:bg-gray-50/80 dark:hover:bg-darkHover/80 transition group cursor-pointer">
                                                         <td className="px-4 py-3">
                                                             <p className="text-[12px] font-bold text-gray-900 dark:text-gray-200">#{t.id}</p>
                                                             <p className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 max-w-[130px] truncate">{t.cliente}</p>
@@ -167,9 +167,6 @@ export default function DashboardTab() {
                                                             </span>
                                                         </td>
                                                         <td className="px-4 py-3 text-right">
-                                                            <button onClick={() => abrirEdicao(t)} className="opacity-0 group-hover:opacity-100 transition p-1.5 text-blue-500 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-md" title="Abrir OS">
-                                                                <Icon name="edit-3" className="w-3.5 h-3.5" />
-                                                            </button>
                                                         </td>
                                                     </tr>
                                                 ));
@@ -220,9 +217,9 @@ export default function DashboardTab() {
                                                 }
 
                                                 return minhasTarefasInt.map(t => (
-                                                    <tr key={t.id} className="border-b border-gray-50 dark:border-darkBorder/50 hover:bg-gray-50/80 dark:hover:bg-darkHover/80 transition group">
+                                                    <tr key={t.id} onClick={() => { setNovaTarefa(t); setModalTarefaAberto(true); }} className="border-b border-gray-50 dark:border-darkBorder/50 hover:bg-gray-50/80 dark:hover:bg-darkHover/80 transition group cursor-pointer">
                                                         <td className="px-4 py-3">
-                                                            <p className="text-[12px] font-bold text-gray-900 dark:text-gray-200">{t.titulo}</p>
+                                                            <h4 className={`text-[12px] font-bold ${t.status === 'Concluída' ? 'text-gray-400 line-through' : 'text-gray-900 dark:text-gray-200'}`}>{t.titulo}</h4>
                                                             <p className="text-[11px] font-medium text-gray-500 dark:text-gray-400 max-w-[160px] truncate" title={t.descricao}>{t.descricao || '-'}</p>
                                                         </td>
                                                         <td className="px-4 py-3">
@@ -236,9 +233,6 @@ export default function DashboardTab() {
                                                             </div>
                                                         </td>
                                                         <td className="px-4 py-3 text-right align-middle">
-                                                            <button onClick={() => { setNovaTarefa(t); setModalTarefaAberto(true); }} className="opacity-0 group-hover:opacity-100 transition p-1.5 text-blue-500 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-md" title="Editar Tarefa">
-                                                                <Icon name="edit-3" className="w-3.5 h-3.5" />
-                                                            </button>
                                                         </td>
                                                     </tr>
                                                 ));

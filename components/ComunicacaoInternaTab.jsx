@@ -71,7 +71,7 @@ export default function ComunicacaoInternaTab() {
                             </thead>
                             <tbody className="divide-y divide-gray-100 dark:divide-darkBorder">
                                 {requisicoesVisiveis.length > 0 ? requisicoesVisiveis.map(r => (
-                                    <tr key={r.id} className="hover:bg-gray-50 dark:hover:bg-darkHover/50 transition-colors">
+                                    <tr key={r.id} onClick={() => { setNovaRequisicao(r); setModalRequisicaoAberto(true); }} className="hover:bg-gray-50 dark:hover:bg-darkHover/50 transition-colors cursor-pointer">
                                         <td className="px-6 py-4 text-[13px] text-gray-700 dark:text-gray-300">{new Date(r.created_at).toLocaleDateString('pt-BR')}</td>
                                         <td className="px-6 py-4 text-[13px] font-medium text-gray-900 dark:text-white">{r.criado_por}</td>
                                         <td className="px-6 py-4 text-[13px] text-gray-700 dark:text-gray-300 max-w-xs truncate">{r.itens}</td>
@@ -81,9 +81,7 @@ export default function ComunicacaoInternaTab() {
                                                 r.status === 'Comprado' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'
                                             }`}>{r.status}</span>
                                         </td>
-                                        <td className="px-6 py-4 text-right flex justify-end gap-2">
-                                            <button onClick={() => { setNovaRequisicao(r); setModalRequisicaoAberto(true); }} className="p-1.5 text-blue-500 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded transition" title="Editar"><Icon name="edit-3" className="w-4 h-4" /></button>
-                                            <button onClick={() => excluirRequisicao(r.id)} className="p-1.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded transition" title="Excluir"><Icon name="trash-2" className="w-4 h-4" /></button>
+                                            <button onClick={(e) => { e.stopPropagation(); excluirRequisicao(r.id); }} className="p-1.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded transition" title="Excluir"><Icon name="trash-2" className="w-4 h-4" /></button>
                                         </td>
                                     </tr>
                                 )) : (
@@ -119,12 +117,11 @@ export default function ComunicacaoInternaTab() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {tarefasVisiveis.length > 0 ? tarefasVisiveis.map(t => (
-                            <div key={t.id} className={`bg-white dark:bg-darkCard rounded-xl shadow-sm border p-5 flex flex-col gap-3 ${t.status === 'Concluída' ? 'opacity-60 border-gray-200 dark:border-darkBorder' : 'border-gray-200 dark:border-darkBorder'}`}>
+                            <div key={t.id} onClick={() => { setNovaTarefa(t); setModalTarefaAberto(true); }} className={`bg-white dark:bg-darkCard rounded-xl shadow-sm border p-5 flex flex-col gap-3 cursor-pointer hover:border-brand/50 transition-colors ${t.status === 'Concluída' ? 'opacity-60 border-gray-200 dark:border-darkBorder' : 'border-gray-200 dark:border-darkBorder'}`}>
                                 <div className="flex justify-between items-start">
                                     <h3 className={`font-bold ${t.status === 'Concluída' ? 'line-through text-gray-500' : 'text-gray-900 dark:text-white'}`}>{t.titulo}</h3>
                                     <div className="flex gap-1">
-                                        <button onClick={() => { setNovaTarefa(t); setModalTarefaAberto(true); }} className="p-1 text-blue-500 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded" title="Editar"><Icon name="edit-3" className="w-4 h-4" /></button>
-                                        <button onClick={() => excluirTarefa(t.id)} className="p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded" title="Excluir"><Icon name="trash-2" className="w-4 h-4" /></button>
+                                        <button onClick={(e) => { e.stopPropagation(); excluirTarefa(t.id); }} className="p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded" title="Excluir"><Icon name="trash-2" className="w-4 h-4" /></button>
                                     </div>
                                 </div>
                                 <p className="text-[13px] text-gray-600 dark:text-[#A1A1AA]">{t.descricao}</p>
@@ -166,15 +163,14 @@ export default function ComunicacaoInternaTab() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {linksVisiveis.length > 0 ? linksVisiveis.map(l => (
-                            <div key={l.id} className="bg-white dark:bg-darkCard rounded-xl shadow-sm border border-gray-200 dark:border-darkBorder p-5 flex flex-col gap-3 group">
+                            <div key={l.id} onClick={() => { setNovoLink(l); setModalLinkAberto(true); }} className="bg-white dark:bg-darkCard rounded-xl shadow-sm border border-gray-200 dark:border-darkBorder p-5 flex flex-col gap-3 group cursor-pointer hover:border-brand/50 transition-colors">
                                 <div className="flex justify-between items-start">
                                     <div>
                                         <h3 className="font-bold text-gray-900 dark:text-white">{l.titulo}</h3>
                                         <p className="text-[11px] font-semibold text-brand mt-1">{l.cliente}</p>
                                     </div>
                                     <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <button onClick={() => { setNovoLink(l); setModalLinkAberto(true); }} className="p-1 text-blue-500 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded" title="Editar"><Icon name="edit-3" className="w-4 h-4" /></button>
-                                        <button onClick={() => excluirLink(l.id)} className="p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded" title="Excluir"><Icon name="trash-2" className="w-4 h-4" /></button>
+                                        <button onClick={(e) => { e.stopPropagation(); excluirLink(l.id); }} className="p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded" title="Excluir"><Icon name="trash-2" className="w-4 h-4" /></button>
                                     </div>
                                 </div>
                                 {l.valor && (
@@ -184,7 +180,8 @@ export default function ComunicacaoInternaTab() {
                                 )}
                                 <div className="mt-2 bg-gray-50 dark:bg-darkElevated p-2 rounded flex items-center justify-between border border-gray-100 dark:border-darkBorder">
                                     <span className="text-[11px] text-gray-500 truncate mr-2">{l.link}</span>
-                                    <button onClick={() => {
+                                    <button onClick={(e) => {
+                                        e.stopPropagation();
                                         navigator.clipboard.writeText(l.link);
                                         alert('Link copiado!');
                                     }} className="text-brand hover:text-brandHover p-1 rounded" title="Copiar Link">
