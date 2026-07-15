@@ -213,7 +213,7 @@ function PrintOrcamento({ orc }) {
                         <div key={idx} className="flex items-start gap-2.5">
                             <span className="text-[#F37021] text-xl leading-none pt-0.5">•</span>
                             <p className="leading-snug">
-                                {descricao} | <span className="font-bold text-[#F37021]">{preco}</span>
+                                {descricao} – <span className="font-bold text-[#F37021]">{preco}</span>
                             </p>
                         </div>
                     );
@@ -232,7 +232,7 @@ function PrintOrcamento({ orc }) {
 
             {/* Footer Totals */}
             <div className="px-16 pb-12 flex justify-between items-end">
-                <div className="flex flex-col pt-2 max-w-[50%]">
+                <div className="flex flex-col pt-2 max-w-[50%] text-right items-end">
                     <p className="text-[#F37021] text-[18px] font-bold leading-tight mb-1">Prazo de Produção:</p>
                     <p className="text-[#F37021] text-[15px] italic leading-tight whitespace-pre-wrap">{obsPrazo}</p>
                 </div>
