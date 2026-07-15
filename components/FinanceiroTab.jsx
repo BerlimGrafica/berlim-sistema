@@ -6,7 +6,7 @@ import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS, RESPONSAVEIS, obterCorStatus, 
 
 
 export default function FinanceiroTab() {
-    const { setAbaFinanceiro, abaFinanceiro, notasFiscais, usuario, filtroNotas, dataFiltroFinInicio, setDataFiltroFinInicio, dataFiltroFinFim, setDataFiltroFinFim, pedidos, setNovaConta, setModalContaAberto, setModalEmpresaFaturamentoAberto, buscaNotaFiscal, setBuscaNotaFiscal, setPaginaNotasFiscais, setFiltroNotas, renderBarHorizontal, produtos, produtosSelecionadosGrafico, setProdutosSelecionadosGrafico, contasPagar, empresasFaturamento, setNovaEmpresaFaturamento, notasFiscaisPaginadas, setNotaFiscalEmEdicao, setModalNotaFiscalAberto, totalPaginasNotasFiscais, paginaNotasFiscais, excluirConta, abrirEdicao, excluirEmpresaFaturamento, concluirNotaFiscal } = useAppContext();
+    const { setAbaFinanceiro, abaFinanceiro, notasFiscais, usuario, filtroNotas, dataFiltroFinInicio, setDataFiltroFinInicio, dataFiltroFinFim, setDataFiltroFinFim, pedidos, setNovaConta, setModalContaAberto, setModalEmpresaFaturamentoAberto, buscaNotaFiscal, setBuscaNotaFiscal, setPaginaNotasFiscais, setFiltroNotas, renderBarHorizontal, produtos, produtosSelecionadosGrafico, setProdutosSelecionadosGrafico, contasPagar, empresasFaturamento, setNovaEmpresaFaturamento, notasFiscaisPaginadas, setNotaFiscalEmEdicao, setModalNotaFiscalAberto, totalPaginasNotasFiscais, paginaNotasFiscais, excluirConta, abrirEdicao, excluirEmpresaFaturamento, concluirNotaFiscal, atualizarCampoInline } = useAppContext();
     const [mostrarContasPagas, setMostrarContasPagas] = useState(false);
 
     return (
@@ -736,6 +736,7 @@ export default function FinanceiroTab() {
                                                                 <th className="px-6 py-4">O.S. / Cliente</th>
                                                                 <th className="px-6 py-4">Serviço</th>
                                                                 <th className="px-6 py-4 text-center">Data Pedido</th>
+                                                                <th className="px-6 py-4 text-center">Prazo</th>
                                                                 <th className="px-6 py-4 text-center">Status</th>
                                                                 <th className="px-6 py-4">Status Pagamento</th>
                                                                 <th className="px-6 py-4 text-right">Valor Total</th>
@@ -752,7 +753,7 @@ export default function FinanceiroTab() {
                                                                     return { ...p, pagamentos };
                                                                 }).filter(p => p.pagamentos.some(pag => pag.forma === 'Boleto'));
                                                                 if (pedidosBoleto.length === 0) return (
-                                                                    <tr><td colSpan="6" className="px-4 py-12 text-center text-[13px] text-gray-400">Nenhum pedido com boleto encontrado.</td></tr>
+                                                                    <tr><td colSpan="7" className="px-4 py-12 text-center text-[13px] text-gray-400">Nenhum pedido com boleto encontrado.</td></tr>
                                                                 );
                                                                 return pedidosBoleto.map(p => {
                                                                     const totalPago = p.pagamentos.reduce((acc, pg) => acc + (parseFloat(String(pg.valor).replace(/\./g, '').replace(',', '.')) || 0), 0);
@@ -770,6 +771,9 @@ export default function FinanceiroTab() {
                                                                                 <div className="text-[13px] text-gray-600 dark:text-gray-400 truncate max-w-[250px]" title={p.servico}>{p.servico}</div>
                                                                             </td>
                                                                             <td className="px-6 py-4 text-[13px] text-center text-gray-500">{formatarDataExibicao(p.data_pedido)}</td>
+                                                                            <td className="px-6 py-4 text-center" onClick={(e) => e.stopPropagation()}>
+                                                                                <CustomDatePicker value={p.prazo_pagamento || ''} onChange={val => atualizarCampoInline(p.id, 'prazo_pagamento', val)} placeholder="Definir prazo..." className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-2.5 py-1.5 text-[11px] outline-none hover:border-brand transition text-gray-700 dark:text-[#EDEDED]" />
+                                                                            </td>
                                                                             <td className="px-6 py-4 text-center">
                                                                                 <span className={`whitespace-nowrap px-2.5 py-1 text-[11px] font-semibold rounded border ${obterCorStatus(p.status)}`}>
                                                                                     {p.status}
