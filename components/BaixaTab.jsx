@@ -23,7 +23,7 @@ export default function BaixaTab() {
                     <main className="flex-1 p-6 lg:p-10 max-w-[1400px] mx-auto w-full fade-in">
                         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 mb-6 border-b border-gray-100 dark:border-darkBorder pb-6">
                             <div>
-                                <h1 className="text-3xl font-semibold dark:text-white tracking-tight">Histórico de Notas</h1>
+                                <h1 className="text-2xl lg:text-3xl font-black text-gray-900 dark:text-white tracking-tight">Histórico de Notas</h1>
                                 <p className="text-[13px] text-gray-500 dark:text-[#888888] mt-1">Busque ordens e filtre por período.</p>
                             </div>
                             <div className="flex flex-wrap items-end gap-3 w-full lg:w-auto">

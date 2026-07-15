@@ -38,7 +38,7 @@ export default function CadastrosTab() {
                     <main className="flex-1 p-6 lg:p-10 max-w-[1200px] mx-auto w-full fade-in">
                         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 mb-6 border-b border-gray-100 dark:border-darkBorder pb-6 shrink-0">
                             <div>
-                                <h1 className="text-3xl font-semibold dark:text-white tracking-tight">Catálogo</h1>
+                                <h1 className="text-2xl lg:text-3xl font-black text-gray-900 dark:text-white tracking-tight">Catálogo</h1>
                                 <p className="text-[13px] text-gray-500 dark:text-[#888888] mt-1">Gerencie os serviços, itens e preços base para orçamentos.</p>
                             </div>
                             <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
@@ -99,7 +99,7 @@ export default function CadastrosTab() {
                     <main className="flex-1 p-6 lg:p-10 max-w-[1200px] mx-auto w-full fade-in">
                         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 mb-6 border-b border-gray-100 dark:border-darkBorder pb-6 shrink-0">
                             <div>
-                                <h1 className="text-3xl font-semibold dark:text-white tracking-tight">Clientes</h1>
+                                <h1 className="text-2xl lg:text-3xl font-black text-gray-900 dark:text-white tracking-tight">Clientes</h1>
                                 <p className="text-[13px] text-gray-500 dark:text-[#888888] mt-1">Base de dados e informações de contato dos seus clientes.</p>
                             </div>
                             <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
@@ -144,7 +144,7 @@ export default function CadastrosTab() {
                     <main className="flex-1 p-6 lg:p-10 max-w-[1200px] mx-auto w-full fade-in">
                         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 mb-6 border-b border-gray-100 dark:border-darkBorder pb-6 shrink-0">
                             <div>
-                                <h1 className="text-3xl font-semibold dark:text-white tracking-tight">Usuários do Sistema</h1>
+                                <h1 className="text-2xl lg:text-3xl font-black text-gray-900 dark:text-white tracking-tight">Usuários do Sistema</h1>
                                 <p className="text-[13px] text-gray-500 dark:text-[#888888] mt-1">Gerencie os acessos da equipe (Administrador, Produção/Atendimento, Financeiro).</p>
                             </div>
                             <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
@@ -177,7 +177,7 @@ export default function CadastrosTab() {
                     <main className="flex-1 p-6 lg:p-10 max-w-[1200px] mx-auto w-full fade-in">
                         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 mb-6 border-b border-gray-100 dark:border-darkBorder pb-6 shrink-0">
                             <div>
-                                <h1 className="text-3xl font-semibold dark:text-white tracking-tight">Fornecedores e Locais</h1>
+                                <h1 className="text-2xl lg:text-3xl font-black text-gray-900 dark:text-white tracking-tight">Fornecedores e Locais</h1>
                                 <p className="text-[13px] text-gray-500 dark:text-[#888888] mt-1">Gerencie os locais de produção e fornecedores externos.</p>
                             </div>
                             <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
