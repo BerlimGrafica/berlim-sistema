@@ -1262,6 +1262,7 @@ export const AppProvider = ({ children }) => {
     };
     const salvarTarefa = async () => {
         let payload = { ...novaTarefa };
+        if (!payload.prazo) payload.prazo = null;
         if (!payload.id) {
             delete payload.id;
             payload.criado_por = usuario?.nome || '';

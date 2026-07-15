@@ -161,6 +161,14 @@ export default function FinanceiroTab() {
 
                             const totalVendasHoje = pedidos.filter(p => p.data_pedido === obterDataAtual()).reduce((acc, p) => acc + (Number(p.valor_total) || 0), 0);
 
+                            const contasFiltradas = contasPagar.filter(c => {
+                                let match = true;
+                                if (dataFiltroFinInicio && (!c.vencimento || c.vencimento < dataFiltroFinInicio)) match = false;
+                                if (dataFiltroFinFim && (!c.vencimento || c.vencimento > dataFiltroFinFim)) match = false;
+                                return match;
+                            });
+                            const totalDespesas = contasFiltradas.reduce((acc, c) => acc + (parseFloat(String(c.valor).replace(/\./g, '').replace(',', '.')) || 0), 0);
+
                             const anoAtualStr = new Date().getFullYear().toString();
                             const anoAnteriorStr = (new Date().getFullYear() - 1).toString();
                             
@@ -332,7 +340,7 @@ export default function FinanceiroTab() {
                                 <>
                                     {abaFinanceiro === 'geral' && (
                                         <div className="flex flex-col gap-6 fade-in">
-                                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-6 gap-4">
                                         <div className="bg-white dark:bg-darkCard p-5 rounded-xl border border-gray-200 dark:border-darkBorder shadow-sm relative overflow-hidden flex flex-col justify-between">
                                             <div>
                                                 <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider block mb-1">Crescimento (YoY)</span>
@@ -344,6 +352,14 @@ export default function FinanceiroTab() {
                                                     {Math.abs(crescimentoPercentual).toFixed(1)}%
                                                 </div>
                                             </div>
+                                        </div>
+
+                                        <div className="bg-red-50 dark:bg-red-900/10 p-5 rounded-xl border border-red-200 dark:border-red-900/30 shadow-sm flex flex-col justify-between">
+                                            <div>
+                                                <span className="text-[10px] font-semibold text-red-600 dark:text-red-400 uppercase tracking-wider block mb-1">Despesas (A Pagar)</span>
+                                                <h2 className="text-2xl font-black text-red-600 dark:text-red-400">R$ {formatarValorFinanceiro(totalDespesas)}</h2>
+                                            </div>
+                                            <p className="text-[10px] text-red-500/70 dark:text-red-400/70 mt-2 font-medium">Gastos no período</p>
                                         </div>
 
                                         <div className="bg-purple-50 dark:bg-purple-900/10 p-5 rounded-xl border border-purple-200 dark:border-purple-900/30 shadow-sm relative overflow-hidden flex flex-col justify-between">
