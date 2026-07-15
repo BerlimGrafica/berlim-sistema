@@ -414,13 +414,13 @@ export const AppProvider = ({ children }) => {
         const { data: listaOrcPP } = await supabase.from('orcamentos_pre_prontos').select('*').order('created_at', { ascending: false });
         if (listaOrcPP) setOrcamentosPreProntos(listaOrcPP);
 
-        const { data: listaReq } = await supabase.from('requisicoes_material').select('*').order('created_at', { ascending: false });
+        const { data: listaReq } = await supabase.from('requisicoes_material').select('*').order('created_at', { ascending: false }).limit(150);
         if (listaReq) setRequisicoesMaterial(listaReq);
 
-        const { data: listaTar } = await supabase.from('tarefas_internas').select('*').order('created_at', { ascending: false });
+        const { data: listaTar } = await supabase.from('tarefas_internas').select('*').order('created_at', { ascending: false }).limit(150);
         if (listaTar) setTarefasInternas(listaTar);
 
-        const { data: listaLnk } = await supabase.from('links_pagamento').select('*').order('created_at', { ascending: false });
+        const { data: listaLnk } = await supabase.from('links_pagamento').select('*').order('created_at', { ascending: false }).limit(150);
         if (listaLnk) setLinksPagamento(listaLnk);
     }
     
@@ -448,6 +448,7 @@ export const AppProvider = ({ children }) => {
 
             const isOperador = usuario?.nivel === 'Produção/Atendimento';
             if (isOperador) {
+                query = query.or(`responsavel.ilike.%${usuario.nome}%,local_producao.ilike.%${usuario.nome}%`);
                 query = query.not('status', 'eq', 'Finalizado');
             }
 
@@ -1340,6 +1341,33 @@ export const AppProvider = ({ children }) => {
             </div>
         )
     };
+
+    // Realtime subscriptions
+    useEffect(() => {
+        if (!usuario) return;
+
+        const channel = supabase.channel('system-alerts')
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'tarefas_internas' }, (payload) => {
+                if (payload.new && payload.new.responsavel && payload.new.responsavel.includes(usuario?.nome)) {
+                    alert(`Você recebeu uma nova tarefa: ${payload.new.titulo}`);
+                }
+            })
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'requisicoes_material' }, (payload) => {
+                if (usuario?.nivel === 'Administrador') {
+                    alert(`Nova requisição de material recebida!\nItem(s): ${payload.new.itens}`);
+                }
+            })
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'links_pagamento' }, (payload) => {
+                if (usuario?.nivel === 'Administrador') {
+                    alert(`Novo link de pagamento registrado para: ${payload.new.cliente}`);
+                }
+            })
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, [usuario]);
 
     // ==== TELA DE LOGIN ====
     if (!usuario) {

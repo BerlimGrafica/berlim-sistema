@@ -92,7 +92,7 @@ export default function OrcamentosTab() {
                                                         <Icon name="file-text" className="w-5 h-5 inline-block" />
                                                     </button>
 
-                                                    <button onClick={(e) => { e.stopPropagation(); excluirOrcamentoFormalizado(orc.id); }} className="p-2 text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded transition inline-block" title="Excluir">
+                                                    <button onClick={(e) => { e.stopPropagation(); excluirOrcamentoFormalizado(orc.id); }} className="p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded" title="Excluir Orçamento">
                                                         <Icon name="trash-2" className="w-5 h-5 inline-block" />
                                                     </button>
                                                 </td>
@@ -163,8 +163,8 @@ export default function OrcamentosTab() {
                                             </div>
                                             {isAdmin && (
                                                 <div className="flex gap-1 shrink-0">
-                                                    <button onClick={() => { setNovoOrcamentoPre(orc); setModalOrcamentoPreAberto(true); }} className="p-1 text-gray-400 hover:text-brand transition-colors"><Icon name="edit-3" className="w-4 h-4" /></button>
-                                                    <button onClick={() => excluirOrcamentoPre(orc.id)} className="p-1 text-gray-400 hover:text-red-500 transition-colors"><Icon name="trash-2" className="w-4 h-4" /></button>
+                                                    <button onClick={() => { setNovoOrcamentoPre(orc); setModalOrcamentoPreAberto(true); }} className="p-1 text-brand hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded transition-colors"><Icon name="edit-3" className="w-4 h-4" /></button>
+                                                    <button onClick={() => excluirOrcamentoPre(orc.id)} className="p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded transition-colors"><Icon name="trash-2" className="w-4 h-4" /></button>
                                                 </div>
                                             )}
                                         </div>

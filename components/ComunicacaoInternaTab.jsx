@@ -14,6 +14,12 @@ export default function ComunicacaoInternaTab() {
         usuario, isAdmin
     } = useAppContext();
 
+    const [mostrarConcluidos, setMostrarConcluidos] = React.useState(false);
+
+    const requisicoesVisiveis = mostrarConcluidos ? requisicoesMaterial : requisicoesMaterial.filter(r => r.status === 'Pendente');
+    const tarefasVisiveis = mostrarConcluidos ? tarefasInternas : tarefasInternas.filter(t => t.status !== 'Concluída');
+    const linksVisiveis = mostrarConcluidos ? linksPagamento : linksPagamento.filter(l => l.status !== 'Inativo' && l.status !== 'Pago' && l.status !== 'Concluído');
+
     return (
         <>
             <div className="bg-[#EDEFF0] dark:bg-darkBg border-b border-gray-200 dark:border-darkBorder px-6 flex gap-6 z-20 overflow-x-auto no-scrollbar-style sticky top-[112px]">
@@ -37,12 +43,17 @@ export default function ComunicacaoInternaTab() {
                                 Solicite materiais para a produção ou escritório.
                             </p>
                         </div>
-                        <button onClick={() => {
-                            setNovaRequisicao({ id: null, itens: '', observacoes: '', status: 'Pendente' });
-                            setModalRequisicaoAberto(true);
-                        }} className="bg-brand hover:bg-brandHover text-white px-4 py-2 text-[13px] rounded-md font-semibold shadow-sm transition flex items-center gap-2">
-                            <Icon name="plus" className="w-4 h-4" /> Nova Requisição
-                        </button>
+                        <div className="flex gap-2">
+                            <button onClick={() => setMostrarConcluidos(!mostrarConcluidos)} className={`px-4 py-2 text-[13px] rounded-md font-semibold border transition ${mostrarConcluidos ? 'bg-gray-100 border-gray-200 text-gray-700 dark:bg-darkElevated dark:border-darkBorder dark:text-gray-300' : 'bg-white border-gray-200 text-gray-600 dark:bg-darkCard dark:border-darkBorder dark:text-gray-400 hover:bg-gray-50'}`}>
+                                {mostrarConcluidos ? 'Ocultar Concluídos' : 'Mostrar Histórico'}
+                            </button>
+                            <button onClick={() => {
+                                setNovaRequisicao({ id: null, itens: '', observacoes: '', status: 'Pendente' });
+                                setModalRequisicaoAberto(true);
+                            }} className="bg-brand hover:bg-brandHover text-white px-4 py-2 text-[13px] rounded-md font-semibold shadow-sm transition flex items-center gap-2">
+                                <Icon name="plus" className="w-4 h-4" /> Nova Requisição
+                            </button>
+                        </div>
                     </div>
 
                     <div className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded overflow-hidden">
@@ -57,7 +68,7 @@ export default function ComunicacaoInternaTab() {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100 dark:divide-darkBorder">
-                                {requisicoesMaterial.length > 0 ? requisicoesMaterial.map(r => (
+                                {requisicoesVisiveis.length > 0 ? requisicoesVisiveis.map(r => (
                                     <tr key={r.id} className="hover:bg-gray-50 dark:hover:bg-darkHover/50 transition-colors">
                                         <td className="px-6 py-4 text-[13px] text-gray-700 dark:text-gray-300">{new Date(r.created_at).toLocaleDateString('pt-BR')}</td>
                                         <td className="px-6 py-4 text-[13px] font-medium text-gray-900 dark:text-white">{r.criado_por}</td>
@@ -69,7 +80,7 @@ export default function ComunicacaoInternaTab() {
                                             }`}>{r.status}</span>
                                         </td>
                                         <td className="px-6 py-4 text-right flex justify-end gap-2">
-                                            <button onClick={() => { setNovaRequisicao(r); setModalRequisicaoAberto(true); }} className="p-1.5 text-gray-400 hover:text-brand hover:bg-gray-100 dark:hover:bg-darkHover rounded transition" title="Editar"><Icon name="edit-2" className="w-4 h-4" /></button>
+                                            <button onClick={() => { setNovaRequisicao(r); setModalRequisicaoAberto(true); }} className="p-1.5 text-brand hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded transition" title="Editar"><Icon name="edit-3" className="w-4 h-4" /></button>
                                             <button onClick={() => excluirRequisicao(r.id)} className="p-1.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded transition" title="Excluir"><Icon name="trash-2" className="w-4 h-4" /></button>
                                         </td>
                                     </tr>
@@ -91,22 +102,27 @@ export default function ComunicacaoInternaTab() {
                                 Gerencie tarefas internas da equipe.
                             </p>
                         </div>
-                        <button onClick={() => {
-                            setNovaTarefa({ id: null, titulo: '', descricao: '', responsavel: '', prazo: '', status: 'Pendente' });
-                            setModalTarefaAberto(true);
-                        }} className="bg-brand hover:bg-brandHover text-white px-4 py-2 text-[13px] rounded-md font-semibold shadow-sm transition flex items-center gap-2">
-                            <Icon name="plus" className="w-4 h-4" /> Nova Tarefa
-                        </button>
+                        <div className="flex gap-2">
+                            <button onClick={() => setMostrarConcluidos(!mostrarConcluidos)} className={`px-4 py-2 text-[13px] rounded-md font-semibold border transition ${mostrarConcluidos ? 'bg-gray-100 border-gray-200 text-gray-700 dark:bg-darkElevated dark:border-darkBorder dark:text-gray-300' : 'bg-white border-gray-200 text-gray-600 dark:bg-darkCard dark:border-darkBorder dark:text-gray-400 hover:bg-gray-50'}`}>
+                                {mostrarConcluidos ? 'Ocultar Concluídas' : 'Mostrar Histórico'}
+                            </button>
+                            <button onClick={() => {
+                                setNovaTarefa({ id: null, titulo: '', descricao: '', responsavel: '', prazo: '', status: 'Pendente' });
+                                setModalTarefaAberto(true);
+                            }} className="bg-brand hover:bg-brandHover text-white px-4 py-2 text-[13px] rounded-md font-semibold shadow-sm transition flex items-center gap-2">
+                                <Icon name="plus" className="w-4 h-4" /> Nova Tarefa
+                            </button>
+                        </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {tarefasInternas.length > 0 ? tarefasInternas.map(t => (
+                        {tarefasVisiveis.length > 0 ? tarefasVisiveis.map(t => (
                             <div key={t.id} className={`bg-white dark:bg-darkCard rounded-xl shadow-sm border p-5 flex flex-col gap-3 ${t.status === 'Concluída' ? 'opacity-60 border-gray-200 dark:border-darkBorder' : 'border-brand/30 dark:border-brand/50'}`}>
                                 <div className="flex justify-between items-start">
                                     <h3 className={`font-bold ${t.status === 'Concluída' ? 'line-through text-gray-500' : 'text-gray-900 dark:text-white'}`}>{t.titulo}</h3>
                                     <div className="flex gap-1">
-                                        <button onClick={() => { setNovaTarefa(t); setModalTarefaAberto(true); }} className="p-1 text-gray-400 hover:text-brand"><Icon name="edit-2" className="w-4 h-4" /></button>
-                                        <button onClick={() => excluirTarefa(t.id)} className="p-1 text-gray-400 hover:text-red-500"><Icon name="trash-2" className="w-4 h-4" /></button>
+                                        <button onClick={() => { setNovaTarefa(t); setModalTarefaAberto(true); }} className="p-1 text-brand hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded" title="Editar"><Icon name="edit-3" className="w-4 h-4" /></button>
+                                        <button onClick={() => excluirTarefa(t.id)} className="p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded" title="Excluir"><Icon name="trash-2" className="w-4 h-4" /></button>
                                     </div>
                                 </div>
                                 <p className="text-[13px] text-gray-600 dark:text-[#A1A1AA]">{t.descricao}</p>
@@ -133,16 +149,21 @@ export default function ComunicacaoInternaTab() {
                                 Organize seus links de pagamento (Mercado Pago, Asaas, etc) para envio rápido.
                             </p>
                         </div>
-                        <button onClick={() => {
-                            setNovoLink({ id: null, titulo: '', link: '', valor: '', cliente: '', status: 'Ativo' });
-                            setModalLinkAberto(true);
-                        }} className="bg-brand hover:bg-brandHover text-white px-4 py-2 text-[13px] rounded-md font-semibold shadow-sm transition flex items-center gap-2">
-                            <Icon name="plus" className="w-4 h-4" /> Novo Link
-                        </button>
+                        <div className="flex gap-2">
+                            <button onClick={() => setMostrarConcluidos(!mostrarConcluidos)} className={`px-4 py-2 text-[13px] rounded-md font-semibold border transition ${mostrarConcluidos ? 'bg-gray-100 border-gray-200 text-gray-700 dark:bg-darkElevated dark:border-darkBorder dark:text-gray-300' : 'bg-white border-gray-200 text-gray-600 dark:bg-darkCard dark:border-darkBorder dark:text-gray-400 hover:bg-gray-50'}`}>
+                                {mostrarConcluidos ? 'Ocultar Inativos' : 'Mostrar Histórico'}
+                            </button>
+                            <button onClick={() => {
+                                setNovoLink({ id: null, titulo: '', link: '', valor: '', cliente: '', status: 'Ativo' });
+                                setModalLinkAberto(true);
+                            }} className="bg-brand hover:bg-brandHover text-white px-4 py-2 text-[13px] rounded-md font-semibold shadow-sm transition flex items-center gap-2">
+                                <Icon name="plus" className="w-4 h-4" /> Novo Link
+                            </button>
+                        </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {linksPagamento.length > 0 ? linksPagamento.map(l => (
+                        {linksVisiveis.length > 0 ? linksVisiveis.map(l => (
                             <div key={l.id} className="bg-white dark:bg-darkCard rounded-xl shadow-sm border border-gray-200 dark:border-darkBorder p-5 flex flex-col gap-3 group">
                                 <div className="flex justify-between items-start">
                                     <div>
@@ -150,8 +171,8 @@ export default function ComunicacaoInternaTab() {
                                         <p className="text-[11px] font-semibold text-brand mt-1">{l.cliente}</p>
                                     </div>
                                     <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <button onClick={() => { setNovoLink(l); setModalLinkAberto(true); }} className="p-1 text-gray-400 hover:text-brand"><Icon name="edit-2" className="w-4 h-4" /></button>
-                                        <button onClick={() => excluirLink(l.id)} className="p-1 text-gray-400 hover:text-red-500"><Icon name="trash-2" className="w-4 h-4" /></button>
+                                        <button onClick={() => { setNovoLink(l); setModalLinkAberto(true); }} className="p-1 text-brand hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded" title="Editar"><Icon name="edit-3" className="w-4 h-4" /></button>
+                                        <button onClick={() => excluirLink(l.id)} className="p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded" title="Excluir"><Icon name="trash-2" className="w-4 h-4" /></button>
                                     </div>
                                 </div>
                                 {l.valor && (

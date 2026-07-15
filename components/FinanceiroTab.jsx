@@ -7,6 +7,7 @@ import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS, RESPONSAVEIS, obterCorStatus, 
 
 export default function FinanceiroTab() {
     const { setAbaFinanceiro, abaFinanceiro, notasFiscais, usuario, filtroNotas, dataFiltroFinInicio, setDataFiltroFinInicio, dataFiltroFinFim, setDataFiltroFinFim, pedidos, setNovaConta, setModalContaAberto, setModalEmpresaFaturamentoAberto, buscaNotaFiscal, setBuscaNotaFiscal, setPaginaNotasFiscais, setFiltroNotas, renderBarHorizontal, produtos, produtosSelecionadosGrafico, setProdutosSelecionadosGrafico, contasPagar, empresasFaturamento, setNovaEmpresaFaturamento, notasFiscaisPaginadas, setNotaFiscalEmEdicao, setModalNotaFiscalAberto, totalPaginasNotasFiscais, paginaNotasFiscais, excluirConta, abrirEdicao, excluirEmpresaFaturamento, concluirNotaFiscal } = useAppContext();
+    const [mostrarContasPagas, setMostrarContasPagas] = useState(false);
 
     return (
         <>
@@ -673,6 +674,11 @@ export default function FinanceiroTab() {
 
                                     {abaFinanceiro === 'contas_pagar' && (
                                         <div className="fade-in">
+                                            <div className="flex justify-end mb-4">
+                                                <button onClick={() => setMostrarContasPagas(!mostrarContasPagas)} className={`px-4 py-2 text-[13px] rounded-md font-semibold border transition ${mostrarContasPagas ? 'bg-gray-100 border-gray-200 text-gray-700 dark:bg-darkElevated dark:border-darkBorder dark:text-gray-300' : 'bg-white border-gray-200 text-gray-600 dark:bg-darkCard dark:border-darkBorder dark:text-gray-400 hover:bg-gray-50'}`}>
+                                                    {mostrarContasPagas ? 'Ocultar Pagas' : 'Mostrar Histórico'}
+                                                </button>
+                                            </div>
 
                                             <div className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded overflow-hidden">
                                                 <div className="overflow-x-auto min-h-[300px]">
@@ -687,10 +693,10 @@ export default function FinanceiroTab() {
                                                             </tr>
                                                         </thead>
                                                         <tbody className="divide-y divide-gray-100 dark:divide-darkBorder">
-                                                            {contasPagar.length === 0 ? (
+                                                            {contasPagar.filter(c => mostrarContasPagas ? true : c.status !== 'Pago').length === 0 ? (
                                                                 <tr><td colSpan="5" className="text-center py-8 text-gray-400">Nenhuma conta a pagar registrada.</td></tr>
                                                             ) : (
-                                                                contasPagar.map(conta => (
+                                                                contasPagar.filter(c => mostrarContasPagas ? true : c.status !== 'Pago').map(conta => (
                                                                     <tr key={conta.id} className="hover:bg-gray-50 dark:hover:bg-darkHover/50 transition-colors group">
                                                                         <td className="px-6 py-4 text-[13px] text-gray-600 dark:text-[#A1A1AA]">{formatarDataExibicao(conta.vencimento)}</td>
                                                                         <td className="px-6 py-4 text-[13px] font-medium text-gray-900 dark:text-gray-300">
@@ -704,10 +710,10 @@ export default function FinanceiroTab() {
                                                                             </span>
                                                                         </td>
                                                                         <td className="px-6 py-4 text-[13px] text-right flex justify-end gap-2">
-                                                                            <button onClick={() => { setNovaConta(conta); setModalContaAberto(true); }} className="p-1.5 text-gray-400 hover:text-brand hover:bg-gray-100 dark:hover:bg-darkHover rounded transition opacity-0 group-hover:opacity-100" title="Editar">
-                                                                                <Icon name="edit-2" className="w-4 h-4" />
+                                                                            <button onClick={() => { setNovaConta(conta); setModalContaAberto(true); }} className="p-1 text-brand hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded" title="Editar Conta">
+                                                                                <Icon name="edit-3" className="w-4 h-4" />
                                                                             </button>
-                                                                            <button onClick={() => excluirConta(conta.id)} className="p-1.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded transition opacity-0 group-hover:opacity-100" title="Excluir">
+                                                                            <button onClick={() => excluirConta(conta.id)} className="p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded" title="Excluir Conta">
                                                                                 <Icon name="trash-2" className="w-4 h-4" />
                                                                             </button>
                                                                         </td>
@@ -819,10 +825,10 @@ export default function FinanceiroTab() {
                                                                             </span>
                                                                         </td>
                                                                         <td className="px-6 py-4 text-[13px] text-right flex justify-end gap-2">
-                                                                            <button onClick={() => { setNovaEmpresaFaturamento(emp); setModalEmpresaFaturamentoAberto(true); }} className="p-1.5 text-gray-400 hover:text-brand hover:bg-gray-100 dark:hover:bg-darkHover rounded transition opacity-0 group-hover:opacity-100" title="Editar">
-                                                                                <Icon name="edit-2" className="w-4 h-4" />
+                                                                            <button onClick={() => { setNovaEmpresaFaturamento(emp); setModalEmpresaFaturamentoAberto(true); }} className="p-1 text-brand hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded" title="Editar">
+                                                                                <Icon name="edit-3" className="w-4 h-4" />
                                                                             </button>
-                                                                            <button onClick={() => excluirEmpresaFaturamento(emp.id)} className="p-1.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded transition opacity-0 group-hover:opacity-100" title="Excluir">
+                                                                            <button onClick={() => excluirEmpresaFaturamento(emp.id)} className="p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded" title="Excluir">
                                                                                 <Icon name="trash-2" className="w-4 h-4" />
                                                                             </button>
                                                                         </td>

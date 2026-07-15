@@ -206,13 +206,14 @@ export default function CadastrosTab() {
                                         </tr>
                                     ) : (
                                         fornecedores.map(f => (
-                                            <tr key={f.id} onClick={() => { setNovoFornecedor(f); setModalFornecedorAberto(true); }} className="border-b border-gray-100 dark:border-darkBorder/50 hover:bg-gray-50/50 dark:hover:bg-darkHover/50 transition cursor-pointer">
+                                            <tr key={f.id} className="border-b border-gray-100 dark:border-darkBorder/50 hover:bg-gray-50/50 dark:hover:bg-darkHover/50 transition">
                                                 <td className="px-6 py-4 text-[13px] font-semibold text-gray-900 dark:text-gray-300">#{f.id}</td>
                                                 <td className="px-6 py-4 text-[13px] font-medium text-gray-800 dark:text-white">{f.nome}</td>
                                                 <td className="px-6 py-4 text-[13px] text-gray-600 dark:text-gray-400">{f.contato || '-'}</td>
                                                 <td className="px-6 py-4 text-[13px] text-gray-600 dark:text-gray-400">{f.observacoes || '-'}</td>
                                                 <td className="px-6 py-4 text-center">
-                                                    <button type="button" onClick={async (e) => {
+                                                    <button onClick={() => { setNovoFornecedor(f); setModalFornecedorAberto(true); }} className="p-1 text-brand hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded transition" title="Editar"><Icon name="edit" className="w-4 h-4" /></button>
+                                                    <button onClick={async (e) => {
                                                         e.stopPropagation();
                                                         if(confirm(`Excluir o fornecedor ${f.nome}?`)) {
                                                             await supabase.from('fornecedores').delete().eq('id', f.id);
