@@ -95,6 +95,8 @@ export const AppProvider = ({ children }) => {
     const [alertasNaoLidos, setAlertasNaoLidos] = useState([]);
     const alertasFuturaDisparados = useRef(new Set());
     const alertasBoletoDisparados = useRef(new Set());
+    const alertasContaPagarDisparados = useRef(new Set());
+    const alertasRetiradaDisparados = useRef(new Set());
     const [modalAlertasAberto, setModalAlertasAberto] = useState(false);
 
     // === COMUNICAÇÃO INTERNA ===
@@ -170,8 +172,8 @@ export const AppProvider = ({ children }) => {
                             try { return JSON.parse(str).filter(pg => pg.forma === 'Boleto'); } catch (e) { return []; }
                         };
 
-                        // Alerta: Novo boleto registrado na O.S. (para Financeiro)
-                        if (isFin) {
+                        // Alerta: Novo boleto registrado na O.S. (para Financeiro e Giovana)
+                        if (isFin || ehUsuario('Giovana')) {
                             const boletosAntes = extrairBoletos(payload.old?.servico);
                             const boletosDepois = extrairBoletos(payload.new?.servico);
                             if (boletosDepois.length > 0 && boletosAntes.length === 0) {
@@ -258,7 +260,9 @@ export const AppProvider = ({ children }) => {
                             const changedServico = payload.new.servico_feito !== payload.old?.servico_feito && payload.new.servico_feito;
                             const changedValor = payload.new.valor_pago !== payload.old?.valor_pago && payload.new.valor_pago;
                             if (changedServico || changedValor) {
-                                if (isAdm || isFin) {
+                                // DANFE avisa o Financeiro, Serviço avisa o Vinicius
+                                const destinatarioCerto = (payload.new.tipo_nota === 'DANFE' && isFin) || (payload.new.tipo_nota === 'Serviço' && ehUsuario('Vinicius'));
+                                if (destinatarioCerto) {
                                     setAlertasNaoLidos(prev => [...prev, { id: Date.now() + 4, msg: `Nota Fiscal (${payload.new.cliente || payload.new.cnpj}) preenchida!`, os_id: null, tipo: 'nf_preenchida' }]);
                                 }
                             }
@@ -282,14 +286,24 @@ export const AppProvider = ({ children }) => {
         return clientesProblema.includes(nome);
     };
 
+    const ehUsuario = (nome) => (usuario?.nome || '').trim().toLowerCase() === nome.toLowerCase();
+
     async function carregarDados() {
         let todosPedidos = [];
         let from = 0;
         let limit = 1000;
         let fetchMore = true;
-        
+
         const anoAnteriorStr = (new Date().getFullYear() - 1).toString();
         const dataCorte = `${anoAnteriorStr}-01-01`;
+
+        const hoje = new Date();
+        hoje.setHours(0, 0, 0, 0);
+        const amanha = new Date(hoje);
+        amanha.setDate(amanha.getDate() + 1);
+        const hojeStr = hoje.getFullYear() + '-' + String(hoje.getMonth() + 1).padStart(2, '0') + '-' + String(hoje.getDate()).padStart(2, '0');
+        const amanhaStr = amanha.getFullYear() + '-' + String(amanha.getMonth() + 1).padStart(2, '0') + '-' + String(amanha.getDate()).padStart(2, '0');
+        const statusIgnorados = ['Concluída', 'Finalizada', 'Cancelada', 'Abandonada'];
 
         while (fetchMore) {
             const { data: batch, error } = await supabase
@@ -315,16 +329,14 @@ export const AppProvider = ({ children }) => {
             }
         }
         if (todosPedidos.length > 0) {
-            // Regra de pedidos Abandonados (Em Retirada a mais de 15 dias após o prazo)
-            const hoje = new Date();
-            hoje.setHours(0, 0, 0, 0);
+            // Regra de pedidos Abandonados (Em Retirada por mais de 31 dias)
             const pedidosParaAbandonar = todosPedidos.filter(p => {
-                if (p.status !== 'Retirada' || !p.prazo) return false;
-                const partes = p.prazo.split('-');
-                if(partes.length !== 3) return false;
-                const dataPrazo = new Date(partes[0], partes[1] - 1, partes[2]);
-                dataPrazo.setDate(dataPrazo.getDate() + 15);
-                return dataPrazo < hoje;
+                if (p.status !== 'Retirada' || !p.data_retirada) return false;
+                const partes = p.data_retirada.split('-');
+                if (partes.length !== 3) return false;
+                const dataRetirada = new Date(partes[0], partes[1] - 1, partes[2]);
+                const diasEmRetirada = Math.floor((hoje - dataRetirada) / (1000 * 60 * 60 * 24));
+                return diasEmRetirada > 31;
             });
             if (pedidosParaAbandonar.length > 0) {
                 pedidosParaAbandonar.forEach(async p => {
@@ -335,74 +347,93 @@ export const AppProvider = ({ children }) => {
 
             setPedidos(todosPedidos);
 
-            if (usuario?.nivel === 'Administrador' || usuario?.nivel === 'Financeiro') {
-                const hoje = new Date();
-                const amanha = new Date(hoje);
-                amanha.setDate(amanha.getDate() + 1);
-                const amanhaStr = amanha.getFullYear() + '-' + String(amanha.getMonth() + 1).padStart(2, '0') + '-' + String(amanha.getDate()).padStart(2, '0');
+            if (usuario?.nivel === 'Administrador') {
+                const pedidosFuturaAlertar = todosPedidos.filter(p => p.local_producao && p.local_producao.toLowerCase().includes('futura') && !statusIgnorados.includes(p.status) && p.prazo && p.prazo <= amanhaStr);
 
-                const statusIgnorados = ['Concluída', 'Finalizada', 'Cancelada', 'Abandonada'];
+                if (pedidosFuturaAlertar.length > 0) {
+                    setAlertasNaoLidos(prev => {
+                        let novosAlertas = [...prev];
+                        pedidosFuturaAlertar.forEach(p => {
+                            if (!novosAlertas.some(a => a.os_id === p.id && a.tipo === 'alerta_futura') && !alertasFuturaDisparados.current.has(p.id)) {
+                                let msg = `Prazo da Futura termina amanhã (O.S. #${p.id}). Retirar!`;
+                                if (p.prazo === hojeStr) msg = `Prazo da Futura é HOJE (O.S. #${p.id}). Retirar o quanto antes!`;
+                                else if (p.prazo < hojeStr) msg = `Prazo da Futura VENCIDO (O.S. #${p.id}). Verifique imediatamente!`;
 
-                const hojeStr = hoje.getFullYear() + '-' + String(hoje.getMonth() + 1).padStart(2, '0') + '-' + String(hoje.getDate()).padStart(2, '0');
+                                novosAlertas.push({ id: Date.now() + Math.random(), msg, os_id: p.id, tipo: 'alerta_futura' });
+                                alertasFuturaDisparados.current.add(p.id);
+                            }
+                        });
+                        return novosAlertas;
+                    });
+                }
+            }
 
-                if (usuario?.nivel === 'Administrador') {
-                    const pedidosFuturaAlertar = todosPedidos.filter(p => p.local_producao && p.local_producao.toLowerCase().includes('futura') && !statusIgnorados.includes(p.status) && p.prazo && p.prazo <= amanhaStr);
+            if (usuario?.nivel === 'Financeiro' || ehUsuario('Giovana')) {
+                const pedidosComBoletoAberto = todosPedidos.map(p => {
+                    const pagamentosStr = p.servico && p.servico.split('\n\n[PAGAMENTOS]\n')[1];
+                    let pagamentos = [];
+                    if (pagamentosStr) {
+                        try { pagamentos = JSON.parse(pagamentosStr); } catch(e) {}
+                    }
+                    return { ...p, pagamentos };
+                }).filter(p => !statusIgnorados.includes(p.status) && p.prazo_pagamento && p.pagamentos.some(pag => pag.forma === 'Boleto' && !pag.boleto_concluido));
 
-                    if (pedidosFuturaAlertar.length > 0) {
+                if (pedidosComBoletoAberto.length > 0) {
+                    let novosAlertasBoleto = [];
+                    pedidosComBoletoAberto.forEach(p => {
+                        if (p.prazo_pagamento === hojeStr || p.prazo_pagamento === amanhaStr) {
+                            const alertId = `${p.id}_${p.prazo_pagamento}`;
+                            if (!alertasBoletoDisparados.current.has(alertId)) {
+                                let msg = `O boleto da O.S. #${p.id} vence amanhã!`;
+                                if (p.prazo_pagamento === hojeStr) msg = `O boleto da O.S. #${p.id} vence HOJE!`;
+
+                                novosAlertasBoleto.push({ id: Date.now() + Math.random(), msg, os_id: p.id, tipo: 'alerta_boleto' });
+                                alertasBoletoDisparados.current.add(alertId);
+                            }
+                        }
+                    });
+
+                    if (novosAlertasBoleto.length > 0) {
                         setAlertasNaoLidos(prev => {
-                            let novosAlertas = [...prev];
-                            pedidosFuturaAlertar.forEach(p => {
-                                if (!novosAlertas.some(a => a.os_id === p.id && a.tipo === 'alerta_futura') && !alertasFuturaDisparados.current.has(p.id)) {
-                                    let msg = `Prazo da Futura termina amanhã (O.S. #${p.id}). Retirar!`;
-                                    if (p.prazo === hojeStr) msg = `Prazo da Futura é HOJE (O.S. #${p.id}). Retirar o quanto antes!`;
-                                    else if (p.prazo < hojeStr) msg = `Prazo da Futura VENCIDO (O.S. #${p.id}). Verifique imediatamente!`;
-
-                                    novosAlertas.push({ id: Date.now() + Math.random(), msg, os_id: p.id, tipo: 'alerta_futura' });
-                                    alertasFuturaDisparados.current.add(p.id);
+                            let mergeAlertas = [...prev];
+                            novosAlertasBoleto.forEach(n => {
+                                if (!mergeAlertas.some(a => a.msg === n.msg && a.os_id === n.os_id)) {
+                                    mergeAlertas.push(n);
                                 }
                             });
-                            return novosAlertas;
+                            return mergeAlertas;
                         });
                     }
                 }
+            }
 
-                if (usuario?.nivel === 'Financeiro') {
-                    const pedidosComBoletoAberto = todosPedidos.map(p => {
-                        const pagamentosStr = p.servico && p.servico.split('\n\n[PAGAMENTOS]\n')[1];
-                        let pagamentos = [];
-                        if (pagamentosStr) {
-                            try { pagamentos = JSON.parse(pagamentosStr); } catch(e) {}
-                        }
-                        return { ...p, pagamentos };
-                    }).filter(p => !statusIgnorados.includes(p.status) && p.prazo_pagamento && p.pagamentos.some(pag => pag.forma === 'Boleto' && !pag.boleto_concluido));
-
-                    if (pedidosComBoletoAberto.length > 0) {
-                        let novosAlertasBoleto = [];
-                        pedidosComBoletoAberto.forEach(p => {
-                            if (p.prazo_pagamento === hojeStr || p.prazo_pagamento === amanhaStr) {
-                                const alertId = `${p.id}_${p.prazo_pagamento}`;
-                                if (!alertasBoletoDisparados.current.has(alertId)) {
-                                    let msg = `O boleto da O.S. #${p.id} vence amanhã!`;
-                                    if (p.prazo_pagamento === hojeStr) msg = `O boleto da O.S. #${p.id} vence HOJE!`;
-
-                                    novosAlertasBoleto.push({ id: Date.now() + Math.random(), msg, os_id: p.id, tipo: 'alerta_boleto' });
-                                    alertasBoletoDisparados.current.add(alertId);
-                                }
-                            }
-                        });
-
-                        if (novosAlertasBoleto.length > 0) {
-                            setAlertasNaoLidos(prev => {
-                                let mergeAlertas = [...prev];
-                                novosAlertasBoleto.forEach(n => {
-                                    if (!mergeAlertas.some(a => a.msg === n.msg && a.os_id === n.os_id)) {
-                                        mergeAlertas.push(n);
-                                    }
-                                });
-                                return mergeAlertas;
-                            });
+            if (usuario?.nivel === 'Produção/Atendimento') {
+                const pedidosEmRetirada = todosPedidos.filter(p => p.status === 'Retirada' && p.data_retirada);
+                let novosAlertasRetirada = [];
+                pedidosEmRetirada.forEach(p => {
+                    const partes = p.data_retirada.split('-');
+                    if (partes.length !== 3) return;
+                    const dataRetirada = new Date(partes[0], partes[1] - 1, partes[2]);
+                    const diasEmRetirada = Math.floor((hoje - dataRetirada) / (1000 * 60 * 60 * 24));
+                    if (diasEmRetirada === 15 || diasEmRetirada === 30) {
+                        const alertId = `${p.id}_retirada_${diasEmRetirada}`;
+                        if (!alertasRetiradaDisparados.current.has(alertId)) {
+                            novosAlertasRetirada.push({ id: Date.now() + Math.random(), msg: `O.S. #${p.id} está há ${diasEmRetirada} dias aguardando retirada!`, os_id: p.id, tipo: 'alerta_retirada' });
+                            alertasRetiradaDisparados.current.add(alertId);
                         }
                     }
+                });
+
+                if (novosAlertasRetirada.length > 0) {
+                    setAlertasNaoLidos(prev => {
+                        let mergeAlertas = [...prev];
+                        novosAlertasRetirada.forEach(n => {
+                            if (!mergeAlertas.some(a => a.msg === n.msg && a.os_id === n.os_id)) {
+                                mergeAlertas.push(n);
+                            }
+                        });
+                        return mergeAlertas;
+                    });
                 }
             }
         }
@@ -422,7 +453,34 @@ export const AppProvider = ({ children }) => {
         if (listaEmpresasFaturamento) setEmpresasFaturamento(listaEmpresasFaturamento);
 
         const { data: listaContas, error: erroContas } = await supabase.from('contas_pagar').select('*').order('vencimento', { ascending: true });
-        if (!erroContas && listaContas) setContasPagar(listaContas);
+        if (!erroContas && listaContas) {
+            setContasPagar(listaContas);
+
+            if (usuario?.nivel === 'Financeiro' || ehUsuario('Giovana')) {
+                const contasVencendo = listaContas.filter(c => c.status !== 'Pago' && (c.vencimento === hojeStr || c.vencimento === amanhaStr));
+                if (contasVencendo.length > 0) {
+                    let novosAlertasConta = [];
+                    contasVencendo.forEach(c => {
+                        const alertId = `${c.id}_${c.vencimento}`;
+                        if (!alertasContaPagarDisparados.current.has(alertId)) {
+                            let msg = `A conta "${c.descricao}" vence amanhã!`;
+                            if (c.vencimento === hojeStr) msg = `A conta "${c.descricao}" vence HOJE!`;
+                            novosAlertasConta.push({ id: Date.now() + Math.random(), msg, tipo: 'alerta_conta_pagar' });
+                            alertasContaPagarDisparados.current.add(alertId);
+                        }
+                    });
+                    if (novosAlertasConta.length > 0) {
+                        setAlertasNaoLidos(prev => {
+                            let mergeAlertas = [...prev];
+                            novosAlertasConta.forEach(n => {
+                                if (!mergeAlertas.some(a => a.msg === n.msg)) mergeAlertas.push(n);
+                            });
+                            return mergeAlertas;
+                        });
+                    }
+                }
+            }
+        }
 
         const { data: listaFornecedores } = await supabase.from('fornecedores').select('*').order('id', { ascending: true });
         if (listaFornecedores) setFornecedores(listaFornecedores);
@@ -603,6 +661,12 @@ export const AppProvider = ({ children }) => {
         let payload = { [campo]: valor };
         if (campo === 'status' && valor === 'Concluído') {
             payload.prazo = obterDataAtual();
+        }
+        if (campo === 'status' && valor === 'Retirada') {
+            const pedidoAtual = pedidos.find(p => p.id === id);
+            if (!pedidoAtual || pedidoAtual.status !== 'Retirada') {
+                payload.data_retirada = obterDataAtual();
+            }
         }
 
         setPedidos(pedidos.map(p => {
@@ -807,6 +871,9 @@ export const AppProvider = ({ children }) => {
 
         if (novoPedido.status === 'Concluído' && (!pedidoEmEdicao || pedidoEmEdicao.status !== 'Concluído')) {
             payload.prazo = obterDataAtual();
+        }
+        if (novoPedido.status === 'Retirada' && (!pedidoEmEdicao || pedidoEmEdicao.status !== 'Retirada')) {
+            payload.data_retirada = obterDataAtual();
         }
 
         if (pedidoEmEdicao) {
@@ -1414,13 +1481,23 @@ export const AppProvider = ({ children }) => {
                 }
             })
             .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'requisicoes_material' }, (payload) => {
-                if (usuario?.nivel === 'Administrador') {
+                if (ehUsuario('Vinicius')) {
                     setAlertasNaoLidos(prev => [...prev, { id: Date.now() + Math.random(), msg: `Nova requisição de material!\nItem(s): ${payload.new.itens}`, tipo: 'nova_requisicao' }]);
                 }
             })
             .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'links_pagamento' }, (payload) => {
-                if (usuario?.nivel === 'Administrador') {
+                if (ehUsuario('Giovana')) {
                     setAlertasNaoLidos(prev => [...prev, { id: Date.now() + Math.random(), msg: `Novo link de pagamento para: ${payload.new.cliente}`, tipo: 'novo_link' }]);
+                }
+            })
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'contas_pagar' }, (payload) => {
+                if (usuario?.nivel === 'Financeiro' || ehUsuario('Giovana')) {
+                    setAlertasNaoLidos(prev => [...prev, { id: Date.now() + Math.random(), msg: `Nova conta a pagar: ${payload.new.descricao}`, tipo: 'nova_conta_pagar' }]);
+                }
+            })
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'empresas_faturamento' }, (payload) => {
+                if (usuario?.nivel === 'Administrador' || usuario?.nivel === 'Financeiro') {
+                    setAlertasNaoLidos(prev => [...prev, { id: Date.now() + Math.random(), msg: `Novo cliente em faturamento: ${payload.new.nome}`, tipo: 'novo_cliente_faturamento' }]);
                 }
             })
             // Atualiza os dados da tela em tempo real para qualquer alteração no banco
