@@ -147,13 +147,21 @@ export default function PrintLayout() {
 }
 
 function PrintOrcamento({ orc }) {
-    const desc = desconstruirTextoServico(orc.descricao || '');
     const itens = extrairItens(orc);
     const telefone = orc.clienteInfo?.telefone || '';
     const date = new Date(orc.created_at).toLocaleDateString('pt-BR');
     
-    // Fallback to desc.observacoes if orc.observacoes is empty
-    const obsPrazo = orc.observacoes || desc.observacoes || "Prazo e condições a combinar.";
+    // Extract observations: strip [ITENS_JSON] block before parsing
+    let obsPrazo = '';
+    if (orc.observacoes && orc.observacoes.trim()) {
+        obsPrazo = orc.observacoes.trim();
+    } else {
+        // Try to extract from descricao by removing [ITENS_JSON] portion first
+        const descSemItensJson = (orc.descricao || '').replace(/\n\n\[ITENS_JSON\]\n[\s\S]*$/, '');
+        const desc = desconstruirTextoServico(descSemItensJson);
+        obsPrazo = desc.observacoes || '';
+    }
+    if (!obsPrazo) obsPrazo = "Prazo e condições a combinar.";
     
     return (
         <div className="print-only bg-white text-black font-sans flex flex-col w-full h-[286mm] overflow-hidden relative select-none">
