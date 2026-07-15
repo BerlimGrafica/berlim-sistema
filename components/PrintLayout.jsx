@@ -163,15 +163,15 @@ function PrintOrcamento({ orc }) {
                     <svg width="210" height="100" viewBox="-10 0 500 310" fill="none" xmlns="http://www.w3.org/2000/svg">
                         {/* 7 Stairs going up and to the right */}
                         {/* Top 4 (Reddish Orange) */}
-                        <rect x="300" y="0" width="170" height="36" fill="#F27127" />
-                        <rect x="250" y="42" width="170" height="36" fill="#F27127" />
-                        <rect x="200" y="84" width="170" height="36" fill="#F27127" />
-                        <rect x="150" y="126" width="170" height="36" fill="#F27127" />
+                        <rect x="300" y="0" width="120" height="36" fill="#F27127" />
+                        <rect x="250" y="42" width="120" height="36" fill="#F27127" />
+                        <rect x="200" y="84" width="120" height="36" fill="#F27127" />
+                        <rect x="150" y="126" width="120" height="36" fill="#F27127" />
                         
                         {/* Bottom 3 (Yellowish Orange) */}
-                        <rect x="100" y="168" width="170" height="36" fill="#F8B133" />
-                        <rect x="50" y="210" width="170" height="36" fill="#F8B133" />
-                        <rect x="0" y="252" width="170" height="36" fill="#F8B133" />
+                        <rect x="100" y="168" width="120" height="36" fill="#F8B133" />
+                        <rect x="50" y="210" width="120" height="36" fill="#F8B133" />
+                        <rect x="0" y="252" width="120" height="36" fill="#F8B133" />
                         
                         {/* Text aligned with the bottom 2 stairs */}
                         <text x="185" y="243" fontFamily="'Bebas Neue', 'Arial Narrow', sans-serif" fontWeight="bold" fontSize="48" fill="#0067B1" letterSpacing="1">BERLIM</text>
