@@ -167,7 +167,7 @@ export default function DashboardTab() {
                                                             </span>
                                                         </td>
                                                         <td className="px-4 py-3 text-right">
-                                                            <button onClick={() => abrirEdicao(t)} className="opacity-0 group-hover:opacity-100 transition p-1.5 bg-brand hover:bg-brandHover text-white rounded-md shadow-sm" title="Abrir OS">
+                                                            <button onClick={() => abrirEdicao(t)} className="opacity-0 group-hover:opacity-100 transition p-1.5 text-blue-500 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-md" title="Abrir OS">
                                                                 <Icon name="edit-3" className="w-3.5 h-3.5" />
                                                             </button>
                                                         </td>
@@ -236,7 +236,7 @@ export default function DashboardTab() {
                                                             </div>
                                                         </td>
                                                         <td className="px-4 py-3 text-right align-middle">
-                                                            <button onClick={() => { setNovaTarefa(t); setModalTarefaAberto(true); }} className="opacity-0 group-hover:opacity-100 transition p-1.5 bg-brand hover:bg-brandHover text-white rounded-md shadow-sm" title="Editar Tarefa">
+                                                            <button onClick={() => { setNovaTarefa(t); setModalTarefaAberto(true); }} className="opacity-0 group-hover:opacity-100 transition p-1.5 text-blue-500 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-md" title="Editar Tarefa">
                                                                 <Icon name="edit-3" className="w-3.5 h-3.5" />
                                                             </button>
                                                         </td>

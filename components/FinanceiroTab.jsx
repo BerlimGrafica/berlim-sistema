@@ -710,7 +710,7 @@ export default function FinanceiroTab() {
                                                                             </span>
                                                                         </td>
                                                                         <td className="px-6 py-4 text-[13px] text-right flex justify-end gap-2">
-                                                                            <button onClick={() => { setNovaConta(conta); setModalContaAberto(true); }} className="p-1 text-brand hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded" title="Editar Conta">
+                                                                            <button onClick={() => { setNovaConta(conta); setModalContaAberto(true); }} className="p-1 text-blue-500 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded" title="Editar Conta">
                                                                                 <Icon name="edit-3" className="w-4 h-4" />
                                                                             </button>
                                                                             <button onClick={() => excluirConta(conta.id)} className="p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded" title="Excluir Conta">
@@ -825,7 +825,7 @@ export default function FinanceiroTab() {
                                                                             </span>
                                                                         </td>
                                                                         <td className="px-6 py-4 text-[13px] text-right flex justify-end gap-2">
-                                                                            <button onClick={() => { setNovaEmpresaFaturamento(emp); setModalEmpresaFaturamentoAberto(true); }} className="p-1 text-brand hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded" title="Editar">
+                                                                            <button onClick={() => { setNovaEmpresaFaturamento(emp); setModalEmpresaFaturamentoAberto(true); }} className="p-1 text-blue-500 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded" title="Editar">
                                                                                 <Icon name="edit-3" className="w-4 h-4" />
                                                                             </button>
                                                                             <button onClick={() => excluirEmpresaFaturamento(emp.id)} className="p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded" title="Excluir">

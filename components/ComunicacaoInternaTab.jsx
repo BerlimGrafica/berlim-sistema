@@ -14,11 +14,13 @@ export default function ComunicacaoInternaTab() {
         usuario, isAdmin
     } = useAppContext();
 
-    const [mostrarConcluidos, setMostrarConcluidos] = React.useState(false);
+    const [mostrarConcluidosReq, setMostrarConcluidosReq] = React.useState(false);
+    const [mostrarConcluidosTarefas, setMostrarConcluidosTarefas] = React.useState(false);
+    const [mostrarConcluidosLinks, setMostrarConcluidosLinks] = React.useState(false);
 
-    const requisicoesVisiveis = mostrarConcluidos ? requisicoesMaterial : requisicoesMaterial.filter(r => r.status === 'Pendente');
-    const tarefasVisiveis = mostrarConcluidos ? tarefasInternas : tarefasInternas.filter(t => t.status !== 'Concluída');
-    const linksVisiveis = mostrarConcluidos ? linksPagamento : linksPagamento.filter(l => l.status !== 'Inativo' && l.status !== 'Pago' && l.status !== 'Concluído');
+    const requisicoesVisiveis = mostrarConcluidosReq ? requisicoesMaterial : requisicoesMaterial.filter(r => r.status === 'Pendente');
+    const tarefasVisiveis = mostrarConcluidosTarefas ? tarefasInternas : tarefasInternas.filter(t => t.status !== 'Concluída');
+    const linksVisiveis = mostrarConcluidosLinks ? linksPagamento : linksPagamento.filter(l => l.status !== 'Inativo' && l.status !== 'Pago' && l.status !== 'Concluído');
 
     return (
         <>
@@ -44,8 +46,8 @@ export default function ComunicacaoInternaTab() {
                             </p>
                         </div>
                         <div className="flex gap-2">
-                            <button onClick={() => setMostrarConcluidos(!mostrarConcluidos)} className={`px-4 py-2 text-[13px] rounded-md font-semibold border transition ${mostrarConcluidos ? 'bg-gray-100 border-gray-200 text-gray-700 dark:bg-darkElevated dark:border-darkBorder dark:text-gray-300' : 'bg-white border-gray-200 text-gray-600 dark:bg-darkCard dark:border-darkBorder dark:text-gray-400 hover:bg-gray-50'}`}>
-                                {mostrarConcluidos ? 'Ocultar Concluídos' : 'Mostrar Histórico'}
+                            <button onClick={() => setMostrarConcluidosReq(!mostrarConcluidosReq)} className={`px-4 py-2 text-[13px] rounded-md font-semibold border transition ${mostrarConcluidosReq ? 'bg-gray-100 border-gray-200 text-gray-700 dark:bg-darkElevated dark:border-darkBorder dark:text-gray-300' : 'bg-white border-gray-200 text-gray-600 dark:bg-darkCard dark:border-darkBorder dark:text-gray-400 hover:bg-gray-50'}`}>
+                                {mostrarConcluidosReq ? 'Ocultar Concluídos' : 'Mostrar Histórico'}
                             </button>
                             <button onClick={() => {
                                 setNovaRequisicao({ id: null, itens: '', observacoes: '', status: 'Pendente' });
@@ -80,7 +82,7 @@ export default function ComunicacaoInternaTab() {
                                             }`}>{r.status}</span>
                                         </td>
                                         <td className="px-6 py-4 text-right flex justify-end gap-2">
-                                            <button onClick={() => { setNovaRequisicao(r); setModalRequisicaoAberto(true); }} className="p-1.5 text-brand hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded transition" title="Editar"><Icon name="edit-3" className="w-4 h-4" /></button>
+                                            <button onClick={() => { setNovaRequisicao(r); setModalRequisicaoAberto(true); }} className="p-1.5 text-blue-500 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded transition" title="Editar"><Icon name="edit-3" className="w-4 h-4" /></button>
                                             <button onClick={() => excluirRequisicao(r.id)} className="p-1.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded transition" title="Excluir"><Icon name="trash-2" className="w-4 h-4" /></button>
                                         </td>
                                     </tr>
@@ -103,8 +105,8 @@ export default function ComunicacaoInternaTab() {
                             </p>
                         </div>
                         <div className="flex gap-2">
-                            <button onClick={() => setMostrarConcluidos(!mostrarConcluidos)} className={`px-4 py-2 text-[13px] rounded-md font-semibold border transition ${mostrarConcluidos ? 'bg-gray-100 border-gray-200 text-gray-700 dark:bg-darkElevated dark:border-darkBorder dark:text-gray-300' : 'bg-white border-gray-200 text-gray-600 dark:bg-darkCard dark:border-darkBorder dark:text-gray-400 hover:bg-gray-50'}`}>
-                                {mostrarConcluidos ? 'Ocultar Concluídas' : 'Mostrar Histórico'}
+                            <button onClick={() => setMostrarConcluidosTarefas(!mostrarConcluidosTarefas)} className={`px-4 py-2 text-[13px] rounded-md font-semibold border transition ${mostrarConcluidosTarefas ? 'bg-gray-100 border-gray-200 text-gray-700 dark:bg-darkElevated dark:border-darkBorder dark:text-gray-300' : 'bg-white border-gray-200 text-gray-600 dark:bg-darkCard dark:border-darkBorder dark:text-gray-400 hover:bg-gray-50'}`}>
+                                {mostrarConcluidosTarefas ? 'Ocultar Concluídas' : 'Mostrar Histórico'}
                             </button>
                             <button onClick={() => {
                                 setNovaTarefa({ id: null, titulo: '', descricao: '', responsavel: '', prazo: '', status: 'Pendente' });
@@ -117,11 +119,11 @@ export default function ComunicacaoInternaTab() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {tarefasVisiveis.length > 0 ? tarefasVisiveis.map(t => (
-                            <div key={t.id} className={`bg-white dark:bg-darkCard rounded-xl shadow-sm border p-5 flex flex-col gap-3 ${t.status === 'Concluída' ? 'opacity-60 border-gray-200 dark:border-darkBorder' : 'border-brand/30 dark:border-brand/50'}`}>
+                            <div key={t.id} className={`bg-white dark:bg-darkCard rounded-xl shadow-sm border p-5 flex flex-col gap-3 ${t.status === 'Concluída' ? 'opacity-60 border-gray-200 dark:border-darkBorder' : 'border-gray-200 dark:border-darkBorder'}`}>
                                 <div className="flex justify-between items-start">
                                     <h3 className={`font-bold ${t.status === 'Concluída' ? 'line-through text-gray-500' : 'text-gray-900 dark:text-white'}`}>{t.titulo}</h3>
                                     <div className="flex gap-1">
-                                        <button onClick={() => { setNovaTarefa(t); setModalTarefaAberto(true); }} className="p-1 text-brand hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded" title="Editar"><Icon name="edit-3" className="w-4 h-4" /></button>
+                                        <button onClick={() => { setNovaTarefa(t); setModalTarefaAberto(true); }} className="p-1 text-blue-500 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded" title="Editar"><Icon name="edit-3" className="w-4 h-4" /></button>
                                         <button onClick={() => excluirTarefa(t.id)} className="p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded" title="Excluir"><Icon name="trash-2" className="w-4 h-4" /></button>
                                     </div>
                                 </div>
@@ -150,8 +152,8 @@ export default function ComunicacaoInternaTab() {
                             </p>
                         </div>
                         <div className="flex gap-2">
-                            <button onClick={() => setMostrarConcluidos(!mostrarConcluidos)} className={`px-4 py-2 text-[13px] rounded-md font-semibold border transition ${mostrarConcluidos ? 'bg-gray-100 border-gray-200 text-gray-700 dark:bg-darkElevated dark:border-darkBorder dark:text-gray-300' : 'bg-white border-gray-200 text-gray-600 dark:bg-darkCard dark:border-darkBorder dark:text-gray-400 hover:bg-gray-50'}`}>
-                                {mostrarConcluidos ? 'Ocultar Inativos' : 'Mostrar Histórico'}
+                            <button onClick={() => setMostrarConcluidosLinks(!mostrarConcluidosLinks)} className={`px-4 py-2 text-[13px] rounded-md font-semibold border transition ${mostrarConcluidosLinks ? 'bg-gray-100 border-gray-200 text-gray-700 dark:bg-darkElevated dark:border-darkBorder dark:text-gray-300' : 'bg-white border-gray-200 text-gray-600 dark:bg-darkCard dark:border-darkBorder dark:text-gray-400 hover:bg-gray-50'}`}>
+                                {mostrarConcluidosLinks ? 'Ocultar Inativos' : 'Mostrar Histórico'}
                             </button>
                             <button onClick={() => {
                                 setNovoLink({ id: null, titulo: '', link: '', valor: '', cliente: '', status: 'Ativo' });
@@ -171,7 +173,7 @@ export default function ComunicacaoInternaTab() {
                                         <p className="text-[11px] font-semibold text-brand mt-1">{l.cliente}</p>
                                     </div>
                                     <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <button onClick={() => { setNovoLink(l); setModalLinkAberto(true); }} className="p-1 text-brand hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded" title="Editar"><Icon name="edit-3" className="w-4 h-4" /></button>
+                                        <button onClick={() => { setNovoLink(l); setModalLinkAberto(true); }} className="p-1 text-blue-500 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded" title="Editar"><Icon name="edit-3" className="w-4 h-4" /></button>
                                         <button onClick={() => excluirLink(l.id)} className="p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded" title="Excluir"><Icon name="trash-2" className="w-4 h-4" /></button>
                                     </div>
                                 </div>
