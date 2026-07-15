@@ -84,9 +84,14 @@ export default function FinanceiroTab() {
                                 )}
                                 
                                 {abaFinanceiro === 'contas_pagar' && (
-                                    <button onClick={() => { setNovaConta({ id: null, descricao: '', valor: '', vencimento: '', status: 'Pendente', recorrente: false }); setModalContaAberto(true); }} className="bg-brand hover:bg-brandHover text-white h-[38px] px-4 text-[13px] rounded-md font-semibold shadow-sm transition flex items-center gap-2">
-                                        <Icon name="plus" className="w-4 h-4" /> Nova Conta
-                                    </button>
+                                    <>
+                                        <button onClick={() => setMostrarContasPagas(!mostrarContasPagas)} className={`h-[38px] px-4 text-[13px] rounded-md font-semibold border transition flex items-center justify-center ${mostrarContasPagas ? 'bg-gray-100 border-gray-200 text-gray-700 dark:bg-darkElevated dark:border-darkBorder dark:text-gray-300' : 'bg-white border-gray-200 text-gray-600 dark:bg-darkCard dark:border-darkBorder dark:text-gray-400 hover:bg-gray-50'}`}>
+                                            {mostrarContasPagas ? 'Ocultar Pagas' : 'Mostrar Histórico'}
+                                        </button>
+                                        <button onClick={() => { setNovaConta({ id: null, descricao: '', valor: '', vencimento: '', status: 'Pendente', recorrente: false }); setModalContaAberto(true); }} className="bg-brand hover:bg-brandHover text-white h-[38px] px-4 text-[13px] rounded-md font-semibold shadow-sm transition flex items-center gap-2">
+                                            <Icon name="plus" className="w-4 h-4" /> Nova Conta
+                                        </button>
+                                    </>
                                 )}
                                 
                                 {abaFinanceiro === 'empresas_aprovadas' && (
@@ -674,12 +679,6 @@ export default function FinanceiroTab() {
 
                                     {abaFinanceiro === 'contas_pagar' && (
                                         <div className="fade-in">
-                                            <div className="flex justify-end mb-4">
-                                                <button onClick={() => setMostrarContasPagas(!mostrarContasPagas)} className={`px-4 py-2 text-[13px] rounded-md font-semibold border transition ${mostrarContasPagas ? 'bg-gray-100 border-gray-200 text-gray-700 dark:bg-darkElevated dark:border-darkBorder dark:text-gray-300' : 'bg-white border-gray-200 text-gray-600 dark:bg-darkCard dark:border-darkBorder dark:text-gray-400 hover:bg-gray-50'}`}>
-                                                    {mostrarContasPagas ? 'Ocultar Pagas' : 'Mostrar Histórico'}
-                                                </button>
-                                            </div>
-
                                             <div className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded overflow-hidden">
                                                 <div className="overflow-x-auto min-h-[300px]">
                                                     <table className="w-full text-left border-collapse">
