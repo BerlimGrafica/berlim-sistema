@@ -751,7 +751,10 @@ export default function Modals() {
                                     </div>
                                 )}
                             </div>
-                            <div className="flex justify-end gap-3 mt-2"><button type="button" onClick={() => setModalTarefaAberto(false)} className="px-4 py-2 rounded text-[13px] font-medium text-gray-600 dark:text-[#A1A1AA] hover:bg-gray-100 dark:hover:bg-darkHover transition">Cancelar</button><button type="button" onClick={salvarTarefa} className="px-5 py-2 rounded text-[13px] font-medium bg-brand text-white hover:bg-brandHover transition shadow-sm">Salvar</button></div>
+                            <div className="flex justify-end gap-3 mt-2">
+                                <button type="button" onClick={() => setModalTarefaAberto(false)} className="px-4 py-2 rounded text-[13px] font-medium text-gray-600 dark:text-[#A1A1AA] hover:bg-gray-100 dark:hover:bg-darkHover transition">Cancelar</button>
+                                <button type="button" onClick={async (e) => { e.preventDefault(); await salvarTarefa(); }} className="px-5 py-2 rounded text-[13px] font-medium bg-brand text-white hover:bg-brandHover transition shadow-sm">Salvar</button>
+                            </div>
                         </div>
                     </div>
                 </div>

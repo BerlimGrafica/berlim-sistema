@@ -1267,12 +1267,12 @@ export const AppProvider = ({ children }) => {
             payload.criado_por = usuario?.nome || '';
             const { data, error } = await supabase.from('tarefas_internas').insert([payload]).select();
             if (error) console.error("Erro ao salvar tarefa:", error);
-            if (!error && data) setTarefasInternas([data[0], ...tarefasInternas]);
+            if (!error && data && data.length > 0) setTarefasInternas(prev => [data[0], ...prev]);
         } else {
             const { id, ...rest } = payload;
             const { data, error } = await supabase.from('tarefas_internas').update(rest).eq('id', id).select();
             if (error) console.error("Erro ao atualizar tarefa:", error);
-            if (!error && data) setTarefasInternas(tarefasInternas.map(t => t.id === id ? data[0] : t));
+            if (!error && data && data.length > 0) setTarefasInternas(prev => prev.map(t => t.id === id ? data[0] : t));
         }
         setModalTarefaAberto(false);
     };
