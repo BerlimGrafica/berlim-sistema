@@ -231,15 +231,15 @@ function PrintOrcamento({ orc }) {
             </div>
 
             {/* Footer Totals */}
-            <div className="px-16 pb-12 flex justify-between items-end">
-                <div className="flex flex-col pt-2 max-w-[50%] text-right items-end">
+            <div className="px-16 pb-12 flex justify-center items-center gap-8">
+                <div className="flex flex-col text-right items-end">
                     <p className="text-[#F37021] text-[18px] font-bold leading-tight mb-1">Prazo de Produção:</p>
                     <p className="text-[#F37021] text-[15px] italic leading-tight whitespace-pre-wrap">{obsPrazo}</p>
                 </div>
                 
-                <div className="w-[2px] bg-[#00579D] h-16 mx-8 self-center rounded"></div>
+                <div className="print-color-adjust-exact h-16 rounded" style={{ width: '2px', backgroundColor: '#00579D', WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}></div>
 
-                <div className="flex-1 flex flex-col justify-end text-left pt-2">
+                <div className="flex flex-col justify-end text-left">
                     <p className="text-[#F37021] text-[18px] font-black italic uppercase leading-none mb-1">Total:</p>
                     <p className="text-[#00579D] text-[32px] font-black italic leading-none tracking-tight">R$ {formatarValorFinanceiro(Number(orc.valor))}</p>
                 </div>
