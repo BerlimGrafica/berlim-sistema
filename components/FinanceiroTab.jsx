@@ -136,6 +136,7 @@ export default function FinanceiroTab() {
                         {/* SUB-MENU FOI MOVIDO PARA O TOPNAV */}
                         {(() => {
                             const pedidosFin = pedidos.filter(p => {
+                                if (p.status === 'Cancelado' || p.status === 'Cancelada') return false;
                                 let match = true;
                                 if (dataFiltroFinInicio && (!p.data_pedido || p.data_pedido < dataFiltroFinInicio)) match = false;
                                 if (dataFiltroFinFim && (!p.data_pedido || p.data_pedido > dataFiltroFinFim)) match = false;
@@ -165,7 +166,7 @@ export default function FinanceiroTab() {
                             const totalAReceber = totalBruto - totalRecebido;
                             const ticketMedio = pedidosFin.length > 0 ? (totalBruto / pedidosFin.length) : 0;
 
-                            const totalVendasHoje = pedidos.filter(p => p.data_pedido === obterDataAtual()).reduce((acc, p) => acc + (Number(p.valor_total) || 0), 0);
+                            const totalVendasHoje = pedidos.filter(p => p.data_pedido === obterDataAtual() && p.status !== 'Cancelado' && p.status !== 'Cancelada').reduce((acc, p) => acc + (Number(p.valor_total) || 0), 0);
 
                             const contasFiltradas = contasPagar.filter(c => {
                                 let match = true;
@@ -178,8 +179,8 @@ export default function FinanceiroTab() {
                             const anoAtualStr = new Date().getFullYear().toString();
                             const anoAnteriorStr = (new Date().getFullYear() - 1).toString();
                             
-                            const totalAnoAtual = pedidos.filter(p => p.data_pedido && p.data_pedido.startsWith(anoAtualStr)).reduce((a, b) => a + (Number(b.valor_total)||0), 0);
-                            const totalAnoAnterior = pedidos.filter(p => p.data_pedido && p.data_pedido.startsWith(anoAnteriorStr)).reduce((a, b) => a + (Number(b.valor_total)||0), 0);
+                            const totalAnoAtual = pedidos.filter(p => p.data_pedido && p.data_pedido.startsWith(anoAtualStr) && p.status !== 'Cancelado' && p.status !== 'Cancelada').reduce((a, b) => a + (Number(b.valor_total)||0), 0);
+                            const totalAnoAnterior = pedidos.filter(p => p.data_pedido && p.data_pedido.startsWith(anoAnteriorStr) && p.status !== 'Cancelado' && p.status !== 'Cancelada').reduce((a, b) => a + (Number(b.valor_total)||0), 0);
                             const crescimentoPercentual = totalAnoAnterior > 0 ? ((totalAnoAtual - totalAnoAnterior) / totalAnoAnterior) * 100 : (totalAnoAtual > 0 ? 100 : 0);
 
                             const agrupadoPorDia = pedidosFin.reduce((acc, p) => {

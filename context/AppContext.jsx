@@ -41,7 +41,7 @@ export const AppProvider = ({ children }) => {
     const [buscaCadClientes, setBuscaCadClientes] = useState('');
     const [buscaCadProdutos, setBuscaCadProdutos] = useState('');
     const [modalFornecedorAberto, setModalFornecedorAberto] = useState(false);
-    const [novoFornecedor, setNovoFornecedor] = useState({ id: null, nome: '', contato: '', observacoes: '' });
+    const [novoFornecedor, setNovoFornecedor] = useState({ id: null, nome: '', contato: '', observacoes: '', tipo: 'Produção' });
     const [paginaClientes, setPaginaClientes] = useState(1);
     const [letraFiltroCliente, setLetraFiltroCliente] = useState('');
     
@@ -405,7 +405,7 @@ export const AppProvider = ({ children }) => {
         const { data: listaContas, error: erroContas } = await supabase.from('contas_pagar').select('*').order('vencimento', { ascending: true });
         if (!erroContas && listaContas) setContasPagar(listaContas);
 
-        const { data: listaFornecedores } = await supabase.from('fornecedores').select('*').order('nome', { ascending: true });
+        const { data: listaFornecedores } = await supabase.from('fornecedores').select('*').order('id', { ascending: true });
         if (listaFornecedores) setFornecedores(listaFornecedores);
 
         const { data: listaOrcF } = await supabase.from('orcamentos_formalizados').select('*').order('created_at', { ascending: false });

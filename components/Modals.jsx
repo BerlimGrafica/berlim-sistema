@@ -147,7 +147,7 @@ export default function Modals() {
                                             <div className="relative col-span-2">
                                                 <span className="absolute left-3 top-2.5 text-[11px] text-gray-400 font-medium">Local:</span>
                                                 <select value={itemAtual.local_producao} disabled={isModalTrancado} onChange={e => setItemAtual({...itemAtual, local_producao: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded pl-[52px] pr-8 py-2 text-[11px] outline-none focus:border-brand transition dark:text-[#EDEDED] font-medium appearance-none disabled:opacity-50">
-                                                    {(fornecedores.length > 0 ? fornecedores.map(f => f.nome) : ['Berlim']).map(l => <option key={l} value={l}>{l}</option>)}
+                                                    {(fornecedores.length > 0 ? fornecedores.filter(f => !f.tipo || f.tipo === 'Produção').map(f => f.nome) : ['Berlim']).map(l => <option key={l} value={l}>{l}</option>)}
                                                 </select>
                                                 <Icon name="chevron-down" className="absolute right-3 top-2.5 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
                                             </div>
@@ -432,7 +432,7 @@ export default function Modals() {
                                             <div className="relative col-span-2">
                                                 <span className="absolute left-3 top-2.5 text-[11px] text-gray-400 font-medium">Local:</span>
                                                 <select value={itemAtual.local_producao} onChange={e => setItemAtual({...itemAtual, local_producao: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded pl-[52px] pr-8 py-2 text-[11px] outline-none focus:border-brand transition dark:text-[#EDEDED] font-medium appearance-none">
-                                                    {(fornecedores.length > 0 ? fornecedores.map(f => f.nome) : ['Berlim']).map(l => <option key={l} value={l}>{l}</option>)}
+                                                    {(fornecedores.length > 0 ? fornecedores.filter(f => !f.tipo || f.tipo === 'Produção').map(f => f.nome) : ['Berlim']).map(l => <option key={l} value={l}>{l}</option>)}
                                                 </select>
                                                 <Icon name="chevron-down" className="absolute right-3 top-2.5 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
                                             </div>
@@ -492,6 +492,14 @@ export default function Modals() {
                                 <input type="text" required value={novoFornecedor.nome} onChange={e => setNovoFornecedor({...novoFornecedor, nome: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-[12px] outline-none focus:border-brand transition dark:text-[#EDEDED] font-medium" placeholder="Ex: Gráfica XYZ, Futura..." />
                             </div>
                             <div>
+                                <label className="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-1.5 tracking-wide uppercase">Tipo de Fornecedor</label>
+                                <select value={novoFornecedor.tipo || 'Produção'} onChange={e => setNovoFornecedor({...novoFornecedor, tipo: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-[12px] outline-none focus:border-brand transition dark:text-[#EDEDED] font-medium appearance-none cursor-pointer">
+                                    <option value="Material">Material</option>
+                                    <option value="Produção">Produção</option>
+                                    <option value="Manutenção">Manutenção</option>
+                                </select>
+                            </div>
+                            <div>
                                 <label className="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-1.5 tracking-wide uppercase">Contato (Telefone, E-mail)</label>
                                 <input type="text" value={novoFornecedor.contato} onChange={e => setNovoFornecedor({...novoFornecedor, contato: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-[12px] outline-none focus:border-brand transition dark:text-[#EDEDED] font-medium" placeholder="Ex: (11) 9999-9999" />
                             </div>
@@ -504,8 +512,8 @@ export default function Modals() {
                             <button type="button" onClick={() => setModalFornecedorAberto(false)} className="px-4 py-2 text-[12px] font-semibold text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-darkHover rounded transition">Cancelar</button>
                             <button type="button" onClick={async () => {
                                 if(!novoFornecedor.nome) return alert('Nome é obrigatório');
-                                if (novoFornecedor.id) await supabase.from('fornecedores').update({ nome: novoFornecedor.nome, contato: novoFornecedor.contato, observacoes: novoFornecedor.observacoes }).eq('id', novoFornecedor.id);
-                                else await supabase.from('fornecedores').insert([{ nome: novoFornecedor.nome, contato: novoFornecedor.contato, observacoes: novoFornecedor.observacoes }]);
+                                if (novoFornecedor.id) await supabase.from('fornecedores').update({ nome: novoFornecedor.nome, contato: novoFornecedor.contato, observacoes: novoFornecedor.observacoes, tipo: novoFornecedor.tipo }).eq('id', novoFornecedor.id);
+                                else await supabase.from('fornecedores').insert([{ nome: novoFornecedor.nome, contato: novoFornecedor.contato, observacoes: novoFornecedor.observacoes, tipo: novoFornecedor.tipo || 'Produção' }]);
                                 carregarDados();
                                 setModalFornecedorAberto(false);
                             }} className="bg-brand hover:bg-brandHover text-white px-5 py-2 text-[12px] font-semibold rounded shadow-sm transition">Salvar</button>
