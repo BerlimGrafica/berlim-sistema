@@ -128,7 +128,7 @@ export const AppProvider = ({ children }) => {
     const [produtoDropdownAberto, setProdutoDropdownAberto] = useState(false);
 
     const [pagamentosPedido, setPagamentosPedido] = useState([]);
-    const [novoPagamento, setNovoPagamento] = useState({ valor: '', forma: 'PIX', parcelas: 1, instituicao: 'Itaú', vencimento_boleto: '' });
+    const [novoPagamento, setNovoPagamento] = useState({ valor: '', forma: 'PIX', parcelas: 1, instituicao: 'Itaú' });
 
     const [novoPedido, setNovoPedido] = useState({ 
         cliente: '', servico: '', valor_total: '', 
@@ -163,7 +163,25 @@ export const AppProvider = ({ children }) => {
                         const isAdm = usuario?.nivel === 'Administrador';
                         const isFin = usuario?.nivel === 'Financeiro';
                         const isOpe = usuario?.nivel === 'Produção/Atendimento';
-                        
+
+                        const extrairBoletos = (servico) => {
+                            const str = servico && servico.split('\n\n[PAGAMENTOS]\n')[1];
+                            if (!str) return [];
+                            try { return JSON.parse(str).filter(pg => pg.forma === 'Boleto'); } catch (e) { return []; }
+                        };
+
+                        // Alerta: Novo boleto registrado na O.S. (para Financeiro)
+                        if (isFin) {
+                            const boletosAntes = extrairBoletos(payload.old?.servico);
+                            const boletosDepois = extrairBoletos(payload.new?.servico);
+                            if (boletosDepois.length > 0 && boletosAntes.length === 0) {
+                                setAlertasNaoLidos(prev => {
+                                    if (prev.some(a => a.os_id === payload.new.id && a.tipo === 'boleto_novo')) return prev;
+                                    return [...prev, { id: Date.now() + 6, msg: `Novo boleto registrado na O.S. #${payload.new.id}`, os_id: payload.new.id, tipo: 'boleto_novo' }];
+                                });
+                            }
+                        }
+
                         // Lógica de alerta
                         if (payload.eventType === 'UPDATE') {
                             const oldResponsavel = payload.old?.responsavel || '';
@@ -317,72 +335,73 @@ export const AppProvider = ({ children }) => {
 
             setPedidos(todosPedidos);
 
-            if (usuario?.nivel === 'Administrador') {
+            if (usuario?.nivel === 'Administrador' || usuario?.nivel === 'Financeiro') {
                 const hoje = new Date();
                 const amanha = new Date(hoje);
                 amanha.setDate(amanha.getDate() + 1);
                 const amanhaStr = amanha.getFullYear() + '-' + String(amanha.getMonth() + 1).padStart(2, '0') + '-' + String(amanha.getDate()).padStart(2, '0');
 
                 const statusIgnorados = ['Concluída', 'Finalizada', 'Cancelada', 'Abandonada'];
-                
+
                 const hojeStr = hoje.getFullYear() + '-' + String(hoje.getMonth() + 1).padStart(2, '0') + '-' + String(hoje.getDate()).padStart(2, '0');
-                
-                const pedidosFuturaAlertar = todosPedidos.filter(p => p.local_producao && p.local_producao.toLowerCase().includes('futura') && !statusIgnorados.includes(p.status) && p.prazo && p.prazo <= amanhaStr);
-                
-                if (pedidosFuturaAlertar.length > 0) {
-                    setAlertasNaoLidos(prev => {
-                        let novosAlertas = [...prev];
-                        pedidosFuturaAlertar.forEach(p => {
-                            if (!novosAlertas.some(a => a.os_id === p.id && a.tipo === 'alerta_futura') && !alertasFuturaDisparados.current.has(p.id)) {
-                                let msg = `Prazo da Futura termina amanhã (O.S. #${p.id}). Retirar!`;
-                                if (p.prazo === hojeStr) msg = `Prazo da Futura é HOJE (O.S. #${p.id}). Retirar o quanto antes!`;
-                                else if (p.prazo < hojeStr) msg = `Prazo da Futura VENCIDO (O.S. #${p.id}). Verifique imediatamente!`;
-                                
-                                novosAlertas.push({ id: Date.now() + Math.random(), msg, os_id: p.id, tipo: 'alerta_futura' });
-                                alertasFuturaDisparados.current.add(p.id);
-                            }
-                        });
-                        return novosAlertas;
-                    });
-                }
-                
-                const pedidosComBoleto = todosPedidos.map(p => {
-                    const pagamentosStr = p.servico && p.servico.split('\n\n[PAGAMENTOS]\n')[1];
-                    let pagamentos = [];
-                    if (pagamentosStr) {
-                        try { pagamentos = JSON.parse(pagamentosStr); } catch(e) {}
-                    }
-                    return { ...p, pagamentos };
-                }).filter(p => !statusIgnorados.includes(p.status) && p.pagamentos.some(pag => pag.forma === 'Boleto'));
-                if (pedidosComBoleto.length > 0) {
-                    let novosAlertasBoleto = [];
-                    pedidosComBoleto.forEach(p => {
-                        p.pagamentos.forEach(pag => {
-                            if (pag.forma === 'Boleto' && pag.vencimento_boleto) {
-                                if (pag.vencimento_boleto === hojeStr || pag.vencimento_boleto === amanhaStr) {
-                                    const alertId = `${p.id}_${pag.vencimento_boleto}`;
-                                    if (!alertasBoletoDisparados.current.has(alertId)) {
-                                        let msg = `O boleto da O.S. #${p.id} vence amanhã!`;
-                                        if (pag.vencimento_boleto === hojeStr) msg = `O boleto da O.S. #${p.id} vence HOJE!`;
-                                        
-                                        novosAlertasBoleto.push({ id: Date.now() + Math.random(), msg, os_id: p.id, tipo: 'alerta_boleto' });
-                                        alertasBoletoDisparados.current.add(alertId);
-                                    }
-                                }
-                            }
-                        });
-                    });
-                    
-                    if (novosAlertasBoleto.length > 0) {
+
+                if (usuario?.nivel === 'Administrador') {
+                    const pedidosFuturaAlertar = todosPedidos.filter(p => p.local_producao && p.local_producao.toLowerCase().includes('futura') && !statusIgnorados.includes(p.status) && p.prazo && p.prazo <= amanhaStr);
+
+                    if (pedidosFuturaAlertar.length > 0) {
                         setAlertasNaoLidos(prev => {
-                            let mergeAlertas = [...prev];
-                            novosAlertasBoleto.forEach(n => {
-                                if (!mergeAlertas.some(a => a.msg === n.msg && a.os_id === n.os_id)) {
-                                    mergeAlertas.push(n);
+                            let novosAlertas = [...prev];
+                            pedidosFuturaAlertar.forEach(p => {
+                                if (!novosAlertas.some(a => a.os_id === p.id && a.tipo === 'alerta_futura') && !alertasFuturaDisparados.current.has(p.id)) {
+                                    let msg = `Prazo da Futura termina amanhã (O.S. #${p.id}). Retirar!`;
+                                    if (p.prazo === hojeStr) msg = `Prazo da Futura é HOJE (O.S. #${p.id}). Retirar o quanto antes!`;
+                                    else if (p.prazo < hojeStr) msg = `Prazo da Futura VENCIDO (O.S. #${p.id}). Verifique imediatamente!`;
+
+                                    novosAlertas.push({ id: Date.now() + Math.random(), msg, os_id: p.id, tipo: 'alerta_futura' });
+                                    alertasFuturaDisparados.current.add(p.id);
                                 }
                             });
-                            return mergeAlertas;
+                            return novosAlertas;
                         });
+                    }
+                }
+
+                if (usuario?.nivel === 'Financeiro') {
+                    const pedidosComBoletoAberto = todosPedidos.map(p => {
+                        const pagamentosStr = p.servico && p.servico.split('\n\n[PAGAMENTOS]\n')[1];
+                        let pagamentos = [];
+                        if (pagamentosStr) {
+                            try { pagamentos = JSON.parse(pagamentosStr); } catch(e) {}
+                        }
+                        return { ...p, pagamentos };
+                    }).filter(p => !statusIgnorados.includes(p.status) && p.prazo_pagamento && p.pagamentos.some(pag => pag.forma === 'Boleto' && !pag.boleto_concluido));
+
+                    if (pedidosComBoletoAberto.length > 0) {
+                        let novosAlertasBoleto = [];
+                        pedidosComBoletoAberto.forEach(p => {
+                            if (p.prazo_pagamento === hojeStr || p.prazo_pagamento === amanhaStr) {
+                                const alertId = `${p.id}_${p.prazo_pagamento}`;
+                                if (!alertasBoletoDisparados.current.has(alertId)) {
+                                    let msg = `O boleto da O.S. #${p.id} vence amanhã!`;
+                                    if (p.prazo_pagamento === hojeStr) msg = `O boleto da O.S. #${p.id} vence HOJE!`;
+
+                                    novosAlertasBoleto.push({ id: Date.now() + Math.random(), msg, os_id: p.id, tipo: 'alerta_boleto' });
+                                    alertasBoletoDisparados.current.add(alertId);
+                                }
+                            }
+                        });
+
+                        if (novosAlertasBoleto.length > 0) {
+                            setAlertasNaoLidos(prev => {
+                                let mergeAlertas = [...prev];
+                                novosAlertasBoleto.forEach(n => {
+                                    if (!mergeAlertas.some(a => a.msg === n.msg && a.os_id === n.os_id)) {
+                                        mergeAlertas.push(n);
+                                    }
+                                });
+                                return mergeAlertas;
+                            });
+                        }
                     }
                 }
             }
@@ -596,7 +615,27 @@ export const AppProvider = ({ children }) => {
         const { error } = await supabase.from('pedidos').update(payload).eq('id', id);
         if (error) {
             alert('Erro ao atualizar: ' + error.message);
-            carregarDados(); 
+            carregarDados();
+        }
+    }
+
+    async function concluirBoletoContasReceber(id) {
+        const pedido = pedidos.find(p => p.id === id);
+        if (!pedido || !pedido.servico) return;
+
+        const partes = pedido.servico.split('\n\n[PAGAMENTOS]\n');
+        let pagamentos = [];
+        try { pagamentos = JSON.parse(partes[1] || '[]'); } catch (e) { pagamentos = []; }
+
+        const pagamentosAtualizados = pagamentos.map(pag => pag.forma === 'Boleto' ? { ...pag, boleto_concluido: true } : pag);
+        const novoServico = partes[0] + '\n\n[PAGAMENTOS]\n' + JSON.stringify(pagamentosAtualizados);
+
+        setPedidos(pedidos.map(p => p.id === id ? { ...p, servico: novoServico } : p));
+
+        const { error } = await supabase.from('pedidos').update({ servico: novoServico }).eq('id', id);
+        if (error) {
+            alert('Erro ao concluir boleto: ' + error.message);
+            carregarDados();
         }
     }
 
@@ -608,7 +647,7 @@ export const AppProvider = ({ children }) => {
         setBuscaProduto('');
         setItensPedido([]); 
         setPagamentosPedido([]);
-        setNovoPagamento({ valor: '', forma: 'PIX', parcelas: 1, instituicao: 'Itaú', vencimento_boleto: '' });
+        setNovoPagamento({ valor: '', forma: 'PIX', parcelas: 1, instituicao: 'Itaú' });
         setItemAtual({ nome: '', descricao: '', valor: '', desconto: '', local_producao: 'Berlim', id_produto: null });
         setNovoPedido({ 
             cliente: '', servico: '', valor_total: '', 
@@ -1632,6 +1671,7 @@ export const AppProvider = ({ children }) => {
         salvarLink, excluirLink,
         carregarDados,
         atualizarCampoInline,
+        concluirBoletoContasReceber,
         fecharModalOS,
         abrirEdicao,
         abrirEdicaoProduto,

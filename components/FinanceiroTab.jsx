@@ -6,7 +6,7 @@ import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS, RESPONSAVEIS, obterCorStatus, 
 
 
 export default function FinanceiroTab() {
-    const { setAbaFinanceiro, abaFinanceiro, notasFiscais, usuario, filtroNotas, dataFiltroFinInicio, setDataFiltroFinInicio, dataFiltroFinFim, setDataFiltroFinFim, pedidos, setNovaConta, setModalContaAberto, setModalEmpresaFaturamentoAberto, buscaNotaFiscal, setBuscaNotaFiscal, setPaginaNotasFiscais, setFiltroNotas, renderBarHorizontal, produtos, produtosSelecionadosGrafico, setProdutosSelecionadosGrafico, contasPagar, empresasFaturamento, setNovaEmpresaFaturamento, notasFiscaisPaginadas, setNotaFiscalEmEdicao, setModalNotaFiscalAberto, totalPaginasNotasFiscais, paginaNotasFiscais, excluirConta, abrirEdicao, excluirEmpresaFaturamento, concluirNotaFiscal, atualizarCampoInline } = useAppContext();
+    const { setAbaFinanceiro, abaFinanceiro, notasFiscais, usuario, filtroNotas, dataFiltroFinInicio, setDataFiltroFinInicio, dataFiltroFinFim, setDataFiltroFinFim, pedidos, setNovaConta, setModalContaAberto, setModalEmpresaFaturamentoAberto, buscaNotaFiscal, setBuscaNotaFiscal, setPaginaNotasFiscais, setFiltroNotas, renderBarHorizontal, produtos, produtosSelecionadosGrafico, setProdutosSelecionadosGrafico, contasPagar, empresasFaturamento, setNovaEmpresaFaturamento, notasFiscaisPaginadas, setNotaFiscalEmEdicao, setModalNotaFiscalAberto, totalPaginasNotasFiscais, paginaNotasFiscais, excluirConta, abrirEdicao, excluirEmpresaFaturamento, concluirNotaFiscal, atualizarCampoInline, concluirBoletoContasReceber } = useAppContext();
     const [mostrarContasPagas, setMostrarContasPagas] = useState(false);
 
     return (
@@ -738,12 +738,18 @@ export default function FinanceiroTab() {
                                                                 <th className="px-6 py-4 text-center">Data Pedido</th>
                                                                 <th className="px-6 py-4 text-center">Prazo</th>
                                                                 <th className="px-6 py-4 text-center">Status</th>
-                                                                <th className="px-6 py-4">Status Pagamento</th>
+                                                                <th className="px-6 py-4 text-center">Status Pagamento</th>
                                                                 <th className="px-6 py-4 text-right">Valor Total</th>
+                                                                <th className="px-6 py-4 text-center">Ação</th>
                                                             </tr>
                                                         </thead>
                                                         <tbody className="divide-y divide-gray-100 dark:divide-darkBorder">
                                                             {(() => {
+                                                                const hojeStr = obterDataAtual();
+                                                                const amanha = new Date();
+                                                                amanha.setDate(amanha.getDate() + 1);
+                                                                const amanhaStr = amanha.getFullYear() + '-' + String(amanha.getMonth() + 1).padStart(2, '0') + '-' + String(amanha.getDate()).padStart(2, '0');
+
                                                                 const pedidosBoleto = pedidos.map(p => {
                                                                     const pagamentosStr = p.servico && p.servico.split('\n\n[PAGAMENTOS]\n')[1];
                                                                     let pagamentos = [];
@@ -751,14 +757,20 @@ export default function FinanceiroTab() {
                                                                         try { pagamentos = JSON.parse(pagamentosStr); } catch(e) {}
                                                                     }
                                                                     return { ...p, pagamentos };
-                                                                }).filter(p => p.pagamentos.some(pag => pag.forma === 'Boleto'));
+                                                                }).filter(p => p.pagamentos.some(pag => pag.forma === 'Boleto' && !pag.boleto_concluido));
                                                                 if (pedidosBoleto.length === 0) return (
-                                                                    <tr><td colSpan="7" className="px-4 py-12 text-center text-[13px] text-gray-400">Nenhum pedido com boleto encontrado.</td></tr>
+                                                                    <tr><td colSpan="8" className="px-4 py-12 text-center text-[13px] text-gray-400">Nenhum pedido com boleto encontrado.</td></tr>
                                                                 );
                                                                 return pedidosBoleto.map(p => {
-                                                                    const totalPago = p.pagamentos.reduce((acc, pg) => acc + (parseFloat(String(pg.valor).replace(/\./g, '').replace(',', '.')) || 0), 0);
-                                                                    const totalGeral = parseFloat(String(p.valor_total).replace(/\./g, '').replace(',', '.')) || 0;
-                                                                    const pagoPercent = totalGeral > 0 ? (totalPago / totalGeral) * 100 : 0;
+                                                                    let statusPagamento = 'Aberto';
+                                                                    let statusPagamentoCor = 'bg-gray-100 text-gray-600 border-gray-300 dark:bg-darkElevated dark:text-gray-300 dark:border-darkBorder';
+                                                                    if (p.prazo_pagamento === hojeStr || p.prazo_pagamento < hojeStr) {
+                                                                        statusPagamento = 'Vencido';
+                                                                        statusPagamentoCor = 'bg-red-50 text-red-600 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800';
+                                                                    } else if (p.prazo_pagamento === amanhaStr) {
+                                                                        statusPagamento = 'Vence amanhã';
+                                                                        statusPagamentoCor = 'bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800';
+                                                                    }
                                                                     return (
                                                                         <tr key={p.id} onClick={() => abrirEdicao(p)} className="hover:bg-gray-50 dark:hover:bg-darkHover/50 transition-colors cursor-pointer group">
                                                                             <td className="px-6 py-4">
@@ -779,13 +791,26 @@ export default function FinanceiroTab() {
                                                                                     {p.status}
                                                                                 </span>
                                                                             </td>
-                                                                            <td className="px-6 py-4 text-[13px]">
-                                                                                <div className="flex items-center gap-2">
-                                                                                    <div className="w-16 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden shrink-0"><div className="h-full bg-emerald-500" style={{ width: `${Math.min(100, pagoPercent)}%` }}></div></div>
-                                                                                    <span className="text-[11px] font-bold text-gray-500 dark:text-gray-400">{totalPago >= totalGeral ? 'Pago' : `${Math.floor(pagoPercent)}%`}</span>
-                                                                                </div>
+                                                                            <td className="px-6 py-4 text-center">
+                                                                                <span className={`whitespace-nowrap px-2.5 py-1 text-[11px] font-semibold rounded border ${statusPagamentoCor}`}>
+                                                                                    {statusPagamento}
+                                                                                </span>
                                                                             </td>
                                                                             <td className="px-6 py-4 text-[13px] font-bold text-gray-900 dark:text-white text-right whitespace-nowrap">R$ {p.valor_total}</td>
+                                                                            <td className="px-6 py-4 text-center" onClick={(e) => e.stopPropagation()}>
+                                                                                <button
+                                                                                    type="button"
+                                                                                    title="Marcar boleto como concluído e remover desta lista"
+                                                                                    onClick={() => {
+                                                                                        if (window.confirm(`Marcar o boleto da O.S. #${p.id} como concluído? Ele sairá desta lista.`)) {
+                                                                                            concluirBoletoContasReceber(p.id);
+                                                                                        }
+                                                                                    }}
+                                                                                    className="p-2 rounded text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition"
+                                                                                >
+                                                                                    <Icon name="check" className="w-4 h-4" />
+                                                                                </button>
+                                                                            </td>
                                                                         </tr>
                                                                     );
                                                                 });

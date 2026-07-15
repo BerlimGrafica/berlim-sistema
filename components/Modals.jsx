@@ -229,11 +229,6 @@ export default function Modals() {
                                                             </select>
                                                         </div>
                                                     )}
-                                                    {novoPagamento.forma === 'Boleto' && (
-                                                        <div>
-                                                            <input type="date" value={novoPagamento.vencimento_boleto} onChange={e => setNovoPagamento({...novoPagamento, vencimento_boleto: e.target.value})} className="w-full bg-white dark:bg-darkCard border border-gray-300 dark:border-darkBorder rounded px-2 py-1.5 text-[11px] outline-none text-gray-600 dark:text-gray-300" />
-                                                        </div>
-                                                    )}
                                                     <button type="button" onClick={() => {
                                                         if (!novoPagamento.valor) return;
                                                         setPagamentosPedido([...pagamentosPedido, { ...novoPagamento, data: obterDataAtual() }]);
@@ -243,7 +238,7 @@ export default function Modals() {
                                                         const totalOSStr = parseFloat(String(novoPedido.valor_total).replace(/\./g, '').replace(',', '.')) || 0;
                                                         const saldoRestante = totalOSStr - novoTotalPago;
                                                         
-                                                        setNovoPagamento({ valor: saldoRestante > 0 ? formatarMoeda((saldoRestante * 100).toFixed(0).toString()) : '', forma: 'PIX', parcelas: 1, instituicao: 'Itaú', vencimento_boleto: '' });
+                                                        setNovoPagamento({ valor: saldoRestante > 0 ? formatarMoeda((saldoRestante * 100).toFixed(0).toString()) : '', forma: 'PIX', parcelas: 1, instituicao: 'Itaú' });
                                                     }} className="w-full bg-brand hover:bg-brandHover text-white py-1.5 rounded text-[11px] font-semibold transition">Registrar Pagamento</button>
                                                 </div>
                                             )}
