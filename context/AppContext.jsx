@@ -1304,6 +1304,10 @@ export const AppProvider = ({ children }) => {
     };
     const salvarLink = async () => {
         let payload = { ...novoLink };
+        if (payload.valor && typeof payload.valor === 'string') {
+            // Remove pontos de milhar e substitui vírgula decimal por ponto
+            payload.valor = parseFloat(payload.valor.replace(/\./g, '').replace(',', '.'));
+        }
         if (!payload.id) {
             delete payload.id;
             payload.criado_por = usuario?.nome || '';

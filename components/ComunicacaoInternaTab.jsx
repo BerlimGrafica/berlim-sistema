@@ -2,6 +2,7 @@
 import React from 'react';
 import { useAppContext } from '@/context/AppContext';
 import Icon from '@/components/Icon';
+import { formatarDataExibicao } from '@/lib/utils';
 
 export default function ComunicacaoInternaTab() {
     const { 
@@ -127,6 +128,11 @@ export default function ComunicacaoInternaTab() {
                                     </div>
                                 </div>
                                 <p className="text-[13px] text-gray-600 dark:text-[#A1A1AA]">{t.descricao}</p>
+                                {t.prazo && (
+                                    <div className="flex items-center gap-1.5 text-[11px] font-medium text-brand mt-1">
+                                        <Icon name="calendar" className="w-3.5 h-3.5" /> Prazo: {formatarDataExibicao(t.prazo)}
+                                    </div>
+                                )}
                                 <div className="mt-auto pt-3 border-t border-gray-100 dark:border-darkBorder flex justify-between items-center">
                                     <div className="flex items-center gap-1.5 text-[11px] font-semibold text-gray-500">
                                         <Icon name="user" className="w-3.5 h-3.5" /> {t.responsavel || 'Sem responsável'}
