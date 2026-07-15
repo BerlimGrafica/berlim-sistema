@@ -19,11 +19,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR" className={`${montserrat.variable} antialiased`}>
+    <html lang="pt-BR" className={`${montserrat.className} antialiased`}>
       <head>
         <link rel="icon" href="https://www.google.com/s2/favicons?domain=berlimgraficarapida.com.br&sz=128" type="image/png" />
       </head>
-      <body className="bg-[#EDEFF0] dark:bg-darkBg text-[#454545] text-[13px] dark:text-[#EDEDED] min-h-screen selection:bg-brand selection:text-white tracking-tight font-sans">
+      <body className="bg-[#EDEFF0] dark:bg-darkBg text-[#454545] text-[13px] dark:text-[#EDEDED] min-h-screen selection:bg-brand selection:text-white tracking-tight">
         {children}
       </body>
     </html>

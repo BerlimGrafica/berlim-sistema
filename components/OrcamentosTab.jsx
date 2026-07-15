@@ -163,7 +163,7 @@ export default function OrcamentosTab() {
                                             </div>
                                             {isAdmin && (
                                                 <div className="flex gap-1 shrink-0">
-                                                    <button onClick={() => { setNovoOrcamentoPre(orc); setModalOrcamentoPreAberto(true); }} className="p-1 text-gray-400 hover:text-brand transition-colors"><Icon name="edit-2" className="w-4 h-4" /></button>
+                                                    <button onClick={() => { setNovoOrcamentoPre(orc); setModalOrcamentoPreAberto(true); }} className="p-1 text-gray-400 hover:text-brand transition-colors"><Icon name="edit-3" className="w-4 h-4" /></button>
                                                     <button onClick={() => excluirOrcamentoPre(orc.id)} className="p-1 text-gray-400 hover:text-red-500 transition-colors"><Icon name="trash-2" className="w-4 h-4" /></button>
                                                 </div>
                                             )}
