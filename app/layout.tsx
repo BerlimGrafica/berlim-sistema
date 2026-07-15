@@ -23,7 +23,7 @@ export default function RootLayout({
       <head>
         <link rel="icon" href="https://www.google.com/s2/favicons?domain=berlimgraficarapida.com.br&sz=128" type="image/png" />
       </head>
-      <body className="bg-[#EDEFF0] dark:bg-darkBg text-[#454545] text-[13px] dark:text-[#EDEDED] min-h-screen selection:bg-brand selection:text-white tracking-tight">
+      <body className="bg-[#EDEFF0] dark:bg-darkBg text-[#454545] text-[13px] dark:text-[#EDEDED] min-h-screen selection:bg-brand selection:text-white tracking-tight font-sans">
         {children}
       </body>
     </html>
