@@ -1371,17 +1371,17 @@ export const AppProvider = ({ children }) => {
         const channel = supabase.channel('system-alerts')
             .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'tarefas_internas' }, (payload) => {
                 if (payload.new && payload.new.responsavel && payload.new.responsavel.includes(usuario?.nome)) {
-                    alert(`Você recebeu uma nova tarefa: ${payload.new.titulo}`);
+                    setAlertasNaoLidos(prev => [...prev, { id: Date.now() + Math.random(), msg: `Você recebeu uma nova tarefa: ${payload.new.titulo}`, tipo: 'nova_tarefa' }]);
                 }
             })
             .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'requisicoes_material' }, (payload) => {
                 if (usuario?.nivel === 'Administrador') {
-                    alert(`Nova requisição de material recebida!\nItem(s): ${payload.new.itens}`);
+                    setAlertasNaoLidos(prev => [...prev, { id: Date.now() + Math.random(), msg: `Nova requisição de material!\nItem(s): ${payload.new.itens}`, tipo: 'nova_requisicao' }]);
                 }
             })
             .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'links_pagamento' }, (payload) => {
                 if (usuario?.nivel === 'Administrador') {
-                    alert(`Novo link de pagamento registrado para: ${payload.new.cliente}`);
+                    setAlertasNaoLidos(prev => [...prev, { id: Date.now() + Math.random(), msg: `Novo link de pagamento para: ${payload.new.cliente}`, tipo: 'novo_link' }]);
                 }
             })
             // Atualiza os dados da tela em tempo real para qualquer alteração no banco
