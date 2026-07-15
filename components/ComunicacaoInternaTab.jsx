@@ -119,7 +119,12 @@ export default function ComunicacaoInternaTab() {
                         {tarefasVisiveis.length > 0 ? tarefasVisiveis.map(t => (
                             <div key={t.id} onClick={() => { setNovaTarefa(t); setModalTarefaAberto(true); }} className={`bg-white dark:bg-darkCard rounded-xl shadow-sm border p-5 flex flex-col gap-3 cursor-pointer hover:border-brand/50 transition-colors ${t.status === 'Concluída' ? 'opacity-60 border-gray-200 dark:border-darkBorder' : 'border-gray-200 dark:border-darkBorder'}`}>
                                 <div className="flex justify-between items-start">
-                                    <h3 className={`font-bold ${t.status === 'Concluída' ? 'line-through text-gray-500' : 'text-gray-900 dark:text-white'}`}>{t.titulo}</h3>
+                                    <div>
+                                        <h3 className={`font-bold ${t.status === 'Concluída' ? 'line-through text-gray-500' : 'text-gray-900 dark:text-white'}`}>{t.titulo}</h3>
+                                        {t.prazo && (
+                                            <p className="text-[11px] font-semibold text-brand mt-1">{formatarDataExibicao(t.prazo)}</p>
+                                        )}
+                                    </div>
                                     <div className="flex gap-1">
                                         {t.status !== 'Concluída' && (
                                             <button onClick={(e) => { e.stopPropagation(); concluirTarefa(t.id); }} className="p-1 text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded" title="Concluir"><Icon name="check-circle" className="w-4 h-4" /></button>
@@ -128,11 +133,7 @@ export default function ComunicacaoInternaTab() {
                                     </div>
                                 </div>
                                 <p className="text-[13px] text-gray-600 dark:text-[#A1A1AA]">{t.descricao}</p>
-                                {t.prazo && (
-                                    <div className="flex items-center gap-1.5 text-[11px] font-medium text-brand mt-1">
-                                        <Icon name="calendar" className="w-3.5 h-3.5" /> Prazo: {formatarDataExibicao(t.prazo)}
-                                    </div>
-                                )}
+
                                 <div className="mt-auto pt-3 border-t border-gray-100 dark:border-darkBorder flex justify-between items-center">
                                     <div className="flex items-center gap-1.5 text-[11px] font-semibold text-gray-500">
                                         <Icon name="user" className="w-3.5 h-3.5" /> {t.responsavel || 'Sem responsável'}
