@@ -1015,7 +1015,7 @@ export const AppProvider = ({ children }) => {
     async function salvarEmpresaFaturamento(e) {
         e.preventDefault();
         setSalvandoEmpresa(true);
-        const payload = { nome: novaEmpresaFaturamento.nome, cnpj: novaEmpresaFaturamento.cnpj, status: novaEmpresaFaturamento.status };
+        const payload = { nome: novaEmpresaFaturamento.nome, cnpj: novaEmpresaFaturamento.cnpj, status: novaEmpresaFaturamento.status, observacoes: novaEmpresaFaturamento.observacoes };
         if (novaEmpresaFaturamento.id) {
             const { data, error } = await supabase.from('empresas_faturamento').update(payload).eq('id', novaEmpresaFaturamento.id).select();
             if (!error && data) setEmpresasFaturamento(empresasFaturamento.map(x => x.id === data[0].id ? data[0] : x));

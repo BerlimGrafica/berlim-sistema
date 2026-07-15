@@ -558,6 +558,10 @@ export default function Modals() {
                                         <option value="Em Análise">Em Análise</option>
                                     </select>
                                 </div>
+                                <div>
+                                    <label className="block text-[11px] font-semibold text-gray-600 dark:text-[#888888] mb-1.5 uppercase tracking-wider">Observações</label>
+                                    <textarea value={novaEmpresaFaturamento.observacoes || ''} onChange={e => setNovaEmpresaFaturamento({...novaEmpresaFaturamento, observacoes: e.target.value})} className="w-full bg-white dark:bg-darkHover border border-gray-200 dark:border-darkBorder rounded-lg px-3 py-2.5 text-[13px] text-gray-800 dark:text-[#EDEDED] outline-none focus:border-brand dark:focus:border-brand focus:ring-1 focus:ring-brand transition-shadow" placeholder="Observações opcionais" rows="2"></textarea>
+                                </div>
                             </div>
                             <div className="mt-8 flex justify-end gap-3">
                                 <button type="button" onClick={() => setModalEmpresaFaturamentoAberto(false)} className="px-4 py-2 rounded-lg text-[13px] font-semibold text-gray-600 dark:text-[#888888] hover:bg-gray-100 dark:hover:bg-darkHover transition">Cancelar</button>
