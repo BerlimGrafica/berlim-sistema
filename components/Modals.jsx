@@ -493,11 +493,14 @@ export default function Modals() {
                             </div>
                             <div>
                                 <label className="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-1.5 tracking-wide uppercase">Tipo de Fornecedor</label>
-                                <select value={novoFornecedor.tipo || 'Produção'} onChange={e => setNovoFornecedor({...novoFornecedor, tipo: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-[12px] outline-none focus:border-brand transition dark:text-[#EDEDED] font-medium appearance-none cursor-pointer">
-                                    <option value="Material">Material</option>
-                                    <option value="Produção">Produção</option>
-                                    <option value="Manutenção">Manutenção</option>
-                                </select>
+                                <div className="relative">
+                                    <select value={novoFornecedor.tipo || 'Produção'} onChange={e => setNovoFornecedor({...novoFornecedor, tipo: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-[12px] outline-none focus:border-brand transition dark:text-[#EDEDED] font-medium appearance-none cursor-pointer">
+                                        <option value="Material">Material</option>
+                                        <option value="Produção">Produção</option>
+                                        <option value="Manutenção">Manutenção</option>
+                                    </select>
+                                    <Icon name="chevron-down" className="absolute right-3 top-2.5 w-4 h-4 text-gray-400 pointer-events-none" />
+                                </div>
                             </div>
                             <div>
                                 <label className="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-1.5 tracking-wide uppercase">Contato (Telefone, E-mail)</label>
