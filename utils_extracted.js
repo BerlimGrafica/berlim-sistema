@@ -17,7 +17,7 @@ const STATUSES_PRODUCAO = [
     'Etiqueta Escolar', 'Produzir', 'Produção', 'Avisar Cliente', 'Retirada'
 ];
 const STATUSES_FINALIZADOS = ['Abandonado', 'Cancelado', 'Concluído', 'Finalizado'];
-const RESPONSAVEIS = ['Giovana', 'Murilo', 'Bruno', 'Nicole', 'Hellen', 'Jessica', 'Vini'];
+const RESPONSAVEIS = ['Giovana', 'Murilo', 'Bruno', 'Nicole', 'Hellen', 'Jessica', 'Vinicius'];
 
 
 // ==== MAPEAMENTO DE CORES DOS STATUS ====
