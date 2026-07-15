@@ -780,7 +780,7 @@ export default function FinanceiroTab() {
                                                                                 </div>
                                                                             </td>
                                                                             <td className="px-6 py-4">
-                                                                                <div className="text-[13px] text-gray-600 dark:text-gray-400 truncate max-w-[250px]" title={p.servico}>{p.servico}</div>
+                                                                                <div className="text-[13px] text-gray-600 dark:text-gray-400 truncate max-w-[250px]" title={obterResumoServicos(p.servico)}>{obterResumoServicos(p.servico)}</div>
                                                                             </td>
                                                                             <td className="px-6 py-4 text-[13px] text-center text-gray-500">{formatarDataExibicao(p.data_pedido)}</td>
                                                                             <td className="px-6 py-4 text-center" onClick={(e) => e.stopPropagation()}>
@@ -800,15 +800,15 @@ export default function FinanceiroTab() {
                                                                             <td className="px-6 py-4 text-center" onClick={(e) => e.stopPropagation()}>
                                                                                 <button
                                                                                     type="button"
-                                                                                    title="Marcar boleto como concluído e remover desta lista"
+                                                                                    title="Concluir Boleto"
                                                                                     onClick={() => {
                                                                                         if (window.confirm(`Marcar o boleto da O.S. #${p.id} como concluído? Ele sairá desta lista.`)) {
                                                                                             concluirBoletoContasReceber(p.id);
                                                                                         }
                                                                                     }}
-                                                                                    className="p-2 rounded text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition"
+                                                                                    className="p-2 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded transition"
                                                                                 >
-                                                                                    <Icon name="check" className="w-4 h-4" />
+                                                                                    <Icon name="check-circle" className="w-4 h-4" />
                                                                                 </button>
                                                                             </td>
                                                                         </tr>
