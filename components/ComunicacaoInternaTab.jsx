@@ -81,6 +81,7 @@ export default function ComunicacaoInternaTab() {
                                                 r.status === 'Comprado' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'
                                             }`}>{r.status}</span>
                                         </td>
+                                        <td className="px-6 py-4 text-right flex justify-end gap-2">
                                             <button onClick={(e) => { e.stopPropagation(); excluirRequisicao(r.id); }} className="p-1.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded transition" title="Excluir"><Icon name="trash-2" className="w-4 h-4" /></button>
                                         </td>
                                     </tr>
