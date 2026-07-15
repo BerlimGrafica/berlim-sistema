@@ -7,6 +7,16 @@ import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS, RESPONSAVEIS, obterCorStatus, 
 
 export default function OrcamentosTab() {
     const { setAbaOrcamentos, abaOrcamentos, setOrcamentoFormalizadoEmEdicao, setBuscaCliente, setItensPedido, setNovoPedido, setModalOrcamentoFormalizadoAberto, orcamentosFormalizados, abaAtual, isAdmin, setNovoOrcamentoPre, setModalOrcamentoPreAberto, orcamentosPreProntos, abrirEdicaoOrcamento, transformarEmOS, baixarPDFOrcamento, excluirOrcamentoFormalizado, excluirOrcamentoPre } = useAppContext();
+    const [buscaPreProntos, setBuscaPreProntos] = useState('');
+
+    const orcsFiltrados = useMemo(() => {
+        let filtrados = orcamentosPreProntos;
+        if (buscaPreProntos) {
+            const term = buscaPreProntos.toLowerCase();
+            filtrados = orcamentosPreProntos.filter(o => o.titulo.toLowerCase().includes(term) || o.texto.toLowerCase().includes(term));
+        }
+        return filtrados.sort((a, b) => a.titulo.localeCompare(b.titulo));
+    }, [orcamentosPreProntos, buscaPreProntos]);
 
     return (
         <>
@@ -121,30 +131,47 @@ export default function OrcamentosTab() {
                             )}
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {orcamentosPreProntos.map(orc => (
-                                <div key={orc.id} className="bg-white dark:bg-darkCard rounded-xl shadow-sm border border-gray-200 dark:border-darkBorder p-5 flex flex-col gap-3 group">
-                                    <div className="flex justify-between items-start">
-                                        <h3 className="font-bold text-gray-900 dark:text-white">{orc.titulo}</h3>
-                                        {isAdmin && (
-                                            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <button onClick={() => { setNovoOrcamentoPre(orc); setModalOrcamentoPreAberto(true); }} className="p-1 text-gray-400 hover:text-brand"><Icon name="edit-2" className="w-4 h-4" /></button>
-                                                <button onClick={() => excluirOrcamentoPre(orc.id)} className="p-1 text-gray-400 hover:text-red-500"><Icon name="trash-2" className="w-4 h-4" /></button>
-                                            </div>
-                                        )}
-                                    </div>
-                                    <pre className="text-[13px] text-gray-600 dark:text-[#A1A1AA] whitespace-pre-wrap font-sans bg-gray-50 dark:bg-darkElevated p-3 rounded-lg flex-1">
-                                        {orc.texto}
-                                    </pre>
-                                    <button onClick={() => {
-                                        navigator.clipboard.writeText(orc.texto);
-                                        alert('Texto copiado!');
-                                    }} className="mt-2 text-[11px] font-semibold text-brand hover:underline flex items-center gap-1 self-start">
-                                        <Icon name="copy" className="w-3 h-3" /> Copiar Texto
-                                    </button>
-                                </div>
-                            ))}
+                        <div className="relative mb-6">
+                            <Icon name="search" className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+                            <input 
+                                type="text" 
+                                placeholder="Buscar orçamentos por título ou conteúdo..." 
+                                value={buscaPreProntos} 
+                                onChange={(e) => setBuscaPreProntos(e.target.value)} 
+                                className="w-full bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-lg pl-10 pr-4 py-2.5 text-[13px] focus:outline-none focus:border-brand transition"
+                            />
                         </div>
+
+                        {orcsFiltrados.length === 0 ? (
+                            <div className="text-center py-10 text-gray-500 dark:text-gray-400 text-[13px]">
+                                Nenhum orçamento encontrado com o termo "{buscaPreProntos}".
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {orcsFiltrados.map(orc => (
+                                    <div key={orc.id} className="bg-white dark:bg-darkCard rounded-xl shadow-sm border border-gray-200 dark:border-darkBorder p-5 flex flex-col gap-3 group">
+                                        <div className="flex justify-between items-start">
+                                            <h3 className="font-bold text-gray-900 dark:text-white">{orc.titulo}</h3>
+                                            {isAdmin && (
+                                                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <button onClick={() => { setNovoOrcamentoPre(orc); setModalOrcamentoPreAberto(true); }} className="p-1 text-gray-400 hover:text-brand"><Icon name="edit-2" className="w-4 h-4" /></button>
+                                                    <button onClick={() => excluirOrcamentoPre(orc.id)} className="p-1 text-gray-400 hover:text-red-500"><Icon name="trash-2" className="w-4 h-4" /></button>
+                                                </div>
+                                            )}
+                                        </div>
+                                        <pre className="text-[13px] text-gray-600 dark:text-[#A1A1AA] whitespace-pre-wrap font-sans bg-gray-50 dark:bg-darkElevated p-3 rounded-lg flex-1">
+                                            {orc.texto}
+                                        </pre>
+                                        <button onClick={() => {
+                                            navigator.clipboard.writeText(orc.texto);
+                                            alert('Texto copiado!');
+                                        }} className="mt-2 text-[11px] font-semibold text-brand hover:underline flex items-center gap-1 self-start">
+                                            <Icon name="copy" className="w-3 h-3" /> Copiar Texto
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </main>
                 )}
 {abaAtual === 'orcamentos' && abaOrcamentos === 'pre_prontos'}
