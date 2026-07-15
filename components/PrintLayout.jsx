@@ -160,22 +160,22 @@ function PrintOrcamento({ orc }) {
             {/* Header */}
             <div className="flex justify-between items-start pt-16 px-16">
                 <div className="flex items-center gap-4">
-                    <svg width="180" height="85" viewBox="0 0 550 280" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <svg width="210" height="100" viewBox="-40 0 640 320" fill="none" xmlns="http://www.w3.org/2000/svg">
                         {/* 7 Stairs going up and to the right */}
                         {/* Top 4 (Reddish Orange) */}
-                        <rect x="360" y="0" width="190" height="36" fill="#F27127" />
-                        <rect x="300" y="40" width="190" height="36" fill="#F27127" />
-                        <rect x="240" y="80" width="190" height="36" fill="#F27127" />
-                        <rect x="180" y="120" width="190" height="36" fill="#F27127" />
+                        <rect x="400" y="0" width="200" height="38" fill="#F27127" />
+                        <rect x="330" y="44" width="200" height="38" fill="#F27127" />
+                        <rect x="260" y="88" width="200" height="38" fill="#F27127" />
+                        <rect x="190" y="132" width="200" height="38" fill="#F27127" />
                         
-                        {/* Bottom 3 (Yellowish Orange) */}
-                        <rect x="120" y="160" width="190" height="36" fill="#F8B133" />
-                        <rect x="60" y="200" width="190" height="36" fill="#F8B133" />
-                        <rect x="0" y="240" width="190" height="36" fill="#F8B133" />
+                        {/* Bottom 3 (Yellowish Orange) - Espaçamento extra aqui */}
+                        <rect x="100" y="190" width="200" height="38" fill="#F8B133" />
+                        <rect x="30" y="234" width="200" height="38" fill="#F8B133" />
+                        <rect x="-40" y="278" width="200" height="38" fill="#F8B133" />
                         
                         {/* Text aligned with the bottom 2 stairs */}
-                        <text x="265" y="234" fontFamily="Arial, sans-serif" fontWeight="900" fontSize="62" fill="#0067B1" letterSpacing="-1.5">BERLIM</text>
-                        <text x="265" y="274" fontFamily="Arial, sans-serif" fontWeight="700" fontSize="38" fill="#0067B1" letterSpacing="-1">GRÁFICA RÁPIDA</text>
+                        <text x="245" y="270" fontFamily="'Bebas Neue', 'Arial Narrow', sans-serif" fontWeight="bold" fontSize="56" fill="#0067B1" letterSpacing="1">BERLIM</text>
+                        <text x="245" y="316" fontFamily="'Bebas Neue', 'Arial Narrow', sans-serif" fontWeight="bold" fontSize="56" fill="#0067B1" letterSpacing="1">GRÁFICA RÁPIDA</text>
                     </svg>
                 </div>
                 <div className="text-right flex flex-col justify-center h-[90px] pb-3 gap-0.5">
