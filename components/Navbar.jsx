@@ -130,50 +130,48 @@ export default function Navbar() {
                     </div>
                 </header>
             <nav className="bg-brand text-white px-6 shadow-sm z-30 sticky top-[64px] h-[48px]">
-                    <div className="flex gap-1 overflow-x-auto custom-scrollbar no-scrollbar-style items-end pt-2 h-full">
-                        <a onClick={() => setAbaAtual('dashboard')} className={`px-5 py-3 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center gap-2 tracking-wide uppercase ${abaAtual === 'dashboard' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
-                            Início
+                    <div className="flex gap-1.5 overflow-x-auto custom-scrollbar no-scrollbar-style items-end pt-2.5 h-full">
+                        <a onClick={() => setAbaAtual('dashboard')} className={`px-4 py-2.5 text-[13px] font-semibold cursor-pointer transition-all duration-200 whitespace-nowrap rounded-t-lg flex items-center gap-2 tracking-wide uppercase border-t-2 ${abaAtual === 'dashboard' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white border-brand shadow-[0_-2px_6px_rgba(0,0,0,0.08)]' : 'border-transparent text-white/85 hover:bg-white/10 hover:text-white'}`}>
+                            <Icon name="layout-dashboard" className={`w-4 h-4 shrink-0 ${abaAtual === 'dashboard' ? 'text-brand' : ''}`} /> Início
                         </a>
                         {(usuario?.nivel === 'Administrador' || usuario?.nivel === 'Atendimento' || usuario?.nivel === 'Produção') && (
-                            <a onClick={() => setAbaAtual('producao')} className={`px-5 py-3 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center gap-2 tracking-wide uppercase ${abaAtual === 'producao' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
-                                Produção
+                            <a onClick={() => setAbaAtual('producao')} className={`px-4 py-2.5 text-[13px] font-semibold cursor-pointer transition-all duration-200 whitespace-nowrap rounded-t-lg flex items-center gap-2 tracking-wide uppercase border-t-2 ${abaAtual === 'producao' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white border-brand shadow-[0_-2px_6px_rgba(0,0,0,0.08)]' : 'border-transparent text-white/85 hover:bg-white/10 hover:text-white'}`}>
+                                <Icon name="grid" className={`w-4 h-4 shrink-0 ${abaAtual === 'producao' ? 'text-brand' : ''}`} /> Produção
                             </a>
                         )}
-                        <a onClick={() => setAbaAtual('baixa')} className={`px-5 py-3 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center gap-2 tracking-wide uppercase ${abaAtual === 'baixa' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
-                            O.S.
+                        <a onClick={() => setAbaAtual('baixa')} className={`px-4 py-2.5 text-[13px] font-semibold cursor-pointer transition-all duration-200 whitespace-nowrap rounded-t-lg flex items-center gap-2 tracking-wide uppercase border-t-2 ${abaAtual === 'baixa' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white border-brand shadow-[0_-2px_6px_rgba(0,0,0,0.08)]' : 'border-transparent text-white/85 hover:bg-white/10 hover:text-white'}`}>
+                            <Icon name="check-circle" className={`w-4 h-4 shrink-0 ${abaAtual === 'baixa' ? 'text-brand' : ''}`} /> O.S.
                         </a>
                         {usuario?.nivel !== 'Financeiro' && (
-                            <a onClick={() => setAbaAtual('calculadoras')} className={`px-5 py-3 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center gap-2 tracking-wide uppercase ${abaAtual === 'calculadoras' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
-                                Calculadoras
+                            <a onClick={() => setAbaAtual('calculadoras')} className={`px-4 py-2.5 text-[13px] font-semibold cursor-pointer transition-all duration-200 whitespace-nowrap rounded-t-lg flex items-center gap-2 tracking-wide uppercase border-t-2 ${abaAtual === 'calculadoras' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white border-brand shadow-[0_-2px_6px_rgba(0,0,0,0.08)]' : 'border-transparent text-white/85 hover:bg-white/10 hover:text-white'}`}>
+                                <Icon name="calculator" className={`w-4 h-4 shrink-0 ${abaAtual === 'calculadoras' ? 'text-brand' : ''}`} /> Calculadoras
                             </a>
                         )}
-                        
+
                         {(usuario?.nivel === 'Administrador' || usuario?.nivel === 'Financeiro') && (
-                            <a onClick={() => setAbaAtual('financeiro')} className={`px-5 py-3 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center gap-2 tracking-wide uppercase ${abaAtual === 'financeiro' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
-                                Financeiro
+                            <a onClick={() => setAbaAtual('financeiro')} className={`px-4 py-2.5 text-[13px] font-semibold cursor-pointer transition-all duration-200 whitespace-nowrap rounded-t-lg flex items-center gap-2 tracking-wide uppercase border-t-2 ${abaAtual === 'financeiro' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white border-brand shadow-[0_-2px_6px_rgba(0,0,0,0.08)]' : 'border-transparent text-white/85 hover:bg-white/10 hover:text-white'}`}>
+                                <Icon name="dollar-sign" className={`w-4 h-4 shrink-0 ${abaAtual === 'financeiro' ? 'text-brand' : ''}`} /> Financeiro
                             </a>
                         )}
                         {usuario?.nivel === 'Atendimento' && (
-                            <a onClick={() => setAbaAtual('notas_fiscais')} className={`px-5 py-3 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center gap-2 tracking-wide uppercase ${abaAtual === 'notas_fiscais' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
-                                Notas Fiscais
+                            <a onClick={() => setAbaAtual('notas_fiscais')} className={`px-4 py-2.5 text-[13px] font-semibold cursor-pointer transition-all duration-200 whitespace-nowrap rounded-t-lg flex items-center gap-2 tracking-wide uppercase border-t-2 ${abaAtual === 'notas_fiscais' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white border-brand shadow-[0_-2px_6px_rgba(0,0,0,0.08)]' : 'border-transparent text-white/85 hover:bg-white/10 hover:text-white'}`}>
+                                <Icon name="file-text" className={`w-4 h-4 shrink-0 ${abaAtual === 'notas_fiscais' ? 'text-brand' : ''}`} /> Notas Fiscais
                             </a>
                         )}
-
-
 
                         {usuario?.nivel !== 'Financeiro' && (
-                            <a onClick={() => setAbaAtual('orcamentos')} className={`px-5 py-3 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center gap-2 tracking-wide uppercase ${abaAtual === 'orcamentos' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
-                                Orçamentos
+                            <a onClick={() => setAbaAtual('orcamentos')} className={`px-4 py-2.5 text-[13px] font-semibold cursor-pointer transition-all duration-200 whitespace-nowrap rounded-t-lg flex items-center gap-2 tracking-wide uppercase border-t-2 ${abaAtual === 'orcamentos' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white border-brand shadow-[0_-2px_6px_rgba(0,0,0,0.08)]' : 'border-transparent text-white/85 hover:bg-white/10 hover:text-white'}`}>
+                                <Icon name="edit-3" className={`w-4 h-4 shrink-0 ${abaAtual === 'orcamentos' ? 'text-brand' : ''}`} /> Orçamentos
                             </a>
                         )}
-                        
+
                         {usuario?.nivel !== 'Financeiro' && (
-                            <a onClick={() => setAbaAtual('cadastros')} className={`px-5 py-3 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center gap-2 tracking-wide uppercase ${abaAtual === 'cadastros' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
-                                Cadastros
+                            <a onClick={() => setAbaAtual('cadastros')} className={`px-4 py-2.5 text-[13px] font-semibold cursor-pointer transition-all duration-200 whitespace-nowrap rounded-t-lg flex items-center gap-2 tracking-wide uppercase border-t-2 ${abaAtual === 'cadastros' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white border-brand shadow-[0_-2px_6px_rgba(0,0,0,0.08)]' : 'border-transparent text-white/85 hover:bg-white/10 hover:text-white'}`}>
+                                <Icon name="users" className={`w-4 h-4 shrink-0 ${abaAtual === 'cadastros' ? 'text-brand' : ''}`} /> Cadastros
                             </a>
                         )}
-                        <a onClick={() => setAbaAtual('comunicacao')} className={`px-5 py-3 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center gap-2 tracking-wide uppercase ${abaAtual === 'comunicacao' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
-                            Comunicação
+                        <a onClick={() => setAbaAtual('comunicacao')} className={`px-4 py-2.5 text-[13px] font-semibold cursor-pointer transition-all duration-200 whitespace-nowrap rounded-t-lg flex items-center gap-2 tracking-wide uppercase border-t-2 ${abaAtual === 'comunicacao' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white border-brand shadow-[0_-2px_6px_rgba(0,0,0,0.08)]' : 'border-transparent text-white/85 hover:bg-white/10 hover:text-white'}`}>
+                            <Icon name="mail" className={`w-4 h-4 shrink-0 ${abaAtual === 'comunicacao' ? 'text-brand' : ''}`} /> Comunicação
                         </a>
                     </div>
                 </nav>
