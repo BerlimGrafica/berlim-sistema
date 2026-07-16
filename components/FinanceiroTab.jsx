@@ -31,6 +31,19 @@ function BarRow({ label, valor, maxVal, color, rank, pctTotal }) {
 export default function FinanceiroTab() {
     const { setAbaFinanceiro, abaFinanceiro, notasFiscais, usuario, filtroNotas, dataFiltroFinInicio, setDataFiltroFinInicio, dataFiltroFinFim, setDataFiltroFinFim, pedidos, setNovaConta, setModalContaAberto, setModalEmpresaFaturamentoAberto, buscaNotaFiscal, setBuscaNotaFiscal, setPaginaNotasFiscais, setFiltroNotas, renderBarHorizontal, produtos, produtosSelecionadosGrafico, setProdutosSelecionadosGrafico, contasPagar, empresasFaturamento, setNovaEmpresaFaturamento, notasFiscaisPaginadas, setNotaFiscalEmEdicao, setModalNotaFiscalAberto, totalPaginasNotasFiscais, paginaNotasFiscais, excluirConta, concluirConta, abrirEdicao, excluirEmpresaFaturamento, concluirNotaFiscal, reabrirNotaFiscal, atualizarCampoInline, concluirBoletoContasReceber } = useAppContext();
     const [mostrarContasPagas, setMostrarContasPagas] = useState(false);
+    const [slidePainelAtivo, setSlidePainelAtivo] = useState(0);
+    const painelScrollRef = useRef(null);
+    const scrollToSlidePainel = (i) => {
+        const el = painelScrollRef.current;
+        if (!el) return;
+        el.scrollTo({ left: i * el.clientWidth, behavior: 'smooth' });
+        setSlidePainelAtivo(i);
+    };
+    const handlePainelScroll = () => {
+        const el = painelScrollRef.current;
+        if (!el || !el.clientWidth) return;
+        setSlidePainelAtivo(Math.round(el.scrollLeft / el.clientWidth));
+    };
 
     return (
         <>
@@ -201,6 +214,28 @@ export default function FinanceiroTab() {
                                 return match;
                             });
                             const totalDespesas = contasFiltradas.reduce((acc, c) => acc + (parseFloat(String(c.valor).replace(/\./g, '').replace(',', '.')) || 0), 0);
+
+                            const parseValorConta = (c) => parseFloat(String(c.valor).replace(/\./g, '').replace(',', '.')) || 0;
+
+                            const coresCategoriaDespesa = { 'Despesa': 'bg-gray-500', 'Manutenção': 'bg-purple-500', 'Terceirização': 'bg-indigo-500' };
+                            const agrupadoCategoriaDespesa = contasFiltradas.reduce((acc, c) => {
+                                const cat = c.categoria || 'Despesa';
+                                if (!acc[cat]) acc[cat] = 0;
+                                acc[cat] += parseValorConta(c);
+                                return acc;
+                            }, {});
+                            const rankingCategoriaDespesa = Object.entries(agrupadoCategoriaDespesa).sort((a, b) => b[1] - a[1]);
+                            const maxCategoriaDespesa = Math.max(...rankingCategoriaDespesa.map(c => c[1]), 1);
+                            const totalCategoriaDespesa = rankingCategoriaDespesa.reduce((a, [, v]) => a + v, 0);
+
+                            const totalContasPendentes = contasFiltradas.filter(c => c.status !== 'Pago').reduce((a, c) => a + parseValorConta(c), 0);
+                            const totalContasPagas = contasFiltradas.filter(c => c.status === 'Pago').reduce((a, c) => a + parseValorConta(c), 0);
+                            const qtdContasVencidas = contasFiltradas.filter(c => c.status !== 'Pago' && c.vencimento && c.vencimento < obterDataAtual()).length;
+                            const maxStatusDespesa = Math.max(totalContasPendentes, totalContasPagas, 1);
+                            const totalStatusDespesa = totalContasPendentes + totalContasPagas;
+
+                            const maioresContas = [...contasFiltradas].sort((a, b) => parseValorConta(b) - parseValorConta(a)).slice(0, 8);
+                            const maxMaiorConta = Math.max(...maioresContas.map(c => parseValorConta(c)), 1);
 
                             const anoAtualStr = new Date().getFullYear().toString();
                             const anoAnteriorStr = (new Date().getFullYear() - 1).toString();
@@ -461,101 +496,173 @@ export default function FinanceiroTab() {
                                                 </div>
                                             </div>
 
-                                            {/* ANÁLISE POR PERÍODO */}
+                                            {/* PAINEL COM ROLAGEM LATERAL: ANÁLISE / DISTRIBUIÇÃO / DESPESAS */}
                                             <div>
-                                                <div className="flex items-center gap-2 mb-4">
-                                                    <span className="w-1 h-4 bg-brand rounded-full"></span>
-                                                    <h2 className="text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Análise por Período</h2>
-                                                    <span className="text-[10px] text-gray-400 font-medium normal-case">clique nos cards para alternar as camadas</span>
-                                                </div>
-                                                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                                                    <StackedCards
-                                                        title="Visão Anual"
-                                                        icon="calendar"
-                                                        description="Evolução e Análise (Anos)"
-                                                        cards={[
-                                                            { title: "Faturamento Histórico", content: anosOrdenados.length === 0 ? <p className="text-[11px] text-gray-500 italic">Sem dados.</p> : <div className="flex flex-col gap-3">{anosOrdenados.map((a, index) => <BarRow key={a.ano} label={a.ano} valor={a.bruto} maxVal={maxBrutoAno} color="bg-blue-500" rank={index + 1} />)}</div> },
-                                                            { title: `Local de Produção (${anoAtual})`, content: renderLayer2() },
-                                                            { title: `Formas de Pagamento (${anoAtual})`, content: renderLayer3() },
-                                                            { title: `Vendas por Instituição (${anoAtual})`, content: renderLayer4() }
-                                                        ]}
-                                                    />
-                                                    <StackedCards
-                                                        title="Visão Mensal"
-                                                        icon="layout-dashboard"
-                                                        description="Evolução e Análise (Meses)"
-                                                        cards={[
-                                                            { title: `Faturamento (${anoAtual})`, content: mesesOrdenados.length === 0 ? <p className="text-[11px] text-gray-500 italic">Sem dados.</p> : <div className="flex flex-col gap-3">{mesesOrdenados.map((m, index) => <BarRow key={m.mesAno} label={formatarMesAno(m.mesAno)} valor={m.bruto} maxVal={maxBrutoMes} color="bg-emerald-500" rank={index + 1} />)}</div> },
-                                                            { title: `Local de Produção (${nomeMesAtual})`, content: renderLayer2() },
-                                                            { title: `Formas de Pagamento (${nomeMesAtual})`, content: renderLayer3() },
-                                                            { title: `Vendas por Instituição (${nomeMesAtual})`, content: renderLayer4() }
-                                                        ]}
-                                                    />
-                                                    <StackedCards
-                                                        title="Visão Diária"
-                                                        icon="list"
-                                                        description="Evolução e Análise (Dias)"
-                                                        cards={[
-                                                            { title: `Faturamento (${nomeMesAtual})`, content: diasOrdenados.length === 0 ? <p className="text-[11px] text-gray-500 italic">Sem dados.</p> : <div className="flex flex-col gap-3">{diasOrdenados.map((d, index) => <BarRow key={d.dia} label={formatarDataExibicao(d.dia).substring(0,5)} valor={d.bruto} maxVal={maxBrutoDia} color="bg-purple-500" rank={index + 1} />)}</div> },
-                                                            { title: `Local de Produção (${diaAtual})`, content: renderLayer2() },
-                                                            { title: `Formas de Pagamento (${diaAtual})`, content: renderLayer3() },
-                                                            { title: `Vendas por Instituição (${diaAtual})`, content: renderLayer4() }
-                                                        ]}
-                                                    />
-                                                </div>
-                                            </div>
-
-                                            {/* DISTRIBUIÇÃO NO PERÍODO */}
-                                            <div>
-                                                <div className="flex items-center gap-2 mb-4">
-                                                    <span className="w-1 h-4 bg-brand rounded-full"></span>
-                                                    <h2 className="text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Distribuição no Período</h2>
-                                                </div>
-                                                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                                                    <div className="bg-white dark:bg-darkCard rounded-xl border border-gray-200 dark:border-darkBorder overflow-hidden flex flex-col">
-                                                        <div className="px-5 py-4 border-b border-gray-100 dark:border-darkBorder flex items-center gap-3 shrink-0">
-                                                            <div className="p-2 rounded-lg bg-teal-50 dark:bg-teal-500/10 shrink-0"><Icon name="map-pin" className="w-4 h-4 text-teal-600 dark:text-teal-400" /></div>
-                                                            <div className="min-w-0">
-                                                                <h3 className="font-bold text-[13px] text-gray-800 dark:text-white truncate">Receitas por Local</h3>
-                                                                <p className="text-[11px] text-gray-400 truncate">Rentabilidade no período filtrado</p>
-                                                            </div>
+                                                <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="w-1 h-4 bg-brand rounded-full"></span>
+                                                        <h2 className="text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                                                            {['Análise por Período', 'Distribuição no Período', 'Despesas'][slidePainelAtivo]}
+                                                        </h2>
+                                                        <span className="text-[10px] text-gray-400 font-medium normal-case">
+                                                            {slidePainelAtivo === 0 ? 'clique nos cards para alternar as camadas' : slidePainelAtivo === 2 ? 'contas a pagar no período filtrado' : 'como o faturamento se distribuiu'}
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="flex items-center gap-1.5">
+                                                            {[0, 1, 2].map(i => (
+                                                                <button key={i} onClick={() => scrollToSlidePainel(i)} className={`h-1.5 rounded-full transition-all ${slidePainelAtivo === i ? 'w-5 bg-brand' : 'w-1.5 bg-gray-300 dark:bg-darkBorder hover:bg-gray-400'}`} title={['Análise por Período', 'Distribuição no Período', 'Despesas'][i]}></button>
+                                                            ))}
                                                         </div>
-                                                        <div className="flex flex-col gap-4 p-5 overflow-y-auto max-h-72 custom-scrollbar">
-                                                            {rankingLocal.length === 0 ? <p className="text-[11px] text-gray-500 italic">Nenhum local registrado.</p> :
-                                                                rankingLocal.map((loc, index) => <BarRow key={loc[0]} label={loc[0]} valor={loc[1]} maxVal={maxLocal} color={colorsLocal[index % colorsLocal.length]} rank={index + 1} pctTotal={totalRankingLocal > 0 ? (loc[1] / totalRankingLocal) * 100 : 0} />)
-                                                            }
+                                                        <div className="flex gap-1">
+                                                            <button onClick={() => scrollToSlidePainel(Math.max(0, slidePainelAtivo - 1))} disabled={slidePainelAtivo === 0} className="w-7 h-7 flex items-center justify-center rounded-md border border-gray-200 dark:border-darkBorder text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-darkHover disabled:opacity-30 disabled:cursor-not-allowed transition"><Icon name="chevron-left" className="w-4 h-4" /></button>
+                                                            <button onClick={() => scrollToSlidePainel(Math.min(2, slidePainelAtivo + 1))} disabled={slidePainelAtivo === 2} className="w-7 h-7 flex items-center justify-center rounded-md border border-gray-200 dark:border-darkBorder text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-darkHover disabled:opacity-30 disabled:cursor-not-allowed transition"><Icon name="chevron-right" className="w-4 h-4" /></button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div ref={painelScrollRef} onScroll={handlePainelScroll} className="flex overflow-x-auto snap-x snap-mandatory custom-scrollbar">
+
+                                                    {/* SLIDE 1: ANÁLISE POR PERÍODO */}
+                                                    <div className="w-full shrink-0 snap-start pr-1">
+                                                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                                                            <StackedCards
+                                                                title="Visão Anual"
+                                                                icon="calendar"
+                                                                description="Evolução e Análise (Anos)"
+                                                                cards={[
+                                                                    { title: "Faturamento Histórico", content: anosOrdenados.length === 0 ? <p className="text-[11px] text-gray-500 italic">Sem dados.</p> : <div className="flex flex-col gap-3">{anosOrdenados.map((a, index) => <BarRow key={a.ano} label={a.ano} valor={a.bruto} maxVal={maxBrutoAno} color="bg-blue-500" rank={index + 1} />)}</div> },
+                                                                    { title: `Local de Produção (${anoAtual})`, content: renderLayer2() },
+                                                                    { title: `Formas de Pagamento (${anoAtual})`, content: renderLayer3() },
+                                                                    { title: `Vendas por Instituição (${anoAtual})`, content: renderLayer4() }
+                                                                ]}
+                                                            />
+                                                            <StackedCards
+                                                                title="Visão Mensal"
+                                                                icon="layout-dashboard"
+                                                                description="Evolução e Análise (Meses)"
+                                                                cards={[
+                                                                    { title: `Faturamento (${anoAtual})`, content: mesesOrdenados.length === 0 ? <p className="text-[11px] text-gray-500 italic">Sem dados.</p> : <div className="flex flex-col gap-3">{mesesOrdenados.map((m, index) => <BarRow key={m.mesAno} label={formatarMesAno(m.mesAno)} valor={m.bruto} maxVal={maxBrutoMes} color="bg-emerald-500" rank={index + 1} />)}</div> },
+                                                                    { title: `Local de Produção (${nomeMesAtual})`, content: renderLayer2() },
+                                                                    { title: `Formas de Pagamento (${nomeMesAtual})`, content: renderLayer3() },
+                                                                    { title: `Vendas por Instituição (${nomeMesAtual})`, content: renderLayer4() }
+                                                                ]}
+                                                            />
+                                                            <StackedCards
+                                                                title="Visão Diária"
+                                                                icon="list"
+                                                                description="Evolução e Análise (Dias)"
+                                                                cards={[
+                                                                    { title: `Faturamento (${nomeMesAtual})`, content: diasOrdenados.length === 0 ? <p className="text-[11px] text-gray-500 italic">Sem dados.</p> : <div className="flex flex-col gap-3">{diasOrdenados.map((d, index) => <BarRow key={d.dia} label={formatarDataExibicao(d.dia).substring(0,5)} valor={d.bruto} maxVal={maxBrutoDia} color="bg-purple-500" rank={index + 1} />)}</div> },
+                                                                    { title: `Local de Produção (${diaAtual})`, content: renderLayer2() },
+                                                                    { title: `Formas de Pagamento (${diaAtual})`, content: renderLayer3() },
+                                                                    { title: `Vendas por Instituição (${diaAtual})`, content: renderLayer4() }
+                                                                ]}
+                                                            />
                                                         </div>
                                                     </div>
 
-                                                    <div className="bg-white dark:bg-darkCard rounded-xl border border-gray-200 dark:border-darkBorder overflow-hidden flex flex-col">
-                                                        <div className="px-5 py-4 border-b border-gray-100 dark:border-darkBorder flex items-center gap-3 shrink-0">
-                                                            <div className="p-2 rounded-lg bg-amber-50 dark:bg-amber-500/10 shrink-0"><Icon name="dollar-sign" className="w-4 h-4 text-amber-600 dark:text-amber-400" /></div>
-                                                            <div className="min-w-0">
-                                                                <h3 className="font-bold text-[13px] text-gray-800 dark:text-white truncate">Formas de Pagamento</h3>
-                                                                <p className="text-[11px] text-gray-400 truncate">Como os clientes pagaram</p>
+                                                    {/* SLIDE 2: DISTRIBUIÇÃO NO PERÍODO */}
+                                                    <div className="w-full shrink-0 snap-start px-1">
+                                                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                                                            <div className="bg-white dark:bg-darkCard rounded-xl border border-gray-200 dark:border-darkBorder overflow-hidden flex flex-col">
+                                                                <div className="px-5 py-4 border-b border-gray-100 dark:border-darkBorder flex items-center gap-3 shrink-0">
+                                                                    <div className="p-2 rounded-lg bg-teal-50 dark:bg-teal-500/10 shrink-0"><Icon name="map-pin" className="w-4 h-4 text-teal-600 dark:text-teal-400" /></div>
+                                                                    <div className="min-w-0">
+                                                                        <h3 className="font-bold text-[13px] text-gray-800 dark:text-white truncate">Receitas por Local</h3>
+                                                                        <p className="text-[11px] text-gray-400 truncate">Rentabilidade no período filtrado</p>
+                                                                    </div>
+                                                                </div>
+                                                                <div className="flex flex-col gap-4 p-5 overflow-y-auto max-h-72 custom-scrollbar">
+                                                                    {rankingLocal.length === 0 ? <p className="text-[11px] text-gray-500 italic">Nenhum local registrado.</p> :
+                                                                        rankingLocal.map((loc, index) => <BarRow key={loc[0]} label={loc[0]} valor={loc[1]} maxVal={maxLocal} color={colorsLocal[index % colorsLocal.length]} rank={index + 1} pctTotal={totalRankingLocal > 0 ? (loc[1] / totalRankingLocal) * 100 : 0} />)
+                                                                    }
+                                                                </div>
                                                             </div>
-                                                        </div>
-                                                        <div className="flex flex-col gap-4 p-5 overflow-y-auto max-h-72 custom-scrollbar">
-                                                            {rankingForma.length === 0 ? <p className="text-[11px] text-gray-500 italic">Nenhum pagamento registrado.</p> :
-                                                                rankingForma.map((f, index) => <BarRow key={f[0]} label={f[0]} valor={f[1]} maxVal={maxForma} color={colorsForma[index % colorsForma.length]} rank={index + 1} pctTotal={totalRankingForma > 0 ? (f[1] / totalRankingForma) * 100 : 0} />)
-                                                            }
+
+                                                            <div className="bg-white dark:bg-darkCard rounded-xl border border-gray-200 dark:border-darkBorder overflow-hidden flex flex-col">
+                                                                <div className="px-5 py-4 border-b border-gray-100 dark:border-darkBorder flex items-center gap-3 shrink-0">
+                                                                    <div className="p-2 rounded-lg bg-amber-50 dark:bg-amber-500/10 shrink-0"><Icon name="dollar-sign" className="w-4 h-4 text-amber-600 dark:text-amber-400" /></div>
+                                                                    <div className="min-w-0">
+                                                                        <h3 className="font-bold text-[13px] text-gray-800 dark:text-white truncate">Formas de Pagamento</h3>
+                                                                        <p className="text-[11px] text-gray-400 truncate">Como os clientes pagaram</p>
+                                                                    </div>
+                                                                </div>
+                                                                <div className="flex flex-col gap-4 p-5 overflow-y-auto max-h-72 custom-scrollbar">
+                                                                    {rankingForma.length === 0 ? <p className="text-[11px] text-gray-500 italic">Nenhum pagamento registrado.</p> :
+                                                                        rankingForma.map((f, index) => <BarRow key={f[0]} label={f[0]} valor={f[1]} maxVal={maxForma} color={colorsForma[index % colorsForma.length]} rank={index + 1} pctTotal={totalRankingForma > 0 ? (f[1] / totalRankingForma) * 100 : 0} />)
+                                                                    }
+                                                                </div>
+                                                            </div>
+
+                                                            <div className="bg-white dark:bg-darkCard rounded-xl border border-gray-200 dark:border-darkBorder overflow-hidden flex flex-col">
+                                                                <div className="px-5 py-4 border-b border-gray-100 dark:border-darkBorder flex items-center gap-3 shrink-0">
+                                                                    <div className="p-2 rounded-lg bg-sky-50 dark:bg-sky-500/10 shrink-0"><Icon name="link" className="w-4 h-4 text-sky-600 dark:text-sky-400" /></div>
+                                                                    <div className="min-w-0">
+                                                                        <h3 className="font-bold text-[13px] text-gray-800 dark:text-white truncate">Instituições</h3>
+                                                                        <p className="text-[11px] text-gray-400 truncate">Volume por conta (PIX, Boleto e Link)</p>
+                                                                    </div>
+                                                                </div>
+                                                                <div className="flex flex-col gap-4 p-5 overflow-y-auto max-h-72 custom-scrollbar">
+                                                                    {rankingInstituicao.length === 0 ? <p className="text-[11px] text-gray-500 italic">Nenhuma instituição registrada.</p> :
+                                                                        rankingInstituicao.map((i, index) => <BarRow key={i[0]} label={i[0]} valor={i[1]} maxVal={maxInstituicao} color={colorsInst[index % colorsInst.length]} rank={index + 1} pctTotal={totalRankingInstituicao > 0 ? (i[1] / totalRankingInstituicao) * 100 : 0} />)
+                                                                    }
+                                                                </div>
+                                                            </div>
                                                         </div>
                                                     </div>
 
-                                                    <div className="bg-white dark:bg-darkCard rounded-xl border border-gray-200 dark:border-darkBorder overflow-hidden flex flex-col">
-                                                        <div className="px-5 py-4 border-b border-gray-100 dark:border-darkBorder flex items-center gap-3 shrink-0">
-                                                            <div className="p-2 rounded-lg bg-sky-50 dark:bg-sky-500/10 shrink-0"><Icon name="link" className="w-4 h-4 text-sky-600 dark:text-sky-400" /></div>
-                                                            <div className="min-w-0">
-                                                                <h3 className="font-bold text-[13px] text-gray-800 dark:text-white truncate">Instituições</h3>
-                                                                <p className="text-[11px] text-gray-400 truncate">Volume por conta (PIX, Boleto e Link)</p>
+                                                    {/* SLIDE 3: DESPESAS (CONTAS A PAGAR) */}
+                                                    <div className="w-full shrink-0 snap-start pl-1">
+                                                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                                                            <div className="bg-white dark:bg-darkCard rounded-xl border border-gray-200 dark:border-darkBorder overflow-hidden flex flex-col">
+                                                                <div className="px-5 py-4 border-b border-gray-100 dark:border-darkBorder flex items-center gap-3 shrink-0">
+                                                                    <div className="p-2 rounded-lg bg-gray-100 dark:bg-gray-500/10 shrink-0"><Icon name="tag" className="w-4 h-4 text-gray-600 dark:text-gray-400" /></div>
+                                                                    <div className="min-w-0">
+                                                                        <h3 className="font-bold text-[13px] text-gray-800 dark:text-white truncate">Despesas por Categoria</h3>
+                                                                        <p className="text-[11px] text-gray-400 truncate">Despesa, Manutenção e Terceirização</p>
+                                                                    </div>
+                                                                </div>
+                                                                <div className="flex flex-col gap-4 p-5 overflow-y-auto max-h-72 custom-scrollbar">
+                                                                    {rankingCategoriaDespesa.length === 0 ? <p className="text-[11px] text-gray-500 italic">Nenhuma conta registrada.</p> :
+                                                                        rankingCategoriaDespesa.map((cat, index) => <BarRow key={cat[0]} label={cat[0]} valor={cat[1]} maxVal={maxCategoriaDespesa} color={coresCategoriaDespesa[cat[0]] || 'bg-gray-500'} rank={index + 1} pctTotal={totalCategoriaDespesa > 0 ? (cat[1] / totalCategoriaDespesa) * 100 : 0} />)
+                                                                    }
+                                                                </div>
+                                                            </div>
+
+                                                            <div className="bg-white dark:bg-darkCard rounded-xl border border-gray-200 dark:border-darkBorder overflow-hidden flex flex-col">
+                                                                <div className="px-5 py-4 border-b border-gray-100 dark:border-darkBorder flex items-center gap-3 shrink-0">
+                                                                    <div className="p-2 rounded-lg bg-rose-50 dark:bg-rose-500/10 shrink-0"><Icon name="check-circle" className="w-4 h-4 text-rose-600 dark:text-rose-400" /></div>
+                                                                    <div className="min-w-0">
+                                                                        <h3 className="font-bold text-[13px] text-gray-800 dark:text-white truncate">Status das Contas</h3>
+                                                                        <p className="text-[11px] text-gray-400 truncate">{qtdContasVencidas > 0 ? `${qtdContasVencidas} conta(s) vencida(s)` : 'Nenhuma conta vencida'}</p>
+                                                                    </div>
+                                                                </div>
+                                                                <div className="flex flex-col gap-4 p-5 overflow-y-auto max-h-72 custom-scrollbar">
+                                                                    {totalStatusDespesa === 0 ? <p className="text-[11px] text-gray-500 italic">Nenhuma conta registrada.</p> : <>
+                                                                        <BarRow label="Pendente" valor={totalContasPendentes} maxVal={maxStatusDespesa} color="bg-red-500" pctTotal={totalStatusDespesa > 0 ? (totalContasPendentes / totalStatusDespesa) * 100 : 0} />
+                                                                        <BarRow label="Pago" valor={totalContasPagas} maxVal={maxStatusDespesa} color="bg-emerald-500" pctTotal={totalStatusDespesa > 0 ? (totalContasPagas / totalStatusDespesa) * 100 : 0} />
+                                                                    </>}
+                                                                </div>
+                                                            </div>
+
+                                                            <div className="bg-white dark:bg-darkCard rounded-xl border border-gray-200 dark:border-darkBorder overflow-hidden flex flex-col">
+                                                                <div className="px-5 py-4 border-b border-gray-100 dark:border-darkBorder flex items-center gap-3 shrink-0">
+                                                                    <div className="p-2 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 shrink-0"><Icon name="trending-up" className="w-4 h-4 text-indigo-600 dark:text-indigo-400" /></div>
+                                                                    <div className="min-w-0">
+                                                                        <h3 className="font-bold text-[13px] text-gray-800 dark:text-white truncate">Maiores Contas</h3>
+                                                                        <p className="text-[11px] text-gray-400 truncate">Top despesas do período filtrado</p>
+                                                                    </div>
+                                                                </div>
+                                                                <div className="flex flex-col gap-4 p-5 overflow-y-auto max-h-72 custom-scrollbar">
+                                                                    {maioresContas.length === 0 ? <p className="text-[11px] text-gray-500 italic">Nenhuma conta registrada.</p> :
+                                                                        maioresContas.map((c, index) => <BarRow key={c.id} label={c.descricao} valor={parseValorConta(c)} maxVal={maxMaiorConta} color={c.status === 'Pago' ? 'bg-emerald-500' : (c.vencimento && c.vencimento < obterDataAtual() ? 'bg-red-500' : 'bg-amber-500')} rank={index + 1} />)
+                                                                    }
+                                                                </div>
                                                             </div>
                                                         </div>
-                                                        <div className="flex flex-col gap-4 p-5 overflow-y-auto max-h-72 custom-scrollbar">
-                                                            {rankingInstituicao.length === 0 ? <p className="text-[11px] text-gray-500 italic">Nenhuma instituição registrada.</p> :
-                                                                rankingInstituicao.map((i, index) => <BarRow key={i[0]} label={i[0]} valor={i[1]} maxVal={maxInstituicao} color={colorsInst[index % colorsInst.length]} rank={index + 1} pctTotal={totalRankingInstituicao > 0 ? (i[1] / totalRankingInstituicao) * 100 : 0} />)
-                                                            }
-                                                        </div>
                                                     </div>
+
                                                 </div>
                                             </div>
 
