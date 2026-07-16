@@ -98,6 +98,7 @@ export const AppProvider = ({ children }) => {
     const alertasContaPagarDisparados = useRef(new Set());
     const alertasRetiradaDisparados = useRef(new Set());
     const alertasFaturamentoAnaliseDisparados = useRef(new Set());
+    const alertasTarefaDisparadas = useRef(new Set());
     const [modalAlertasAberto, setModalAlertasAberto] = useState(false);
 
     // === COMUNICAÇÃO INTERNA ===
@@ -298,6 +299,22 @@ export const AppProvider = ({ children }) => {
             }
         } else {
             alertasFaturamentoAnaliseDisparados.current.delete(empresa.id);
+        }
+    }
+
+    function notificarSeTarefaMinha(tarefa) {
+        if (!tarefa || !usuario) return;
+        const nomeUsuario = (usuario.nome || '').trim().toLowerCase();
+        const responsaveis = (tarefa.responsavel || '').split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+        const souResponsavel = responsaveis.includes(nomeUsuario);
+
+        if (souResponsavel && tarefa.status !== 'Concluída') {
+            if (!alertasTarefaDisparadas.current.has(tarefa.id)) {
+                alertasTarefaDisparadas.current.add(tarefa.id);
+                setAlertasNaoLidos(prev => [...prev, { id: Date.now() + Math.random(), msg: `Você tem uma tarefa: ${tarefa.titulo}`, tipo: 'nova_tarefa' }]);
+            }
+        } else {
+            alertasTarefaDisparadas.current.delete(tarefa.id);
         }
     }
 
@@ -511,7 +528,10 @@ export const AppProvider = ({ children }) => {
         if (listaReq) setRequisicoesMaterial(listaReq);
 
         const { data: listaTar } = await supabase.from('tarefas_internas').select('*').order('created_at', { ascending: false }).limit(150);
-        if (listaTar) setTarefasInternas(listaTar);
+        if (listaTar) {
+            setTarefasInternas(listaTar);
+            listaTar.forEach(notificarSeTarefaMinha);
+        }
 
         const { data: listaLnk } = await supabase.from('links_pagamento').select('*').order('created_at', { ascending: false }).limit(150);
         if (listaLnk) setLinksPagamento(listaLnk);
@@ -1414,12 +1434,18 @@ export const AppProvider = ({ children }) => {
             payload.criado_por = usuario?.nome || '';
             const { data, error } = await supabase.from('tarefas_internas').insert([payload]).select();
             if (error) console.error("Erro ao salvar tarefa:", error);
-            if (!error && data && data.length > 0) setTarefasInternas(prev => [data[0], ...prev]);
+            if (!error && data && data.length > 0) {
+                setTarefasInternas(prev => [data[0], ...prev]);
+                notificarSeTarefaMinha(data[0]);
+            }
         } else {
             const { id, ...rest } = payload;
             const { data, error } = await supabase.from('tarefas_internas').update(rest).eq('id', id).select();
             if (error) console.error("Erro ao atualizar tarefa:", error);
-            if (!error && data && data.length > 0) setTarefasInternas(prev => prev.map(t => t.id === id ? data[0] : t));
+            if (!error && data && data.length > 0) {
+                setTarefasInternas(prev => prev.map(t => t.id === id ? data[0] : t));
+                notificarSeTarefaMinha(data[0]);
+            }
         }
         setModalTarefaAberto(false);
     };
@@ -1497,9 +1523,10 @@ export const AppProvider = ({ children }) => {
 
         const channel = supabase.channel('system-alerts')
             .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'tarefas_internas' }, (payload) => {
-                if (payload.new && payload.new.responsavel && payload.new.responsavel.includes(usuario?.nome)) {
-                    setAlertasNaoLidos(prev => [...prev, { id: Date.now() + Math.random(), msg: `Você recebeu uma nova tarefa: ${payload.new.titulo}`, tipo: 'nova_tarefa' }]);
-                }
+                notificarSeTarefaMinha(payload.new);
+            })
+            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'tarefas_internas' }, (payload) => {
+                notificarSeTarefaMinha(payload.new);
             })
             .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'requisicoes_material' }, (payload) => {
                 if (ehUsuario('Vinicius')) {

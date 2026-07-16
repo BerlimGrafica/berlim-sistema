@@ -201,7 +201,7 @@ export default function DashboardTab() {
                                         </thead>
                                         <tbody>
                                             {(() => {
-                                                const minhasTarefasInt = tarefasInternas.filter(t => t.responsavel && t.responsavel.toLowerCase().includes(usuario?.nome?.toLowerCase()) && t.status !== 'Concluída');
+                                                const minhasTarefasInt = tarefasInternas.filter(t => (t.responsavel || '').split(',').map(s => s.trim().toLowerCase()).includes((usuario?.nome || '').trim().toLowerCase()) && t.status !== 'Concluída');
 
                                                 if (minhasTarefasInt.length === 0) {
                                                     return (
