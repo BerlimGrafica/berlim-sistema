@@ -565,8 +565,8 @@ export default function FinanceiroTab() {
                                                     {/* SLIDE 2: DISTRIBUIÇÃO NO PERÍODO */}
                                                     <div className="w-full shrink-0 snap-start px-1">
                                                         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                                                            <div className="bg-white dark:bg-darkCard rounded-xl border border-gray-200 dark:border-darkBorder overflow-hidden flex flex-col">
-                                                                <div className="px-5 py-4 border-b border-gray-100 dark:border-darkBorder flex items-center gap-3 shrink-0">
+                                                            <div className="bg-white dark:bg-darkCard rounded-xl border border-gray-200 dark:border-darkBorder flex flex-col">
+                                                                <div className="rounded-t-xl px-5 py-4 border-b border-gray-100 dark:border-darkBorder flex items-center gap-3 shrink-0">
                                                                     <div className="p-2 rounded-lg bg-teal-50 dark:bg-teal-500/10 shrink-0"><Icon name="map-pin" className="w-4 h-4 text-teal-600 dark:text-teal-400" /></div>
                                                                     <div className="min-w-0">
                                                                         <h3 className="font-bold text-[13px] text-gray-800 dark:text-white truncate">Receitas por Local</h3>
@@ -580,8 +580,8 @@ export default function FinanceiroTab() {
                                                                 </div>
                                                             </div>
 
-                                                            <div className="bg-white dark:bg-darkCard rounded-xl border border-gray-200 dark:border-darkBorder overflow-hidden flex flex-col">
-                                                                <div className="px-5 py-4 border-b border-gray-100 dark:border-darkBorder flex items-center gap-3 shrink-0">
+                                                            <div className="bg-white dark:bg-darkCard rounded-xl border border-gray-200 dark:border-darkBorder flex flex-col">
+                                                                <div className="rounded-t-xl px-5 py-4 border-b border-gray-100 dark:border-darkBorder flex items-center gap-3 shrink-0">
                                                                     <div className="p-2 rounded-lg bg-amber-50 dark:bg-amber-500/10 shrink-0"><Icon name="dollar-sign" className="w-4 h-4 text-amber-600 dark:text-amber-400" /></div>
                                                                     <div className="min-w-0">
                                                                         <h3 className="font-bold text-[13px] text-gray-800 dark:text-white truncate">Formas de Pagamento</h3>
@@ -595,8 +595,8 @@ export default function FinanceiroTab() {
                                                                 </div>
                                                             </div>
 
-                                                            <div className="bg-white dark:bg-darkCard rounded-xl border border-gray-200 dark:border-darkBorder overflow-hidden flex flex-col">
-                                                                <div className="px-5 py-4 border-b border-gray-100 dark:border-darkBorder flex items-center gap-3 shrink-0">
+                                                            <div className="bg-white dark:bg-darkCard rounded-xl border border-gray-200 dark:border-darkBorder flex flex-col">
+                                                                <div className="rounded-t-xl px-5 py-4 border-b border-gray-100 dark:border-darkBorder flex items-center gap-3 shrink-0">
                                                                     <div className="p-2 rounded-lg bg-sky-50 dark:bg-sky-500/10 shrink-0"><Icon name="link" className="w-4 h-4 text-sky-600 dark:text-sky-400" /></div>
                                                                     <div className="min-w-0">
                                                                         <h3 className="font-bold text-[13px] text-gray-800 dark:text-white truncate">Instituições</h3>
@@ -615,8 +615,8 @@ export default function FinanceiroTab() {
                                                     {/* SLIDE 3: DESPESAS (CONTAS A PAGAR) */}
                                                     <div className="w-full shrink-0 snap-start pl-1">
                                                         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                                                            <div className="bg-white dark:bg-darkCard rounded-xl border border-gray-200 dark:border-darkBorder overflow-hidden flex flex-col">
-                                                                <div className="px-5 py-4 border-b border-gray-100 dark:border-darkBorder flex items-center gap-3 shrink-0">
+                                                            <div className="bg-white dark:bg-darkCard rounded-xl border border-gray-200 dark:border-darkBorder flex flex-col">
+                                                                <div className="rounded-t-xl px-5 py-4 border-b border-gray-100 dark:border-darkBorder flex items-center gap-3 shrink-0">
                                                                     <div className="p-2 rounded-lg bg-gray-100 dark:bg-gray-500/10 shrink-0"><Icon name="tag" className="w-4 h-4 text-gray-600 dark:text-gray-400" /></div>
                                                                     <div className="min-w-0">
                                                                         <h3 className="font-bold text-[13px] text-gray-800 dark:text-white truncate">Despesas por Categoria</h3>
@@ -630,8 +630,8 @@ export default function FinanceiroTab() {
                                                                 </div>
                                                             </div>
 
-                                                            <div className="bg-white dark:bg-darkCard rounded-xl border border-gray-200 dark:border-darkBorder overflow-hidden flex flex-col">
-                                                                <div className="px-5 py-4 border-b border-gray-100 dark:border-darkBorder flex items-center gap-3 shrink-0">
+                                                            <div className="bg-white dark:bg-darkCard rounded-xl border border-gray-200 dark:border-darkBorder flex flex-col">
+                                                                <div className="rounded-t-xl px-5 py-4 border-b border-gray-100 dark:border-darkBorder flex items-center gap-3 shrink-0">
                                                                     <div className="p-2 rounded-lg bg-rose-50 dark:bg-rose-500/10 shrink-0"><Icon name="check-circle" className="w-4 h-4 text-rose-600 dark:text-rose-400" /></div>
                                                                     <div className="min-w-0">
                                                                         <h3 className="font-bold text-[13px] text-gray-800 dark:text-white truncate">Status das Contas</h3>
@@ -646,8 +646,8 @@ export default function FinanceiroTab() {
                                                                 </div>
                                                             </div>
 
-                                                            <div className="bg-white dark:bg-darkCard rounded-xl border border-gray-200 dark:border-darkBorder overflow-hidden flex flex-col">
-                                                                <div className="px-5 py-4 border-b border-gray-100 dark:border-darkBorder flex items-center gap-3 shrink-0">
+                                                            <div className="bg-white dark:bg-darkCard rounded-xl border border-gray-200 dark:border-darkBorder flex flex-col">
+                                                                <div className="rounded-t-xl px-5 py-4 border-b border-gray-100 dark:border-darkBorder flex items-center gap-3 shrink-0">
                                                                     <div className="p-2 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 shrink-0"><Icon name="trending-up" className="w-4 h-4 text-indigo-600 dark:text-indigo-400" /></div>
                                                                     <div className="min-w-0">
                                                                         <h3 className="font-bold text-[13px] text-gray-800 dark:text-white truncate">Maiores Contas</h3>

@@ -113,8 +113,8 @@ export default function Modals() {
                             </div>
 
                             {/* CARRINHO DE ITENS — destacado */}
-                            <div className="rounded-xl border border-blue-200 dark:border-blue-500/30 bg-blue-50/40 dark:bg-blue-500/5 overflow-hidden">
-                                <div className="px-5 py-3.5 bg-blue-100/60 dark:bg-blue-500/10 border-b border-blue-200 dark:border-blue-500/20 flex items-center justify-between gap-2 flex-wrap">
+                            <div className="rounded-xl border border-blue-200 dark:border-blue-500/30 bg-blue-50/40 dark:bg-blue-500/5">
+                                <div className="rounded-t-xl px-5 py-3.5 bg-blue-100/60 dark:bg-blue-500/10 border-b border-blue-200 dark:border-blue-500/20 flex items-center justify-between gap-2 flex-wrap">
                                     <div className="flex items-center gap-2.5">
                                         <div className="p-1.5 rounded-lg bg-white dark:bg-darkCard shadow-sm shrink-0"><Icon name="shopping-bag" className="w-4 h-4 text-blue-600 dark:text-blue-400" /></div>
                                         <h4 className="font-bold text-[13px] text-gray-800 dark:text-white">Carrinho de Itens do Orçamento</h4>
@@ -201,8 +201,8 @@ export default function Modals() {
                                 const saldo = totalOS - totalPago;
                                 const coresFormaPagamento = { 'PIX': 'bg-teal-500', 'Boleto': 'bg-orange-500', 'Cartão de Crédito': 'bg-purple-500', 'Cartão de Débito': 'bg-blue-500', 'Dinheiro': 'bg-emerald-500', 'Link de Pagamento': 'bg-sky-500' };
                                 return (
-                                    <div className="rounded-xl border border-emerald-200 dark:border-emerald-500/30 bg-emerald-50/40 dark:bg-emerald-500/5 overflow-hidden">
-                                        <div className="px-5 py-3.5 bg-emerald-100/60 dark:bg-emerald-500/10 border-b border-emerald-200 dark:border-emerald-500/20 flex items-center justify-between gap-2 flex-wrap">
+                                    <div className="rounded-xl border border-emerald-200 dark:border-emerald-500/30 bg-emerald-50/40 dark:bg-emerald-500/5">
+                                        <div className="rounded-t-xl px-5 py-3.5 bg-emerald-100/60 dark:bg-emerald-500/10 border-b border-emerald-200 dark:border-emerald-500/20 flex items-center justify-between gap-2 flex-wrap">
                                             <div className="flex items-center gap-2.5">
                                                 <div className="p-1.5 rounded-lg bg-white dark:bg-darkCard shadow-sm shrink-0"><Icon name="dollar-sign" className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /></div>
                                                 <h4 className="font-bold text-[13px] text-gray-800 dark:text-white">Pagamentos</h4>
