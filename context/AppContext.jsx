@@ -99,6 +99,7 @@ export const AppProvider = ({ children }) => {
     const alertasRetiradaDisparados = useRef(new Set());
     const alertasFaturamentoAnaliseDisparados = useRef(new Set());
     const alertasTarefaDisparadas = useRef(new Set());
+    const alertasNotaFiscalDisparadas = useRef(new Set());
     const [modalAlertasAberto, setModalAlertasAberto] = useState(false);
 
     // === COMUNICAÇÃO INTERNA ===
@@ -251,7 +252,6 @@ export const AppProvider = ({ children }) => {
                     (payload) => {
                         console.log('Atualização em tempo real (notas_fiscais) recebida!', payload);
                         const isAdm = usuario?.nivel === 'Administrador';
-                        const isFin = usuario?.nivel === 'Financeiro';
                         const isOpe = usuario?.nivel === 'Atendimento' || usuario?.nivel === 'Produção';
 
                         if (payload.eventType === 'INSERT') {
@@ -259,15 +259,7 @@ export const AppProvider = ({ children }) => {
                                 setAlertasNaoLidos(prev => [...prev, { id: Date.now() + 3, msg: `Nova Nota Fiscal solicitada (${payload.new.cliente || payload.new.cnpj})`, os_id: null, tipo: 'nf_nova' }]);
                             }
                         } else if (payload.eventType === 'UPDATE') {
-                            const changedServico = payload.new.servico_feito !== payload.old?.servico_feito && payload.new.servico_feito;
-                            const changedValor = payload.new.valor_pago !== payload.old?.valor_pago && payload.new.valor_pago;
-                            if (changedServico || changedValor) {
-                                // DANFE avisa o Financeiro, Serviço avisa o Vinicius
-                                const destinatarioCerto = (payload.new.tipo_nota === 'DANFE' && isFin) || (payload.new.tipo_nota === 'Serviço' && ehUsuario('Vinicius'));
-                                if (destinatarioCerto) {
-                                    setAlertasNaoLidos(prev => [...prev, { id: Date.now() + 4, msg: `Nota Fiscal (${payload.new.cliente || payload.new.cnpj}) preenchida!`, os_id: null, tipo: 'nf_preenchida' }]);
-                                }
-                            }
+                            notificarSeNotaFiscalPreenchida(payload.new);
                         }
 
                         carregarDados(); // Puxa os dados novos invisivelmente
@@ -315,6 +307,21 @@ export const AppProvider = ({ children }) => {
             }
         } else {
             alertasTarefaDisparadas.current.delete(tarefa.id);
+        }
+    }
+
+    function notificarSeNotaFiscalPreenchida(nota) {
+        if (!nota || !usuario) return;
+        const preenchida = nota.concluido === false && (!!nota.servico_feito || !!nota.valor_pago);
+        const destinatarioCerto = (nota.tipo_nota === 'DANFE' && usuario?.nivel === 'Financeiro') || (nota.tipo_nota === 'Serviço' && ehUsuario('Vinicius'));
+
+        if (preenchida && destinatarioCerto) {
+            if (!alertasNotaFiscalDisparadas.current.has(nota.id)) {
+                alertasNotaFiscalDisparadas.current.add(nota.id);
+                setAlertasNaoLidos(prev => [...prev, { id: Date.now() + Math.random(), msg: `Nota Fiscal (${nota.cliente || nota.cnpj}) preenchida!`, tipo: 'nf_preenchida' }]);
+            }
+        } else {
+            alertasNotaFiscalDisparadas.current.delete(nota.id);
         }
     }
 
@@ -477,7 +484,10 @@ export const AppProvider = ({ children }) => {
         if (listaUsuarios) setUsuariosSistema(listaUsuarios);
 
         const { data: listaNotas } = await supabase.from('notas_fiscais').select('*').order('created_at', { ascending: false });
-        if (listaNotas) setNotasFiscais(listaNotas);
+        if (listaNotas) {
+            setNotasFiscais(listaNotas);
+            listaNotas.forEach(notificarSeNotaFiscalPreenchida);
+        }
         
         const { data: listaEmpresasFaturamento } = await supabase.from('empresas_faturamento').select('*').order('nome', { ascending: true });
         if (listaEmpresasFaturamento) {
@@ -1288,9 +1298,10 @@ export const AppProvider = ({ children }) => {
             tipo_nota: notaFiscalEmEdicao.tipo_nota
         };
         const { data, error } = await supabase.from('notas_fiscais').update(payload).eq('id', notaFiscalEmEdicao.id).select();
-        if (!error && data) { 
-            setNotasFiscais(notasFiscais.map(n => n.id === notaFiscalEmEdicao.id ? data[0] : n)); 
-            setModalNotaFiscalAberto(false); 
+        if (!error && data) {
+            setNotasFiscais(notasFiscais.map(n => n.id === notaFiscalEmEdicao.id ? data[0] : n));
+            notificarSeNotaFiscalPreenchida(data[0]);
+            setModalNotaFiscalAberto(false);
         } else {
             alert('Falha ao atualizar nota: ' + error.message);
         }
