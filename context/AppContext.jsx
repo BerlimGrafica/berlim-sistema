@@ -100,6 +100,7 @@ export const AppProvider = ({ children }) => {
     const alertasFaturamentoAnaliseDisparados = useRef(new Set());
     const alertasTarefaDisparadas = useRef(new Set());
     const alertasNotaFiscalDisparadas = useRef(new Set());
+    const alertasLinkPagamentoDisparados = useRef(new Set());
     const [modalAlertasAberto, setModalAlertasAberto] = useState(false);
 
     // === COMUNICAÇÃO INTERNA ===
@@ -322,6 +323,20 @@ export const AppProvider = ({ children }) => {
             }
         } else {
             alertasNotaFiscalDisparadas.current.delete(nota.id);
+        }
+    }
+
+    function notificarSeLinkPagamentoNovo(link) {
+        if (!link || !ehUsuario('Giovana')) return;
+        const ativo = link.status !== 'Inativo' && link.status !== 'Pago' && link.status !== 'Concluído';
+
+        if (ativo) {
+            if (!alertasLinkPagamentoDisparados.current.has(link.id)) {
+                alertasLinkPagamentoDisparados.current.add(link.id);
+                setAlertasNaoLidos(prev => [...prev, { id: Date.now() + Math.random(), msg: `Novo link de pagamento para: ${link.cliente}`, tipo: 'novo_link' }]);
+            }
+        } else {
+            alertasLinkPagamentoDisparados.current.delete(link.id);
         }
     }
 
@@ -550,7 +565,10 @@ export const AppProvider = ({ children }) => {
         }
 
         const { data: listaLnk } = await supabase.from('links_pagamento').select('*').order('created_at', { ascending: false }).limit(150);
-        if (listaLnk) setLinksPagamento(listaLnk);
+        if (listaLnk) {
+            setLinksPagamento(listaLnk);
+            listaLnk.forEach(notificarSeLinkPagamentoNovo);
+        }
     }
     
     useEffect(() => {
@@ -1413,7 +1431,10 @@ export const AppProvider = ({ children }) => {
     async function concluirLink(id) {
         if (!confirm('Deseja marcar este link como pago/concluído?')) return;
         const { data, error } = await supabase.from('links_pagamento').update({ status: 'Pago' }).eq('id', id).select();
-        if (!error && data) setLinksPagamento(linksPagamento.map(x => x.id === id ? data[0] : x));
+        if (!error && data) {
+            setLinksPagamento(linksPagamento.map(x => x.id === id ? data[0] : x));
+            notificarSeLinkPagamentoNovo(data[0]);
+        }
     }
 
     async function imprimirOS(pedido) {
@@ -1557,11 +1578,17 @@ export const AppProvider = ({ children }) => {
             payload.criado_por = usuario?.nome || '';
             const { data, error } = await supabase.from('links_pagamento').insert([payload]).select();
             if (error) console.error("Erro ao salvar link:", error);
-            if (!error && data) setLinksPagamento([data[0], ...linksPagamento]);
+            if (!error && data) {
+                setLinksPagamento([data[0], ...linksPagamento]);
+                notificarSeLinkPagamentoNovo(data[0]);
+            }
         } else {
             const { id, ...rest } = payload;
             const { data, error } = await supabase.from('links_pagamento').update(rest).eq('id', id).select();
-            if (!error && data) setLinksPagamento(linksPagamento.map(l => l.id === id ? data[0] : l));
+            if (!error && data) {
+                setLinksPagamento(linksPagamento.map(l => l.id === id ? data[0] : l));
+                notificarSeLinkPagamentoNovo(data[0]);
+            }
         }
         setModalLinkAberto(false);
     };
@@ -1625,9 +1652,10 @@ export const AppProvider = ({ children }) => {
                 }
             })
             .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'links_pagamento' }, (payload) => {
-                if (ehUsuario('Giovana')) {
-                    setAlertasNaoLidos(prev => [...prev, { id: Date.now() + Math.random(), msg: `Novo link de pagamento para: ${payload.new.cliente}`, tipo: 'novo_link' }]);
-                }
+                notificarSeLinkPagamentoNovo(payload.new);
+            })
+            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'links_pagamento' }, (payload) => {
+                notificarSeLinkPagamentoNovo(payload.new);
             })
             .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'contas_pagar' }, (payload) => {
                 if (usuario?.nivel === 'Financeiro' || ehUsuario('Giovana')) {

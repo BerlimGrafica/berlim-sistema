@@ -92,9 +92,11 @@ export default function OrcamentosTab() {
                                                         <Icon name="file-text" className="w-5 h-5 inline-block" />
                                                     </button>
 
-                                                    <button onClick={(e) => { e.stopPropagation(); excluirOrcamentoFormalizado(orc.id); }} className="p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded" title="Excluir Orçamento">
-                                                        <Icon name="trash-2" className="w-5 h-5 inline-block" />
-                                                    </button>
+                                                    {isAdmin && (
+                                                        <button onClick={(e) => { e.stopPropagation(); excluirOrcamentoFormalizado(orc.id); }} className="p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded" title="Excluir Orçamento">
+                                                            <Icon name="trash-2" className="w-5 h-5 inline-block" />
+                                                        </button>
+                                                    )}
                                                 </td>
                                             </tr>
                                         ))}
