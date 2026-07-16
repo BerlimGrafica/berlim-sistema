@@ -892,19 +892,21 @@ export default function FinanceiroTab() {
                                             <th className="px-6 py-4 w-28">Data</th>
                                             <th className="px-6 py-4 w-48">Cliente / Razão Social</th>
                                             <th className="px-6 py-4 w-36">CPF / CNPJ</th>
+                                            <th className="px-6 py-4 w-40">Contato</th>
                                             <th className="px-6 py-4 w-32">Tipo Nota</th>
-                                            <th className="px-6 py-4 min-w-[300px]">Serviço / Valor</th>
+                                            <th className="px-6 py-4 min-w-[260px]">Serviço / Valor</th>
+                                            <th className="px-6 py-4 w-48">Observações</th>
                                             <th className="px-6 py-4 w-24 text-right">Ações</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {notasFiscaisPaginadas.map(n => (
-                                            <tr key={n.id} onClick={() => { 
+                                            <tr key={n.id} onClick={() => {
                                                 setNotaFiscalEmEdicao({
                                                     ...n,
                                                     valor_pago: n.valor_pago ? formatarMoeda((n.valor_pago * 100).toFixed(0).toString()) : ''
-                                                }); 
-                                                setModalNotaFiscalAberto(true); 
+                                                });
+                                                setModalNotaFiscalAberto(true);
                                             }} className="border-b border-gray-100 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover transition cursor-pointer">
                                                 <td className="px-4 py-3 text-[13px] dark:text-[#EDEDED] whitespace-nowrap">{new Date(n.created_at).toLocaleDateString('pt-BR')}</td>
                                                 <td className="px-4 py-3">
@@ -912,6 +914,14 @@ export default function FinanceiroTab() {
                                                     <div className="text-[11px] text-gray-500 dark:text-[#A1A1AA]">{n.razao_social}</div>
                                                 </td>
                                                 <td className="px-4 py-3 text-[13px] dark:text-[#EDEDED] whitespace-nowrap">{n.cnpj}</td>
+                                                <td className="px-4 py-3 text-[13px] dark:text-[#EDEDED] whitespace-nowrap">
+                                                    {n.contato ? (
+                                                        <div className="flex items-center gap-1.5">
+                                                            <Icon name={n.forma_envio === 'E-mail' ? 'mail' : 'phone'} className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                                                            {n.contato}
+                                                        </div>
+                                                    ) : <span className="text-gray-400">---</span>}
+                                                </td>
                                                 <td className="px-4 py-3 text-[13px] font-medium text-gray-600 dark:text-gray-400">
                                                     <span className={`px-2 py-1 rounded text-[11px] font-bold ${n.tipo_nota === 'DANFE' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' : (n.tipo_nota === 'Serviço' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400')}`}>
                                                         {n.tipo_nota || 'N/A'}
@@ -920,6 +930,9 @@ export default function FinanceiroTab() {
                                                 <td className="px-4 py-3">
                                                     <div className="text-[13px] dark:text-[#EDEDED]">{n.servico_feito || <span className="text-gray-400 italic">Pendente</span>}</div>
                                                     <div className="text-[11px] font-semibold text-orange-500 dark:text-orange-400">{n.valor_pago ? `R$ ${parseFloat(n.valor_pago).toFixed(2).replace('.', ',')}` : ''}</div>
+                                                </td>
+                                                <td className="px-4 py-3 text-[13px] text-gray-600 dark:text-gray-400 max-w-[200px] truncate" title={n.observacao_cliente || ''}>
+                                                    {n.observacao_cliente || <span className="text-gray-400 italic">---</span>}
                                                 </td>
                                                 <td className="px-4 py-3 text-right">
                                                     <div className="flex items-center justify-end gap-2">
@@ -939,7 +952,7 @@ export default function FinanceiroTab() {
                                             </tr>
                                         ))}
                                         {notasFiscaisPaginadas.length === 0 && (
-                                            <tr><td colSpan="5" className="px-6 py-8 text-center text-gray-500 dark:text-[#A1A1AA]">Nenhuma nota fiscal encontrada.</td></tr>
+                                            <tr><td colSpan="8" className="px-6 py-8 text-center text-gray-500 dark:text-[#A1A1AA]">Nenhuma nota fiscal encontrada.</td></tr>
                                         )}
                                     </tbody>
                                 </table>

@@ -1400,6 +1400,8 @@ export const AppProvider = ({ children }) => {
             cnpj: nota.cnpj,
             endereco: nota.endereco,
             contato: nota.contato,
+            forma_envio: nota.forma_envio,
+            observacao_cliente: nota.observacao_cliente,
             cliente: '',
             servico_feito: '',
             valor_pago: null,
