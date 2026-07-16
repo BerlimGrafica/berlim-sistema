@@ -20,7 +20,7 @@ export default function Modals() {
         <>
             {modalAberto && (
                 <div onClick={fecharModalOS} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer">
-                    <div onClick={(e) => e.stopPropagation()} className="bg-[#EDEFF0] dark:bg-darkBg w-full max-w-3xl rounded border border-gray-200 dark:border-darkBorder shadow-2xl flex flex-col max-h-[95vh] cursor-default overflow-hidden">
+                    <div onClick={(e) => e.stopPropagation()} className="bg-[#EDEFF0] dark:bg-darkBg w-full max-w-4xl rounded border border-gray-200 dark:border-darkBorder shadow-2xl flex flex-col max-h-[95vh] cursor-default overflow-hidden">
                         <div className="px-6 py-5 flex justify-between items-center bg-brand text-white rounded-t">
                             <div className="flex items-center gap-3">
                                 <h3 className="font-semibold text-xl tracking-tight">
@@ -30,184 +30,221 @@ export default function Modals() {
                             </div>
                             <button type="button" onClick={fecharModalOS} className="text-white/70 hover:text-white transition"><Icon name="x" className="w-5 h-5" /></button>
                         </div>
-                        
-                        <form onSubmit={(e) => salvarOS(e, false)} className="p-8 overflow-y-auto custom-scrollbar flex flex-col gap-6">
-                            {isModalTrancado && <div className="p-3 bg-red-950/20 border border-red-900/50 rounded text-[11px] text-red-400 mb-2">Nota liquidada. Peça para um Admin ou Financeiro destravar para edições.</div>}
-                            
-                            <div className="grid grid-cols-3 gap-4 pb-4 border-b border-gray-100 dark:border-darkBorder">
-                                <div>
-                                    <label className="block text-[13px] font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Data da Venda</label>
-                                    <CustomDatePicker value={novoPedido.data_pedido} onChange={val => setNovoPedido({...novoPedido, data_pedido: val})} disabled={isModalTrancado} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none transition" />
-                                </div>
-                                <div>
-                                    <label className="block text-[13px] font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Prazo</label>
-                                    <CustomDatePicker value={novoPedido.prazo} onChange={val => setNovoPedido({...novoPedido, prazo: val})} disabled={isModalTrancado} placeholder="Data final..." className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none transition" />
-                                </div>
-                                <div>
-                                    <label className="block text-[13px] font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Status Inicial</label>
-                                    <div className="relative">
-                                        <select required value={novoPedido.status} onChange={e => setNovoPedido({...novoPedido, status: e.target.value})} disabled={isModalTrancado} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2.5 text-[13px] outline-none focus:border-brand transition dark:text-white font-semibold cursor-pointer appearance-none disabled:opacity-50">
-                                            {opcoesStatusPermitidas.map(s => <option key={s} value={s}>{s}</option>)}
-                                        </select>
-                                        <Icon name="chevron-down" className="absolute right-3 top-3.5 w-4 h-4 text-gray-400 pointer-events-none" />
-                                    </div>
-                                </div>
-                            </div>
 
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-[13px] font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Resp.</label>
-                                    <MultiSelectDropdown
-                                        value={novoPedido.responsavel}
-                                        options={nomesResponsaveis}
-                                        onChange={val => setNovoPedido({...novoPedido, responsavel: val})} 
-                                        disabled={isModalTrancado} 
-                                        className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand transition dark:text-[#EDEDED]"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-[13px] font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Tags Especiais</label>
-                                    <div className="flex items-center gap-2 mt-1">
-                                        <button type="button" onClick={() => setNovoPedido({...novoPedido, entrega: !novoPedido.entrega})} disabled={isModalTrancado} className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded text-[11px] font-semibold transition disabled:opacity-50 ${novoPedido.entrega ? 'text-white bg-orange-500 dark:bg-orange-600 hover:bg-orange-600 dark:hover:bg-orange-700' : 'bg-gray-100 text-gray-500 dark:bg-darkElevated dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-darkHover'}`}><Icon name="package" className="w-4 h-4"/> Entrega</button>
-                                        <button type="button" onClick={() => setNovoPedido({...novoPedido, urgente: !novoPedido.urgente})} disabled={isModalTrancado} className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded text-[11px] font-semibold transition disabled:opacity-50 ${novoPedido.urgente ? 'text-white bg-red-500 dark:bg-red-600 hover:bg-red-600 dark:hover:bg-red-700' : 'bg-gray-100 text-gray-500 dark:bg-darkElevated dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-darkHover'}`}><Icon name="alert-triangle" className="w-3.5 h-3.5"/> Urgente</button>
-                                    </div>
-                                </div>
-                            </div>
+                        <form onSubmit={(e) => salvarOS(e, false)} className="p-6 sm:p-8 overflow-y-auto custom-scrollbar flex flex-col gap-7">
+                            {isModalTrancado && <div className="p-3 bg-red-950/20 border border-red-900/50 rounded text-[11px] text-red-400">Nota liquidada. Peça para um Admin ou Financeiro destravar para edições.</div>}
 
-                            <div>
-                                <label className="block text-[13px] font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Cliente / Empresa</label>
-                                <div className="flex gap-2">
-                                    <div className="relative flex-1">
-                                        <input required type="text" value={buscaCliente} disabled={isModalTrancado}
-                                            onChange={e => { setBuscaCliente(e.target.value); setNovoPedido({...novoPedido, cliente: e.target.value}); setClienteDropdownAberto(true); }}
-                                            onFocus={() => { if(!isModalTrancado) setClienteDropdownAberto(true); }} onBlur={() => setTimeout(() => setClienteDropdownAberto(false), 200)}
-                                            className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand transition dark:text-[#EDEDED] disabled:opacity-50" placeholder="Buscar cliente..." autoComplete="off" />
-                                        <Icon name="chevron-down" className="absolute right-3 top-2.5 w-4 h-4 text-gray-400 pointer-events-none" />
-                                        {clienteDropdownAberto && clientesFiltrados.length > 0 && (
-                                            <ul className="absolute z-[60] w-full mt-1 max-h-48 overflow-y-auto bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded shadow-xl custom-scrollbar">
-                                                {clientesFiltrados.map(c => (
-                                                    <li key={c.id} onClick={() => { setBuscaCliente(c.nome); setNovoPedido({...novoPedido, cliente: c.nome}); setClienteDropdownAberto(false); }} className="px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-darkHover cursor-pointer border-b border-gray-100 dark:border-darkBorder last:border-0 flex justify-between items-center transition"><span className="font-medium text-[13px] text-gray-800 dark:text-[#EDEDED]">{c.nome}</span><span className="text-[11px] text-gray-500">{c.telefone}</span></li>
-                                                ))}
-                                            </ul>
-                                        )}
-                                    </div>
-                                    <button type="button" onClick={() => { setNovoCliente({ id: null, nome: '', telefone: '', email: '', observacoes: '', cliente_problema: false }); setModalClienteAberto(true); }} disabled={isModalTrancado} className="shrink-0 w-[38px] h-[38px] flex items-center justify-center bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded hover:bg-darkHover transition disabled:opacity-50" title="Novo Cliente">
-                                        <Icon name="plus" className="w-4 h-4 text-brand" />
-                                    </button>
+                            <div className="flex flex-col gap-4 pb-6 border-b border-gray-200 dark:border-darkBorder">
+                                <div className="flex items-center gap-2">
+                                    <span className="w-1 h-3.5 bg-brand rounded-full"></span>
+                                    <h4 className="text-[10px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Dados da O.S.</h4>
                                 </div>
-                                {isClienteProblema(novoPedido.cliente) && (
-                                    <div className="mt-2 p-2.5 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded flex items-start gap-2.5 text-red-600 dark:text-red-400">
-                                        <Icon name="alert-triangle" className="w-5 h-5 shrink-0 mt-0.5" />
-                                        <div>
-                                            <span className="text-[13px] font-semibold block">Atenção: Cliente Problemático</span>
-                                            <span className="text-[11px]">Este cliente possui restrições ou histórico negativo na empresa. Fique atento.</span>
+                                <div className="grid grid-cols-3 gap-4">
+                                    <div>
+                                        <label className="block text-[13px] font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Data da Venda</label>
+                                        <CustomDatePicker value={novoPedido.data_pedido} onChange={val => setNovoPedido({...novoPedido, data_pedido: val})} disabled={isModalTrancado} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none transition" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-[13px] font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Prazo</label>
+                                        <CustomDatePicker value={novoPedido.prazo} onChange={val => setNovoPedido({...novoPedido, prazo: val})} disabled={isModalTrancado} placeholder="Data final..." className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none transition" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-[13px] font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Status Inicial</label>
+                                        <div className="relative">
+                                            <select required value={novoPedido.status} onChange={e => setNovoPedido({...novoPedido, status: e.target.value})} disabled={isModalTrancado} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2.5 text-[13px] outline-none focus:border-brand transition dark:text-white font-semibold cursor-pointer appearance-none disabled:opacity-50">
+                                                {opcoesStatusPermitidas.map(s => <option key={s} value={s}>{s}</option>)}
+                                            </select>
+                                            <Icon name="chevron-down" className="absolute right-3 top-3.5 w-4 h-4 text-gray-400 pointer-events-none" />
                                         </div>
                                     </div>
-                                )}
-                            </div>
+                                </div>
 
-                            <div>
-                                <label className="block text-[13px] font-medium mb-3 text-gray-700 dark:text-[#EDEDED]">Carrinho de Itens do Orçamento</label>
-                                {itensPedido.length > 0 ? (
-                                    <div className="mb-4 flex flex-col gap-2">
-                                        {itensPedido.map((item, index) => (
-                                            <div key={item.id_temp} className="flex justify-between items-center p-3 bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded shadow-sm">
-                                                <div className="flex flex-col"><span className="font-semibold text-[13px] dark:text-white">{index + 1}. {item.nome || 'Serviço Personalizado'}</span><span className="text-[11px] text-gray-500 dark:text-[#A1A1AA] whitespace-pre-wrap mt-1">{item.descricao}</span>{item.local_producao && <span className="text-[10px] bg-brand/10 text-brand font-semibold px-1.5 py-0.5 rounded mt-1.5 w-max">Local: {item.local_producao}</span>}</div>
-                                                <div className="flex items-center gap-4"><div className="text-right"><span className="font-semibold text-[13px] dark:text-white">R$ {item.valor}</span>{item.desconto && <span className="block text-[10px] text-brand font-medium">-{item.desconto}% desc</span>}</div><button type="button" disabled={isModalTrancado} onClick={() => removerItemDoCarrinho(item.id_temp)} className="text-red-500 hover:text-red-600 transition disabled:opacity-30"><Icon name="trash-2" className="w-4 h-4" /></button></div>
-                                            </div>
-                                        ))}
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-[13px] font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Resp.</label>
+                                        <MultiSelectDropdown
+                                            value={novoPedido.responsavel}
+                                            options={nomesResponsaveis}
+                                            onChange={val => setNovoPedido({...novoPedido, responsavel: val})}
+                                            disabled={isModalTrancado}
+                                            className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand transition dark:text-[#EDEDED]"
+                                        />
                                     </div>
-                                ) : (
-                                    <p className="text-[11px] text-gray-500 dark:text-[#666] mb-4 italic">Nenhum item adicionado de forma estruturada.</p>
-                                )}
+                                    <div>
+                                        <label className="block text-[13px] font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Tags Especiais</label>
+                                        <div className="flex items-center gap-2 mt-1">
+                                            <button type="button" onClick={() => setNovoPedido({...novoPedido, entrega: !novoPedido.entrega})} disabled={isModalTrancado} className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded text-[11px] font-semibold transition disabled:opacity-50 ${novoPedido.entrega ? 'text-white bg-orange-500 dark:bg-orange-600 hover:bg-orange-600 dark:hover:bg-orange-700' : 'bg-gray-100 text-gray-500 dark:bg-darkElevated dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-darkHover'}`}><Icon name="package" className="w-4 h-4"/> Entrega</button>
+                                            <button type="button" onClick={() => setNovoPedido({...novoPedido, urgente: !novoPedido.urgente})} disabled={isModalTrancado} className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded text-[11px] font-semibold transition disabled:opacity-50 ${novoPedido.urgente ? 'text-white bg-red-500 dark:bg-red-600 hover:bg-red-600 dark:hover:bg-red-700' : 'bg-gray-100 text-gray-500 dark:bg-darkElevated dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-darkHover'}`}><Icon name="alert-triangle" className="w-3.5 h-3.5"/> Urgente</button>
+                                        </div>
+                                    </div>
+                                </div>
 
-                                <div className="p-4 border border-dashed border-gray-300 dark:border-darkBorder rounded bg-transparent">
-                                    <div className="flex flex-col gap-3">
-                                        <div className="flex gap-2">
-                                            <div className="relative flex-1">
-                                                <input type="text" value={buscaProduto} disabled={isModalTrancado} 
-                                                    onChange={e => { setBuscaProduto(e.target.value); setProdutoDropdownAberto(true); }}
-                                                    onFocus={() => { if(!isModalTrancado) setProdutoDropdownAberto(true); }} onBlur={() => setTimeout(() => setProdutoDropdownAberto(false), 200)}
-                                                    className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand transition dark:text-[#EDEDED] disabled:opacity-50" placeholder="Puxar item do catálogo (Opcional)..." autoComplete="off" />
-                                                <Icon name="chevron-down" className="absolute right-3 top-3 w-4 h-4 text-gray-400 pointer-events-none" />
-                                                {produtoDropdownAberto && produtosFiltrados.length > 0 && (
-                                                    <ul className="absolute z-[60] w-full mt-1 max-h-48 overflow-y-auto bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded shadow-xl custom-scrollbar">
-                                                        {produtosFiltrados.map(p => (
-                                                            <li key={p.id} onClick={() => { 
-                                                                setBuscaProduto(p.nome);
-                                                                setItemAtual({ ...itemAtual, nome: p.nome, descricao: p.texto_padrao, valor: formatarMoeda((p.preco_base * 100).toFixed(0).toString()), desconto: '', id_produto: p.id }); 
-                                                                setProdutoDropdownAberto(false); 
-                                                            }} className="px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-darkHover cursor-pointer border-b border-gray-100 dark:border-darkBorder last:border-0 flex flex-col transition">
-                                                                <div className="flex justify-between items-center"><span className="font-medium text-[13px] dark:text-[#EDEDED]">{p.nome}</span><span className="text-[11px] font-semibold text-brand">R$ {formatarValorFinanceiro(Number(p.preco_base))}</span></div>
-                                                            </li>
-                                                        ))}
-                                                    </ul>
-                                                )}
-                                            </div>
-                                            {isAdmin && (
-                                                <button type="button" onClick={() => { setNovoProduto({ id: null, nome: '', texto_padrao: '', preco_base: '' }); setModalProdutoAberto(true); }} disabled={isModalTrancado} className="shrink-0 w-[38px] h-[38px] flex items-center justify-center bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded hover:bg-darkHover transition disabled:opacity-50" title="Novo Produto">
-                                                    <Icon name="plus" className="w-4 h-4 text-brand" />
-                                                </button>
+                                <div>
+                                    <label className="block text-[13px] font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Cliente / Empresa</label>
+                                    <div className="flex gap-2">
+                                        <div className="relative flex-1">
+                                            <input required type="text" value={buscaCliente} disabled={isModalTrancado}
+                                                onChange={e => { setBuscaCliente(e.target.value); setNovoPedido({...novoPedido, cliente: e.target.value}); setClienteDropdownAberto(true); }}
+                                                onFocus={() => { if(!isModalTrancado) setClienteDropdownAberto(true); }} onBlur={() => setTimeout(() => setClienteDropdownAberto(false), 200)}
+                                                className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand transition dark:text-[#EDEDED] disabled:opacity-50" placeholder="Buscar cliente..." autoComplete="off" />
+                                            <Icon name="chevron-down" className="absolute right-3 top-2.5 w-4 h-4 text-gray-400 pointer-events-none" />
+                                            {clienteDropdownAberto && clientesFiltrados.length > 0 && (
+                                                <ul className="absolute z-[60] w-full mt-1 max-h-48 overflow-y-auto bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded shadow-xl custom-scrollbar">
+                                                    {clientesFiltrados.map(c => (
+                                                        <li key={c.id} onClick={() => { setBuscaCliente(c.nome); setNovoPedido({...novoPedido, cliente: c.nome}); setClienteDropdownAberto(false); }} className="px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-darkHover cursor-pointer border-b border-gray-100 dark:border-darkBorder last:border-0 flex justify-between items-center transition"><span className="font-medium text-[13px] text-gray-800 dark:text-[#EDEDED]">{c.nome}</span><span className="text-[11px] text-gray-500">{c.telefone}</span></li>
+                                                    ))}
+                                                </ul>
                                             )}
                                         </div>
-
-                                        <textarea rows="2" value={itemAtual.descricao} disabled={isModalTrancado} onChange={e => setItemAtual({...itemAtual, descricao: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand transition dark:text-[#EDEDED] disabled:opacity-50" placeholder="Especificações do item (Ex: Medida, quantidade, material...)"></textarea>
-                                        <div className="grid grid-cols-4 gap-3">
-                                            <div className="relative col-span-2">
-                                                <span className="absolute left-3 top-2.5 text-[11px] text-gray-400 font-medium">Local:</span>
-                                                <select value={itemAtual.local_producao} disabled={isModalTrancado} onChange={e => setItemAtual({...itemAtual, local_producao: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded pl-[52px] pr-8 py-2 text-[11px] outline-none focus:border-brand transition dark:text-[#EDEDED] font-medium appearance-none disabled:opacity-50">
-                                                    {(fornecedores.length > 0 ? fornecedores.filter(f => !f.tipo || f.tipo === 'Produção').map(f => f.nome) : ['Berlim']).map(l => <option key={l} value={l}>{l}</option>)}
-                                                </select>
-                                                <Icon name="chevron-down" className="absolute right-3 top-2.5 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+                                        <button type="button" onClick={() => { setNovoCliente({ id: null, nome: '', telefone: '', email: '', observacoes: '', cliente_problema: false }); setModalClienteAberto(true); }} disabled={isModalTrancado} className="shrink-0 w-[38px] h-[38px] flex items-center justify-center bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded hover:bg-darkHover transition disabled:opacity-50" title="Novo Cliente">
+                                            <Icon name="plus" className="w-4 h-4 text-brand" />
+                                        </button>
+                                    </div>
+                                    {isClienteProblema(novoPedido.cliente) && (
+                                        <div className="mt-2 p-2.5 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded flex items-start gap-2.5 text-red-600 dark:text-red-400">
+                                            <Icon name="alert-triangle" className="w-5 h-5 shrink-0 mt-0.5" />
+                                            <div>
+                                                <span className="text-[13px] font-semibold block">Atenção: Cliente Problemático</span>
+                                                <span className="text-[11px]">Este cliente possui restrições ou histórico negativo na empresa. Fique atento.</span>
                                             </div>
-                                            <div className="relative">
-                                                <span className="absolute left-2.5 top-2.5 text-[11px] text-gray-400">R$</span>
-                                                <input type="text" value={itemAtual.valor} disabled={isModalTrancado} onChange={e => setItemAtual({...itemAtual, valor: formatarMoeda(e.target.value)})} className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded pl-7 pr-2 py-2 text-[11px] outline-none focus:border-brand transition dark:text-[#EDEDED] font-medium disabled:opacity-50" placeholder="Bruto" />
-                                            </div>
-                                            <div><input type="text" value={itemAtual.desconto} disabled={isModalTrancado} onChange={e => { let val = e.target.value.replace(/\D/g, ''); if (parseFloat(val) > 100) val = '100'; setItemAtual({...itemAtual, desconto: val}); }} className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-2 py-2 text-[11px] outline-none focus:border-brand transition dark:text-[#EDEDED] disabled:opacity-50" placeholder="Desc. %" /></div>
                                         </div>
-                                        <button type="button" onClick={adicionarItemAoCarrinho} disabled={!itemAtual.descricao || !itemAtual.valor || isModalTrancado} className="w-full mt-3 px-3 py-2 text-[11px] font-semibold bg-white hover:bg-gray-100 dark:bg-darkHover dark:hover:bg-darkBorder text-gray-800 dark:text-white rounded border border-gray-200 dark:border-darkBorder transition shadow-sm disabled:opacity-50 flex items-center justify-center gap-1.5"><Icon name="plus" className="w-3.5 h-3.5"/> Inserir Item no Orçamento</button>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* CARRINHO DE ITENS — destacado */}
+                            <div className="rounded-xl border border-blue-200 dark:border-blue-500/30 bg-blue-50/40 dark:bg-blue-500/5 overflow-hidden">
+                                <div className="px-5 py-3.5 bg-blue-100/60 dark:bg-blue-500/10 border-b border-blue-200 dark:border-blue-500/20 flex items-center justify-between gap-2 flex-wrap">
+                                    <div className="flex items-center gap-2.5">
+                                        <div className="p-1.5 rounded-lg bg-white dark:bg-darkCard shadow-sm shrink-0"><Icon name="shopping-bag" className="w-4 h-4 text-blue-600 dark:text-blue-400" /></div>
+                                        <h4 className="font-bold text-[13px] text-gray-800 dark:text-white">Carrinho de Itens do Orçamento</h4>
+                                    </div>
+                                    {itensPedido.length > 0 && (
+                                        <span className="text-[11px] font-bold text-blue-700 dark:text-blue-400 bg-white dark:bg-darkCard px-2.5 py-1 rounded-full shadow-sm shrink-0">{itensPedido.length} {itensPedido.length === 1 ? 'item' : 'itens'}</span>
+                                    )}
+                                </div>
+                                <div className="p-5 flex flex-col gap-4">
+                                    {itensPedido.length > 0 ? (
+                                        <div className="flex flex-col gap-2">
+                                            {itensPedido.map((item, index) => (
+                                                <div key={item.id_temp} className="flex justify-between items-start gap-3 p-3 bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded-lg shadow-sm">
+                                                    <div className="flex items-start gap-3 min-w-0">
+                                                        <span className="w-6 h-6 shrink-0 rounded-full bg-blue-100 dark:bg-blue-500/20 text-[11px] font-bold text-blue-700 dark:text-blue-400 flex items-center justify-center mt-0.5">{index + 1}</span>
+                                                        <div className="flex flex-col min-w-0"><span className="font-semibold text-[13px] dark:text-white">{item.nome || 'Serviço Personalizado'}</span><span className="text-[11px] text-gray-500 dark:text-[#A1A1AA] whitespace-pre-wrap mt-1">{item.descricao}</span>{item.local_producao && <span className="text-[10px] bg-brand/10 text-brand font-semibold px-1.5 py-0.5 rounded mt-1.5 w-max">Local: {item.local_producao}</span>}</div>
+                                                    </div>
+                                                    <div className="flex items-center gap-4 shrink-0"><div className="text-right"><span className="font-bold text-[13px] dark:text-white">R$ {item.valor}</span>{item.desconto && <span className="block text-[10px] text-brand font-medium">-{item.desconto}% desc</span>}</div><button type="button" disabled={isModalTrancado} onClick={() => removerItemDoCarrinho(item.id_temp)} className="text-red-400 hover:text-red-600 transition disabled:opacity-30"><Icon name="trash-2" className="w-4 h-4" /></button></div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="flex flex-col items-center justify-center py-6 text-center opacity-70">
+                                            <Icon name="shopping-bag" className="w-7 h-7 text-gray-300 dark:text-gray-600 mb-1.5" />
+                                            <p className="text-[12px] text-gray-400 italic">Nenhum item adicionado ainda.</p>
+                                        </div>
+                                    )}
+
+                                    <div className="p-4 border-2 border-dashed border-blue-200 dark:border-blue-500/30 rounded-lg bg-white/60 dark:bg-darkElevated/40">
+                                        <div className="flex flex-col gap-3">
+                                            <div className="flex gap-2">
+                                                <div className="relative flex-1">
+                                                    <input type="text" value={buscaProduto} disabled={isModalTrancado}
+                                                        onChange={e => { setBuscaProduto(e.target.value); setProdutoDropdownAberto(true); }}
+                                                        onFocus={() => { if(!isModalTrancado) setProdutoDropdownAberto(true); }} onBlur={() => setTimeout(() => setProdutoDropdownAberto(false), 200)}
+                                                        className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand transition dark:text-[#EDEDED] disabled:opacity-50" placeholder="Puxar item do catálogo (Opcional)..." autoComplete="off" />
+                                                    <Icon name="chevron-down" className="absolute right-3 top-3 w-4 h-4 text-gray-400 pointer-events-none" />
+                                                    {produtoDropdownAberto && produtosFiltrados.length > 0 && (
+                                                        <ul className="absolute z-[60] w-full mt-1 max-h-48 overflow-y-auto bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded shadow-xl custom-scrollbar">
+                                                            {produtosFiltrados.map(p => (
+                                                                <li key={p.id} onClick={() => {
+                                                                    setBuscaProduto(p.nome);
+                                                                    setItemAtual({ ...itemAtual, nome: p.nome, descricao: p.texto_padrao, valor: formatarMoeda((p.preco_base * 100).toFixed(0).toString()), desconto: '', id_produto: p.id });
+                                                                    setProdutoDropdownAberto(false);
+                                                                }} className="px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-darkHover cursor-pointer border-b border-gray-100 dark:border-darkBorder last:border-0 flex flex-col transition">
+                                                                    <div className="flex justify-between items-center"><span className="font-medium text-[13px] dark:text-[#EDEDED]">{p.nome}</span><span className="text-[11px] font-semibold text-brand">R$ {formatarValorFinanceiro(Number(p.preco_base))}</span></div>
+                                                                </li>
+                                                            ))}
+                                                        </ul>
+                                                    )}
+                                                </div>
+                                                {isAdmin && (
+                                                    <button type="button" onClick={() => { setNovoProduto({ id: null, nome: '', texto_padrao: '', preco_base: '' }); setModalProdutoAberto(true); }} disabled={isModalTrancado} className="shrink-0 w-[38px] h-[38px] flex items-center justify-center bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded hover:bg-darkHover transition disabled:opacity-50" title="Novo Produto">
+                                                        <Icon name="plus" className="w-4 h-4 text-brand" />
+                                                    </button>
+                                                )}
+                                            </div>
+
+                                            <textarea rows="2" value={itemAtual.descricao} disabled={isModalTrancado} onChange={e => setItemAtual({...itemAtual, descricao: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand transition dark:text-[#EDEDED] disabled:opacity-50" placeholder="Especificações do item (Ex: Medida, quantidade, material...)"></textarea>
+                                            <div className="grid grid-cols-4 gap-3">
+                                                <div className="relative col-span-2">
+                                                    <span className="absolute left-3 top-2.5 text-[11px] text-gray-400 font-medium">Local:</span>
+                                                    <select value={itemAtual.local_producao} disabled={isModalTrancado} onChange={e => setItemAtual({...itemAtual, local_producao: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded pl-[52px] pr-8 py-2 text-[11px] outline-none focus:border-brand transition dark:text-[#EDEDED] font-medium appearance-none disabled:opacity-50">
+                                                        {(fornecedores.length > 0 ? fornecedores.filter(f => !f.tipo || f.tipo === 'Produção').map(f => f.nome) : ['Berlim']).map(l => <option key={l} value={l}>{l}</option>)}
+                                                    </select>
+                                                    <Icon name="chevron-down" className="absolute right-3 top-2.5 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+                                                </div>
+                                                <div className="relative">
+                                                    <span className="absolute left-2.5 top-2.5 text-[11px] text-gray-400">R$</span>
+                                                    <input type="text" value={itemAtual.valor} disabled={isModalTrancado} onChange={e => setItemAtual({...itemAtual, valor: formatarMoeda(e.target.value)})} className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded pl-7 pr-2 py-2 text-[11px] outline-none focus:border-brand transition dark:text-[#EDEDED] font-medium disabled:opacity-50" placeholder="Bruto" />
+                                                </div>
+                                                <div><input type="text" value={itemAtual.desconto} disabled={isModalTrancado} onChange={e => { let val = e.target.value.replace(/\D/g, ''); if (parseFloat(val) > 100) val = '100'; setItemAtual({...itemAtual, desconto: val}); }} className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-2 py-2 text-[11px] outline-none focus:border-brand transition dark:text-[#EDEDED] disabled:opacity-50" placeholder="Desc. %" /></div>
+                                            </div>
+                                            <button type="button" onClick={adicionarItemAoCarrinho} disabled={!itemAtual.descricao || !itemAtual.valor || isModalTrancado} className="w-full mt-1 px-3 py-2 text-[11px] font-semibold bg-white hover:bg-gray-100 dark:bg-darkHover dark:hover:bg-darkBorder text-gray-800 dark:text-white rounded border border-gray-200 dark:border-darkBorder transition shadow-sm disabled:opacity-50 flex items-center justify-center gap-1.5"><Icon name="plus" className="w-3.5 h-3.5"/> Inserir Item no Orçamento</button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="pt-4 border-t border-gray-200 dark:border-darkBorder">
-                                <label className="block text-[13px] font-medium mb-2 text-gray-700 dark:text-[#EDEDED]">Histórico de Pagamentos</label>
-                                {pagamentosPedido.length > 0 && (
-                                    <div className="mb-3 flex flex-col gap-2">
-                                        {pagamentosPedido.map((pag, idx) => (
-                                            <div key={idx} className="flex justify-between items-center bg-gray-50 dark:bg-darkElevated px-3 py-2 rounded border border-gray-100 dark:border-darkBorder">
-                                                <div className="flex flex-col">
-                                                    <span className="text-[13px] font-medium dark:text-white">{pag.forma} {pag.parcelas > 1 ? `(${pag.parcelas}x)` : ''}</span>
-                                                    {pag.vencimento_boleto && (
-                                                        <span className="text-[11px] text-orange-500 font-semibold ml-2">Vencimento: {pag.vencimento_boleto.split('-').reverse().join('/')}</span>
-                                                    )}
-                                                    <span className="text-[11px] text-gray-500 ml-2">{pag.data}</span>
-                                                </div>
-                                                <div className="flex items-center gap-3">
-                                                    <span className="font-semibold text-[13px] text-emerald-600 dark:text-emerald-400">R$ {pag.valor}</span>
-                                                    {!isModalTrancado && (
-                                                        <button type="button" onClick={() => setPagamentosPedido(pagamentosPedido.filter((_, i) => i !== idx))} className="text-red-500 hover:text-red-700"><Icon name="trash-2" className="w-4 h-4" /></button>
-                                                    )}
-                                                </div>
+                            {/* PAGAMENTOS — destacado */}
+                            {(() => {
+                                const totalPago = pagamentosPedido.reduce((acc, p) => acc + (parseFloat(String(p.valor).replace(/\./g, '').replace(',', '.')) || 0), 0);
+                                const totalOS = parseFloat(String(novoPedido.valor_total).replace(/\./g, '').replace(',', '.')) || 0;
+                                const saldo = totalOS - totalPago;
+                                const coresFormaPagamento = { 'PIX': 'bg-teal-500', 'Boleto': 'bg-orange-500', 'Cartão de Crédito': 'bg-purple-500', 'Cartão de Débito': 'bg-blue-500', 'Dinheiro': 'bg-emerald-500', 'Link de Pagamento': 'bg-sky-500' };
+                                return (
+                                    <div className="rounded-xl border border-emerald-200 dark:border-emerald-500/30 bg-emerald-50/40 dark:bg-emerald-500/5 overflow-hidden">
+                                        <div className="px-5 py-3.5 bg-emerald-100/60 dark:bg-emerald-500/10 border-b border-emerald-200 dark:border-emerald-500/20 flex items-center justify-between gap-2 flex-wrap">
+                                            <div className="flex items-center gap-2.5">
+                                                <div className="p-1.5 rounded-lg bg-white dark:bg-darkCard shadow-sm shrink-0"><Icon name="dollar-sign" className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /></div>
+                                                <h4 className="font-bold text-[13px] text-gray-800 dark:text-white">Pagamentos</h4>
                                             </div>
-                                        ))}
-                                    </div>
-                                )}
-                                
-                                {(() => {
-                                    const totalPago = pagamentosPedido.reduce((acc, p) => acc + (parseFloat(String(p.valor).replace(/\./g, '').replace(',', '.')) || 0), 0);
-                                    const totalOS = parseFloat(String(novoPedido.valor_total).replace(/\./g, '').replace(',', '.')) || 0;
-                                    const saldo = totalOS - totalPago;
-                                    return (
-                                        <>
-                                            <div className="mb-4 flex justify-between items-center text-[13px]">
-                                                <span className="text-gray-600 dark:text-gray-400">Total Pago: <strong className="text-emerald-600">R$ {formatarValorFinanceiro(totalPago)}</strong></span>
-                                                <span className="text-gray-600 dark:text-gray-400">Saldo Devedor: <strong className={saldo > 0 ? "text-red-500" : "text-gray-400"}>R$ {formatarValorFinanceiro(saldo)}</strong></span>
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 bg-white dark:bg-darkCard px-2.5 py-1 rounded-full shadow-sm">Pago: R$ {formatarValorFinanceiro(totalPago)}</span>
+                                                <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full shadow-sm bg-white dark:bg-darkCard ${saldo > 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-400'}`}>Saldo: R$ {formatarValorFinanceiro(saldo)}</span>
                                             </div>
+                                        </div>
+                                        <div className="p-5 flex flex-col gap-4">
+                                            {pagamentosPedido.length > 0 ? (
+                                                <div className="flex flex-col gap-2">
+                                                    {pagamentosPedido.map((pag, idx) => (
+                                                        <div key={idx} className="flex justify-between items-center gap-3 bg-white dark:bg-darkElevated px-3.5 py-3 rounded-lg border border-gray-200 dark:border-darkBorder shadow-sm">
+                                                            <div className="flex items-center gap-3 min-w-0">
+                                                                <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${coresFormaPagamento[pag.forma] || 'bg-gray-400'}`}></span>
+                                                                <div className="flex flex-col min-w-0">
+                                                                    <span className="text-[13px] font-semibold dark:text-white truncate">{pag.forma} {pag.parcelas > 1 ? `(${pag.parcelas}x)` : ''}</span>
+                                                                    {pag.vencimento_boleto && (
+                                                                        <span className="text-[11px] text-orange-500 font-semibold">Vencimento: {pag.vencimento_boleto.split('-').reverse().join('/')}</span>
+                                                                    )}
+                                                                    <span className="text-[11px] text-gray-500">{pag.data}</span>
+                                                                </div>
+                                                            </div>
+                                                            <div className="flex items-center gap-3 shrink-0">
+                                                                <span className="font-bold text-[13px] text-emerald-600 dark:text-emerald-400">R$ {pag.valor}</span>
+                                                                {!isModalTrancado && (
+                                                                    <button type="button" onClick={() => setPagamentosPedido(pagamentosPedido.filter((_, i) => i !== idx))} className="text-red-400 hover:text-red-600 transition"><Icon name="trash-2" className="w-4 h-4" /></button>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <div className="flex flex-col items-center justify-center py-6 text-center opacity-70">
+                                                    <Icon name="dollar-sign" className="w-7 h-7 text-gray-300 dark:text-gray-600 mb-1.5" />
+                                                    <p className="text-[12px] text-gray-400 italic">Nenhum pagamento registrado ainda.</p>
+                                                </div>
+                                            )}
 
                                             {!isModalTrancado && saldo > 0 && (
-                                                <div className="flex flex-col gap-2 p-3 bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded mb-4">
+                                                <div className="flex flex-col gap-2 p-4 border-2 border-dashed border-emerald-200 dark:border-emerald-500/30 rounded-lg bg-white/60 dark:bg-darkElevated/40">
                                                     <div className="grid grid-cols-2 gap-2">
                                                         <select value={novoPagamento.forma} onChange={e => setNovoPagamento({...novoPagamento, forma: e.target.value})} className="bg-white dark:bg-darkCard border border-gray-300 dark:border-darkBorder rounded px-2 py-1.5 text-[11px] outline-none">
                                                             <option value="PIX">PIX</option>
@@ -241,29 +278,32 @@ export default function Modals() {
                                                     <button type="button" onClick={() => {
                                                         if (!novoPagamento.valor) return;
                                                         setPagamentosPedido([...pagamentosPedido, { ...novoPagamento, data: obterDataAtual() }]);
-                                                        
+
                                                         // Atualiza sugerindo o restante
                                                         const novoTotalPago = pagamentosPedido.reduce((acc, p) => acc + (parseFloat(String(p.valor).replace(/\./g, '').replace(',', '.')) || 0), 0) + parseFloat(String(novoPagamento.valor).replace(/\./g, '').replace(',', '.'));
                                                         const totalOSStr = parseFloat(String(novoPedido.valor_total).replace(/\./g, '').replace(',', '.')) || 0;
                                                         const saldoRestante = totalOSStr - novoTotalPago;
-                                                        
+
                                                         setNovoPagamento({ valor: saldoRestante > 0 ? formatarMoeda((saldoRestante * 100).toFixed(0).toString()) : '', forma: 'PIX', parcelas: 1, instituicao: 'Itaú' });
                                                     }} className="w-full bg-brand hover:bg-brandHover text-white py-1.5 rounded text-[11px] font-semibold transition">Registrar Pagamento</button>
                                                 </div>
                                             )}
-                                        </>
-                                    );
-                                })()}
-                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })()}
 
                             <div>
-                                <label className="block text-[13px] font-medium mb-2 text-gray-700 dark:text-[#EDEDED]">Observações Gerais ou Texto Complementar</label>
+                                <div className="flex items-center gap-2 mb-2">
+                                    <span className="w-1 h-3.5 bg-brand rounded-full"></span>
+                                    <h4 className="text-[10px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Observações Gerais ou Texto Complementar</h4>
+                                </div>
                                 <textarea rows="4" value={novoPedido.servico} onChange={e => setNovoPedido({...novoPedido, servico: e.target.value})} disabled={isModalTrancado} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand transition dark:text-[#EDEDED] custom-scrollbar disabled:opacity-50" placeholder="Prazos de entrega, observações do financeiro ou complementos da O.S..."></textarea>
                             </div>
                         </form>
 
                         <div className="px-6 py-4 border-t border-gray-200 dark:border-darkBorder bg-gray-50/80 dark:bg-darkCard/80 backdrop-blur-md flex flex-col lg:flex-row items-center justify-between gap-6 shrink-0 rounded-b-xl z-20 shadow-[0_-4px_20px_rgb(0,0,0,0.02)] dark:shadow-none">
-                            
+
                             <div className="flex items-center gap-3 bg-white dark:bg-darkElevated px-4 py-3 rounded-xl border border-gray-200 dark:border-darkBorder shadow-sm w-full lg:w-auto justify-between lg:justify-start">
                                 <span className="text-[11px] font-bold text-gray-400 dark:text-[#888888] uppercase tracking-widest mt-1">Total Final</span>
                                 <div className="relative flex items-center justify-end">
@@ -279,7 +319,7 @@ export default function Modals() {
                                             <Icon name="printer" className="w-4 h-4 shrink-0" />
                                             {salvandoOS ? 'Salvando...' : 'Salvar e Imprimir'}
                                         </button>
-                                        
+
                                         <button type="button" onClick={(e) => salvarOS(e, false)} disabled={salvandoOS} className="w-full sm:w-44 px-2 py-2.5 rounded-lg text-[13px] font-bold bg-brand text-white hover:bg-brandHover shadow-md shadow-brand/20 transition disabled:opacity-50 flex items-center justify-center gap-2 whitespace-nowrap">
                                             <Icon name="save" className="w-4 h-4 shrink-0" />
                                             {salvandoOS ? 'Salvando...' : pedidoEmEdicao ? 'Atualizar' : 'Salvar OS'}
@@ -293,8 +333,7 @@ export default function Modals() {
                                                     alert("Não é possível finalizar a OS: O valor total ainda não foi pago.");
                                                     return;
                                                 }
-                                                novoPedido.status = 'Finalizado';
-                                                salvarOS(e, false);
+                                                salvarOS(e, false, 'Finalizado');
                                             }} disabled={salvandoOS} className="w-full sm:w-44 px-2 py-2.5 rounded-lg text-[13px] font-bold bg-emerald-500 hover:bg-emerald-600 text-white shadow-md shadow-emerald-500/20 transition disabled:opacity-50 flex items-center justify-center gap-2 border border-emerald-600/50 whitespace-nowrap">
                                                 <Icon name="check-circle" className="w-4 h-4 shrink-0" />
                                                 Finalizar OS

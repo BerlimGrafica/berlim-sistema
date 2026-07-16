@@ -886,10 +886,11 @@ export const AppProvider = ({ children }) => {
         setNovoPedido({...novoPedido, valor_total: formatarMoeda((totalGeralOS * 100).toFixed(0).toString())});
     }
 
-    async function salvarOS(e, querImprimir = false) {
+    async function salvarOS(e, querImprimir = false, statusForcado = null) {
         if (e) e.preventDefault();
         setSalvandoOS(true);
-        
+        const statusFinal = statusForcado || novoPedido.status;
+
         let textoFinalServico = '';
         if (itensPedido.length > 0) {
             const itensTextoArray = itensPedido.map(i => {
@@ -917,7 +918,7 @@ export const AppProvider = ({ children }) => {
         const payload = {
             cliente: novoPedido.cliente,
             servico: textoFinalServico,
-            status: novoPedido.status,
+            status: statusFinal,
             valor_total: valorNumericoFinal,
             data_pedido: novoPedido.data_pedido || null,
             prazo: novoPedido.prazo || null,
@@ -928,10 +929,10 @@ export const AppProvider = ({ children }) => {
             urgente: novoPedido.urgente
         };
 
-        if (novoPedido.status === 'Concluído' && (!pedidoEmEdicao || pedidoEmEdicao.status !== 'Concluído')) {
+        if (statusFinal === 'Concluído' && (!pedidoEmEdicao || pedidoEmEdicao.status !== 'Concluído')) {
             payload.prazo = obterDataAtual();
         }
-        if (novoPedido.status === 'Retirada' && (!pedidoEmEdicao || pedidoEmEdicao.status !== 'Retirada')) {
+        if (statusFinal === 'Retirada' && (!pedidoEmEdicao || pedidoEmEdicao.status !== 'Retirada')) {
             payload.data_retirada = obterDataAtual();
         }
 
@@ -951,11 +952,19 @@ export const AppProvider = ({ children }) => {
                 if (querImprimir) imprimirOS({ ...pedidoEmEdicao, ...payload });
             }
         } else {
-            const novoId = pedidos.length > 0 ? Math.max(...pedidos.map(p => p.id)) + 1 : 1;
-            payload.id = novoId;
+            const { data: ultimoPedido } = await supabase.from('pedidos').select('id').order('id', { ascending: false }).limit(1);
+            const idBase = ultimoPedido && ultimoPedido.length > 0 ? ultimoPedido[0].id : (pedidos.length > 0 ? Math.max(...pedidos.map(p => p.id)) : 0);
+            let novoId = idBase + 1;
             payload.criado_por = usuario?.nome || 'Desconhecido';
-            const { data, error } = await supabase.from('pedidos').insert([payload]).select();
-            
+
+            let data, error;
+            for (let tentativa = 0; tentativa < 5; tentativa++) {
+                payload.id = novoId;
+                ({ data, error } = await supabase.from('pedidos').insert([payload]).select());
+                if (!error || error.code !== '23505') break;
+                novoId += 1; // ID já usado por outra O.S. criada nesse meio tempo; tenta o próximo.
+            }
+
             if (error) {
                 alert('Erro ao salvar OS: ' + error.message);
             } else if (data && data.length > 0) {
