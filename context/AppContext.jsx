@@ -166,9 +166,7 @@ export const AppProvider = ({ children }) => {
                     { event: '*', schema: 'public', table: 'pedidos' }, 
                     (payload) => {
                         console.log('Atualização em tempo real (pedidos) recebida!', payload);
-                        const isAdm = usuario?.nivel === 'Administrador';
                         const isFin = usuario?.nivel === 'Financeiro';
-                        const isOpe = usuario?.nivel === 'Atendimento' || usuario?.nivel === 'Produção';
 
                         const extrairBoletos = (servico) => {
                             const str = servico && servico.split('\n\n[PAGAMENTOS]\n')[1];
@@ -205,23 +203,16 @@ export const AppProvider = ({ children }) => {
                                 });
                             }
 
-                            // Alerta: Serviço Concluído (para Financeiro/Admin)
-                            if (payload.new.status === 'Concluído' && payload.old?.status !== 'Concluído') {
-                                if (isAdm || isFin) {
-                                    setAlertasNaoLidos(prev => [...prev, { id: Date.now() + 1, msg: `Serviço O.S. #${payload.new.id} concluído!`, os_id: payload.new.id, tipo: 'concluido' }]);
-                                }
-                            }
-
-                            // Alerta: Avisar Cliente (para Atendimento/Admin)
+                            // Alerta: Avisar Cliente (apenas Atendimento)
                             if (payload.new.status === 'Avisar Cliente' && payload.old?.status !== 'Avisar Cliente') {
-                                if (isAdm || isOpe) {
+                                if (usuario?.nivel === 'Atendimento') {
                                     setAlertasNaoLidos(prev => [...prev, { id: Date.now() + 5, msg: `Avisar cliente: ${payload.new.cliente} (O.S. #${payload.new.id})`, os_id: payload.new.id, tipo: 'avisar_cliente' }]);
                                 }
                             }
 
-                            // Alerta: Serviço de Urgência (para Operacional/Admin)
+                            // Alerta: Serviço de Urgência (apenas para o responsável pela O.S.)
                             if (payload.new.urgente && !payload.old?.urgente) {
-                                if (isAdm || isOpe) {
+                                if (newList.includes(nomeUsuario)) {
                                     setAlertasNaoLidos(prev => [...prev, { id: Date.now() + 2, msg: `Urgência marcada na O.S. #${payload.new.id}!`, os_id: payload.new.id, tipo: 'urgencia' }]);
                                 }
                             }
@@ -235,9 +226,9 @@ export const AppProvider = ({ children }) => {
                                 setAlertasNaoLidos(prev => [...prev, { id: Date.now(), msg: `Nova O.S. #${payload.new.id} atribuída a você`, os_id: payload.new.id, tipo: 'atribuicao' }]);
                             }
                             
-                            // Alerta: Serviço de Urgência no cadastro
+                            // Alerta: Serviço de Urgência no cadastro (apenas para o responsável pela O.S.)
                             if (payload.new.urgente) {
-                                if (isAdm || isOpe) {
+                                if (newList.includes(nomeUsuario)) {
                                     setAlertasNaoLidos(prev => [...prev, { id: Date.now() + 2, msg: `Urgência na nova O.S. #${payload.new.id}!`, os_id: payload.new.id, tipo: 'urgencia' }]);
                                 }
                             }
@@ -252,11 +243,9 @@ export const AppProvider = ({ children }) => {
                     { event: '*', schema: 'public', table: 'notas_fiscais' }, 
                     (payload) => {
                         console.log('Atualização em tempo real (notas_fiscais) recebida!', payload);
-                        const isAdm = usuario?.nivel === 'Administrador';
-                        const isOpe = usuario?.nivel === 'Atendimento' || usuario?.nivel === 'Produção';
 
                         if (payload.eventType === 'INSERT') {
-                            if (isAdm || isOpe) {
+                            if (usuario?.nivel === 'Atendimento') {
                                 setAlertasNaoLidos(prev => [...prev, { id: Date.now() + 3, msg: `Nova Nota Fiscal solicitada (${payload.new.cliente || payload.new.cnpj})`, os_id: null, tipo: 'nf_nova' }]);
                             }
                         } else if (payload.eventType === 'UPDATE') {
@@ -1688,9 +1677,6 @@ export const AppProvider = ({ children }) => {
                 notificarSeContaPagarUrgente(payload.new);
             })
             .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'empresas_faturamento' }, (payload) => {
-                if (usuario?.nivel === 'Administrador' || usuario?.nivel === 'Financeiro') {
-                    setAlertasNaoLidos(prev => [...prev, { id: Date.now() + Math.random(), msg: `Novo cliente em faturamento: ${payload.new.nome}`, tipo: 'novo_cliente_faturamento' }]);
-                }
                 notificarSeFaturamentoEmAnalise(payload.new);
             })
             .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'empresas_faturamento' }, (payload) => {

@@ -50,7 +50,7 @@ export default function Navbar() {
                                             alertasNaoLidos.slice().reverse().map(alerta => (
                                                 <div key={alerta.id} className="px-4 py-3 hover:bg-gray-50 dark:hover:bg-darkHover border-b border-gray-50 dark:border-darkBorder/50 last:border-0 cursor-pointer flex justify-between items-start group" onClick={() => {
                                                     setModalAlertasAberto(false);
-                                                    if (alerta.tipo === 'faturamento_em_analise' || alerta.tipo === 'novo_cliente_faturamento') {
+                                                    if (alerta.tipo === 'faturamento_em_analise') {
                                                         setAbaAtual('financeiro');
                                                         setAbaFinanceiro('empresas_aprovadas');
                                                     } else if (alerta.tipo === 'nf_nova' || alerta.tipo === 'nf_preenchida') {
