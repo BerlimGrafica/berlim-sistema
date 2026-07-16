@@ -1146,9 +1146,29 @@ export const AppProvider = ({ children }) => {
         };
 
         if (novaConta.id) {
+            const contaAnterior = contasPagar.find(c => c.id === novaConta.id);
+            const tornouPaga = contaAnterior && contaAnterior.status !== 'Pago' && contaFormatada.status === 'Pago';
+
             const { data, error } = await supabase.from('contas_pagar').update(contaFormatada).eq('id', novaConta.id).select();
             if (!error && data) {
-                setContasPagar(contasPagar.map(c => c.id === novaConta.id ? data[0] : c));
+                let contasAtualizadas = contasPagar.map(c => c.id === novaConta.id ? data[0] : c);
+
+                if (tornouPaga && contaFormatada.recorrente) {
+                    const copiaPendente = {
+                        descricao: contaFormatada.descricao,
+                        valor: 0,
+                        vencimento: contaFormatada.vencimento,
+                        status: 'Pendente',
+                        recorrente: true
+                    };
+                    const { data: novaCopia, error: erroCopia } = await supabase.from('contas_pagar').insert([copiaPendente]).select();
+                    if (!erroCopia && novaCopia) {
+                        contasAtualizadas = [...contasAtualizadas, novaCopia[0]];
+                        notificarSeContaPagarUrgente(novaCopia[0]);
+                    }
+                }
+
+                setContasPagar(contasAtualizadas);
                 notificarSeContaPagarUrgente(data[0]);
                 setModalContaAberto(false);
             } else {

@@ -588,10 +588,19 @@ export default function Modals() {
                             <button onClick={() => setModalContaAberto(false)} className="text-gray-400 hover:text-white transition"><Icon name="x" /></button>
                         </div>
                         <form onSubmit={salvarConta} className="p-6 flex flex-col gap-4">
-                            <input required value={novaConta.descricao} onChange={e => setNovaConta({...novaConta, descricao: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition" placeholder="Descrição da Despesa" />
+                            <div className="flex flex-col gap-1">
+                                <label className="text-[11px] font-semibold text-gray-500 uppercase">Descrição</label>
+                                <input required value={novaConta.descricao} onChange={e => setNovaConta({...novaConta, descricao: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition" placeholder="Ex: Conta de Energia" />
+                            </div>
                             <div className="grid grid-cols-2 gap-4">
-                                <input required value={novaConta.valor} onChange={e => setNovaConta({...novaConta, valor: formatarMoeda(e.target.value)})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white font-medium transition" placeholder="Valor (R$)" />
-                                <input type="date" required value={novaConta.vencimento} onChange={e => setNovaConta({...novaConta, vencimento: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition text-gray-700" />
+                                <div className="flex flex-col gap-1">
+                                    <label className="text-[11px] font-semibold text-gray-500 uppercase">Valor (R$)</label>
+                                    <input required value={novaConta.valor} onChange={e => setNovaConta({...novaConta, valor: formatarMoeda(e.target.value)})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white font-medium transition" placeholder="0,00" />
+                                </div>
+                                <div className="flex flex-col gap-1">
+                                    <label className="text-[11px] font-semibold text-gray-500 uppercase">Vencimento</label>
+                                    <CustomDatePicker value={novaConta.vencimento} onChange={val => setNovaConta({...novaConta, vencimento: val})} placeholder="Selecione uma data" className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition" />
+                                </div>
                             </div>
                             <div className="flex flex-col gap-1">
                                 <label className="text-[11px] font-semibold text-gray-500 uppercase">Status</label>
@@ -600,10 +609,15 @@ export default function Modals() {
                                     <option value="Pago">Pago</option>
                                 </select>
                             </div>
-                            <label className="flex items-center gap-2 cursor-pointer mt-1">
-                                <input type="checkbox" checked={novaConta.recorrente || false} onChange={e => setNovaConta({...novaConta, recorrente: e.target.checked})} className="w-4 h-4 rounded text-brand focus:ring-brand dark:bg-darkElevated border-gray-300 dark:border-darkBorder" />
-                                <span className="text-[13px] font-semibold text-gray-700 dark:text-gray-300">Conta Recorrente?</span>
-                            </label>
+                            <div className="flex flex-col gap-1.5 mt-1">
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                    <input type="checkbox" checked={novaConta.recorrente || false} onChange={e => setNovaConta({...novaConta, recorrente: e.target.checked})} className="w-4 h-4 rounded text-brand focus:ring-brand dark:bg-darkElevated border-gray-300 dark:border-darkBorder" />
+                                    <span className="text-[13px] font-semibold text-gray-700 dark:text-gray-300">Conta Recorrente?</span>
+                                </label>
+                                {novaConta.recorrente && (
+                                    <p className="text-[11px] text-gray-500 dark:text-gray-400 pl-6">Ao marcar esta conta como &ldquo;Pago&rdquo;, uma nova cobrança pendente é criada automaticamente com o mesmo vencimento, para você só preencher o valor na próxima vez.</p>
+                                )}
+                            </div>
                             <div className="flex justify-end gap-3 mt-2">
                                 <button type="button" onClick={() => setModalContaAberto(false)} className="px-4 py-2 rounded text-[13px] font-medium text-gray-600 dark:text-[#A1A1AA] hover:bg-gray-100 dark:hover:bg-darkHover transition">Cancelar</button>
                                 <button type="submit" disabled={salvandoConta} className="px-5 py-2 rounded text-[13px] font-medium bg-white text-black hover:bg-gray-200 transition disabled:opacity-50">

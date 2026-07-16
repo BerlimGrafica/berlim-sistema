@@ -697,7 +697,7 @@ export default function FinanceiroTab() {
                                                                 <tr><td colSpan="5" className="text-center py-8 text-gray-400">Nenhuma conta a pagar registrada.</td></tr>
                                                             ) : (
                                                                 contasPagar.filter(c => mostrarContasPagas ? true : c.status !== 'Pago').map(conta => (
-                                                                    <tr key={conta.id} onClick={() => { setNovaConta(conta); setModalContaAberto(true); }} className="hover:bg-gray-50 dark:hover:bg-darkHover/50 transition-colors group cursor-pointer">
+                                                                    <tr key={conta.id} onClick={() => { setNovaConta({...conta, valor: conta.valor ? formatarMoeda((conta.valor * 100).toFixed(0).toString()) : ''}); setModalContaAberto(true); }} className="hover:bg-gray-50 dark:hover:bg-darkHover/50 transition-colors group cursor-pointer">
                                                                         <td className="px-6 py-4 text-[13px] text-gray-600 dark:text-[#A1A1AA]">{formatarDataExibicao(conta.vencimento)}</td>
                                                                         <td className="px-6 py-4 text-[13px] font-medium text-gray-900 dark:text-gray-300">
                                                                             {conta.descricao}
