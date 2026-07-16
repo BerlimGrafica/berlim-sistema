@@ -35,9 +35,7 @@ export default function DashboardTab() {
                         </div>
 
                         {/* METRICS & ALERTS ROW */}
-                        <div className="flex flex-col lg:flex-row gap-6 shrink-0 items-stretch">
-                        <div className="flex-1 flex flex-col gap-6 lg:w-2/3">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 shrink-0">
 
                             {/* KPIs */}
                             {(() => {
@@ -80,9 +78,49 @@ export default function DashboardTab() {
                                 );
                             })()}
 
-                        </div>
+                            {/* ALERTS WALL */}
+                            <div className="bg-white dark:bg-darkCard border border-gray-100 dark:border-darkBorder rounded-md p-0 shadow-[0_4px_20px_rgb(0,0,0,0.03)] dark:shadow-none flex flex-col overflow-hidden hover:shadow-lg transition lg:row-span-2 min-h-0">
+                                <div className="px-6 py-5 border-b border-gray-100 dark:border-darkBorder bg-gray-50/50 dark:bg-darkHover/30 flex justify-between items-center shrink-0">
+                                    <h3 className="font-bold text-[13px] uppercase tracking-wider text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                                        <Icon name="bell" className="w-4 h-4 text-brand" /> Mural de Avisos
+                                    </h3>
+                                    {alertasNaoLidos.length > 0 && (
+                                        <span className="bg-rose-500 text-white text-[11px] font-bold px-2 py-0.5 rounded-full shadow-sm">{alertasNaoLidos.length}</span>
+                                    )}
+                                </div>
+                                <div className="flex-1 min-h-0 p-4 overflow-y-auto custom-scrollbar flex flex-col gap-3">
+                                    {alertasNaoLidos.length === 0 ? (
+                                        <div className="flex-1 flex flex-col items-center justify-center text-center opacity-60">
+                                            <Icon name="check-circle" className="w-10 h-10 mb-2 text-emerald-500" />
+                                            <p className="text-[13px] font-semibold text-gray-500 dark:text-gray-400">Nenhum aviso pendente.</p>
+                                        </div>
+                                    ) : (
+                                        alertasNaoLidos.map((alerta, idx) => (
+                                            <div key={idx} className="group bg-rose-50/80 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/30 rounded-xl p-4 flex gap-3 items-start shadow-sm hover:shadow-md hover:bg-rose-50 dark:hover:bg-rose-500/20 transition cursor-pointer backdrop-blur-sm" onClick={() => {
+                                                setAbaAtual('producao');
+                                                if (alerta.os_id) {
+                                                    setBuscaProducaoText(alerta.os_id.toString());
+                                                }
+                                            }}>
+                                                <div className="bg-rose-500/20 p-2 rounded-lg shrink-0 mt-0.5">
+                                                    <Icon name="alert-triangle" className="w-4 h-4 text-rose-600 dark:text-rose-400" />
+                                                </div>
+                                                <div className="flex-1">
+                                                    <p className="text-[13px] font-bold text-gray-800 dark:text-gray-200 leading-snug">{alerta.msg}</p>
+                                                    <span className="text-[10px] font-bold text-rose-500 mt-1.5 inline-block uppercase tracking-wider hover:underline">Ver Detalhes &rarr;</span>
+                                                </div>
+                                                <button type="button" onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setAlertasNaoLidos(prev => prev.filter(a => a.id !== alerta.id));
+                                                }} className="text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 opacity-0 group-hover:opacity-100 transition p-1 shrink-0" title="Remover aviso">
+                                                    <Icon name="x" className="w-3.5 h-3.5" />
+                                                </button>
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
+                            </div>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 flex-1">
                             {/* MINHAS TAREFAS LIST */}
                             <div className="bg-white dark:bg-darkCard border border-gray-100 dark:border-darkBorder rounded-md shadow-[0_4px_20px_rgb(0,0,0,0.03)] dark:shadow-none overflow-hidden flex flex-col hover:shadow-lg transition h-[320px]">
                                 <div className="px-5 py-4 border-b border-gray-100 dark:border-darkBorder bg-gray-50/50 dark:bg-darkHover/30 flex justify-between items-center shrink-0">
@@ -209,52 +247,6 @@ export default function DashboardTab() {
                                     </table>
                                 </div>
                             </div>
-                        </div>
-                        </div>
-
-                        {/* ALERTS WALL */}
-                        <div className="bg-white dark:bg-darkCard border border-gray-100 dark:border-darkBorder rounded-md p-0 shadow-[0_4px_20px_rgb(0,0,0,0.03)] dark:shadow-none flex flex-col overflow-hidden hover:shadow-lg transition lg:w-1/3">
-                            <div className="px-6 py-5 border-b border-gray-100 dark:border-darkBorder bg-gray-50/50 dark:bg-darkHover/30 flex justify-between items-center shrink-0">
-                                <h3 className="font-bold text-[13px] uppercase tracking-wider text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                                    <Icon name="bell" className="w-4 h-4 text-brand" /> Mural de Avisos
-                                </h3>
-                                {alertasNaoLidos.length > 0 && (
-                                    <span className="bg-rose-500 text-white text-[11px] font-bold px-2 py-0.5 rounded-full shadow-sm">{alertasNaoLidos.length}</span>
-                                )}
-                            </div>
-                            <div className="flex-1 min-h-0 p-4 overflow-y-auto custom-scrollbar flex flex-col gap-3">
-                                {alertasNaoLidos.length === 0 ? (
-                                    <div className="flex-1 flex flex-col items-center justify-center text-center opacity-60">
-                                        <Icon name="check-circle" className="w-10 h-10 mb-2 text-emerald-500" />
-                                        <p className="text-[13px] font-semibold text-gray-500 dark:text-gray-400">Nenhum aviso pendente.</p>
-                                    </div>
-                                ) : (
-                                    alertasNaoLidos.map((alerta, idx) => (
-                                        <div key={idx} className="group bg-rose-50/80 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/30 rounded-xl p-4 flex gap-3 items-start shadow-sm hover:shadow-md hover:bg-rose-50 dark:hover:bg-rose-500/20 transition cursor-pointer backdrop-blur-sm" onClick={() => {
-                                            setAbaAtual('producao');
-                                            if (alerta.os_id) {
-                                                setBuscaProducaoText(alerta.os_id.toString());
-                                            }
-                                        }}>
-                                            <div className="bg-rose-500/20 p-2 rounded-lg shrink-0 mt-0.5">
-                                                <Icon name="alert-triangle" className="w-4 h-4 text-rose-600 dark:text-rose-400" />
-                                            </div>
-                                            <div className="flex-1">
-                                                <p className="text-[13px] font-bold text-gray-800 dark:text-gray-200 leading-snug">{alerta.msg}</p>
-                                                <span className="text-[10px] font-bold text-rose-500 mt-1.5 inline-block uppercase tracking-wider hover:underline">Ver Detalhes &rarr;</span>
-                                            </div>
-                                            <button type="button" onClick={(e) => {
-                                                e.stopPropagation();
-                                                setAlertasNaoLidos(prev => prev.filter(a => a.id !== alerta.id));
-                                            }} className="text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 opacity-0 group-hover:opacity-100 transition p-1 shrink-0" title="Remover aviso">
-                                                <Icon name="x" className="w-3.5 h-3.5" />
-                                            </button>
-                                        </div>
-                                    ))
-                                )}
-                            </div>
-                        </div>
-
                         </div>
                     </main>
                 )}
