@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useAppContext, supabase } from "@/context/AppContext";
 import Icon from "@/components/Icon";
-import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS, obterCorStatus, formatarValorFinanceiro, formatarMoeda, formatarTelefone, formatarCnpjCpf, obterDataAtual, formatarDataExibicao, formatarMesAno, CustomDatePicker, InlineDropdown, MultiSelectDropdown, desconstruirTextoServico, obterResumoServicos, ItensChecklist, StackedCards, CalculadoraBanner, CalculadoraAdesivo, CalculadoraCasamento, CalculadorasAba } from '@/lib/utils';
+import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS, obterCorStatus, formatarValorFinanceiro, formatarMoeda, formatarTelefone, formatarCnpjCpf, obterDataAtual, formatarDataExibicao, formatarMesAno, CustomDatePicker, InlineDropdown, MultiSelectDropdown, Switch, desconstruirTextoServico, obterResumoServicos, ItensChecklist, StackedCards, CalculadoraBanner, CalculadoraAdesivo, CalculadoraCasamento, CalculadorasAba } from '@/lib/utils';
 
 export default function Modals() {
     const { modalAberto, fecharModalOS, pedidoEmEdicao, isModalTrancado, novoPedido, setNovoPedido, opcoesStatusPermitidas, buscaCliente, setBuscaCliente, setClienteDropdownAberto, clienteDropdownAberto, clientesFiltrados, setNovoCliente, setModalClienteAberto, isClienteProblema, itensPedido, buscaProduto, setBuscaProduto, setProdutoDropdownAberto, produtoDropdownAberto, produtosFiltrados, setItemAtual, itemAtual, isAdmin, setNovoProduto, setModalProdutoAberto, fornecedores, pagamentosPedido, setPagamentosPedido, novoPagamento, setNovoPagamento, salvandoOS, usuario, modalProdutoAberto, novoProduto, modalOrcamentoPreAberto, setModalOrcamentoPreAberto, novoOrcamentoPre, setNovoOrcamentoPre, modalOrcamentoFormalizadoAberto, setModalOrcamentoFormalizadoAberto, orcamentoFormalizadoEmEdicao, modalFornecedorAberto, setModalFornecedorAberto, novoFornecedor, setNovoFornecedor, modalClienteAberto, novoCliente, salvandoCliente, modalEmpresaFaturamentoAberto, novaEmpresaFaturamento, setModalEmpresaFaturamentoAberto, setNovaEmpresaFaturamento, salvandoEmpresa, modalContaAberto, setModalContaAberto, novaConta, setNovaConta, salvandoConta, modalNotaFiscalAberto, notaFiscalEmEdicao, setModalNotaFiscalAberto, setNotaFiscalEmEdicao, salvandoNotaFiscal, modalUsuarioAberto, setModalUsuarioAberto, novoUsuario, setNovoUsuario, salvarOS, removerItemDoCarrinho, adicionarItemAoCarrinho, salvarProduto, salvarOrcamentoPre, salvarOrcamentoFormalizado, carregarDados, salvarCliente, salvarEmpresaFaturamento, salvarConta, salvarNotaFiscal, salvarUsuario, modalRequisicaoAberto, setModalRequisicaoAberto, novaRequisicao, setNovaRequisicao, salvarRequisicao, modalTarefaAberto, setModalTarefaAberto, novaTarefa, setNovaTarefa, salvarTarefa, modalLinkAberto, setModalLinkAberto, novoLink, setNovoLink, salvarLink, usuariosSistema } = useAppContext();
@@ -528,9 +528,9 @@ export default function Modals() {
                             <input required value={novoCliente.nome} onChange={e => setNovoCliente({...novoCliente, nome: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition" placeholder="Nome *" />
                             <div className="grid grid-cols-2 gap-4"><input value={novoCliente.telefone} onChange={e => setNovoCliente({...novoCliente, telefone: formatarTelefone(e.target.value)})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition" placeholder="WhatsApp" /><input type="email" value={novoCliente.email} onChange={e => setNovoCliente({...novoCliente, email: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition" placeholder="E-mail" /></div>
                             <textarea rows="2" value={novoCliente.observacoes} onChange={e => setNovoCliente({...novoCliente, observacoes: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand transition dark:text-[#EDEDED]" placeholder="Observações"></textarea>
-                            <label className="flex items-center gap-2 cursor-pointer mt-1 p-2 border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-950/20 rounded transition hover:bg-red-100 dark:hover:bg-red-900/30">
-                                <input type="checkbox" checked={novoCliente.cliente_problema} onChange={e => setNovoCliente({...novoCliente, cliente_problema: e.target.checked})} className="w-4 h-4 text-red-600 rounded border-red-300 focus:ring-red-500 cursor-pointer accent-red-600" />
+                            <label className="flex items-center justify-between gap-2 cursor-pointer mt-1 p-2 border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-950/20 rounded transition hover:bg-red-100 dark:hover:bg-red-900/30">
                                 <span className="text-[13px] font-semibold text-red-600 dark:text-red-400 flex items-center gap-1.5"><Icon name="alert-triangle" className="w-4 h-4" /> Sinalizar como Cliente Problema</span>
+                                <Switch checked={novoCliente.cliente_problema} onChange={val => setNovoCliente({...novoCliente, cliente_problema: val})} color="red" />
                             </label>
                             <div className="flex justify-end gap-3 mt-2"><button type="button" onClick={() => setModalClienteAberto(false)} className="px-4 py-2 rounded text-[13px] font-medium text-gray-600 dark:text-[#A1A1AA] hover:bg-gray-100 dark:hover:bg-darkHover transition">Cancelar</button><button type="submit" disabled={salvandoCliente} className="px-5 py-2 rounded text-[13px] font-medium bg-white text-black hover:bg-gray-200 transition disabled:opacity-50">{salvandoCliente ? 'Salvando...' : 'Salvar'}</button></div>
                         </form>
@@ -538,8 +538,8 @@ export default function Modals() {
                 </div>
             )}
 {modalEmpresaFaturamentoAberto && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-                    <div className="bg-white dark:bg-darkCard rounded-xl shadow-2xl w-full max-w-md overflow-hidden fade-in border border-gray-100 dark:border-darkBorder">
+                <div onClick={() => setModalEmpresaFaturamentoAberto(false)} className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 cursor-pointer">
+                    <div onClick={(e) => e.stopPropagation()} className="bg-white dark:bg-darkCard rounded-xl shadow-2xl w-full max-w-md overflow-hidden fade-in border border-gray-100 dark:border-darkBorder">
                         <div className="px-6 py-4 border-b border-gray-100 dark:border-darkBorder flex justify-between items-center bg-gray-50/50 dark:bg-darkHover/50">
                             <h2 className="text-[15px] font-bold text-gray-800 dark:text-[#EDEDED] flex items-center gap-2">
                                 <Icon name="check-circle" className="w-4 h-4 text-blue-500" />
@@ -610,9 +610,9 @@ export default function Modals() {
                                 </select>
                             </div>
                             <div className="flex flex-col gap-1.5 mt-1">
-                                <label className="flex items-center gap-2 cursor-pointer">
-                                    <input type="checkbox" checked={novaConta.recorrente || false} onChange={e => setNovaConta({...novaConta, recorrente: e.target.checked})} className="w-4 h-4 rounded text-brand focus:ring-brand dark:bg-darkElevated border-gray-300 dark:border-darkBorder" />
+                                <label className="flex items-center justify-between gap-2 cursor-pointer">
                                     <span className="text-[13px] font-semibold text-gray-700 dark:text-gray-300">Conta Recorrente?</span>
+                                    <Switch checked={novaConta.recorrente || false} onChange={val => setNovaConta({...novaConta, recorrente: val})} />
                                 </label>
                                 {novaConta.recorrente && (
                                     <p className="text-[11px] text-gray-500 dark:text-gray-400 pl-6">Ao marcar esta conta como &ldquo;Pago&rdquo;, uma nova cobrança pendente é criada automaticamente com o mesmo vencimento, para você só preencher o valor na próxima vez.</p>
@@ -793,9 +793,9 @@ export default function Modals() {
                                     </div>
                                 )}
                             </div>
-                            <label className="flex items-center gap-2 cursor-pointer select-none">
-                                <input type="checkbox" checked={!!novaTarefa.fixa} onChange={e => setNovaTarefa({...novaTarefa, fixa: e.target.checked})} className="w-4 h-4 rounded border-gray-300 text-blue-500 focus:ring-blue-400 cursor-pointer" />
+                            <label className="flex items-center justify-between gap-2 cursor-pointer select-none">
                                 <span className="text-[13px] font-medium text-gray-700 dark:text-[#EDEDED]">Tarefa Fixa (conclusão diária, não é removida)</span>
+                                <Switch checked={!!novaTarefa.fixa} onChange={val => setNovaTarefa({...novaTarefa, fixa: val})} color="blue" />
                             </label>
                             <div className="flex justify-end gap-3 mt-2">
                                 <button type="button" onClick={() => setModalTarefaAberto(false)} className="px-4 py-2 rounded text-[13px] font-medium text-gray-600 dark:text-[#A1A1AA] hover:bg-gray-100 dark:hover:bg-darkHover transition">Cancelar</button>
