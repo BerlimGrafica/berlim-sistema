@@ -49,7 +49,7 @@ export default function ComunicacaoInternaTab() {
                         </div>
                         <div className="flex gap-2">
                             <button onClick={() => setMostrarConcluidosReq(!mostrarConcluidosReq)} className={`px-4 py-2 text-[13px] rounded-md font-semibold border transition ${mostrarConcluidosReq ? 'bg-gray-100 border-gray-200 text-gray-700 dark:bg-darkElevated dark:border-darkBorder dark:text-gray-300' : 'bg-white border-gray-200 text-gray-600 dark:bg-darkCard dark:border-darkBorder dark:text-gray-400 hover:bg-gray-50'}`}>
-                                {mostrarConcluidosReq ? 'Ocultar Concluídos' : 'Mostrar Histórico'}
+                                {mostrarConcluidosReq ? 'Ocultar Concluídas' : 'Mostrar Histórico'}
                             </button>
                             <button onClick={() => {
                                 setNovaRequisicao({ id: null, itens: '', observacoes: '', status: 'Pendente' });
@@ -172,10 +172,10 @@ export default function ComunicacaoInternaTab() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {linksVisiveis.length > 0 ? linksVisiveis.map(l => (
-                            <div key={l.id} onClick={() => { setNovoLink(l); setModalLinkAberto(true); }} className="bg-white dark:bg-darkCard rounded-xl shadow-sm border border-gray-200 dark:border-darkBorder p-5 flex flex-col gap-3 group cursor-pointer hover:border-brand/50 transition-colors">
+                            <div key={l.id} onClick={() => { setNovoLink(l); setModalLinkAberto(true); }} className={`bg-white dark:bg-darkCard rounded-xl shadow-sm border p-5 flex flex-col gap-3 cursor-pointer hover:border-brand/50 transition-colors ${(l.status === 'Pago' || l.status === 'Concluído' || l.status === 'Inativo') ? 'opacity-60 border-gray-200 dark:border-darkBorder' : 'border-gray-200 dark:border-darkBorder'}`}>
                                 <div className="flex justify-between items-start">
                                     <div>
-                                        <h3 className="font-bold text-gray-900 dark:text-white">{l.titulo}</h3>
+                                        <h3 className={`font-bold ${(l.status === 'Pago' || l.status === 'Concluído' || l.status === 'Inativo') ? 'line-through text-gray-500' : 'text-gray-900 dark:text-white'}`}>{l.titulo}</h3>
                                         <p className="text-[11px] font-semibold text-brand mt-1">{l.cliente}</p>
                                     </div>
                                     <div className="flex gap-1">
@@ -199,6 +199,15 @@ export default function ComunicacaoInternaTab() {
                                     }} className="text-brand hover:text-brandHover p-1 rounded" title="Copiar Link">
                                         <Icon name="copy" className="w-4 h-4" />
                                     </button>
+                                </div>
+                                <div className="mt-auto pt-3 border-t border-gray-100 dark:border-darkBorder flex justify-between items-center">
+                                    <div className="flex items-center gap-1.5 text-[11px] font-semibold text-gray-500">
+                                        <Icon name="calendar" className="w-3.5 h-3.5" /> {new Date(l.created_at).toLocaleDateString('pt-BR')}
+                                    </div>
+                                    <span className={`px-2 py-1 text-[10px] font-bold uppercase rounded ${
+                                        l.status === 'Ativo' ? 'bg-yellow-100 text-yellow-800' :
+                                        (l.status === 'Pago' || l.status === 'Concluído') ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-500'
+                                    }`}>{l.status}</span>
                                 </div>
                             </div>
                         )) : (
