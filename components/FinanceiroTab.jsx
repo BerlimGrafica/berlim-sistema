@@ -5,6 +5,29 @@ import Icon from '@/components/Icon';
 import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS, obterCorStatus, formatarValorFinanceiro, formatarMoeda, formatarTelefone, obterDataAtual, formatarDataExibicao, formatarMesAno, CustomDatePicker, InlineDropdown, MultiSelectDropdown, desconstruirTextoServico, obterResumoServicos, ItensChecklist, StackedCards, CalculadoraBanner, CalculadoraAdesivo, CalculadoraCasamento, CalculadorasAba } from '@/lib/utils';
 
 
+function BarRow({ label, valor, maxVal, color, rank, pctTotal }) {
+    const pct = maxVal > 0 ? (valor / maxVal) * 100 : 0;
+    return (
+        <div key={label} className="flex items-center gap-3 group">
+            {rank != null && (
+                <span className="w-5 h-5 shrink-0 rounded-full bg-gray-100 dark:bg-darkElevated text-[10px] font-bold text-gray-500 dark:text-gray-400 flex items-center justify-center">{rank}</span>
+            )}
+            <div className="flex-1 min-w-0">
+                <div className="flex justify-between items-baseline gap-2 mb-1">
+                    <span className="text-[12px] font-semibold text-gray-700 dark:text-gray-300 truncate">{label}</span>
+                    <span className="text-[12px] font-bold text-gray-900 dark:text-white tabular-nums shrink-0">R$ {formatarValorFinanceiro(valor)}</span>
+                </div>
+                <div className="h-[6px] rounded-full bg-gray-100 dark:bg-darkElevated overflow-hidden">
+                    <div className={`h-full rounded-full ${color} transition-all duration-500 group-hover:opacity-90`} style={{ width: `${Math.max(pct, 2)}%` }}></div>
+                </div>
+            </div>
+            {pctTotal != null && (
+                <span className="text-[10px] font-semibold text-gray-400 w-9 text-right tabular-nums shrink-0">{pctTotal.toFixed(0)}%</span>
+            )}
+        </div>
+    );
+}
+
 export default function FinanceiroTab() {
     const { setAbaFinanceiro, abaFinanceiro, notasFiscais, usuario, filtroNotas, dataFiltroFinInicio, setDataFiltroFinInicio, dataFiltroFinFim, setDataFiltroFinFim, pedidos, setNovaConta, setModalContaAberto, setModalEmpresaFaturamentoAberto, buscaNotaFiscal, setBuscaNotaFiscal, setPaginaNotasFiscais, setFiltroNotas, renderBarHorizontal, produtos, produtosSelecionadosGrafico, setProdutosSelecionadosGrafico, contasPagar, empresasFaturamento, setNovaEmpresaFaturamento, notasFiscaisPaginadas, setNotaFiscalEmEdicao, setModalNotaFiscalAberto, totalPaginasNotasFiscais, paginaNotasFiscais, excluirConta, concluirConta, abrirEdicao, excluirEmpresaFaturamento, concluirNotaFiscal, reabrirNotaFiscal, atualizarCampoInline, concluirBoletoContasReceber } = useAppContext();
     const [mostrarContasPagas, setMostrarContasPagas] = useState(false);
@@ -322,17 +345,21 @@ export default function FinanceiroTab() {
                             const rankingInstituicaoMesAtual = Object.entries(agrupadoInstituicaoMesAtual).sort((a,b) => b[1] - a[1]);
                             const maxInstituicaoMesAtual = Math.max(...rankingInstituicaoMesAtual.map(i => i[1]), 1);
 
+                            const totalLocalMesAtual = rankingLocalMesAtual.reduce((a, [, v]) => a + v, 0);
+                            const totalFormaMesAtual = rankingFormaMesAtual.reduce((a, [, v]) => a + v, 0);
+                            const totalInstituicaoMesAtual = rankingInstituicaoMesAtual.reduce((a, [, v]) => a + v, 0);
+
                             const renderLayer2 = () => {
                                 if (rankingLocalMesAtual.length === 0) return <p className="text-[11px] text-gray-500 italic">Nenhum local registrado no mês.</p>;
-                                return rankingLocalMesAtual.map((loc, index) => renderBarHorizontal(loc[0], loc[1], maxLocalMesAtual, false, colorsLocal[index % colorsLocal.length]));
+                                return <div className="flex flex-col gap-3">{rankingLocalMesAtual.map((loc, index) => <BarRow key={loc[0]} label={loc[0]} valor={loc[1]} maxVal={maxLocalMesAtual} color={colorsLocal[index % colorsLocal.length]} rank={index + 1} pctTotal={totalLocalMesAtual > 0 ? (loc[1] / totalLocalMesAtual) * 100 : 0} />)}</div>;
                             };
                             const renderLayer3 = () => {
                                 if (rankingFormaMesAtual.length === 0) return <p className="text-[11px] text-gray-500 italic">Nenhum pagamento registrado no mês.</p>;
-                                return rankingFormaMesAtual.map((f, index) => renderBarHorizontal(f[0], f[1], maxFormaMesAtual, false, colorsForma[index % colorsForma.length]));
+                                return <div className="flex flex-col gap-3">{rankingFormaMesAtual.map((f, index) => <BarRow key={f[0]} label={f[0]} valor={f[1]} maxVal={maxFormaMesAtual} color={colorsForma[index % colorsForma.length]} rank={index + 1} pctTotal={totalFormaMesAtual > 0 ? (f[1] / totalFormaMesAtual) * 100 : 0} />)}</div>;
                             };
                             const renderLayer4 = () => {
                                 if (rankingInstituicaoMesAtual.length === 0) return <p className="text-[11px] text-gray-500 italic">Nenhuma instituição no mês.</p>;
-                                return rankingInstituicaoMesAtual.map((i, index) => renderBarHorizontal(i[0], i[1], maxInstituicaoMesAtual, false, colorsInst[index % colorsInst.length]));
+                                return <div className="flex flex-col gap-3">{rankingInstituicaoMesAtual.map((i, index) => <BarRow key={i[0]} label={i[0]} valor={i[1]} maxVal={maxInstituicaoMesAtual} color={colorsInst[index % colorsInst.length]} rank={index + 1} pctTotal={totalInstituicaoMesAtual > 0 ? (i[1] / totalInstituicaoMesAtual) * 100 : 0} />)}</div>;
                             };
 
                             // --- ANUAL METRICS ---
@@ -346,139 +373,192 @@ export default function FinanceiroTab() {
                             const anosOrdenados = Object.values(agrupadoPorAno).sort((a, b) => b.ano.localeCompare(a.ano)).slice(0, 15);
                             const maxBrutoAno = Math.max(...anosOrdenados.map(a => a.bruto), 1);
 
+                            const totalRankingLocal = rankingLocal.reduce((a, [, v]) => a + v, 0);
+                            const totalRankingForma = rankingForma.reduce((a, [, v]) => a + v, 0);
+                            const totalRankingInstituicao = rankingInstituicao.reduce((a, [, v]) => a + v, 0);
+
                             return (
                                 <>
                                     {abaFinanceiro === 'geral' && (
-                                        <div className="flex flex-col gap-6 fade-in">
-                                            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-6 gap-4">
-                                        <div className="bg-white dark:bg-darkCard p-5 rounded-xl border border-gray-200 dark:border-darkBorder shadow-sm relative overflow-hidden flex flex-col justify-between">
+                                        <div className="flex flex-col gap-8 fade-in">
+
+                                            {/* RESUMO DO PERÍODO */}
                                             <div>
-                                                <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider block mb-1">Crescimento (YoY)</span>
-                                                <h2 className="text-xl font-black text-gray-900 dark:text-white">R$ {formatarValorFinanceiro(totalAnoAtual)}</h2>
-                                            </div>
-                                            <div className="mt-2">
-                                                <div className={`inline-flex items-center gap-1 text-[11px] font-semibold px-1.5 py-0.5 rounded ${crescimentoPercentual >= 0 ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-red-50 text-red-600 dark:bg-red-900/30 dark:text-red-400'}`}>
-                                                    <Icon name={crescimentoPercentual >= 0 ? 'trending-up' : 'trending-down'} className="w-3 h-3" />
-                                                    {Math.abs(crescimentoPercentual).toFixed(1)}%
+                                                <div className="flex items-center gap-2 mb-4">
+                                                    <span className="w-1 h-4 bg-brand rounded-full"></span>
+                                                    <h2 className="text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Resumo do Período</h2>
+                                                </div>
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-6 gap-4">
+                                                    <div className="bg-white dark:bg-darkCard p-5 rounded-xl border border-gray-200 dark:border-darkBorder shadow-sm hover:shadow-md transition flex flex-col justify-between">
+                                                        <div className="flex items-start justify-between gap-2">
+                                                            <div className="min-w-0">
+                                                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">Crescimento (YoY)</span>
+                                                                <h2 className="text-lg font-black text-gray-900 dark:text-white">R$ {formatarValorFinanceiro(totalAnoAtual)}</h2>
+                                                            </div>
+                                                            <div className={`p-2 rounded-lg shrink-0 ${crescimentoPercentual >= 0 ? 'bg-emerald-50 dark:bg-emerald-500/10' : 'bg-red-50 dark:bg-red-500/10'}`}>
+                                                                <Icon name={crescimentoPercentual >= 0 ? 'trending-up' : 'trending-down'} className={`w-4 h-4 ${crescimentoPercentual >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`} />
+                                                            </div>
+                                                        </div>
+                                                        <p className={`text-[11px] font-bold mt-3 ${crescimentoPercentual >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+                                                            {crescimentoPercentual >= 0 ? '+' : '-'}{Math.abs(crescimentoPercentual).toFixed(1)}% vs. ano anterior
+                                                        </p>
+                                                    </div>
+
+                                                    <div className="bg-white dark:bg-darkCard p-5 rounded-xl border border-gray-200 dark:border-darkBorder shadow-sm hover:shadow-md transition flex flex-col justify-between">
+                                                        <div className="flex items-start justify-between gap-2">
+                                                            <div className="min-w-0">
+                                                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">Despesas (A Pagar)</span>
+                                                                <h2 className="text-lg font-black text-red-600 dark:text-red-400">R$ {formatarValorFinanceiro(totalDespesas)}</h2>
+                                                            </div>
+                                                            <div className="p-2 rounded-lg bg-red-50 dark:bg-red-500/10 shrink-0"><Icon name="dollar-sign" className="w-4 h-4 text-red-600 dark:text-red-400" /></div>
+                                                        </div>
+                                                        <p className="text-[11px] text-gray-400 mt-3 font-medium">Gastos no período</p>
+                                                    </div>
+
+                                                    <div className="bg-white dark:bg-darkCard p-5 rounded-xl border border-gray-200 dark:border-darkBorder shadow-sm hover:shadow-md transition flex flex-col justify-between">
+                                                        <div className="flex items-start justify-between gap-2">
+                                                            <div className="min-w-0">
+                                                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">Vendas Hoje</span>
+                                                                <h2 className="text-lg font-black text-purple-600 dark:text-purple-400">R$ {formatarValorFinanceiro(totalVendasHoje)}</h2>
+                                                            </div>
+                                                            <div className="p-2 rounded-lg bg-purple-50 dark:bg-purple-500/10 shrink-0"><Icon name="calendar" className="w-4 h-4 text-purple-600 dark:text-purple-400" /></div>
+                                                        </div>
+                                                        <p className="text-[11px] text-gray-400 mt-3 font-medium">Pedidos lançados hoje</p>
+                                                    </div>
+
+                                                    <div className="bg-white dark:bg-darkCard p-5 rounded-xl border border-gray-200 dark:border-darkBorder shadow-sm hover:shadow-md transition flex flex-col justify-between">
+                                                        <div className="flex items-start justify-between gap-2">
+                                                            <div className="min-w-0">
+                                                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">Total Pago</span>
+                                                                <h2 className="text-lg font-black text-emerald-600 dark:text-emerald-400">R$ {formatarValorFinanceiro(totalRecebido)}</h2>
+                                                            </div>
+                                                            <div className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 shrink-0"><Icon name="check-circle" className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /></div>
+                                                        </div>
+                                                        <p className="text-[11px] text-gray-400 mt-3 font-medium">Já entrou no caixa</p>
+                                                    </div>
+
+                                                    <div className="bg-white dark:bg-darkCard p-5 rounded-xl border border-gray-200 dark:border-darkBorder shadow-sm hover:shadow-md transition flex flex-col justify-between">
+                                                        <div className="flex items-start justify-between gap-2">
+                                                            <div className="min-w-0">
+                                                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">Saldo Devedor</span>
+                                                                <h2 className="text-lg font-black text-orange-600 dark:text-orange-400">R$ {formatarValorFinanceiro(totalAReceber)}</h2>
+                                                            </div>
+                                                            <div className="p-2 rounded-lg bg-orange-50 dark:bg-orange-500/10 shrink-0"><Icon name="clock" className="w-4 h-4 text-orange-600 dark:text-orange-400" /></div>
+                                                        </div>
+                                                        <p className="text-[11px] text-gray-400 mt-3 font-medium">Falta receber</p>
+                                                    </div>
+
+                                                    <div className="bg-white dark:bg-darkCard p-5 rounded-xl border border-gray-200 dark:border-darkBorder shadow-sm hover:shadow-md transition flex flex-col justify-between">
+                                                        <div className="flex items-start justify-between gap-2">
+                                                            <div className="min-w-0">
+                                                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">Ticket Médio</span>
+                                                                <h2 className="text-lg font-black text-blue-600 dark:text-blue-400">R$ {formatarValorFinanceiro(ticketMedio)}</h2>
+                                                            </div>
+                                                            <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-500/10 shrink-0"><Icon name="tag" className="w-4 h-4 text-blue-600 dark:text-blue-400" /></div>
+                                                        </div>
+                                                        <p className="text-[11px] text-gray-400 mt-3 font-medium">Média por pedido</p>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
 
-                                        <div className="bg-red-50 dark:bg-red-900/10 p-5 rounded-xl border border-red-200 dark:border-red-900/30 shadow-sm flex flex-col justify-between">
+                                            {/* ANÁLISE POR PERÍODO */}
                                             <div>
-                                                <span className="text-[10px] font-semibold text-red-600 dark:text-red-400 uppercase tracking-wider block mb-1">Despesas (A Pagar)</span>
-                                                <h2 className="text-2xl font-black text-red-600 dark:text-red-400">R$ {formatarValorFinanceiro(totalDespesas)}</h2>
+                                                <div className="flex items-center gap-2 mb-4">
+                                                    <span className="w-1 h-4 bg-brand rounded-full"></span>
+                                                    <h2 className="text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Análise por Período</h2>
+                                                    <span className="text-[10px] text-gray-400 font-medium normal-case">clique nos cards para alternar as camadas</span>
+                                                </div>
+                                                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                                                    <StackedCards
+                                                        title="Visão Anual"
+                                                        icon="calendar"
+                                                        description="Evolução e Análise (Anos)"
+                                                        cards={[
+                                                            { title: "Faturamento Histórico", content: anosOrdenados.length === 0 ? <p className="text-[11px] text-gray-500 italic">Sem dados.</p> : <div className="flex flex-col gap-3">{anosOrdenados.map((a, index) => <BarRow key={a.ano} label={a.ano} valor={a.bruto} maxVal={maxBrutoAno} color="bg-blue-500" rank={index + 1} />)}</div> },
+                                                            { title: `Local de Produção (${anoAtual})`, content: renderLayer2() },
+                                                            { title: `Formas de Pagamento (${anoAtual})`, content: renderLayer3() },
+                                                            { title: `Vendas por Instituição (${anoAtual})`, content: renderLayer4() }
+                                                        ]}
+                                                    />
+                                                    <StackedCards
+                                                        title="Visão Mensal"
+                                                        icon="layout-dashboard"
+                                                        description="Evolução e Análise (Meses)"
+                                                        cards={[
+                                                            { title: `Faturamento (${anoAtual})`, content: mesesOrdenados.length === 0 ? <p className="text-[11px] text-gray-500 italic">Sem dados.</p> : <div className="flex flex-col gap-3">{mesesOrdenados.map((m, index) => <BarRow key={m.mesAno} label={formatarMesAno(m.mesAno)} valor={m.bruto} maxVal={maxBrutoMes} color="bg-emerald-500" rank={index + 1} />)}</div> },
+                                                            { title: `Local de Produção (${nomeMesAtual})`, content: renderLayer2() },
+                                                            { title: `Formas de Pagamento (${nomeMesAtual})`, content: renderLayer3() },
+                                                            { title: `Vendas por Instituição (${nomeMesAtual})`, content: renderLayer4() }
+                                                        ]}
+                                                    />
+                                                    <StackedCards
+                                                        title="Visão Diária"
+                                                        icon="list"
+                                                        description="Evolução e Análise (Dias)"
+                                                        cards={[
+                                                            { title: `Faturamento (${nomeMesAtual})`, content: diasOrdenados.length === 0 ? <p className="text-[11px] text-gray-500 italic">Sem dados.</p> : <div className="flex flex-col gap-3">{diasOrdenados.map((d, index) => <BarRow key={d.dia} label={formatarDataExibicao(d.dia).substring(0,5)} valor={d.bruto} maxVal={maxBrutoDia} color="bg-purple-500" rank={index + 1} />)}</div> },
+                                                            { title: `Local de Produção (${diaAtual})`, content: renderLayer2() },
+                                                            { title: `Formas de Pagamento (${diaAtual})`, content: renderLayer3() },
+                                                            { title: `Vendas por Instituição (${diaAtual})`, content: renderLayer4() }
+                                                        ]}
+                                                    />
+                                                </div>
                                             </div>
-                                            <p className="text-[10px] text-red-500/70 dark:text-red-400/70 mt-2 font-medium">Gastos no período</p>
-                                        </div>
 
-                                        <div className="bg-purple-50 dark:bg-purple-900/10 p-5 rounded-xl border border-purple-200 dark:border-purple-900/30 shadow-sm relative overflow-hidden flex flex-col justify-between">
+                                            {/* DISTRIBUIÇÃO NO PERÍODO */}
                                             <div>
-                                                <span className="text-[10px] font-semibold text-purple-600 dark:text-purple-400 uppercase tracking-wider block mb-1">Vendas Hoje</span>
-                                                <h2 className="text-2xl font-black text-purple-600 dark:text-purple-400">R$ {formatarValorFinanceiro(totalVendasHoje)}</h2>
-                                            </div>
-                                            <p className="text-[10px] text-purple-500/70 dark:text-purple-400/70 mt-2 font-medium">Pedidos lançados hoje</p>
-                                        </div>
+                                                <div className="flex items-center gap-2 mb-4">
+                                                    <span className="w-1 h-4 bg-brand rounded-full"></span>
+                                                    <h2 className="text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Distribuição no Período</h2>
+                                                </div>
+                                                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                                                    <div className="bg-white dark:bg-darkCard rounded-xl border border-gray-200 dark:border-darkBorder overflow-hidden flex flex-col">
+                                                        <div className="px-5 py-4 border-b border-gray-100 dark:border-darkBorder flex items-center gap-3 shrink-0">
+                                                            <div className="p-2 rounded-lg bg-teal-50 dark:bg-teal-500/10 shrink-0"><Icon name="map-pin" className="w-4 h-4 text-teal-600 dark:text-teal-400" /></div>
+                                                            <div className="min-w-0">
+                                                                <h3 className="font-bold text-[13px] text-gray-800 dark:text-white truncate">Receitas por Local</h3>
+                                                                <p className="text-[11px] text-gray-400 truncate">Rentabilidade no período filtrado</p>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex flex-col gap-4 p-5 overflow-y-auto max-h-72 custom-scrollbar">
+                                                            {rankingLocal.length === 0 ? <p className="text-[11px] text-gray-500 italic">Nenhum local registrado.</p> :
+                                                                rankingLocal.map((loc, index) => <BarRow key={loc[0]} label={loc[0]} valor={loc[1]} maxVal={maxLocal} color={colorsLocal[index % colorsLocal.length]} rank={index + 1} pctTotal={totalRankingLocal > 0 ? (loc[1] / totalRankingLocal) * 100 : 0} />)
+                                                            }
+                                                        </div>
+                                                    </div>
 
-                                        <div className="bg-emerald-50 dark:bg-emerald-900/10 p-5 rounded-xl border border-emerald-200 dark:border-emerald-900/30 shadow-sm flex flex-col justify-between">
-                                            <div>
-                                                <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider block mb-1">Total Pago (Recebido)</span>
-                                                <h2 className="text-2xl font-black text-emerald-600 dark:text-emerald-400">R$ {formatarValorFinanceiro(totalRecebido)}</h2>
-                                            </div>
-                                            <p className="text-[10px] text-emerald-500/70 dark:text-emerald-400/70 mt-2 font-medium">Já entrou no caixa</p>
-                                        </div>
-                                        
-                                        <div className="bg-orange-50 dark:bg-orange-900/10 p-5 rounded-xl border border-orange-200 dark:border-orange-900/30 shadow-sm flex flex-col justify-between">
-                                            <div>
-                                                <span className="text-[10px] font-semibold text-orange-600 dark:text-orange-400 uppercase tracking-wider block mb-1">Saldo Devedor (A Receber)</span>
-                                                <h2 className="text-2xl font-black text-orange-600 dark:text-orange-400">R$ {formatarValorFinanceiro(totalAReceber)}</h2>
-                                            </div>
-                                            <p className="text-[10px] text-orange-500/70 dark:text-orange-400/70 mt-2 font-medium">Falta receber</p>
-                                        </div>
-                                        
-                                        <div className="bg-white dark:bg-darkCard p-5 rounded-xl border border-gray-200 dark:border-darkBorder shadow-sm flex flex-col justify-between">
-                                            <div>
-                                                <span className="text-[10px] font-semibold text-blue-500 uppercase tracking-wider block mb-1">Ticket Médio</span>
-                                                <h2 className="text-2xl font-black text-blue-500">R$ {formatarValorFinanceiro(ticketMedio)}</h2>
-                                            </div>
-                                            <p className="text-[10px] text-gray-400 mt-2 font-medium">Média por pedido</p>
-                                        </div>
-                                    </div>
+                                                    <div className="bg-white dark:bg-darkCard rounded-xl border border-gray-200 dark:border-darkBorder overflow-hidden flex flex-col">
+                                                        <div className="px-5 py-4 border-b border-gray-100 dark:border-darkBorder flex items-center gap-3 shrink-0">
+                                                            <div className="p-2 rounded-lg bg-amber-50 dark:bg-amber-500/10 shrink-0"><Icon name="dollar-sign" className="w-4 h-4 text-amber-600 dark:text-amber-400" /></div>
+                                                            <div className="min-w-0">
+                                                                <h3 className="font-bold text-[13px] text-gray-800 dark:text-white truncate">Formas de Pagamento</h3>
+                                                                <p className="text-[11px] text-gray-400 truncate">Como os clientes pagaram</p>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex flex-col gap-4 p-5 overflow-y-auto max-h-72 custom-scrollbar">
+                                                            {rankingForma.length === 0 ? <p className="text-[11px] text-gray-500 italic">Nenhum pagamento registrado.</p> :
+                                                                rankingForma.map((f, index) => <BarRow key={f[0]} label={f[0]} valor={f[1]} maxVal={maxForma} color={colorsForma[index % colorsForma.length]} rank={index + 1} pctTotal={totalRankingForma > 0 ? (f[1] / totalRankingForma) * 100 : 0} />)
+                                                            }
+                                                        </div>
+                                                    </div>
 
-                                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                                        <StackedCards 
-                                            title="Visão Anual" 
-                                            icon="calendar"
-                                            description="Evolução e Análise (Anos)"
-                                            cards={[
-                                                { title: "Faturamento Histórico", content: anosOrdenados.length === 0 ? <p className="text-[11px] text-gray-500 italic">Sem dados.</p> : anosOrdenados.map(a => renderBarHorizontal(a.ano, a.bruto, maxBrutoAno, false, 'bg-blue-500')) },
-                                                { title: `Local de Produção (${anoAtual})`, content: renderLayer2() },
-                                                { title: `Formas de Pagamento (${anoAtual})`, content: renderLayer3() },
-                                                { title: `Vendas por Instituição (${anoAtual})`, content: renderLayer4() }
-                                            ]}
-                                        />
-                                        <StackedCards 
-                                            title="Visão Mensal" 
-                                            icon="layout-dashboard"
-                                            description="Evolução e Análise (Meses)"
-                                            cards={[
-                                                { title: `Faturamento (${anoAtual})`, content: mesesOrdenados.length === 0 ? <p className="text-[11px] text-gray-500 italic">Sem dados.</p> : mesesOrdenados.map(m => renderBarHorizontal(formatarMesAno(m.mesAno), m.bruto, maxBrutoMes, false, 'bg-emerald-500')) },
-                                                { title: `Local de Produção (${nomeMesAtual})`, content: renderLayer2() },
-                                                { title: `Formas de Pagamento (${nomeMesAtual})`, content: renderLayer3() },
-                                                { title: `Vendas por Instituição (${nomeMesAtual})`, content: renderLayer4() }
-                                            ]}
-                                        />
-                                        <StackedCards 
-                                            title="Visão Diária" 
-                                            icon="list"
-                                            description="Evolução e Análise (Dias)"
-                                            cards={[
-                                                { title: `Faturamento (${nomeMesAtual})`, content: diasOrdenados.length === 0 ? <p className="text-[11px] text-gray-500 italic">Sem dados.</p> : diasOrdenados.map(d => renderBarHorizontal(formatarDataExibicao(d.dia).substring(0,5), d.bruto, maxBrutoDia, false, 'bg-purple-500')) },
-                                                { title: `Local de Produção (${diaAtual})`, content: renderLayer2() },
-                                                { title: `Formas de Pagamento (${diaAtual})`, content: renderLayer3() },
-                                                { title: `Vendas por Instituição (${diaAtual})`, content: renderLayer4() }
-                                            ]}
-                                        />
-                                    </div>
+                                                    <div className="bg-white dark:bg-darkCard rounded-xl border border-gray-200 dark:border-darkBorder overflow-hidden flex flex-col">
+                                                        <div className="px-5 py-4 border-b border-gray-100 dark:border-darkBorder flex items-center gap-3 shrink-0">
+                                                            <div className="p-2 rounded-lg bg-sky-50 dark:bg-sky-500/10 shrink-0"><Icon name="link" className="w-4 h-4 text-sky-600 dark:text-sky-400" /></div>
+                                                            <div className="min-w-0">
+                                                                <h3 className="font-bold text-[13px] text-gray-800 dark:text-white truncate">Instituições</h3>
+                                                                <p className="text-[11px] text-gray-400 truncate">Volume por conta (PIX, Boleto e Link)</p>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex flex-col gap-4 p-5 overflow-y-auto max-h-72 custom-scrollbar">
+                                                            {rankingInstituicao.length === 0 ? <p className="text-[11px] text-gray-500 italic">Nenhuma instituição registrada.</p> :
+                                                                rankingInstituicao.map((i, index) => <BarRow key={i[0]} label={i[0]} valor={i[1]} maxVal={maxInstituicao} color={colorsInst[index % colorsInst.length]} rank={index + 1} pctTotal={totalRankingInstituicao > 0 ? (i[1] / totalRankingInstituicao) * 100 : 0} />)
+                                                            }
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                                        <div className="bg-white dark:bg-darkCard p-6 rounded-xl border border-gray-200 dark:border-darkBorder flex flex-col gap-4">
-                                            <div>
-                                                <h3 className="font-semibold text-[13px] text-gray-800 dark:text-white uppercase tracking-wider">Receitas por Local (Geral)</h3>
-                                                <p className="text-[11px] text-gray-400 mt-0.5">Rentabilidade total no período filtrado.</p>
-                                            </div>
-                                            <div className="flex flex-col gap-3 mt-2 overflow-y-auto max-h-64 custom-scrollbar pr-2">
-                                                {rankingLocal.length === 0 ? <p className="text-[11px] text-gray-500 italic">Nenhum local registrado.</p> :
-                                                    rankingLocal.map((loc, index) => renderBarHorizontal(loc[0], loc[1], maxLocal, false, colorsLocal[index % colorsLocal.length]))
-                                                }
-                                            </div>
-                                        </div>
-
-                                        <div className="bg-white dark:bg-darkCard p-6 rounded-xl border border-gray-200 dark:border-darkBorder flex flex-col gap-4">
-                                            <div>
-                                                <h3 className="font-semibold text-[13px] text-gray-800 dark:text-white uppercase tracking-wider">Formas de Pagamento (Geral)</h3>
-                                                <p className="text-[11px] text-gray-400 mt-0.5">Como os clientes pagaram no período filtrado.</p>
-                                            </div>
-                                            <div className="flex flex-col gap-3 mt-2 overflow-y-auto max-h-64 custom-scrollbar pr-2">
-                                                {rankingForma.length === 0 ? <p className="text-[11px] text-gray-500 italic">Nenhum pagamento registrado.</p> :
-                                                    rankingForma.map((f, index) => renderBarHorizontal(f[0], f[1], maxForma, false, colorsForma[index % colorsForma.length]))
-                                                }
-                                            </div>
-                                        </div>
-
-                                        <div className="bg-white dark:bg-darkCard p-6 rounded-xl border border-gray-200 dark:border-darkBorder flex flex-col gap-4">
-                                            <div>
-                                                <h3 className="font-semibold text-[13px] text-gray-800 dark:text-white uppercase tracking-wider">Instituições (Geral)</h3>
-                                                <p className="text-[11px] text-gray-400 mt-0.5">Volume por conta no período filtrado.</p>
-                                            </div>
-                                            <div className="flex flex-col gap-3 mt-2 overflow-y-auto max-h-64 custom-scrollbar pr-2">
-                                                {rankingInstituicao.length === 0 ? <p className="text-[11px] text-gray-500 italic">Nenhuma instituição registrada.</p> :
-                                                    rankingInstituicao.map((i, index) => renderBarHorizontal(i[0], i[1], maxInstituicao, false, colorsInst[index % colorsInst.length]))
-                                                }
-                                            </div>
-                                        </div>
-
-                                        </div>
                                         </div>
                                     )}
 
