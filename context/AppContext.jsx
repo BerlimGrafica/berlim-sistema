@@ -97,6 +97,7 @@ export const AppProvider = ({ children }) => {
     const alertasBoletoDisparados = useRef(new Set());
     const alertasContaPagarDisparados = useRef(new Set());
     const alertasRetiradaDisparados = useRef(new Set());
+    const alertasFaturamentoAnaliseDisparados = useRef(new Set());
     const [modalAlertasAberto, setModalAlertasAberto] = useState(false);
 
     // === COMUNICAÇÃO INTERNA ===
@@ -450,7 +451,36 @@ export const AppProvider = ({ children }) => {
         if (listaNotas) setNotasFiscais(listaNotas);
         
         const { data: listaEmpresasFaturamento } = await supabase.from('empresas_faturamento').select('*').order('nome', { ascending: true });
-        if (listaEmpresasFaturamento) setEmpresasFaturamento(listaEmpresasFaturamento);
+        if (listaEmpresasFaturamento) {
+            setEmpresasFaturamento(listaEmpresasFaturamento);
+
+            if (ehUsuario('Vinicius')) {
+                const empresasEmAnalise = listaEmpresasFaturamento.filter(e => e.status === 'Em Análise');
+                const idsEmAnalise = new Set(empresasEmAnalise.map(e => e.id));
+
+                // Empresa saiu de "Em Análise" (aprovada/bloqueada) -> pode voltar a alertar se entrar em análise de novo
+                alertasFaturamentoAnaliseDisparados.current.forEach(id => {
+                    if (!idsEmAnalise.has(id)) alertasFaturamentoAnaliseDisparados.current.delete(id);
+                });
+
+                let novosAlertasFaturamento = [];
+                empresasEmAnalise.forEach(e => {
+                    if (!alertasFaturamentoAnaliseDisparados.current.has(e.id)) {
+                        novosAlertasFaturamento.push({ id: Date.now() + Math.random(), msg: `Empresa "${e.nome}" está com faturamento em análise.`, tipo: 'faturamento_em_analise' });
+                        alertasFaturamentoAnaliseDisparados.current.add(e.id);
+                    }
+                });
+                if (novosAlertasFaturamento.length > 0) {
+                    setAlertasNaoLidos(prev => {
+                        let mergeAlertas = [...prev];
+                        novosAlertasFaturamento.forEach(n => {
+                            if (!mergeAlertas.some(a => a.msg === n.msg)) mergeAlertas.push(n);
+                        });
+                        return mergeAlertas;
+                    });
+                }
+            }
+        }
 
         const { data: listaContas, error: erroContas } = await supabase.from('contas_pagar').select('*').order('vencimento', { ascending: true });
         if (!erroContas && listaContas) {

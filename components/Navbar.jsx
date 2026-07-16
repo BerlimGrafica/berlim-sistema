@@ -5,7 +5,7 @@ import Icon from "@/components/Icon";
 import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS, obterCorStatus, formatarValorFinanceiro, formatarMoeda, formatarTelefone, obterDataAtual, formatarDataExibicao, formatarMesAno, CustomDatePicker, InlineDropdown, MultiSelectDropdown, desconstruirTextoServico, obterResumoServicos, ItensChecklist, StackedCards, CalculadoraBanner, CalculadoraAdesivo, CalculadoraCasamento, CalculadorasAba } from '@/lib/utils';
 
 export default function Navbar() {
-    const { setModalAlertasAberto, modalAlertasAberto, alertasNaoLidos, setAlertasNaoLidos, setAbaAtual, pedidos, abrirEdicao, toggleDarkMode, darkMode, usuario, setUsuario, abaAtual } = useAppContext();
+    const { setModalAlertasAberto, modalAlertasAberto, alertasNaoLidos, setAlertasNaoLidos, setAbaAtual, setAbaFinanceiro, pedidos, abrirEdicao, toggleDarkMode, darkMode, usuario, setUsuario, abaAtual } = useAppContext();
 
     return (
         <>
@@ -38,10 +38,15 @@ export default function Navbar() {
                                             alertasNaoLidos.slice().reverse().map(alerta => (
                                                 <div key={alerta.id} className="px-4 py-3 hover:bg-gray-50 dark:hover:bg-darkHover border-b border-gray-50 dark:border-darkBorder/50 last:border-0 cursor-pointer flex justify-between items-start group" onClick={() => {
                                                     setModalAlertasAberto(false);
-                                                    setAbaAtual('producao');
-                                                    if (alerta.os_id) {
-                                                        const p = pedidos.find(x => x.id === alerta.os_id);
-                                                        if (p) abrirEdicao(p);
+                                                    if (alerta.tipo === 'faturamento_em_analise' || alerta.tipo === 'novo_cliente_faturamento') {
+                                                        setAbaAtual('financeiro');
+                                                        setAbaFinanceiro('empresas_aprovadas');
+                                                    } else {
+                                                        setAbaAtual('producao');
+                                                        if (alerta.os_id) {
+                                                            const p = pedidos.find(x => x.id === alerta.os_id);
+                                                            if (p) abrirEdicao(p);
+                                                        }
                                                     }
                                                 }}>
                                                     <div className="flex-1 pr-2">
