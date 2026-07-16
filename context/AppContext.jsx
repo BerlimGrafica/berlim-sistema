@@ -471,7 +471,7 @@ export const AppProvider = ({ children }) => {
                 }
             }
 
-            if (usuario?.nivel === 'Atendimento' || usuario?.nivel === 'Produção') {
+            if (usuario?.nivel === 'Atendimento') {
                 const pedidosEmRetirada = todosPedidos.filter(p => p.status === 'Retirada' && p.data_retirada);
                 let novosAlertasRetirada = [];
                 pedidosEmRetirada.forEach(p => {
@@ -479,8 +479,11 @@ export const AppProvider = ({ children }) => {
                     if (partes.length !== 3) return;
                     const dataRetirada = new Date(partes[0], partes[1] - 1, partes[2]);
                     const diasEmRetirada = Math.floor((hoje - dataRetirada) / (1000 * 60 * 60 * 24));
-                    if (diasEmRetirada === 15 || diasEmRetirada === 30) {
-                        const alertId = `${p.id}_retirada_${diasEmRetirada}`;
+                    let faixa = null;
+                    if (diasEmRetirada >= 30) faixa = 30;
+                    else if (diasEmRetirada >= 15) faixa = 15;
+                    if (faixa) {
+                        const alertId = `${p.id}_retirada_${faixa}`;
                         if (!alertasRetiradaDisparados.current.has(alertId)) {
                             novosAlertasRetirada.push({ id: Date.now() + Math.random(), msg: `O.S. #${p.id} está há ${diasEmRetirada} dias aguardando retirada!`, os_id: p.id, tipo: 'alerta_retirada' });
                             alertasRetiradaDisparados.current.add(alertId);
@@ -1366,6 +1369,35 @@ export const AppProvider = ({ children }) => {
         }
     }
 
+    async function reabrirNotaFiscal(nota) {
+        if (!confirm(`Deseja gerar uma nova nota pendente para "${nota.razao_social || nota.cnpj}"?`)) return;
+
+        const payload = {
+            razao_social: nota.razao_social,
+            cnpj: nota.cnpj,
+            endereco: nota.endereco,
+            contato: nota.contato,
+            cliente: '',
+            servico_feito: '',
+            valor_pago: null,
+            observacoes: '',
+            tipo_nota: null,
+            forma_pagamento: null,
+            forma_transporte: null,
+            concluido: false
+        };
+
+        const { data, error } = await supabase.from('notas_fiscais').insert([payload]).select();
+        if (!error && data) {
+            setNotasFiscais(prev => [data[0], ...prev]);
+            if (usuario?.nivel === 'Administrador' || usuario?.nivel === 'Atendimento' || usuario?.nivel === 'Produção') {
+                setAlertasNaoLidos(prev => [...prev, { id: Date.now() + Math.random(), msg: `Nova Nota Fiscal solicitada (${data[0].cliente || data[0].cnpj})`, os_id: null, tipo: 'nf_nova' }]);
+            }
+        } else {
+            alert('Falha ao gerar nova nota: ' + (error?.message || 'Erro desconhecido'));
+        }
+    }
+
     async function concluirRequisicao(id) {
         if (!confirm('Deseja marcar esta requisição como comprada/concluída?')) return;
         const { data, error } = await supabase.from('requisicoes_material').update({ status: 'Comprado' }).eq('id', id).select();
@@ -1893,6 +1925,7 @@ export const AppProvider = ({ children }) => {
         salvarCliente,
         salvarNotaFiscal,
         concluirNotaFiscal,
+        reabrirNotaFiscal,
         concluirRequisicao,
         concluirTarefa,
         concluirLink,

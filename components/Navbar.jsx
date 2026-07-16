@@ -6,6 +6,18 @@ import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS, obterCorStatus, formatarValorF
 
 export default function Navbar() {
     const { setModalAlertasAberto, modalAlertasAberto, alertasNaoLidos, setAlertasNaoLidos, setAbaAtual, setAbaFinanceiro, pedidos, abrirEdicao, toggleDarkMode, darkMode, usuario, setUsuario, abaAtual } = useAppContext();
+    const notificacoesRef = useRef(null);
+
+    useEffect(() => {
+        if (!modalAlertasAberto) return;
+        const handleClickFora = (e) => {
+            if (notificacoesRef.current && !notificacoesRef.current.contains(e.target)) {
+                setModalAlertasAberto(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickFora);
+        return () => document.removeEventListener('mousedown', handleClickFora);
+    }, [modalAlertasAberto, setModalAlertasAberto]);
 
     return (
         <>
@@ -14,7 +26,7 @@ export default function Navbar() {
                         <img src="https://www.berlimgraficarapida.com.br/wp-content/uploads/elementor/thumbs/logosite-rm0erpiqj90gcf7ff4jp8ujys78opflob1b9vn5jjs.png" alt="Berlim Gráfica" className="h-8 object-contain" />
                     </div>
                     <div className="flex items-center gap-5">
-                        <div className="relative">
+                        <div className="relative" ref={notificacoesRef}>
                             <button onClick={() => setModalAlertasAberto(!modalAlertasAberto)} className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-darkHover transition text-gray-600 dark:text-[#888888] relative">
                                 <Icon name="bell" className="w-5 h-5" />
                                 {alertasNaoLidos.length > 0 && (
@@ -41,6 +53,13 @@ export default function Navbar() {
                                                     if (alerta.tipo === 'faturamento_em_analise' || alerta.tipo === 'novo_cliente_faturamento') {
                                                         setAbaAtual('financeiro');
                                                         setAbaFinanceiro('empresas_aprovadas');
+                                                    } else if (alerta.tipo === 'nf_nova' || alerta.tipo === 'nf_preenchida') {
+                                                        if (usuario?.nivel === 'Atendimento') {
+                                                            setAbaAtual('notas_fiscais');
+                                                        } else {
+                                                            setAbaAtual('financeiro');
+                                                            setAbaFinanceiro('notas_fiscais');
+                                                        }
                                                     } else {
                                                         setAbaAtual('producao');
                                                         if (alerta.os_id) {
@@ -134,7 +153,12 @@ export default function Navbar() {
                                 Financeiro
                             </a>
                         )}
-                        
+                        {usuario?.nivel === 'Atendimento' && (
+                            <a onClick={() => setAbaAtual('notas_fiscais')} className={`px-5 py-3 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap rounded-t-md flex items-center gap-2 tracking-wide uppercase ${abaAtual === 'notas_fiscais' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]' : 'hover:bg-black/10 text-white/90'}`}>
+                                Notas Fiscais
+                            </a>
+                        )}
+
 
 
                         {usuario?.nivel !== 'Financeiro' && (
