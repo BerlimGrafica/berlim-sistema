@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useAppContext } from '@/context/AppContext';
 import Icon from '@/components/Icon';
+import Tooltip from '@/components/Tooltip';
 import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS, obterCorStatus, formatarValorFinanceiro, formatarMoeda, formatarTelefone, obterDataAtual, formatarDataExibicao, formatarMesAno, CustomDatePicker, InlineDropdown, MultiSelectDropdown, desconstruirTextoServico, obterResumoServicos, ItensChecklist, StackedCards, CalculadoraBanner, CalculadoraAdesivo, CalculadoraCasamento, CalculadorasAba } from '@/lib/utils';
 
 
@@ -109,12 +110,14 @@ export default function DashboardTab() {
                                                     <p className="text-[13px] font-bold text-gray-800 dark:text-gray-200 leading-snug">{alerta.msg}</p>
                                                     <span className="text-[10px] font-bold text-rose-500 mt-1.5 inline-block uppercase tracking-wider hover:underline">Ver Detalhes &rarr;</span>
                                                 </div>
-                                                <button type="button" onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setAlertasNaoLidos(prev => prev.filter(a => a.id !== alerta.id));
-                                                }} className="text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 opacity-0 group-hover:opacity-100 transition p-1 shrink-0" title="Remover aviso">
-                                                    <Icon name="x" className="w-3.5 h-3.5" />
-                                                </button>
+                                                <Tooltip label="Remover aviso" className="opacity-0 group-hover:opacity-100 transition shrink-0">
+                                                    <button type="button" onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setAlertasNaoLidos(prev => prev.filter(a => a.id !== alerta.id));
+                                                    }} aria-label="Remover aviso" className="text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 p-1">
+                                                        <Icon name="x" className="w-3.5 h-3.5" />
+                                                    </button>
+                                                </Tooltip>
                                             </div>
                                         ))
                                     )}

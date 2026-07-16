@@ -2,6 +2,7 @@
 import React from 'react';
 import { useAppContext } from '@/context/AppContext';
 import Icon from '@/components/Icon';
+import Tooltip from '@/components/Tooltip';
 import { formatarMoeda } from '@/lib/utils';
 
 
@@ -31,7 +32,9 @@ export default function Notas_fiscaisTab() {
                             className="w-full pl-9 pr-9 py-1.5 h-[38px] text-[13px] border border-gray-200 dark:border-darkBorder bg-white dark:bg-darkCard rounded-md focus:outline-none focus:ring-2 focus:ring-brand dark:text-white transition"
                         />
                         {buscaNotaFiscal && (
-                            <button type="button" onClick={() => { setBuscaNotaFiscal(''); setPaginaNotasFiscais(1); }} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-brand transition" title="Limpar Busca"><Icon name="x" className="w-4 h-4" /></button>
+                            <Tooltip label="Limpar Busca" className="absolute right-2.5 top-1/2 -translate-y-1/2">
+                                <button type="button" onClick={() => { setBuscaNotaFiscal(''); setPaginaNotasFiscais(1); }} aria-label="Limpar Busca" className="text-gray-400 hover:text-brand transition"><Icon name="x" className="w-4 h-4" /></button>
+                            </Tooltip>
                         )}
                     </div>
                     <div className="flex bg-gray-100/50 dark:bg-darkHover/50 p-1 rounded-lg border border-gray-200 dark:border-darkBorder w-full lg:w-auto">
@@ -42,13 +45,15 @@ export default function Notas_fiscaisTab() {
                         <button onClick={() => window.open('/solicitar-nota', '_blank')} className="bg-brand hover:bg-brandHover text-white h-[38px] px-4 text-[13px] rounded-l-md font-semibold transition flex items-center gap-2 border border-brand border-r-0">
                             <Icon name="external-link" className="w-4 h-4" /> Formulário
                         </button>
-                        <button onClick={() => {
-                            const link = window.location.origin + '/solicitar-nota';
-                            navigator.clipboard.writeText(link);
-                            alert('Link copiado!');
-                        }} className="bg-brand hover:bg-brandHover text-white h-[38px] px-3 rounded-r-md border-l border-white/20 transition flex items-center justify-center" title="Copiar Link">
-                            <Icon name="copy" className="w-3.5 h-3.5" />
-                        </button>
+                        <Tooltip label="Copiar Link">
+                            <button onClick={() => {
+                                const link = window.location.origin + '/solicitar-nota';
+                                navigator.clipboard.writeText(link);
+                                alert('Link copiado!');
+                            }} aria-label="Copiar Link" className="bg-brand hover:bg-brandHover text-white h-[38px] px-3 rounded-r-md border-l border-white/20 transition flex items-center justify-center">
+                                <Icon name="copy" className="w-3.5 h-3.5" />
+                            </button>
+                        </Tooltip>
                     </div>
                 </div>
             </div>
@@ -107,14 +112,18 @@ export default function Notas_fiscaisTab() {
                                         <td className="px-4 py-3 text-right">
                                             <div className="flex items-center justify-end gap-2">
                                                 {!n.concluido && (usuario?.nivel === 'Administrador' || usuario?.nivel === 'Financeiro') && (
-                                                    <button onClick={(e) => { e.stopPropagation(); concluirNotaFiscal(n.id); }} className="p-2 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded transition" title="Concluir Nota">
-                                                        <Icon name="check-circle" className="w-4 h-4" />
-                                                    </button>
+                                                    <Tooltip label="Concluir Nota">
+                                                        <button onClick={(e) => { e.stopPropagation(); concluirNotaFiscal(n.id); }} aria-label="Concluir Nota" className="p-2 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded transition">
+                                                            <Icon name="check-circle" className="w-4 h-4" />
+                                                        </button>
+                                                    </Tooltip>
                                                 )}
                                                 {n.concluido && (
-                                                    <button onClick={(e) => { e.stopPropagation(); reabrirNotaFiscal(n); }} className="p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded transition" title="Gerar Nova Nota (Duplicar)">
-                                                        <Icon name="rotate-ccw" className="w-4 h-4" />
-                                                    </button>
+                                                    <Tooltip label="Gerar Nova Nota (Duplicar)">
+                                                        <button onClick={(e) => { e.stopPropagation(); reabrirNotaFiscal(n); }} aria-label="Gerar Nova Nota (Duplicar)" className="p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded transition">
+                                                            <Icon name="rotate-ccw" className="w-4 h-4" />
+                                                        </button>
+                                                    </Tooltip>
                                                 )}
                                             </div>
                                         </td>

@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useAppContext } from '@/context/AppContext';
 import Icon from '@/components/Icon';
+import Tooltip from '@/components/Tooltip';
 import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS, obterCorStatus, formatarValorFinanceiro, formatarMoeda, formatarTelefone, obterDataAtual, formatarDataExibicao, formatarMesAno, CustomDatePicker, InlineDropdown, MultiSelectDropdown, desconstruirTextoServico, obterResumoServicos, ItensChecklist, StackedCards, CalculadoraBanner, CalculadoraAdesivo, CalculadoraCasamento, CalculadorasAba } from '@/lib/utils';
 
 
@@ -85,17 +86,23 @@ export default function OrcamentosTab() {
                                                 <td className="px-6 py-4 text-[13px] font-medium text-gray-900 dark:text-gray-300">{orc.cliente}</td>
                                                 <td className="px-6 py-4 text-[13px] font-medium text-emerald-600 dark:text-emerald-400">R$ {formatarMoeda((orc.valor * 100).toFixed(0).toString())}</td>
                                                 <td className="px-6 py-4 text-[13px] text-right flex justify-end gap-1">
-                                                    <button onClick={(e) => { e.stopPropagation(); transformarEmOS(orc); }} className="p-2 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded transition inline-block" title="Aprovar e Transformar em O.S.">
-                                                        <Icon name="check-circle" className="w-5 h-5 inline-block" />
-                                                    </button>
-                                                    <button onClick={(e) => { e.stopPropagation(); baixarPDFOrcamento(orc); }} className="p-2 text-blue-500 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded transition inline-block" title="Imprimir Orçamento">
-                                                        <Icon name="file-text" className="w-5 h-5 inline-block" />
-                                                    </button>
+                                                    <Tooltip label="Aprovar e Transformar em O.S.">
+                                                        <button onClick={(e) => { e.stopPropagation(); transformarEmOS(orc); }} aria-label="Aprovar e Transformar em O.S." className="p-2 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded transition inline-block">
+                                                            <Icon name="check-circle" className="w-5 h-5 inline-block" />
+                                                        </button>
+                                                    </Tooltip>
+                                                    <Tooltip label="Imprimir Orçamento">
+                                                        <button onClick={(e) => { e.stopPropagation(); baixarPDFOrcamento(orc); }} aria-label="Imprimir Orçamento" className="p-2 text-blue-500 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded transition inline-block">
+                                                            <Icon name="file-text" className="w-5 h-5 inline-block" />
+                                                        </button>
+                                                    </Tooltip>
 
                                                     {isAdmin && (
-                                                        <button onClick={(e) => { e.stopPropagation(); excluirOrcamentoFormalizado(orc.id); }} className="p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded" title="Excluir Orçamento">
-                                                            <Icon name="trash-2" className="w-5 h-5 inline-block" />
-                                                        </button>
+                                                        <Tooltip label="Excluir Orçamento">
+                                                            <button onClick={(e) => { e.stopPropagation(); excluirOrcamentoFormalizado(orc.id); }} aria-label="Excluir Orçamento" className="p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded">
+                                                                <Icon name="trash-2" className="w-5 h-5 inline-block" />
+                                                            </button>
+                                                        </Tooltip>
                                                     )}
                                                 </td>
                                             </tr>
@@ -143,7 +150,9 @@ export default function OrcamentosTab() {
                                 className="w-full bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-lg pl-10 pr-9 py-2.5 text-[13px] focus:outline-none focus:border-brand transition"
                             />
                             {buscaPreProntos && (
-                                <button type="button" onClick={() => setBuscaPreProntos('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-brand transition" title="Limpar Busca"><Icon name="x" className="w-4 h-4" /></button>
+                                <Tooltip label="Limpar Busca" className="absolute right-3 top-1/2 -translate-y-1/2">
+                                    <button type="button" onClick={() => setBuscaPreProntos('')} aria-label="Limpar Busca" className="text-gray-400 hover:text-brand transition"><Icon name="x" className="w-4 h-4" /></button>
+                                </Tooltip>
                             )}
                         </div>
 

@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useAppContext } from '@/context/AppContext';
 import Icon from '@/components/Icon';
+import Tooltip from '@/components/Tooltip';
 import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS, obterCorStatus, formatarValorFinanceiro, formatarMoeda, formatarTelefone, obterDataAtual, formatarDataExibicao, formatarMesAno, CustomDatePicker, InlineDropdown, MultiSelectDropdown, desconstruirTextoServico, obterResumoServicos, ItensChecklist, StackedCards, CalculadoraBanner, CalculadoraAdesivo, CalculadoraCasamento, CalculadorasAba } from '@/lib/utils';
 
 
@@ -31,7 +32,9 @@ export default function BaixaTab() {
                                     <Icon name="search" className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
                                     <input type="text" value={buscaHistoricoText} onChange={e => setBuscaHistoricoText(e.target.value)} placeholder="Buscar cliente ou OS..." className="w-full bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-md pl-9 pr-9 py-2 text-[13px] outline-none focus:border-brand transition dark:text-[#EDEDED]" />
                                     {buscaHistoricoText && (
-                                        <button type="button" onClick={() => setBuscaHistoricoText('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-brand transition" title="Limpar Busca"><Icon name="x" className="w-4 h-4" /></button>
+                                        <Tooltip label="Limpar Busca" className="absolute right-2.5 top-1/2 -translate-y-1/2">
+                                            <button type="button" onClick={() => setBuscaHistoricoText('')} aria-label="Limpar Busca" className="text-gray-400 hover:text-brand transition"><Icon name="x" className="w-4 h-4" /></button>
+                                        </Tooltip>
                                     )}
                                 </div>
                                 <div className="flex flex-col w-36">
@@ -43,7 +46,9 @@ export default function BaixaTab() {
                                     <CustomDatePicker value={dataFiltroFim} onChange={setDataFiltroFim} placeholder="Fim" className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-md px-3 py-2 text-[13px] outline-none hover:border-brand transition" />
                                 </div>
                                 {(dataFiltroInicio || dataFiltroFim || buscaHistoricoText) && (
-                                    <button type="button" onClick={() => { setDataFiltroInicio(''); setDataFiltroFim(''); setBuscaHistoricoText(''); }} className="w-[38px] h-[38px] flex items-center justify-center bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-md hover:bg-gray-100 dark:hover:bg-darkElevated transition text-gray-400 hover:text-brand" title="Limpar Filtros"><Icon name="x" className="w-4 h-4" /></button>
+                                    <Tooltip label="Limpar Filtros">
+                                        <button type="button" onClick={() => { setDataFiltroInicio(''); setDataFiltroFim(''); setBuscaHistoricoText(''); }} aria-label="Limpar Filtros" className="w-[38px] h-[38px] flex items-center justify-center bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-md hover:bg-gray-100 dark:hover:bg-darkElevated transition text-gray-400 hover:text-brand"><Icon name="x" className="w-4 h-4" /></button>
+                                    </Tooltip>
                                 )}
                             </div>
                         </div>
@@ -80,7 +85,7 @@ export default function BaixaTab() {
                                                 <td className="px-6 py-4 text-[13px] text-gray-600 dark:text-[#A1A1AA] truncate max-w-xs">{obterResumoServicos(p.servico)}</td>
                                                 <td className="px-6 py-4"><span className={`whitespace-nowrap px-2.5 py-1 text-[11px] font-semibold rounded border bg-gray-50 border-gray-200 dark:bg-darkElevated dark:border-darkBorder ${obterCorStatus(p.status)}`}>{p.status}</span></td>
                                                 <td className="px-6 py-4 font-semibold text-[13px] text-right text-gray-900 dark:text-[#EDEDED]">R$ {formatarValorFinanceiro(Number(p.valor_total))}</td>
-                                                <td className="px-6 py-4 text-center"><button type="button" onClick={(e) => { e.stopPropagation(); imprimirOS(p); }} className="p-2 text-blue-500 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition rounded inline-block" title="Imprimir O.S."><Icon name="printer" className="w-5 h-5 inline-block" /></button></td>
+                                                <td className="px-6 py-4 text-center"><Tooltip label="Imprimir O.S."><button type="button" onClick={(e) => { e.stopPropagation(); imprimirOS(p); }} aria-label="Imprimir O.S." className="p-2 text-blue-500 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition rounded inline-block"><Icon name="printer" className="w-5 h-5 inline-block" /></button></Tooltip></td>
                                             </tr>
                                         )
                                     })}

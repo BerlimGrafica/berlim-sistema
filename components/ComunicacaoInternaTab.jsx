@@ -2,6 +2,7 @@
 import React from 'react';
 import { useAppContext } from '@/context/AppContext';
 import Icon from '@/components/Icon';
+import Tooltip from '@/components/Tooltip';
 import { formatarDataExibicao } from '@/lib/utils';
 
 export default function ComunicacaoInternaTab() {
@@ -70,9 +71,13 @@ export default function ComunicacaoInternaTab() {
                                     </div>
                                     <div className="flex gap-1">
                                         {r.status !== 'Comprado' && (
-                                            <button onClick={(e) => { e.stopPropagation(); concluirRequisicao(r.id); }} className="p-1 text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded" title="Concluir"><Icon name="check-circle" className="w-4 h-4" /></button>
+                                            <Tooltip label="Concluir">
+                                                <button onClick={(e) => { e.stopPropagation(); concluirRequisicao(r.id); }} aria-label="Concluir" className="p-1 text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded"><Icon name="check-circle" className="w-4 h-4" /></button>
+                                            </Tooltip>
                                         )}
-                                        <button onClick={(e) => { e.stopPropagation(); excluirRequisicao(r.id); }} className="p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded" title="Excluir"><Icon name="trash-2" className="w-4 h-4" /></button>
+                                        <Tooltip label="Excluir">
+                                            <button onClick={(e) => { e.stopPropagation(); excluirRequisicao(r.id); }} aria-label="Excluir" className="p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded"><Icon name="trash-2" className="w-4 h-4" /></button>
+                                        </Tooltip>
                                     </div>
                                 </div>
                                 <p className="text-[13px] text-gray-600 dark:text-[#A1A1AA] mt-1 line-clamp-3" title={r.itens}>{r.itens}</p>
@@ -127,11 +132,17 @@ export default function ComunicacaoInternaTab() {
                                     </div>
                                     <div className="flex gap-1">
                                         {t.status !== 'Concluída' ? (
-                                            <button onClick={(e) => { e.stopPropagation(); concluirTarefa(t.id); }} className="p-1 text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded" title="Concluir"><Icon name="check-circle" className="w-4 h-4" /></button>
+                                            <Tooltip label="Concluir">
+                                                <button onClick={(e) => { e.stopPropagation(); concluirTarefa(t.id); }} aria-label="Concluir" className="p-1 text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded"><Icon name="check-circle" className="w-4 h-4" /></button>
+                                            </Tooltip>
                                         ) : t.fixa && (
-                                            <button onClick={(e) => { e.stopPropagation(); reabrirTarefaFixa(t.id); }} className="p-1 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded" title="Desfazer conclusão de hoje"><Icon name="rotate-ccw" className="w-4 h-4" /></button>
+                                            <Tooltip label="Desfazer conclusão de hoje">
+                                                <button onClick={(e) => { e.stopPropagation(); reabrirTarefaFixa(t.id); }} aria-label="Desfazer conclusão de hoje" className="p-1 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded"><Icon name="rotate-ccw" className="w-4 h-4" /></button>
+                                            </Tooltip>
                                         )}
-                                        <button onClick={(e) => { e.stopPropagation(); excluirTarefa(t.id); }} className="p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded" title="Excluir"><Icon name="trash-2" className="w-4 h-4" /></button>
+                                        <Tooltip label="Excluir">
+                                            <button onClick={(e) => { e.stopPropagation(); excluirTarefa(t.id); }} aria-label="Excluir" className="p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded"><Icon name="trash-2" className="w-4 h-4" /></button>
+                                        </Tooltip>
                                     </div>
                                 </div>
                                 <p className="text-[13px] text-gray-600 dark:text-[#A1A1AA]">{t.descricao}</p>
@@ -182,9 +193,13 @@ export default function ComunicacaoInternaTab() {
                                     </div>
                                     <div className="flex gap-1">
                                         {l.status !== 'Pago' && l.status !== 'Concluído' && (
-                                            <button onClick={(e) => { e.stopPropagation(); concluirLink(l.id); }} className="p-1 text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded" title="Concluir"><Icon name="check-circle" className="w-4 h-4" /></button>
+                                            <Tooltip label="Concluir">
+                                                <button onClick={(e) => { e.stopPropagation(); concluirLink(l.id); }} aria-label="Concluir" className="p-1 text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded"><Icon name="check-circle" className="w-4 h-4" /></button>
+                                            </Tooltip>
                                         )}
-                                        <button onClick={(e) => { e.stopPropagation(); excluirLink(l.id); }} className="p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded" title="Excluir"><Icon name="trash-2" className="w-4 h-4" /></button>
+                                        <Tooltip label="Excluir">
+                                            <button onClick={(e) => { e.stopPropagation(); excluirLink(l.id); }} aria-label="Excluir" className="p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded"><Icon name="trash-2" className="w-4 h-4" /></button>
+                                        </Tooltip>
                                     </div>
                                 </div>
                                 {l.valor && (
@@ -194,13 +209,15 @@ export default function ComunicacaoInternaTab() {
                                 )}
                                 <div className="mt-2 bg-gray-50 dark:bg-darkElevated p-2 rounded flex items-center justify-between border border-gray-100 dark:border-darkBorder">
                                     <span className="text-[11px] text-gray-500 truncate mr-2">{l.link}</span>
-                                    <button onClick={(e) => {
-                                        e.stopPropagation();
-                                        navigator.clipboard.writeText(l.link);
-                                        alert('Link copiado!');
-                                    }} className="text-brand hover:text-brandHover p-1 rounded" title="Copiar Link">
-                                        <Icon name="copy" className="w-4 h-4" />
-                                    </button>
+                                    <Tooltip label="Copiar Link">
+                                        <button onClick={(e) => {
+                                            e.stopPropagation();
+                                            navigator.clipboard.writeText(l.link);
+                                            alert('Link copiado!');
+                                        }} aria-label="Copiar Link" className="text-brand hover:text-brandHover p-1 rounded">
+                                            <Icon name="copy" className="w-4 h-4" />
+                                        </button>
+                                    </Tooltip>
                                 </div>
                                 <div className="mt-auto pt-3 border-t border-gray-100 dark:border-darkBorder flex justify-between items-center">
                                     <div className="flex items-center gap-1.5 text-[11px] font-semibold text-gray-500">

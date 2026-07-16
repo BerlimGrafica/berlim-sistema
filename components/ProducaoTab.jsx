@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useAppContext } from '@/context/AppContext';
 import Icon from '@/components/Icon';
+import Tooltip from '@/components/Tooltip';
 import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS, obterCorStatus, formatarValorFinanceiro, formatarMoeda, formatarTelefone, obterDataAtual, formatarDataExibicao, formatarMesAno, CustomDatePicker, InlineDropdown, MultiSelectDropdown, desconstruirTextoServico, obterResumoServicos, ItensChecklist, StackedCards, CalculadoraBanner, CalculadoraAdesivo, CalculadoraCasamento, CalculadorasAba } from '@/lib/utils';
 
 
@@ -23,7 +24,9 @@ export default function ProducaoTab() {
                                     <Icon name="search" className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
                                     <input type="text" value={buscaProducaoText} onChange={e => setBuscaProducaoText(e.target.value)} placeholder="Pesquisar por cliente, OS ou responsável..." className="w-full bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-md pl-9 pr-9 py-2 text-[13px] outline-none focus:border-brand transition dark:text-[#EDEDED]" />
                                     {buscaProducaoText && (
-                                        <button type="button" onClick={() => setBuscaProducaoText('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-brand transition" title="Limpar Busca"><Icon name="x" className="w-4 h-4" /></button>
+                                        <Tooltip label="Limpar Busca" className="absolute right-2.5 top-1/2 -translate-y-1/2">
+                                            <button type="button" onClick={() => setBuscaProducaoText('')} aria-label="Limpar Busca" className="text-gray-400 hover:text-brand transition"><Icon name="x" className="w-4 h-4" /></button>
+                                        </Tooltip>
                                     )}
                                 </div>
                                 <button onClick={() => { setPedidoEmEdicao(null); setModalAberto(true); }} className="bg-brand hover:bg-brandHover text-white px-4 py-2 text-[13px] rounded-md font-semibold shadow-sm transition flex items-center gap-2"><Icon name="plus" /> Nova O.S.</button>
@@ -79,15 +82,21 @@ export default function ProducaoTab() {
                                                                 <td className="px-4 py-3 text-gray-800 dark:text-white font-medium"><ItensChecklist pedido={p} atualizarCampoInline={atualizarCampoInline} /></td>
                                                                 <td className="px-4 py-3">
                                                                     <div className="flex items-center justify-center gap-1">
-                                                                        <button type="button" onClick={() => atualizarCampoInline(p.id, 'aprovado', !p.aprovado)} className={`p-2 rounded transition ${p.aprovado ? 'text-white bg-blue-500 dark:bg-blue-600 hover:bg-blue-600 dark:hover:bg-blue-700' : 'text-gray-300 dark:text-gray-600 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30'}`} title="Arte Aprovada">
-                                                                            <Icon name="thumbs-up" className="w-4 h-4" />
-                                                                        </button>
-                                                                        <button type="button" onClick={() => atualizarCampoInline(p.id, 'entrega', !p.entrega)} className={`p-2 rounded transition ${p.entrega ? 'text-white bg-orange-500 dark:bg-orange-600 hover:bg-orange-600 dark:hover:bg-orange-700' : 'text-gray-300 dark:text-gray-600 hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/30'}`} title="Pronto para Entrega">
-                                                                            <Icon name="package" className="w-4 h-4" />
-                                                                        </button>
-                                                                        <button type="button" onClick={() => atualizarCampoInline(p.id, 'urgente', !p.urgente)} className={`p-2 rounded transition ${p.urgente ? 'text-white bg-red-500 dark:bg-red-600 hover:bg-red-600 dark:hover:bg-red-700' : 'text-gray-300 dark:text-gray-600 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30'}`} title="Urgente">
-                                                                            <Icon name="alert-triangle" className="w-4 h-4" />
-                                                                        </button>
+                                                                        <Tooltip label="Arte Aprovada">
+                                                                            <button type="button" onClick={() => atualizarCampoInline(p.id, 'aprovado', !p.aprovado)} aria-label="Arte Aprovada" className={`p-2 rounded transition ${p.aprovado ? 'text-white bg-blue-500 dark:bg-blue-600 hover:bg-blue-600 dark:hover:bg-blue-700' : 'text-gray-300 dark:text-gray-600 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30'}`}>
+                                                                                <Icon name="thumbs-up" className="w-4 h-4" />
+                                                                            </button>
+                                                                        </Tooltip>
+                                                                        <Tooltip label="Pronto para Entrega">
+                                                                            <button type="button" onClick={() => atualizarCampoInline(p.id, 'entrega', !p.entrega)} aria-label="Pronto para Entrega" className={`p-2 rounded transition ${p.entrega ? 'text-white bg-orange-500 dark:bg-orange-600 hover:bg-orange-600 dark:hover:bg-orange-700' : 'text-gray-300 dark:text-gray-600 hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/30'}`}>
+                                                                                <Icon name="package" className="w-4 h-4" />
+                                                                            </button>
+                                                                        </Tooltip>
+                                                                        <Tooltip label="Urgente">
+                                                                            <button type="button" onClick={() => atualizarCampoInline(p.id, 'urgente', !p.urgente)} aria-label="Urgente" className={`p-2 rounded transition ${p.urgente ? 'text-white bg-red-500 dark:bg-red-600 hover:bg-red-600 dark:hover:bg-red-700' : 'text-gray-300 dark:text-gray-600 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30'}`}>
+                                                                                <Icon name="alert-triangle" className="w-4 h-4" />
+                                                                            </button>
+                                                                        </Tooltip>
                                                                     </div>
                                                                 </td>
                                                                 <td className="px-4 py-3"><InlineDropdown value={p.status} options={opcoesStatusPermitidas} onChange={(val) => atualizarCampoInline(p.id, 'status', val)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-2.5 py-1.5 text-[11px] outline-none hover:border-brand" /></td>
@@ -97,9 +106,11 @@ export default function ProducaoTab() {
                                                                     </div>
                                                                 </td>
                                                                 <td className="px-4 py-3 text-right">
-                                                                    <button type="button" onClick={() => atualizarCampoInline(p.id, 'status', 'Concluído')} className="p-2 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition rounded inline-block" title="Marcar como Concluído">
-                                                                        <Icon name="check-circle" className="w-5 h-5 inline-block" />
-                                                                    </button>
+                                                                    <Tooltip label="Marcar como Concluído">
+                                                                        <button type="button" onClick={() => atualizarCampoInline(p.id, 'status', 'Concluído')} aria-label="Marcar como Concluído" className="p-2 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition rounded inline-block">
+                                                                            <Icon name="check-circle" className="w-5 h-5 inline-block" />
+                                                                        </button>
+                                                                    </Tooltip>
                                                                 </td>
                                                             </tr>
                                                         ))}

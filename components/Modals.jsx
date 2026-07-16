@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useAppContext, supabase } from "@/context/AppContext";
 import Icon from "@/components/Icon";
+import Tooltip from "@/components/Tooltip";
 import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS, obterCorStatus, formatarValorFinanceiro, formatarMoeda, formatarTelefone, formatarCnpjCpf, obterDataAtual, formatarDataExibicao, formatarMesAno, CustomDatePicker, InlineDropdown, MultiSelectDropdown, ToggleCard, SegmentedControl, desconstruirTextoServico, obterResumoServicos, ItensChecklist, StackedCards, CalculadoraBanner, CalculadoraAdesivo, CalculadoraCasamento, CalculadorasAba } from '@/lib/utils';
 
 const CATEGORIAS_CONTA = [
@@ -96,9 +97,11 @@ export default function Modals() {
                                                 </ul>
                                             )}
                                         </div>
-                                        <button type="button" onClick={() => { setNovoCliente({ id: null, nome: '', telefone: '', email: '', observacoes: '', cliente_problema: false }); setModalClienteAberto(true); }} disabled={isModalTrancado} className="shrink-0 w-[38px] h-[38px] flex items-center justify-center bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded hover:bg-darkHover transition disabled:opacity-50" title="Novo Cliente">
-                                            <Icon name="plus" className="w-4 h-4 text-brand" />
-                                        </button>
+                                        <Tooltip label="Novo Cliente">
+                                            <button type="button" onClick={() => { setNovoCliente({ id: null, nome: '', telefone: '', email: '', observacoes: '', cliente_problema: false }); setModalClienteAberto(true); }} disabled={isModalTrancado} aria-label="Novo Cliente" className="shrink-0 w-[38px] h-[38px] flex items-center justify-center bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded hover:bg-darkHover transition disabled:opacity-50">
+                                                <Icon name="plus" className="w-4 h-4 text-brand" />
+                                            </button>
+                                        </Tooltip>
                                     </div>
                                     {isClienteProblema(novoPedido.cliente) && (
                                         <div className="mt-2 p-2.5 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded flex items-start gap-2.5 text-red-600 dark:text-red-400">
@@ -167,9 +170,11 @@ export default function Modals() {
                                                     )}
                                                 </div>
                                                 {isAdmin && (
-                                                    <button type="button" onClick={() => { setNovoProduto({ id: null, nome: '', texto_padrao: '', preco_base: '' }); setModalProdutoAberto(true); }} disabled={isModalTrancado} className="shrink-0 w-[38px] h-[38px] flex items-center justify-center bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded hover:bg-darkHover transition disabled:opacity-50" title="Novo Produto">
-                                                        <Icon name="plus" className="w-4 h-4 text-brand" />
-                                                    </button>
+                                                    <Tooltip label="Novo Produto">
+                                                        <button type="button" onClick={() => { setNovoProduto({ id: null, nome: '', texto_padrao: '', preco_base: '' }); setModalProdutoAberto(true); }} disabled={isModalTrancado} aria-label="Novo Produto" className="shrink-0 w-[38px] h-[38px] flex items-center justify-center bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded hover:bg-darkHover transition disabled:opacity-50">
+                                                            <Icon name="plus" className="w-4 h-4 text-brand" />
+                                                        </button>
+                                                    </Tooltip>
                                                 )}
                                             </div>
 
@@ -410,9 +415,11 @@ export default function Modals() {
                                             </ul>
                                         )}
                                     </div>
-                                    <button type="button" onClick={() => { setNovoCliente({ id: null, nome: '', telefone: '', email: '', observacoes: '', cliente_problema: false }); setModalClienteAberto(true); }} className="shrink-0 w-[38px] h-[38px] flex items-center justify-center bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded hover:bg-darkHover transition" title="Novo Cliente">
-                                        <Icon name="plus" className="w-4 h-4 text-brand" />
-                                    </button>
+                                    <Tooltip label="Novo Cliente">
+                                        <button type="button" onClick={() => { setNovoCliente({ id: null, nome: '', telefone: '', email: '', observacoes: '', cliente_problema: false }); setModalClienteAberto(true); }} aria-label="Novo Cliente" className="shrink-0 w-[38px] h-[38px] flex items-center justify-center bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded hover:bg-darkHover transition">
+                                            <Icon name="plus" className="w-4 h-4 text-brand" />
+                                        </button>
+                                    </Tooltip>
                                 </div>
                                 {isClienteProblema(novoPedido.cliente) && (
                                     <div className="mt-2 p-2.5 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded flex items-start gap-2.5 text-red-600 dark:text-red-400">
@@ -464,9 +471,11 @@ export default function Modals() {
                                                 )}
                                             </div>
                                             {isAdmin && (
-                                                <button type="button" onClick={() => { setNovoProduto({ id: null, nome: '', texto_padrao: '', preco_base: '' }); setModalProdutoAberto(true); }} className="shrink-0 w-[38px] h-[38px] flex items-center justify-center bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded hover:bg-darkHover transition" title="Novo Produto">
-                                                    <Icon name="plus" className="w-4 h-4 text-brand" />
-                                                </button>
+                                                <Tooltip label="Novo Produto">
+                                                    <button type="button" onClick={() => { setNovoProduto({ id: null, nome: '', texto_padrao: '', preco_base: '' }); setModalProdutoAberto(true); }} aria-label="Novo Produto" className="shrink-0 w-[38px] h-[38px] flex items-center justify-center bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded hover:bg-darkHover transition">
+                                                        <Icon name="plus" className="w-4 h-4 text-brand" />
+                                                    </button>
+                                                </Tooltip>
                                             )}
                                         </div>
 
@@ -713,9 +722,9 @@ export default function Modals() {
                             <div className="bg-gray-50 dark:bg-darkElevated p-4 rounded border border-gray-100 dark:border-darkBorder mb-6">
                                 <h4 className="font-semibold text-[13px] text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-3">Dados do Cliente (Link)</h4>
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                    <div><label className="text-[11px] text-gray-500">Razão Social</label><div className="flex items-center gap-2"><div className="text-[13px] dark:text-[#EDEDED] font-medium truncate">{notaFiscalEmEdicao.razao_social || '---'}</div>{notaFiscalEmEdicao.razao_social && <button type="button" onClick={() => navigator.clipboard.writeText(notaFiscalEmEdicao.razao_social)} className="text-gray-400 hover:text-brand transition shrink-0" title="Copiar"><Icon name="copy" className="w-3.5 h-3.5" /></button>}</div></div>
-                                    <div><label className="text-[11px] text-gray-500">CNPJ</label><div className="flex items-center gap-2"><div className="text-[13px] dark:text-[#EDEDED] font-medium truncate">{notaFiscalEmEdicao.cnpj || '---'}</div>{notaFiscalEmEdicao.cnpj && <button type="button" onClick={() => navigator.clipboard.writeText(notaFiscalEmEdicao.cnpj)} className="text-gray-400 hover:text-brand transition shrink-0" title="Copiar"><Icon name="copy" className="w-3.5 h-3.5" /></button>}</div></div>
-                                    <div><label className="text-[11px] text-gray-500">Endereço</label><div className="flex items-center gap-2"><div className="text-[13px] dark:text-[#EDEDED] font-medium truncate">{notaFiscalEmEdicao.endereco || '---'}</div>{notaFiscalEmEdicao.endereco && <button type="button" onClick={() => navigator.clipboard.writeText(notaFiscalEmEdicao.endereco)} className="text-gray-400 hover:text-brand transition shrink-0" title="Copiar"><Icon name="copy" className="w-3.5 h-3.5" /></button>}</div></div>
+                                    <div><label className="text-[11px] text-gray-500">Razão Social</label><div className="flex items-center gap-2"><div className="text-[13px] dark:text-[#EDEDED] font-medium truncate">{notaFiscalEmEdicao.razao_social || '---'}</div>{notaFiscalEmEdicao.razao_social && <Tooltip label="Copiar"><button type="button" onClick={() => navigator.clipboard.writeText(notaFiscalEmEdicao.razao_social)} aria-label="Copiar" className="text-gray-400 hover:text-brand transition shrink-0"><Icon name="copy" className="w-3.5 h-3.5" /></button></Tooltip>}</div></div>
+                                    <div><label className="text-[11px] text-gray-500">CNPJ</label><div className="flex items-center gap-2"><div className="text-[13px] dark:text-[#EDEDED] font-medium truncate">{notaFiscalEmEdicao.cnpj || '---'}</div>{notaFiscalEmEdicao.cnpj && <Tooltip label="Copiar"><button type="button" onClick={() => navigator.clipboard.writeText(notaFiscalEmEdicao.cnpj)} aria-label="Copiar" className="text-gray-400 hover:text-brand transition shrink-0"><Icon name="copy" className="w-3.5 h-3.5" /></button></Tooltip>}</div></div>
+                                    <div><label className="text-[11px] text-gray-500">Endereço</label><div className="flex items-center gap-2"><div className="text-[13px] dark:text-[#EDEDED] font-medium truncate">{notaFiscalEmEdicao.endereco || '---'}</div>{notaFiscalEmEdicao.endereco && <Tooltip label="Copiar"><button type="button" onClick={() => navigator.clipboard.writeText(notaFiscalEmEdicao.endereco)} aria-label="Copiar" className="text-gray-400 hover:text-brand transition shrink-0"><Icon name="copy" className="w-3.5 h-3.5" /></button></Tooltip>}</div></div>
                                     <div><label className="text-[11px] text-gray-500">Contato ({notaFiscalEmEdicao.forma_envio || 'Whatsapp'})</label><div className="flex items-center gap-1.5"><Icon name={notaFiscalEmEdicao.forma_envio === 'E-mail' ? 'mail' : 'phone'} className="w-3.5 h-3.5 text-gray-400 shrink-0" /><div className="text-[13px] dark:text-[#EDEDED] font-medium truncate">{notaFiscalEmEdicao.contato || '---'}</div></div></div>
                                 </div>
                                 {notaFiscalEmEdicao.observacao_cliente && (

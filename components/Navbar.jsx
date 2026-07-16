@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useAppContext } from "@/context/AppContext";
 import Icon from "@/components/Icon";
+import Tooltip from "@/components/Tooltip";
 import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS, obterCorStatus, formatarValorFinanceiro, formatarMoeda, formatarTelefone, obterDataAtual, formatarDataExibicao, formatarMesAno, CustomDatePicker, InlineDropdown, MultiSelectDropdown, desconstruirTextoServico, obterResumoServicos, ItensChecklist, StackedCards, CalculadoraBanner, CalculadoraAdesivo, CalculadoraCasamento, CalculadorasAba } from '@/lib/utils';
 
 export default function Navbar() {
@@ -95,19 +96,25 @@ export default function Navbar() {
 
                         <div className="flex items-center gap-1.5">
                             {/* LINK FUTURA IM */}
-                            <a href="https://www.futuraim.com.br/" target="_blank" rel="noopener noreferrer" className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-darkHover transition flex items-center justify-center" title="Acessar Futura IM">
-                                <img src="https://www.google.com/s2/favicons?domain=futuraim.com.br&sz=64" alt="Futura IM" className="w-5 h-5 object-contain rounded-sm" />
-                            </a>
-                            
+                            <Tooltip label="Acessar Futura IM">
+                                <a href="https://www.futuraim.com.br/" target="_blank" rel="noopener noreferrer" aria-label="Acessar Futura IM" className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-darkHover transition flex items-center justify-center">
+                                    <img src="https://www.google.com/s2/favicons?domain=futuraim.com.br&sz=64" alt="Futura IM" className="w-5 h-5 object-contain rounded-sm" />
+                                </a>
+                            </Tooltip>
+
                             {/* LINK ATUAL CARD */}
-                            <a href="https://oferta.atualcard.com.br/" target="_blank" rel="noopener noreferrer" className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-darkHover transition flex items-center justify-center" title="Acessar Atual Card">
-                                <img src="https://www.google.com/s2/favicons?domain=atualcard.com.br&sz=64" alt="Atual Card" className="w-5 h-5 object-contain rounded-sm" />
-                            </a>
-                            
+                            <Tooltip label="Acessar Atual Card">
+                                <a href="https://oferta.atualcard.com.br/" target="_blank" rel="noopener noreferrer" aria-label="Acessar Atual Card" className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-darkHover transition flex items-center justify-center">
+                                    <img src="https://www.google.com/s2/favicons?domain=atualcard.com.br&sz=64" alt="Atual Card" className="w-5 h-5 object-contain rounded-sm" />
+                                </a>
+                            </Tooltip>
+
                             {/* LINK ALVO PRINT */}
-                            <a href="https://www.alvoprint.com.br/" target="_blank" rel="noopener noreferrer" className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-darkHover transition flex items-center justify-center" title="Acessar Alvo Print">
-                                <img src="https://www.google.com/s2/favicons?domain=alvoprint.com.br&sz=64" alt="Alvo Print" className="w-5 h-5 object-contain rounded-sm" />
-                            </a>
+                            <Tooltip label="Acessar Alvo Print">
+                                <a href="https://www.alvoprint.com.br/" target="_blank" rel="noopener noreferrer" aria-label="Acessar Alvo Print" className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-darkHover transition flex items-center justify-center">
+                                    <img src="https://www.google.com/s2/favicons?domain=alvoprint.com.br&sz=64" alt="Alvo Print" className="w-5 h-5 object-contain rounded-sm" />
+                                </a>
+                            </Tooltip>
                         </div>
 
                         {/* SEPARADOR VERTICAL DE ELEGÂNCIA */}
@@ -123,9 +130,11 @@ export default function Navbar() {
                                     {usuario?.nivel}
                                 </span>
                             </div>
-                            <button type="button" onClick={() => setUsuario(null)} className="text-gray-400 hover:text-red-500 transition p-2 rounded-md hover:bg-red-50 dark:hover:bg-red-950/30" title="Sair do Sistema">
-                                <Icon name="log-out" className="w-5 h-5" />
-                            </button>
+                            <Tooltip label="Sair do Sistema">
+                                <button type="button" onClick={() => setUsuario(null)} aria-label="Sair do Sistema" className="text-gray-400 hover:text-red-500 transition p-2 rounded-md hover:bg-red-50 dark:hover:bg-red-950/30">
+                                    <Icon name="log-out" className="w-5 h-5" />
+                                </button>
+                            </Tooltip>
                         </div>
                     </div>
                 </header>

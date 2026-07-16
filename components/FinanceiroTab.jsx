@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useAppContext } from '@/context/AppContext';
 import Icon from '@/components/Icon';
+import Tooltip from '@/components/Tooltip';
 import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS, obterCorStatus, formatarValorFinanceiro, formatarMoeda, formatarTelefone, obterDataAtual, formatarDataExibicao, formatarMesAno, CustomDatePicker, InlineDropdown, MultiSelectDropdown, desconstruirTextoServico, obterResumoServicos, ItensChecklist, StackedCards, CalculadoraBanner, CalculadoraAdesivo, CalculadoraCasamento, CalculadorasAba } from '@/lib/utils';
 
 
@@ -92,7 +93,9 @@ export default function FinanceiroTab() {
                                             <CustomDatePicker value={dataFiltroFinFim} onChange={setDataFiltroFinFim} placeholder="Fim" className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-md px-3 py-2 text-[13px] outline-none hover:border-brand transition" />
                                         </div>
                                         {(dataFiltroFinInicio || dataFiltroFinFim) && (
-                                            <button type="button" onClick={() => { setDataFiltroFinInicio(''); setDataFiltroFinFim(''); }} className="w-[38px] h-[38px] flex items-center justify-center bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-md hover:bg-gray-100 dark:hover:bg-darkElevated transition text-gray-400 hover:text-brand" title="Limpar Filtros"><Icon name="x" className="w-4 h-4" /></button>
+                                            <Tooltip label="Limpar Filtros">
+                                                <button type="button" onClick={() => { setDataFiltroFinInicio(''); setDataFiltroFinFim(''); }} aria-label="Limpar Filtros" className="w-[38px] h-[38px] flex items-center justify-center bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-md hover:bg-gray-100 dark:hover:bg-darkElevated transition text-gray-400 hover:text-brand"><Icon name="x" className="w-4 h-4" /></button>
+                                            </Tooltip>
                                         )}
                                         <button type="button" onClick={() => {
                                                 const pedidosExport = pedidos.filter(p => {
@@ -148,7 +151,9 @@ export default function FinanceiroTab() {
                                                 className="w-full pl-9 pr-9 py-1.5 h-[38px] text-[13px] border border-gray-200 dark:border-darkBorder bg-white dark:bg-darkCard rounded-md focus:outline-none focus:ring-2 focus:ring-brand dark:text-white transition"
                                             />
                                             {buscaNotaFiscal && (
-                                                <button type="button" onClick={() => { setBuscaNotaFiscal(''); setPaginaNotasFiscais(1); }} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-brand transition" title="Limpar Busca"><Icon name="x" className="w-4 h-4" /></button>
+                                                <Tooltip label="Limpar Busca" className="absolute right-2.5 top-1/2 -translate-y-1/2">
+                                                    <button type="button" onClick={() => { setBuscaNotaFiscal(''); setPaginaNotasFiscais(1); }} aria-label="Limpar Busca" className="text-gray-400 hover:text-brand transition"><Icon name="x" className="w-4 h-4" /></button>
+                                                </Tooltip>
                                             )}
                                         </div>
                                         <div className="flex bg-gray-100/50 dark:bg-darkHover/50 p-1 rounded-lg border border-gray-200 dark:border-darkBorder w-full lg:w-auto mt-3 lg:mt-0">
@@ -159,13 +164,15 @@ export default function FinanceiroTab() {
                                             <button onClick={() => window.open('/solicitar-nota', '_blank')} className="bg-brand hover:bg-brandHover text-white h-[38px] px-4 text-[13px] rounded-l-md font-semibold transition flex items-center gap-2 border border-brand border-r-0">
                                                 <Icon name="external-link" className="w-4 h-4" /> Formulário
                                             </button>
-                                            <button onClick={() => {
-                                                const link = window.location.origin + '/solicitar-nota';
-                                                navigator.clipboard.writeText(link);
-                                                alert('Link copiado!');
-                                            }} className="bg-brand hover:bg-brandHover text-white h-[38px] px-3 rounded-r-md border-l border-white/20 transition flex items-center justify-center" title="Copiar Link">
-                                                <Icon name="copy" className="w-3.5 h-3.5" />
-                                            </button>
+                                            <Tooltip label="Copiar Link">
+                                                <button onClick={() => {
+                                                    const link = window.location.origin + '/solicitar-nota';
+                                                    navigator.clipboard.writeText(link);
+                                                    alert('Link copiado!');
+                                                }} aria-label="Copiar Link" className="bg-brand hover:bg-brandHover text-white h-[38px] px-3 rounded-r-md border-l border-white/20 transition flex items-center justify-center">
+                                                    <Icon name="copy" className="w-3.5 h-3.5" />
+                                                </button>
+                                            </Tooltip>
                                         </div>
                                     </>
                                 )}
@@ -511,7 +518,9 @@ export default function FinanceiroTab() {
                                                     <div className="flex items-center gap-3">
                                                         <div className="flex items-center gap-1.5">
                                                             {[0, 1, 2].map(i => (
-                                                                <button key={i} onClick={() => scrollToSlidePainel(i)} className={`h-1.5 rounded-full transition-all ${slidePainelAtivo === i ? 'w-5 bg-brand' : 'w-1.5 bg-gray-300 dark:bg-darkBorder hover:bg-gray-400'}`} title={['Análise por Período', 'Distribuição no Período', 'Despesas'][i]}></button>
+                                                                <Tooltip key={i} label={['Análise por Período', 'Distribuição no Período', 'Despesas'][i]}>
+                                                                    <button onClick={() => scrollToSlidePainel(i)} aria-label={['Análise por Período', 'Distribuição no Período', 'Despesas'][i]} className={`h-1.5 rounded-full transition-all ${slidePainelAtivo === i ? 'w-5 bg-brand' : 'w-1.5 bg-gray-300 dark:bg-darkBorder hover:bg-gray-400'}`}></button>
+                                                                </Tooltip>
                                                             ))}
                                                         </div>
                                                         <div className="flex gap-1">
@@ -912,13 +921,17 @@ export default function FinanceiroTab() {
                                                                         </td>
                                                                         <td className="px-6 py-4 text-[13px] text-right flex justify-end gap-2">
                                                                             {conta.status !== 'Pago' && (
-                                                                                <button onClick={(e) => { e.stopPropagation(); concluirConta(conta.id); }} className="p-1 text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded" title="Marcar como Pago">
+                                                                                <Tooltip label="Marcar como Pago">
+                                                                                <button onClick={(e) => { e.stopPropagation(); concluirConta(conta.id); }} aria-label="Marcar como Pago" className="p-1 text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded">
                                                                                     <Icon name="check-circle" className="w-4 h-4" />
                                                                                 </button>
+                                                                                </Tooltip>
                                                                             )}
-                                                                            <button onClick={(e) => { e.stopPropagation(); excluirConta(conta.id); }} className="p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded" title="Excluir Conta">
-                                                                                <Icon name="trash-2" className="w-4 h-4" />
-                                                                            </button>
+                                                                            <Tooltip label="Excluir Conta">
+                                                                                <button onClick={(e) => { e.stopPropagation(); excluirConta(conta.id); }} aria-label="Excluir Conta" className="p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded">
+                                                                                    <Icon name="trash-2" className="w-4 h-4" />
+                                                                                </button>
+                                                                            </Tooltip>
                                                                         </td>
                                                                     </tr>
                                                                 ))
@@ -1004,18 +1017,20 @@ export default function FinanceiroTab() {
                                                                             </td>
                                                                             <td className="px-6 py-4 text-[13px] font-bold text-gray-900 dark:text-white text-right whitespace-nowrap">R$ {p.valor_total}</td>
                                                                             <td className="px-6 py-4 text-center" onClick={(e) => e.stopPropagation()}>
-                                                                                <button
-                                                                                    type="button"
-                                                                                    title="Concluir Boleto"
-                                                                                    onClick={() => {
-                                                                                        if (window.confirm(`Marcar o boleto da O.S. #${p.id} como concluído? Ele sairá desta lista.`)) {
-                                                                                            concluirBoletoContasReceber(p.id);
-                                                                                        }
-                                                                                    }}
-                                                                                    className="p-2 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded transition"
-                                                                                >
-                                                                                    <Icon name="check-circle" className="w-4 h-4" />
-                                                                                </button>
+                                                                                <Tooltip label="Concluir Boleto">
+                                                                                    <button
+                                                                                        type="button"
+                                                                                        aria-label="Concluir Boleto"
+                                                                                        onClick={() => {
+                                                                                            if (window.confirm(`Marcar o boleto da O.S. #${p.id} como concluído? Ele sairá desta lista.`)) {
+                                                                                                concluirBoletoContasReceber(p.id);
+                                                                                            }
+                                                                                        }}
+                                                                                        className="p-2 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded transition"
+                                                                                    >
+                                                                                        <Icon name="check-circle" className="w-4 h-4" />
+                                                                                    </button>
+                                                                                </Tooltip>
                                                                             </td>
                                                                         </tr>
                                                                     );
@@ -1059,9 +1074,11 @@ export default function FinanceiroTab() {
                                                                             </span>
                                                                         </td>
                                                                         <td className="px-6 py-4 text-[13px] text-right flex justify-end gap-2">
-                                                                            <button onClick={(e) => { e.stopPropagation(); excluirEmpresaFaturamento(emp.id); }} className="p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded" title="Excluir">
+                                                                            <Tooltip label="Excluir">
+                                                                            <button onClick={(e) => { e.stopPropagation(); excluirEmpresaFaturamento(emp.id); }} aria-label="Excluir" className="p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded">
                                                                                 <Icon name="trash-2" className="w-4 h-4" />
                                                                             </button>
+                                                                            </Tooltip>
                                                                         </td>
                                                                     </tr>
                                                                 ))
@@ -1128,14 +1145,18 @@ export default function FinanceiroTab() {
                                                     <div className="flex items-center justify-end gap-2">
 
                                                         {!n.concluido && (usuario?.nivel === 'Administrador' || usuario?.nivel === 'Financeiro') && (
-                                                            <button onClick={(e) => { e.stopPropagation(); concluirNotaFiscal(n.id); }} className="p-2 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded transition" title="Concluir Nota">
-                                                                <Icon name="check-circle" className="w-4 h-4" />
-                                                            </button>
+                                                            <Tooltip label="Concluir Nota">
+                                                                <button onClick={(e) => { e.stopPropagation(); concluirNotaFiscal(n.id); }} aria-label="Concluir Nota" className="p-2 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded transition">
+                                                                    <Icon name="check-circle" className="w-4 h-4" />
+                                                                </button>
+                                                            </Tooltip>
                                                         )}
                                                         {n.concluido && (usuario?.nivel === 'Administrador' || usuario?.nivel === 'Financeiro') && (
-                                                            <button onClick={(e) => { e.stopPropagation(); reabrirNotaFiscal(n); }} className="p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded transition" title="Gerar Nova Nota (Duplicar)">
-                                                                <Icon name="rotate-ccw" className="w-4 h-4" />
-                                                            </button>
+                                                            <Tooltip label="Gerar Nova Nota (Duplicar)">
+                                                                <button onClick={(e) => { e.stopPropagation(); reabrirNotaFiscal(n); }} aria-label="Gerar Nova Nota (Duplicar)" className="p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded transition">
+                                                                    <Icon name="rotate-ccw" className="w-4 h-4" />
+                                                                </button>
+                                                            </Tooltip>
                                                         )}
                                                     </div>
                                                 </td>
