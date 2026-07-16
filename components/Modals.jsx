@@ -616,53 +616,65 @@ export default function Modals() {
             )}
 {modalNotaFiscalAberto && notaFiscalEmEdicao && (
                 <div onClick={() => setModalNotaFiscalAberto(false)} className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer">
-                    <div className="bg-[#EDEFF0] dark:bg-darkBg w-full max-w-2xl rounded shadow-2xl overflow-hidden border border-gray-200 dark:border-darkBorder" onClick={(e) => e.stopPropagation()}>
-                        <div className="px-6 py-5 border-b border-gray-100 dark:border-darkBorder flex justify-between items-center bg-gray-50 dark:bg-darkCard"><h3 className="font-semibold text-lg dark:text-white tracking-tight">Detalhes e Edição da Nota Fiscal</h3><button onClick={() => setModalNotaFiscalAberto(false)} className="text-gray-400 hover:text-white transition"><Icon name="x" /></button></div>
-                        <div className="p-6">
-                            <div className="grid grid-cols-2 gap-6 mb-6">
-                                <div className="space-y-4 bg-gray-50 dark:bg-darkElevated p-4 rounded border border-gray-100 dark:border-darkBorder">
-                                    <h4 className="font-semibold text-[13px] text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">Dados do Cliente (Link)</h4>
-                                    <div><label className="text-[11px] text-gray-500">Razão Social</label><div className="flex items-center gap-2"><div className="text-[13px] dark:text-[#EDEDED] font-medium">{notaFiscalEmEdicao.razao_social || '---'}</div>{notaFiscalEmEdicao.razao_social && <button type="button" onClick={() => navigator.clipboard.writeText(notaFiscalEmEdicao.razao_social)} className="text-gray-400 hover:text-brand transition" title="Copiar"><Icon name="copy" className="w-3.5 h-3.5" /></button>}</div></div>
-                                    <div><label className="text-[11px] text-gray-500">CNPJ</label><div className="flex items-center gap-2"><div className="text-[13px] dark:text-[#EDEDED] font-medium">{notaFiscalEmEdicao.cnpj || '---'}</div>{notaFiscalEmEdicao.cnpj && <button type="button" onClick={() => navigator.clipboard.writeText(notaFiscalEmEdicao.cnpj)} className="text-gray-400 hover:text-brand transition" title="Copiar"><Icon name="copy" className="w-3.5 h-3.5" /></button>}</div></div>
-                                    <div><label className="text-[11px] text-gray-500">Endereço</label><div className="flex items-center gap-2"><div className="text-[13px] dark:text-[#EDEDED] font-medium">{notaFiscalEmEdicao.endereco || '---'}</div>{notaFiscalEmEdicao.endereco && <button type="button" onClick={() => navigator.clipboard.writeText(notaFiscalEmEdicao.endereco)} className="text-gray-400 hover:text-brand transition" title="Copiar"><Icon name="copy" className="w-3.5 h-3.5" /></button>}</div></div>
-                                    <div><label className="text-[11px] text-gray-500">Contato</label><div className="text-[13px] dark:text-[#EDEDED] font-medium">{notaFiscalEmEdicao.contato || '---'}</div></div>
+                    <div className="bg-[#EDEFF0] dark:bg-darkBg w-full max-w-2xl rounded shadow-2xl overflow-hidden border border-gray-200 dark:border-darkBorder max-h-[90vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
+                        <div className="px-6 py-5 border-b border-gray-100 dark:border-darkBorder flex justify-between items-center bg-gray-50 dark:bg-darkCard shrink-0"><h3 className="font-semibold text-lg dark:text-white tracking-tight">Detalhes e Edição da Nota Fiscal</h3><button onClick={() => setModalNotaFiscalAberto(false)} className="text-gray-400 hover:text-white transition"><Icon name="x" /></button></div>
+                        <div className="p-6 overflow-y-auto custom-scrollbar">
+                            <div className="bg-gray-50 dark:bg-darkElevated p-4 rounded border border-gray-100 dark:border-darkBorder mb-6">
+                                <h4 className="font-semibold text-[13px] text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-3">Dados do Cliente (Link)</h4>
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                    <div><label className="text-[11px] text-gray-500">Razão Social</label><div className="flex items-center gap-2"><div className="text-[13px] dark:text-[#EDEDED] font-medium truncate">{notaFiscalEmEdicao.razao_social || '---'}</div>{notaFiscalEmEdicao.razao_social && <button type="button" onClick={() => navigator.clipboard.writeText(notaFiscalEmEdicao.razao_social)} className="text-gray-400 hover:text-brand transition shrink-0" title="Copiar"><Icon name="copy" className="w-3.5 h-3.5" /></button>}</div></div>
+                                    <div><label className="text-[11px] text-gray-500">CNPJ</label><div className="flex items-center gap-2"><div className="text-[13px] dark:text-[#EDEDED] font-medium truncate">{notaFiscalEmEdicao.cnpj || '---'}</div>{notaFiscalEmEdicao.cnpj && <button type="button" onClick={() => navigator.clipboard.writeText(notaFiscalEmEdicao.cnpj)} className="text-gray-400 hover:text-brand transition shrink-0" title="Copiar"><Icon name="copy" className="w-3.5 h-3.5" /></button>}</div></div>
+                                    <div><label className="text-[11px] text-gray-500">Endereço</label><div className="flex items-center gap-2"><div className="text-[13px] dark:text-[#EDEDED] font-medium truncate">{notaFiscalEmEdicao.endereco || '---'}</div>{notaFiscalEmEdicao.endereco && <button type="button" onClick={() => navigator.clipboard.writeText(notaFiscalEmEdicao.endereco)} className="text-gray-400 hover:text-brand transition shrink-0" title="Copiar"><Icon name="copy" className="w-3.5 h-3.5" /></button>}</div></div>
+                                    <div><label className="text-[11px] text-gray-500">Contato</label><div className="text-[13px] dark:text-[#EDEDED] font-medium truncate">{notaFiscalEmEdicao.contato || '---'}</div></div>
                                 </div>
-                                <form id="formNota" onSubmit={salvarNotaFiscal} className="space-y-4">
-                                    <h4 className="font-semibold text-[13px] text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">Preenchimento Interno</h4>
+                            </div>
+                            <form id="formNota" onSubmit={salvarNotaFiscal} className="space-y-4">
+                                <h4 className="font-semibold text-[13px] text-gray-700 dark:text-gray-300 uppercase tracking-wider">Preenchimento Interno</h4>
+                                <div className="grid grid-cols-2 gap-4">
                                     <div>
                                         <label className="text-[11px] text-gray-500 mb-1 block">Cliente (Identificação Interna)</label>
                                         <input value={notaFiscalEmEdicao.cliente || ''} onChange={e => setNotaFiscalEmEdicao({...notaFiscalEmEdicao, cliente: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition" placeholder="Nome Fantasia / Cliente" />
                                     </div>
                                     <div>
+                                        <label className="text-[11px] font-semibold text-gray-600 dark:text-[#888888] uppercase mb-1 block">Tipo de Nota</label>
+                                        <InlineDropdown
+                                            value={notaFiscalEmEdicao.tipo_nota}
+                                            options={['DANFE', 'Serviço']}
+                                            onChange={val => setNotaFiscalEmEdicao({...notaFiscalEmEdicao, tipo_nota: val})}
+                                            className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none hover:border-brand dark:text-white transition"
+                                            hasIndefinido={true}
+                                        />
+                                    </div>
+                                    <div className="col-span-2">
                                         <label className="text-[11px] font-semibold text-gray-600 dark:text-[#888888] uppercase mb-1 block">Serviço Feito</label>
                                         <input value={notaFiscalEmEdicao.servico_feito || ''} onChange={e => setNotaFiscalEmEdicao({...notaFiscalEmEdicao, servico_feito: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition" placeholder="Qual foi o serviço?" />
                                     </div>
-                                    <div>
-                                        <label className="text-[11px] font-semibold text-gray-600 dark:text-[#888888] uppercase mb-1 block">Tipo de Nota</label>
-                                        <div className="w-full">
-                                            <InlineDropdown 
-                                                value={notaFiscalEmEdicao.tipo_nota} 
-                                                options={['DANFE', 'Serviço']} 
-                                                onChange={val => setNotaFiscalEmEdicao({...notaFiscalEmEdicao, tipo_nota: val})} 
-                                                className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none hover:border-brand dark:text-white transition"
-                                                hasIndefinido={true}
-                                            />
-                                        </div>
-                                    </div>
-                                    <div>
+                                    <div className={notaFiscalEmEdicao.tipo_nota === 'DANFE' ? '' : 'col-span-2'}>
                                         <label className="text-[11px] text-gray-500 mb-1 block">Valor Pago (R$)</label>
                                         <input type="text" value={notaFiscalEmEdicao.valor_pago || ''} onChange={e => setNotaFiscalEmEdicao({...notaFiscalEmEdicao, valor_pago: formatarMoeda(e.target.value)})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition" placeholder="0,00" />
                                     </div>
-                                    <div>
+                                    {notaFiscalEmEdicao.tipo_nota === 'DANFE' && (
+                                        <>
+                                            <div>
+                                                <label className="text-[11px] text-gray-500 mb-1 block">Forma de Pagamento</label>
+                                                <input value={notaFiscalEmEdicao.forma_pagamento || ''} onChange={e => setNotaFiscalEmEdicao({...notaFiscalEmEdicao, forma_pagamento: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition" placeholder="Ex: PIX, Boleto, Cartão..." />
+                                            </div>
+                                            <div>
+                                                <label className="text-[11px] text-gray-500 mb-1 block">Forma de Transporte</label>
+                                                <input value={notaFiscalEmEdicao.forma_transporte || ''} onChange={e => setNotaFiscalEmEdicao({...notaFiscalEmEdicao, forma_transporte: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition" placeholder="Ex: CIF, FOB, Retirada..." />
+                                            </div>
+                                        </>
+                                    )}
+                                    <div className="col-span-2">
                                         <label className="text-[11px] text-gray-500 mb-1 block">Observações</label>
                                         <textarea rows="2" value={notaFiscalEmEdicao.observacoes || ''} onChange={e => setNotaFiscalEmEdicao({...notaFiscalEmEdicao, observacoes: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition" placeholder="Anotações internas..."></textarea>
                                     </div>
-                                </form>
-                            </div>
-                            <div className="flex justify-end gap-3 pt-4 border-t border-gray-100 dark:border-darkBorder">
-                                <button type="button" onClick={() => setModalNotaFiscalAberto(false)} className="px-4 py-2 rounded text-[13px] font-medium text-gray-600 dark:text-[#A1A1AA] hover:bg-gray-100 dark:hover:bg-darkHover transition">Cancelar</button>
-                                <button type="submit" form="formNota" disabled={salvandoNotaFiscal} className="px-5 py-2 rounded text-[13px] font-medium bg-brand text-white hover:bg-brandHover transition disabled:opacity-50">{salvandoNotaFiscal ? 'Salvando...' : 'Salvar Alterações'}</button>
-                            </div>
+                                </div>
+                            </form>
+                        </div>
+                        <div className="flex justify-end gap-3 px-6 py-4 border-t border-gray-100 dark:border-darkBorder shrink-0">
+                            <button type="button" onClick={() => setModalNotaFiscalAberto(false)} className="px-4 py-2 rounded text-[13px] font-medium text-gray-600 dark:text-[#A1A1AA] hover:bg-gray-100 dark:hover:bg-darkHover transition">Cancelar</button>
+                            <button type="submit" form="formNota" disabled={salvandoNotaFiscal} className="px-5 py-2 rounded text-[13px] font-medium bg-brand text-white hover:bg-brandHover transition disabled:opacity-50">{salvandoNotaFiscal ? 'Salvando...' : 'Salvar Alterações'}</button>
                         </div>
                     </div>
                 </div>

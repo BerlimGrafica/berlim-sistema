@@ -1290,12 +1290,15 @@ export const AppProvider = ({ children }) => {
 
         const valorNumerico = notaFiscalEmEdicao.valor_pago ? parseFloat(String(notaFiscalEmEdicao.valor_pago).replace(/\./g, '').replace(',', '.')) : null;
 
-        const payload = { 
-            servico_feito: notaFiscalEmEdicao.servico_feito, 
-            valor_pago: valorNumerico, 
+        const ehDanfe = notaFiscalEmEdicao.tipo_nota === 'DANFE';
+        const payload = {
+            servico_feito: notaFiscalEmEdicao.servico_feito,
+            valor_pago: valorNumerico,
             observacoes: notaFiscalEmEdicao.observacoes,
             cliente: notaFiscalEmEdicao.cliente,
-            tipo_nota: notaFiscalEmEdicao.tipo_nota
+            tipo_nota: notaFiscalEmEdicao.tipo_nota,
+            forma_pagamento: ehDanfe ? (notaFiscalEmEdicao.forma_pagamento || null) : null,
+            forma_transporte: ehDanfe ? (notaFiscalEmEdicao.forma_transporte || null) : null
         };
         const { data, error } = await supabase.from('notas_fiscais').update(payload).eq('id', notaFiscalEmEdicao.id).select();
         if (!error && data) {
