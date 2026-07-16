@@ -6,7 +6,7 @@ import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS, obterCorStatus, formatarValorF
 
 
 export default function FinanceiroTab() {
-    const { setAbaFinanceiro, abaFinanceiro, notasFiscais, usuario, filtroNotas, dataFiltroFinInicio, setDataFiltroFinInicio, dataFiltroFinFim, setDataFiltroFinFim, pedidos, setNovaConta, setModalContaAberto, setModalEmpresaFaturamentoAberto, buscaNotaFiscal, setBuscaNotaFiscal, setPaginaNotasFiscais, setFiltroNotas, renderBarHorizontal, produtos, produtosSelecionadosGrafico, setProdutosSelecionadosGrafico, contasPagar, empresasFaturamento, setNovaEmpresaFaturamento, notasFiscaisPaginadas, setNotaFiscalEmEdicao, setModalNotaFiscalAberto, totalPaginasNotasFiscais, paginaNotasFiscais, excluirConta, abrirEdicao, excluirEmpresaFaturamento, concluirNotaFiscal, atualizarCampoInline, concluirBoletoContasReceber } = useAppContext();
+    const { setAbaFinanceiro, abaFinanceiro, notasFiscais, usuario, filtroNotas, dataFiltroFinInicio, setDataFiltroFinInicio, dataFiltroFinFim, setDataFiltroFinFim, pedidos, setNovaConta, setModalContaAberto, setModalEmpresaFaturamentoAberto, buscaNotaFiscal, setBuscaNotaFiscal, setPaginaNotasFiscais, setFiltroNotas, renderBarHorizontal, produtos, produtosSelecionadosGrafico, setProdutosSelecionadosGrafico, contasPagar, empresasFaturamento, setNovaEmpresaFaturamento, notasFiscaisPaginadas, setNotaFiscalEmEdicao, setModalNotaFiscalAberto, totalPaginasNotasFiscais, paginaNotasFiscais, excluirConta, concluirConta, abrirEdicao, excluirEmpresaFaturamento, concluirNotaFiscal, atualizarCampoInline, concluirBoletoContasReceber } = useAppContext();
     const [mostrarContasPagas, setMostrarContasPagas] = useState(false);
 
     return (
@@ -710,6 +710,11 @@ export default function FinanceiroTab() {
                                                                             </span>
                                                                         </td>
                                                                         <td className="px-6 py-4 text-[13px] text-right flex justify-end gap-2">
+                                                                            {conta.status !== 'Pago' && (
+                                                                                <button onClick={(e) => { e.stopPropagation(); concluirConta(conta.id); }} className="p-1 text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded" title="Marcar como Pago">
+                                                                                    <Icon name="check-circle" className="w-4 h-4" />
+                                                                                </button>
+                                                                            )}
                                                                             <button onClick={(e) => { e.stopPropagation(); excluirConta(conta.id); }} className="p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded" title="Excluir Conta">
                                                                                 <Icon name="trash-2" className="w-4 h-4" />
                                                                             </button>

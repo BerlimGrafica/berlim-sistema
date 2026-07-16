@@ -1133,6 +1133,37 @@ export const AppProvider = ({ children }) => {
         setSalvandoProduto(false);
     }
 
+    async function criarCopiaRecorrente(contaOriginal) {
+        const copiaPendente = {
+            descricao: contaOriginal.descricao,
+            valor: 0,
+            vencimento: contaOriginal.vencimento,
+            status: 'Pendente',
+            recorrente: true
+        };
+        const { data: novaCopia, error } = await supabase.from('contas_pagar').insert([copiaPendente]).select();
+        if (!error && novaCopia) {
+            setContasPagar(prev => [...prev, novaCopia[0]]);
+            notificarSeContaPagarUrgente(novaCopia[0]);
+        }
+    }
+
+    async function concluirConta(id) {
+        const contaAnterior = contasPagar.find(c => c.id === id);
+        if (!contaAnterior || contaAnterior.status === 'Pago') return;
+        if (!confirm(`Deseja marcar a conta "${contaAnterior.descricao}" como paga?`)) return;
+
+        const { data, error } = await supabase.from('contas_pagar').update({ status: 'Pago' }).eq('id', id).select();
+        if (!error && data) {
+            setContasPagar(prev => prev.map(c => c.id === id ? data[0] : c));
+            if (contaAnterior.recorrente) {
+                await criarCopiaRecorrente(data[0]);
+            }
+        } else {
+            alert('Falha ao concluir: ' + (error?.message || 'Erro desconhecido'));
+        }
+    }
+
     const [salvandoConta, setSalvandoConta] = useState(false);
     async function salvarConta(e) {
         e.preventDefault();
@@ -1151,25 +1182,11 @@ export const AppProvider = ({ children }) => {
 
             const { data, error } = await supabase.from('contas_pagar').update(contaFormatada).eq('id', novaConta.id).select();
             if (!error && data) {
-                let contasAtualizadas = contasPagar.map(c => c.id === novaConta.id ? data[0] : c);
-
-                if (tornouPaga && contaFormatada.recorrente) {
-                    const copiaPendente = {
-                        descricao: contaFormatada.descricao,
-                        valor: 0,
-                        vencimento: contaFormatada.vencimento,
-                        status: 'Pendente',
-                        recorrente: true
-                    };
-                    const { data: novaCopia, error: erroCopia } = await supabase.from('contas_pagar').insert([copiaPendente]).select();
-                    if (!erroCopia && novaCopia) {
-                        contasAtualizadas = [...contasAtualizadas, novaCopia[0]];
-                        notificarSeContaPagarUrgente(novaCopia[0]);
-                    }
-                }
-
-                setContasPagar(contasAtualizadas);
+                setContasPagar(prev => prev.map(c => c.id === novaConta.id ? data[0] : c));
                 notificarSeContaPagarUrgente(data[0]);
+                if (tornouPaga && contaFormatada.recorrente) {
+                    await criarCopiaRecorrente(data[0]);
+                }
                 setModalContaAberto(false);
             } else {
                 alert('Falha ao atualizar (Tabela contas_pagar existe no Supabase?): ' + (error?.message || 'Erro desconhecido'));
@@ -1869,6 +1886,7 @@ export const AppProvider = ({ children }) => {
         salvarEmpresaFaturamento,
         excluirEmpresaFaturamento,
         excluirConta,
+        concluirConta,
         excluirProduto,
         handleDragStartProduto,
         handleDropProduto,
