@@ -29,7 +29,10 @@ export default function BaixaTab() {
                             <div className="flex flex-wrap items-end gap-3 w-full lg:w-auto">
                                 <div className="relative flex-1 min-w-[200px]">
                                     <Icon name="search" className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
-                                    <input type="text" value={buscaHistoricoText} onChange={e => setBuscaHistoricoText(e.target.value)} placeholder="Buscar cliente ou OS..." className="w-full bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-md pl-9 pr-3 py-2 text-[13px] outline-none focus:border-brand transition dark:text-[#EDEDED]" />
+                                    <input type="text" value={buscaHistoricoText} onChange={e => setBuscaHistoricoText(e.target.value)} placeholder="Buscar cliente ou OS..." className="w-full bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-md pl-9 pr-9 py-2 text-[13px] outline-none focus:border-brand transition dark:text-[#EDEDED]" />
+                                    {buscaHistoricoText && (
+                                        <button type="button" onClick={() => setBuscaHistoricoText('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-brand transition" title="Limpar Busca"><Icon name="x" className="w-4 h-4" /></button>
+                                    )}
                                 </div>
                                 <div className="flex flex-col w-36">
                                     <span className="text-[10px] font-semibold text-gray-500 dark:text-[#888888] uppercase mb-1">De:</span>

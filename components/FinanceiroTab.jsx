@@ -104,13 +104,16 @@ export default function FinanceiroTab() {
                                     <>
                                         <div className="relative w-full lg:w-64">
                                             <Icon name="search" className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                                            <input 
-                                                type="text" 
-                                                placeholder="Buscar por nome, razão ou CNPJ..." 
-                                                value={buscaNotaFiscal} 
+                                            <input
+                                                type="text"
+                                                placeholder="Buscar por nome, razão ou CNPJ..."
+                                                value={buscaNotaFiscal}
                                                 onChange={(e) => { setBuscaNotaFiscal(e.target.value); setPaginaNotasFiscais(1); }}
-                                                className="w-full pl-9 pr-4 py-1.5 h-[38px] text-[13px] border border-gray-200 dark:border-darkBorder bg-white dark:bg-darkCard rounded-md focus:outline-none focus:ring-2 focus:ring-brand dark:text-white transition"
+                                                className="w-full pl-9 pr-9 py-1.5 h-[38px] text-[13px] border border-gray-200 dark:border-darkBorder bg-white dark:bg-darkCard rounded-md focus:outline-none focus:ring-2 focus:ring-brand dark:text-white transition"
                                             />
+                                            {buscaNotaFiscal && (
+                                                <button type="button" onClick={() => { setBuscaNotaFiscal(''); setPaginaNotasFiscais(1); }} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-brand transition" title="Limpar Busca"><Icon name="x" className="w-4 h-4" /></button>
+                                            )}
                                         </div>
                                         <div className="flex bg-gray-100/50 dark:bg-darkHover/50 p-1 rounded-lg border border-gray-200 dark:border-darkBorder w-full lg:w-auto mt-3 lg:mt-0">
                                             <button onClick={() => { setFiltroNotas('pendentes'); setPaginaNotasFiscais(1); }} className={`px-4 py-1.5 text-[12px] font-semibold rounded-md transition flex items-center gap-2 ${filtroNotas === 'pendentes' ? 'bg-white dark:bg-darkCard text-brand shadow-sm border border-gray-200 dark:border-darkBorder' : 'text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white'}`}>Pendentes {notasFiscais.some(n => !n.concluido) && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 ml-1"></span>}</button>

@@ -44,7 +44,10 @@ export default function CadastrosTab() {
                             <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
                                 <div className="relative">
                                     <Icon name="search" className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
-                                    <input type="text" value={buscaCadProdutos} onChange={e => setBuscaCadProdutos(e.target.value)} placeholder="Buscar produto..." className="w-56 bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-md pl-9 pr-3 py-2 text-[13px] outline-none focus:border-brand transition dark:text-[#EDEDED]" />
+                                    <input type="text" value={buscaCadProdutos} onChange={e => setBuscaCadProdutos(e.target.value)} placeholder="Buscar produto..." className="w-56 bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-md pl-9 pr-9 py-2 text-[13px] outline-none focus:border-brand transition dark:text-[#EDEDED]" />
+                                    {buscaCadProdutos && (
+                                        <button type="button" onClick={() => setBuscaCadProdutos('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-brand transition" title="Limpar Busca"><Icon name="x" className="w-4 h-4" /></button>
+                                    )}
                                 </div>
                                 <button onClick={() => { setNovoProduto({ id: null, nome: '', texto_padrao: '', preco_base: '' }); setModalProdutoAberto(true); }} className="bg-brand hover:bg-brandHover text-white h-[38px] px-4 text-[13px] rounded-md font-semibold shadow-sm transition flex items-center gap-2">
                                     <Icon name="plus" className="w-4 h-4" /> Novo Produto
@@ -105,7 +108,10 @@ export default function CadastrosTab() {
                             <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
                                 <div className="relative">
                                     <Icon name="search" className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
-                                    <input type="text" value={buscaCadClientes} onChange={e => setBuscaCadClientes(e.target.value)} placeholder="Buscar cliente..." className="w-56 bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-md pl-9 pr-3 py-2 text-[13px] outline-none focus:border-brand transition dark:text-[#EDEDED]" />
+                                    <input type="text" value={buscaCadClientes} onChange={e => setBuscaCadClientes(e.target.value)} placeholder="Buscar cliente..." className="w-56 bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-md pl-9 pr-9 py-2 text-[13px] outline-none focus:border-brand transition dark:text-[#EDEDED]" />
+                                    {buscaCadClientes && (
+                                        <button type="button" onClick={() => setBuscaCadClientes('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-brand transition" title="Limpar Busca"><Icon name="x" className="w-4 h-4" /></button>
+                                    )}
                                 </div>
                                 <button onClick={() => { setNovoCliente({ id: null, nome: '', telefone: '', email: '', observacoes: '', cliente_problema: false }); setModalClienteAberto(true); }} className="bg-brand hover:bg-brandHover text-white h-[38px] px-4 text-[13px] rounded-md font-semibold shadow-sm transition flex items-center gap-2">
                                     <Icon name="plus" className="w-4 h-4" /> Novo Cliente

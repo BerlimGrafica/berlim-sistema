@@ -135,13 +135,16 @@ export default function OrcamentosTab() {
 
                         <div className="relative mb-6">
                             <Icon name="search" className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
-                            <input 
-                                type="text" 
-                                placeholder="Buscar orçamentos por título ou conteúdo..." 
-                                value={buscaPreProntos} 
-                                onChange={(e) => setBuscaPreProntos(e.target.value)} 
-                                className="w-full bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-lg pl-10 pr-4 py-2.5 text-[13px] focus:outline-none focus:border-brand transition"
+                            <input
+                                type="text"
+                                placeholder="Buscar orçamentos por título ou conteúdo..."
+                                value={buscaPreProntos}
+                                onChange={(e) => setBuscaPreProntos(e.target.value)}
+                                className="w-full bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-lg pl-10 pr-9 py-2.5 text-[13px] focus:outline-none focus:border-brand transition"
                             />
+                            {buscaPreProntos && (
+                                <button type="button" onClick={() => setBuscaPreProntos('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-brand transition" title="Limpar Busca"><Icon name="x" className="w-4 h-4" /></button>
+                            )}
                         </div>
 
                         {orcsFiltrados.length === 0 ? (
