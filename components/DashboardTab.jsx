@@ -35,7 +35,7 @@ export default function DashboardTab() {
                         </div>
 
                         {/* METRICS & ALERTS ROW */}
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 shrink-0">
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 shrink-0 lg:grid-rows-[150px_320px]">
 
                             {/* KPIs */}
                             {(() => {
@@ -49,7 +49,7 @@ export default function DashboardTab() {
 
                                 return (
                                     <>
-                                        <div className="bg-white dark:bg-darkCard border border-gray-100 dark:border-darkBorder rounded-md p-6 shadow-[0_4px_20px_rgb(0,0,0,0.03)] dark:shadow-none flex flex-col justify-between hover:shadow-lg transition hover:-translate-y-1">
+                                        <div className="bg-white dark:bg-darkCard border border-gray-100 dark:border-darkBorder rounded-md p-6 shadow-[0_4px_20px_rgb(0,0,0,0.03)] dark:shadow-none flex flex-col justify-between hover:shadow-lg transition hover:-translate-y-1 lg:h-[150px] overflow-hidden">
                                             <div className="flex justify-between items-start mb-4">
                                                 <div>
                                                     <h3 className="text-gray-500 dark:text-[#888888] font-bold text-[11px] uppercase tracking-wider mb-1">Minhas Tarefas</h3>
@@ -62,7 +62,7 @@ export default function DashboardTab() {
                                             <p className="text-[13px] font-medium text-gray-500 dark:text-gray-400">Tarefas em andamento designadas a você.</p>
                                         </div>
 
-                                        <div className="bg-white dark:bg-darkCard border border-gray-100 dark:border-darkBorder rounded-md p-6 shadow-[0_4px_20px_rgb(0,0,0,0.03)] dark:shadow-none flex flex-col justify-between hover:shadow-lg transition hover:-translate-y-1">
+                                        <div className="bg-white dark:bg-darkCard border border-gray-100 dark:border-darkBorder rounded-md p-6 shadow-[0_4px_20px_rgb(0,0,0,0.03)] dark:shadow-none flex flex-col justify-between hover:shadow-lg transition hover:-translate-y-1 lg:h-[150px] overflow-hidden">
                                             <div className="flex justify-between items-start mb-4">
                                                 <div>
                                                     <h3 className="text-gray-500 dark:text-[#888888] font-bold text-[11px] uppercase tracking-wider mb-1">Atrasadas</h3>
