@@ -677,7 +677,8 @@ export default function Modals() {
                             
                             <div className="relative">
                                 <select value={novoUsuario.nivel} onChange={e => setNovoUsuario({...novoUsuario, nivel: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition appearance-none cursor-pointer">
-                                    <option value="Produção/Atendimento">Operador de Produção / Atendimento</option>
+                                    <option value="Atendimento">Atendimento</option>
+                                    <option value="Produção">Produção</option>
                                     <option value="Financeiro">Equipe Financeira</option>
                                     <option value="Administrador">Administrador (Total)</option>
                                 </select>

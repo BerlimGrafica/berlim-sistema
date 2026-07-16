@@ -14,7 +14,7 @@ export default function CadastrosTab() {
         <>
             { (
                     <div className="bg-[#EDEFF0] dark:bg-darkBg border-b border-gray-200 dark:border-darkBorder px-6 flex gap-6 z-20 overflow-x-auto no-scrollbar-style sticky top-[112px]">
-                        {(usuario?.nivel === 'Administrador' || usuario?.nivel === 'Produção/Atendimento') && (
+                        {(usuario?.nivel === 'Administrador' || usuario?.nivel === 'Atendimento' || usuario?.nivel === 'Produção') && (
                             <a onClick={() => setAbaCadastros('clientes')} className={`py-3 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap border-b-[3px] flex items-center gap-2 ${abaCadastros === 'clientes' ? 'border-brand text-brand' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'}`}>
                                 <Icon name="users" className="w-4 h-4" /> Clientes
                             </a>
@@ -145,10 +145,10 @@ export default function CadastrosTab() {
                         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 mb-6 border-b border-gray-100 dark:border-darkBorder pb-6 shrink-0">
                             <div>
                                 <h1 className="text-2xl lg:text-3xl font-black text-gray-900 dark:text-white tracking-tight">Usuários do Sistema</h1>
-                                <p className="text-[13px] text-gray-500 dark:text-[#888888] mt-1">Gerencie os acessos da equipe (Administrador, Produção/Atendimento, Financeiro).</p>
+                                <p className="text-[13px] text-gray-500 dark:text-[#888888] mt-1">Gerencie os acessos da equipe (Administrador, Atendimento, Produção, Financeiro).</p>
                             </div>
                             <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
-                                <button onClick={() => { setNovoUsuario({ id: null, nome: '', senha: '', nivel: 'Produção/Atendimento' }); setModalUsuarioAberto(true); }} className="bg-brand hover:bg-brandHover text-white h-[38px] px-4 text-[13px] rounded-md font-semibold shadow-sm transition flex items-center gap-2">
+                                <button onClick={() => { setNovoUsuario({ id: null, nome: '', senha: '', nivel: 'Atendimento' }); setModalUsuarioAberto(true); }} className="bg-brand hover:bg-brandHover text-white h-[38px] px-4 text-[13px] rounded-md font-semibold shadow-sm transition flex items-center gap-2">
                                     <Icon name="plus" className="w-4 h-4" /> Novo Usuário
                                 </button>
                             </div>

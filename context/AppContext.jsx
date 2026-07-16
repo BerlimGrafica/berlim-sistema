@@ -60,8 +60,8 @@ export const AppProvider = ({ children }) => {
         else { document.documentElement.classList.remove('dark'); }
     }, [darkMode]);
     const isAdmin = usuario?.nivel === 'Administrador';
-    const isOperador = usuario?.nivel === 'Produção/Atendimento';
-    
+    const isOperador = usuario?.nivel === 'Atendimento' || usuario?.nivel === 'Produção';
+
     // Filtros
     const [buscaHistoricoText, setBuscaHistoricoText] = useState('');
     
@@ -149,7 +149,7 @@ export const AppProvider = ({ children }) => {
     const [novoCliente, setNovoCliente] = useState({ id: null, nome: '', telefone: '', email: '', observacoes: '', cliente_problema: false });
 
     const [modalUsuarioAberto, setModalUsuarioAberto] = useState(false);
-    const [novoUsuario, setNovoUsuario] = useState({ id: null, nome: '', senha: '', nivel: 'Produção/Atendimento' });
+    const [novoUsuario, setNovoUsuario] = useState({ id: null, nome: '', senha: '', nivel: 'Atendimento' });
 
     useEffect(() => { 
         if(usuario) {
@@ -165,7 +165,7 @@ export const AppProvider = ({ children }) => {
                         console.log('Atualização em tempo real (pedidos) recebida!', payload);
                         const isAdm = usuario?.nivel === 'Administrador';
                         const isFin = usuario?.nivel === 'Financeiro';
-                        const isOpe = usuario?.nivel === 'Produção/Atendimento';
+                        const isOpe = usuario?.nivel === 'Atendimento' || usuario?.nivel === 'Produção';
 
                         const extrairBoletos = (servico) => {
                             const str = servico && servico.split('\n\n[PAGAMENTOS]\n')[1];
@@ -251,7 +251,7 @@ export const AppProvider = ({ children }) => {
                         console.log('Atualização em tempo real (notas_fiscais) recebida!', payload);
                         const isAdm = usuario?.nivel === 'Administrador';
                         const isFin = usuario?.nivel === 'Financeiro';
-                        const isOpe = usuario?.nivel === 'Produção/Atendimento';
+                        const isOpe = usuario?.nivel === 'Atendimento' || usuario?.nivel === 'Produção';
 
                         if (payload.eventType === 'INSERT') {
                             if (isAdm || isOpe) {
@@ -288,6 +288,18 @@ export const AppProvider = ({ children }) => {
     };
 
     const ehUsuario = (nome) => (usuario?.nome || '').trim().toLowerCase() === nome.toLowerCase();
+
+    function notificarSeFaturamentoEmAnalise(empresa) {
+        if (!ehUsuario('Vinicius') || !empresa) return;
+        if (empresa.status === 'Em Análise') {
+            if (!alertasFaturamentoAnaliseDisparados.current.has(empresa.id)) {
+                alertasFaturamentoAnaliseDisparados.current.add(empresa.id);
+                setAlertasNaoLidos(prev => [...prev, { id: Date.now() + Math.random(), msg: `Empresa "${empresa.nome}" está com faturamento em análise.`, tipo: 'faturamento_em_analise' }]);
+            }
+        } else {
+            alertasFaturamentoAnaliseDisparados.current.delete(empresa.id);
+        }
+    }
 
     async function carregarDados() {
         let todosPedidos = [];
@@ -408,7 +420,7 @@ export const AppProvider = ({ children }) => {
                 }
             }
 
-            if (usuario?.nivel === 'Produção/Atendimento') {
+            if (usuario?.nivel === 'Atendimento' || usuario?.nivel === 'Produção') {
                 const pedidosEmRetirada = todosPedidos.filter(p => p.status === 'Retirada' && p.data_retirada);
                 let novosAlertasRetirada = [];
                 pedidosEmRetirada.forEach(p => {
@@ -453,33 +465,7 @@ export const AppProvider = ({ children }) => {
         const { data: listaEmpresasFaturamento } = await supabase.from('empresas_faturamento').select('*').order('nome', { ascending: true });
         if (listaEmpresasFaturamento) {
             setEmpresasFaturamento(listaEmpresasFaturamento);
-
-            if (ehUsuario('Vinicius')) {
-                const empresasEmAnalise = listaEmpresasFaturamento.filter(e => e.status === 'Em Análise');
-                const idsEmAnalise = new Set(empresasEmAnalise.map(e => e.id));
-
-                // Empresa saiu de "Em Análise" (aprovada/bloqueada) -> pode voltar a alertar se entrar em análise de novo
-                alertasFaturamentoAnaliseDisparados.current.forEach(id => {
-                    if (!idsEmAnalise.has(id)) alertasFaturamentoAnaliseDisparados.current.delete(id);
-                });
-
-                let novosAlertasFaturamento = [];
-                empresasEmAnalise.forEach(e => {
-                    if (!alertasFaturamentoAnaliseDisparados.current.has(e.id)) {
-                        novosAlertasFaturamento.push({ id: Date.now() + Math.random(), msg: `Empresa "${e.nome}" está com faturamento em análise.`, tipo: 'faturamento_em_analise' });
-                        alertasFaturamentoAnaliseDisparados.current.add(e.id);
-                    }
-                });
-                if (novosAlertasFaturamento.length > 0) {
-                    setAlertasNaoLidos(prev => {
-                        let mergeAlertas = [...prev];
-                        novosAlertasFaturamento.forEach(n => {
-                            if (!mergeAlertas.some(a => a.msg === n.msg)) mergeAlertas.push(n);
-                        });
-                        return mergeAlertas;
-                    });
-                }
-            }
+            listaEmpresasFaturamento.forEach(notificarSeFaturamentoEmAnalise);
         }
 
         const { data: listaContas, error: erroContas } = await supabase.from('contas_pagar').select('*').order('vencimento', { ascending: true });
@@ -553,7 +539,7 @@ export const AppProvider = ({ children }) => {
                 query = query.eq('status', 'Abandonado');
             }
 
-            const isOperador = usuario?.nivel === 'Produção/Atendimento';
+            const isOperador = usuario?.nivel === 'Atendimento' || usuario?.nivel === 'Produção';
             if (isOperador) {
                 query = query.or(`responsavel.ilike.%${usuario.nome}%,local_producao.ilike.%${usuario.nome}%`);
                 query = query.not('status', 'eq', 'Finalizado');
@@ -1153,11 +1139,17 @@ export const AppProvider = ({ children }) => {
         const payload = { nome: novaEmpresaFaturamento.nome, cnpj: novaEmpresaFaturamento.cnpj, status: novaEmpresaFaturamento.status, observacoes: novaEmpresaFaturamento.observacoes };
         if (novaEmpresaFaturamento.id) {
             const { data, error } = await supabase.from('empresas_faturamento').update(payload).eq('id', novaEmpresaFaturamento.id).select();
-            if (!error && data) setEmpresasFaturamento(empresasFaturamento.map(x => x.id === data[0].id ? data[0] : x));
+            if (!error && data) {
+                setEmpresasFaturamento(empresasFaturamento.map(x => x.id === data[0].id ? data[0] : x));
+                notificarSeFaturamentoEmAnalise(data[0]);
+            }
             else if (error) alert('Falha ao atualizar (A tabela empresas_faturamento foi criada?): ' + error.message);
         } else {
             const { data, error } = await supabase.from('empresas_faturamento').insert([payload]).select();
-            if (!error && data) setEmpresasFaturamento([...empresasFaturamento, data[0]]);
+            if (!error && data) {
+                setEmpresasFaturamento([...empresasFaturamento, data[0]]);
+                notificarSeFaturamentoEmAnalise(data[0]);
+            }
             else if (error) alert('Falha ao salvar (A tabela empresas_faturamento foi criada?): ' + error.message);
         }
         setModalEmpresaFaturamentoAberto(false);
@@ -1528,6 +1520,10 @@ export const AppProvider = ({ children }) => {
                 if (usuario?.nivel === 'Administrador' || usuario?.nivel === 'Financeiro') {
                     setAlertasNaoLidos(prev => [...prev, { id: Date.now() + Math.random(), msg: `Novo cliente em faturamento: ${payload.new.nome}`, tipo: 'novo_cliente_faturamento' }]);
                 }
+                notificarSeFaturamentoEmAnalise(payload.new);
+            })
+            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'empresas_faturamento' }, (payload) => {
+                notificarSeFaturamentoEmAnalise(payload.new);
             })
             // Atualiza os dados da tela em tempo real para qualquer alteração no banco
             .on('postgres_changes', { event: '*', schema: 'public' }, () => {
