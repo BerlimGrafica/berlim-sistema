@@ -87,7 +87,7 @@ export const AppProvider = ({ children }) => {
     const [contasPagar, setContasPagar] = useState([]);
     const [calculadoraAtiva, setCalculadoraAtiva] = useState('banner');
     const [modalContaAberto, setModalContaAberto] = useState(false);
-    const [novaConta, setNovaConta] = useState({ id: null, descricao: '', valor: '', vencimento: '', status: 'Pendente', recorrente: false });
+    const [novaConta, setNovaConta] = useState({ id: null, descricao: '', valor: '', vencimento: '', status: 'Pendente', recorrente: false, categoria: 'Despesa', fornecedor_id: null });
     
     const [empresasFaturamento, setEmpresasFaturamento] = useState([]);
     const [modalEmpresaFaturamentoAberto, setModalEmpresaFaturamentoAberto] = useState(false);
@@ -1161,7 +1161,9 @@ export const AppProvider = ({ children }) => {
             valor: 0,
             vencimento: contaOriginal.vencimento,
             status: 'Pendente',
-            recorrente: true
+            recorrente: true,
+            categoria: contaOriginal.categoria || 'Despesa',
+            fornecedor_id: contaOriginal.fornecedor_id || null
         };
         const { data: novaCopia, error } = await supabase.from('contas_pagar').insert([copiaPendente]).select();
         if (!error && novaCopia) {
@@ -1190,12 +1192,14 @@ export const AppProvider = ({ children }) => {
     async function salvarConta(e) {
         e.preventDefault();
         setSalvandoConta(true);
-        const contaFormatada = { 
-            descricao: novaConta.descricao, 
+        const contaFormatada = {
+            descricao: novaConta.descricao,
             valor: parseFloat(String(novaConta.valor).replace(/\./g, '').replace(',', '.')) || 0,
             vencimento: novaConta.vencimento,
             status: novaConta.status,
-            recorrente: novaConta.recorrente
+            recorrente: novaConta.recorrente,
+            categoria: novaConta.categoria || 'Despesa',
+            fornecedor_id: novaConta.categoria && novaConta.categoria !== 'Despesa' ? (novaConta.fornecedor_id || null) : null
         };
 
         if (novaConta.id) {

@@ -2,11 +2,19 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useAppContext, supabase } from "@/context/AppContext";
 import Icon from "@/components/Icon";
-import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS, obterCorStatus, formatarValorFinanceiro, formatarMoeda, formatarTelefone, formatarCnpjCpf, obterDataAtual, formatarDataExibicao, formatarMesAno, CustomDatePicker, InlineDropdown, MultiSelectDropdown, ToggleCard, desconstruirTextoServico, obterResumoServicos, ItensChecklist, StackedCards, CalculadoraBanner, CalculadoraAdesivo, CalculadoraCasamento, CalculadorasAba } from '@/lib/utils';
+import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS, obterCorStatus, formatarValorFinanceiro, formatarMoeda, formatarTelefone, formatarCnpjCpf, obterDataAtual, formatarDataExibicao, formatarMesAno, CustomDatePicker, InlineDropdown, MultiSelectDropdown, ToggleCard, SegmentedControl, desconstruirTextoServico, obterResumoServicos, ItensChecklist, StackedCards, CalculadoraBanner, CalculadoraAdesivo, CalculadoraCasamento, CalculadorasAba } from '@/lib/utils';
+
+const CATEGORIAS_CONTA = [
+    { value: 'Despesa', label: 'Despesa', icon: 'dollar-sign' },
+    { value: 'Manutenção', label: 'Manutenção', icon: 'wrench' },
+    { value: 'Terceirização', label: 'Terceirização', icon: 'package' },
+];
 
 export default function Modals() {
     const { modalAberto, fecharModalOS, pedidoEmEdicao, isModalTrancado, novoPedido, setNovoPedido, opcoesStatusPermitidas, buscaCliente, setBuscaCliente, setClienteDropdownAberto, clienteDropdownAberto, clientesFiltrados, setNovoCliente, setModalClienteAberto, isClienteProblema, itensPedido, buscaProduto, setBuscaProduto, setProdutoDropdownAberto, produtoDropdownAberto, produtosFiltrados, setItemAtual, itemAtual, isAdmin, setNovoProduto, setModalProdutoAberto, fornecedores, pagamentosPedido, setPagamentosPedido, novoPagamento, setNovoPagamento, salvandoOS, usuario, modalProdutoAberto, novoProduto, modalOrcamentoPreAberto, setModalOrcamentoPreAberto, novoOrcamentoPre, setNovoOrcamentoPre, modalOrcamentoFormalizadoAberto, setModalOrcamentoFormalizadoAberto, orcamentoFormalizadoEmEdicao, modalFornecedorAberto, setModalFornecedorAberto, novoFornecedor, setNovoFornecedor, modalClienteAberto, novoCliente, salvandoCliente, modalEmpresaFaturamentoAberto, novaEmpresaFaturamento, setModalEmpresaFaturamentoAberto, setNovaEmpresaFaturamento, salvandoEmpresa, modalContaAberto, setModalContaAberto, novaConta, setNovaConta, salvandoConta, modalNotaFiscalAberto, notaFiscalEmEdicao, setModalNotaFiscalAberto, setNotaFiscalEmEdicao, salvandoNotaFiscal, modalUsuarioAberto, setModalUsuarioAberto, novoUsuario, setNovoUsuario, salvarOS, removerItemDoCarrinho, adicionarItemAoCarrinho, salvarProduto, salvarOrcamentoPre, salvarOrcamentoFormalizado, carregarDados, salvarCliente, salvarEmpresaFaturamento, salvarConta, salvarNotaFiscal, salvarUsuario, modalRequisicaoAberto, setModalRequisicaoAberto, novaRequisicao, setNovaRequisicao, salvarRequisicao, modalTarefaAberto, setModalTarefaAberto, novaTarefa, setNovaTarefa, salvarTarefa, modalLinkAberto, setModalLinkAberto, novoLink, setNovoLink, salvarLink, usuariosSistema } = useAppContext();
     const nomesResponsaveis = usuariosSistema.map(u => u.nome);
+    const tipoFornecedorContaNecessario = novaConta.categoria === 'Manutenção' ? 'Manutenção' : novaConta.categoria === 'Terceirização' ? 'Produção' : null;
+    const fornecedoresParaConta = tipoFornecedorContaNecessario ? fornecedores.filter(f => f.tipo === tipoFornecedorContaNecessario) : [];
 
     return (
         <>
@@ -592,10 +600,38 @@ export default function Modals() {
                             <button onClick={() => setModalContaAberto(false)} className="text-gray-400 hover:text-white transition"><Icon name="x" /></button>
                         </div>
                         <form onSubmit={salvarConta} className="p-6 flex flex-col gap-4">
-                            <div className="flex flex-col gap-1">
-                                <label className="text-[11px] font-semibold text-gray-500 uppercase">Descrição</label>
-                                <input required value={novaConta.descricao} onChange={e => setNovaConta({...novaConta, descricao: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition" placeholder="Ex: Conta de Energia" />
+                            <div className="flex flex-col gap-1.5">
+                                <label className="text-[11px] font-semibold text-gray-500 uppercase">Categoria</label>
+                                <SegmentedControl
+                                    options={CATEGORIAS_CONTA}
+                                    value={novaConta.categoria || 'Despesa'}
+                                    onChange={val => setNovaConta({...novaConta, categoria: val, fornecedor_id: null, descricao: ''})}
+                                />
                             </div>
+                            {(!novaConta.categoria || novaConta.categoria === 'Despesa') ? (
+                                <div className="flex flex-col gap-1">
+                                    <label className="text-[11px] font-semibold text-gray-500 uppercase">Descrição</label>
+                                    <input required value={novaConta.descricao} onChange={e => setNovaConta({...novaConta, descricao: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition" placeholder="Ex: Conta de Energia" />
+                                </div>
+                            ) : (
+                                <div className="flex flex-col gap-1">
+                                    <label className="text-[11px] font-semibold text-gray-500 uppercase">Fornecedor de {novaConta.categoria}</label>
+                                    <div className="relative">
+                                        <select required value={novaConta.fornecedor_id || ''} onChange={e => {
+                                            const fid = e.target.value ? Number(e.target.value) : null;
+                                            const forn = fornecedoresParaConta.find(f => f.id === fid);
+                                            setNovaConta({...novaConta, fornecedor_id: fid, descricao: forn ? forn.nome : ''});
+                                        }} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition appearance-none cursor-pointer">
+                                            <option value="">Selecione um fornecedor...</option>
+                                            {fornecedoresParaConta.map(f => <option key={f.id} value={f.id}>{f.nome}</option>)}
+                                        </select>
+                                        <Icon name="chevron-down" className="absolute right-3 top-2.5 w-4 h-4 text-gray-400 pointer-events-none" />
+                                    </div>
+                                    {fornecedoresParaConta.length === 0 && (
+                                        <p className="text-[11px] text-amber-600 dark:text-amber-400 mt-1">Nenhum fornecedor com a flag &ldquo;{tipoFornecedorContaNecessario}&rdquo; cadastrado. Cadastre em Cadastros → Fornecedores.</p>
+                                    )}
+                                </div>
+                            )}
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="flex flex-col gap-1">
                                     <label className="text-[11px] font-semibold text-gray-500 uppercase">Valor (R$)</label>

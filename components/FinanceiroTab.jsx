@@ -88,7 +88,7 @@ export default function FinanceiroTab() {
                                         <button onClick={() => setMostrarContasPagas(!mostrarContasPagas)} className={`h-[38px] px-4 text-[13px] rounded-md font-semibold border transition flex items-center justify-center ${mostrarContasPagas ? 'bg-gray-100 border-gray-200 text-gray-700 dark:bg-darkElevated dark:border-darkBorder dark:text-gray-300' : 'bg-white border-gray-200 text-gray-600 dark:bg-darkCard dark:border-darkBorder dark:text-gray-400 hover:bg-gray-50'}`}>
                                             {mostrarContasPagas ? 'Ocultar Pagas' : 'Mostrar Histórico'}
                                         </button>
-                                        <button onClick={() => { setNovaConta({ id: null, descricao: '', valor: '', vencimento: '', status: 'Pendente', recorrente: false }); setModalContaAberto(true); }} className="bg-brand hover:bg-brandHover text-white h-[38px] px-4 text-[13px] rounded-md font-semibold shadow-sm transition flex items-center gap-2">
+                                        <button onClick={() => { setNovaConta({ id: null, descricao: '', valor: '', vencimento: '', status: 'Pendente', recorrente: false, categoria: 'Despesa', fornecedor_id: null }); setModalContaAberto(true); }} className="bg-brand hover:bg-brandHover text-white h-[38px] px-4 text-[13px] rounded-md font-semibold shadow-sm transition flex items-center gap-2">
                                             <Icon name="plus" className="w-4 h-4" /> Nova Conta
                                         </button>
                                     </>
@@ -701,6 +701,8 @@ export default function FinanceiroTab() {
                                                                         <td className="px-6 py-4 text-[13px] text-gray-600 dark:text-[#A1A1AA]">{formatarDataExibicao(conta.vencimento)}</td>
                                                                         <td className="px-6 py-4 text-[13px] font-medium text-gray-900 dark:text-gray-300">
                                                                             {conta.descricao}
+                                                                            {conta.categoria === 'Manutenção' && <span className="ml-2 px-1.5 py-0.5 rounded text-[10px] font-bold bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400">Manutenção</span>}
+                                                                            {conta.categoria === 'Terceirização' && <span className="ml-2 px-1.5 py-0.5 rounded text-[10px] font-bold bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400">Terceirização</span>}
                                                                             {conta.recorrente && <span className="ml-2 px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">Recorrente</span>}
                                                                         </td>
                                                                         <td className="px-6 py-4 text-[13px] font-medium text-emerald-600 dark:text-emerald-400">R$ {formatarValorFinanceiro(conta.valor)}</td>
