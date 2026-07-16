@@ -325,6 +325,33 @@ export const AppProvider = ({ children }) => {
         }
     }
 
+    function notificarSeContaPagarUrgente(conta) {
+        if (!conta || !conta.vencimento) return;
+        if (!(usuario?.nivel === 'Financeiro' || ehUsuario('Giovana'))) return;
+
+        const hoje = new Date();
+        hoje.setHours(0, 0, 0, 0);
+        const amanha = new Date(hoje);
+        amanha.setDate(amanha.getDate() + 1);
+        const hojeStr = hoje.getFullYear() + '-' + String(hoje.getMonth() + 1).padStart(2, '0') + '-' + String(hoje.getDate()).padStart(2, '0');
+        const amanhaStr = amanha.getFullYear() + '-' + String(amanha.getMonth() + 1).padStart(2, '0') + '-' + String(amanha.getDate()).padStart(2, '0');
+
+        const alertId = `${conta.id}_${conta.vencimento}`;
+        const urgente = conta.status !== 'Pago' && conta.vencimento <= amanhaStr;
+
+        if (urgente) {
+            if (!alertasContaPagarDisparados.current.has(alertId)) {
+                alertasContaPagarDisparados.current.add(alertId);
+                let msg = `A conta "${conta.descricao}" vence amanhã!`;
+                if (conta.vencimento === hojeStr) msg = `A conta "${conta.descricao}" vence HOJE!`;
+                else if (conta.vencimento < hojeStr) msg = `A conta "${conta.descricao}" está VENCIDA!`;
+                setAlertasNaoLidos(prev => [...prev, { id: Date.now() + Math.random(), msg, tipo: 'alerta_conta_pagar' }]);
+            }
+        } else {
+            alertasContaPagarDisparados.current.delete(alertId);
+        }
+    }
+
     async function carregarDados() {
         let todosPedidos = [];
         let from = 0;
@@ -498,31 +525,7 @@ export const AppProvider = ({ children }) => {
         const { data: listaContas, error: erroContas } = await supabase.from('contas_pagar').select('*').order('vencimento', { ascending: true });
         if (!erroContas && listaContas) {
             setContasPagar(listaContas);
-
-            if (usuario?.nivel === 'Financeiro' || ehUsuario('Giovana')) {
-                const contasVencendo = listaContas.filter(c => c.status !== 'Pago' && (c.vencimento === hojeStr || c.vencimento === amanhaStr));
-                if (contasVencendo.length > 0) {
-                    let novosAlertasConta = [];
-                    contasVencendo.forEach(c => {
-                        const alertId = `${c.id}_${c.vencimento}`;
-                        if (!alertasContaPagarDisparados.current.has(alertId)) {
-                            let msg = `A conta "${c.descricao}" vence amanhã!`;
-                            if (c.vencimento === hojeStr) msg = `A conta "${c.descricao}" vence HOJE!`;
-                            novosAlertasConta.push({ id: Date.now() + Math.random(), msg, tipo: 'alerta_conta_pagar' });
-                            alertasContaPagarDisparados.current.add(alertId);
-                        }
-                    });
-                    if (novosAlertasConta.length > 0) {
-                        setAlertasNaoLidos(prev => {
-                            let mergeAlertas = [...prev];
-                            novosAlertasConta.forEach(n => {
-                                if (!mergeAlertas.some(a => a.msg === n.msg)) mergeAlertas.push(n);
-                            });
-                            return mergeAlertas;
-                        });
-                    }
-                }
-            }
+            listaContas.forEach(notificarSeContaPagarUrgente);
         }
 
         const { data: listaFornecedores } = await supabase.from('fornecedores').select('*').order('id', { ascending: true });
@@ -1144,17 +1147,22 @@ export const AppProvider = ({ children }) => {
 
         if (novaConta.id) {
             const { data, error } = await supabase.from('contas_pagar').update(contaFormatada).eq('id', novaConta.id).select();
-            if (!error && data) { 
-                setContasPagar(contasPagar.map(c => c.id === novaConta.id ? data[0] : c)); 
-                setModalContaAberto(false); 
+            if (!error && data) {
+                setContasPagar(contasPagar.map(c => c.id === novaConta.id ? data[0] : c));
+                notificarSeContaPagarUrgente(data[0]);
+                setModalContaAberto(false);
             } else {
                 alert('Falha ao atualizar (Tabela contas_pagar existe no Supabase?): ' + (error?.message || 'Erro desconhecido'));
             }
         } else {
             const { data, error } = await supabase.from('contas_pagar').insert([contaFormatada]).select();
-            if (!error && data) { 
-                setContasPagar([...contasPagar, data[0]]); 
-                setModalContaAberto(false); 
+            if (!error && data) {
+                setContasPagar([...contasPagar, data[0]]);
+                if (usuario?.nivel === 'Financeiro' || ehUsuario('Giovana')) {
+                    setAlertasNaoLidos(prev => [...prev, { id: Date.now() + Math.random(), msg: `Nova conta a pagar: ${data[0].descricao}`, tipo: 'nova_conta_pagar' }]);
+                }
+                notificarSeContaPagarUrgente(data[0]);
+                setModalContaAberto(false);
             } else {
                 alert('Falha ao salvar (Tabela contas_pagar existe no Supabase?): ' + (error?.message || 'Erro desconhecido'));
             }
@@ -1556,6 +1564,10 @@ export const AppProvider = ({ children }) => {
                 if (usuario?.nivel === 'Financeiro' || ehUsuario('Giovana')) {
                     setAlertasNaoLidos(prev => [...prev, { id: Date.now() + Math.random(), msg: `Nova conta a pagar: ${payload.new.descricao}`, tipo: 'nova_conta_pagar' }]);
                 }
+                notificarSeContaPagarUrgente(payload.new);
+            })
+            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'contas_pagar' }, (payload) => {
+                notificarSeContaPagarUrgente(payload.new);
             })
             .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'empresas_faturamento' }, (payload) => {
                 if (usuario?.nivel === 'Administrador' || usuario?.nivel === 'Financeiro') {
