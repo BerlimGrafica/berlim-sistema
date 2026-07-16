@@ -183,7 +183,7 @@ export default function DashboardTab() {
                                         <Icon name="check-square" className="w-4 h-4 text-brand" /> Minhas Tarefas Internas
                                     </h3>
                                     <button onClick={() => {
-                                        setNovaTarefa({ id: null, titulo: '', descricao: '', responsavel: usuario?.nome || '', prazo: '', status: 'Pendente' });
+                                        setNovaTarefa({ id: null, titulo: '', descricao: '', responsavel: usuario?.nome || '', prazo: '', status: 'Pendente', fixa: false });
                                         setModalTarefaAberto(true);
                                     }} className="text-[10px] font-bold text-brand hover:text-brandHover uppercase tracking-wider transition">
                                         + Nova Tarefa

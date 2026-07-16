@@ -113,7 +113,7 @@ export const AppProvider = ({ children }) => {
     const [novaRequisicao, setNovaRequisicao] = useState({ id: null, itens: '', observacoes: '', status: 'Pendente' });
     
     const [modalTarefaAberto, setModalTarefaAberto] = useState(false);
-    const [novaTarefa, setNovaTarefa] = useState({ id: null, titulo: '', descricao: '', responsavel: '', prazo: '', status: 'Pendente' });
+    const [novaTarefa, setNovaTarefa] = useState({ id: null, titulo: '', descricao: '', responsavel: '', prazo: '', status: 'Pendente', fixa: false });
     
     const [modalLinkAberto, setModalLinkAberto] = useState(false);
     const [novoLink, setNovoLink] = useState({ id: null, titulo: '', link: '', valor: '', cliente: '', status: 'Ativo' });
@@ -560,8 +560,9 @@ export const AppProvider = ({ children }) => {
 
         const { data: listaTar } = await supabase.from('tarefas_internas').select('*').order('created_at', { ascending: false }).limit(150);
         if (listaTar) {
-            setTarefasInternas(listaTar);
-            listaTar.forEach(notificarSeTarefaMinha);
+            const listaTarAtualizada = await resetarTarefasFixasDoDia(listaTar);
+            setTarefasInternas(listaTarAtualizada);
+            listaTarAtualizada.forEach(notificarSeTarefaMinha);
         }
 
         const { data: listaLnk } = await supabase.from('links_pagamento').select('*').order('created_at', { ascending: false }).limit(150);
@@ -1423,9 +1424,23 @@ export const AppProvider = ({ children }) => {
     }
 
     async function concluirTarefa(id) {
-        if (!confirm('Deseja marcar esta tarefa como concluída?')) return;
-        const { data, error } = await supabase.from('tarefas_internas').update({ status: 'Concluída' }).eq('id', id).select();
+        const tarefa = tarefasInternas.find(t => t.id === id);
+        if (!tarefa?.fixa && !confirm('Deseja marcar esta tarefa como concluída?')) return;
+        const payload = tarefa?.fixa ? { status: 'Concluída', ultima_conclusao: obterDataAtual() } : { status: 'Concluída' };
+        const { data, error } = await supabase.from('tarefas_internas').update(payload).eq('id', id).select();
         if (!error && data) setTarefasInternas(tarefasInternas.map(x => x.id === id ? data[0] : x));
+    }
+    async function reabrirTarefaFixa(id) {
+        const { data, error } = await supabase.from('tarefas_internas').update({ status: 'Pendente', ultima_conclusao: null }).eq('id', id).select();
+        if (!error && data) setTarefasInternas(tarefasInternas.map(x => x.id === id ? data[0] : x));
+    }
+    async function resetarTarefasFixasDoDia(lista) {
+        const hoje = obterDataAtual();
+        const paraResetar = lista.filter(t => t.fixa && t.status === 'Concluída' && t.ultima_conclusao !== hoje);
+        if (paraResetar.length === 0) return lista;
+        const { data, error } = await supabase.from('tarefas_internas').update({ status: 'Pendente' }).in('id', paraResetar.map(t => t.id)).select();
+        if (error || !data) return lista;
+        return lista.map(t => data.find(d => d.id === t.id) || t);
     }
 
     async function concluirLink(id) {
@@ -1956,6 +1971,7 @@ export const AppProvider = ({ children }) => {
         reabrirNotaFiscal,
         concluirRequisicao,
         concluirTarefa,
+        reabrirTarefaFixa,
         concluirLink,
         imprimirOS
     };

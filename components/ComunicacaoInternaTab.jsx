@@ -12,7 +12,7 @@ export default function ComunicacaoInternaTab() {
         setModalTarefaAberto, setNovaTarefa,
         setModalLinkAberto, setNovoLink,
         excluirRequisicao, excluirTarefa, excluirLink,
-        concluirRequisicao, concluirTarefa, concluirLink,
+        concluirRequisicao, concluirTarefa, reabrirTarefaFixa, concluirLink,
         usuario, isAdmin
     } = useAppContext();
 
@@ -21,7 +21,7 @@ export default function ComunicacaoInternaTab() {
     const [mostrarConcluidosLinks, setMostrarConcluidosLinks] = React.useState(false);
 
     const requisicoesVisiveis = mostrarConcluidosReq ? requisicoesMaterial : requisicoesMaterial.filter(r => r.status === 'Pendente');
-    const tarefasVisiveis = mostrarConcluidosTarefas ? tarefasInternas : tarefasInternas.filter(t => t.status !== 'Concluída');
+    const tarefasVisiveis = mostrarConcluidosTarefas ? tarefasInternas : tarefasInternas.filter(t => t.fixa || t.status !== 'Concluída');
     const linksVisiveis = mostrarConcluidosLinks ? linksPagamento : linksPagamento.filter(l => l.status !== 'Inativo' && l.status !== 'Pago' && l.status !== 'Concluído');
 
     return (
@@ -107,7 +107,7 @@ export default function ComunicacaoInternaTab() {
                                 {mostrarConcluidosTarefas ? 'Ocultar Concluídas' : 'Mostrar Histórico'}
                             </button>
                             <button onClick={() => {
-                                setNovaTarefa({ id: null, titulo: '', descricao: '', responsavel: '', prazo: '', status: 'Pendente' });
+                                setNovaTarefa({ id: null, titulo: '', descricao: '', responsavel: '', prazo: '', status: 'Pendente', fixa: false });
                                 setModalTarefaAberto(true);
                             }} className="bg-brand hover:bg-brandHover text-white px-4 py-2 text-[13px] rounded-md font-semibold shadow-sm transition flex items-center gap-2">
                                 <Icon name="plus" className="w-4 h-4" /> Nova Tarefa
@@ -117,17 +117,19 @@ export default function ComunicacaoInternaTab() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {tarefasVisiveis.length > 0 ? tarefasVisiveis.map(t => (
-                            <div key={t.id} onClick={() => { setNovaTarefa(t); setModalTarefaAberto(true); }} className={`bg-white dark:bg-darkCard rounded-xl shadow-sm border p-5 flex flex-col gap-3 cursor-pointer hover:border-brand/50 transition-colors ${t.status === 'Concluída' ? 'opacity-60 border-gray-200 dark:border-darkBorder' : 'border-gray-200 dark:border-darkBorder'}`}>
+                            <div key={t.id} onClick={() => { setNovaTarefa(t); setModalTarefaAberto(true); }} className={`bg-white dark:bg-darkCard rounded-xl shadow-sm p-5 flex flex-col gap-3 cursor-pointer hover:border-brand/50 transition-colors ${t.fixa ? 'border-2 border-blue-500 dark:border-blue-400' : `border ${t.status === 'Concluída' ? 'opacity-60 border-gray-200 dark:border-darkBorder' : 'border-gray-200 dark:border-darkBorder'}`}`}>
                                 <div className="flex justify-between items-start">
                                     <div>
-                                        <h3 className={`font-bold ${t.status === 'Concluída' ? 'line-through text-gray-500' : 'text-gray-900 dark:text-white'}`}>{t.titulo}</h3>
+                                        <h3 className={`font-bold ${t.status === 'Concluída' && !t.fixa ? 'line-through text-gray-500' : 'text-gray-900 dark:text-white'}`}>{t.titulo}</h3>
                                         {t.prazo && (
                                             <p className="text-[11px] font-semibold text-brand mt-1">{formatarDataExibicao(t.prazo)}</p>
                                         )}
                                     </div>
                                     <div className="flex gap-1">
-                                        {t.status !== 'Concluída' && (
+                                        {t.status !== 'Concluída' ? (
                                             <button onClick={(e) => { e.stopPropagation(); concluirTarefa(t.id); }} className="p-1 text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded" title="Concluir"><Icon name="check-circle" className="w-4 h-4" /></button>
+                                        ) : t.fixa && (
+                                            <button onClick={(e) => { e.stopPropagation(); reabrirTarefaFixa(t.id); }} className="p-1 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded" title="Desfazer conclusão de hoje"><Icon name="rotate-ccw" className="w-4 h-4" /></button>
                                         )}
                                         <button onClick={(e) => { e.stopPropagation(); excluirTarefa(t.id); }} className="p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded" title="Excluir"><Icon name="trash-2" className="w-4 h-4" /></button>
                                     </div>
@@ -138,7 +140,7 @@ export default function ComunicacaoInternaTab() {
                                     <div className="flex items-center gap-1.5 text-[11px] font-semibold text-gray-500">
                                         <Icon name="user" className="w-3.5 h-3.5" /> {t.responsavel || 'Sem responsável'}
                                     </div>
-                                    <span className={`px-2 py-1 text-[10px] font-bold uppercase rounded ${t.status === 'Concluída' ? 'bg-gray-100 text-gray-500' : t.status === 'Em Andamento' ? 'bg-blue-100 text-blue-700' : 'bg-yellow-100 text-yellow-700'}`}>{t.status}</span>
+                                    <span className={`px-2 py-1 text-[10px] font-bold uppercase rounded ${t.fixa ? (t.status === 'Concluída' ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-100 text-blue-700') : t.status === 'Concluída' ? 'bg-gray-100 text-gray-500' : t.status === 'Em Andamento' ? 'bg-blue-100 text-blue-700' : 'bg-yellow-100 text-yellow-700'}`}>{t.fixa ? (t.status === 'Concluída' ? 'Concluída Hoje' : 'Fixa') : t.status}</span>
                                 </div>
                             </div>
                         )) : (
