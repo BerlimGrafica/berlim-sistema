@@ -213,7 +213,6 @@ export default function ComunicacaoInternaTab() {
                                         <button onClick={(e) => {
                                             e.stopPropagation();
                                             navigator.clipboard.writeText(l.link);
-                                            alert('Link copiado!');
                                         }} aria-label="Copiar Link" className="text-brand hover:text-brandHover p-1 rounded">
                                             <Icon name="copy" className="w-4 h-4" />
                                         </button>

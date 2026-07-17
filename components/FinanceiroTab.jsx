@@ -159,7 +159,6 @@ export default function FinanceiroTab() {
                                                 <button onClick={() => {
                                                     const link = window.location.origin + '/solicitar-nota';
                                                     navigator.clipboard.writeText(link);
-                                                    alert('Link copiado!');
                                                 }} aria-label="Copiar Link" className="bg-brand hover:bg-brandHover text-white h-[38px] px-3 rounded-r-md border-l border-white/20 transition flex items-center justify-center">
                                                     <Icon name="copy" className="w-3.5 h-3.5" />
                                                 </button>

@@ -187,7 +187,6 @@ export default function OrcamentosTab() {
                                         <button onClick={(e) => {
                                             e.stopPropagation();
                                             navigator.clipboard.writeText(orc.texto);
-                                            alert('Texto copiado!');
                                         }} className="mt-2 text-[11px] font-semibold text-brand hover:underline flex items-center gap-1 self-start">
                                             <Icon name="copy" className="w-3 h-3" /> Copiar Texto
                                         </button>
