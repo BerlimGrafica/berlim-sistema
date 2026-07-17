@@ -572,11 +572,11 @@ export default function Modals() {
                         </div>
                         <div className="p-6 space-y-4">
                             <div>
-                                <label className="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-1.5 tracking-wide uppercase">Nome / Local *</label>
+                                <label className="block text-[13px] font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Nome / Local *</label>
                                 <input type="text" required value={novoFornecedor.nome} onChange={e => setNovoFornecedor({...novoFornecedor, nome: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-[12px] outline-none focus:border-brand transition dark:text-[#EDEDED] font-medium" placeholder="Ex: Gráfica XYZ, Futura..." />
                             </div>
                             <div>
-                                <label className="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-1.5 tracking-wide uppercase">Tipo de Fornecedor</label>
+                                <label className="block text-[13px] font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Tipo de Fornecedor</label>
                                 <CustomSelect
                                     value={novoFornecedor.tipo || 'Produção'}
                                     onChange={(val) => setNovoFornecedor({...novoFornecedor, tipo: val})}
@@ -589,11 +589,11 @@ export default function Modals() {
                                 />
                             </div>
                             <div>
-                                <label className="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-1.5 tracking-wide uppercase">Contato (Telefone, E-mail)</label>
+                                <label className="block text-[13px] font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Contato (Telefone, E-mail)</label>
                                 <input type="text" value={novoFornecedor.contato} onChange={e => setNovoFornecedor({...novoFornecedor, contato: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-[12px] outline-none focus:border-brand transition dark:text-[#EDEDED] font-medium" placeholder="Ex: (11) 9999-9999" />
                             </div>
                             <div>
-                                <label className="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-1.5 tracking-wide uppercase">Observações</label>
+                                <label className="block text-[13px] font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Observações</label>
                                 <textarea rows="3" value={novoFornecedor.observacoes} onChange={e => setNovoFornecedor({...novoFornecedor, observacoes: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-[12px] outline-none focus:border-brand transition dark:text-[#EDEDED] font-medium resize-none custom-scrollbar" placeholder="Dados bancários, prazo padrão..." />
                             </div>
                         </div>
@@ -656,15 +656,15 @@ export default function Modals() {
                         <form onSubmit={salvarEmpresaFaturamento} className="p-6">
                             <div className="space-y-4">
                                 <div>
-                                    <label className="block text-[11px] font-semibold text-gray-600 dark:text-[#888888] mb-1.5 uppercase tracking-wider">Nome da Empresa</label>
+                                    <label className="block text-[13px] font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Nome da Empresa</label>
                                     <input type="text" required value={novaEmpresaFaturamento.nome} onChange={e => setNovaEmpresaFaturamento({...novaEmpresaFaturamento, nome: e.target.value})} className="w-full bg-white dark:bg-darkHover border border-gray-200 dark:border-darkBorder rounded-lg px-3 py-2.5 text-[13px] text-gray-800 dark:text-[#EDEDED] outline-none focus:border-brand dark:focus:border-brand focus:ring-1 focus:ring-brand transition-shadow" placeholder="Razão Social ou Fantasia" />
                                 </div>
                                 <div>
-                                    <label className="block text-[11px] font-semibold text-gray-600 dark:text-[#888888] mb-1.5 uppercase tracking-wider">CNPJ/CPF</label>
+                                    <label className="block text-[13px] font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">CNPJ/CPF</label>
                                     <input type="text" required value={novaEmpresaFaturamento.cnpj} onChange={e => setNovaEmpresaFaturamento({...novaEmpresaFaturamento, cnpj: formatarCnpjCpf(e.target.value)})} className="w-full bg-white dark:bg-darkHover border border-gray-200 dark:border-darkBorder rounded-lg px-3 py-2.5 text-[13px] text-gray-800 dark:text-[#EDEDED] outline-none focus:border-brand dark:focus:border-brand focus:ring-1 focus:ring-brand transition-shadow" placeholder="00.000.000/0000-00" />
                                 </div>
                                 <div>
-                                    <label className="block text-[11px] font-semibold text-gray-600 dark:text-[#888888] mb-1.5 uppercase tracking-wider">Status</label>
+                                    <label className="block text-[13px] font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Status</label>
                                     <CustomSelect
                                         value={novaEmpresaFaturamento.status}
                                         onChange={(val) => setNovaEmpresaFaturamento({...novaEmpresaFaturamento, status: val})}
@@ -677,7 +677,7 @@ export default function Modals() {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-[11px] font-semibold text-gray-600 dark:text-[#888888] mb-1.5 uppercase tracking-wider">Observações</label>
+                                    <label className="block text-[13px] font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Observações</label>
                                     <textarea value={novaEmpresaFaturamento.observacoes || ''} onChange={e => setNovaEmpresaFaturamento({...novaEmpresaFaturamento, observacoes: e.target.value})} className="w-full bg-white dark:bg-darkHover border border-gray-200 dark:border-darkBorder rounded-lg px-3 py-2.5 text-[13px] text-gray-800 dark:text-[#EDEDED] outline-none focus:border-brand dark:focus:border-brand focus:ring-1 focus:ring-brand transition-shadow" placeholder="Observações opcionais" rows="2"></textarea>
                                 </div>
                             </div>
@@ -700,7 +700,7 @@ export default function Modals() {
                         </div>
                         <form onSubmit={salvarConta} className="p-6 flex flex-col gap-4">
                             <div className="flex flex-col gap-1.5">
-                                <label className="text-[11px] font-semibold text-gray-500 uppercase">Categoria</label>
+                                <label className="text-[13px] font-medium text-gray-700 dark:text-[#EDEDED]">Categoria</label>
                                 <SegmentedControl
                                     options={CATEGORIAS_CONTA}
                                     value={novaConta.categoria || 'Despesa'}
@@ -709,12 +709,12 @@ export default function Modals() {
                             </div>
                             {(!novaConta.categoria || novaConta.categoria === 'Despesa') ? (
                                 <div className="flex flex-col gap-1">
-                                    <label className="text-[11px] font-semibold text-gray-500 uppercase">Descrição</label>
+                                    <label className="text-[13px] font-medium text-gray-700 dark:text-[#EDEDED]">Descrição</label>
                                     <input required value={novaConta.descricao} onChange={e => setNovaConta({...novaConta, descricao: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition" placeholder="Ex: Conta de Energia" />
                                 </div>
                             ) : (
                                 <div className="flex flex-col gap-1">
-                                    <label className="text-[11px] font-semibold text-gray-500 uppercase">Fornecedor de {novaConta.categoria}</label>
+                                    <label className="text-[13px] font-medium text-gray-700 dark:text-[#EDEDED]">Fornecedor de {novaConta.categoria}</label>
                                     <div className="relative">
                                         <CustomSelect
                                             value={novaConta.fornecedor_id || ''}
@@ -737,16 +737,16 @@ export default function Modals() {
                             )}
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="flex flex-col gap-1">
-                                    <label className="text-[11px] font-semibold text-gray-500 uppercase">Valor (R$)</label>
+                                    <label className="text-[13px] font-medium text-gray-700 dark:text-[#EDEDED]">Valor (R$)</label>
                                     <input required value={novaConta.valor} onChange={e => setNovaConta({...novaConta, valor: formatarMoeda(e.target.value)})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white font-medium transition" placeholder="0,00" />
                                 </div>
                                 <div className="flex flex-col gap-1">
-                                    <label className="text-[11px] font-semibold text-gray-500 uppercase">Vencimento</label>
+                                    <label className="text-[13px] font-medium text-gray-700 dark:text-[#EDEDED]">Vencimento</label>
                                     <CustomDatePicker value={novaConta.vencimento} onChange={val => setNovaConta({...novaConta, vencimento: val})} placeholder="Selecione uma data" className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition" />
                                 </div>
                             </div>
                             <div className="flex flex-col gap-1">
-                                <label className="text-[11px] font-semibold text-gray-500 uppercase">Status</label>
+                                <label className="text-[13px] font-medium text-gray-700 dark:text-[#EDEDED]">Status</label>
                                 <CustomSelect
                                     value={novaConta.status}
                                     onChange={(val) => setNovaConta({...novaConta, status: val})}
@@ -808,7 +808,7 @@ export default function Modals() {
                                         <input value={notaFiscalEmEdicao.cliente || ''} onChange={e => setNotaFiscalEmEdicao({...notaFiscalEmEdicao, cliente: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition" placeholder="Nome Fantasia / Cliente" />
                                     </div>
                                     <div>
-                                        <label className="text-[11px] font-semibold text-gray-600 dark:text-[#888888] uppercase mb-1 block">Tipo de Nota</label>
+                                        <label className="text-[11px] text-gray-500 mb-1 block">Tipo de Nota</label>
                                         <InlineDropdown
                                             value={notaFiscalEmEdicao.tipo_nota}
                                             options={['DANFE', 'Serviço']}
@@ -818,7 +818,7 @@ export default function Modals() {
                                         />
                                     </div>
                                     <div className="col-span-2">
-                                        <label className="text-[11px] font-semibold text-gray-600 dark:text-[#888888] uppercase mb-1 block">Serviço Feito</label>
+                                        <label className="text-[11px] text-gray-500 mb-1 block">Serviço Feito</label>
                                         <input value={notaFiscalEmEdicao.servico_feito || ''} onChange={e => setNotaFiscalEmEdicao({...notaFiscalEmEdicao, servico_feito: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition" placeholder="Qual foi o serviço?" />
                                     </div>
                                     <div className={notaFiscalEmEdicao.tipo_nota === 'DANFE' ? '' : 'col-span-2'}>
