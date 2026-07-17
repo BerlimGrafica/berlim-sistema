@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useAppContext, supabase } from "@/context/AppContext";
 import Icon from "@/components/Icon";
 import Tooltip from "@/components/Tooltip";
-import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS, obterCorStatus, formatarValorFinanceiro, formatarMoeda, formatarTelefone, formatarCnpjCpf, obterDataAtual, formatarDataExibicao, formatarMesAno, CustomDatePicker, InlineDropdown, MultiSelectDropdown, ToggleCard, SegmentedControl, desconstruirTextoServico, obterResumoServicos, ItensChecklist, StackedCards, CalculadoraBanner, CalculadoraAdesivo, CalculadoraCasamento, CalculadorasAba } from '@/lib/utils';
+import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS, obterCorStatus, formatarValorFinanceiro, formatarMoeda, formatarTelefone, formatarCnpjCpf, obterDataAtual, formatarDataExibicao, formatarMesAno, CustomDatePicker, CustomSelect, InlineDropdown, MultiSelectDropdown, ToggleCard, SegmentedControl, desconstruirTextoServico, obterResumoServicos, ItensChecklist, StackedCards, CalculadoraBanner, CalculadoraAdesivo, CalculadoraCasamento, CalculadorasAba } from '@/lib/utils';
 
 const CATEGORIAS_CONTA = [
     { value: 'Despesa', label: 'Despesa', icon: 'dollar-sign' },
@@ -51,12 +51,13 @@ export default function Modals() {
                                     </div>
                                     <div>
                                         <label className="block text-[13px] font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Status Inicial</label>
-                                        <div className="relative">
-                                            <select required value={novoPedido.status} onChange={e => setNovoPedido({...novoPedido, status: e.target.value})} disabled={isModalTrancado} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2.5 text-[13px] outline-none focus:border-brand transition dark:text-white font-semibold cursor-pointer appearance-none disabled:opacity-50">
-                                                {opcoesStatusPermitidas.map(s => <option key={s} value={s}>{s}</option>)}
-                                            </select>
-                                            <Icon name="chevron-down" className="absolute right-3 top-3.5 w-4 h-4 text-gray-400 pointer-events-none" />
-                                        </div>
+                                        <CustomSelect
+                                            value={novoPedido.status}
+                                            onChange={(val) => setNovoPedido({...novoPedido, status: val})}
+                                            disabled={isModalTrancado}
+                                            className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2.5 text-[13px] outline-none focus:border-brand transition dark:text-white font-semibold cursor-pointer"
+                                            options={opcoesStatusPermitidas.map(s => ({ value: s, label: s }))}
+                                        />
                                     </div>
                                 </div>
 
@@ -181,11 +182,14 @@ export default function Modals() {
                                             <textarea rows="2" value={itemAtual.descricao} disabled={isModalTrancado} onChange={e => setItemAtual({...itemAtual, descricao: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand transition dark:text-[#EDEDED] disabled:opacity-50" placeholder="Especificações do item (Ex: Medida, quantidade, material...)"></textarea>
                                             <div className="grid grid-cols-4 gap-3">
                                                 <div className="relative col-span-2">
-                                                    <span className="absolute left-3 top-2.5 text-[11px] text-gray-400 font-medium">Local:</span>
-                                                    <select value={itemAtual.local_producao} disabled={isModalTrancado} onChange={e => setItemAtual({...itemAtual, local_producao: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded pl-[52px] pr-8 py-2 text-[11px] outline-none focus:border-brand transition dark:text-[#EDEDED] font-medium appearance-none disabled:opacity-50">
-                                                        {(fornecedores.length > 0 ? fornecedores.filter(f => !f.tipo || f.tipo === 'Produção').map(f => f.nome) : ['Berlim']).map(l => <option key={l} value={l}>{l}</option>)}
-                                                    </select>
-                                                    <Icon name="chevron-down" className="absolute right-3 top-2.5 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+                                                    <span className="absolute left-3 top-2.5 text-[11px] text-gray-400 font-medium z-[1]">Local:</span>
+                                                    <CustomSelect
+                                                        value={itemAtual.local_producao}
+                                                        onChange={(val) => setItemAtual({...itemAtual, local_producao: val})}
+                                                        disabled={isModalTrancado}
+                                                        className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded pl-[52px] pr-3 py-2 text-[11px] outline-none focus:border-brand transition dark:text-[#EDEDED] font-medium"
+                                                        options={(fornecedores.length > 0 ? fornecedores.filter(f => !f.tipo || f.tipo === 'Produção').map(f => f.nome) : ['Berlim']).map(l => ({ value: l, label: l }))}
+                                                    />
                                                 </div>
                                                 <div className="relative">
                                                     <span className="absolute left-2.5 top-2.5 text-[11px] text-gray-400">R$</span>
@@ -251,14 +255,19 @@ export default function Modals() {
                                             {!isModalTrancado && saldo > 0 && (
                                                 <div className="flex flex-col gap-2 p-4 border-2 border-dashed border-emerald-200 dark:border-emerald-500/30 rounded-lg bg-white/60 dark:bg-darkElevated/40">
                                                     <div className="grid grid-cols-2 gap-2">
-                                                        <select value={novoPagamento.forma} onChange={e => setNovoPagamento({...novoPagamento, forma: e.target.value})} className="bg-white dark:bg-darkCard border border-gray-300 dark:border-darkBorder rounded px-2 py-1.5 text-[11px] outline-none">
-                                                            <option value="PIX">PIX</option>
-                                                            <option value="Boleto">Boleto</option>
-                                                            <option value="Cartão de Crédito">Cartão de Crédito</option>
-                                                            <option value="Cartão de Débito">Cartão de Débito</option>
-                                                            <option value="Dinheiro">Dinheiro</option>
-                                                            <option value="Link de Pagamento">Link de Pagamento</option>
-                                                        </select>
+                                                        <CustomSelect
+                                                            value={novoPagamento.forma}
+                                                            onChange={(val) => setNovoPagamento({...novoPagamento, forma: val})}
+                                                            className="bg-white dark:bg-darkCard border border-gray-300 dark:border-darkBorder rounded px-2 py-1.5 text-[11px] outline-none"
+                                                            options={[
+                                                                { value: 'PIX', label: 'PIX' },
+                                                                { value: 'Boleto', label: 'Boleto' },
+                                                                { value: 'Cartão de Crédito', label: 'Cartão de Crédito' },
+                                                                { value: 'Cartão de Débito', label: 'Cartão de Débito' },
+                                                                { value: 'Dinheiro', label: 'Dinheiro' },
+                                                                { value: 'Link de Pagamento', label: 'Link de Pagamento' },
+                                                            ]}
+                                                        />
                                                         <div className="relative">
                                                             <span className="absolute left-2 top-2 text-[10px] text-gray-400">R$</span>
                                                             <input type="text" value={novoPagamento.valor} onChange={e => setNovoPagamento({...novoPagamento, valor: formatarMoeda(e.target.value)})} className="w-full bg-white dark:bg-darkCard border border-gray-300 dark:border-darkBorder rounded pl-6 pr-2 py-1.5 text-[11px] outline-none" placeholder="Valor" />
@@ -266,18 +275,26 @@ export default function Modals() {
                                                     </div>
                                                     {(novoPagamento.forma === 'PIX' || novoPagamento.forma === 'Link de Pagamento') && (
                                                         <div>
-                                                            <select value={novoPagamento.instituicao} onChange={e => setNovoPagamento({...novoPagamento, instituicao: e.target.value})} className="w-full bg-white dark:bg-darkCard border border-gray-300 dark:border-darkBorder rounded px-2 py-1.5 text-[11px] outline-none">
-                                                                <option value="Itaú">Itaú</option>
-                                                                <option value="Infinite Pay">Infinite Pay</option>
-                                                                <option value="Pag Seguro">Pag Seguro</option>
-                                                            </select>
+                                                            <CustomSelect
+                                                                value={novoPagamento.instituicao}
+                                                                onChange={(val) => setNovoPagamento({...novoPagamento, instituicao: val})}
+                                                                className="w-full bg-white dark:bg-darkCard border border-gray-300 dark:border-darkBorder rounded px-2 py-1.5 text-[11px] outline-none"
+                                                                options={[
+                                                                    { value: 'Itaú', label: 'Itaú' },
+                                                                    { value: 'Infinite Pay', label: 'Infinite Pay' },
+                                                                    { value: 'Pag Seguro', label: 'Pag Seguro' },
+                                                                ]}
+                                                            />
                                                         </div>
                                                     )}
                                                     {(novoPagamento.forma === 'Cartão de Crédito' || novoPagamento.forma === 'Link de Pagamento') && (
                                                         <div>
-                                                            <select value={novoPagamento.parcelas} onChange={e => setNovoPagamento({...novoPagamento, parcelas: parseInt(e.target.value)})} className="w-full bg-white dark:bg-darkCard border border-gray-300 dark:border-darkBorder rounded px-2 py-1.5 text-[11px] outline-none">
-                                                                {[1,2,3,4,5,6,7,8,9,10,11,12].map(n => <option key={n} value={n}>{n}x</option>)}
-                                                            </select>
+                                                            <CustomSelect
+                                                                value={novoPagamento.parcelas}
+                                                                onChange={(val) => setNovoPagamento({...novoPagamento, parcelas: parseInt(val)})}
+                                                                className="w-full bg-white dark:bg-darkCard border border-gray-300 dark:border-darkBorder rounded px-2 py-1.5 text-[11px] outline-none"
+                                                                options={[1,2,3,4,5,6,7,8,9,10,11,12].map(n => ({ value: n, label: `${n}x` }))}
+                                                            />
                                                         </div>
                                                     )}
                                                     <button type="button" onClick={() => {
@@ -482,11 +499,13 @@ export default function Modals() {
                                         <textarea rows="2" value={itemAtual.descricao} onChange={e => setItemAtual({...itemAtual, descricao: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand transition dark:text-[#EDEDED]" placeholder="Especificações do item (Ex: Medida, quantidade, material...)"></textarea>
                                         <div className="grid grid-cols-4 gap-3">
                                             <div className="relative col-span-2">
-                                                <span className="absolute left-3 top-2.5 text-[11px] text-gray-400 font-medium">Local:</span>
-                                                <select value={itemAtual.local_producao} onChange={e => setItemAtual({...itemAtual, local_producao: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded pl-[52px] pr-8 py-2 text-[11px] outline-none focus:border-brand transition dark:text-[#EDEDED] font-medium appearance-none">
-                                                    {(fornecedores.length > 0 ? fornecedores.filter(f => !f.tipo || f.tipo === 'Produção').map(f => f.nome) : ['Berlim']).map(l => <option key={l} value={l}>{l}</option>)}
-                                                </select>
-                                                <Icon name="chevron-down" className="absolute right-3 top-2.5 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+                                                <span className="absolute left-3 top-2.5 text-[11px] text-gray-400 font-medium z-[1]">Local:</span>
+                                                <CustomSelect
+                                                    value={itemAtual.local_producao}
+                                                    onChange={(val) => setItemAtual({...itemAtual, local_producao: val})}
+                                                    className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded pl-[52px] pr-3 py-2 text-[11px] outline-none focus:border-brand transition dark:text-[#EDEDED] font-medium"
+                                                    options={(fornecedores.length > 0 ? fornecedores.filter(f => !f.tipo || f.tipo === 'Produção').map(f => f.nome) : ['Berlim']).map(l => ({ value: l, label: l }))}
+                                                />
                                             </div>
                                             <div className="relative">
                                                 <span className="absolute left-2.5 top-2.5 text-[11px] text-gray-400">R$</span>
@@ -545,14 +564,16 @@ export default function Modals() {
                             </div>
                             <div>
                                 <label className="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-1.5 tracking-wide uppercase">Tipo de Fornecedor</label>
-                                <div className="relative">
-                                    <select value={novoFornecedor.tipo || 'Produção'} onChange={e => setNovoFornecedor({...novoFornecedor, tipo: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-[12px] outline-none focus:border-brand transition dark:text-[#EDEDED] font-medium appearance-none cursor-pointer">
-                                        <option value="Material">Material</option>
-                                        <option value="Produção">Produção</option>
-                                        <option value="Manutenção">Manutenção</option>
-                                    </select>
-                                    <Icon name="chevron-down" className="absolute right-3 top-2.5 w-4 h-4 text-gray-400 pointer-events-none" />
-                                </div>
+                                <CustomSelect
+                                    value={novoFornecedor.tipo || 'Produção'}
+                                    onChange={(val) => setNovoFornecedor({...novoFornecedor, tipo: val})}
+                                    className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-[12px] outline-none focus:border-brand transition dark:text-[#EDEDED] font-medium cursor-pointer"
+                                    options={[
+                                        { value: 'Material', label: 'Material' },
+                                        { value: 'Produção', label: 'Produção' },
+                                        { value: 'Manutenção', label: 'Manutenção' },
+                                    ]}
+                                />
                             </div>
                             <div>
                                 <label className="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-1.5 tracking-wide uppercase">Contato (Telefone, E-mail)</label>
@@ -619,11 +640,16 @@ export default function Modals() {
                                 </div>
                                 <div>
                                     <label className="block text-[11px] font-semibold text-gray-600 dark:text-[#888888] mb-1.5 uppercase tracking-wider">Status</label>
-                                    <select required value={novaEmpresaFaturamento.status} onChange={e => setNovaEmpresaFaturamento({...novaEmpresaFaturamento, status: e.target.value})} className="w-full bg-white dark:bg-darkHover border border-gray-200 dark:border-darkBorder rounded-lg px-3 py-2.5 text-[13px] text-gray-800 dark:text-[#EDEDED] outline-none focus:border-brand dark:focus:border-brand focus:ring-1 focus:ring-brand transition-shadow">
-                                        <option value="Aprovado">Aprovado</option>
-                                        <option value="Bloqueado">Bloqueado</option>
-                                        <option value="Em Análise">Em Análise</option>
-                                    </select>
+                                    <CustomSelect
+                                        value={novaEmpresaFaturamento.status}
+                                        onChange={(val) => setNovaEmpresaFaturamento({...novaEmpresaFaturamento, status: val})}
+                                        className="w-full bg-white dark:bg-darkHover border border-gray-200 dark:border-darkBorder rounded-lg px-3 py-2.5 text-[13px] text-gray-800 dark:text-[#EDEDED] outline-none focus:border-brand dark:focus:border-brand focus:ring-1 focus:ring-brand transition-shadow cursor-pointer"
+                                        options={[
+                                            { value: 'Aprovado', label: 'Aprovado' },
+                                            { value: 'Bloqueado', label: 'Bloqueado' },
+                                            { value: 'Em Análise', label: 'Em Análise' },
+                                        ]}
+                                    />
                                 </div>
                                 <div>
                                     <label className="block text-[11px] font-semibold text-gray-600 dark:text-[#888888] mb-1.5 uppercase tracking-wider">Observações</label>
@@ -665,15 +691,19 @@ export default function Modals() {
                                 <div className="flex flex-col gap-1">
                                     <label className="text-[11px] font-semibold text-gray-500 uppercase">Fornecedor de {novaConta.categoria}</label>
                                     <div className="relative">
-                                        <select required value={novaConta.fornecedor_id || ''} onChange={e => {
-                                            const fid = e.target.value ? Number(e.target.value) : null;
-                                            const forn = fornecedoresParaConta.find(f => f.id === fid);
-                                            setNovaConta({...novaConta, fornecedor_id: fid, descricao: forn ? forn.nome : ''});
-                                        }} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition appearance-none cursor-pointer">
-                                            <option value="">Selecione um fornecedor...</option>
-                                            {fornecedoresParaConta.map(f => <option key={f.id} value={f.id}>{f.nome}</option>)}
-                                        </select>
-                                        <Icon name="chevron-down" className="absolute right-3 top-2.5 w-4 h-4 text-gray-400 pointer-events-none" />
+                                        <CustomSelect
+                                            value={novaConta.fornecedor_id || ''}
+                                            onChange={(val) => {
+                                                const fid = val ? Number(val) : null;
+                                                const forn = fornecedoresParaConta.find(f => f.id === fid);
+                                                setNovaConta({...novaConta, fornecedor_id: fid, descricao: forn ? forn.nome : ''});
+                                            }}
+                                            className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition cursor-pointer"
+                                            options={[
+                                                { value: '', label: 'Selecione um fornecedor...' },
+                                                ...fornecedoresParaConta.map(f => ({ value: f.id, label: f.nome })),
+                                            ]}
+                                        />
                                     </div>
                                     {fornecedoresParaConta.length === 0 && (
                                         <p className="text-[11px] text-amber-600 dark:text-amber-400 mt-1">Nenhum fornecedor com a flag &ldquo;{tipoFornecedorContaNecessario}&rdquo; cadastrado. Cadastre em Cadastros → Fornecedores.</p>
@@ -692,10 +722,15 @@ export default function Modals() {
                             </div>
                             <div className="flex flex-col gap-1">
                                 <label className="text-[11px] font-semibold text-gray-500 uppercase">Status</label>
-                                <select value={novaConta.status} onChange={e => setNovaConta({...novaConta, status: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition">
-                                    <option value="Pendente">Pendente</option>
-                                    <option value="Pago">Pago</option>
-                                </select>
+                                <CustomSelect
+                                    value={novaConta.status}
+                                    onChange={(val) => setNovaConta({...novaConta, status: val})}
+                                    className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition cursor-pointer"
+                                    options={[
+                                        { value: 'Pendente', label: 'Pendente' },
+                                        { value: 'Pago', label: 'Pago' },
+                                    ]}
+                                />
                             </div>
                             <ToggleCard
                                 icon="repeat"
@@ -720,7 +755,10 @@ export default function Modals() {
                         <div className="px-6 py-5 border-b border-gray-100 dark:border-darkBorder flex justify-between items-center bg-gray-50 dark:bg-darkCard shrink-0"><h3 className="font-semibold text-lg dark:text-white tracking-tight">Detalhes e Edição da Nota Fiscal</h3><button onClick={() => setModalNotaFiscalAberto(false)} className="text-gray-400 hover:text-white transition"><Icon name="x" /></button></div>
                         <div className="p-6 overflow-y-auto custom-scrollbar">
                             <div className="bg-gray-50 dark:bg-darkElevated p-4 rounded border border-gray-100 dark:border-darkBorder mb-6">
-                                <h4 className="font-semibold text-[13px] text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-3">Dados do Cliente (Link)</h4>
+                                <div className="flex items-center gap-2 mb-3">
+                                    <span className="w-1 h-3.5 bg-brand rounded-full"></span>
+                                    <h4 className="text-[10px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Dados do Cliente (Link)</h4>
+                                </div>
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                     <div><label className="text-[11px] text-gray-500">Razão Social</label><div className="flex items-center gap-2"><div className="text-[13px] dark:text-[#EDEDED] font-medium truncate">{notaFiscalEmEdicao.razao_social || '---'}</div>{notaFiscalEmEdicao.razao_social && <Tooltip label="Copiar"><button type="button" onClick={() => navigator.clipboard.writeText(notaFiscalEmEdicao.razao_social)} aria-label="Copiar" className="text-gray-400 hover:text-brand transition shrink-0"><Icon name="copy" className="w-3.5 h-3.5" /></button></Tooltip>}</div></div>
                                     <div><label className="text-[11px] text-gray-500">CNPJ</label><div className="flex items-center gap-2"><div className="text-[13px] dark:text-[#EDEDED] font-medium truncate">{notaFiscalEmEdicao.cnpj || '---'}</div>{notaFiscalEmEdicao.cnpj && <Tooltip label="Copiar"><button type="button" onClick={() => navigator.clipboard.writeText(notaFiscalEmEdicao.cnpj)} aria-label="Copiar" className="text-gray-400 hover:text-brand transition shrink-0"><Icon name="copy" className="w-3.5 h-3.5" /></button></Tooltip>}</div></div>
@@ -735,7 +773,10 @@ export default function Modals() {
                                 )}
                             </div>
                             <form id="formNota" onSubmit={salvarNotaFiscal} className="space-y-4">
-                                <h4 className="font-semibold text-[13px] text-gray-700 dark:text-gray-300 uppercase tracking-wider">Preenchimento Interno</h4>
+                                <div className="flex items-center gap-2">
+                                    <span className="w-1 h-3.5 bg-brand rounded-full"></span>
+                                    <h4 className="text-[10px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Preenchimento Interno</h4>
+                                </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
                                         <label className="text-[11px] text-gray-500 mb-1 block">Cliente (Identificação Interna)</label>
@@ -793,15 +834,17 @@ export default function Modals() {
                             <input required value={novoUsuario.nome} onChange={e => setNovoUsuario({...novoUsuario, nome: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition" placeholder="Nome de Acesso" />
                             <input required type="password" value={novoUsuario.senha} onChange={e => setNovoUsuario({...novoUsuario, senha: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition" placeholder="Senha" />
                             
-                            <div className="relative">
-                                <select value={novoUsuario.nivel} onChange={e => setNovoUsuario({...novoUsuario, nivel: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition appearance-none cursor-pointer">
-                                    <option value="Atendimento">Atendimento</option>
-                                    <option value="Produção">Produção</option>
-                                    <option value="Financeiro">Equipe Financeira</option>
-                                    <option value="Administrador">Administrador (Total)</option>
-                                </select>
-                                <Icon name="chevron-down" className="absolute right-3 top-2.5 w-4 h-4 text-gray-400 pointer-events-none" />
-                            </div>
+                            <CustomSelect
+                                value={novoUsuario.nivel}
+                                onChange={(val) => setNovoUsuario({...novoUsuario, nivel: val})}
+                                className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition cursor-pointer"
+                                options={[
+                                    { value: 'Atendimento', label: 'Atendimento' },
+                                    { value: 'Produção', label: 'Produção' },
+                                    { value: 'Financeiro', label: 'Equipe Financeira' },
+                                    { value: 'Administrador', label: 'Administrador (Total)' },
+                                ]}
+                            />
                             <p className="text-[10px] text-gray-500 italic mt-1">* Nota: O usuário terá acesso imediato após salvar.</p>
                             <div className="flex justify-end gap-3 mt-2"><button type="button" onClick={() => setModalUsuarioAberto(false)} className="px-4 py-2 rounded text-[13px] font-medium text-gray-600 dark:text-[#A1A1AA] hover:bg-gray-100 dark:hover:bg-darkHover transition">Cancelar</button><button type="submit" className="px-5 py-2 rounded text-[13px] font-medium bg-brand text-white hover:bg-brandHover transition shadow-sm">Salvar Acesso</button></div>
                         </form>
@@ -826,14 +869,16 @@ export default function Modals() {
                             {novaRequisicao.id && (
                                 <div>
                                     <label className="block text-[13px] font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Status</label>
-                                    <div className="relative">
-                                        <select value={novaRequisicao.status} onChange={e => setNovaRequisicao({...novaRequisicao, status: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition appearance-none cursor-pointer">
-                                            <option value="Pendente">Pendente</option>
-                                            <option value="Comprado">Comprado</option>
-                                            <option value="Recusado">Recusado</option>
-                                        </select>
-                                        <Icon name="chevron-down" className="absolute right-3 top-2.5 w-4 h-4 text-gray-400 pointer-events-none" />
-                                    </div>
+                                    <CustomSelect
+                                        value={novaRequisicao.status}
+                                        onChange={(val) => setNovaRequisicao({...novaRequisicao, status: val})}
+                                        className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition cursor-pointer"
+                                        options={[
+                                            { value: 'Pendente', label: 'Pendente' },
+                                            { value: 'Comprado', label: 'Comprado' },
+                                            { value: 'Recusado', label: 'Recusado' },
+                                        ]}
+                                    />
                                 </div>
                             )}
                             <div className="flex justify-end gap-3 mt-2"><button type="button" onClick={() => setModalRequisicaoAberto(false)} className="px-4 py-2 rounded text-[13px] font-medium text-gray-600 dark:text-[#A1A1AA] hover:bg-gray-100 dark:hover:bg-darkHover transition">Cancelar</button><button type="button" onClick={salvarRequisicao} className="px-5 py-2 rounded text-[13px] font-medium bg-brand text-white hover:bg-brandHover transition shadow-sm">Salvar</button></div>
@@ -863,25 +908,29 @@ export default function Modals() {
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-[13px] font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Responsável</label>
-                                    <div className="relative">
-                                        <select value={novaTarefa.responsavel} onChange={e => setNovaTarefa({...novaTarefa, responsavel: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition appearance-none cursor-pointer">
-                                            <option value="">(Sem responsável)</option>
-                                            {nomesResponsaveis.map(r => <option key={r} value={r}>{r}</option>)}
-                                        </select>
-                                        <Icon name="chevron-down" className="absolute right-3 top-2.5 w-4 h-4 text-gray-400 pointer-events-none" />
-                                    </div>
+                                    <CustomSelect
+                                        value={novaTarefa.responsavel}
+                                        onChange={(val) => setNovaTarefa({...novaTarefa, responsavel: val})}
+                                        className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition cursor-pointer"
+                                        options={[
+                                            { value: '', label: '(Sem responsável)' },
+                                            ...nomesResponsaveis.map(r => ({ value: r, label: r })),
+                                        ]}
+                                    />
                                 </div>
                                 {novaTarefa.id && (
                                     <div>
                                         <label className="block text-[13px] font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Status</label>
-                                        <div className="relative">
-                                            <select value={novaTarefa.status} onChange={e => setNovaTarefa({...novaTarefa, status: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition appearance-none cursor-pointer">
-                                                <option value="Pendente">Pendente</option>
-                                                <option value="Em Andamento">Em Andamento</option>
-                                                <option value="Concluída">Concluída</option>
-                                            </select>
-                                            <Icon name="chevron-down" className="absolute right-3 top-2.5 w-4 h-4 text-gray-400 pointer-events-none" />
-                                        </div>
+                                        <CustomSelect
+                                            value={novaTarefa.status}
+                                            onChange={(val) => setNovaTarefa({...novaTarefa, status: val})}
+                                            className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition cursor-pointer"
+                                            options={[
+                                                { value: 'Pendente', label: 'Pendente' },
+                                                { value: 'Em Andamento', label: 'Em Andamento' },
+                                                { value: 'Concluída', label: 'Concluída' },
+                                            ]}
+                                        />
                                     </div>
                                 )}
                             </div>
