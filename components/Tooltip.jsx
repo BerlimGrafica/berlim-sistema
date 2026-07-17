@@ -19,10 +19,12 @@ export default function Tooltip({ label, children, className = '' }) {
 
     if (!label) return children;
 
+    const isPositioned = /(^|\s)(absolute|fixed|sticky)(\s|$)/.test(className);
+
     return (
         <span
             ref={wrapperRef}
-            className={`relative inline-flex ${className}`}
+            className={`${isPositioned ? '' : 'relative'} inline-flex ${className}`}
             onMouseEnter={() => setVisible(true)}
             onMouseLeave={() => setVisible(false)}
             onFocus={() => setVisible(true)}
