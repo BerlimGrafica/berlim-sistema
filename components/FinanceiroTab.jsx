@@ -530,7 +530,7 @@ export default function FinanceiroTab() {
                                                     </div>
                                                 </div>
 
-                                                <div ref={painelScrollRef} onScroll={handlePainelScroll} className="flex overflow-x-auto snap-x snap-mandatory custom-scrollbar">
+                                                <div ref={painelScrollRef} onScroll={handlePainelScroll} className="flex overflow-x-auto overflow-y-hidden snap-x snap-mandatory no-scrollbar-style">
 
                                                     {/* SLIDE 1: ANÁLISE POR PERÍODO */}
                                                     <div className="w-full shrink-0 snap-start pr-1">
