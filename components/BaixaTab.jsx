@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useAppContext } from '@/context/AppContext';
 import Icon from '@/components/Icon';
 import Tooltip from '@/components/Tooltip';
-import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS, obterCorStatus, formatarValorFinanceiro, formatarMoeda, formatarTelefone, obterDataAtual, formatarDataExibicao, formatarMesAno, CustomDatePicker, InlineDropdown, MultiSelectDropdown, desconstruirTextoServico, obterResumoServicos, ItensChecklist, StackedCards, CalculadoraBanner, CalculadoraAdesivo, CalculadoraCasamento, CalculadorasAba } from '@/lib/utils';
+import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS, obterCorStatus, formatarValorFinanceiro, formatarMoeda, formatarTelefone, obterDataAtual, formatarDataExibicao, formatarMesAno, CustomDatePicker, CustomDateRangePicker, InlineDropdown, MultiSelectDropdown, desconstruirTextoServico, obterResumoServicos, ItensChecklist, StackedCards, CalculadoraBanner, CalculadoraAdesivo, CalculadoraCasamento, CalculadorasAba } from '@/lib/utils';
 
 
 export default function BaixaTab() {
@@ -37,19 +37,10 @@ export default function BaixaTab() {
                                         </Tooltip>
                                     )}
                                 </div>
-                                <div className="flex flex-col w-36">
-                                    <span className="text-[10px] font-semibold text-gray-500 dark:text-[#888888] uppercase mb-1">De:</span>
-                                    <CustomDatePicker value={dataFiltroInicio} onChange={setDataFiltroInicio} placeholder="Início" className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-md px-3 py-2 text-[13px] outline-none hover:border-brand transition" />
+                                <div className="flex flex-col w-60">
+                                    <span className="text-[10px] font-semibold text-gray-500 dark:text-[#888888] uppercase mb-1">Período:</span>
+                                    <CustomDateRangePicker startValue={dataFiltroInicio} endValue={dataFiltroFim} onChangeStart={setDataFiltroInicio} onChangeEnd={setDataFiltroFim} placeholder="Todo o período" className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-md px-3 py-2 text-[13px] outline-none hover:border-brand transition" />
                                 </div>
-                                <div className="flex flex-col w-36">
-                                    <span className="text-[10px] font-semibold text-gray-500 dark:text-[#888888] uppercase mb-1">Até:</span>
-                                    <CustomDatePicker value={dataFiltroFim} onChange={setDataFiltroFim} placeholder="Fim" className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-md px-3 py-2 text-[13px] outline-none hover:border-brand transition" />
-                                </div>
-                                {(dataFiltroInicio || dataFiltroFim || buscaHistoricoText) && (
-                                    <Tooltip label="Limpar Filtros">
-                                        <button type="button" onClick={() => { setDataFiltroInicio(''); setDataFiltroFim(''); setBuscaHistoricoText(''); }} aria-label="Limpar Filtros" className="w-[38px] h-[38px] flex items-center justify-center bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-md hover:bg-gray-100 dark:hover:bg-darkElevated transition text-gray-400 hover:text-brand"><Icon name="x" className="w-4 h-4" /></button>
-                                    </Tooltip>
-                                )}
                             </div>
                         </div>
                         <div className="bg-white dark:bg-darkCard rounded border border-gray-200 dark:border-darkBorder overflow-hidden">

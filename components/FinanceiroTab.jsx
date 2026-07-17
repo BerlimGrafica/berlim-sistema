@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useAppContext } from '@/context/AppContext';
 import Icon from '@/components/Icon';
 import Tooltip from '@/components/Tooltip';
-import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS, obterCorStatus, formatarValorFinanceiro, formatarMoeda, formatarTelefone, obterDataAtual, formatarDataExibicao, formatarMesAno, CustomDatePicker, InlineDropdown, MultiSelectDropdown, desconstruirTextoServico, obterResumoServicos, ItensChecklist, StackedCards, CalculadoraBanner, CalculadoraAdesivo, CalculadoraCasamento, CalculadorasAba } from '@/lib/utils';
+import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS, obterCorStatus, formatarValorFinanceiro, formatarMoeda, formatarTelefone, obterDataAtual, formatarDataExibicao, formatarMesAno, CustomDatePicker, CustomDateRangePicker, InlineDropdown, MultiSelectDropdown, desconstruirTextoServico, obterResumoServicos, ItensChecklist, StackedCards, CalculadoraBanner, CalculadoraAdesivo, CalculadoraCasamento, CalculadorasAba } from '@/lib/utils';
 
 
 function BarRow({ label, valor, maxVal, color, rank, pctTotal }) {
@@ -84,19 +84,10 @@ export default function FinanceiroTab() {
                             <div className="flex flex-wrap items-end gap-3 w-full lg:w-auto">
                                 {(abaFinanceiro === 'geral' || abaFinanceiro === 'vendas_produto') && (
                                     <>
-                                        <div className="flex flex-col w-36">
-                                            <span className="text-[10px] font-semibold text-gray-500 dark:text-[#888888] uppercase mb-1">Período De:</span>
-                                            <CustomDatePicker value={dataFiltroFinInicio} onChange={setDataFiltroFinInicio} placeholder="Início" className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-md px-3 py-2 text-[13px] outline-none hover:border-brand transition" />
+                                        <div className="flex flex-col w-60">
+                                            <span className="text-[10px] font-semibold text-gray-500 dark:text-[#888888] uppercase mb-1">Período:</span>
+                                            <CustomDateRangePicker startValue={dataFiltroFinInicio} endValue={dataFiltroFinFim} onChangeStart={setDataFiltroFinInicio} onChangeEnd={setDataFiltroFinFim} placeholder="Todo o período" className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-md px-3 py-2 text-[13px] outline-none hover:border-brand transition" />
                                         </div>
-                                        <div className="flex flex-col w-36">
-                                            <span className="text-[10px] font-semibold text-gray-500 dark:text-[#888888] uppercase mb-1">Período Até:</span>
-                                            <CustomDatePicker value={dataFiltroFinFim} onChange={setDataFiltroFinFim} placeholder="Fim" className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-md px-3 py-2 text-[13px] outline-none hover:border-brand transition" />
-                                        </div>
-                                        {(dataFiltroFinInicio || dataFiltroFinFim) && (
-                                            <Tooltip label="Limpar Filtros">
-                                                <button type="button" onClick={() => { setDataFiltroFinInicio(''); setDataFiltroFinFim(''); }} aria-label="Limpar Filtros" className="w-[38px] h-[38px] flex items-center justify-center bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-md hover:bg-gray-100 dark:hover:bg-darkElevated transition text-gray-400 hover:text-brand"><Icon name="x" className="w-4 h-4" /></button>
-                                            </Tooltip>
-                                        )}
                                         <button type="button" onClick={() => {
                                                 const pedidosExport = pedidos.filter(p => {
                                                     let match = true;
