@@ -632,7 +632,7 @@ export default function FinanceiroTab() {
                                                                         <p className="text-[11px] text-gray-400 truncate">Despesa, Manutenção e Terceirização</p>
                                                                     </div>
                                                                 </div>
-                                                                <div className="flex flex-col gap-4 p-5 overflow-y-auto max-h-72 custom-scrollbar">
+                                                                <div className="flex-1 flex flex-col gap-4 p-5 overflow-y-auto max-h-72 custom-scrollbar">
                                                                     {rankingCategoriaDespesa.length === 0 ? <p className="text-[11px] text-gray-500 italic">Nenhuma conta registrada.</p> :
                                                                         rankingCategoriaDespesa.map((cat, index) => <BarRow key={cat[0]} label={cat[0]} valor={cat[1]} maxVal={maxCategoriaDespesa} color={coresCategoriaDespesa[cat[0]] || 'bg-gray-500'} rank={index + 1} pctTotal={totalCategoriaDespesa > 0 ? (cat[1] / totalCategoriaDespesa) * 100 : 0} />)
                                                                     }
@@ -647,7 +647,7 @@ export default function FinanceiroTab() {
                                                                         <p className="text-[11px] text-gray-400 truncate">{qtdContasVencidas > 0 ? `${qtdContasVencidas} conta(s) vencida(s)` : 'Nenhuma conta vencida'}</p>
                                                                     </div>
                                                                 </div>
-                                                                <div className="flex flex-col gap-4 p-5 overflow-y-auto max-h-72 custom-scrollbar">
+                                                                <div className="flex-1 flex flex-col gap-4 p-5 overflow-y-auto max-h-72 custom-scrollbar">
                                                                     {totalStatusDespesa === 0 ? <p className="text-[11px] text-gray-500 italic">Nenhuma conta registrada.</p> : <>
                                                                         <BarRow label="Pendente" valor={totalContasPendentes} maxVal={maxStatusDespesa} color="bg-red-500" pctTotal={totalStatusDespesa > 0 ? (totalContasPendentes / totalStatusDespesa) * 100 : 0} />
                                                                         <BarRow label="Pago" valor={totalContasPagas} maxVal={maxStatusDespesa} color="bg-emerald-500" pctTotal={totalStatusDespesa > 0 ? (totalContasPagas / totalStatusDespesa) * 100 : 0} />
@@ -663,7 +663,7 @@ export default function FinanceiroTab() {
                                                                         <p className="text-[11px] text-gray-400 truncate">Top despesas do período filtrado</p>
                                                                     </div>
                                                                 </div>
-                                                                <div className="flex flex-col gap-4 p-5 overflow-y-auto max-h-72 custom-scrollbar">
+                                                                <div className="flex-1 flex flex-col gap-4 p-5 overflow-y-auto max-h-72 custom-scrollbar">
                                                                     {maioresContas.length === 0 ? <p className="text-[11px] text-gray-500 italic">Nenhuma conta registrada.</p> :
                                                                         maioresContas.map((c, index) => <BarRow key={c.id} label={c.descricao} valor={parseValorConta(c)} maxVal={maxMaiorConta} color={c.status === 'Pago' ? 'bg-emerald-500' : (c.vencimento && c.vencimento < obterDataAtual() ? 'bg-red-500' : 'bg-amber-500')} rank={index + 1} />)
                                                                     }
