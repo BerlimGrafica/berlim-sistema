@@ -20,7 +20,7 @@ export default function DashboardTab() {
                             
                             <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
                                 <div>
-                                    <h1 className="text-2xl lg:text-3xl font-black text-gray-900 dark:text-white tracking-tight drop-shadow-sm mb-2">Olá, {usuario?.nome?.split(' ')[0]}!</h1>
+                                    <h1 className="text-2xl lg:text-3xl font-black text-white tracking-tight drop-shadow-sm mb-2">Olá, {usuario?.nome?.split(' ')[0]}!</h1>
                                     <p className="text-white/80 font-medium text-[15px]">Aqui está o seu resumo de tarefas e atividades do dia.</p>
                                 </div>
                                 <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-md px-5 py-3 flex items-center gap-3 shadow-inner">
