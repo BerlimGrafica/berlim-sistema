@@ -12,7 +12,8 @@ export const AppProvider = ({ children }) => {
 /// ==== CONTROLE DE SESSÃO E USUÁRIOS ====
     const [usuariosSistema, setUsuariosSistema] = useState([]);
     const [usuario, setUsuario] = useState(null);
-    
+    const [googleVinculado, setGoogleVinculado] = useState(false);
+
     const [loginInput, setLoginInput] = useState('');
     const [senhaInput, setSenhaInput] = useState('');
     const [erroLogin, setErroLogin] = useState('');
@@ -687,6 +688,11 @@ export const AppProvider = ({ children }) => {
         return data;
     }
 
+    // Reflete se a sessão atual tem uma identidade Google vinculada (usado no botão de "Vincular Google" da Navbar).
+    function atualizarGoogleVinculado(user) {
+        setGoogleVinculado(!!user?.identities?.some(i => i.provider === 'google'));
+    }
+
     const efetuarLogin = async (e) => {
         e.preventDefault();
         setErroLogin('Entrando...');
@@ -708,11 +714,42 @@ export const AppProvider = ({ children }) => {
             return;
         }
 
+        atualizarGoogleVinculado(data.user);
         setUsuario(perfil);
         setErroLogin('');
         setLoginInput('');
         setSenhaInput('');
         setAbaAtual('dashboard');
+    };
+
+    // Login direto com Google — só entra se essa identidade já estiver vinculada a uma conta
+    // com perfil cadastrado (ver vincularGoogle); senão cai no mesmo aviso de "sem perfil".
+    const entrarComGoogle = async () => {
+        setErroLogin('');
+        const { error } = await supabase.auth.signInWithOAuth({
+            provider: 'google',
+            options: { redirectTo: window.location.origin },
+        });
+        if (error) setErroLogin('Não foi possível iniciar o login com Google.');
+    };
+
+    // Vincula a conta Google à sessão atual (usuário já logado por e-mail/senha).
+    // Depois disso, ele também pode entrar direto pelo botão "Entrar com Google".
+    const vincularGoogle = async () => {
+        const { error } = await supabase.auth.linkIdentity({
+            provider: 'google',
+            options: { redirectTo: window.location.origin },
+        });
+        if (error) alert('Não foi possível vincular a conta Google: ' + error.message);
+    };
+
+    const desvincularGoogle = async () => {
+        const { data: { user } } = await supabase.auth.getUser();
+        const identidadeGoogle = user?.identities?.find(i => i.provider === 'google');
+        if (!identidadeGoogle) return;
+        const { error } = await supabase.auth.unlinkIdentity(identidadeGoogle);
+        if (error) { alert('Não foi possível desvincular a conta Google: ' + error.message); return; }
+        setGoogleVinculado(false);
     };
 
     const logout = async () => {
@@ -721,16 +758,25 @@ export const AppProvider = ({ children }) => {
     };
 
     // Restaura a sessão ao recarregar a página e reage a logout/expiração feitos em outra aba
+    // (e também ao voltar do redirect do Google, seja de login ou de vinculação de conta)
     useEffect(() => {
         let ativo = true;
         supabase.auth.getSession().then(async ({ data: { session } }) => {
             if (!session || !ativo) return;
             const perfil = await carregarPerfil(session.user.id);
-            if (perfil && ativo) setUsuario(perfil);
+            if (!ativo) return;
+            if (perfil) {
+                atualizarGoogleVinculado(session.user);
+                setUsuario(perfil);
+            } else {
+                setErroLogin('Login válido, mas sem perfil cadastrado (tabela profiles). Fale com um administrador.');
+                await supabase.auth.signOut();
+            }
         });
 
-        const { data: listener } = supabase.auth.onAuthStateChange((event) => {
-            if (event === 'SIGNED_OUT') setUsuario(null);
+        const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
+            if (event === 'SIGNED_OUT') { setUsuario(null); setGoogleVinculado(false); }
+            if (event === 'USER_UPDATED' && session?.user) atualizarGoogleVinculado(session.user);
         });
 
         return () => {
@@ -1756,6 +1802,22 @@ export const AppProvider = ({ children }) => {
                             Entrar no Sistema
                         </button>
                     </form>
+
+                    <div className="flex items-center gap-3">
+                        <div className="flex-1 h-px bg-gray-200"></div>
+                        <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">ou</span>
+                        <div className="flex-1 h-px bg-gray-200"></div>
+                    </div>
+
+                    <button type="button" onClick={entrarComGoogle} className="w-full flex items-center justify-center gap-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 py-2 rounded text-[13px] font-semibold shadow-sm transition">
+                        <svg className="w-4 h-4" viewBox="0 0 48 48" aria-hidden="true">
+                            <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.9 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 8 3l6-6C34.5 5.5 29.6 3.5 24 3.5 12.7 3.5 3.5 12.7 3.5 24S12.7 44.5 24 44.5 44.5 35.3 44.5 24c0-1.2-.1-2.4-.3-3.5z"/>
+                            <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.9 18.9 13 24 13c3.1 0 5.8 1.1 8 3l6-6C34.5 6.5 29.6 4.5 24 4.5c-7.7 0-14.4 4.4-17.7 10.2z"/>
+                            <path fill="#4CAF50" d="M24 44.5c5.5 0 10.3-1.9 14-5l-6.5-5.3C29.5 35.7 26.9 36.5 24 36.5c-5.3 0-9.8-3.1-11.4-7.6l-6.6 5.1C9.5 40.1 16.2 44.5 24 44.5z"/>
+                            <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.3 4.3-4.2 5.7l6.5 5.3C41.4 35.9 44.5 30.4 44.5 24c0-1.2-.1-2.4-.3-3.5z"/>
+                        </svg>
+                        Entrar com Google
+                    </button>
                 </div>
             </div>
         );
@@ -1769,6 +1831,10 @@ export const AppProvider = ({ children }) => {
         setUsuariosSistema,
         usuario,
         setUsuario,
+        googleVinculado,
+        vincularGoogle,
+        desvincularGoogle,
+        entrarComGoogle,
         loginInput,
         setLoginInput,
         senhaInput,

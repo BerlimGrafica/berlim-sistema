@@ -6,7 +6,7 @@ import Tooltip from "@/components/Tooltip";
 import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS, obterCorStatus, formatarValorFinanceiro, formatarMoeda, formatarTelefone, obterDataAtual, formatarDataExibicao, formatarMesAno, CustomDatePicker, InlineDropdown, MultiSelectDropdown, desconstruirTextoServico, obterResumoServicos, ItensChecklist, StackedCards, CalculadoraBanner, CalculadoraAdesivo, CalculadoraCasamento, CalculadorasAba } from '@/lib/utils';
 
 export default function Navbar() {
-    const { setModalAlertasAberto, modalAlertasAberto, alertasNaoLidos, setAlertasNaoLidos, setAbaAtual, setAbaFinanceiro, pedidos, abrirEdicao, toggleDarkMode, darkMode, usuario, logout, abaAtual } = useAppContext();
+    const { setModalAlertasAberto, modalAlertasAberto, alertasNaoLidos, setAlertasNaoLidos, setAbaAtual, setAbaFinanceiro, pedidos, abrirEdicao, toggleDarkMode, darkMode, usuario, logout, abaAtual, googleVinculado, vincularGoogle, desvincularGoogle } = useAppContext();
     const notificacoesRef = useRef(null);
 
     useEffect(() => {
@@ -130,6 +130,22 @@ export default function Navbar() {
                                     {usuario?.nivel}
                                 </span>
                             </div>
+                            <Tooltip label={googleVinculado ? 'Desvincular conta Google' : 'Vincular conta Google (login rápido)'}>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        if (googleVinculado) {
+                                            if (confirm('Desvincular sua conta Google? Você vai deixar de conseguir entrar com o botão "Entrar com Google".')) desvincularGoogle();
+                                        } else {
+                                            vincularGoogle();
+                                        }
+                                    }}
+                                    aria-label={googleVinculado ? 'Desvincular conta Google' : 'Vincular conta Google'}
+                                    className={`transition p-2 rounded-md ${googleVinculado ? 'text-emerald-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30' : 'text-gray-400 hover:text-brand hover:bg-gray-100 dark:hover:bg-darkHover'}`}
+                                >
+                                    <Icon name="link" className="w-4 h-4" />
+                                </button>
+                            </Tooltip>
                             <Tooltip label="Sair do Sistema">
                                 <button type="button" onClick={() => logout()} aria-label="Sair do Sistema" className="text-gray-400 hover:text-red-500 transition p-2 rounded-md hover:bg-red-50 dark:hover:bg-red-950/30">
                                     <Icon name="log-out" className="w-5 h-5" />
