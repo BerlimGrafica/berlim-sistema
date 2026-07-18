@@ -584,11 +584,7 @@ export const AppProvider = ({ children }) => {
                 query = query.eq('status', 'Abandonado');
             }
 
-            const isOperador = usuario?.nivel === 'Atendimento' || usuario?.nivel === 'Produção';
-            if (isOperador) {
-                query = query.or(`responsavel.ilike.%${usuario.nome}%,local_producao.ilike.%${usuario.nome}%`);
-                query = query.not('status', 'eq', 'Finalizado');
-            }
+            // Removido o filtro de operador para que Atendimento e Produção possam ver tudo na aba OS
 
             if (buscaHistoricoText) {
                 const isNum = !isNaN(buscaHistoricoText);
