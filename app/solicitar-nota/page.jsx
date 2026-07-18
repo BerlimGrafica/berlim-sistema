@@ -1,13 +1,8 @@
 "use client";
 import React, { useState } from 'react';
-import { createClient } from '@supabase/supabase-js';
 import Icon from '@/components/Icon';
 import { SegmentedControl } from '@/lib/utils';
-
-const supabase = createClient(
-    'https://xbanoipgoleuahwbqksy.supabase.co',
-    'sb_publishable_RSQ4odG0wxy8ZucJHu_WvQ_0JfM8jbh'
-);
+import { supabase } from '@/lib/supabaseClient';
 
 const FORMAS_ENVIO = [
     { value: 'Whatsapp', label: 'WhatsApp', icon: 'phone' },

@@ -161,7 +161,7 @@ export default function CadastrosTab() {
                                 <p className="text-[13px] text-gray-500 dark:text-[#888888] mt-1">Gerencie os acessos da equipe (Administrador, Atendimento, Produção, Financeiro).</p>
                             </div>
                             <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
-                                <button onClick={() => { setNovoUsuario({ id: null, nome: '', senha: '', nivel: 'Atendimento' }); setModalUsuarioAberto(true); }} className="bg-brand hover:bg-brandHover text-white h-[38px] px-4 text-[13px] rounded-md font-semibold shadow-sm transition flex items-center gap-2">
+                                <button onClick={() => { setNovoUsuario({ id: null, nome: '', email: '', senha: '', nivel: 'Atendimento' }); setModalUsuarioAberto(true); }} className="bg-brand hover:bg-brandHover text-white h-[38px] px-4 text-[13px] rounded-md font-semibold shadow-sm transition flex items-center gap-2">
                                     <Icon name="plus" className="w-4 h-4" /> Novo Usuário
                                 </button>
                             </div>

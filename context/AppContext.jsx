@@ -1,10 +1,10 @@
 "use client";
 import React, { createContext, useContext, useState, useEffect, useRef, useMemo } from 'react';
-import { createClient } from '@supabase/supabase-js';
 import Icon from '@/components/Icon';
+import { supabase } from '@/lib/supabaseClient';
 import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS, obterCorStatus, formatarValorFinanceiro, formatarMoeda, formatarTelefone, obterDataAtual, formatarDataExibicao, formatarMesAno, CustomDatePicker, InlineDropdown, MultiSelectDropdown, desconstruirTextoServico, obterResumoServicos, ItensChecklist, StackedCards, CalculadoraBanner, CalculadoraAdesivo, CalculadoraCasamento, CalculadorasAba } from '@/lib/utils';
 
-export const supabase = createClient('https://xbanoipgoleuahwbqksy.supabase.co', 'sb_publishable_RSQ4odG0wxy8ZucJHu_WvQ_0JfM8jbh');
+export { supabase };
 
 export const AppContext = createContext();
 
@@ -152,7 +152,7 @@ export const AppProvider = ({ children }) => {
     const [novoCliente, setNovoCliente] = useState({ id: null, nome: '', telefone: '', email: '', observacoes: '', cliente_problema: false });
 
     const [modalUsuarioAberto, setModalUsuarioAberto] = useState(false);
-    const [novoUsuario, setNovoUsuario] = useState({ id: null, nome: '', senha: '', nivel: 'Atendimento' });
+    const [novoUsuario, setNovoUsuario] = useState({ id: null, nome: '', email: '', senha: '', nivel: 'Atendimento' });
 
     useEffect(() => { 
         if(usuario) {
@@ -514,7 +514,7 @@ export const AppProvider = ({ children }) => {
         
         // Clientes não são mais puxados integralmente aqui.
 
-        const { data: listaUsuarios } = await supabase.from('usuarios').select('*').order('nome', { ascending: true });
+        const { data: listaUsuarios } = await supabase.from('profiles').select('*').order('nome', { ascending: true });
         if (listaUsuarios) setUsuariosSistema(listaUsuarios);
 
         const { data: listaNotas } = await supabase.from('notas_fiscais').select('*').order('created_at', { ascending: false });
@@ -681,34 +681,63 @@ export const AppProvider = ({ children }) => {
         return () => clearTimeout(timeout);
     }, [usuario, abaAtual, abaCadastros, paginaClientes, buscaCadClientes, letraFiltroCliente, triggerRealtime]);
 
+    async function carregarPerfil(userId) {
+        const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).single();
+        if (error || !data) return null;
+        return data;
+    }
+
     const efetuarLogin = async (e) => {
         e.preventDefault();
-        setErroLogin('Conectando ao banco de dados...');
-        const { data, error } = await supabase.from('usuarios').select('*');
+        setErroLogin('Entrando...');
+
+        const { data, error } = await supabase.auth.signInWithPassword({
+            email: loginInput.trim(),
+            password: senhaInput,
+        });
 
         if (error) {
-            console.error("Erro do Supabase:", error);
-            setErroLogin('Erro de conexão: ' + error.message);
+            setErroLogin('E-mail ou senha incorretos.');
             return;
         }
 
-        if (!data || data.length === 0) {
-            setErroLogin('Tabela inacessível. Verifique se o RLS está desativado no Supabase.');
+        const perfil = await carregarPerfil(data.user.id);
+        if (!perfil) {
+            setErroLogin('Login válido, mas sem perfil cadastrado (tabela profiles). Fale com um administrador.');
+            await supabase.auth.signOut();
             return;
         }
 
-        let conta = data.find(u => u.nome.toLowerCase() === loginInput.toLowerCase().trim() && String(u.senha) === senhaInput.trim());
-
-        if (conta) {
-            setUsuario(conta);
-            setErroLogin('');
-            setLoginInput('');
-            setSenhaInput('');
-            setAbaAtual('dashboard');
-        } else {
-            setErroLogin('Usuário ou senha incorretos.');
-        }
+        setUsuario(perfil);
+        setErroLogin('');
+        setLoginInput('');
+        setSenhaInput('');
+        setAbaAtual('dashboard');
     };
+
+    const logout = async () => {
+        await supabase.auth.signOut();
+        setUsuario(null);
+    };
+
+    // Restaura a sessão ao recarregar a página e reage a logout/expiração feitos em outra aba
+    useEffect(() => {
+        let ativo = true;
+        supabase.auth.getSession().then(async ({ data: { session } }) => {
+            if (!session || !ativo) return;
+            const perfil = await carregarPerfil(session.user.id);
+            if (perfil && ativo) setUsuario(perfil);
+        });
+
+        const { data: listener } = supabase.auth.onAuthStateChange((event) => {
+            if (event === 'SIGNED_OUT') setUsuario(null);
+        });
+
+        return () => {
+            ativo = false;
+            listener?.subscription?.unsubscribe();
+        };
+    }, []);
 
     const toggleDarkMode = () => {
         if (darkMode) { document.documentElement.classList.remove('dark'); } 
@@ -823,37 +852,38 @@ export const AppProvider = ({ children }) => {
     }
 
     function abrirEdicaoUsuario(usr) {
-        setNovoUsuario({ id: usr.id, nome: usr.nome, senha: usr.senha, nivel: usr.nivel });
+        setNovoUsuario({ id: usr.id, nome: usr.nome, email: '', senha: '', nivel: usr.nivel });
         setModalUsuarioAberto(true);
     }
 
     async function salvarUsuario(e) {
         e.preventDefault();
-        const usuarioFormatado = { nome: novoUsuario.nome, senha: novoUsuario.senha, nivel: novoUsuario.nivel };
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) { alert('Sessão expirada, faça login novamente.'); return; }
+
+        const metodo = novoUsuario.id ? 'PUT' : 'POST';
+        const payload = novoUsuario.id
+            ? { id: novoUsuario.id, nome: novoUsuario.nome, nivel: novoUsuario.nivel, novaSenha: novoUsuario.senha || undefined }
+            : { email: novoUsuario.email, senha: novoUsuario.senha, nome: novoUsuario.nome, nivel: novoUsuario.nivel };
+
+        const resposta = await fetch('/api/usuarios', {
+            method: metodo,
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+            body: JSON.stringify(payload),
+        });
+        const resultado = await resposta.json();
+
+        if (!resposta.ok) {
+            alert('Falha ao salvar usuário: ' + (resultado.error || 'erro desconhecido'));
+            return;
+        }
 
         if (novoUsuario.id) {
-            const { data, error } = await supabase.from('usuarios').update(usuarioFormatado).eq('id', novoUsuario.id).select();
-            if (error) {
-                alert('Falha ao atualizar usuário: ' + error.message);
-            } else if (data && data.length > 0) {
-                setUsuariosSistema(usuariosSistema.map(u => u.id === novoUsuario.id ? data[0] : u));
-                setModalUsuarioAberto(false);
-            } else {
-                carregarDados();
-                setModalUsuarioAberto(false);
-            }
+            setUsuariosSistema(usuariosSistema.map(u => u.id === resultado.perfil.id ? resultado.perfil : u));
         } else {
-            const { data, error } = await supabase.from('usuarios').insert([usuarioFormatado]).select();
-            if (error) {
-                alert('Falha ao salvar usuário: ' + error.message);
-            } else if (data && data.length > 0) {
-                setUsuariosSistema([...usuariosSistema, data[0]]);
-                setModalUsuarioAberto(false);
-            } else {
-                carregarDados();
-                setModalUsuarioAberto(false);
-            }
+            setUsuariosSistema([...usuariosSistema, resultado.perfil]);
         }
+        setModalUsuarioAberto(false);
     }
 
     function adicionarItemAoCarrinho() {
@@ -1714,12 +1744,12 @@ export const AppProvider = ({ children }) => {
                     
                     <form onSubmit={efetuarLogin} className="flex flex-col gap-4">
                         <div>
-                            <label className="block text-[10px] font-semibold uppercase tracking-wider text-gray-500 mb-1.5">Usuário</label>
-                            <input required type="text" value={loginInput} onChange={e => setLoginInput(e.target.value)} className="w-full bg-white border border-gray-200 rounded px-3 py-2 text-[13px] outline-none focus:border-brand transition text-gray-800" placeholder="Ex: admin, gi, financeiro..." autoComplete="off" />
+                            <label className="block text-[10px] font-semibold uppercase tracking-wider text-gray-500 mb-1.5">E-mail</label>
+                            <input required type="email" value={loginInput} onChange={e => setLoginInput(e.target.value)} className="w-full bg-white border border-gray-200 rounded px-3 py-2 text-[13px] outline-none focus:border-brand transition text-gray-800" placeholder="seu@email.com" autoComplete="username" />
                         </div>
                         <div>
                             <label className="block text-[10px] font-semibold uppercase tracking-wider text-gray-500 mb-1.5">Senha</label>
-                            <input required type="password" value={senhaInput} onChange={e => setSenhaInput(e.target.value)} className="w-full bg-white border border-gray-200 rounded px-3 py-2 text-[13px] outline-none focus:border-brand transition text-gray-800" placeholder="••••••" />
+                            <input required type="password" value={senhaInput} onChange={e => setSenhaInput(e.target.value)} className="w-full bg-white border border-gray-200 rounded px-3 py-2 text-[13px] outline-none focus:border-brand transition text-gray-800" placeholder="••••••" autoComplete="current-password" />
                         </div>
                         {erroLogin && <p className="text-[11px] text-red-500 font-medium text-center">{erroLogin}</p>}
                         <button type="submit" className="w-full bg-brand hover:bg-brandHover text-white py-2 rounded text-[13px] font-semibold shadow transition mt-2">
@@ -1905,6 +1935,7 @@ export const AppProvider = ({ children }) => {
         setNovoUsuario,
         isClienteProblema,
         efetuarLogin,
+        logout,
         toggleDarkMode,
         salvandoConta,
         setSalvandoConta,

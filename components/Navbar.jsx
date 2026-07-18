@@ -6,7 +6,7 @@ import Tooltip from "@/components/Tooltip";
 import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS, obterCorStatus, formatarValorFinanceiro, formatarMoeda, formatarTelefone, obterDataAtual, formatarDataExibicao, formatarMesAno, CustomDatePicker, InlineDropdown, MultiSelectDropdown, desconstruirTextoServico, obterResumoServicos, ItensChecklist, StackedCards, CalculadoraBanner, CalculadoraAdesivo, CalculadoraCasamento, CalculadorasAba } from '@/lib/utils';
 
 export default function Navbar() {
-    const { setModalAlertasAberto, modalAlertasAberto, alertasNaoLidos, setAlertasNaoLidos, setAbaAtual, setAbaFinanceiro, pedidos, abrirEdicao, toggleDarkMode, darkMode, usuario, setUsuario, abaAtual } = useAppContext();
+    const { setModalAlertasAberto, modalAlertasAberto, alertasNaoLidos, setAlertasNaoLidos, setAbaAtual, setAbaFinanceiro, pedidos, abrirEdicao, toggleDarkMode, darkMode, usuario, logout, abaAtual } = useAppContext();
     const notificacoesRef = useRef(null);
 
     useEffect(() => {
@@ -131,7 +131,7 @@ export default function Navbar() {
                                 </span>
                             </div>
                             <Tooltip label="Sair do Sistema">
-                                <button type="button" onClick={() => setUsuario(null)} aria-label="Sair do Sistema" className="text-gray-400 hover:text-red-500 transition p-2 rounded-md hover:bg-red-50 dark:hover:bg-red-950/30">
+                                <button type="button" onClick={() => logout()} aria-label="Sair do Sistema" className="text-gray-400 hover:text-red-500 transition p-2 rounded-md hover:bg-red-50 dark:hover:bg-red-950/30">
                                     <Icon name="log-out" className="w-5 h-5" />
                                 </button>
                             </Tooltip>
