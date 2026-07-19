@@ -748,6 +748,21 @@ export const AppProvider = ({ children }) => {
     // Reflete se a sessão atual tem uma identidade Google vinculada (usado no botão de "Vincular Google" da Navbar).
     function atualizarGoogleVinculado(user) {
         setGoogleVinculado(!!user?.identities?.some(i => i.provider === 'google'));
+        sincronizarAvatarGoogle(user);
+    }
+
+    // Copia a foto de perfil do Google (se ainda não tiver sido salva) para profiles.avatar_url,
+    // via RPC que só grava essa coluna e só na própria linha (ver avatar_google_migration.sql).
+    async function sincronizarAvatarGoogle(user) {
+        const identidadeGoogle = user?.identities?.find(i => i.provider === 'google');
+        const avatarGoogle = identidadeGoogle?.identity_data?.avatar_url || identidadeGoogle?.identity_data?.picture || null;
+        if (!avatarGoogle) return;
+
+        const { error } = await supabase.rpc('atualizar_meu_avatar', { novo_avatar_url: avatarGoogle });
+        if (!error) {
+            setUsuario(prev => (prev && prev.avatar_url !== avatarGoogle ? { ...prev, avatar_url: avatarGoogle } : prev));
+            setUsuariosSistema(prev => prev.map(u => (u.id === user.id && u.avatar_url !== avatarGoogle ? { ...u, avatar_url: avatarGoogle } : u)));
+        }
     }
 
     const efetuarLogin = async (e) => {
@@ -807,6 +822,12 @@ export const AppProvider = ({ children }) => {
         const { error } = await supabase.auth.unlinkIdentity(identidadeGoogle);
         if (error) { alert('Não foi possível desvincular a conta Google: ' + error.message); return; }
         setGoogleVinculado(false);
+
+        const { error: erroAvatar } = await supabase.rpc('atualizar_meu_avatar', { novo_avatar_url: null });
+        if (!erroAvatar) {
+            setUsuario(prev => (prev ? { ...prev, avatar_url: null } : prev));
+            setUsuariosSistema(prev => prev.map(u => (u.id === user.id ? { ...u, avatar_url: null } : u)));
+        }
     };
 
     const logout = async () => {

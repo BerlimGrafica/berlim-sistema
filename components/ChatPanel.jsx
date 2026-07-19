@@ -23,6 +23,17 @@ function formatarHora(iso) {
     return new Date(iso).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 }
 
+function Avatar({ nome, avatarUrl, className = 'w-7 h-7 text-[10px]' }) {
+    if (avatarUrl) {
+        return <img src={avatarUrl} alt={nome} referrerPolicy="no-referrer" className={`${className} rounded-full object-cover shrink-0`} />;
+    }
+    return (
+        <div title={nome} className={`${className} rounded-full ${corAvatar(nome)} flex items-center justify-center font-bold text-white shrink-0`}>
+            {iniciais(nome)}
+        </div>
+    );
+}
+
 export default function ChatPanel() {
     const {
         chatAberto, setChatAberto,
@@ -46,6 +57,11 @@ export default function ChatPanel() {
         document.addEventListener('keydown', handleEsc);
         return () => document.removeEventListener('keydown', handleEsc);
     }, [chatAberto, setChatAberto]);
+
+    function avatarPara(usuarioId) {
+        if (usuarioId === usuario?.id) return usuario?.avatar_url || null;
+        return usuariosSistema.find(u => u.id === usuarioId)?.avatar_url || null;
+    }
 
     function handleEnviar(e) {
         e.preventDefault();
@@ -80,9 +96,7 @@ export default function ChatPanel() {
                     </div>
                     <div className="flex items-center -space-x-2">
                         {participantes.map(p => (
-                            <div key={p.id} title={p.nome} className={`w-7 h-7 rounded-full ${corAvatar(p.nome)} border-2 border-white dark:border-darkCard flex items-center justify-center text-[10px] font-bold text-white`}>
-                                {iniciais(p.nome)}
-                            </div>
+                            <Avatar key={p.id} nome={p.nome} avatarUrl={p.avatar_url} className="w-7 h-7 text-[10px] border-2 border-white dark:border-darkCard" />
                         ))}
                         {extras > 0 && (
                             <div className="w-7 h-7 rounded-full bg-gray-500 border-2 border-white dark:border-darkCard flex items-center justify-center text-[10px] font-bold text-white">
@@ -106,9 +120,7 @@ export default function ChatPanel() {
                             return (
                                 <div key={msg.id} className={`flex items-end gap-2 group ${minha ? 'flex-row-reverse' : ''}`}>
                                     {mostrarCabecalho ? (
-                                        <div title={nome} className={`w-7 h-7 rounded-full shrink-0 ${corAvatar(nome)} flex items-center justify-center text-[10px] font-bold text-white`}>
-                                            {iniciais(nome)}
-                                        </div>
+                                        <Avatar nome={nome} avatarUrl={avatarPara(msg.usuario_id)} className="w-7 h-7 text-[10px]" />
                                     ) : (
                                         <div className="w-7 shrink-0" />
                                     )}
@@ -138,9 +150,7 @@ export default function ChatPanel() {
 
                 {/* Envio */}
                 <form onSubmit={handleEnviar} className="flex items-center gap-2 p-3 border-t border-gray-100 dark:border-darkBorder shrink-0">
-                    <div className={`w-8 h-8 rounded-full shrink-0 ${corAvatar(usuario?.nome)} flex items-center justify-center text-[10px] font-bold text-white`}>
-                        {iniciais(usuario?.nome)}
-                    </div>
+                    <Avatar nome={usuario?.nome} avatarUrl={usuario?.avatar_url} className="w-8 h-8 text-[10px]" />
                     <input
                         type="text"
                         value={texto}
