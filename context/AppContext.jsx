@@ -104,6 +104,14 @@ export const AppProvider = ({ children }) => {
     const alertasLinkPagamentoDisparados = useRef(new Set());
     const [modalAlertasAberto, setModalAlertasAberto] = useState(false);
 
+    // === CHAT DA EQUIPE (canal único) ===
+    const [chatAberto, setChatAberto] = useState(false);
+    const [chatMensagens, setChatMensagens] = useState([]);
+    const [chatNaoLidas, setChatNaoLidas] = useState(0);
+    const [enviandoChat, setEnviandoChat] = useState(false);
+    const chatAbertoRef = useRef(false);
+    useEffect(() => { chatAbertoRef.current = chatAberto; }, [chatAberto]);
+
     // === COMUNICAÇÃO INTERNA ===
     const [abaComunicacao, setAbaComunicacao] = useState('requisicoes');
     const [requisicoesMaterial, setRequisicoesMaterial] = useState([]);
@@ -155,10 +163,11 @@ export const AppProvider = ({ children }) => {
     const [modalUsuarioAberto, setModalUsuarioAberto] = useState(false);
     const [novoUsuario, setNovoUsuario] = useState({ id: null, nome: '', email: '', senha: '', nivel: 'Atendimento' });
 
-    useEffect(() => { 
+    useEffect(() => {
         if(usuario) {
-            carregarDados(); 
-            
+            carregarDados();
+            carregarChat();
+
             // LIGA O RADAR DE TEMPO REAL DO SUPABASE
             const canalRealTime = supabase
                 .channel('mudancas-banco')
@@ -257,6 +266,23 @@ export const AppProvider = ({ children }) => {
                         setTriggerRealtime(prev => prev + 1);
                     }
                 )
+                .on(
+                    'postgres_changes',
+                    { event: 'INSERT', schema: 'public', table: 'chat_mensagens' },
+                    (payload) => {
+                        setChatMensagens(prev => prev.some(m => m.id === payload.new.id) ? prev : [...prev, payload.new]);
+                        if (!chatAbertoRef.current && payload.new.usuario_id !== usuario?.id) {
+                            setChatNaoLidas(prev => prev + 1);
+                        }
+                    }
+                )
+                .on(
+                    'postgres_changes',
+                    { event: 'DELETE', schema: 'public', table: 'chat_mensagens' },
+                    (payload) => {
+                        setChatMensagens(prev => prev.filter(m => m.id !== payload.old.id));
+                    }
+                )
             .subscribe();
 
             // Desliga o radar se o usuário fizer logoff
@@ -272,6 +298,41 @@ export const AppProvider = ({ children }) => {
     };
 
     const ehUsuario = (nome) => (usuario?.nome || '').trim().toLowerCase() === nome.toLowerCase();
+
+    // === CHAT DA EQUIPE ===
+    async function carregarChat() {
+        const { data, error } = await supabase
+            .from('chat_mensagens')
+            .select('*')
+            .order('criado_em', { ascending: true })
+            .limit(200);
+        if (!error && data) setChatMensagens(data);
+    }
+
+    function nomeDoUsuarioChat(usuarioId) {
+        if (usuarioId === usuario?.id) return usuario?.nome || 'Você';
+        return usuariosSistema.find(u => u.id === usuarioId)?.nome || 'Usuário';
+    }
+
+    function abrirChat() {
+        setChatAberto(true);
+        setChatNaoLidas(0);
+    }
+
+    async function enviarMensagemChat(conteudo) {
+        const texto = (conteudo || '').trim();
+        if (!texto || !usuario) return;
+        setEnviandoChat(true);
+        const { error } = await supabase.from('chat_mensagens').insert([{ conteudo: texto, usuario_id: usuario.id }]);
+        setEnviandoChat(false);
+        if (error) alert('Erro ao enviar mensagem: ' + error.message);
+    }
+
+    async function excluirMensagemChat(id) {
+        const { error } = await supabase.from('chat_mensagens').delete().eq('id', id);
+        if (error) alert('Erro ao apagar mensagem: ' + error.message);
+        else setChatMensagens(prev => prev.filter(m => m.id !== id));
+    }
 
     function notificarSeFaturamentoEmAnalise(empresa) {
         if (!ehUsuario('Vinicius') || !empresa) return;
@@ -1949,6 +2010,15 @@ export const AppProvider = ({ children }) => {
         alertasBoletoDisparados,
         modalAlertasAberto,
         setModalAlertasAberto,
+        chatAberto,
+        setChatAberto,
+        abrirChat,
+        chatMensagens,
+        chatNaoLidas,
+        enviandoChat,
+        nomeDoUsuarioChat,
+        enviarMensagemChat,
+        excluirMensagemChat,
         modalAberto,
         setModalAberto,
         salvandoOS,

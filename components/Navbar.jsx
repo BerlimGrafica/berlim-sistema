@@ -3,10 +3,11 @@ import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useAppContext } from "@/context/AppContext";
 import Icon from "@/components/Icon";
 import Tooltip from "@/components/Tooltip";
+import ChatPanel from "@/components/ChatPanel";
 import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS, obterCorStatus, formatarValorFinanceiro, formatarMoeda, formatarTelefone, obterDataAtual, formatarDataExibicao, formatarMesAno, CustomDatePicker, InlineDropdown, MultiSelectDropdown, desconstruirTextoServico, obterResumoServicos, ItensChecklist, StackedCards, CalculadoraBanner, CalculadoraAdesivo, CalculadoraCasamento, CalculadorasAba } from '@/lib/utils';
 
 export default function Navbar() {
-    const { setModalAlertasAberto, modalAlertasAberto, alertasNaoLidos, setAlertasNaoLidos, setAbaAtual, setAbaFinanceiro, pedidos, abrirEdicao, toggleDarkMode, darkMode, usuario, logout, abaAtual, googleVinculado, vincularGoogle, desvincularGoogle } = useAppContext();
+    const { setModalAlertasAberto, modalAlertasAberto, alertasNaoLidos, setAlertasNaoLidos, setAbaAtual, setAbaFinanceiro, pedidos, abrirEdicao, toggleDarkMode, darkMode, usuario, logout, abaAtual, googleVinculado, vincularGoogle, desvincularGoogle, abrirChat, chatNaoLidas } = useAppContext();
     const notificacoesRef = useRef(null);
 
     useEffect(() => {
@@ -27,6 +28,17 @@ export default function Navbar() {
                         <img src="https://www.berlimgraficarapida.com.br/wp-content/uploads/elementor/thumbs/logosite-rm0erpiqj90gcf7ff4jp8ujys78opflob1b9vn5jjs.png" alt="Berlim Gráfica" className="h-8 object-contain" />
                     </div>
                     <div className="flex items-center gap-5">
+                        <Tooltip label="Chat da Equipe">
+                            <button onClick={() => abrirChat()} aria-label="Abrir chat" className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-darkHover transition text-gray-600 dark:text-[#888888] relative">
+                                <Icon name="message-circle" className="w-5 h-5" />
+                                {chatNaoLidas > 0 && (
+                                    <span className="absolute top-0.5 right-0.5 min-w-[14px] h-[14px] px-1 flex items-center justify-center bg-red-500 text-white text-[9px] font-bold rounded-full shadow-sm">
+                                        {chatNaoLidas}
+                                    </span>
+                                )}
+                            </button>
+                        </Tooltip>
+
                         <div className="relative" ref={notificacoesRef}>
                             <button onClick={() => setModalAlertasAberto(!modalAlertasAberto)} className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-darkHover transition text-gray-600 dark:text-[#888888] relative">
                                 <Icon name="bell" className="w-5 h-5" />
@@ -200,6 +212,7 @@ export default function Navbar() {
                         </a>
                     </div>
                 </nav>
+            <ChatPanel />
         </>
     );
 }
