@@ -12,7 +12,7 @@ export default function DashboardTab() {
     return (
         <>
             { (
-                    <main className="flex-1 p-6 lg:p-10 max-w-[1400px] mx-auto w-full fade-in flex flex-col gap-8">
+                    <main className="flex-1 p-6 lg:p-10 max-w-[1400px] mx-auto w-full flex flex-col gap-8">
                         
                         {/* HERO SECTION */}
                         <div className="relative rounded-md overflow-hidden bg-gradient-to-r from-brand to-brandHover text-white p-8 lg:p-10 shadow-lg shadow-brand/20 border border-white/10 shrink-0">

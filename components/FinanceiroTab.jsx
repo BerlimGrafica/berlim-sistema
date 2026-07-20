@@ -62,7 +62,7 @@ export default function FinanceiroTab() {
                     </div>
                 )}
 { (usuario?.nivel === 'Administrador' || usuario?.nivel === 'Financeiro') && (
-                    <main className="flex-1 p-6 lg:p-10 max-w-[1400px] mx-auto w-full fade-in flex flex-col gap-6">
+                    <main className="flex-1 p-6 lg:p-10 max-w-[1400px] mx-auto w-full flex flex-col gap-6">
                         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 border-b border-gray-100 dark:border-darkBorder pb-6 shrink-0">
                             <div>
                                 <h1 className="text-2xl lg:text-3xl font-black text-gray-900 dark:text-white tracking-tight">
@@ -412,7 +412,7 @@ export default function FinanceiroTab() {
                             return (
                                 <>
                                     {abaFinanceiro === 'geral' && (
-                                        <div className="flex flex-col gap-8 fade-in">
+                                        <div className="flex flex-col gap-8">
 
                                             {/* RESUMO DO PERÍODO */}
                                             <div>
@@ -669,7 +669,7 @@ export default function FinanceiroTab() {
                                     )}
 
                                     {abaFinanceiro === 'vendas_produto' && (
-                                        <div className="bg-white dark:bg-darkCard p-6 rounded-xl border border-gray-200 dark:border-darkBorder flex flex-col gap-4 fade-in">
+                                        <div className="bg-white dark:bg-darkCard p-6 rounded-xl border border-gray-200 dark:border-darkBorder flex flex-col gap-4">
                                             <div>
                                                 <h3 className="font-semibold text-[13px] text-gray-800 dark:text-white uppercase tracking-wider">Vendas por Produto (Catálogo)</h3>
                                                 <p className="text-[11px] text-gray-400 mt-0.5">Visão expandida de vendas baseadas nos produtos do sistema referentes ao período filtrado.</p>
@@ -868,7 +868,7 @@ export default function FinanceiroTab() {
                                     )}
 
                                     {abaFinanceiro === 'contas_pagar' && (
-                                        <div className="fade-in">
+                                        <div>
                                             <div className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded overflow-hidden">
                                                 <div className="overflow-x-auto min-h-[300px]">
                                                     <table className="w-full text-left border-collapse">
@@ -934,7 +934,7 @@ export default function FinanceiroTab() {
                                     )}
 
                                     {abaFinanceiro === 'contas_receber' && (
-                                        <div className="fade-in">
+                                        <div>
 
 
                                             <div className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded overflow-hidden">
@@ -1034,7 +1034,7 @@ export default function FinanceiroTab() {
                                     )}
 
                                     {abaFinanceiro === 'empresas_aprovadas' && (
-                                        <div className="fade-in">
+                                        <div>
 
 
                                             <div className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded overflow-hidden">
@@ -1080,7 +1080,7 @@ export default function FinanceiroTab() {
                                         </div>
                                     )}
                                     {abaFinanceiro === 'notas_fiscais' && (
-                                        <div className="fade-in">
+                                        <div>
                         <div className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded overflow-hidden">
                             <div className="overflow-x-auto custom-scrollbar">
                                 <table className="w-full text-left border-collapse min-w-[800px]">

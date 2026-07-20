@@ -49,7 +49,7 @@ export default function Navbar() {
                                 )}
                             </button>
                             {modalAlertasAberto && (
-                                <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded-lg shadow-lg py-2 z-50 fade-in">
+                                <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded-lg shadow-lg py-2 z-50">
                                     <div className="px-4 py-2 border-b border-gray-100 dark:border-darkBorder flex justify-between items-center">
                                         <h3 className="font-semibold text-[13px] dark:text-white">Notificações</h3>
                                         {alertasNaoLidos.length > 0 && (
