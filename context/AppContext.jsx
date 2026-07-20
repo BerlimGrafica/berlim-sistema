@@ -640,7 +640,9 @@ export const AppProvider = ({ children }) => {
             } else if (abaOS === 'finalizadas') {
                 query = query.eq('status', 'Finalizado');
             } else if (abaOS === 'canceladas') {
-                query = query.eq('status', 'Cancelado');
+                const quinzeDiasAtras = new Date();
+                quinzeDiasAtras.setDate(quinzeDiasAtras.getDate() - 15);
+                query = query.eq('status', 'Cancelado').gte('cancelado_em', quinzeDiasAtras.toISOString());
             } else if (abaOS === 'abandonadas') {
                 query = query.eq('status', 'Abandonado');
             }
@@ -880,6 +882,9 @@ export const AppProvider = ({ children }) => {
                 payload.data_retirada = obterDataAtual();
             }
         }
+        if (campo === 'status' && valor === 'Cancelado') {
+            payload.cancelado_em = new Date().toISOString();
+        }
 
         setPedidos(pedidos.map(p => {
             if (p.id === id) {
@@ -1088,6 +1093,9 @@ export const AppProvider = ({ children }) => {
         }
         if (statusFinal === 'Retirada' && (!pedidoEmEdicao || pedidoEmEdicao.status !== 'Retirada')) {
             payload.data_retirada = obterDataAtual();
+        }
+        if (statusFinal === 'Cancelado' && (!pedidoEmEdicao || pedidoEmEdicao.status !== 'Cancelado')) {
+            payload.cancelado_em = new Date().toISOString();
         }
 
         if (pedidoEmEdicao) {
