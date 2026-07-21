@@ -29,6 +29,13 @@ export default function Modals() {
         }
     }, [modalAberto]);
 
+    const camposExtrasPagamento = (forma) => {
+        const mostrarInstituicao = forma === 'PIX' || forma === 'Link de Pagamento';
+        const mostrarParcelas = forma === 'Cartão de Crédito' || forma === 'Link de Pagamento';
+        const total = 1 + (mostrarInstituicao ? 1 : 0) + (mostrarParcelas ? 1 : 0);
+        return { mostrarInstituicao, mostrarParcelas, gridClass: total === 3 ? 'grid-cols-3' : total === 2 ? 'grid-cols-2' : 'grid-cols-1' };
+    };
+
     const cliqueForaAlvo = useRef(false);
     const fecharAoClicarFora = (fn) => ({
         onMouseDown: (e) => { cliqueForaAlvo.current = e.target === e.currentTarget; },
@@ -282,38 +289,39 @@ export default function Modals() {
                                                                         <input type="text" value={pagamentoEditando.valor} onChange={e => setPagamentoEditando({...pagamentoEditando, valor: formatarMoeda(e.target.value)})} className="w-full bg-white dark:bg-darkCard border border-gray-300 dark:border-darkBorder rounded pl-6 pr-2 py-1.5 text-[11px] outline-none" placeholder="Valor" />
                                                                     </div>
                                                                 </div>
-                                                                <div>
-                                                                    <CustomDatePicker
-                                                                        value={pagamentoEditando.data}
-                                                                        onChange={val => setPagamentoEditando({...pagamentoEditando, data: val})}
-                                                                        placeholder="Data do pagamento"
-                                                                        className="w-full bg-white dark:bg-darkCard border border-gray-300 dark:border-darkBorder rounded px-2 py-1.5 text-[11px] outline-none"
-                                                                    />
-                                                                </div>
-                                                                {(pagamentoEditando.forma === 'PIX' || pagamentoEditando.forma === 'Link de Pagamento') && (
-                                                                    <div>
-                                                                        <CustomSelect
-                                                                            value={pagamentoEditando.instituicao}
-                                                                            onChange={(val) => setPagamentoEditando({...pagamentoEditando, instituicao: val})}
-                                                                            className="w-full bg-white dark:bg-darkCard border border-gray-300 dark:border-darkBorder rounded px-2 py-1.5 text-[11px] outline-none"
-                                                                            options={[
-                                                                                { value: 'Itaú', label: 'Itaú' },
-                                                                                { value: 'Infinite Pay', label: 'Infinite Pay' },
-                                                                                { value: 'Pag Seguro', label: 'Pag Seguro' },
-                                                                            ]}
-                                                                        />
-                                                                    </div>
-                                                                )}
-                                                                {(pagamentoEditando.forma === 'Cartão de Crédito' || pagamentoEditando.forma === 'Link de Pagamento') && (
-                                                                    <div>
-                                                                        <CustomSelect
-                                                                            value={pagamentoEditando.parcelas}
-                                                                            onChange={(val) => setPagamentoEditando({...pagamentoEditando, parcelas: parseInt(val)})}
-                                                                            className="w-full bg-white dark:bg-darkCard border border-gray-300 dark:border-darkBorder rounded px-2 py-1.5 text-[11px] outline-none"
-                                                                            options={[1,2,3,4,5,6,7,8,9,10,11,12].map(n => ({ value: n, label: `${n}x` }))}
-                                                                        />
-                                                                    </div>
-                                                                )}
+                                                                {(() => {
+                                                                    const { mostrarInstituicao, mostrarParcelas, gridClass } = camposExtrasPagamento(pagamentoEditando.forma);
+                                                                    return (
+                                                                        <div className={`grid ${gridClass} gap-2`}>
+                                                                            <CustomDatePicker
+                                                                                value={pagamentoEditando.data}
+                                                                                onChange={val => setPagamentoEditando({...pagamentoEditando, data: val})}
+                                                                                placeholder="Data do pagamento"
+                                                                                className="w-full bg-white dark:bg-darkCard border border-gray-300 dark:border-darkBorder rounded px-2 py-1.5 text-[11px] outline-none"
+                                                                            />
+                                                                            {mostrarInstituicao && (
+                                                                                <CustomSelect
+                                                                                    value={pagamentoEditando.instituicao}
+                                                                                    onChange={(val) => setPagamentoEditando({...pagamentoEditando, instituicao: val})}
+                                                                                    className="w-full bg-white dark:bg-darkCard border border-gray-300 dark:border-darkBorder rounded px-2 py-1.5 text-[11px] outline-none"
+                                                                                    options={[
+                                                                                        { value: 'Itaú', label: 'Itaú' },
+                                                                                        { value: 'Infinite Pay', label: 'Infinite Pay' },
+                                                                                        { value: 'Pag Seguro', label: 'Pag Seguro' },
+                                                                                    ]}
+                                                                                />
+                                                                            )}
+                                                                            {mostrarParcelas && (
+                                                                                <CustomSelect
+                                                                                    value={pagamentoEditando.parcelas}
+                                                                                    onChange={(val) => setPagamentoEditando({...pagamentoEditando, parcelas: parseInt(val)})}
+                                                                                    className="w-full bg-white dark:bg-darkCard border border-gray-300 dark:border-darkBorder rounded px-2 py-1.5 text-[11px] outline-none"
+                                                                                    options={[1,2,3,4,5,6,7,8,9,10,11,12].map(n => ({ value: n, label: `${n}x` }))}
+                                                                                />
+                                                                            )}
+                                                                        </div>
+                                                                    );
+                                                                })()}
                                                                 <div className="flex gap-2 justify-end pt-1">
                                                                     <button type="button" onClick={() => { setPagamentoEditandoIdx(null); setPagamentoEditando(null); }} className="text-[11px] font-semibold px-3 py-1.5 rounded text-gray-500 hover:bg-gray-100 dark:hover:bg-darkHover transition">Cancelar</button>
                                                                     <button type="button" onClick={() => {
@@ -379,38 +387,39 @@ export default function Modals() {
                                                             <input type="text" value={novoPagamento.valor} onChange={e => setNovoPagamento({...novoPagamento, valor: formatarMoeda(e.target.value)})} className="w-full bg-white dark:bg-darkCard border border-gray-300 dark:border-darkBorder rounded pl-6 pr-2 py-1.5 text-[11px] outline-none" placeholder="Valor" />
                                                         </div>
                                                     </div>
-                                                    <div>
-                                                        <CustomDatePicker
-                                                            value={novoPagamento.data}
-                                                            onChange={val => setNovoPagamento({...novoPagamento, data: val})}
-                                                            placeholder="Data do pagamento"
-                                                            className="w-full bg-white dark:bg-darkCard border border-gray-300 dark:border-darkBorder rounded px-2 py-1.5 text-[11px] outline-none"
-                                                        />
-                                                    </div>
-                                                    {(novoPagamento.forma === 'PIX' || novoPagamento.forma === 'Link de Pagamento') && (
-                                                        <div>
-                                                            <CustomSelect
-                                                                value={novoPagamento.instituicao}
-                                                                onChange={(val) => setNovoPagamento({...novoPagamento, instituicao: val})}
-                                                                className="w-full bg-white dark:bg-darkCard border border-gray-300 dark:border-darkBorder rounded px-2 py-1.5 text-[11px] outline-none"
-                                                                options={[
-                                                                    { value: 'Itaú', label: 'Itaú' },
-                                                                    { value: 'Infinite Pay', label: 'Infinite Pay' },
-                                                                    { value: 'Pag Seguro', label: 'Pag Seguro' },
-                                                                ]}
-                                                            />
-                                                        </div>
-                                                    )}
-                                                    {(novoPagamento.forma === 'Cartão de Crédito' || novoPagamento.forma === 'Link de Pagamento') && (
-                                                        <div>
-                                                            <CustomSelect
-                                                                value={novoPagamento.parcelas}
-                                                                onChange={(val) => setNovoPagamento({...novoPagamento, parcelas: parseInt(val)})}
-                                                                className="w-full bg-white dark:bg-darkCard border border-gray-300 dark:border-darkBorder rounded px-2 py-1.5 text-[11px] outline-none"
-                                                                options={[1,2,3,4,5,6,7,8,9,10,11,12].map(n => ({ value: n, label: `${n}x` }))}
-                                                            />
-                                                        </div>
-                                                    )}
+                                                    {(() => {
+                                                        const { mostrarInstituicao, mostrarParcelas, gridClass } = camposExtrasPagamento(novoPagamento.forma);
+                                                        return (
+                                                            <div className={`grid ${gridClass} gap-2`}>
+                                                                <CustomDatePicker
+                                                                    value={novoPagamento.data}
+                                                                    onChange={val => setNovoPagamento({...novoPagamento, data: val})}
+                                                                    placeholder="Data do pagamento"
+                                                                    className="w-full bg-white dark:bg-darkCard border border-gray-300 dark:border-darkBorder rounded px-2 py-1.5 text-[11px] outline-none"
+                                                                />
+                                                                {mostrarInstituicao && (
+                                                                    <CustomSelect
+                                                                        value={novoPagamento.instituicao}
+                                                                        onChange={(val) => setNovoPagamento({...novoPagamento, instituicao: val})}
+                                                                        className="w-full bg-white dark:bg-darkCard border border-gray-300 dark:border-darkBorder rounded px-2 py-1.5 text-[11px] outline-none"
+                                                                        options={[
+                                                                            { value: 'Itaú', label: 'Itaú' },
+                                                                            { value: 'Infinite Pay', label: 'Infinite Pay' },
+                                                                            { value: 'Pag Seguro', label: 'Pag Seguro' },
+                                                                        ]}
+                                                                    />
+                                                                )}
+                                                                {mostrarParcelas && (
+                                                                    <CustomSelect
+                                                                        value={novoPagamento.parcelas}
+                                                                        onChange={(val) => setNovoPagamento({...novoPagamento, parcelas: parseInt(val)})}
+                                                                        className="w-full bg-white dark:bg-darkCard border border-gray-300 dark:border-darkBorder rounded px-2 py-1.5 text-[11px] outline-none"
+                                                                        options={[1,2,3,4,5,6,7,8,9,10,11,12].map(n => ({ value: n, label: `${n}x` }))}
+                                                                    />
+                                                                )}
+                                                            </div>
+                                                        );
+                                                    })()}
                                                     <button type="button" onClick={() => {
                                                         if (!novoPagamento.valor) return;
                                                         setPagamentosPedido([...pagamentosPedido, { ...novoPagamento, data: novoPagamento.data || obterDataAtual() }]);
