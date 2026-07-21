@@ -355,6 +355,9 @@ export default function Modals() {
                                                     alert("Não é possível finalizar a OS: O valor total ainda não foi pago.");
                                                     return;
                                                 }
+                                                if (!window.confirm("Tem certeza que deseja finalizar esta OS?")) {
+                                                    return;
+                                                }
                                                 salvarOS(e, false, 'Finalizado');
                                             }} disabled={salvandoOS} className="w-full sm:w-44 px-2 py-2.5 rounded-lg text-[13px] font-bold bg-emerald-500 hover:bg-emerald-600 text-white shadow-md shadow-emerald-500/20 transition disabled:opacity-50 flex items-center justify-center gap-2 border border-emerald-600/50 whitespace-nowrap">
                                                 <Icon name="check-circle" className="w-4 h-4 shrink-0" />
