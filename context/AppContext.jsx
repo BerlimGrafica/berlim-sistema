@@ -1045,6 +1045,26 @@ export const AppProvider = ({ children }) => {
         setNovoPedido({...novoPedido, valor_total: formatarMoeda((totalGeralOS * 100).toFixed(0).toString())});
     }
 
+    function salvarEdicaoItemCarrinho(id_temp) {
+        if (!itemAtual.descricao || !itemAtual.valor) return;
+        const pctDesconto = parseFloat(itemAtual.desconto) || 0;
+        const numOriginal = parseFloat(itemAtual.valor.replace(/\./g, '').replace(',', '.')) || 0;
+        const valorFinalCalculadoNum = numOriginal * (1 - pctDesconto / 100);
+        const valorFinalCalculadoStr = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(valorFinalCalculadoNum);
+
+        const itemAtualizado = { ...itemAtual, valor_original: itemAtual.valor, valor: valorFinalCalculadoStr, id_temp };
+
+        const novosItens = itensPedido.map(i => i.id_temp === id_temp ? itemAtualizado : i);
+        setItensPedido(novosItens);
+
+        let totalGeralOS = 0;
+        novosItens.forEach(i => { totalGeralOS += parseFloat(i.valor.replace(/\./g, '').replace(',', '.')) || 0; });
+        setNovoPedido({...novoPedido, valor_total: formatarMoeda((totalGeralOS * 100).toFixed(0).toString())});
+
+        setItemAtual({ nome: '', descricao: '', valor: '', desconto: '', local_producao: 'Berlim', id_produto: null });
+        setBuscaProduto('');
+    }
+
     async function salvarOS(e, querImprimir = false, statusForcado = null) {
         if (e) e.preventDefault();
         setSalvandoOS(true);
@@ -2140,6 +2160,7 @@ export const AppProvider = ({ children }) => {
         salvarUsuario,
         adicionarItemAoCarrinho,
         removerItemDoCarrinho,
+        salvarEdicaoItemCarrinho,
         salvarOS,
         salvarOrcamentoPre,
         excluirOrcamentoPre,
