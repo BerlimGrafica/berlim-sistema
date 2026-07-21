@@ -947,7 +947,7 @@ export const AppProvider = ({ children }) => {
         setPagamentosPedido(pagamentosRecuperados);
         
         const totalPago = pagamentosRecuperados.reduce((acc, p) => acc + (parseFloat(String(p.valor).replace(/\./g, '').replace(',', '.')) || 0), 0);
-        const totalOSStr = parseFloat(String(pedido.valor_total).replace(/\./g, '').replace(',', '.')) || 0;
+        const totalOSStr = parseFloat(pedido.valor_total) || 0;
         const saldoRestante = totalOSStr - totalPago;
         
         setNovoPagamento({
