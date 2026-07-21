@@ -143,7 +143,7 @@ export const AppProvider = ({ children }) => {
     const [produtoDropdownAberto, setProdutoDropdownAberto] = useState(false);
 
     const [pagamentosPedido, setPagamentosPedido] = useState([]);
-    const [novoPagamento, setNovoPagamento] = useState({ valor: '', forma: 'PIX', parcelas: 1, instituicao: 'Itaú' });
+    const [novoPagamento, setNovoPagamento] = useState({ valor: '', forma: 'PIX', parcelas: 1, instituicao: 'Itaú', data: obterDataAtual() });
 
     const [novoPedido, setNovoPedido] = useState({ 
         cliente: '', servico: '', valor_total: '', 
@@ -928,7 +928,7 @@ export const AppProvider = ({ children }) => {
         setBuscaProduto('');
         setItensPedido([]); 
         setPagamentosPedido([]);
-        setNovoPagamento({ valor: '', forma: 'PIX', parcelas: 1, instituicao: 'Itaú' });
+        setNovoPagamento({ valor: '', forma: 'PIX', parcelas: 1, instituicao: 'Itaú', data: obterDataAtual() });
         setItemAtual({ nome: '', descricao: '', valor: '', desconto: '', local_producao: 'Berlim', id_produto: null });
         setNovoPedido({ 
             cliente: '', servico: '', valor_total: '', 
@@ -950,9 +950,9 @@ export const AppProvider = ({ children }) => {
         const totalOSStr = parseFloat(String(pedido.valor_total).replace(/\./g, '').replace(',', '.')) || 0;
         const saldoRestante = totalOSStr - totalPago;
         
-        setNovoPagamento({ 
-            valor: saldoRestante > 0 ? formatarMoeda((saldoRestante * 100).toFixed(0).toString()) : '', 
-            forma: 'PIX', parcelas: 1, instituicao: 'Itaú' 
+        setNovoPagamento({
+            valor: saldoRestante > 0 ? formatarMoeda((saldoRestante * 100).toFixed(0).toString()) : '',
+            forma: 'PIX', parcelas: 1, instituicao: 'Itaú', data: obterDataAtual()
         });
         setNovoPedido({
             cliente: pedido.cliente,

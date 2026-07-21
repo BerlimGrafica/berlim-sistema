@@ -17,6 +17,16 @@ export default function Modals() {
     const tipoFornecedorContaNecessario = novaConta.categoria === 'Manutenção' ? 'Manutenção' : novaConta.categoria === 'Terceirização' ? 'Produção' : null;
     const fornecedoresParaConta = tipoFornecedorContaNecessario ? fornecedores.filter(f => f.tipo === tipoFornecedorContaNecessario) : [];
 
+    const [pagamentoEditandoIdx, setPagamentoEditandoIdx] = useState(null);
+    const [pagamentoEditando, setPagamentoEditando] = useState(null);
+
+    useEffect(() => {
+        if (!modalAberto) {
+            setPagamentoEditandoIdx(null);
+            setPagamentoEditando(null);
+        }
+    }, [modalAberto]);
+
     const cliqueForaAlvo = useRef(false);
     const fecharAoClicarFora = (fn) => ({
         onMouseDown: (e) => { cliqueForaAlvo.current = e.target === e.currentTarget; },
@@ -234,6 +244,70 @@ export default function Modals() {
                                             {pagamentosPedido.length > 0 ? (
                                                 <div className="flex flex-col gap-2">
                                                     {pagamentosPedido.map((pag, idx) => (
+                                                        pagamentoEditandoIdx === idx ? (
+                                                            <div key={idx} className="flex flex-col gap-2 bg-white dark:bg-darkElevated p-3.5 rounded-lg border border-brand shadow-sm">
+                                                                <div className="grid grid-cols-2 gap-2">
+                                                                    <CustomSelect
+                                                                        value={pagamentoEditando.forma}
+                                                                        onChange={(val) => setPagamentoEditando({...pagamentoEditando, forma: val})}
+                                                                        className="bg-white dark:bg-darkCard border border-gray-300 dark:border-darkBorder rounded px-2 py-1.5 text-[11px] outline-none"
+                                                                        options={[
+                                                                            { value: 'PIX', label: 'PIX' },
+                                                                            { value: 'Boleto', label: 'Boleto' },
+                                                                            { value: 'Cartão de Crédito', label: 'Cartão de Crédito' },
+                                                                            { value: 'Cartão de Débito', label: 'Cartão de Débito' },
+                                                                            { value: 'Dinheiro', label: 'Dinheiro' },
+                                                                            { value: 'Link de Pagamento', label: 'Link de Pagamento' },
+                                                                        ]}
+                                                                    />
+                                                                    <div className="relative">
+                                                                        <span className="absolute left-2 top-2 text-[10px] text-gray-400">R$</span>
+                                                                        <input type="text" value={pagamentoEditando.valor} onChange={e => setPagamentoEditando({...pagamentoEditando, valor: formatarMoeda(e.target.value)})} className="w-full bg-white dark:bg-darkCard border border-gray-300 dark:border-darkBorder rounded pl-6 pr-2 py-1.5 text-[11px] outline-none" placeholder="Valor" />
+                                                                    </div>
+                                                                </div>
+                                                                <div>
+                                                                    <CustomDatePicker
+                                                                        value={pagamentoEditando.data}
+                                                                        onChange={val => setPagamentoEditando({...pagamentoEditando, data: val})}
+                                                                        placeholder="Data do pagamento"
+                                                                        className="w-full bg-white dark:bg-darkCard border border-gray-300 dark:border-darkBorder rounded px-2 py-1.5 text-[11px] outline-none"
+                                                                    />
+                                                                </div>
+                                                                {(pagamentoEditando.forma === 'PIX' || pagamentoEditando.forma === 'Link de Pagamento') && (
+                                                                    <div>
+                                                                        <CustomSelect
+                                                                            value={pagamentoEditando.instituicao}
+                                                                            onChange={(val) => setPagamentoEditando({...pagamentoEditando, instituicao: val})}
+                                                                            className="w-full bg-white dark:bg-darkCard border border-gray-300 dark:border-darkBorder rounded px-2 py-1.5 text-[11px] outline-none"
+                                                                            options={[
+                                                                                { value: 'Itaú', label: 'Itaú' },
+                                                                                { value: 'Infinite Pay', label: 'Infinite Pay' },
+                                                                                { value: 'Pag Seguro', label: 'Pag Seguro' },
+                                                                            ]}
+                                                                        />
+                                                                    </div>
+                                                                )}
+                                                                {(pagamentoEditando.forma === 'Cartão de Crédito' || pagamentoEditando.forma === 'Link de Pagamento') && (
+                                                                    <div>
+                                                                        <CustomSelect
+                                                                            value={pagamentoEditando.parcelas}
+                                                                            onChange={(val) => setPagamentoEditando({...pagamentoEditando, parcelas: parseInt(val)})}
+                                                                            className="w-full bg-white dark:bg-darkCard border border-gray-300 dark:border-darkBorder rounded px-2 py-1.5 text-[11px] outline-none"
+                                                                            options={[1,2,3,4,5,6,7,8,9,10,11,12].map(n => ({ value: n, label: `${n}x` }))}
+                                                                        />
+                                                                    </div>
+                                                                )}
+                                                                <div className="flex gap-2 justify-end pt-1">
+                                                                    <button type="button" onClick={() => { setPagamentoEditandoIdx(null); setPagamentoEditando(null); }} className="text-[11px] font-semibold px-3 py-1.5 rounded text-gray-500 hover:bg-gray-100 dark:hover:bg-darkHover transition">Cancelar</button>
+                                                                    <button type="button" onClick={() => {
+                                                                        if (!pagamentoEditando.valor) return;
+                                                                        setPagamentosPedido(pagamentosPedido.map((p, i) => i === idx ? { ...p, ...pagamentoEditando } : p));
+                                                                        setPagamentoEditandoIdx(null);
+                                                                        setPagamentoEditando(null);
+                                                                    }} className="bg-brand hover:bg-brandHover text-white text-[11px] font-semibold px-3 py-1.5 rounded transition">Salvar</button>
+                                                                </div>
+                                                            </div>
+                                                        ) : (
                                                         <div key={idx} className="flex justify-between items-center gap-3 bg-white dark:bg-darkElevated px-3.5 py-3 rounded-lg border border-gray-200 dark:border-darkBorder shadow-sm">
                                                             <div className="flex items-center gap-3 min-w-0">
                                                                 <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${coresFormaPagamento[pag.forma] || 'bg-gray-400'}`}></span>
@@ -248,10 +322,14 @@ export default function Modals() {
                                                             <div className="flex items-center gap-3 shrink-0">
                                                                 <span className="font-bold text-[13px] text-emerald-600 dark:text-emerald-400">R$ {pag.valor}</span>
                                                                 {!isModalTrancado && (
-                                                                    <button type="button" onClick={() => setPagamentosPedido(pagamentosPedido.filter((_, i) => i !== idx))} className="text-red-400 hover:text-red-600 transition"><Icon name="trash-2" className="w-4 h-4" /></button>
+                                                                    <>
+                                                                        <button type="button" onClick={() => { setPagamentoEditandoIdx(idx); setPagamentoEditando({ forma: 'PIX', parcelas: 1, instituicao: 'Itaú', data: obterDataAtual(), ...pag }); }} className="text-gray-400 hover:text-brand transition"><Icon name="edit-3" className="w-4 h-4" /></button>
+                                                                        <button type="button" onClick={() => setPagamentosPedido(pagamentosPedido.filter((_, i) => i !== idx))} className="text-red-400 hover:text-red-600 transition"><Icon name="trash-2" className="w-4 h-4" /></button>
+                                                                    </>
                                                                 )}
                                                             </div>
                                                         </div>
+                                                        )
                                                     ))}
                                                 </div>
                                             ) : (
@@ -282,6 +360,14 @@ export default function Modals() {
                                                             <input type="text" value={novoPagamento.valor} onChange={e => setNovoPagamento({...novoPagamento, valor: formatarMoeda(e.target.value)})} className="w-full bg-white dark:bg-darkCard border border-gray-300 dark:border-darkBorder rounded pl-6 pr-2 py-1.5 text-[11px] outline-none" placeholder="Valor" />
                                                         </div>
                                                     </div>
+                                                    <div>
+                                                        <CustomDatePicker
+                                                            value={novoPagamento.data}
+                                                            onChange={val => setNovoPagamento({...novoPagamento, data: val})}
+                                                            placeholder="Data do pagamento"
+                                                            className="w-full bg-white dark:bg-darkCard border border-gray-300 dark:border-darkBorder rounded px-2 py-1.5 text-[11px] outline-none"
+                                                        />
+                                                    </div>
                                                     {(novoPagamento.forma === 'PIX' || novoPagamento.forma === 'Link de Pagamento') && (
                                                         <div>
                                                             <CustomSelect
@@ -308,14 +394,14 @@ export default function Modals() {
                                                     )}
                                                     <button type="button" onClick={() => {
                                                         if (!novoPagamento.valor) return;
-                                                        setPagamentosPedido([...pagamentosPedido, { ...novoPagamento, data: obterDataAtual() }]);
+                                                        setPagamentosPedido([...pagamentosPedido, { ...novoPagamento, data: novoPagamento.data || obterDataAtual() }]);
 
                                                         // Atualiza sugerindo o restante
                                                         const novoTotalPago = pagamentosPedido.reduce((acc, p) => acc + (parseFloat(String(p.valor).replace(/\./g, '').replace(',', '.')) || 0), 0) + parseFloat(String(novoPagamento.valor).replace(/\./g, '').replace(',', '.'));
                                                         const totalOSStr = parseFloat(String(novoPedido.valor_total).replace(/\./g, '').replace(',', '.')) || 0;
                                                         const saldoRestante = totalOSStr - novoTotalPago;
 
-                                                        setNovoPagamento({ valor: saldoRestante > 0 ? formatarMoeda((saldoRestante * 100).toFixed(0).toString()) : '', forma: 'PIX', parcelas: 1, instituicao: 'Itaú' });
+                                                        setNovoPagamento({ valor: saldoRestante > 0 ? formatarMoeda((saldoRestante * 100).toFixed(0).toString()) : '', forma: 'PIX', parcelas: 1, instituicao: 'Itaú', data: obterDataAtual() });
                                                     }} className="w-full bg-brand hover:bg-brandHover text-white py-1.5 rounded text-[11px] font-semibold transition">Registrar Pagamento</button>
                                                 </div>
                                             )}
