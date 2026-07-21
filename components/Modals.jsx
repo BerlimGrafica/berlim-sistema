@@ -17,10 +17,19 @@ export default function Modals() {
     const tipoFornecedorContaNecessario = novaConta.categoria === 'Manutenção' ? 'Manutenção' : novaConta.categoria === 'Terceirização' ? 'Produção' : null;
     const fornecedoresParaConta = tipoFornecedorContaNecessario ? fornecedores.filter(f => f.tipo === tipoFornecedorContaNecessario) : [];
 
+    const cliqueForaAlvo = useRef(false);
+    const fecharAoClicarFora = (fn) => ({
+        onMouseDown: (e) => { cliqueForaAlvo.current = e.target === e.currentTarget; },
+        onMouseUp: (e) => {
+            if (cliqueForaAlvo.current && e.target === e.currentTarget) fn();
+            cliqueForaAlvo.current = false;
+        },
+    });
+
     return (
         <>
             {modalAberto && (
-                <div onClick={fecharModalOS} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer animate-modal-backdrop">
+                <div {...fecharAoClicarFora(fecharModalOS)} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer animate-modal-backdrop">
                     <div onClick={(e) => e.stopPropagation()} className="bg-[#EDEFF0] dark:bg-darkBg w-full max-w-4xl rounded border border-gray-200 dark:border-darkBorder shadow-2xl flex flex-col max-h-[95vh] cursor-default overflow-hidden animate-modal-in">
                         <div className="px-6 py-5 flex justify-between items-center bg-brand text-white rounded-t">
                             <div className="flex items-center gap-3">
@@ -372,7 +381,7 @@ export default function Modals() {
                 </div>
             )}
 {modalProdutoAberto && (
-                <div onClick={() => setModalProdutoAberto(false)} className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer animate-modal-backdrop">
+                <div {...fecharAoClicarFora(() => setModalProdutoAberto(false))} className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer animate-modal-backdrop">
                     <div className="bg-[#EDEFF0] dark:bg-darkBg w-full max-w-md rounded shadow-2xl overflow-hidden border border-gray-200 dark:border-darkBorder animate-modal-in" onClick={(e) => e.stopPropagation()}>
                         <div className="px-6 py-5 flex justify-between items-center bg-brand text-white rounded-t"><h3 className="font-semibold text-lg tracking-tight">{novoProduto.id ? 'Editar Produto' : 'Novo Produto'}</h3><button onClick={() => setModalProdutoAberto(false)} className="text-white/70 hover:text-white transition"><Icon name="x" /></button></div>
                         <form onSubmit={salvarProduto} className="p-6 flex flex-col gap-4">
@@ -394,7 +403,7 @@ export default function Modals() {
                 </div>
             )}
 {modalOrcamentoPreAberto && (
-                <div onClick={() => setModalOrcamentoPreAberto(false)} className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer animate-modal-backdrop">
+                <div {...fecharAoClicarFora(() => setModalOrcamentoPreAberto(false))} className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer animate-modal-backdrop">
                     <div className="bg-[#EDEFF0] dark:bg-darkBg w-full max-w-md rounded shadow-2xl overflow-hidden border border-gray-200 dark:border-darkBorder animate-modal-in" onClick={(e) => e.stopPropagation()}>
                         <div className="px-6 py-5 flex justify-between items-center bg-brand text-white rounded-t"><h3 className="font-semibold text-lg tracking-tight">{novoOrcamentoPre.id ? 'Editar Modelo' : 'Novo Modelo'}</h3><button onClick={() => setModalOrcamentoPreAberto(false)} className="text-white/70 hover:text-white transition"><Icon name="x" /></button></div>
                         <form onSubmit={salvarOrcamentoPre} className="p-6 flex flex-col gap-4">
@@ -422,7 +431,7 @@ export default function Modals() {
                 </div>
             )}
 {modalOrcamentoFormalizadoAberto && (
-                <div onClick={() => setModalOrcamentoFormalizadoAberto(false)} className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer animate-modal-backdrop">
+                <div {...fecharAoClicarFora(() => setModalOrcamentoFormalizadoAberto(false))} className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer animate-modal-backdrop">
                     <div onClick={(e) => e.stopPropagation()} className="bg-[#EDEFF0] dark:bg-darkBg w-full max-w-4xl rounded border border-gray-200 dark:border-darkBorder shadow-2xl flex flex-col max-h-[95vh] cursor-default overflow-hidden animate-modal-in">
                         <div className="px-6 py-5 flex justify-between items-center bg-brand text-white rounded-t">
                             <div className="flex items-center gap-3">
@@ -593,7 +602,7 @@ export default function Modals() {
                 </div>
             )}
 {modalFornecedorAberto && (
-                <div onClick={() => setModalFornecedorAberto(false)} className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer animate-modal-backdrop">
+                <div {...fecharAoClicarFora(() => setModalFornecedorAberto(false))} className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer animate-modal-backdrop">
                     <div onClick={e => e.stopPropagation()} className="bg-[#EDEFF0] dark:bg-darkBg rounded shadow-2xl w-full max-w-md overflow-hidden cursor-default border border-gray-100 dark:border-darkBorder animate-modal-in">
                         <div className="px-6 py-5 flex justify-between items-center bg-brand text-white rounded-t">
                             <h3 className="font-semibold text-lg tracking-tight">{novoFornecedor.id ? 'Editar Fornecedor' : 'Novo Fornecedor'}</h3>
@@ -640,7 +649,7 @@ export default function Modals() {
                 </div>
             )}
 {modalClienteAberto && (
-                <div onClick={() => setModalClienteAberto(false)} className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer animate-modal-backdrop">
+                <div {...fecharAoClicarFora(() => setModalClienteAberto(false))} className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer animate-modal-backdrop">
                     <div className="bg-[#EDEFF0] dark:bg-darkBg w-full max-w-md rounded shadow-2xl overflow-hidden border border-gray-200 dark:border-darkBorder animate-modal-in" onClick={(e) => e.stopPropagation()}>
                         <div className="px-6 py-5 flex justify-between items-center bg-brand text-white rounded-t"><h3 className="font-semibold text-lg tracking-tight">{novoCliente.id ? 'Editar Cliente' : 'Novo Cliente'}</h3><button onClick={() => setModalClienteAberto(false)} className="text-white/70 hover:text-white transition"><Icon name="x" /></button></div>
                         <form onSubmit={salvarCliente} className="p-6 flex flex-col gap-4">
@@ -676,7 +685,7 @@ export default function Modals() {
                 </div>
             )}
 {modalEmpresaFaturamentoAberto && (
-                <div onClick={() => setModalEmpresaFaturamentoAberto(false)} className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer animate-modal-backdrop">
+                <div {...fecharAoClicarFora(() => setModalEmpresaFaturamentoAberto(false))} className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer animate-modal-backdrop">
                     <div onClick={(e) => e.stopPropagation()} className="bg-[#EDEFF0] dark:bg-darkBg w-full max-w-md rounded shadow-2xl overflow-hidden border border-gray-200 dark:border-darkBorder animate-modal-in">
                         <div className="px-6 py-5 flex justify-between items-center bg-brand text-white rounded-t">
                             <h3 className="font-semibold text-lg tracking-tight">{novaEmpresaFaturamento.id ? 'Editar Empresa' : 'Adicionar Empresa'}</h3>
@@ -721,7 +730,7 @@ export default function Modals() {
                 </div>
             )}
 {modalContaAberto && (
-                <div onClick={() => setModalContaAberto(false)} className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer animate-modal-backdrop">
+                <div {...fecharAoClicarFora(() => setModalContaAberto(false))} className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer animate-modal-backdrop">
                     <div className="bg-[#EDEFF0] dark:bg-darkBg w-full max-w-md rounded shadow-2xl overflow-hidden border border-gray-200 dark:border-darkBorder animate-modal-in" onClick={(e) => e.stopPropagation()}>
                         <div className="px-6 py-5 flex justify-between items-center bg-brand text-white rounded-t">
                             <h3 className="font-semibold text-lg tracking-tight">{novaConta.id ? 'Editar Conta a Pagar' : 'Nova Conta a Pagar'}</h3>
@@ -804,7 +813,7 @@ export default function Modals() {
                 </div>
             )}
 {modalNotaFiscalAberto && notaFiscalEmEdicao && (
-                <div onClick={() => setModalNotaFiscalAberto(false)} className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer animate-modal-backdrop">
+                <div {...fecharAoClicarFora(() => setModalNotaFiscalAberto(false))} className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer animate-modal-backdrop">
                     <div className="bg-[#EDEFF0] dark:bg-darkBg w-full max-w-2xl rounded shadow-2xl overflow-hidden border border-gray-200 dark:border-darkBorder max-h-[90vh] flex flex-col animate-modal-in" onClick={(e) => e.stopPropagation()}>
                         <div className="px-6 py-5 flex justify-between items-center bg-brand text-white rounded-t shrink-0"><h3 className="font-semibold text-lg tracking-tight">Detalhes e Edição da Nota Fiscal</h3><button onClick={() => setModalNotaFiscalAberto(false)} className="text-white/70 hover:text-white transition"><Icon name="x" /></button></div>
                         <div className="p-6 overflow-y-auto custom-scrollbar">
@@ -881,7 +890,7 @@ export default function Modals() {
                 </div>
             )}
 {modalUsuarioAberto && (
-                <div onClick={() => setModalUsuarioAberto(false)} className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer animate-modal-backdrop">
+                <div {...fecharAoClicarFora(() => setModalUsuarioAberto(false))} className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer animate-modal-backdrop">
                     <div className="bg-[#EDEFF0] dark:bg-darkBg w-full max-w-md rounded shadow-2xl overflow-hidden border border-gray-200 dark:border-darkBorder animate-modal-in" onClick={(e) => e.stopPropagation()}>
                         <div className="px-6 py-5 flex justify-between items-center bg-brand text-white rounded-t"><h3 className="font-semibold text-lg tracking-tight">{novoUsuario.id ? 'Editar Conta' : 'Nova Conta de Acesso'}</h3><button onClick={() => setModalUsuarioAberto(false)} className="text-white/70 hover:text-white transition"><Icon name="x" /></button></div>
                         <form onSubmit={salvarUsuario} className="p-6 flex flex-col gap-4">
@@ -922,7 +931,7 @@ export default function Modals() {
 
             {/* Modal Requisicao */}
             {modalRequisicaoAberto && (
-                <div onClick={() => setModalRequisicaoAberto(false)} className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer animate-modal-backdrop">
+                <div {...fecharAoClicarFora(() => setModalRequisicaoAberto(false))} className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer animate-modal-backdrop">
                     <div className="bg-[#EDEFF0] dark:bg-darkBg w-full max-w-lg rounded shadow-2xl overflow-hidden border border-gray-200 dark:border-darkBorder animate-modal-in" onClick={(e) => e.stopPropagation()}>
                         <div className="px-6 py-5 border-b border-gray-100 dark:border-darkBorder flex justify-between items-center bg-brand text-white"><h3 className="font-semibold text-lg tracking-tight">{novaRequisicao.id ? 'Editar Requisição' : 'Nova Requisição'}</h3><button onClick={() => setModalRequisicaoAberto(false)} className="text-white/70 hover:text-white transition"><Icon name="x" className="w-5 h-5"/></button></div>
                         <div className="p-6 flex flex-col gap-4">
@@ -957,7 +966,7 @@ export default function Modals() {
 
             {/* Modal Tarefa */}
             {modalTarefaAberto && (
-                <div onClick={() => setModalTarefaAberto(false)} className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer animate-modal-backdrop">
+                <div {...fecharAoClicarFora(() => setModalTarefaAberto(false))} className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer animate-modal-backdrop">
                     <div className="bg-[#EDEFF0] dark:bg-darkBg w-full max-w-lg rounded shadow-2xl overflow-hidden border border-gray-200 dark:border-darkBorder animate-modal-in" onClick={(e) => e.stopPropagation()}>
                         <div className="px-6 py-5 border-b border-gray-100 dark:border-darkBorder flex justify-between items-center bg-brand text-white"><h3 className="font-semibold text-lg tracking-tight">{novaTarefa.id ? 'Editar Tarefa' : 'Nova Tarefa'}</h3><button onClick={() => setModalTarefaAberto(false)} className="text-white/70 hover:text-white transition"><Icon name="x" className="w-5 h-5"/></button></div>
                         <div className="p-6 flex flex-col gap-4">
@@ -1021,7 +1030,7 @@ export default function Modals() {
 
             {/* Modal Link de Pagamento */}
             {modalLinkAberto && (
-                <div onClick={() => setModalLinkAberto(false)} className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer animate-modal-backdrop">
+                <div {...fecharAoClicarFora(() => setModalLinkAberto(false))} className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer animate-modal-backdrop">
                     <div className="bg-[#EDEFF0] dark:bg-darkBg w-full max-w-md rounded shadow-2xl overflow-hidden border border-gray-200 dark:border-darkBorder animate-modal-in" onClick={(e) => e.stopPropagation()}>
                         <div className="px-6 py-5 border-b border-gray-100 dark:border-darkBorder flex justify-between items-center bg-brand text-white"><h3 className="font-semibold text-lg tracking-tight">{novoLink.id ? 'Editar Link' : 'Novo Link de Pagamento'}</h3><button onClick={() => setModalLinkAberto(false)} className="text-white/70 hover:text-white transition"><Icon name="x" className="w-5 h-5"/></button></div>
                         <div className="p-6 flex flex-col gap-4">
