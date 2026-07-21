@@ -210,9 +210,8 @@ export default function FinanceiroTab() {
                                 if (dataFiltroFinFim && (!c.vencimento || c.vencimento > dataFiltroFinFim)) match = false;
                                 return match;
                             });
-                            const totalDespesas = contasFiltradas.reduce((acc, c) => acc + (parseFloat(String(c.valor).replace(/\./g, '').replace(',', '.')) || 0), 0);
-
-                            const parseValorConta = (c) => parseFloat(String(c.valor).replace(/\./g, '').replace(',', '.')) || 0;
+                            const parseValorConta = (c) => Number(c.valor) || 0;
+                            const totalDespesas = contasFiltradas.reduce((acc, c) => acc + parseValorConta(c), 0);
 
                             const coresCategoriaDespesa = { 'Despesa': 'bg-gray-500', 'Manutenção': 'bg-purple-500', 'Terceirização': 'bg-indigo-500' };
                             const agrupadoCategoriaDespesa = contasFiltradas.reduce((acc, c) => {
