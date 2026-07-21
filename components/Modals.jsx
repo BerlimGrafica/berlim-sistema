@@ -40,7 +40,7 @@ export default function Modals() {
         <>
             {modalAberto && (
                 <div {...fecharAoClicarFora(fecharModalOS)} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer animate-modal-backdrop">
-                    <div onClick={(e) => e.stopPropagation()} className="bg-[#EDEFF0] dark:bg-darkBg w-full max-w-4xl rounded border border-gray-200 dark:border-darkBorder shadow-2xl flex flex-col max-h-[95vh] cursor-default overflow-hidden animate-modal-in">
+                    <div onClick={(e) => e.stopPropagation()} className="bg-[#EDEFF0] dark:bg-darkBg w-full max-w-6xl rounded border border-gray-200 dark:border-darkBorder shadow-2xl flex flex-col max-h-[95vh] cursor-default overflow-hidden animate-modal-in">
                         <div className="px-6 py-5 flex justify-between items-center bg-brand text-white rounded-t">
                             <div className="flex items-center gap-3">
                                 <h3 className="font-semibold text-xl tracking-tight">
@@ -135,6 +135,7 @@ export default function Modals() {
                                 </div>
                             </div>
 
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
                             {/* CARRINHO DE ITENS — destacado */}
                             <div className="rounded-xl border border-blue-200 dark:border-blue-500/30 bg-blue-50/40 dark:bg-blue-500/5">
                                 <div className="rounded-t-xl px-5 py-3.5 bg-blue-100/60 dark:bg-blue-500/10 border-b border-blue-200 dark:border-blue-500/20 flex items-center justify-between gap-2 flex-wrap">
@@ -409,6 +410,7 @@ export default function Modals() {
                                     </div>
                                 );
                             })()}
+                            </div>
 
                             <div>
                                 <div className="flex items-center gap-2 mb-2">
