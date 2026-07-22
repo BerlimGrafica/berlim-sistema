@@ -40,8 +40,7 @@ export default function DashboardTab() {
 
                             {/* KPIs */}
                             {(() => {
-                                const statusIgnorados = ['Concluída', 'Finalizada', 'Cancelada', 'Abandonada'];
-                                const minhasTarefas = pedidos.filter(p => p.responsavel && p.responsavel.toLowerCase().includes(usuario?.nome?.toLowerCase()) && !statusIgnorados.includes(p.status));
+                                const minhasTarefas = pedidos.filter(p => p.responsavel && p.responsavel.toLowerCase().includes(usuario?.nome?.toLowerCase()) && !STATUSES_FINALIZADOS.includes(p.status));
                                 const tarefasAtrasadas = minhasTarefas.filter(p => {
                                     if(!p.prazo) return false;
                                     const prazo = new Date(p.prazo + 'T23:59:59');
@@ -147,8 +146,7 @@ export default function DashboardTab() {
                                         </thead>
                                         <tbody>
                                             {(() => {
-                                                const statusIgnorados = ['Concluída', 'Finalizada', 'Cancelada', 'Abandonada'];
-                                                const minhasTarefas = pedidos.filter(p => p.responsavel && p.responsavel.toLowerCase().includes(usuario?.nome?.toLowerCase()) && !statusIgnorados.includes(p.status)).slice(0, 5);
+                                                const minhasTarefas = pedidos.filter(p => p.responsavel && p.responsavel.toLowerCase().includes(usuario?.nome?.toLowerCase()) && !STATUSES_FINALIZADOS.includes(p.status)).slice(0, 5);
 
                                                 if (minhasTarefas.length === 0) {
                                                     return (
