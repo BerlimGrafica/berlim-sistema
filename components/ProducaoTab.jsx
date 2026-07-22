@@ -42,9 +42,9 @@ export default function ProducaoTab() {
                             </div>
                         </div>
 
-                        <div className="flex-1 bg-white dark:bg-darkCard rounded border border-gray-200 dark:border-darkBorder">
+                        <div className="flex-1 bg-white dark:bg-darkCard rounded border border-gray-200 dark:border-darkBorder overflow-x-auto custom-scrollbar">
                             <table className="w-full text-left border-collapse whitespace-nowrap">
-                                <thead className="sticky top-[112px] z-10 rounded-t bg-gray-50/50 dark:bg-darkHover/50 border-t-2 border-brand">
+                                <thead className="rounded-t bg-gray-50/50 dark:bg-darkHover/50 border-t-2 border-brand">
                                         <tr className="border-b border-gray-200 dark:border-darkBorder text-[13px] font-semibold text-gray-500 dark:text-gray-400 tracking-wide uppercase text-center">
                                             <th className="px-6 py-4 w-24">ID</th>
                                             <th className="px-6 py-4 w-32">Prazo</th>
