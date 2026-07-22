@@ -22,7 +22,7 @@ export default function ProducaoTab() {
     return (
         <>
             { (
-                    <main className="flex-1 p-6 lg:p-10 mx-auto w-full flex flex-col h-[calc(100vh-60px)]">
+                    <main className="flex-1 p-6 lg:p-10 mx-auto w-full flex flex-col min-h-[calc(100vh-60px)]">
                         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 mb-6 border-b border-gray-100 dark:border-darkBorder pb-6 shrink-0">
                             <div>
                                 <h1 className="text-2xl lg:text-3xl font-black text-gray-900 dark:text-white tracking-tight">Produção</h1>
@@ -42,10 +42,9 @@ export default function ProducaoTab() {
                             </div>
                         </div>
 
-                        <div className="flex-1 bg-white dark:bg-darkCard rounded border border-gray-200 dark:border-darkBorder overflow-hidden flex flex-col">
-                            <div className="overflow-auto custom-scrollbar flex-1">
-                                <table className="w-full text-left border-collapse whitespace-nowrap">
-                                    <thead className="sticky top-0 z-10 bg-gray-50/50 dark:bg-darkHover/50 border-t-2 border-brand">
+                        <div className="flex-1 bg-white dark:bg-darkCard rounded border border-gray-200 dark:border-darkBorder">
+                            <table className="w-full text-left border-collapse whitespace-nowrap">
+                                <thead className="sticky top-[112px] z-10 rounded-t bg-gray-50/50 dark:bg-darkHover/50 border-t-2 border-brand">
                                         <tr className="border-b border-gray-200 dark:border-darkBorder text-[13px] font-semibold text-gray-500 dark:text-gray-400 tracking-wide uppercase text-center">
                                             <th className="px-6 py-4 w-24">ID</th>
                                             <th className="px-6 py-4 w-32">Prazo</th>
@@ -128,8 +127,7 @@ export default function ProducaoTab() {
                                             })
                                         )}
                                     </tbody>
-                                </table>
-                            </div>
+                            </table>
                         </div>
                     </main>
                 )}
