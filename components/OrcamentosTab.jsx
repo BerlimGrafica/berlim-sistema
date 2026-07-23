@@ -165,15 +165,11 @@ export default function OrcamentosTab() {
                                 {orcsFiltrados.map(orc => (
                                     <div key={orc.id} onClick={() => { setNovoOrcamentoPre(orc); setModalOrcamentoPreAberto(true); }} className="bg-white dark:bg-darkCard rounded-xl shadow-sm border border-gray-200 dark:border-darkBorder flex flex-col group relative cursor-pointer hover:border-brand/50 transition-colors">
                                         <div className="flex justify-between items-start gap-3 px-5 py-3.5 bg-gray-50/70 dark:bg-darkElevated/60 rounded-t-xl border-b border-dashed border-gray-300 dark:border-darkBorder">
-                                            <div className="flex flex-col gap-1.5 flex-1 min-w-0">
-                                                <div className="flex items-center gap-2">
-                                                    <h3 className="font-bold text-gray-900 dark:text-white leading-tight truncate">{orc.titulo}</h3>
-                                                    {orc.empresa === 'Futura' ? (
-                                                        <span className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider shrink-0">Futura</span>
-                                                    ) : (
-                                                        <span className="bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider shrink-0">Berlim</span>
-                                                    )}
-                                                </div>
+                                            <div className="flex flex-col flex-1 min-w-0">
+                                                <h3 className="font-bold text-gray-900 dark:text-white leading-tight truncate">{orc.titulo}</h3>
+                                                <p className={`text-[11px] font-semibold uppercase tracking-wide mt-1 ${orc.empresa === 'Futura' ? 'text-blue-600 dark:text-blue-400' : 'text-orange-600 dark:text-orange-400'}`}>
+                                                    {orc.empresa === 'Futura' ? 'Futura' : 'Berlim'}
+                                                </p>
                                             </div>
                                             {isAdmin && (
                                                 <div className="flex gap-1 shrink-0">

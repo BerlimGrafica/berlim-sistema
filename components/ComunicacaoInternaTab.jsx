@@ -63,13 +63,13 @@ export default function ComunicacaoInternaTab() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {requisicoesVisiveis.length > 0 ? requisicoesVisiveis.map(r => (
-                            <div key={r.id} onClick={() => { setNovaRequisicao(r); setModalRequisicaoAberto(true); }} className={`bg-white dark:bg-darkCard rounded-xl shadow-sm border p-5 flex flex-col gap-3 cursor-pointer hover:border-brand/50 transition-colors ${r.status === 'Comprado' ? 'opacity-60 border-gray-200 dark:border-darkBorder' : 'border-gray-200 dark:border-darkBorder'}`}>
-                                <div className="flex justify-between items-start">
+                            <div key={r.id} onClick={() => { setNovaRequisicao(r); setModalRequisicaoAberto(true); }} className={`bg-white dark:bg-darkCard rounded-xl shadow-sm border flex flex-col cursor-pointer hover:border-brand/50 transition-colors ${r.status === 'Comprado' ? 'opacity-60 border-gray-200 dark:border-darkBorder' : 'border-gray-200 dark:border-darkBorder'}`}>
+                                <div className="flex justify-between items-start px-5 py-3.5 bg-gray-50/70 dark:bg-darkElevated/60 rounded-t-xl border-b border-dashed border-gray-300 dark:border-darkBorder">
                                     <div>
                                         <h3 className={`font-bold ${r.status === 'Comprado' ? 'line-through text-gray-500' : 'text-gray-900 dark:text-white'}`}>Requisição #{r.id}</h3>
                                         <p className="text-[11px] font-semibold text-brand mt-1">{new Date(r.created_at).toLocaleDateString('pt-BR')}</p>
                                     </div>
-                                    <div className="flex gap-1">
+                                    <div className="flex gap-1 shrink-0">
                                         {r.status !== 'Comprado' && (
                                             <Tooltip label="Concluir">
                                                 <button onClick={(e) => { e.stopPropagation(); concluirRequisicao(r.id); }} aria-label="Concluir" className="p-1 text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded"><Icon name="check-circle" className="w-4 h-4" /></button>
@@ -80,15 +80,17 @@ export default function ComunicacaoInternaTab() {
                                         </Tooltip>
                                     </div>
                                 </div>
-                                <p className="text-[13px] text-gray-600 dark:text-[#A1A1AA] mt-1 line-clamp-3" title={r.itens}>{r.itens}</p>
-                                <div className="mt-auto pt-3 border-t border-gray-100 dark:border-darkBorder flex justify-between items-center">
-                                    <div className="flex items-center gap-1.5 text-[11px] font-semibold text-gray-500">
-                                        <Icon name="user" className="w-3.5 h-3.5" /> {r.criado_por}
+                                <div className="flex flex-col gap-3 p-5 flex-1">
+                                    <p className="text-[13px] text-gray-600 dark:text-[#A1A1AA] line-clamp-3" title={r.itens}>{r.itens}</p>
+                                    <div className="mt-auto pt-3 border-t border-gray-100 dark:border-darkBorder flex justify-between items-center">
+                                        <div className="flex items-center gap-1.5 text-[11px] font-semibold text-gray-500">
+                                            <Icon name="user" className="w-3.5 h-3.5" /> {r.criado_por}
+                                        </div>
+                                        <span className={`px-2 py-1 text-[10px] font-bold uppercase rounded ${
+                                            r.status === 'Pendente' ? 'bg-yellow-100 text-yellow-800' :
+                                            r.status === 'Comprado' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'
+                                        }`}>{r.status}</span>
                                     </div>
-                                    <span className={`px-2 py-1 text-[10px] font-bold uppercase rounded ${
-                                        r.status === 'Pendente' ? 'bg-yellow-100 text-yellow-800' :
-                                        r.status === 'Comprado' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'
-                                    }`}>{r.status}</span>
                                 </div>
                             </div>
                         )) : (
@@ -122,15 +124,15 @@ export default function ComunicacaoInternaTab() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {tarefasVisiveis.length > 0 ? tarefasVisiveis.map(t => (
-                            <div key={t.id} onClick={() => { setNovaTarefa(t); setModalTarefaAberto(true); }} className={`bg-white dark:bg-darkCard rounded-xl shadow-sm p-5 flex flex-col gap-3 cursor-pointer hover:border-brand/50 transition-colors ${t.fixa ? 'border-2 border-blue-500 dark:border-blue-400' : `border ${t.status === 'Concluída' ? 'opacity-60 border-gray-200 dark:border-darkBorder' : 'border-gray-200 dark:border-darkBorder'}`}`}>
-                                <div className="flex justify-between items-start">
+                            <div key={t.id} onClick={() => { setNovaTarefa(t); setModalTarefaAberto(true); }} className={`bg-white dark:bg-darkCard rounded-xl shadow-sm flex flex-col cursor-pointer hover:border-brand/50 transition-colors ${t.fixa ? 'border-2 border-blue-500 dark:border-blue-400' : `border ${t.status === 'Concluída' ? 'opacity-60 border-gray-200 dark:border-darkBorder' : 'border-gray-200 dark:border-darkBorder'}`}`}>
+                                <div className="flex justify-between items-start px-5 py-3.5 bg-gray-50/70 dark:bg-darkElevated/60 rounded-t-xl border-b border-dashed border-gray-300 dark:border-darkBorder">
                                     <div>
                                         <h3 className={`font-bold ${t.status === 'Concluída' && !t.fixa ? 'line-through text-gray-500' : 'text-gray-900 dark:text-white'}`}>{t.titulo}</h3>
                                         {t.prazo && (
                                             <p className="text-[11px] font-semibold text-brand mt-1">{formatarDataExibicao(t.prazo)}</p>
                                         )}
                                     </div>
-                                    <div className="flex gap-1">
+                                    <div className="flex gap-1 shrink-0">
                                         {t.status !== 'Concluída' ? (
                                             <Tooltip label="Concluir">
                                                 <button onClick={(e) => { e.stopPropagation(); concluirTarefa(t.id); }} aria-label="Concluir" className="p-1 text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded"><Icon name="check-circle" className="w-4 h-4" /></button>
@@ -145,13 +147,15 @@ export default function ComunicacaoInternaTab() {
                                         </Tooltip>
                                     </div>
                                 </div>
-                                <p className="text-[13px] text-gray-600 dark:text-[#A1A1AA]">{t.descricao}</p>
+                                <div className="flex flex-col gap-3 p-5 flex-1">
+                                    <p className="text-[13px] text-gray-600 dark:text-[#A1A1AA]">{t.descricao}</p>
 
-                                <div className="mt-auto pt-3 border-t border-gray-100 dark:border-darkBorder flex justify-between items-center">
-                                    <div className="flex items-center gap-1.5 text-[11px] font-semibold text-gray-500">
-                                        <Icon name="user" className="w-3.5 h-3.5" /> {t.responsavel || 'Sem responsável'}
+                                    <div className="mt-auto pt-3 border-t border-gray-100 dark:border-darkBorder flex justify-between items-center">
+                                        <div className="flex items-center gap-1.5 text-[11px] font-semibold text-gray-500">
+                                            <Icon name="user" className="w-3.5 h-3.5" /> {t.responsavel || 'Sem responsável'}
+                                        </div>
+                                        <span className={`px-2 py-1 text-[10px] font-bold uppercase rounded ${t.fixa ? (t.status === 'Concluída' ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-100 text-blue-700') : t.status === 'Concluída' ? 'bg-gray-100 text-gray-500' : t.status === 'Em Andamento' ? 'bg-blue-100 text-blue-700' : 'bg-yellow-100 text-yellow-700'}`}>{t.fixa ? (t.status === 'Concluída' ? 'Concluída Hoje' : 'Fixa') : t.status}</span>
                                     </div>
-                                    <span className={`px-2 py-1 text-[10px] font-bold uppercase rounded ${t.fixa ? (t.status === 'Concluída' ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-100 text-blue-700') : t.status === 'Concluída' ? 'bg-gray-100 text-gray-500' : t.status === 'Em Andamento' ? 'bg-blue-100 text-blue-700' : 'bg-yellow-100 text-yellow-700'}`}>{t.fixa ? (t.status === 'Concluída' ? 'Concluída Hoje' : 'Fixa') : t.status}</span>
                                 </div>
                             </div>
                         )) : (
