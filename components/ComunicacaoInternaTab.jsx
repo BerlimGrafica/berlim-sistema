@@ -185,13 +185,13 @@ export default function ComunicacaoInternaTab() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {linksVisiveis.length > 0 ? linksVisiveis.map(l => (
-                            <div key={l.id} onClick={() => { setNovoLink(l); setModalLinkAberto(true); }} className={`bg-white dark:bg-darkCard rounded-xl shadow-sm border p-5 flex flex-col gap-3 cursor-pointer hover:border-brand/50 transition-colors ${(l.status === 'Pago' || l.status === 'Concluído' || l.status === 'Inativo') ? 'opacity-60 border-gray-200 dark:border-darkBorder' : 'border-gray-200 dark:border-darkBorder'}`}>
-                                <div className="flex justify-between items-start">
+                            <div key={l.id} onClick={() => { setNovoLink(l); setModalLinkAberto(true); }} className={`bg-white dark:bg-darkCard rounded-xl shadow-sm border flex flex-col cursor-pointer hover:border-brand/50 transition-colors ${(l.status === 'Pago' || l.status === 'Concluído' || l.status === 'Inativo') ? 'opacity-60 border-gray-200 dark:border-darkBorder' : 'border-gray-200 dark:border-darkBorder'}`}>
+                                <div className="flex justify-between items-start px-5 py-3.5 bg-gray-50/70 dark:bg-darkElevated/60 rounded-t-xl border-b border-dashed border-gray-300 dark:border-darkBorder">
                                     <div>
                                         <h3 className={`font-bold ${(l.status === 'Pago' || l.status === 'Concluído' || l.status === 'Inativo') ? 'line-through text-gray-500' : 'text-gray-900 dark:text-white'}`}>{l.titulo}</h3>
                                         <p className="text-[11px] font-semibold text-brand mt-1">{l.cliente}</p>
                                     </div>
-                                    <div className="flex gap-1">
+                                    <div className="flex gap-1 shrink-0">
                                         {l.status !== 'Pago' && l.status !== 'Concluído' && (
                                             <Tooltip label="Concluir">
                                                 <button onClick={(e) => { e.stopPropagation(); concluirLink(l.id); }} aria-label="Concluir" className="p-1 text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded"><Icon name="check-circle" className="w-4 h-4" /></button>
@@ -202,30 +202,32 @@ export default function ComunicacaoInternaTab() {
                                         </Tooltip>
                                     </div>
                                 </div>
-                                {l.valor && (
-                                    <div className="text-[18px] font-black text-gray-800 dark:text-gray-200 mt-2">
-                                        R$ {Number(l.valor).toLocaleString('pt-BR', {minimumFractionDigits: 2})}
+                                <div className="flex flex-col gap-3 p-5 flex-1">
+                                    {l.valor && (
+                                        <div className="text-[18px] font-black text-gray-800 dark:text-gray-200">
+                                            R$ {Number(l.valor).toLocaleString('pt-BR', {minimumFractionDigits: 2})}
+                                        </div>
+                                    )}
+                                    <div className="bg-gray-50 dark:bg-darkElevated p-2 rounded flex items-center justify-between border border-gray-100 dark:border-darkBorder">
+                                        <span className="text-[11px] text-gray-500 truncate mr-2">{l.link}</span>
+                                        <Tooltip label="Copiar Link">
+                                            <button onClick={(e) => {
+                                                e.stopPropagation();
+                                                navigator.clipboard.writeText(l.link);
+                                            }} aria-label="Copiar Link" className="text-brand hover:text-brandHover p-1 rounded">
+                                                <Icon name="copy" className="w-4 h-4" />
+                                            </button>
+                                        </Tooltip>
                                     </div>
-                                )}
-                                <div className="mt-2 bg-gray-50 dark:bg-darkElevated p-2 rounded flex items-center justify-between border border-gray-100 dark:border-darkBorder">
-                                    <span className="text-[11px] text-gray-500 truncate mr-2">{l.link}</span>
-                                    <Tooltip label="Copiar Link">
-                                        <button onClick={(e) => {
-                                            e.stopPropagation();
-                                            navigator.clipboard.writeText(l.link);
-                                        }} aria-label="Copiar Link" className="text-brand hover:text-brandHover p-1 rounded">
-                                            <Icon name="copy" className="w-4 h-4" />
-                                        </button>
-                                    </Tooltip>
-                                </div>
-                                <div className="mt-auto pt-3 border-t border-gray-100 dark:border-darkBorder flex justify-between items-center">
-                                    <div className="flex items-center gap-1.5 text-[11px] font-semibold text-gray-500">
-                                        <Icon name="calendar" className="w-3.5 h-3.5" /> {new Date(l.created_at).toLocaleDateString('pt-BR')}
+                                    <div className="mt-auto pt-3 border-t border-gray-100 dark:border-darkBorder flex justify-between items-center">
+                                        <div className="flex items-center gap-1.5 text-[11px] font-semibold text-gray-500">
+                                            <Icon name="calendar" className="w-3.5 h-3.5" /> {new Date(l.created_at).toLocaleDateString('pt-BR')}
+                                        </div>
+                                        <span className={`px-2 py-1 text-[10px] font-bold uppercase rounded ${
+                                            l.status === 'Ativo' ? 'bg-yellow-100 text-yellow-800' :
+                                            (l.status === 'Pago' || l.status === 'Concluído') ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-500'
+                                        }`}>{l.status}</span>
                                     </div>
-                                    <span className={`px-2 py-1 text-[10px] font-bold uppercase rounded ${
-                                        l.status === 'Ativo' ? 'bg-yellow-100 text-yellow-800' :
-                                        (l.status === 'Pago' || l.status === 'Concluído') ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-500'
-                                    }`}>{l.status}</span>
                                 </div>
                             </div>
                         )) : (

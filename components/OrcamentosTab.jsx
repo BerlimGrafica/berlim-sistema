@@ -163,15 +163,15 @@ export default function OrcamentosTab() {
                         ) : (
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {orcsFiltrados.map(orc => (
-                                    <div key={orc.id} onClick={() => { setNovoOrcamentoPre(orc); setModalOrcamentoPreAberto(true); }} className="bg-white dark:bg-darkCard rounded-xl shadow-sm border border-gray-200 dark:border-darkBorder p-5 flex flex-col gap-3 group relative cursor-pointer hover:border-brand/50 transition-colors">
-                                        <div className="flex justify-between items-start gap-3">
-                                            <div className="flex flex-col gap-1.5 flex-1">
+                                    <div key={orc.id} onClick={() => { setNovoOrcamentoPre(orc); setModalOrcamentoPreAberto(true); }} className="bg-white dark:bg-darkCard rounded-xl shadow-sm border border-gray-200 dark:border-darkBorder flex flex-col group relative cursor-pointer hover:border-brand/50 transition-colors">
+                                        <div className="flex justify-between items-start gap-3 px-5 py-3.5 bg-gray-50/70 dark:bg-darkElevated/60 rounded-t-xl border-b border-dashed border-gray-300 dark:border-darkBorder">
+                                            <div className="flex flex-col gap-1.5 flex-1 min-w-0">
                                                 <div className="flex items-center gap-2">
-                                                    <h3 className="font-bold text-gray-900 dark:text-white leading-tight">{orc.titulo}</h3>
+                                                    <h3 className="font-bold text-gray-900 dark:text-white leading-tight truncate">{orc.titulo}</h3>
                                                     {orc.empresa === 'Futura' ? (
-                                                        <span className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">Futura</span>
+                                                        <span className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider shrink-0">Futura</span>
                                                     ) : (
-                                                        <span className="bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">Berlim</span>
+                                                        <span className="bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider shrink-0">Berlim</span>
                                                     )}
                                                 </div>
                                             </div>
@@ -181,15 +181,17 @@ export default function OrcamentosTab() {
                                                 </div>
                                             )}
                                         </div>
-                                        <pre className="text-[13px] text-gray-600 dark:text-[#A1A1AA] whitespace-pre-wrap font-sans bg-gray-50 dark:bg-darkElevated p-3 rounded-lg flex-1">
-                                            {orc.texto}
-                                        </pre>
-                                        <button onClick={(e) => {
-                                            e.stopPropagation();
-                                            navigator.clipboard.writeText(orc.texto);
-                                        }} className="mt-2 text-[11px] font-semibold text-brand hover:underline flex items-center gap-1 self-start">
-                                            <Icon name="copy" className="w-3 h-3" /> Copiar Texto
-                                        </button>
+                                        <div className="flex flex-col gap-3 p-5 flex-1">
+                                            <pre className="text-[13px] text-gray-600 dark:text-[#A1A1AA] whitespace-pre-wrap font-sans bg-gray-50 dark:bg-darkElevated p-3 rounded-lg flex-1">
+                                                {orc.texto}
+                                            </pre>
+                                            <button onClick={(e) => {
+                                                e.stopPropagation();
+                                                navigator.clipboard.writeText(orc.texto);
+                                            }} className="text-[11px] font-semibold text-brand hover:underline flex items-center gap-1 self-start">
+                                                <Icon name="copy" className="w-3 h-3" /> Copiar Texto
+                                            </button>
+                                        </div>
                                     </div>
                                 ))}
                             </div>
