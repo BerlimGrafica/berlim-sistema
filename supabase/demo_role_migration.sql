@@ -71,6 +71,30 @@ create policy "links_write" on public.links_pagamento for insert to authenticate
 create policy "links_update" on public.links_pagamento for update to authenticated using (nivel_atual() <> 'demo') with check (nivel_atual() <> 'demo');
 create policy "links_delete" on public.links_pagamento for delete to authenticated using (nivel_atual() <> 'demo');
 
+-- ----------------------------------------------------------------------------
+-- 14) CORREÇÃO CRÍTICA — as policies originais de "clientes" e "pedidos"
+--     (rls_and_auth_migration.sql, seções 5 e 7) usam "using (true)" pra
+--     select/insert/update, ou seja, valem pra QUALQUER autenticado — inclusive
+--     'demo', mesmo sem eu ter criado nenhuma policy nova pra ele nessas duas
+--     tabelas. RLS é permissiva: policies somam (OR), nunca subtraem. Testado
+--     em produção e confirmado: sem isto, o demo lê "clientes" inteira e
+--     consegue dar update em "pedidos". As duas policies abaixo substituem as
+--     originais adicionando a exclusão do nível 'demo' — mantêm exatamente o
+--     mesmo comportamento pra todo o resto (Atendimento/Produção/Financeiro/
+--     Administrador continuam com "true").
+-- ----------------------------------------------------------------------------
+drop policy if exists "clientes_select" on public.clientes;
+create policy "clientes_select" on public.clientes for select to authenticated
+  using (nivel_atual() <> 'demo');
+
+drop policy if exists "pedidos_insert" on public.pedidos;
+create policy "pedidos_insert" on public.pedidos for insert to authenticated
+  with check (nivel_atual() <> 'demo');
+
+drop policy if exists "pedidos_update" on public.pedidos;
+create policy "pedidos_update" on public.pedidos for update to authenticated
+  using (nivel_atual() <> 'demo') with check (nivel_atual() <> 'demo');
+
 -- ============================================================================
 -- FIM. Depois de rodar isto, crie o usuário demo pela tela "Novo Usuário"
 -- (nível "Demonstração"), configure NEXT_PUBLIC_DEMO_EMAIL/SENHA no Vercel
