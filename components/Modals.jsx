@@ -345,7 +345,10 @@ export default function Modals() {
                                                                 </div>
                                                             </div>
                                                             <div className="flex items-center gap-3 shrink-0">
-                                                                <span className="font-bold text-[13px] text-emerald-600 dark:text-emerald-400">R$ {pag.valor}</span>
+                                                                <div className="flex flex-col items-end">
+                                                                    <span className="font-bold text-[13px] text-emerald-600 dark:text-emerald-400">R$ {pag.valor}</span>
+                                                                    {pag.instituicao && <span className="text-[10px] bg-brand/10 text-brand font-semibold px-1.5 py-0.5 rounded mt-1.5 w-max">{pag.instituicao}</span>}
+                                                                </div>
                                                                 {!isModalTrancado && (
                                                                     <button type="button" onClick={(e) => {
                                                                         e.stopPropagation();
