@@ -148,7 +148,7 @@ export default function PrintLayout() {
 
 function PrintOrcamento({ orc }) {
     const itens = extrairItens(orc);
-    const telefone = orc.clienteInfo?.telefone || '';
+    const telefone = orc.clienteInfo?.telefone || orc.telefone || '';
     const date = new Date(orc.created_at).toLocaleDateString('pt-BR');
     
     // Extract observations: strip [ITENS_JSON] block before parsing
