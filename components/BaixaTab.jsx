@@ -3,11 +3,11 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useAppContext } from '@/context/AppContext';
 import Icon from '@/components/Icon';
 import Tooltip from '@/components/Tooltip';
-import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS, obterCorStatus, formatarValorFinanceiro, formatarMoeda, formatarTelefone, obterDataAtual, formatarDataExibicao, formatarMesAno, CustomDatePicker, CustomDateRangePicker, InlineDropdown, MultiSelectDropdown, desconstruirTextoServico, obterResumoServicos, ItensChecklist, StackedCards, CalculadoraBanner, CalculadoraAdesivo, CalculadoraCasamento, CalculadorasAba } from '@/lib/utils';
+import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS, obterCorStatus, formatarValorFinanceiro, formatarMoeda, formatarTelefone, obterDataAtual, formatarDataExibicao, formatarMesAno, mascararCliente, CustomDatePicker, CustomDateRangePicker, InlineDropdown, MultiSelectDropdown, desconstruirTextoServico, obterResumoServicos, ItensChecklist, StackedCards, CalculadoraBanner, CalculadoraAdesivo, CalculadoraCasamento, CalculadorasAba } from '@/lib/utils';
 
 
 export default function BaixaTab() {
-    const { setAbaOS, abaOS, buscaHistoricoText, setBuscaHistoricoText, dataFiltroInicio, setDataFiltroInicio, dataFiltroFim, setDataFiltroFim, isAdmin, pedidosHistorico, isOperador, isClienteProblema, totalPedidosHistorico, itensPorPagina, paginaHistorico, setPaginaHistorico, abrirEdicao, imprimirOS } = useAppContext();
+    const { setAbaOS, abaOS, buscaHistoricoText, setBuscaHistoricoText, dataFiltroInicio, setDataFiltroInicio, dataFiltroFim, setDataFiltroFim, isAdmin, pedidosHistorico, isOperador, isDemo, isClienteProblema, totalPedidosHistorico, itensPorPagina, paginaHistorico, setPaginaHistorico, abrirEdicao, imprimirOS } = useAppContext();
 
     return (
         <>
@@ -71,7 +71,7 @@ export default function BaixaTab() {
                                                 )}
                                                 <td className="px-6 py-4 text-[13px] text-gray-600 dark:text-[#A1A1AA]">{formatarDataExibicao(p.prazo || p.data_pedido)}</td>
                                                 <td className={`px-6 py-4 font-semibold text-[13px] ${isClienteProblema(p.cliente) ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-[#EDEDED]'}`}>
-                                                    <div className="flex items-center gap-1.5">{p.cliente} {isClienteProblema(p.cliente) && <Icon name="alert-triangle" className="w-4 h-4 text-red-500 shrink-0" title="Cliente Problema" />}</div>
+                                                    <div className="flex items-center gap-1.5">{mascararCliente(p.cliente, isDemo)} {isClienteProblema(p.cliente) && <Icon name="alert-triangle" className="w-4 h-4 text-red-500 shrink-0" title="Cliente Problema" />}</div>
                                                 </td>
                                                 <td className="px-6 py-4 text-[13px] text-gray-600 dark:text-[#A1A1AA] truncate max-w-xs">{obterResumoServicos(p.servico)}</td>
                                                 <td className="px-6 py-4"><span className={`whitespace-nowrap px-2.5 py-1 text-[11px] font-semibold rounded border bg-gray-50 border-gray-200 dark:bg-darkElevated dark:border-darkBorder ${obterCorStatus(p.status)}`}>{p.status}</span></td>

@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useAppContext } from '@/context/AppContext';
 import Icon from '@/components/Icon';
 import Tooltip from '@/components/Tooltip';
-import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS, obterCorStatus, formatarValorFinanceiro, formatarMoeda, formatarTelefone, obterDataAtual, formatarDataExibicao, formatarMesAno, CustomDatePicker, CustomDateRangePicker, InlineDropdown, MultiSelectDropdown, desconstruirTextoServico, obterResumoServicos, ItensChecklist, StackedCards, CalculadoraBanner, CalculadoraAdesivo, CalculadoraCasamento, CalculadorasAba } from '@/lib/utils';
+import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS, obterCorStatus, formatarValorFinanceiro, formatarMoeda, formatarTelefone, obterDataAtual, formatarDataExibicao, formatarMesAno, mascararCliente, CustomDatePicker, CustomDateRangePicker, InlineDropdown, MultiSelectDropdown, desconstruirTextoServico, obterResumoServicos, ItensChecklist, StackedCards, CalculadoraBanner, CalculadoraAdesivo, CalculadoraCasamento, CalculadorasAba } from '@/lib/utils';
 
 
 function BarRow({ label, valor, maxVal, color, rank, pctTotal }) {
@@ -30,7 +30,7 @@ function BarRow({ label, valor, maxVal, color, rank, pctTotal }) {
 }
 
 export default function FinanceiroTab() {
-    const { setAbaFinanceiro, abaFinanceiro, notasFiscais, usuario, filtroNotas, dataFiltroFinInicio, setDataFiltroFinInicio, dataFiltroFinFim, setDataFiltroFinFim, pedidos, setNovaConta, setModalContaAberto, setModalEmpresaFaturamentoAberto, buscaNotaFiscal, setBuscaNotaFiscal, setPaginaNotasFiscais, setFiltroNotas, renderBarHorizontal, produtos, produtosSelecionadosGrafico, setProdutosSelecionadosGrafico, contasPagar, empresasFaturamento, setNovaEmpresaFaturamento, notasFiscaisPaginadas, setNotaFiscalEmEdicao, setModalNotaFiscalAberto, totalPaginasNotasFiscais, paginaNotasFiscais, excluirConta, concluirConta, abrirEdicao, excluirEmpresaFaturamento, concluirNotaFiscal, reabrirNotaFiscal, atualizarCampoInline, concluirBoletoContasReceber } = useAppContext();
+    const { setAbaFinanceiro, abaFinanceiro, notasFiscais, usuario, isDemo, filtroNotas, dataFiltroFinInicio, setDataFiltroFinInicio, dataFiltroFinFim, setDataFiltroFinFim, pedidos, setNovaConta, setModalContaAberto, setModalEmpresaFaturamentoAberto, buscaNotaFiscal, setBuscaNotaFiscal, setPaginaNotasFiscais, setFiltroNotas, renderBarHorizontal, produtos, produtosSelecionadosGrafico, setProdutosSelecionadosGrafico, contasPagar, empresasFaturamento, setNovaEmpresaFaturamento, notasFiscaisPaginadas, setNotaFiscalEmEdicao, setModalNotaFiscalAberto, totalPaginasNotasFiscais, paginaNotasFiscais, excluirConta, concluirConta, abrirEdicao, excluirEmpresaFaturamento, concluirNotaFiscal, reabrirNotaFiscal, atualizarCampoInline, concluirBoletoContasReceber } = useAppContext();
     const [mostrarContasPagas, setMostrarContasPagas] = useState(false);
     const [slidePainelAtivo, setSlidePainelAtivo] = useState(0);
     const painelScrollRef = useRef(null);
@@ -96,7 +96,7 @@ export default function FinanceiroTab() {
                                                     return match;
                                                 });
                                                 const cabecalho = "ID;Data;Cliente;Responsavel;Local;Status;Valor\n";
-                                                const linhas = pedidosExport.map(p => `${p.id};${p.data_pedido};${p.cliente};${p.responsavel};${p.local_producao};${p.status};${p.valor_total}`).join("\n");
+                                                const linhas = pedidosExport.map(p => `${p.id};${p.data_pedido};${mascararCliente(p.cliente, isDemo)};${p.responsavel};${p.local_producao};${p.status};${p.valor_total}`).join("\n");
                                                 const blob = new Blob([cabecalho + linhas], { type: 'text/csv;charset=utf-8;' });
                                                 const url = URL.createObjectURL(blob);
                                                 const link = document.createElement("a");
@@ -984,7 +984,7 @@ export default function FinanceiroTab() {
                                                                             <td className="px-6 py-4">
                                                                                 <div className="flex items-center gap-2">
                                                                                     <span className="text-[12px] font-bold text-gray-400 dark:text-gray-500 w-8">#{p.id}</span>
-                                                                                    <span className="text-[13px] font-semibold text-gray-800 dark:text-[#EDEDED] truncate max-w-[200px]" title={p.cliente}>{p.cliente}</span>
+                                                                                    <span className="text-[13px] font-semibold text-gray-800 dark:text-[#EDEDED] truncate max-w-[200px]" title={mascararCliente(p.cliente, isDemo)}>{mascararCliente(p.cliente, isDemo)}</span>
                                                                                 </div>
                                                                             </td>
                                                                             <td className="px-6 py-4">
@@ -1106,8 +1106,8 @@ export default function FinanceiroTab() {
                                             }} className="border-b border-gray-100 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover transition cursor-pointer">
                                                 <td className="px-4 py-3 text-[13px] dark:text-[#EDEDED] whitespace-nowrap">{new Date(n.created_at).toLocaleDateString('pt-BR')}</td>
                                                 <td className="px-4 py-3">
-                                                    <div className="text-[13px] font-semibold dark:text-[#EDEDED]">{n.cliente || 'Sem Identificação'}</div>
-                                                    <div className="text-[11px] text-gray-500 dark:text-[#A1A1AA]">{n.razao_social}</div>
+                                                    <div className="text-[13px] font-semibold dark:text-[#EDEDED]">{mascararCliente(n.cliente, isDemo) || 'Sem Identificação'}</div>
+                                                    <div className="text-[11px] text-gray-500 dark:text-[#A1A1AA]">{isDemo ? '' : n.razao_social}</div>
                                                 </td>
                                                 <td className="px-4 py-3 text-[13px] dark:text-[#EDEDED] whitespace-nowrap">{n.cnpj}</td>
                                                 <td className="px-4 py-3 text-[13px] dark:text-[#EDEDED] whitespace-nowrap">

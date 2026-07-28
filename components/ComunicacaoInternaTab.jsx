@@ -3,7 +3,7 @@ import React from 'react';
 import { useAppContext } from '@/context/AppContext';
 import Icon from '@/components/Icon';
 import Tooltip from '@/components/Tooltip';
-import { formatarDataExibicao } from '@/lib/utils';
+import { formatarDataExibicao, mascararCliente } from '@/lib/utils';
 
 export default function ComunicacaoInternaTab() {
     const { 
@@ -14,7 +14,7 @@ export default function ComunicacaoInternaTab() {
         setModalLinkAberto, setNovoLink,
         excluirRequisicao, excluirTarefa, excluirLink,
         concluirRequisicao, concluirTarefa, reabrirTarefaFixa, concluirLink,
-        usuario, isAdmin
+        usuario, isAdmin, isDemo
     } = useAppContext();
 
     const [mostrarConcluidosReq, setMostrarConcluidosReq] = React.useState(false);
@@ -193,7 +193,7 @@ export default function ComunicacaoInternaTab() {
                                 <div className="flex justify-between items-start px-5 py-3.5 bg-gray-50/70 dark:bg-darkElevated/60 rounded-t-xl border-b border-dashed border-gray-300 dark:border-darkBorder">
                                     <div>
                                         <h3 className={`font-bold ${(l.status === 'Pago' || l.status === 'Concluído' || l.status === 'Inativo') ? 'line-through text-gray-500' : 'text-gray-900 dark:text-white'}`}>{l.titulo}</h3>
-                                        <p className="text-[11px] font-semibold text-brand mt-1">{l.cliente}</p>
+                                        <p className="text-[11px] font-semibold text-brand mt-1">{mascararCliente(l.cliente, isDemo)}</p>
                                     </div>
                                     <div className="flex gap-1 shrink-0">
                                         {l.status !== 'Pago' && l.status !== 'Concluído' && (

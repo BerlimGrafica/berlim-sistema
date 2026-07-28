@@ -1,7 +1,7 @@
 "use client";
 import React, { createContext, useContext, useState, useEffect, useRef, useMemo } from 'react';
 import Icon from '@/components/Icon';
-import { supabase } from '@/lib/supabaseClient';
+import { supabase, setSomenteLeitura } from '@/lib/supabaseClient';
 import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS, obterCorStatus, formatarValorFinanceiro, formatarMoeda, formatarTelefone, obterDataAtual, formatarDataExibicao, formatarMesAno, CustomDatePicker, InlineDropdown, MultiSelectDropdown, desconstruirTextoServico, obterResumoServicos, ItensChecklist, StackedCards, CalculadoraBanner, CalculadoraAdesivo, CalculadoraCasamento, CalculadorasAba } from '@/lib/utils';
 
 export { supabase };
@@ -62,6 +62,12 @@ export const AppProvider = ({ children }) => {
     }, [darkMode]);
     const isAdmin = usuario?.nivel === 'Administrador';
     const isOperador = usuario?.nivel === 'Atendimento' || usuario?.nivel === 'Produção';
+    const isDemo = usuario?.nivel === 'demo';
+
+    // Espelha isDemo no cliente Supabase para bloquear escrita antes de sair para a rede (ver lib/supabaseClient.js).
+    useEffect(() => {
+        setSomenteLeitura(isDemo);
+    }, [isDemo]);
 
     // Filtros
     const [buscaHistoricoText, setBuscaHistoricoText] = useState('');
@@ -793,6 +799,35 @@ export const AppProvider = ({ children }) => {
         setErroLogin('');
         setLoginInput('');
         setSenhaInput('');
+        setAbaAtual('dashboard');
+    };
+
+    // Login de 1 clique com a conta de demonstração (somente leitura), usada no link do
+    // currículo. Credenciais fixas via env — se não estiverem configuradas, avisa em vez
+    // de tentar logar com "undefined".
+    const entrarComoDemo = async () => {
+        setErroLogin('');
+        const email = process.env.NEXT_PUBLIC_DEMO_EMAIL;
+        const senha = process.env.NEXT_PUBLIC_DEMO_SENHA;
+        if (!email || !senha) {
+            setErroLogin('Acesso demo não configurado.');
+            return;
+        }
+
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password: senha });
+        if (error) {
+            setErroLogin('Não foi possível entrar no modo demonstração.');
+            return;
+        }
+
+        const perfil = await carregarPerfil(data.user.id);
+        if (!perfil) {
+            setErroLogin('Conta demo sem perfil cadastrado. Fale com um administrador.');
+            await supabase.auth.signOut();
+            return;
+        }
+
+        setUsuario(perfil);
         setAbaAtual('dashboard');
     };
 
@@ -1924,6 +1959,12 @@ export const AppProvider = ({ children }) => {
                         </svg>
                         Entrar com Google
                     </button>
+
+                    {process.env.NEXT_PUBLIC_DEMO_EMAIL && (
+                        <button type="button" onClick={entrarComoDemo} className="w-full flex items-center justify-center gap-2 bg-white border border-dashed border-brand text-brand hover:bg-brand/5 py-2 rounded text-[13px] font-semibold transition">
+                            Entrar como Visitante (Demo)
+                        </button>
+                    )}
                 </div>
             </div>
         );
@@ -1933,6 +1974,8 @@ export const AppProvider = ({ children }) => {
         itensPorPagina,
         isAdmin,
         isOperador,
+        isDemo,
+        entrarComoDemo,
         usuariosSistema,
         setUsuariosSistema,
         usuario,

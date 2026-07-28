@@ -3,11 +3,11 @@ import React from 'react';
 import { useAppContext } from '@/context/AppContext';
 import Icon from '@/components/Icon';
 import Tooltip from '@/components/Tooltip';
-import { formatarMoeda } from '@/lib/utils';
+import { formatarMoeda, mascararCliente } from '@/lib/utils';
 
 
 export default function Notas_fiscaisTab() {
-    const { notasFiscais, usuario, filtroNotas, setFiltroNotas, buscaNotaFiscal, setBuscaNotaFiscal, setPaginaNotasFiscais, notasFiscaisPaginadas, setNotaFiscalEmEdicao, setModalNotaFiscalAberto, totalPaginasNotasFiscais, paginaNotasFiscais, concluirNotaFiscal, reabrirNotaFiscal } = useAppContext();
+    const { notasFiscais, usuario, isDemo, filtroNotas, setFiltroNotas, buscaNotaFiscal, setBuscaNotaFiscal, setPaginaNotasFiscais, notasFiscaisPaginadas, setNotaFiscalEmEdicao, setModalNotaFiscalAberto, totalPaginasNotasFiscais, paginaNotasFiscais, concluirNotaFiscal, reabrirNotaFiscal } = useAppContext();
 
     return (
         <main className="flex-1 p-6 lg:p-10 max-w-[1400px] mx-auto w-full flex flex-col gap-6">
@@ -84,8 +84,8 @@ export default function Notas_fiscaisTab() {
                                     }} className="border-b border-gray-100 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover transition cursor-pointer">
                                         <td className="px-4 py-3 text-[13px] dark:text-[#EDEDED] whitespace-nowrap">{new Date(n.created_at).toLocaleDateString('pt-BR')}</td>
                                         <td className="px-4 py-3">
-                                            <div className="text-[13px] font-semibold dark:text-[#EDEDED]">{n.cliente || 'Sem Identificação'}</div>
-                                            <div className="text-[11px] text-gray-500 dark:text-[#A1A1AA]">{n.razao_social}</div>
+                                            <div className="text-[13px] font-semibold dark:text-[#EDEDED]">{mascararCliente(n.cliente, isDemo) || 'Sem Identificação'}</div>
+                                            <div className="text-[11px] text-gray-500 dark:text-[#A1A1AA]">{isDemo ? '' : n.razao_social}</div>
                                         </td>
                                         <td className="px-4 py-3 text-[13px] dark:text-[#EDEDED] whitespace-nowrap">{n.cnpj}</td>
                                         <td className="px-4 py-3 text-[13px] dark:text-[#EDEDED] whitespace-nowrap">

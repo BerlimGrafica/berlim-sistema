@@ -3,11 +3,11 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useAppContext } from '@/context/AppContext';
 import Icon from '@/components/Icon';
 import Tooltip from '@/components/Tooltip';
-import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS, obterCorStatus, formatarValorFinanceiro, formatarMoeda, formatarTelefone, obterDataAtual, formatarDataExibicao, formatarMesAno, CustomDatePicker, InlineDropdown, MultiSelectDropdown, desconstruirTextoServico, obterResumoServicos, ItensChecklist, StackedCards, CalculadoraBanner, CalculadoraAdesivo, CalculadoraCasamento, CalculadorasAba } from '@/lib/utils';
+import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS, obterCorStatus, formatarValorFinanceiro, formatarMoeda, formatarTelefone, obterDataAtual, formatarDataExibicao, formatarMesAno, mascararCliente, CustomDatePicker, InlineDropdown, MultiSelectDropdown, desconstruirTextoServico, obterResumoServicos, ItensChecklist, StackedCards, CalculadoraBanner, CalculadoraAdesivo, CalculadoraCasamento, CalculadorasAba } from '@/lib/utils';
 
 
 export default function DashboardTab() {
-    const { usuario, pedidos, alertasNaoLidos, setAlertasNaoLidos, setAbaAtual, setBuscaProducaoText, abrirEdicao, tarefasInternas, setModalTarefaAberto, setNovaTarefa } = useAppContext();
+    const { usuario, pedidos, isDemo, alertasNaoLidos, setAlertasNaoLidos, setAbaAtual, setBuscaProducaoText, abrirEdicao, tarefasInternas, setModalTarefaAberto, setNovaTarefa } = useAppContext();
 
     return (
         <>
@@ -165,7 +165,7 @@ export default function DashboardTab() {
                                                     <tr key={t.id} onClick={() => abrirEdicao(t)} className="border-b border-gray-50 dark:border-darkBorder/50 hover:bg-gray-50/80 dark:hover:bg-darkHover/80 transition group cursor-pointer">
                                                         <td className="px-4 py-3">
                                                             <p className="text-[12px] font-bold text-gray-900 dark:text-gray-200">#{t.id}</p>
-                                                            <p className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 max-w-[130px] truncate">{t.cliente}</p>
+                                                            <p className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 max-w-[130px] truncate">{mascararCliente(t.cliente, isDemo)}</p>
                                                         </td>
                                                         <td className="px-4 py-3 text-[12px] font-medium text-gray-600 dark:text-gray-400 max-w-[120px] truncate">{obterResumoServicos(t.servico)}</td>
                                                         <td className="px-4 py-3">
