@@ -298,6 +298,19 @@ export const AppProvider = ({ children }) => {
         }
     }, [usuario]);
 
+    // Redundância pro Realtime: se a aba ficar em segundo plano por um tempo, o
+    // navegador pode suspender a conexão e perder eventos nesse meio-tempo. Ao
+    // voltar a ficar visível, recarrega tudo de novo pra garantir que não ficou
+    // nada desatualizado (novo produto, pedido, etc.).
+    useEffect(() => {
+        if (!usuario) return;
+        function aoVoltarVisivel() {
+            if (document.visibilityState === 'visible') carregarDados();
+        }
+        document.addEventListener('visibilitychange', aoVoltarVisivel);
+        return () => document.removeEventListener('visibilitychange', aoVoltarVisivel);
+    }, [usuario]);
+
     const isClienteProblema = (nome) => {
         if (!nome) return false;
         return clientesProblema.includes(nome);
@@ -1379,6 +1392,14 @@ export const AppProvider = ({ children }) => {
         setSalvandoProduto(false);
     }
 
+    // Busca o catálogo direto do banco (sem esperar o Realtime), pra usar em
+    // pontos onde é crítico não trabalhar com uma lista de produtos desatualizada
+    // — ex: ao focar o campo de busca de item dentro de um pedido já aberto.
+    async function atualizarCatalogoProdutos() {
+        const { data } = await supabase.from('produtos').select('*').order('ordem', { ascending: true });
+        if (data) setProdutos(data);
+    }
+
     async function criarCopiaRecorrente(contaOriginal) {
         const copiaPendente = {
             descricao: contaOriginal.descricao,
@@ -2168,6 +2189,7 @@ export const AppProvider = ({ children }) => {
         salvarTarefa, excluirTarefa,
         salvarLink, excluirLink,
         carregarDados,
+        atualizarCatalogoProdutos,
         atualizarCampoInline,
         concluirBoletoContasReceber,
         fecharModalOS,
