@@ -1,5 +1,6 @@
 "use client";
 import React, { createContext, useContext, useState, useEffect, useRef, useMemo } from 'react';
+import { flushSync } from 'react-dom';
 import { supabase, setSomenteLeitura } from '@/lib/supabaseClient';
 import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS, formatarMoeda, parseValorMoeda, paraCentavos, centavosParaReais, obterDataAtual, desconstruirTextoServico } from '@/lib/utils';
 
@@ -1732,7 +1733,10 @@ export const AppProvider = ({ children }) => {
         // maiúscula ou espaço divergente entre o nome no pedido e o cadastro atual.
         const { data } = await supabase.from('clientes').select('*').ilike('nome', (pedido.cliente || '').trim()).limit(1).maybeSingle();
         if (data) {
-            setOsParaImprimir(prev => ({...prev, clienteInfo: data}));
+            // flushSync força o React a aplicar e renderizar esse estado antes da
+            // próxima linha — sem isso, window.print() captura o DOM antes do
+            // telefone aparecer (o setState sozinho só agenda a renderização).
+            flushSync(() => setOsParaImprimir(prev => ({...prev, clienteInfo: data})));
         }
         window.print();
     }
