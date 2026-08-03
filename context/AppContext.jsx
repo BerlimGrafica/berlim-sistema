@@ -1,8 +1,7 @@
 "use client";
 import React, { createContext, useContext, useState, useEffect, useRef, useMemo } from 'react';
-import Icon from '@/components/Icon';
 import { supabase } from '@/lib/supabaseClient';
-import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS, obterCorStatus, formatarValorFinanceiro, formatarMoeda, formatarTelefone, obterDataAtual, formatarDataExibicao, formatarMesAno, CustomDatePicker, InlineDropdown, MultiSelectDropdown, desconstruirTextoServico, obterResumoServicos, ItensChecklist, StackedCards, CalculadoraBanner, CalculadoraAdesivo, CalculadoraCasamento, CalculadorasAba } from '@/lib/utils';
+import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS, formatarMoeda, parseValorMoeda, obterDataAtual, desconstruirTextoServico } from '@/lib/utils';
 
 export { supabase };
 
@@ -67,12 +66,10 @@ export const AppProvider = ({ children }) => {
     const [buscaHistoricoText, setBuscaHistoricoText] = useState('');
     
     // Paginação
-    const [paginaProducao, setPaginaProducao] = useState(1);
     const [paginaHistorico, setPaginaHistorico] = useState(1);
     const [pedidosHistorico, setPedidosHistorico] = useState([]);
     const [totalPedidosHistorico, setTotalPedidosHistorico] = useState(0);
     const [triggerRealtime, setTriggerRealtime] = useState(0);
-    const [paginaFinanceiro, setPaginaFinanceiro] = useState(1);
     const itensPorPagina = 50;
     const [dataFiltroInicio, setDataFiltroInicio] = useState('');
     const [dataFiltroFim, setDataFiltroFim] = useState('');
@@ -623,13 +620,17 @@ export const AppProvider = ({ children }) => {
         }
     }
     
-    useEffect(() => {
-        setPaginaHistorico(1);
-    }, [buscaHistoricoText, dataFiltroInicio, dataFiltroFim]);
+    // Reseta a página do histórico quando o filtro muda. Ajustado durante a
+    // renderização (em vez de num useEffect) para não disparar um commit extra.
+    const [filtroHistoricoAnterior, setFiltroHistoricoAnterior] = useState({ buscaHistoricoText, dataFiltroInicio, dataFiltroFim });
+    if (filtroHistoricoAnterior.buscaHistoricoText !== buscaHistoricoText || filtroHistoricoAnterior.dataFiltroInicio !== dataFiltroInicio || filtroHistoricoAnterior.dataFiltroFim !== dataFiltroFim) {
+        setFiltroHistoricoAnterior({ buscaHistoricoText, dataFiltroInicio, dataFiltroFim });
+        if (paginaHistorico !== 1) setPaginaHistorico(1);
+    }
 
     useEffect(() => {
         if (!usuario) return;
-        
+
         async function fetchHistorico() {
             let query = supabase.from('pedidos').select('*', { count: 'exact' });
             
@@ -687,11 +688,16 @@ export const AppProvider = ({ children }) => {
         fetchProblemas();
     }, [usuario, triggerRealtime]);
 
+    // Limpa os resultados assim que a busca fica vazia, ajustado durante a
+    // renderização (em vez de num useEffect) para não disparar um commit extra.
+    const [buscaClienteAnterior, setBuscaClienteAnterior] = useState(buscaCliente);
+    if (buscaClienteAnterior !== buscaCliente) {
+        setBuscaClienteAnterior(buscaCliente);
+        if (!buscaCliente || buscaCliente.length < 1) setClientes([]);
+    }
+
     useEffect(() => {
-        if (!buscaCliente || buscaCliente.length < 1) {
-            setClientes([]);
-            return;
-        }
+        if (!buscaCliente || buscaCliente.length < 1) return;
         const timeout = setTimeout(async () => {
             const isNum = !isNaN(buscaCliente);
             let query = supabase.from('clientes').select('*').limit(15);
@@ -946,7 +952,7 @@ export const AppProvider = ({ children }) => {
         const pagamentosRecuperados = dadosDesconstruidos.pagamentos || [];
         setPagamentosPedido(pagamentosRecuperados);
         
-        const totalPago = pagamentosRecuperados.reduce((acc, p) => acc + (parseFloat(String(p.valor).replace(/\./g, '').replace(',', '.')) || 0), 0);
+        const totalPago = pagamentosRecuperados.reduce((acc, p) => acc + parseValorMoeda(p.valor), 0);
         const totalOSStr = parseFloat(pedido.valor_total) || 0;
         const saldoRestante = totalOSStr - totalPago;
         
@@ -1018,7 +1024,7 @@ export const AppProvider = ({ children }) => {
     function adicionarItemAoCarrinho() {
         if (!itemAtual.descricao || !itemAtual.valor) return;
         const pctDesconto = parseFloat(itemAtual.desconto) || 0;
-        const numOriginal = parseFloat(itemAtual.valor.replace(/\./g, '').replace(',', '.')) || 0;
+        const numOriginal = parseValorMoeda(itemAtual.valor);
         const valorFinalCalculadoNum = numOriginal * (1 - pctDesconto / 100);
         const valorFinalCalculadoStr = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(valorFinalCalculadoNum);
         
@@ -1030,7 +1036,7 @@ export const AppProvider = ({ children }) => {
         setItensPedido(novosItens); 
         
         let totalGeralOS = 0;
-        novosItens.forEach(i => { totalGeralOS += parseFloat(i.valor.replace(/\./g, '').replace(',', '.')) || 0; });
+        novosItens.forEach(i => { totalGeralOS += parseValorMoeda(i.valor); });
         setNovoPedido({...novoPedido, valor_total: formatarMoeda((totalGeralOS * 100).toFixed(0).toString())});
         
         setItemAtual({ nome: '', descricao: '', valor: '', desconto: '', local_producao: 'Berlim', id_produto: null });
@@ -1041,14 +1047,14 @@ export const AppProvider = ({ children }) => {
         const novosItens = itensPedido.filter(i => i.id_temp !== id_temp);
         setItensPedido(novosItens);
         let totalGeralOS = 0;
-        novosItens.forEach(i => { totalGeralOS += parseFloat(i.valor.replace(/\./g, '').replace(',', '.')) || 0; });
+        novosItens.forEach(i => { totalGeralOS += parseValorMoeda(i.valor); });
         setNovoPedido({...novoPedido, valor_total: formatarMoeda((totalGeralOS * 100).toFixed(0).toString())});
     }
 
     function salvarEdicaoItemCarrinho(id_temp) {
         if (!itemAtual.descricao || !itemAtual.valor) return;
         const pctDesconto = parseFloat(itemAtual.desconto) || 0;
-        const numOriginal = parseFloat(itemAtual.valor.replace(/\./g, '').replace(',', '.')) || 0;
+        const numOriginal = parseValorMoeda(itemAtual.valor);
         const valorFinalCalculadoNum = numOriginal * (1 - pctDesconto / 100);
         const valorFinalCalculadoStr = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(valorFinalCalculadoNum);
 
@@ -1058,7 +1064,7 @@ export const AppProvider = ({ children }) => {
         setItensPedido(novosItens);
 
         let totalGeralOS = 0;
-        novosItens.forEach(i => { totalGeralOS += parseFloat(i.valor.replace(/\./g, '').replace(',', '.')) || 0; });
+        novosItens.forEach(i => { totalGeralOS += parseValorMoeda(i.valor); });
         setNovoPedido({...novoPedido, valor_total: formatarMoeda((totalGeralOS * 100).toFixed(0).toString())});
 
         setItemAtual({ nome: '', descricao: '', valor: '', desconto: '', local_producao: 'Berlim', id_produto: null });
@@ -1089,7 +1095,7 @@ export const AppProvider = ({ children }) => {
             textoFinalServico += '\n\n[PAGAMENTOS]\n' + JSON.stringify(pagamentosPedido);
         }
 
-        const valorNumericoFinal = parseFloat(String(novoPedido.valor_total).replace(/\./g, '').replace(',', '.')) || 0;
+        const valorNumericoFinal = parseValorMoeda(novoPedido.valor_total);
 
         // Calcular locais unicos da OS a partir dos itens
         const locaisOS = [...new Set(itensPedido.map(i => i.local_producao || 'Berlim'))].join(', ');
@@ -1217,7 +1223,7 @@ export const AppProvider = ({ children }) => {
             textoFinalServico = novoPedido.servico;
         }
 
-        const valorNumericoFinal = parseFloat(String(novoPedido.valor_total).replace(/\./g, '').replace(',', '.')) || 0;
+        const valorNumericoFinal = parseValorMoeda(novoPedido.valor_total);
 
         const payload = {
             cliente: novoPedido.cliente,
@@ -1321,7 +1327,7 @@ export const AppProvider = ({ children }) => {
     async function salvarProduto(e) {
         e.preventDefault();
         setSalvandoProduto(true);
-        const produtoFormatado = { nome: novoProduto.nome, texto_padrao: novoProduto.texto_padrao, preco_base: parseFloat(novoProduto.preco_base.replace(/\./g, '').replace(',', '.')) || 0 };
+        const produtoFormatado = { nome: novoProduto.nome, texto_padrao: novoProduto.texto_padrao, preco_base: parseValorMoeda(novoProduto.preco_base) };
 
         if (novoProduto.id) {
             const { data, error } = await supabase.from('produtos').update(produtoFormatado).eq('id', novoProduto.id).select();
@@ -1374,7 +1380,7 @@ export const AppProvider = ({ children }) => {
         setSalvandoConta(true);
         const contaFormatada = {
             descricao: novaConta.descricao,
-            valor: parseFloat(String(novaConta.valor).replace(/\./g, '').replace(',', '.')) || 0,
+            valor: parseValorMoeda(novaConta.valor),
             vencimento: novaConta.vencimento,
             status: novaConta.status,
             recorrente: novaConta.recorrente,
@@ -1539,7 +1545,7 @@ export const AppProvider = ({ children }) => {
         e.preventDefault();
         setSalvandoNotaFiscal(true);
 
-        const valorNumerico = notaFiscalEmEdicao.valor_pago ? parseFloat(String(notaFiscalEmEdicao.valor_pago).replace(/\./g, '').replace(',', '.')) : null;
+        const valorNumerico = notaFiscalEmEdicao.valor_pago ? parseValorMoeda(notaFiscalEmEdicao.valor_pago) : null;
 
         const ehDanfe = notaFiscalEmEdicao.tipo_nota === 'DANFE';
         const payload = {
@@ -1659,7 +1665,7 @@ export const AppProvider = ({ children }) => {
             itens.forEach(item => {
                 const id_produto_match = item.id_produto;
                 const nomeLimpo = item.nome.trim();
-                const valorNum = parseFloat(item.valor.replace(/\./g, '').replace(',', '.')) || 0;
+                const valorNum = parseValorMoeda(item.valor);
                 
                 const prod = id_produto_match 
                     ? produtos.find(p => String(p.id) === String(id_produto_match)) 
@@ -1771,8 +1777,7 @@ export const AppProvider = ({ children }) => {
     const salvarLink = async () => {
         let payload = { ...novoLink };
         if (payload.valor && typeof payload.valor === 'string') {
-            // Remove pontos de milhar e substitui vírgula decimal por ponto
-            payload.valor = parseFloat(payload.valor.replace(/\./g, '').replace(',', '.'));
+            payload.valor = parseValorMoeda(payload.valor);
         }
         if (!payload.id) {
             delete payload.id;
@@ -1818,23 +1823,6 @@ export const AppProvider = ({ children }) => {
 
     const opcoesStatusPermitidas = isOperador ? [...STATUSES_PRODUCAO, 'Abandonado', 'Concluído'] : [...STATUSES_PRODUCAO, ...STATUSES_FINALIZADOS];
     const isModalTrancado = (pedidoEmEdicao && pedidoEmEdicao.status === 'Finalizado' && isOperador) ? true : false;
-
-    // Render de barras para o Financeiro
-    const renderBarHorizontal = (label, valor, maxVal, isCaixa = false, customColor = null) => {
-        const pct = maxVal > 0 ? (valor / maxVal) * 100 : 0;
-        const barColor = customColor || (isCaixa ? 'bg-emerald-500' : 'bg-brand');
-        return (
-            <div key={label} className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 text-[11px] group">
-                <span className="w-24 sm:w-32 font-medium truncate text-gray-700 dark:text-gray-300">{label}</span>
-                <div className="flex-1 bg-gray-100 dark:bg-darkElevated h-6 rounded overflow-hidden relative border dark:border-darkBorder">
-                    <div className={`${barColor} h-full transition-all duration-500 opacity-80 group-hover:opacity-100`} style={{ width: `${Math.max(pct, 1)}%` }}></div>
-                </div>
-                <span className="w-24 text-right font-semibold text-gray-900 dark:text-[#EDEDED]">
-                    R$ {formatarValorFinanceiro(valor)}
-                </span>
-            </div>
-        )
-    };
 
     // Realtime subscriptions
     useEffect(() => {
@@ -1940,7 +1928,6 @@ export const AppProvider = ({ children }) => {
         googleVinculado,
         vincularGoogle,
         desvincularGoogle,
-        entrarComGoogle,
         loginInput,
         setLoginInput,
         senhaInput,
@@ -1971,12 +1958,6 @@ export const AppProvider = ({ children }) => {
         setOrcamentoFormalizadoEmEdicao,
         clientes,
         setClientes,
-        clientesCadastrados,
-        setClientesCadastrados,
-        totalClientesCad,
-        setTotalClientesCad,
-        clientesProblema,
-        setClientesProblema,
         fornecedores,
         setFornecedores,
         abaCadastros,
@@ -2013,8 +1994,6 @@ export const AppProvider = ({ children }) => {
         setDarkMode,
         buscaHistoricoText,
         setBuscaHistoricoText,
-        paginaProducao,
-        setPaginaProducao,
         paginaHistorico,
         setPaginaHistorico,
         pedidosHistorico,
@@ -2023,8 +2002,6 @@ export const AppProvider = ({ children }) => {
         setTotalPedidosHistorico,
         triggerRealtime,
         setTriggerRealtime,
-        paginaFinanceiro,
-        setPaginaFinanceiro,
         dataFiltroInicio,
         setDataFiltroInicio,
         dataFiltroFim,
@@ -2055,8 +2032,6 @@ export const AppProvider = ({ children }) => {
         setNovaEmpresaFaturamento,
         alertasNaoLidos,
         setAlertasNaoLidos,
-        alertasFuturaDisparados,
-        alertasBoletoDisparados,
         modalAlertasAberto,
         setModalAlertasAberto,
         chatAberto,
@@ -2078,8 +2053,6 @@ export const AppProvider = ({ children }) => {
         setOrcamentoParaImprimir,
         pedidoEmEdicao,
         setPedidoEmEdicao,
-        idOrcamentoOrigem,
-        setIdOrcamentoOrigem,
         itensPedido,
         setItensPedido,
         itemAtual,
@@ -2135,7 +2108,6 @@ export const AppProvider = ({ children }) => {
         pedidosProducaoAtivos,
         opcoesStatusPermitidas,
         isModalTrancado,
-        renderBarHorizontal,
         abaComunicacao, setAbaComunicacao,
         requisicoesMaterial, setRequisicoesMaterial,
         tarefasInternas, setTarefasInternas,

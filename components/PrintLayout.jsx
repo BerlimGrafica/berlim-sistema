@@ -68,7 +68,7 @@ export default function PrintLayout() {
                                 </div>
                                 {cInfo?.observacoes && (
                                     <div className="mt-1">
-                                        <p className="text-[11px] text-gray-600 italic">" {cInfo.observacoes} "</p>
+                                        <p className="text-[11px] text-gray-600 italic">&quot; {cInfo.observacoes} &quot;</p>
                                     </div>
                                 )}
                             </div>

@@ -1,10 +1,9 @@
 "use client";
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useEffect, useRef } from "react";
 import { useAppContext } from "@/context/AppContext";
 import Icon from "@/components/Icon";
 import Tooltip from "@/components/Tooltip";
 import ChatPanel from "@/components/ChatPanel";
-import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS, obterCorStatus, formatarValorFinanceiro, formatarMoeda, formatarTelefone, obterDataAtual, formatarDataExibicao, formatarMesAno, CustomDatePicker, InlineDropdown, MultiSelectDropdown, desconstruirTextoServico, obterResumoServicos, ItensChecklist, StackedCards, CalculadoraBanner, CalculadoraAdesivo, CalculadoraCasamento, CalculadorasAba } from '@/lib/utils';
 
 export default function Navbar() {
     const { setModalAlertasAberto, modalAlertasAberto, alertasNaoLidos, setAlertasNaoLidos, setAbaAtual, setAbaFinanceiro, pedidos, abrirEdicao, toggleDarkMode, darkMode, usuario, logout, abaAtual, googleVinculado, vincularGoogle, desvincularGoogle, abrirChat, chatNaoLidas } = useAppContext();

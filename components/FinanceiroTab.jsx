@@ -1,9 +1,9 @@
 "use client";
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useRef } from 'react';
 import { useAppContext } from '@/context/AppContext';
 import Icon from '@/components/Icon';
 import Tooltip from '@/components/Tooltip';
-import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS, obterCorStatus, formatarValorFinanceiro, formatarMoeda, formatarTelefone, obterDataAtual, formatarDataExibicao, formatarMesAno, CustomDatePicker, CustomDateRangePicker, InlineDropdown, MultiSelectDropdown, desconstruirTextoServico, obterResumoServicos, ItensChecklist, StackedCards, CalculadoraBanner, CalculadoraAdesivo, CalculadoraCasamento, CalculadorasAba } from '@/lib/utils';
+import { obterCorStatus, formatarValorFinanceiro, formatarMoeda, parseValorMoeda, obterDataAtual, formatarDataExibicao, formatarMesAno, CustomDatePicker, CustomDateRangePicker, desconstruirTextoServico, obterResumoServicos, StackedCards } from '@/lib/utils';
 
 
 function BarRow({ label, valor, maxVal, color, rank, pctTotal }) {
@@ -30,7 +30,7 @@ function BarRow({ label, valor, maxVal, color, rank, pctTotal }) {
 }
 
 export default function FinanceiroTab() {
-    const { setAbaFinanceiro, abaFinanceiro, notasFiscais, usuario, filtroNotas, dataFiltroFinInicio, setDataFiltroFinInicio, dataFiltroFinFim, setDataFiltroFinFim, pedidos, setNovaConta, setModalContaAberto, setModalEmpresaFaturamentoAberto, buscaNotaFiscal, setBuscaNotaFiscal, setPaginaNotasFiscais, setFiltroNotas, renderBarHorizontal, produtos, produtosSelecionadosGrafico, setProdutosSelecionadosGrafico, contasPagar, empresasFaturamento, setNovaEmpresaFaturamento, notasFiscaisPaginadas, setNotaFiscalEmEdicao, setModalNotaFiscalAberto, totalPaginasNotasFiscais, paginaNotasFiscais, excluirConta, concluirConta, abrirEdicao, excluirEmpresaFaturamento, concluirNotaFiscal, reabrirNotaFiscal, atualizarCampoInline, concluirBoletoContasReceber } = useAppContext();
+    const { setAbaFinanceiro, abaFinanceiro, notasFiscais, usuario, filtroNotas, dataFiltroFinInicio, setDataFiltroFinInicio, dataFiltroFinFim, setDataFiltroFinFim, pedidos, setNovaConta, setModalContaAberto, setModalEmpresaFaturamentoAberto, buscaNotaFiscal, setBuscaNotaFiscal, setPaginaNotasFiscais, setFiltroNotas, produtos, produtosSelecionadosGrafico, setProdutosSelecionadosGrafico, contasPagar, empresasFaturamento, setNovaEmpresaFaturamento, notasFiscaisPaginadas, setNotaFiscalEmEdicao, setModalNotaFiscalAberto, totalPaginasNotasFiscais, paginaNotasFiscais, excluirConta, concluirConta, abrirEdicao, excluirEmpresaFaturamento, concluirNotaFiscal, reabrirNotaFiscal, atualizarCampoInline, concluirBoletoContasReceber } = useAppContext();
     const [mostrarContasPagas, setMostrarContasPagas] = useState(false);
     const [slidePainelAtivo, setSlidePainelAtivo] = useState(0);
     const painelScrollRef = useRef(null);
@@ -185,7 +185,7 @@ export default function FinanceiroTab() {
                                 if (!pagamentosStr) return 0;
                                 try {
                                     const pagamentos = JSON.parse(pagamentosStr);
-                                    return pagamentos.reduce((a, p) => a + (parseFloat(String(p.valor).replace(/\./g, '').replace(',', '.')) || 0), 0);
+                                    return pagamentos.reduce((a, p) => a + parseValorMoeda(p.valor), 0);
                                 } catch (e) { return 0; }
                             };
 
@@ -296,7 +296,7 @@ export default function FinanceiroTab() {
                                 if (!pagamentosStr) return [];
                                 try {
                                     return JSON.parse(pagamentosStr).map(pag => ({
-                                        valor: parseFloat(String(pag.valor).replace(/\./g, '').replace(',', '.')) || 0,
+                                        valor: parseValorMoeda(pag.valor),
                                         forma: pag.forma || 'Indefinido',
                                         instituicao: pag.instituicao || 'Indefinido'
                                     }));
@@ -350,7 +350,7 @@ export default function FinanceiroTab() {
                                 if (!pagamentosStr) return [];
                                 try {
                                     return JSON.parse(pagamentosStr).map(pag => ({
-                                        valor: parseFloat(String(pag.valor).replace(/\./g, '').replace(',', '.')) || 0,
+                                        valor: parseValorMoeda(pag.valor),
                                         forma: pag.forma || 'Indefinido',
                                         instituicao: pag.instituicao || 'Indefinido'
                                     }));
@@ -682,7 +682,7 @@ export default function FinanceiroTab() {
                                                         itens.forEach(item => {
                                                             const id_produto_match = item.id_produto;
                                                             const nomeLimpo = item.nome.trim();
-                                                            const valorNum = parseFloat(item.valor.replace(/\./g, '').replace(',', '.')) || 0;
+                                                            const valorNum = parseValorMoeda(item.valor);
                                                             
                                                             const prod = id_produto_match 
                                                                 ? produtos.find(p => String(p.id) === String(id_produto_match)) 
@@ -735,7 +735,7 @@ export default function FinanceiroTab() {
                                                             const finalName = prod ? prod.nome : nomeLimpo;
 
                                                             if (selecionadosAtuais.includes(finalName)) {
-                                                                const valorNum = parseFloat(item.valor.replace(/\./g, '').replace(',', '.')) || 0;
+                                                                const valorNum = parseValorMoeda(item.valor);
                                                                 dadosMesProduto[finalName][mesAno] += valorNum;
                                                             }
                                                         });

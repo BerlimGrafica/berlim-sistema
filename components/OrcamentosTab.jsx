@@ -1,9 +1,9 @@
 "use client";
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useAppContext } from '@/context/AppContext';
 import Icon from '@/components/Icon';
 import Tooltip from '@/components/Tooltip';
-import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS, obterCorStatus, formatarValorFinanceiro, formatarMoeda, formatarTelefone, obterDataAtual, formatarDataExibicao, formatarMesAno, CustomDatePicker, InlineDropdown, MultiSelectDropdown, desconstruirTextoServico, obterResumoServicos, ItensChecklist, StackedCards, CalculadoraBanner, CalculadoraAdesivo, CalculadoraCasamento, CalculadorasAba } from '@/lib/utils';
+import { formatarMoeda, obterDataAtual } from '@/lib/utils';
 
 
 export default function OrcamentosTab() {
@@ -158,7 +158,7 @@ export default function OrcamentosTab() {
 
                         {orcsFiltrados.length === 0 ? (
                             <div className="text-center py-10 text-gray-500 dark:text-gray-400 text-[13px]">
-                                Nenhum orçamento encontrado com o termo "{buscaPreProntos}".
+                                Nenhum orçamento encontrado com o termo &quot;{buscaPreProntos}&quot;.
                             </div>
                         ) : (
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
