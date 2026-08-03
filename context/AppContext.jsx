@@ -1138,6 +1138,10 @@ export const AppProvider = ({ children }) => {
             });
             textoFinalServico += itensTextoArray.join('\n\n') + '\n\n';
             if (novoPedido.servico) textoFinalServico += '[OBSERVAÇÕES GERAIS]\n' + novoPedido.servico;
+            // Cópia exata dos itens em JSON, imune a descrição com linha em branco
+            // (que quebra a reconstrução via texto com marcador "• " — ver
+            // desconstruirTextoServico). Mesmo padrão já usado nos orçamentos.
+            textoFinalServico += '\n\n[ITENS_JSON]\n' + JSON.stringify(itensPedido);
         } else {
             textoFinalServico = novoPedido.servico;
         }
