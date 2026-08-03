@@ -311,6 +311,23 @@ export const AppProvider = ({ children }) => {
         return () => document.removeEventListener('visibilitychange', aoVoltarVisivel);
     }, [usuario]);
 
+    // Notificações vivem só em memória e um F5 zera o estado — persiste no
+    // localStorage (por usuário) pra sobreviver a um refresh da página.
+    useEffect(() => {
+        if (!usuario) return;
+        try {
+            const salvas = localStorage.getItem('notificacoes_' + usuario.id);
+            if (salvas) setAlertasNaoLidos(JSON.parse(salvas));
+        } catch (e) { /* localStorage indisponível ou dado corrompido, ignora */ }
+    }, [usuario?.id]);
+
+    useEffect(() => {
+        if (!usuario) return;
+        try {
+            localStorage.setItem('notificacoes_' + usuario.id, JSON.stringify(alertasNaoLidos));
+        } catch (e) { /* localStorage indisponível (modo privado, quota etc.), ignora */ }
+    }, [alertasNaoLidos, usuario?.id]);
+
     const isClienteProblema = (nome) => {
         if (!nome) return false;
         return clientesProblema.includes(nome);
