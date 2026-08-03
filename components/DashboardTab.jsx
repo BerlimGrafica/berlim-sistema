@@ -46,6 +46,10 @@ export default function DashboardTab() {
                                     const prazo = new Date(p.prazo + 'T23:59:59');
                                     return prazo < new Date();
                                 });
+                                // Card "Minhas Tarefas" soma pedidos + tarefas internas (Comunicação > Tarefas)
+                                // designadas a você — "Atrasadas" continua só pedidos, é especificamente sobre OS.
+                                const minhasTarefasInternas = tarefasInternas.filter(t => (t.responsavel || '').split(',').map(s => s.trim().toLowerCase()).includes((usuario?.nome || '').trim().toLowerCase()) && t.status !== 'Concluída');
+                                const totalMinhasTarefas = minhasTarefas.length + minhasTarefasInternas.length;
 
                                 return (
                                     <>
@@ -53,7 +57,7 @@ export default function DashboardTab() {
                                             <div className="flex justify-between items-start mb-4">
                                                 <div>
                                                     <h3 className="text-gray-500 dark:text-[#888888] font-bold text-[11px] uppercase tracking-wider mb-1">Minhas Tarefas</h3>
-                                                    <p className="text-4xl font-black text-gray-800 dark:text-gray-100 tracking-tight">{minhasTarefas.length}</p>
+                                                    <p className="text-4xl font-black text-gray-800 dark:text-gray-100 tracking-tight">{totalMinhasTarefas}</p>
                                                 </div>
                                                 <div className="bg-blue-50 dark:bg-blue-500/10 p-3 rounded-md border border-blue-100 dark:border-blue-500/20">
                                                     <Icon name="layout-dashboard" className="w-6 h-6 text-blue-600 dark:text-blue-400" />
