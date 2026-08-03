@@ -7,6 +7,9 @@ export { supabase };
 
 export const AppContext = createContext();
 
+// Numeração dos pedidos deve continuar a partir do último número usado no sistema anterior.
+const NUMERO_INICIAL_PEDIDO = 17930;
+
 export const AppProvider = ({ children }) => {
 /// ==== CONTROLE DE SESSÃO E USUÁRIOS ====
     const [usuariosSistema, setUsuariosSistema] = useState([]);
@@ -1177,7 +1180,7 @@ export const AppProvider = ({ children }) => {
         } else {
             const { data: ultimoPedido } = await supabase.from('pedidos').select('id').order('id', { ascending: false }).limit(1);
             const idBase = ultimoPedido && ultimoPedido.length > 0 ? ultimoPedido[0].id : (pedidos.length > 0 ? Math.max(...pedidos.map(p => p.id)) : 0);
-            let novoId = idBase + 1;
+            let novoId = Math.max(idBase, NUMERO_INICIAL_PEDIDO - 1) + 1;
             payload.criado_por = usuario?.nome || 'Desconhecido';
 
             let data, error;
