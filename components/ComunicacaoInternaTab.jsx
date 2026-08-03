@@ -3,7 +3,7 @@ import React from 'react';
 import { useAppContext } from '@/context/AppContext';
 import Icon from '@/components/Icon';
 import Tooltip from '@/components/Tooltip';
-import { formatarDataExibicao, mascararCliente } from '@/lib/utils';
+import { formatarDataExibicao, mascararCliente, formatarMoeda, centavosParaReais } from '@/lib/utils';
 
 export default function ComunicacaoInternaTab() {
     const { 
@@ -189,7 +189,7 @@ export default function ComunicacaoInternaTab() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {linksVisiveis.length > 0 ? linksVisiveis.map(l => (
-                            <div key={l.id} onClick={() => { setNovoLink(l); setModalLinkAberto(true); }} className={`bg-white dark:bg-darkCard rounded-xl shadow-sm border flex flex-col cursor-pointer hover:border-brand/50 transition-colors ${(l.status === 'Pago' || l.status === 'Concluído' || l.status === 'Inativo') ? 'opacity-60 border-gray-200 dark:border-darkBorder' : 'border-gray-200 dark:border-darkBorder'}`}>
+                            <div key={l.id} onClick={() => { setNovoLink({...l, valor: l.valor ? formatarMoeda(Math.round(l.valor).toString()) : ''}); setModalLinkAberto(true); }} className={`bg-white dark:bg-darkCard rounded-xl shadow-sm border flex flex-col cursor-pointer hover:border-brand/50 transition-colors ${(l.status === 'Pago' || l.status === 'Concluído' || l.status === 'Inativo') ? 'opacity-60 border-gray-200 dark:border-darkBorder' : 'border-gray-200 dark:border-darkBorder'}`}>
                                 <div className="flex justify-between items-start px-5 py-3.5 bg-gray-50/70 dark:bg-darkElevated/60 rounded-t-xl border-b border-dashed border-gray-300 dark:border-darkBorder">
                                     <div>
                                         <h3 className={`font-bold ${(l.status === 'Pago' || l.status === 'Concluído' || l.status === 'Inativo') ? 'line-through text-gray-500' : 'text-gray-900 dark:text-white'}`}>{l.titulo}</h3>
@@ -209,7 +209,7 @@ export default function ComunicacaoInternaTab() {
                                 <div className="flex flex-col gap-3 p-5 flex-1">
                                     {l.valor && (
                                         <div className="text-[18px] font-black text-gray-800 dark:text-gray-200">
-                                            R$ {Number(l.valor).toLocaleString('pt-BR', {minimumFractionDigits: 2})}
+                                            R$ {centavosParaReais(l.valor).toLocaleString('pt-BR', {minimumFractionDigits: 2})}
                                         </div>
                                     )}
                                     <div className="bg-gray-50 dark:bg-darkElevated p-2 rounded flex items-center justify-between border border-gray-100 dark:border-darkBorder">

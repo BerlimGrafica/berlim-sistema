@@ -3,7 +3,7 @@ import React from 'react';
 import { useAppContext } from '@/context/AppContext';
 import Icon from '@/components/Icon';
 import Tooltip from '@/components/Tooltip';
-import { obterCorStatus, formatarValorFinanceiro, formatarDataExibicao, CustomDateRangePicker, obterResumoServicos, mascararCliente } from '@/lib/utils';
+import { obterCorStatus, formatarValorFinanceiro, formatarDataExibicao, CustomDateRangePicker, obterResumoServicos, mascararCliente, centavosParaReais } from '@/lib/utils';
 
 
 export default function BaixaTab() {
@@ -75,7 +75,7 @@ export default function BaixaTab() {
                                                 </td>
                                                 <td className="px-6 py-4 text-[13px] text-gray-600 dark:text-[#A1A1AA] truncate max-w-xs">{obterResumoServicos(p.servico)}</td>
                                                 <td className="px-6 py-4"><span className={`whitespace-nowrap px-2.5 py-1 text-[11px] font-semibold rounded border bg-gray-50 border-gray-200 dark:bg-darkElevated dark:border-darkBorder ${obterCorStatus(p.status)}`}>{p.status}</span></td>
-                                                <td className="px-6 py-4 font-semibold text-[13px] text-right text-gray-900 dark:text-[#EDEDED]">R$ {formatarValorFinanceiro(Number(p.valor_total))}</td>
+                                                <td className="px-6 py-4 font-semibold text-[13px] text-right text-gray-900 dark:text-[#EDEDED]">R$ {formatarValorFinanceiro(centavosParaReais(p.valor_total))}</td>
                                                 <td className="px-6 py-4 text-center"><Tooltip label="Imprimir O.S."><button type="button" onClick={(e) => { e.stopPropagation(); imprimirOS(p); }} aria-label="Imprimir O.S." className="p-2 text-blue-500 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition rounded inline-block"><Icon name="printer" className="w-5 h-5 inline-block" /></button></Tooltip></td>
                                             </tr>
                                         )

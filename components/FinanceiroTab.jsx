@@ -3,7 +3,7 @@ import React, { useState, useRef } from 'react';
 import { useAppContext } from '@/context/AppContext';
 import Icon from '@/components/Icon';
 import Tooltip from '@/components/Tooltip';
-import { obterCorStatus, formatarValorFinanceiro, formatarMoeda, parseValorMoeda, obterDataAtual, formatarDataExibicao, formatarMesAno, mascararCliente, CustomDatePicker, CustomDateRangePicker, desconstruirTextoServico, obterResumoServicos, StackedCards } from '@/lib/utils';
+import { obterCorStatus, formatarValorFinanceiro, formatarMoeda, parseValorMoeda, centavosParaReais, obterDataAtual, formatarDataExibicao, formatarMesAno, mascararCliente, CustomDatePicker, CustomDateRangePicker, desconstruirTextoServico, obterResumoServicos, StackedCards } from '@/lib/utils';
 
 
 function BarRow({ label, valor, maxVal, color, rank, pctTotal }) {
@@ -96,7 +96,7 @@ export default function FinanceiroTab() {
                                                     return match;
                                                 });
                                                 const cabecalho = "ID;Data;Cliente;Responsavel;Local;Status;Valor\n";
-                                                const linhas = pedidosExport.map(p => `${p.id};${p.data_pedido};${mascararCliente(p.cliente, isDemo)};${p.responsavel};${p.local_producao};${p.status};${p.valor_total}`).join("\n");
+                                                const linhas = pedidosExport.map(p => `${p.id};${p.data_pedido};${mascararCliente(p.cliente, isDemo)};${p.responsavel};${p.local_producao};${p.status};${centavosParaReais(p.valor_total)}`).join("\n");
                                                 const blob = new Blob([cabecalho + linhas], { type: 'text/csv;charset=utf-8;' });
                                                 const url = URL.createObjectURL(blob);
                                                 const link = document.createElement("a");
@@ -179,6 +179,9 @@ export default function FinanceiroTab() {
                                 return match;
                             });
 
+                            // Helper: pedidos.valor_total vem do banco em centavos.
+                            const valorTotalPedido = (p) => centavosParaReais(p.valor_total);
+
                             // Helper para extrair pagamentos de um pedido
                             const obterTotalPagoPedido = (pedido) => {
                                 const pagamentosStr = pedido.servico && pedido.servico.split('\n\n[PAGAMENTOS]\n')[1];
@@ -189,20 +192,20 @@ export default function FinanceiroTab() {
                                 } catch (e) { return 0; }
                             };
 
-                            const totalBruto = pedidosFin.reduce((acc, p) => acc + (Number(p.valor_total) || 0), 0);
+                            const totalBruto = pedidosFin.reduce((acc, p) => acc + valorTotalPedido(p), 0);
                             
                             const totalRecebido = pedidosFin.reduce((acc, p) => {
                                 const pagoStr = p.servico && p.servico.split('\n\n[PAGAMENTOS]\n')[1];
                                 if (pagoStr) return acc + obterTotalPagoPedido(p);
                                 // Compatibilidade com OS antigas:
-                                if (p.status === 'Concluído' || p.status === 'Finalizado') return acc + (Number(p.valor_total) || 0);
+                                if (p.status === 'Concluído' || p.status === 'Finalizado') return acc + valorTotalPedido(p);
                                 return acc;
                             }, 0);
                             
                             const totalAReceber = totalBruto - totalRecebido;
                             const ticketMedio = pedidosFin.length > 0 ? (totalBruto / pedidosFin.length) : 0;
 
-                            const totalVendasHoje = pedidos.filter(p => p.data_pedido === obterDataAtual() && p.status !== 'Cancelado' && p.status !== 'Cancelada').reduce((acc, p) => acc + (Number(p.valor_total) || 0), 0);
+                            const totalVendasHoje = pedidos.filter(p => p.data_pedido === obterDataAtual() && p.status !== 'Cancelado' && p.status !== 'Cancelada').reduce((acc, p) => acc + valorTotalPedido(p), 0);
 
                             const contasFiltradas = contasPagar.filter(c => {
                                 let match = true;
@@ -210,7 +213,7 @@ export default function FinanceiroTab() {
                                 if (dataFiltroFinFim && (!c.vencimento || c.vencimento > dataFiltroFinFim)) match = false;
                                 return match;
                             });
-                            const parseValorConta = (c) => Number(c.valor) || 0;
+                            const parseValorConta = (c) => centavosParaReais(c.valor);
                             const totalDespesas = contasFiltradas.reduce((acc, c) => acc + parseValorConta(c), 0);
 
                             const coresCategoriaDespesa = { 'Despesa': 'bg-gray-500', 'Manutenção': 'bg-purple-500', 'Terceirização': 'bg-indigo-500' };
@@ -236,15 +239,15 @@ export default function FinanceiroTab() {
                             const anoAtualStr = new Date().getFullYear().toString();
                             const anoAnteriorStr = (new Date().getFullYear() - 1).toString();
                             
-                            const totalAnoAtual = pedidos.filter(p => p.data_pedido && p.data_pedido.startsWith(anoAtualStr) && p.status !== 'Cancelado' && p.status !== 'Cancelada').reduce((a, b) => a + (Number(b.valor_total)||0), 0);
-                            const totalAnoAnterior = pedidos.filter(p => p.data_pedido && p.data_pedido.startsWith(anoAnteriorStr) && p.status !== 'Cancelado' && p.status !== 'Cancelada').reduce((a, b) => a + (Number(b.valor_total)||0), 0);
+                            const totalAnoAtual = pedidos.filter(p => p.data_pedido && p.data_pedido.startsWith(anoAtualStr) && p.status !== 'Cancelado' && p.status !== 'Cancelada').reduce((a, b) => a + valorTotalPedido(b), 0);
+                            const totalAnoAnterior = pedidos.filter(p => p.data_pedido && p.data_pedido.startsWith(anoAnteriorStr) && p.status !== 'Cancelado' && p.status !== 'Cancelada').reduce((a, b) => a + valorTotalPedido(b), 0);
                             const crescimentoPercentual = totalAnoAnterior > 0 ? ((totalAnoAtual - totalAnoAnterior) / totalAnoAnterior) * 100 : (totalAnoAtual > 0 ? 100 : 0);
 
                             const agrupadoPorDia = pedidosFin.reduce((acc, p) => {
                                 if (!p.data_pedido) return acc;
                                 const dia = p.data_pedido;
                                 if (!acc[dia]) acc[dia] = { dia, bruto: 0 };
-                                acc[dia].bruto += (Number(p.valor_total) || 0);
+                                acc[dia].bruto += valorTotalPedido(p);
                                 return acc;
                             }, {});
                             const diasOrdenados = Object.values(agrupadoPorDia).sort((a, b) => b.dia.localeCompare(a.dia)).slice(0, 15);
@@ -254,7 +257,7 @@ export default function FinanceiroTab() {
                                 if (!p.data_pedido) return acc;
                                 const mesAno = p.data_pedido.substring(0, 7);
                                 if (!acc[mesAno]) acc[mesAno] = { mesAno, bruto: 0, recebido: 0 };
-                                const val = Number(p.valor_total) || 0;
+                                const val = valorTotalPedido(p);
                                 acc[mesAno].bruto += val;
                                 if (p.status === 'Concluído' || p.status === 'Finalizado') acc[mesAno].recebido += val;
                                 return acc;
@@ -267,7 +270,7 @@ export default function FinanceiroTab() {
                                 const resps = p.responsavel.split(',').map(s=>s.trim()).filter(Boolean);
                                 resps.forEach(r => {
                                     if(!acc[r]) acc[r] = 0;
-                                    acc[r] += (Number(p.valor_total) || 0) / resps.length; 
+                                    acc[r] += valorTotalPedido(p) / resps.length;
                                 });
                                 return acc;
                             }, {});
@@ -279,7 +282,7 @@ export default function FinanceiroTab() {
                                 const locais = p.local_producao.split(',').map(s=>s.trim()).filter(Boolean);
                                 locais.forEach(l => {
                                     if(!acc[l]) acc[l] = 0;
-                                    acc[l] += (Number(p.valor_total) || 0) / locais.length;
+                                    acc[l] += valorTotalPedido(p) / locais.length;
                                 });
                                 return acc;
                             }, {});
@@ -338,7 +341,7 @@ export default function FinanceiroTab() {
                                 const locais = p.local_producao.split(',').map(s=>s.trim()).filter(Boolean);
                                 locais.forEach(l => {
                                     if(!acc[l]) acc[l] = 0;
-                                    acc[l] += (Number(p.valor_total) || 0) / locais.length;
+                                    acc[l] += valorTotalPedido(p) / locais.length;
                                 });
                                 return acc;
                             }, {});
@@ -398,7 +401,7 @@ export default function FinanceiroTab() {
                                 if (!p.data_pedido) return acc;
                                 const ano = p.data_pedido.substring(0, 4);
                                 if (!acc[ano]) acc[ano] = { ano, bruto: 0 };
-                                acc[ano].bruto += (Number(p.valor_total) || 0);
+                                acc[ano].bruto += valorTotalPedido(p);
                                 return acc;
                             }, {});
                             const anosOrdenados = Object.values(agrupadoPorAno).sort((a, b) => b.ano.localeCompare(a.ano)).slice(0, 15);
@@ -886,7 +889,7 @@ export default function FinanceiroTab() {
                                                                 <tr><td colSpan="6" className="text-center py-8 text-gray-400">Nenhuma conta a pagar registrada.</td></tr>
                                                             ) : (
                                                                 contasPagar.filter(c => mostrarContasPagas ? true : c.status !== 'Pago').map(conta => (
-                                                                    <tr key={conta.id} onClick={() => { setNovaConta({...conta, valor: conta.valor ? formatarMoeda((conta.valor * 100).toFixed(0).toString()) : ''}); setModalContaAberto(true); }} className="hover:bg-gray-50 dark:hover:bg-darkHover/50 transition-colors group cursor-pointer">
+                                                                    <tr key={conta.id} onClick={() => { setNovaConta({...conta, valor: conta.valor ? formatarMoeda(Math.round(conta.valor).toString()) : ''}); setModalContaAberto(true); }} className="hover:bg-gray-50 dark:hover:bg-darkHover/50 transition-colors group cursor-pointer">
                                                                         <td className="px-6 py-4 text-[13px] text-gray-600 dark:text-[#A1A1AA]">{formatarDataExibicao(conta.vencimento)}</td>
                                                                         <td className="px-6 py-4 text-[13px] font-medium text-gray-900 dark:text-gray-300">
                                                                             {conta.descricao}
@@ -902,7 +905,7 @@ export default function FinanceiroTab() {
                                                                                 {conta.categoria || 'Despesa'}
                                                                             </span>
                                                                         </td>
-                                                                        <td className="px-6 py-4 text-[13px] font-medium text-emerald-600 dark:text-emerald-400">R$ {formatarValorFinanceiro(conta.valor)}</td>
+                                                                        <td className="px-6 py-4 text-[13px] font-medium text-emerald-600 dark:text-emerald-400">R$ {formatarValorFinanceiro(centavosParaReais(conta.valor))}</td>
                                                                         <td className="px-6 py-4 text-[13px]">
                                                                             <span className={`whitespace-nowrap px-2.5 py-1 text-[11px] font-semibold rounded border ${conta.status === 'Pago' ? 'bg-emerald-50 border-emerald-200 text-emerald-600 dark:bg-emerald-900/20 dark:border-emerald-800/50 dark:text-emerald-400' : 'bg-red-50 border-red-200 text-red-600 dark:bg-red-900/20 dark:border-red-800/50 dark:text-red-400'}`}>
                                                                                 {conta.status}
@@ -1004,7 +1007,7 @@ export default function FinanceiroTab() {
                                                                                     {statusPagamento}
                                                                                 </span>
                                                                             </td>
-                                                                            <td className="px-6 py-4 text-[13px] font-bold text-gray-900 dark:text-white text-right whitespace-nowrap">R$ {p.valor_total}</td>
+                                                                            <td className="px-6 py-4 text-[13px] font-bold text-gray-900 dark:text-white text-right whitespace-nowrap">R$ {formatarValorFinanceiro(centavosParaReais(p.valor_total))}</td>
                                                                             <td className="px-6 py-4 text-center" onClick={(e) => e.stopPropagation()}>
                                                                                 <Tooltip label="Concluir Boleto">
                                                                                     <button
@@ -1100,7 +1103,7 @@ export default function FinanceiroTab() {
                                             <tr key={n.id} onClick={() => {
                                                 setNotaFiscalEmEdicao({
                                                     ...n,
-                                                    valor_pago: n.valor_pago ? formatarMoeda((n.valor_pago * 100).toFixed(0).toString()) : ''
+                                                    valor_pago: n.valor_pago ? formatarMoeda(Math.round(n.valor_pago).toString()) : ''
                                                 });
                                                 setModalNotaFiscalAberto(true);
                                             }} className="border-b border-gray-100 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover transition cursor-pointer">
@@ -1125,7 +1128,7 @@ export default function FinanceiroTab() {
                                                 </td>
                                                 <td className="px-4 py-3">
                                                     <div className="text-[13px] dark:text-[#EDEDED]">{n.servico_feito || <span className="text-gray-400 italic">Pendente</span>}</div>
-                                                    <div className="text-[11px] font-semibold text-orange-500 dark:text-orange-400">{n.valor_pago ? `R$ ${parseFloat(n.valor_pago).toFixed(2).replace('.', ',')}` : ''}</div>
+                                                    <div className="text-[11px] font-semibold text-orange-500 dark:text-orange-400">{n.valor_pago ? `R$ ${centavosParaReais(n.valor_pago).toFixed(2).replace('.', ',')}` : ''}</div>
                                                 </td>
                                                 <td className="px-4 py-3 text-[13px] text-gray-600 dark:text-gray-400 max-w-[200px] truncate" title={n.observacao_cliente || ''}>
                                                     {n.observacao_cliente || <span className="text-gray-400 italic">---</span>}

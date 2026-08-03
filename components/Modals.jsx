@@ -3,7 +3,7 @@ import React, { useState, useRef } from "react";
 import { useAppContext, supabase } from "@/context/AppContext";
 import Icon from "@/components/Icon";
 import Tooltip from "@/components/Tooltip";
-import { formatarValorFinanceiro, formatarMoeda, parseValorMoeda, formatarTelefone, formatarCnpjCpf, obterDataAtual, mascararCliente, CustomDatePicker, CustomSelect, InlineDropdown, MultiSelectDropdown, ToggleCard, SegmentedControl } from '@/lib/utils';
+import { formatarValorFinanceiro, formatarMoeda, parseValorMoeda, centavosParaReais, formatarTelefone, formatarCnpjCpf, obterDataAtual, mascararCliente, CustomDatePicker, CustomSelect, InlineDropdown, MultiSelectDropdown, ToggleCard, SegmentedControl } from '@/lib/utils';
 
 const CATEGORIAS_CONTA = [
     { value: 'Despesa', label: 'Despesa', icon: 'dollar-sign' },
@@ -199,10 +199,10 @@ export default function Modals() {
                                                             {produtosFiltrados.map(p => (
                                                                 <li key={p.id} onClick={() => {
                                                                     setBuscaProduto(p.nome);
-                                                                    setItemAtual({ ...itemAtual, nome: p.nome, descricao: p.texto_padrao, valor: formatarMoeda((p.preco_base * 100).toFixed(0).toString()), desconto: '', id_produto: p.id });
+                                                                    setItemAtual({ ...itemAtual, nome: p.nome, descricao: p.texto_padrao, valor: formatarMoeda(Math.round(p.preco_base).toString()), desconto: '', id_produto: p.id });
                                                                     setProdutoDropdownAberto(false);
                                                                 }} className="px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-darkHover cursor-pointer border-b border-gray-100 dark:border-darkBorder last:border-0 flex flex-col transition">
-                                                                    <div className="flex justify-between items-center"><span className="font-medium text-[13px] dark:text-[#EDEDED]">{p.nome}</span><span className="text-[11px] font-semibold text-brand">R$ {formatarValorFinanceiro(Number(p.preco_base))}</span></div>
+                                                                    <div className="flex justify-between items-center"><span className="font-medium text-[13px] dark:text-[#EDEDED]">{p.nome}</span><span className="text-[11px] font-semibold text-brand">R$ {formatarValorFinanceiro(centavosParaReais(p.preco_base))}</span></div>
                                                                 </li>
                                                             ))}
                                                         </ul>
@@ -654,10 +654,10 @@ export default function Modals() {
                                                             {produtosFiltrados.map(p => (
                                                                 <li key={p.id} onClick={() => {
                                                                     setBuscaProduto(p.nome);
-                                                                    setItemAtual({ ...itemAtual, nome: p.nome, descricao: p.texto_padrao, valor: formatarMoeda((p.preco_base * 100).toFixed(0).toString()), desconto: '', id_produto: p.id });
+                                                                    setItemAtual({ ...itemAtual, nome: p.nome, descricao: p.texto_padrao, valor: formatarMoeda(Math.round(p.preco_base).toString()), desconto: '', id_produto: p.id });
                                                                     setProdutoDropdownAberto(false);
                                                                 }} className="px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-darkHover cursor-pointer border-b border-gray-100 dark:border-darkBorder last:border-0 flex flex-col transition">
-                                                                    <div className="flex justify-between items-center"><span className="font-medium text-[13px] dark:text-[#EDEDED]">{p.nome}</span><span className="text-[11px] font-semibold text-brand">R$ {formatarValorFinanceiro(Number(p.preco_base))}</span></div>
+                                                                    <div className="flex justify-between items-center"><span className="font-medium text-[13px] dark:text-[#EDEDED]">{p.nome}</span><span className="text-[11px] font-semibold text-brand">R$ {formatarValorFinanceiro(centavosParaReais(p.preco_base))}</span></div>
                                                                 </li>
                                                             ))}
                                                         </ul>

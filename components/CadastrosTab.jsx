@@ -3,7 +3,7 @@ import React from 'react';
 import { useAppContext, supabase } from '@/context/AppContext';
 import Icon from '@/components/Icon';
 import Tooltip from '@/components/Tooltip';
-import { formatarValorFinanceiro } from '@/lib/utils';
+import { formatarValorFinanceiro, centavosParaReais } from '@/lib/utils';
 
 
 export default function CadastrosTab() {
@@ -87,7 +87,7 @@ export default function CadastrosTab() {
                                             </td>
                                             <td className="px-6 py-4 text-[13px] font-medium text-gray-800 dark:text-white">{p.nome}</td>
                                             <td className="px-6 py-4 text-[13px] text-gray-600 dark:text-gray-400 truncate max-w-xs">{p.texto_padrao}</td>
-                                            <td className="px-6 py-4 text-[13px] font-semibold text-gray-900 dark:text-gray-300 text-right">R$ {formatarValorFinanceiro(Number(p.preco_base))}</td>
+                                            <td className="px-6 py-4 text-[13px] font-semibold text-gray-900 dark:text-gray-300 text-right">R$ {formatarValorFinanceiro(centavosParaReais(p.preco_base))}</td>
                                             <td className="px-6 py-4 text-center">
                                                 <Tooltip label="Excluir Produto">
                                                 <button type="button" onClick={(e) => excluirProduto(p.id, e)} aria-label="Excluir Produto" className="p-2 text-red-500 hover:text-red-600 transition rounded hover:bg-red-50 dark:hover:bg-red-950/30">

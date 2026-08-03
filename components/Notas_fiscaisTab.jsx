@@ -3,7 +3,7 @@ import React from 'react';
 import { useAppContext } from '@/context/AppContext';
 import Icon from '@/components/Icon';
 import Tooltip from '@/components/Tooltip';
-import { formatarMoeda, mascararCliente } from '@/lib/utils';
+import { formatarMoeda, mascararCliente, centavosParaReais } from '@/lib/utils';
 
 
 export default function Notas_fiscaisTab() {
@@ -78,7 +78,7 @@ export default function Notas_fiscaisTab() {
                                     <tr key={n.id} onClick={() => {
                                         setNotaFiscalEmEdicao({
                                             ...n,
-                                            valor_pago: n.valor_pago ? formatarMoeda((n.valor_pago * 100).toFixed(0).toString()) : ''
+                                            valor_pago: n.valor_pago ? formatarMoeda(Math.round(n.valor_pago).toString()) : ''
                                         });
                                         setModalNotaFiscalAberto(true);
                                     }} className="border-b border-gray-100 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover transition cursor-pointer">
@@ -103,7 +103,7 @@ export default function Notas_fiscaisTab() {
                                         </td>
                                         <td className="px-4 py-3">
                                             <div className="text-[13px] dark:text-[#EDEDED]">{n.servico_feito || <span className="text-gray-400 italic">Pendente</span>}</div>
-                                            <div className="text-[11px] font-semibold text-orange-500 dark:text-orange-400">{n.valor_pago ? `R$ ${parseFloat(n.valor_pago).toFixed(2).replace('.', ',')}` : ''}</div>
+                                            <div className="text-[11px] font-semibold text-orange-500 dark:text-orange-400">{n.valor_pago ? `R$ ${centavosParaReais(n.valor_pago).toFixed(2).replace('.', ',')}` : ''}</div>
                                         </td>
                                         <td className="px-4 py-3 text-[13px] text-gray-600 dark:text-gray-400 max-w-[200px] truncate" title={n.observacao_cliente || ''}>
                                             {n.observacao_cliente || <span className="text-gray-400 italic">---</span>}

@@ -1,7 +1,7 @@
 "use client";
 import React, { createContext, useContext, useState, useEffect, useRef, useMemo } from 'react';
 import { supabase, setSomenteLeitura } from '@/lib/supabaseClient';
-import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS, formatarMoeda, parseValorMoeda, obterDataAtual, desconstruirTextoServico } from '@/lib/utils';
+import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS, formatarMoeda, parseValorMoeda, paraCentavos, centavosParaReais, obterDataAtual, desconstruirTextoServico } from '@/lib/utils';
 
 export { supabase };
 
@@ -988,7 +988,7 @@ export const AppProvider = ({ children }) => {
         setPagamentosPedido(pagamentosRecuperados);
         
         const totalPago = pagamentosRecuperados.reduce((acc, p) => acc + parseValorMoeda(p.valor), 0);
-        const totalOSStr = parseFloat(pedido.valor_total) || 0;
+        const totalOSStr = centavosParaReais(pedido.valor_total);
         const saldoRestante = totalOSStr - totalPago;
         
         setNovoPagamento({
@@ -999,7 +999,7 @@ export const AppProvider = ({ children }) => {
             cliente: pedido.cliente,
             servico: dadosDesconstruidos.observacoes,
             status: pedido.status,
-            valor_total: formatarMoeda((pedido.valor_total * 100).toFixed(0).toString()),
+            valor_total: formatarMoeda(Math.round(pedido.valor_total).toString()),
             data_pedido: pedido.data_pedido || null,
             prazo: pedido.prazo || null,
             responsavel: pedido.responsavel || '',
@@ -1012,7 +1012,7 @@ export const AppProvider = ({ children }) => {
     }
 
     function abrirEdicaoProduto(produto) {
-        setNovoProduto({ id: produto.id, nome: produto.nome, texto_padrao: produto.texto_padrao, preco_base: formatarMoeda((produto.preco_base * 100).toFixed(0).toString()) });
+        setNovoProduto({ id: produto.id, nome: produto.nome, texto_padrao: produto.texto_padrao, preco_base: formatarMoeda(Math.round(produto.preco_base).toString()) });
         setModalProdutoAberto(true);
     }
 
@@ -1130,7 +1130,7 @@ export const AppProvider = ({ children }) => {
             textoFinalServico += '\n\n[PAGAMENTOS]\n' + JSON.stringify(pagamentosPedido);
         }
 
-        const valorNumericoFinal = parseValorMoeda(novoPedido.valor_total);
+        const valorNumericoFinal = paraCentavos(novoPedido.valor_total);
 
         // Calcular locais unicos da OS a partir dos itens
         const locaisOS = [...new Set(itensPedido.map(i => i.local_producao || 'Berlim'))].join(', ');
@@ -1258,7 +1258,7 @@ export const AppProvider = ({ children }) => {
             textoFinalServico = novoPedido.servico;
         }
 
-        const valorNumericoFinal = parseValorMoeda(novoPedido.valor_total);
+        const valorNumericoFinal = paraCentavos(novoPedido.valor_total);
 
         const payload = {
             cliente: novoPedido.cliente,
@@ -1321,7 +1321,7 @@ export const AppProvider = ({ children }) => {
         setNovoPedido({
             cliente: orcamento.cliente,
             servico: obs || '',
-            valor_total: formatarMoeda((orcamento.valor * 100).toFixed(0).toString()),
+            valor_total: formatarMoeda(Math.round(orcamento.valor).toString()),
             status: 'Orçamento',
             data_pedido: obterDataAtual(),
             prazo: '',
@@ -1340,7 +1340,7 @@ export const AppProvider = ({ children }) => {
         setNovoPedido({
             cliente: orcamento.cliente,
             servico: '',
-            valor_total: formatarMoeda((orcamento.valor * 100).toFixed(0).toString()),
+            valor_total: formatarMoeda(Math.round(orcamento.valor).toString()),
             status: 'Produzir',
             data_pedido: obterDataAtual(),
             prazo: '',
@@ -1362,7 +1362,7 @@ export const AppProvider = ({ children }) => {
     async function salvarProduto(e) {
         e.preventDefault();
         setSalvandoProduto(true);
-        const produtoFormatado = { nome: novoProduto.nome, texto_padrao: novoProduto.texto_padrao, preco_base: parseValorMoeda(novoProduto.preco_base) };
+        const produtoFormatado = { nome: novoProduto.nome, texto_padrao: novoProduto.texto_padrao, preco_base: paraCentavos(novoProduto.preco_base) };
 
         if (novoProduto.id) {
             const { data, error } = await supabase.from('produtos').update(produtoFormatado).eq('id', novoProduto.id).select();
@@ -1415,7 +1415,7 @@ export const AppProvider = ({ children }) => {
         setSalvandoConta(true);
         const contaFormatada = {
             descricao: novaConta.descricao,
-            valor: parseValorMoeda(novaConta.valor),
+            valor: paraCentavos(novaConta.valor),
             vencimento: novaConta.vencimento,
             status: novaConta.status,
             recorrente: novaConta.recorrente,
@@ -1580,7 +1580,7 @@ export const AppProvider = ({ children }) => {
         e.preventDefault();
         setSalvandoNotaFiscal(true);
 
-        const valorNumerico = notaFiscalEmEdicao.valor_pago ? parseValorMoeda(notaFiscalEmEdicao.valor_pago) : null;
+        const valorNumerico = notaFiscalEmEdicao.valor_pago ? paraCentavos(notaFiscalEmEdicao.valor_pago) : null;
 
         const ehDanfe = notaFiscalEmEdicao.tipo_nota === 'DANFE';
         const payload = {
@@ -1812,7 +1812,7 @@ export const AppProvider = ({ children }) => {
     const salvarLink = async () => {
         let payload = { ...novoLink };
         if (payload.valor && typeof payload.valor === 'string') {
-            payload.valor = parseValorMoeda(payload.valor);
+            payload.valor = paraCentavos(payload.valor);
         }
         if (!payload.id) {
             delete payload.id;

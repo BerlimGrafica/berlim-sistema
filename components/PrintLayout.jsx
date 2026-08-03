@@ -1,7 +1,7 @@
 "use client";
 import React from 'react';
 import { useAppContext } from '@/context/AppContext';
-import { formatarDataExibicao, formatarValorFinanceiro, desconstruirTextoServico, mascararCliente } from '@/lib/utils';
+import { formatarDataExibicao, formatarValorFinanceiro, desconstruirTextoServico, mascararCliente, centavosParaReais } from '@/lib/utils';
 import Icon from '@/components/Icon';
 
 function extrairItens(orc) {
@@ -99,7 +99,7 @@ export default function PrintLayout() {
                                                 Serviço formatado manualmente (Verifique as observações gerais abaixo).
                                             </td>
                                             <td className="py-2 text-right whitespace-nowrap align-middle font-semibold text-[13px]">
-                                                R$ {formatarValorFinanceiro(Number(osParaImprimir.valor_total))}
+                                                R$ {formatarValorFinanceiro(centavosParaReais(osParaImprimir.valor_total))}
                                             </td>
                                         </tr>
                                     )}
@@ -134,7 +134,7 @@ export default function PrintLayout() {
                                 </div>
                                 <div className="text-right shrink-0">
                                     <span className="text-[10px] uppercase font-semibold tracking-widest text-gray-500 block mb-0.5">Total do Pedido</span>
-                                    <h2 className="text-4xl font-black tracking-tight text-gray-900">R$ {formatarValorFinanceiro(Number(osParaImprimir.valor_total))}</h2>
+                                    <h2 className="text-4xl font-black tracking-tight text-gray-900">R$ {formatarValorFinanceiro(centavosParaReais(osParaImprimir.valor_total))}</h2>
                                 </div>
                             </div>
                         </div>
@@ -242,7 +242,7 @@ function PrintOrcamento({ orc }) {
 
                 <div className="flex flex-col justify-end text-left">
                     <p className="text-[#F37021] text-[18px] font-black italic uppercase leading-none mb-1">Total:</p>
-                    <p className="text-[#00579D] text-[32px] font-black italic leading-none tracking-tight">R$ {formatarValorFinanceiro(Number(orc.valor))}</p>
+                    <p className="text-[#00579D] text-[32px] font-black italic leading-none tracking-tight">R$ {formatarValorFinanceiro(centavosParaReais(orc.valor))}</p>
                 </div>
             </div>
 

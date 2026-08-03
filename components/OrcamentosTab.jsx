@@ -84,7 +84,7 @@ export default function OrcamentosTab() {
                                                     <div className="text-[11px] text-gray-400 mt-0.5">{new Date(orc.created_at).toLocaleDateString('pt-BR')}</div>
                                                 </td>
                                                 <td className="px-6 py-4 text-[13px] font-medium text-gray-900 dark:text-gray-300">{mascararCliente(orc.cliente, isDemo)}</td>
-                                                <td className="px-6 py-4 text-[13px] font-medium text-emerald-600 dark:text-emerald-400">R$ {formatarMoeda((orc.valor * 100).toFixed(0).toString())}</td>
+                                                <td className="px-6 py-4 text-[13px] font-medium text-emerald-600 dark:text-emerald-400">R$ {formatarMoeda(Math.round(orc.valor).toString())}</td>
                                                 <td className="px-6 py-4 text-[13px] text-right flex justify-end gap-1">
                                                     <Tooltip label="Aprovar e Transformar em O.S.">
                                                         <button onClick={(e) => { e.stopPropagation(); transformarEmOS(orc); }} aria-label="Aprovar e Transformar em O.S." className="p-2 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded transition inline-block">
