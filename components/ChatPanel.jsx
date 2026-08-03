@@ -23,6 +23,18 @@ function formatarHora(iso) {
     return new Date(iso).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 }
 
+// Monta o arredondamento do balão de acordo com a posição na sequência de mensagens
+// da mesma pessoa, pra dar aquele efeito de "grupo colado" do WhatsApp/Telegram:
+// o canto do lado do avatar vai ficando reto entre uma mensagem e outra do mesmo grupo,
+// e só fica "pontudo" (a pontinha do balão) na última mensagem da sequência.
+function bordaBolha(minha, primeiraDoGrupo, ultimaDoGrupo) {
+    const lado = minha ? 'r' : 'l';
+    if (primeiraDoGrupo && ultimaDoGrupo) return `rounded-2xl rounded-b${lado}-sm`;
+    if (primeiraDoGrupo) return `rounded-2xl rounded-b${lado}-md`;
+    if (ultimaDoGrupo) return `rounded-2xl rounded-t${lado}-md rounded-b${lado}-sm`;
+    return `rounded-2xl rounded-t${lado}-md rounded-b${lado}-md`;
+}
+
 function Avatar({ nome, avatarUrl, className = 'w-7 h-7 text-[10px]' }) {
     if (avatarUrl) {
         return <img src={avatarUrl} alt={nome} referrerPolicy="no-referrer" className={`${className} rounded-full object-cover shrink-0`} />;
@@ -107,28 +119,30 @@ export default function ChatPanel() {
                 </div>
 
                 {/* Mensagens */}
-                <div ref={listRef} className="flex-1 overflow-y-auto custom-scrollbar px-4 py-4 space-y-3 bg-gray-50 dark:bg-darkBg">
+                <div ref={listRef} className="flex-1 overflow-y-auto custom-scrollbar px-4 py-4 bg-gray-50 dark:bg-darkBg">
                     {chatMensagens.length === 0 ? (
                         <p className="text-center text-[12px] text-gray-400 mt-6">Nenhuma mensagem ainda. Diga oi!</p>
                     ) : (
                         chatMensagens.map((msg, idx) => {
                             const minha = msg.usuario_id === usuario?.id;
                             const anterior = chatMensagens[idx - 1];
-                            const mostrarCabecalho = !anterior || anterior.usuario_id !== msg.usuario_id;
+                            const proxima = chatMensagens[idx + 1];
+                            const primeiraDoGrupo = !anterior || anterior.usuario_id !== msg.usuario_id;
+                            const ultimaDoGrupo = !proxima || proxima.usuario_id !== msg.usuario_id;
                             const nome = nomeDoUsuarioChat(msg.usuario_id);
 
                             return (
-                                <div key={msg.id} className={`flex items-end gap-2 group ${minha ? 'flex-row-reverse' : ''}`}>
-                                    {mostrarCabecalho ? (
+                                <div key={msg.id} className={`flex items-end gap-2 group ${minha ? 'flex-row-reverse' : ''} ${idx === 0 ? '' : primeiraDoGrupo ? 'mt-3' : 'mt-0.5'}`}>
+                                    {ultimaDoGrupo ? (
                                         <Avatar nome={nome} avatarUrl={avatarPara(msg.usuario_id)} className="w-7 h-7 text-[10px]" />
                                     ) : (
                                         <div className="w-7 shrink-0" />
                                     )}
                                     <div className={`flex flex-col max-w-[75%] ${minha ? 'items-end' : 'items-start'}`}>
-                                        {mostrarCabecalho && !minha && (
+                                        {primeiraDoGrupo && !minha && (
                                             <span className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 mb-1 px-1">{nome}</span>
                                         )}
-                                        <div className={`relative px-3.5 py-2 text-[13px] leading-snug break-words rounded-2xl ${minha ? 'bg-brand text-white rounded-br-sm' : 'bg-white dark:bg-darkElevated text-gray-800 dark:text-[#EDEDED] rounded-bl-sm border border-gray-100 dark:border-darkBorder'}`}>
+                                        <div className={`relative px-3.5 py-2 text-[13px] leading-snug break-words ${bordaBolha(minha, primeiraDoGrupo, ultimaDoGrupo)} ${minha ? 'bg-brand text-white' : 'bg-white dark:bg-darkElevated text-gray-800 dark:text-[#EDEDED] border border-gray-100 dark:border-darkBorder'}`}>
                                             {msg.conteudo}
                                             {(minha || isAdmin) && (
                                                 <button
@@ -140,7 +154,9 @@ export default function ChatPanel() {
                                                 </button>
                                             )}
                                         </div>
-                                        <span className="text-[10px] text-gray-400 mt-1 px-1">{formatarHora(msg.criado_em)}</span>
+                                        {ultimaDoGrupo && (
+                                            <span className="text-[10px] text-gray-400 mt-1 px-1">{formatarHora(msg.criado_em)}</span>
+                                        )}
                                     </div>
                                 </div>
                             );

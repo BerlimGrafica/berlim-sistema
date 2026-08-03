@@ -3,11 +3,11 @@ import React from 'react';
 import { useAppContext } from '@/context/AppContext';
 import Icon from '@/components/Icon';
 import Tooltip from '@/components/Tooltip';
-import { formatarDataExibicao, obterResumoServicos } from '@/lib/utils';
+import { STATUSES_FINALIZADOS, formatarDataExibicao, obterResumoServicos, mascararCliente } from '@/lib/utils';
 
 
 export default function DashboardTab() {
-    const { usuario, pedidos, alertasNaoLidos, setAlertasNaoLidos, setAbaAtual, setBuscaProducaoText, abrirEdicao, tarefasInternas, setModalTarefaAberto, setNovaTarefa } = useAppContext();
+    const { usuario, pedidos, isDemo, alertasNaoLidos, setAlertasNaoLidos, setAbaAtual, setBuscaProducaoText, abrirEdicao, tarefasInternas, setModalTarefaAberto, setNovaTarefa } = useAppContext();
 
     return (
         <>
@@ -40,8 +40,7 @@ export default function DashboardTab() {
 
                             {/* KPIs */}
                             {(() => {
-                                const statusIgnorados = ['Concluída', 'Finalizada', 'Cancelada', 'Abandonada'];
-                                const minhasTarefas = pedidos.filter(p => p.responsavel && p.responsavel.toLowerCase().includes(usuario?.nome?.toLowerCase()) && !statusIgnorados.includes(p.status));
+                                const minhasTarefas = pedidos.filter(p => p.responsavel && p.responsavel.toLowerCase().includes(usuario?.nome?.toLowerCase()) && !STATUSES_FINALIZADOS.includes(p.status));
                                 const tarefasAtrasadas = minhasTarefas.filter(p => {
                                     if(!p.prazo) return false;
                                     const prazo = new Date(p.prazo + 'T23:59:59');
@@ -147,8 +146,7 @@ export default function DashboardTab() {
                                         </thead>
                                         <tbody>
                                             {(() => {
-                                                const statusIgnorados = ['Concluída', 'Finalizada', 'Cancelada', 'Abandonada'];
-                                                const minhasTarefas = pedidos.filter(p => p.responsavel && p.responsavel.toLowerCase().includes(usuario?.nome?.toLowerCase()) && !statusIgnorados.includes(p.status)).slice(0, 5);
+                                                const minhasTarefas = pedidos.filter(p => p.responsavel && p.responsavel.toLowerCase().includes(usuario?.nome?.toLowerCase()) && !STATUSES_FINALIZADOS.includes(p.status)).slice(0, 5);
 
                                                 if (minhasTarefas.length === 0) {
                                                     return (
@@ -167,7 +165,7 @@ export default function DashboardTab() {
                                                     <tr key={t.id} onClick={() => abrirEdicao(t)} className="border-b border-gray-50 dark:border-darkBorder/50 hover:bg-gray-50/80 dark:hover:bg-darkHover/80 transition group cursor-pointer">
                                                         <td className="px-4 py-3">
                                                             <p className="text-[12px] font-bold text-gray-900 dark:text-gray-200">#{t.id}</p>
-                                                            <p className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 max-w-[130px] truncate">{t.cliente}</p>
+                                                            <p className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 max-w-[130px] truncate">{mascararCliente(t.cliente, isDemo)}</p>
                                                         </td>
                                                         <td className="px-4 py-3 text-[12px] font-medium text-gray-600 dark:text-gray-400 max-w-[120px] truncate">{obterResumoServicos(t.servico)}</td>
                                                         <td className="px-4 py-3">

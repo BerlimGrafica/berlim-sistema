@@ -1,7 +1,7 @@
 "use client";
 import React from 'react';
 import { useAppContext } from '@/context/AppContext';
-import { formatarDataExibicao, formatarValorFinanceiro, desconstruirTextoServico } from '@/lib/utils';
+import { formatarDataExibicao, formatarValorFinanceiro, desconstruirTextoServico, mascararCliente } from '@/lib/utils';
 import Icon from '@/components/Icon';
 
 function extrairItens(orc) {
@@ -14,7 +14,7 @@ function extrairItens(orc) {
 }
 
 export default function PrintLayout() {
-    const { osParaImprimir, orcamentoParaImprimir } = useAppContext();
+    const { osParaImprimir, orcamentoParaImprimir, isDemo } = useAppContext();
 
     if (!osParaImprimir && !orcamentoParaImprimir) return null;
 
@@ -59,7 +59,7 @@ export default function PrintLayout() {
                                 <div className="flex justify-between items-end mb-1">
                                     <div>
                                         <h3 className="font-semibold text-[10px] uppercase text-gray-400 mb-0.5 tracking-wider">Cliente</h3>
-                                        <p className="font-semibold text-base uppercase text-gray-900">{osParaImprimir.cliente}</p>
+                                        <p className="font-semibold text-base uppercase text-gray-900">{mascararCliente(osParaImprimir.cliente, isDemo)}</p>
                                     </div>
                                     <div className="text-right">
                                         <h3 className="font-semibold text-[10px] uppercase text-gray-400 mb-0.5 tracking-wider">Contato</h3>
@@ -147,8 +147,9 @@ export default function PrintLayout() {
 }
 
 function PrintOrcamento({ orc }) {
+    const { isDemo } = useAppContext();
     const itens = extrairItens(orc);
-    const telefone = orc.clienteInfo?.telefone || '';
+    const telefone = isDemo ? '' : (orc.clienteInfo?.telefone || orc.telefone || '');
     const date = new Date(orc.created_at).toLocaleDateString('pt-BR');
     
     // Extract observations: strip [ITENS_JSON] block before parsing
@@ -195,7 +196,7 @@ function PrintOrcamento({ orc }) {
             {/* Client Info */}
             <div className="px-16 mt-8 mb-4">
                 <p className="text-[16px] text-[#00579D]">
-                    <span className="font-bold">Cliente:</span> {orc.cliente}{telefone ? ` - ${telefone}` : ''}
+                    <span className="font-bold">Cliente:</span> {mascararCliente(orc.cliente, isDemo)}{telefone ? ` - ${telefone}` : ''}
                 </p>
             </div>
 

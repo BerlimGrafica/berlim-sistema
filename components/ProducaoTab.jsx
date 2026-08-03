@@ -3,11 +3,11 @@ import React from 'react';
 import { useAppContext } from '@/context/AppContext';
 import Icon from '@/components/Icon';
 import Tooltip from '@/components/Tooltip';
-import { STATUSES_PRODUCAO, obterCorStatus, CustomDatePicker, InlineDropdown, MultiSelectDropdown, ItensChecklist } from '@/lib/utils';
+import { STATUSES_PRODUCAO, obterCorStatus, mascararCliente, CustomDatePicker, InlineDropdown, MultiSelectDropdown, ItensChecklist } from '@/lib/utils';
 
 
 export default function ProducaoTab() {
-    const { buscaProducaoText, setBuscaProducaoText, setPedidoEmEdicao, setModalAberto, pedidosProducaoAtivos, isClienteProblema, opcoesStatusPermitidas, abrirEdicao, atualizarCampoInline, usuariosSistema } = useAppContext();
+    const { buscaProducaoText, setBuscaProducaoText, setPedidoEmEdicao, setModalAberto, pedidosProducaoAtivos, isClienteProblema, isDemo, opcoesStatusPermitidas, abrirEdicao, atualizarCampoInline, usuariosSistema } = useAppContext();
     const nomesResponsaveis = usuariosSistema.map(u => u.nome);
 
     const handleAtualizarCampo = (id, campo, valor) => {
@@ -22,7 +22,7 @@ export default function ProducaoTab() {
     return (
         <>
             { (
-                    <main className="flex-1 p-6 lg:p-10 mx-auto w-full flex flex-col h-[calc(100vh-60px)]">
+                    <main className="flex-1 p-6 lg:p-10 mx-auto w-full flex flex-col min-h-[calc(100vh-60px)]">
                         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 mb-6 border-b border-gray-100 dark:border-darkBorder pb-6 shrink-0">
                             <div>
                                 <h1 className="text-2xl lg:text-3xl font-black text-gray-900 dark:text-white tracking-tight">Produção</h1>
@@ -42,10 +42,9 @@ export default function ProducaoTab() {
                             </div>
                         </div>
 
-                        <div className="flex-1 bg-white dark:bg-darkCard rounded border border-gray-200 dark:border-darkBorder overflow-hidden flex flex-col">
-                            <div className="overflow-auto custom-scrollbar flex-1">
-                                <table className="w-full text-left border-collapse whitespace-nowrap">
-                                    <thead className="sticky top-0 z-10 bg-gray-50/50 dark:bg-darkHover/50 border-t-2 border-brand">
+                        <div className="flex-1 bg-white dark:bg-darkCard rounded border border-gray-200 dark:border-darkBorder overflow-x-auto custom-scrollbar">
+                            <table className="w-full text-left border-collapse whitespace-nowrap">
+                                <thead className="rounded-t bg-gray-50/50 dark:bg-darkHover/50 border-t-2 border-brand">
                                         <tr className="border-b border-gray-200 dark:border-darkBorder text-[13px] font-semibold text-gray-500 dark:text-gray-400 tracking-wide uppercase text-center">
                                             <th className="px-6 py-4 w-24">ID</th>
                                             <th className="px-6 py-4 w-32">Prazo</th>
@@ -86,7 +85,7 @@ export default function ProducaoTab() {
                                                                 <td className="px-4 py-3"><CustomDatePicker value={p.prazo || ''} onChange={val => handleAtualizarCampo(p.id, 'prazo', val)} placeholder="Definir prazo..." className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-2.5 py-1.5 text-[11px] outline-none hover:border-brand transition text-gray-700 dark:text-[#EDEDED]" /></td>
                                                                 <td className="px-4 py-3"><MultiSelectDropdown value={p.responsavel} options={nomesResponsaveis} onChange={(val) => handleAtualizarCampo(p.id, 'responsavel', val)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-2.5 py-1.5 text-[11px] outline-none hover:border-brand" /></td>
                                                                 <td className={`px-4 py-3 font-semibold truncate max-w-[12rem] ${isClienteProblema(p.cliente) ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-white'}`}>
-                                                                    <div className="flex items-center gap-1.5">{p.cliente} {isClienteProblema(p.cliente) && <Icon name="alert-triangle" className="w-3.5 h-3.5 text-red-500 shrink-0" title="Cliente Problema" />}</div>
+                                                                    <div className="flex items-center gap-1.5">{mascararCliente(p.cliente, isDemo)} {isClienteProblema(p.cliente) && <Icon name="alert-triangle" className="w-3.5 h-3.5 text-red-500 shrink-0" title="Cliente Problema" />}</div>
                                                                 </td>
                                                                 <td className="px-4 py-3 text-gray-800 dark:text-white font-medium"><ItensChecklist pedido={p} atualizarCampoInline={handleAtualizarCampo} /></td>
                                                                 <td className="px-4 py-3">
@@ -128,8 +127,7 @@ export default function ProducaoTab() {
                                             })
                                         )}
                                     </tbody>
-                                </table>
-                            </div>
+                            </table>
                         </div>
                     </main>
                 )}

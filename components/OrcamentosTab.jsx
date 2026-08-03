@@ -3,11 +3,11 @@ import React, { useState, useMemo } from 'react';
 import { useAppContext } from '@/context/AppContext';
 import Icon from '@/components/Icon';
 import Tooltip from '@/components/Tooltip';
-import { formatarMoeda, obterDataAtual } from '@/lib/utils';
+import { formatarMoeda, obterDataAtual, mascararCliente } from '@/lib/utils';
 
 
 export default function OrcamentosTab() {
-    const { setAbaOrcamentos, abaOrcamentos, setOrcamentoFormalizadoEmEdicao, setBuscaCliente, setItensPedido, setNovoPedido, setModalOrcamentoFormalizadoAberto, orcamentosFormalizados, abaAtual, isAdmin, setNovoOrcamentoPre, setModalOrcamentoPreAberto, orcamentosPreProntos, abrirEdicaoOrcamento, transformarEmOS, baixarPDFOrcamento, excluirOrcamentoFormalizado, excluirOrcamentoPre } = useAppContext();
+    const { setAbaOrcamentos, abaOrcamentos, setOrcamentoFormalizadoEmEdicao, setBuscaCliente, setItensPedido, setNovoPedido, setModalOrcamentoFormalizadoAberto, orcamentosFormalizados, abaAtual, isAdmin, isDemo, setNovoOrcamentoPre, setModalOrcamentoPreAberto, orcamentosPreProntos, abrirEdicaoOrcamento, transformarEmOS, baixarPDFOrcamento, excluirOrcamentoFormalizado, excluirOrcamentoPre } = useAppContext();
     const [buscaPreProntos, setBuscaPreProntos] = useState('');
 
     const orcsFiltrados = useMemo(() => {
@@ -83,7 +83,7 @@ export default function OrcamentosTab() {
                                                     <div className="text-[13px] font-semibold text-gray-800 dark:text-[#EDEDED]">{orc.criado_por || '---'}</div>
                                                     <div className="text-[11px] text-gray-400 mt-0.5">{new Date(orc.created_at).toLocaleDateString('pt-BR')}</div>
                                                 </td>
-                                                <td className="px-6 py-4 text-[13px] font-medium text-gray-900 dark:text-gray-300">{orc.cliente}</td>
+                                                <td className="px-6 py-4 text-[13px] font-medium text-gray-900 dark:text-gray-300">{mascararCliente(orc.cliente, isDemo)}</td>
                                                 <td className="px-6 py-4 text-[13px] font-medium text-emerald-600 dark:text-emerald-400">R$ {formatarMoeda((orc.valor * 100).toFixed(0).toString())}</td>
                                                 <td className="px-6 py-4 text-[13px] text-right flex justify-end gap-1">
                                                     <Tooltip label="Aprovar e Transformar em O.S.">
@@ -163,17 +163,13 @@ export default function OrcamentosTab() {
                         ) : (
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {orcsFiltrados.map(orc => (
-                                    <div key={orc.id} onClick={() => { setNovoOrcamentoPre(orc); setModalOrcamentoPreAberto(true); }} className="bg-white dark:bg-darkCard rounded-xl shadow-sm border border-gray-200 dark:border-darkBorder p-5 flex flex-col gap-3 group relative cursor-pointer hover:border-brand/50 transition-colors">
-                                        <div className="flex justify-between items-start gap-3">
-                                            <div className="flex flex-col gap-1.5 flex-1">
-                                                <div className="flex items-center gap-2">
-                                                    <h3 className="font-bold text-gray-900 dark:text-white leading-tight">{orc.titulo}</h3>
-                                                    {orc.empresa === 'Futura' ? (
-                                                        <span className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">Futura</span>
-                                                    ) : (
-                                                        <span className="bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">Berlim</span>
-                                                    )}
-                                                </div>
+                                    <div key={orc.id} onClick={() => { setNovoOrcamentoPre(orc); setModalOrcamentoPreAberto(true); }} className="bg-white dark:bg-darkCard rounded-xl shadow-sm border border-gray-200 dark:border-darkBorder flex flex-col group relative cursor-pointer hover:border-brand/50 transition-colors">
+                                        <div className="flex justify-between items-start gap-3 px-5 py-3.5 bg-gray-50/70 dark:bg-darkElevated/60 rounded-t-xl border-b border-dashed border-gray-300 dark:border-darkBorder">
+                                            <div className="flex flex-col flex-1 min-w-0">
+                                                <h3 className="font-bold text-gray-900 dark:text-white leading-tight truncate">{orc.titulo}</h3>
+                                                <p className={`text-[11px] font-semibold uppercase tracking-wide mt-1 ${orc.empresa === 'Futura' ? 'text-blue-600 dark:text-blue-400' : 'text-orange-600 dark:text-orange-400'}`}>
+                                                    {orc.empresa === 'Futura' ? 'Futura' : 'Berlim'}
+                                                </p>
                                             </div>
                                             {isAdmin && (
                                                 <div className="flex gap-1 shrink-0">
@@ -181,15 +177,17 @@ export default function OrcamentosTab() {
                                                 </div>
                                             )}
                                         </div>
-                                        <pre className="text-[13px] text-gray-600 dark:text-[#A1A1AA] whitespace-pre-wrap font-sans bg-gray-50 dark:bg-darkElevated p-3 rounded-lg flex-1">
-                                            {orc.texto}
-                                        </pre>
-                                        <button onClick={(e) => {
-                                            e.stopPropagation();
-                                            navigator.clipboard.writeText(orc.texto);
-                                        }} className="mt-2 text-[11px] font-semibold text-brand hover:underline flex items-center gap-1 self-start">
-                                            <Icon name="copy" className="w-3 h-3" /> Copiar Texto
-                                        </button>
+                                        <div className="flex flex-col gap-3 p-5 flex-1">
+                                            <pre className="text-[13px] text-gray-600 dark:text-[#A1A1AA] whitespace-pre-wrap font-sans bg-gray-50 dark:bg-darkElevated p-3 rounded-lg flex-1">
+                                                {orc.texto}
+                                            </pre>
+                                            <button onClick={(e) => {
+                                                e.stopPropagation();
+                                                navigator.clipboard.writeText(orc.texto);
+                                            }} className="text-[11px] font-semibold text-brand hover:underline flex items-center gap-1 self-start">
+                                                <Icon name="copy" className="w-3 h-3" /> Copiar Texto
+                                            </button>
+                                        </div>
                                     </div>
                                 ))}
                             </div>

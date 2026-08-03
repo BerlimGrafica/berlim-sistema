@@ -3,7 +3,7 @@ import React, { useState, useRef } from "react";
 import { useAppContext, supabase } from "@/context/AppContext";
 import Icon from "@/components/Icon";
 import Tooltip from "@/components/Tooltip";
-import { formatarValorFinanceiro, formatarMoeda, parseValorMoeda, formatarTelefone, formatarCnpjCpf, obterDataAtual, CustomDatePicker, CustomSelect, InlineDropdown, MultiSelectDropdown, ToggleCard, SegmentedControl } from '@/lib/utils';
+import { formatarValorFinanceiro, formatarMoeda, parseValorMoeda, formatarTelefone, formatarCnpjCpf, obterDataAtual, mascararCliente, CustomDatePicker, CustomSelect, InlineDropdown, MultiSelectDropdown, ToggleCard, SegmentedControl } from '@/lib/utils';
 
 const CATEGORIAS_CONTA = [
     { value: 'Despesa', label: 'Despesa', icon: 'dollar-sign' },
@@ -12,7 +12,7 @@ const CATEGORIAS_CONTA = [
 ];
 
 export default function Modals() {
-    const { modalAberto, fecharModalOS, pedidoEmEdicao, isModalTrancado, novoPedido, setNovoPedido, opcoesStatusPermitidas, buscaCliente, setBuscaCliente, setClienteDropdownAberto, clienteDropdownAberto, clientesFiltrados, setNovoCliente, setModalClienteAberto, isClienteProblema, itensPedido, buscaProduto, setBuscaProduto, setProdutoDropdownAberto, produtoDropdownAberto, produtosFiltrados, setItemAtual, itemAtual, isAdmin, setNovoProduto, setModalProdutoAberto, salvandoProduto, fornecedores, pagamentosPedido, setPagamentosPedido, novoPagamento, setNovoPagamento, salvandoOS, usuario, modalProdutoAberto, novoProduto, modalOrcamentoPreAberto, setModalOrcamentoPreAberto, novoOrcamentoPre, setNovoOrcamentoPre, modalOrcamentoFormalizadoAberto, setModalOrcamentoFormalizadoAberto, orcamentoFormalizadoEmEdicao, modalFornecedorAberto, setModalFornecedorAberto, novoFornecedor, setNovoFornecedor, modalClienteAberto, novoCliente, salvandoCliente, modalEmpresaFaturamentoAberto, novaEmpresaFaturamento, setModalEmpresaFaturamentoAberto, setNovaEmpresaFaturamento, salvandoEmpresa, modalContaAberto, setModalContaAberto, novaConta, setNovaConta, salvandoConta, modalNotaFiscalAberto, notaFiscalEmEdicao, setModalNotaFiscalAberto, setNotaFiscalEmEdicao, salvandoNotaFiscal, modalUsuarioAberto, setModalUsuarioAberto, novoUsuario, setNovoUsuario, salvarOS, removerItemDoCarrinho, adicionarItemAoCarrinho, salvarEdicaoItemCarrinho, salvarProduto, salvarOrcamentoPre, salvarOrcamentoFormalizado, carregarDados, salvarCliente, salvarEmpresaFaturamento, salvarConta, salvarNotaFiscal, salvarUsuario, modalRequisicaoAberto, setModalRequisicaoAberto, novaRequisicao, setNovaRequisicao, salvarRequisicao, modalTarefaAberto, setModalTarefaAberto, novaTarefa, setNovaTarefa, salvarTarefa, modalLinkAberto, setModalLinkAberto, novoLink, setNovoLink, salvarLink, usuariosSistema } = useAppContext();
+    const { modalAberto, fecharModalOS, pedidoEmEdicao, isModalTrancado, novoPedido, setNovoPedido, opcoesStatusPermitidas, buscaCliente, setBuscaCliente, isDemo, setClienteDropdownAberto, clienteDropdownAberto, clientesFiltrados, setNovoCliente, setModalClienteAberto, isClienteProblema, itensPedido, buscaProduto, setBuscaProduto, setProdutoDropdownAberto, produtoDropdownAberto, produtosFiltrados, setItemAtual, itemAtual, isAdmin, setNovoProduto, setModalProdutoAberto, salvandoProduto, fornecedores, pagamentosPedido, setPagamentosPedido, novoPagamento, setNovoPagamento, salvandoOS, usuario, modalProdutoAberto, novoProduto, modalOrcamentoPreAberto, setModalOrcamentoPreAberto, novoOrcamentoPre, setNovoOrcamentoPre, modalOrcamentoFormalizadoAberto, setModalOrcamentoFormalizadoAberto, orcamentoFormalizadoEmEdicao, modalFornecedorAberto, setModalFornecedorAberto, novoFornecedor, setNovoFornecedor, modalClienteAberto, novoCliente, salvandoCliente, modalEmpresaFaturamentoAberto, novaEmpresaFaturamento, setModalEmpresaFaturamentoAberto, setNovaEmpresaFaturamento, salvandoEmpresa, modalContaAberto, setModalContaAberto, novaConta, setNovaConta, salvandoConta, modalNotaFiscalAberto, notaFiscalEmEdicao, setModalNotaFiscalAberto, setNotaFiscalEmEdicao, salvandoNotaFiscal, modalUsuarioAberto, setModalUsuarioAberto, novoUsuario, setNovoUsuario, salvarOS, removerItemDoCarrinho, adicionarItemAoCarrinho, salvarEdicaoItemCarrinho, salvarProduto, salvarOrcamentoPre, salvarOrcamentoFormalizado, carregarDados, salvarCliente, salvarEmpresaFaturamento, salvarConta, salvarNotaFiscal, salvarUsuario, modalRequisicaoAberto, setModalRequisicaoAberto, novaRequisicao, setNovaRequisicao, salvarRequisicao, modalTarefaAberto, setModalTarefaAberto, novaTarefa, setNovaTarefa, salvarTarefa, modalLinkAberto, setModalLinkAberto, novoLink, setNovoLink, salvarLink, usuariosSistema } = useAppContext();
     const nomesResponsaveis = usuariosSistema.map(u => u.nome);
     const tipoFornecedorContaNecessario = novaConta.categoria === 'Manutenção' ? 'Manutenção' : novaConta.categoria === 'Terceirização' ? 'Produção' : null;
     const fornecedoresParaConta = tipoFornecedorContaNecessario ? fornecedores.filter(f => f.tipo === tipoFornecedorContaNecessario) : [];
@@ -117,7 +117,7 @@ export default function Modals() {
                                     <label className="block text-[13px] font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Cliente / Empresa</label>
                                     <div className="flex gap-2">
                                         <div className="relative flex-1">
-                                            <input required type="text" value={buscaCliente} disabled={isModalTrancado}
+                                            <input required type="text" value={mascararCliente(buscaCliente, isDemo)} disabled={isModalTrancado}
                                                 onChange={e => { setBuscaCliente(e.target.value); setNovoPedido({...novoPedido, cliente: e.target.value}); setClienteDropdownAberto(true); }}
                                                 onFocus={() => { if(!isModalTrancado) setClienteDropdownAberto(true); }} onBlur={() => setTimeout(() => setClienteDropdownAberto(false), 200)}
                                                 className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand transition dark:text-[#EDEDED] disabled:opacity-50" placeholder="Buscar cliente..." autoComplete="off" />
@@ -349,7 +349,10 @@ export default function Modals() {
                                                                 </div>
                                                             </div>
                                                             <div className="flex items-center gap-3 shrink-0">
-                                                                <span className="font-bold text-[13px] text-emerald-600 dark:text-emerald-400">R$ {pag.valor}</span>
+                                                                <div className="flex flex-col items-end">
+                                                                    <span className="font-bold text-[13px] text-emerald-600 dark:text-emerald-400">R$ {pag.valor}</span>
+                                                                    {pag.instituicao && <span className="text-[10px] bg-brand/10 text-brand font-semibold px-1.5 py-0.5 rounded mt-1.5 w-max">{pag.instituicao}</span>}
+                                                                </div>
                                                                 {!isModalTrancado && (
                                                                     <button type="button" onClick={(e) => {
                                                                         e.stopPropagation();
@@ -571,7 +574,7 @@ export default function Modals() {
                                     <label className="block text-[13px] font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Cliente / Empresa</label>
                                     <div className="flex gap-2">
                                         <div className="relative flex-1">
-                                            <input required type="text" value={buscaCliente}
+                                            <input required type="text" value={mascararCliente(buscaCliente, isDemo)}
                                                 onChange={e => { setBuscaCliente(e.target.value); setNovoPedido({...novoPedido, cliente: e.target.value}); setClienteDropdownAberto(true); }}
                                                 onFocus={() => { setClienteDropdownAberto(true); }} onBlur={() => setTimeout(() => setClienteDropdownAberto(false), 200)}
                                                 className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand transition dark:text-[#EDEDED]" placeholder="Buscar cliente..." autoComplete="off" />
@@ -617,12 +620,16 @@ export default function Modals() {
                                     {itensPedido.length > 0 ? (
                                         <div className="flex flex-col gap-2">
                                             {itensPedido.map((item, index) => (
-                                                <div key={item.id_temp} className="flex justify-between items-start gap-3 p-3 bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded-lg shadow-sm">
+                                                <div key={item.id_temp} onClick={() => {
+                                                    setItemAtual({ nome: item.nome || '', descricao: item.descricao || '', valor: item.valor_original || item.valor, desconto: item.desconto || '', local_producao: item.local_producao || 'Berlim', id_produto: item.id_produto || null });
+                                                    setBuscaProduto(item.nome || '');
+                                                    setItemEditandoId(item.id_temp);
+                                                }} className={`flex justify-between items-start gap-3 p-3 bg-white dark:bg-darkElevated border rounded-lg shadow-sm transition cursor-pointer hover:border-brand/60 ${itemEditandoId === item.id_temp ? 'border-brand ring-1 ring-brand' : 'border-gray-200 dark:border-darkBorder'}`}>
                                                     <div className="flex items-start gap-3 min-w-0">
                                                         <span className="w-6 h-6 shrink-0 rounded-full bg-blue-100 dark:bg-blue-500/20 text-[11px] font-bold text-blue-700 dark:text-blue-400 flex items-center justify-center mt-0.5">{index + 1}</span>
                                                         <div className="flex flex-col min-w-0"><span className="font-semibold text-[13px] dark:text-white">{item.nome || 'Serviço Personalizado'}</span><span className="text-[11px] text-gray-500 dark:text-[#A1A1AA] whitespace-pre-wrap mt-1">{item.descricao}</span>{item.local_producao && <span className="text-[10px] bg-brand/10 text-brand font-semibold px-1.5 py-0.5 rounded mt-1.5 w-max">Local: {item.local_producao}</span>}</div>
                                                     </div>
-                                                    <div className="flex items-center gap-4 shrink-0"><div className="text-right"><span className="font-bold text-[13px] dark:text-white">R$ {item.valor}</span>{item.desconto && <span className="block text-[10px] text-brand font-medium">-{item.desconto}% desc</span>}</div><button type="button" onClick={() => removerItemDoCarrinho(item.id_temp)} className="text-red-400 hover:text-red-600 transition"><Icon name="trash-2" className="w-4 h-4" /></button></div>
+                                                    <div className="flex items-center gap-4 shrink-0"><div className="text-right"><span className="font-bold text-[13px] dark:text-white">R$ {item.valor}</span>{item.desconto && <span className="block text-[10px] text-brand font-medium">-{item.desconto}% desc</span>}</div><button type="button" onClick={(e) => { e.stopPropagation(); if (itemEditandoId === item.id_temp) { setItemEditandoId(null); setItemAtual({ nome: '', descricao: '', valor: '', desconto: '', local_producao: 'Berlim', id_produto: null }); setBuscaProduto(''); } removerItemDoCarrinho(item.id_temp); }} className="text-red-400 hover:text-red-600 transition"><Icon name="trash-2" className="w-4 h-4" /></button></div>
                                                 </div>
                                             ))}
                                         </div>
@@ -682,7 +689,16 @@ export default function Modals() {
                                                 </div>
                                                 <div><input type="text" value={itemAtual.desconto} onChange={e => { let val = e.target.value.replace(/\D/g, ''); if (parseFloat(val) > 100) val = '100'; setItemAtual({...itemAtual, desconto: val}); }} className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-2 py-2 text-[11px] outline-none focus:border-brand transition dark:text-[#EDEDED]" placeholder="Desc. %" /></div>
                                             </div>
-                                            <button type="button" onClick={adicionarItemAoCarrinho} disabled={!itemAtual.descricao || !itemAtual.valor} className="w-full mt-1 px-3 py-2 text-[11px] font-semibold bg-white hover:bg-gray-100 dark:bg-darkHover dark:hover:bg-darkBorder text-gray-800 dark:text-white rounded border border-gray-200 dark:border-darkBorder transition shadow-sm disabled:opacity-50 flex items-center justify-center gap-1.5"><Icon name="plus" className="w-3.5 h-3.5"/> Inserir Item no Orçamento</button>
+                                            <div className="flex gap-2 mt-1">
+                                                {itemEditandoId !== null && (
+                                                    <button type="button" onClick={() => { setItemEditandoId(null); setItemAtual({ nome: '', descricao: '', valor: '', desconto: '', local_producao: 'Berlim', id_produto: null }); setBuscaProduto(''); }} className="px-3 py-2 text-[11px] font-semibold text-gray-500 hover:bg-gray-100 dark:hover:bg-darkHover rounded transition">Cancelar</button>
+                                                )}
+                                                {itemEditandoId !== null ? (
+                                                    <button type="button" onClick={() => { salvarEdicaoItemCarrinho(itemEditandoId); setItemEditandoId(null); }} disabled={!itemAtual.descricao || !itemAtual.valor} className="flex-1 px-3 py-2 text-[11px] font-semibold bg-brand hover:bg-brandHover text-white rounded transition shadow-sm disabled:opacity-50 flex items-center justify-center gap-1.5"><Icon name="check" className="w-3.5 h-3.5"/> Salvar Alterações</button>
+                                                ) : (
+                                                    <button type="button" onClick={adicionarItemAoCarrinho} disabled={!itemAtual.descricao || !itemAtual.valor} className="flex-1 px-3 py-2 text-[11px] font-semibold bg-white hover:bg-gray-100 dark:bg-darkHover dark:hover:bg-darkBorder text-gray-800 dark:text-white rounded border border-gray-200 dark:border-darkBorder transition shadow-sm disabled:opacity-50 flex items-center justify-center gap-1.5"><Icon name="plus" className="w-3.5 h-3.5"/> Inserir Item no Orçamento</button>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -1010,7 +1026,7 @@ export default function Modals() {
             )}
 {modalUsuarioAberto && (
                 <div {...fecharAoClicarFora(() => setModalUsuarioAberto(false))} className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer animate-modal-backdrop">
-                    <div className="bg-[#EDEFF0] dark:bg-darkBg w-full max-w-md rounded shadow-2xl overflow-hidden border border-gray-200 dark:border-darkBorder animate-modal-in" onClick={(e) => e.stopPropagation()}>
+                    <div className="bg-[#EDEFF0] dark:bg-darkBg w-full max-w-md rounded shadow-2xl border border-gray-200 dark:border-darkBorder animate-modal-in" onClick={(e) => e.stopPropagation()}>
                         <div className="px-6 py-5 flex justify-between items-center bg-brand text-white rounded-t"><h3 className="font-semibold text-lg tracking-tight">{novoUsuario.id ? 'Editar Conta' : 'Nova Conta de Acesso'}</h3><button onClick={() => setModalUsuarioAberto(false)} className="text-white/70 hover:text-white transition"><Icon name="x" /></button></div>
                         <form onSubmit={salvarUsuario} className="p-6 flex flex-col gap-4">
                             <div>
@@ -1038,6 +1054,7 @@ export default function Modals() {
                                         { value: 'Produção', label: 'Produção' },
                                         { value: 'Financeiro', label: 'Equipe Financeira' },
                                         { value: 'Administrador', label: 'Administrador (Total)' },
+                                        { value: 'demo', label: 'Demonstração (somente leitura)' },
                                     ]}
                                 />
                             </div>
