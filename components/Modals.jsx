@@ -795,7 +795,7 @@ export default function Modals() {
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-[13px] font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">WhatsApp</label>
-                                    <input value={novoCliente.telefone} onChange={e => setNovoCliente({...novoCliente, telefone: formatarTelefone(e.target.value)})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition" placeholder="WhatsApp" />
+                                    <input value={novoCliente.telefone} onChange={e => setNovoCliente({...novoCliente, telefone: formatarTelefone(e.target.value)})} className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition" placeholder="(00) 00000-0000" />
                                 </div>
                                 <div>
                                     <label className="block text-[13px] font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">E-mail</label>

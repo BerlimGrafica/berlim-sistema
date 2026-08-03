@@ -1727,11 +1727,14 @@ export const AppProvider = ({ children }) => {
     async function imprimirOS(pedido) {
         setOrcamentoParaImprimir(null);
         setOsParaImprimir(pedido);
-        const { data } = await supabase.from('clientes').select('*').eq('nome', pedido.cliente).single();
+        // Pedido guarda o cliente como texto solto (sem vínculo por ID com a tabela
+        // clientes) — usa ilike/trim pra não perder o telefone por causa de
+        // maiúscula ou espaço divergente entre o nome no pedido e o cadastro atual.
+        const { data } = await supabase.from('clientes').select('*').ilike('nome', (pedido.cliente || '').trim()).limit(1).maybeSingle();
         if (data) {
             setOsParaImprimir(prev => ({...prev, clienteInfo: data}));
         }
-        setTimeout(() => window.print(), 200);
+        window.print();
     }
 
     const clientesFiltrados = clientes;
