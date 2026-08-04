@@ -233,15 +233,15 @@ export function CalculadoraAdesivo({ produtos }) {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                 <div>
-                    <label className="block text-[11px] font-semibold text-gray-500 mb-1">Largura Unitária (cm)</label>
+                    <label className="block text-[11px] font-semibold text-gray-500 dark:text-[#A1A1AA] mb-1">Largura Unitária (cm)</label>
                     <input type="text" value={largura} onChange={e => setLargura(e.target.value)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition" placeholder="Ex: 5" />
                 </div>
                 <div>
-                    <label className="block text-[11px] font-semibold text-gray-500 mb-1">Altura Unitária (cm)</label>
+                    <label className="block text-[11px] font-semibold text-gray-500 dark:text-[#A1A1AA] mb-1">Altura Unitária (cm)</label>
                     <input type="text" value={altura} onChange={e => setAltura(e.target.value)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition" placeholder="Ex: 5" />
                 </div>
                 <div>
-                    <label className="block text-[11px] font-semibold text-gray-500 mb-1">Tipo de Adesivo</label>
+                    <label className="block text-[11px] font-semibold text-gray-500 dark:text-[#A1A1AA] mb-1">Tipo de Adesivo</label>
                     <CustomSelect
                         value={tipo}
                         onChange={setTipo}
@@ -254,7 +254,7 @@ export function CalculadoraAdesivo({ produtos }) {
                     />
                 </div>
                 <div>
-                    <label className="block text-[11px] font-semibold text-gray-500 mb-1">Quantidade</label>
+                    <label className="block text-[11px] font-semibold text-gray-500 dark:text-[#A1A1AA] mb-1">Quantidade</label>
                     <div className="flex">
                         <input type="number" min="1" value={quantidade} onChange={e => setQuantidade(e.target.value)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded-l px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition" />
                         <Tooltip label="Copiar orçamentos de quantidades máximas">

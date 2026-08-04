@@ -74,15 +74,15 @@ export function CalculadoraBanner() {
         <div className="bg-white dark:bg-darkCard p-6 rounded border border-gray-200 dark:border-darkBorder border-t-[3px] border-t-brand dark:border-t-brand">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                 <div>
-                    <label className="block text-[11px] font-semibold text-gray-500 mb-1">Largura (m)</label>
+                    <label className="block text-[11px] font-semibold text-gray-500 dark:text-[#A1A1AA] mb-1">Largura (m)</label>
                     <input type="text" value={largura} onChange={e => setLargura(e.target.value)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition" placeholder="Ex: 1,50" />
                 </div>
                 <div>
-                    <label className="block text-[11px] font-semibold text-gray-500 mb-1">Altura (m)</label>
+                    <label className="block text-[11px] font-semibold text-gray-500 dark:text-[#A1A1AA] mb-1">Altura (m)</label>
                     <input type="text" value={altura} onChange={e => setAltura(e.target.value)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition" placeholder="Ex: 2,00" />
                 </div>
                 <div>
-                    <label className="block text-[11px] font-semibold text-gray-500 mb-1">Tipo de Lona</label>
+                    <label className="block text-[11px] font-semibold text-gray-500 dark:text-[#A1A1AA] mb-1">Tipo de Lona</label>
                     <CustomSelect
                         value={tipo}
                         onChange={setTipo}
@@ -94,7 +94,7 @@ export function CalculadoraBanner() {
                     />
                 </div>
                 <div>
-                    <label className="block text-[11px] font-semibold text-gray-500 mb-1">Acabamento</label>
+                    <label className="block text-[11px] font-semibold text-gray-500 dark:text-[#A1A1AA] mb-1">Acabamento</label>
                     <CustomSelect
                         value={acabamento}
                         onChange={setAcabamento}
@@ -107,7 +107,7 @@ export function CalculadoraBanner() {
                     />
                 </div>
                 <div>
-                    <label className="block text-[11px] font-semibold text-gray-500 mb-1">Prazo de Entrega</label>
+                    <label className="block text-[11px] font-semibold text-gray-500 dark:text-[#A1A1AA] mb-1">Prazo de Entrega</label>
                     <CustomSelect
                         value={prazo}
                         onChange={setPrazo}
@@ -120,7 +120,7 @@ export function CalculadoraBanner() {
                     />
                 </div>
                 <div>
-                    <label className="block text-[11px] font-semibold text-gray-500 mb-1">Quantidade</label>
+                    <label className="block text-[11px] font-semibold text-gray-500 dark:text-[#A1A1AA] mb-1">Quantidade</label>
                     <input type="number" min="1" value={quantidade} onChange={e => setQuantidade(parseInt(e.target.value) || 1)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition" />
                 </div>
             </div>

@@ -36,7 +36,7 @@ export default function OrcamentosTab() {
                         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 mb-6 border-b border-gray-100 dark:border-darkBorder pb-6 shrink-0">
                             <div>
                                 <h1 className="text-2xl lg:text-3xl font-black text-gray-900 dark:text-white tracking-tight">Orçamentos Formalizados</h1>
-                                <p className="text-[13px] text-gray-500 mt-1.5 font-medium max-w-xl">
+                                <p className="text-[13px] text-gray-500 dark:text-[#A1A1AA] mt-1.5 font-medium max-w-xl">
                                     Crie e gerencie orçamentos. Transforme orçamentos aprovados em Ordens de Serviço.
                                 </p>
                             </div>
@@ -124,7 +124,7 @@ export default function OrcamentosTab() {
                         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 mb-6 border-b border-gray-100 dark:border-darkBorder pb-6 shrink-0">
                             <div>
                                 <h1 className="text-2xl lg:text-3xl font-black text-gray-900 dark:text-white tracking-tight">Textos Pré Prontos</h1>
-                                <p className="text-[13px] text-gray-500 mt-1.5 font-medium max-w-xl">
+                                <p className="text-[13px] text-gray-500 dark:text-[#A1A1AA] mt-1.5 font-medium max-w-xl">
                                     Modelos de texto para orçamentos rápidos (Visíveis para a produção, editáveis apenas por Admin).
                                 </p>
                             </div>

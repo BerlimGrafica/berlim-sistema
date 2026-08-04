@@ -65,7 +65,7 @@ export default function BaixaTab() {
                                         const trancado = isOperador && p.status === 'Finalizado';
                                         return (
                                             <tr key={p.id} onClick={() => { if (trancado) return; abrirEdicao(p); }} className={`border-b border-gray-100 dark:border-darkBorder transition ${trancado ? 'opacity-30 bg-[#050505] cursor-not-allowed' : 'cursor-pointer hover:bg-gray-50 dark:hover:bg-darkHover'}`}>
-                                                <td className="px-6 py-4 text-[13px] font-medium text-gray-500"><span className="flex items-center gap-1.5">{trancado && <Icon name="lock" className="w-3 h-3 text-red-500" />}#{p.id}</span></td>
+                                                <td className="px-6 py-4 text-[13px] font-medium text-gray-500 dark:text-[#A1A1AA]"><span className="flex items-center gap-1.5">{trancado && <Icon name="lock" className="w-3 h-3 text-red-500" />}#{p.id}</span></td>
                                                 {isAdmin && (
                                                     <td className="px-6 py-4">
                                                         <div className="text-[13px] font-semibold text-gray-800 dark:text-[#EDEDED]">{p.criado_por || '---'}</div>
@@ -87,7 +87,7 @@ export default function BaixaTab() {
                             </table>
                             {totalPedidosHistorico > itensPorPagina && (
                                 <div className="flex justify-between items-center p-4 border-t border-gray-200 dark:border-darkBorder bg-white dark:bg-darkCard rounded-b-xl">
-                                    <span className="text-[13px] text-gray-500">
+                                    <span className="text-[13px] text-gray-500 dark:text-[#A1A1AA]">
                                         Mostrando {((paginaHistorico - 1) * itensPorPagina) + 1} a {Math.min(paginaHistorico * itensPorPagina, totalPedidosHistorico)} de {totalPedidosHistorico}
                                     </span>
                                     <div className="flex gap-2">

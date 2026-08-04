@@ -68,7 +68,7 @@ export default function ContasAReceberPanel() {
                                             <td className="px-6 py-4">
                                                 <div className="text-[13px] text-gray-600 dark:text-gray-400 truncate max-w-[250px]" title={obterResumoServicos(p.servico)}>{obterResumoServicos(p.servico)}</div>
                                             </td>
-                                            <td className="px-6 py-4 text-[13px] text-center text-gray-500">{formatarDataExibicao(p.data_pedido)}</td>
+                                            <td className="px-6 py-4 text-[13px] text-center text-gray-500 dark:text-[#A1A1AA]">{formatarDataExibicao(p.data_pedido)}</td>
                                             <td className="px-6 py-4 text-center" onClick={(e) => e.stopPropagation()}>
                                                 <CustomDatePicker value={p.prazo_pagamento || ''} onChange={val => atualizarCampoInline(p.id, 'prazo_pagamento', val)} placeholder="Definir prazo..." className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-2.5 py-1.5 text-[11px] outline-none hover:border-brand transition text-gray-700 dark:text-[#EDEDED]" />
                                             </td>

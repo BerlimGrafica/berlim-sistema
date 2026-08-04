@@ -341,7 +341,7 @@ export default function OSModal() {
                                                             {pag.vencimento_boleto && (
                                                                 <span className="text-[11px] text-orange-500 font-semibold">Vencimento: {pag.vencimento_boleto.split('-').reverse().join('/')}</span>
                                                             )}
-                                                            <span className="text-[11px] text-gray-500">{pag.data}</span>
+                                                            <span className="text-[11px] text-gray-500 dark:text-[#A1A1AA]">{pag.data}</span>
                                                         </div>
                                                     </div>
                                                     <div className="flex items-center gap-3 shrink-0">

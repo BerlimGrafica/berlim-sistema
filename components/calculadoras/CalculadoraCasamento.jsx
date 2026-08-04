@@ -68,25 +68,25 @@ export function CalculadoraCasamento() {
             <div className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
-                            <label className="block text-[11px] font-semibold text-gray-500 mb-1">Qtd. de Manuais</label>
+                            <label className="block text-[11px] font-semibold text-gray-500 dark:text-[#A1A1AA] mb-1">Qtd. de Manuais</label>
                             <input type="number" value={manual.qtdManuais} onChange={e => setManual({...manual, qtdManuais: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white" />
                         </div>
                         <div className="flex gap-2">
                             <div className="flex-1">
-                                <label className="block text-[11px] font-semibold text-gray-500 mb-1">Largura (cm)</label>
+                                <label className="block text-[11px] font-semibold text-gray-500 dark:text-[#A1A1AA] mb-1">Largura (cm)</label>
                                 <input type="text" value={manual.largura} onChange={e => setManual({...manual, largura: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white" />
                             </div>
                             <div className="flex-1">
-                                <label className="block text-[11px] font-semibold text-gray-500 mb-1">Altura (cm)</label>
+                                <label className="block text-[11px] font-semibold text-gray-500 dark:text-[#A1A1AA] mb-1">Altura (cm)</label>
                                 <input type="text" value={manual.altura} onChange={e => setManual({...manual, altura: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white" />
                             </div>
                         </div>
                         <div>
-                            <label className="block text-[11px] font-semibold text-gray-500 mb-1">Qtd. Impressões (quadradinhos)</label>
+                            <label className="block text-[11px] font-semibold text-gray-500 dark:text-[#A1A1AA] mb-1">Qtd. Impressões (quadradinhos)</label>
                             <input type="number" value={manual.qtdImpressoes} onChange={e => setManual({...manual, qtdImpressoes: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white" />
                         </div>
                         <div>
-                            <label className="block text-[11px] font-semibold text-gray-500 mb-1">Tipo de Papel</label>
+                            <label className="block text-[11px] font-semibold text-gray-500 dark:text-[#A1A1AA] mb-1">Tipo de Papel</label>
                             <CustomSelect
                                 value={manual.papel}
                                 onChange={(val) => setManual({...manual, papel: val})}
@@ -95,7 +95,7 @@ export function CalculadoraCasamento() {
                             />
                         </div>
                         <div>
-                            <label className="block text-[11px] font-semibold text-gray-500 mb-1">Só Furo?</label>
+                            <label className="block text-[11px] font-semibold text-gray-500 dark:text-[#A1A1AA] mb-1">Só Furo?</label>
                             <CustomSelect
                                 value={manual.furo}
                                 onChange={(val) => setManual({...manual, furo: val})}
@@ -108,26 +108,26 @@ export function CalculadoraCasamento() {
                             />
                         </div>
                         <div>
-                            <label className="block text-[11px] font-semibold text-gray-500 mb-1">Qtd. Variações de Arte</label>
+                            <label className="block text-[11px] font-semibold text-gray-500 dark:text-[#A1A1AA] mb-1">Qtd. Variações de Arte</label>
                             <input type="number" value={manual.qtdVariaveis} onChange={e => setManual({...manual, qtdVariaveis: e.target.value})} className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white" />
                         </div>
                     </div>
 
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-gray-50 dark:bg-darkElevated rounded border border-gray-100 dark:border-darkBorder">
                         <div>
-                            <p className="text-[11px] text-gray-500">Qtd. por A4</p>
+                            <p className="text-[11px] text-gray-500 dark:text-[#A1A1AA]">Qtd. por A4</p>
                             <p className="font-bold dark:text-white">{resultManual.qtdPorA4}</p>
                         </div>
                         <div>
-                            <p className="text-[11px] text-gray-500">Folhas A4 necessárias</p>
+                            <p className="text-[11px] text-gray-500 dark:text-[#A1A1AA]">Folhas A4 necessárias</p>
                             <p className="font-bold dark:text-white">{resultManual.qtdFolhasA4}</p>
                         </div>
                         <div>
-                            <p className="text-[11px] text-gray-500">Custo Furo/Ilhós</p>
+                            <p className="text-[11px] text-gray-500 dark:text-[#A1A1AA]">Custo Furo/Ilhós</p>
                             <p className="font-bold text-gray-700 dark:text-gray-300">R$ {resultManual.custoFuro.toFixed(2).replace('.', ',')}</p>
                         </div>
                         <div>
-                            <p className="text-[11px] text-gray-500">Custo Variações</p>
+                            <p className="text-[11px] text-gray-500 dark:text-[#A1A1AA]">Custo Variações</p>
                             <p className="font-bold text-gray-700 dark:text-gray-300">R$ {resultManual.custoVariavel.toFixed(2).replace('.', ',')}</p>
                         </div>
                     </div>
