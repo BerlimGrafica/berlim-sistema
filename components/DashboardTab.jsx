@@ -1,5 +1,6 @@
 "use client";
 import React from 'react';
+import { useRouter } from 'next/navigation';
 import { useAppContext } from '@/context/AppContext';
 import Icon from '@/components/Icon';
 import Tooltip from '@/components/Tooltip';
@@ -9,7 +10,8 @@ import { obterResumoServicos } from '@/lib/utils/servico';
 
 
 export default function DashboardTab() {
-    const { usuario, pedidos, isDemo, alertasNaoLidos, setAlertasNaoLidos, setAbaAtual, setBuscaProducaoText, abrirEdicao, tarefasInternas, setModalTarefaAberto, setNovaTarefa } = useAppContext();
+    const { usuario, pedidos, isDemo, alertasNaoLidos, setAlertasNaoLidos, setBuscaProducaoText, abrirEdicao, tarefasInternas, setModalTarefaAberto, setNovaTarefa } = useAppContext();
+    const router = useRouter();
 
     return (
         <>
@@ -103,10 +105,10 @@ export default function DashboardTab() {
                                     ) : (
                                         alertasNaoLidos.map((alerta, idx) => (
                                             <div key={idx} className="group bg-rose-50/80 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/30 rounded-xl p-4 flex gap-3 items-start shadow-sm hover:shadow-md hover:bg-rose-50 dark:hover:bg-rose-500/20 transition cursor-pointer backdrop-blur-sm" onClick={() => {
-                                                setAbaAtual('producao');
                                                 if (alerta.os_id) {
                                                     setBuscaProducaoText(alerta.os_id.toString());
                                                 }
+                                                router.push('/producao');
                                             }}>
                                                 <div className="bg-rose-500/20 p-2 rounded-lg shrink-0 mt-0.5">
                                                     <Icon name="alert-triangle" className="w-4 h-4 text-rose-600 dark:text-rose-400" />
@@ -135,7 +137,7 @@ export default function DashboardTab() {
                                     <h3 className="font-bold text-[12px] uppercase tracking-wider text-gray-700 dark:text-gray-300 flex items-center gap-2">
                                         <Icon name="list" className="w-4 h-4 text-brand" /> Fila de Produção
                                     </h3>
-                                    <button onClick={() => setAbaAtual('producao')} className="text-[10px] font-bold text-brand hover:text-brandHover uppercase tracking-wider transition">
+                                    <button onClick={() => router.push('/producao')} className="text-[10px] font-bold text-brand hover:text-brandHover uppercase tracking-wider transition">
                                         Ver Todas &rarr;
                                     </button>
                                 </div>
