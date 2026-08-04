@@ -2,15 +2,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useAppContext } from '@/context/AppContext';
 import Icon from '@/components/Icon';
-
-const PALETA_AVATAR = ['bg-rose-500', 'bg-orange-500', 'bg-amber-500', 'bg-emerald-500', 'bg-teal-500', 'bg-sky-500', 'bg-indigo-500', 'bg-fuchsia-500'];
-
-function corAvatar(nome) {
-    const str = nome || '?';
-    let soma = 0;
-    for (let i = 0; i < str.length; i++) soma += str.charCodeAt(i);
-    return PALETA_AVATAR[soma % PALETA_AVATAR.length];
-}
+import { corPorNome } from '@/lib/utils';
 
 function iniciais(nome) {
     if (!nome) return '?';
@@ -39,8 +31,9 @@ function Avatar({ nome, avatarUrl, className = 'w-7 h-7 text-[10px]' }) {
     if (avatarUrl) {
         return <img src={avatarUrl} alt={nome} referrerPolicy="no-referrer" className={`${className} rounded-full object-cover shrink-0`} />;
     }
+    const { bg, text } = corPorNome(nome);
     return (
-        <div title={nome} className={`${className} rounded-full ${corAvatar(nome)} flex items-center justify-center font-bold text-white shrink-0`}>
+        <div title={nome} className={`${className} rounded-full ${bg} flex items-center justify-center font-bold ${text} shrink-0`}>
             {iniciais(nome)}
         </div>
     );

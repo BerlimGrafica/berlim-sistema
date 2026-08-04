@@ -3,7 +3,7 @@ import React from 'react';
 import { useAppContext } from '@/context/AppContext';
 import Icon from '@/components/Icon';
 import Tooltip from '@/components/Tooltip';
-import { STATUSES_PRODUCAO, obterCorStatus, mascararCliente, CustomDatePicker, InlineDropdown, MultiSelectDropdown, ItensChecklist } from '@/lib/utils';
+import { STATUSES_PRODUCAO, obterCorStatus, mascararCliente, CustomDatePicker, InlineDropdown, MultiSelectDropdown, ItensChecklist, ChipNome } from '@/lib/utils';
 
 
 export default function ProducaoTab() {
@@ -109,8 +109,10 @@ export default function ProducaoTab() {
                                                                 </td>
                                                                 <td className="px-4 py-3"><InlineDropdown value={p.status} options={opcoesStatusPermitidas} onChange={(val) => handleAtualizarCampo(p.id, 'status', val)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-2.5 py-1.5 text-[11px] outline-none hover:border-brand" /></td>
                                                                 <td className="px-4 py-3 align-middle">
-                                                                    <div className="flex items-center justify-center min-h-[32px]">
-                                                                        <span className="text-[11px] font-semibold px-2 py-1 bg-gray-100 dark:bg-darkElevated text-gray-700 dark:text-[#EDEDED] rounded border border-gray-200 dark:border-darkBorder truncate max-w-[150px] inline-block" title={p.local_producao || 'Berlim'}>{p.local_producao || 'Berlim'}</span>
+                                                                    <div className="flex items-center justify-center flex-wrap gap-1 min-h-[32px]">
+                                                                        {(p.local_producao || 'Berlim').split(',').map(s => s.trim()).filter(Boolean).map(local => (
+                                                                            <ChipNome key={local} nome={local} />
+                                                                        ))}
                                                                     </div>
                                                                 </td>
                                                                 <td className="px-4 py-3 text-right">

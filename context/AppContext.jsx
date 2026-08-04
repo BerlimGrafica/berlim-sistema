@@ -107,6 +107,7 @@ export const AppProvider = ({ children }) => {
     const alertasRetiradaDisparados = useRef(new Set());
     const alertasFaturamentoAnaliseDisparados = useRef(new Set());
     const alertasTarefaDisparadas = useRef(new Set());
+    const alertasAtribuicaoDisparadas = useRef(new Set());
     const alertasNotaFiscalDisparadas = useRef(new Set());
     const alertasLinkPagamentoDisparados = useRef(new Set());
     const [modalAlertasAberto, setModalAlertasAberto] = useState(false);
@@ -399,6 +400,29 @@ export const AppProvider = ({ children }) => {
         }
     }
 
+    // Reconciliação da atribuição de O.S.: o alerta "Você foi designado" (no canal
+    // Realtime, mais abaixo) só dispara no instante exato do evento — se a sessão
+    // perdeu esse instante (aba fechada, F5, login depois), nunca mais aparece. Essa
+    // checagem, rodada a cada carregarDados(), cobre esse buraco.
+    function notificarSeAtribuidoAMim(pedido) {
+        if (!pedido || !usuario) return;
+        const nomeUsuario = (usuario.nome || '').trim().toLowerCase();
+        const responsaveis = (pedido.responsavel || '').split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+        const souResponsavel = responsaveis.includes(nomeUsuario);
+
+        if (souResponsavel && !STATUSES_FINALIZADOS.includes(pedido.status)) {
+            if (!alertasAtribuicaoDisparadas.current.has(pedido.id)) {
+                alertasAtribuicaoDisparadas.current.add(pedido.id);
+                setAlertasNaoLidos(prev => {
+                    if (prev.some(a => a.os_id === pedido.id && a.tipo === 'atribuicao')) return prev;
+                    return [...prev, { id: Date.now() + Math.random(), msg: `Você está designado para a O.S. #${pedido.id}`, os_id: pedido.id, tipo: 'atribuicao' }];
+                });
+            }
+        } else {
+            alertasAtribuicaoDisparadas.current.delete(pedido.id);
+        }
+    }
+
     function notificarSeNotaFiscalPreenchida(nota) {
         if (!nota || !usuario) return;
         const preenchida = nota.concluido === false && (!!nota.servico_feito || !!nota.valor_pago);
@@ -513,6 +537,7 @@ export const AppProvider = ({ children }) => {
             }
 
             setPedidos(todosPedidos);
+            todosPedidos.forEach(notificarSeAtribuidoAMim);
 
             if (usuario?.nivel === 'Administrador') {
                 const pedidosFuturaAlertar = todosPedidos.filter(p => p.local_producao && p.local_producao.toLowerCase().includes('futura') && !statusIgnorados.includes(p.status) && p.prazo && p.prazo <= amanhaStr);
