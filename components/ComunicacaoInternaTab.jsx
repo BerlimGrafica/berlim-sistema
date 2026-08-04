@@ -3,7 +3,7 @@ import React from 'react';
 import { useAppContext } from '@/context/AppContext';
 import Icon from '@/components/Icon';
 import Tooltip from '@/components/Tooltip';
-import { formatarDataExibicao, mascararCliente, formatarMoeda, centavosParaReais } from '@/lib/utils';
+import { formatarDataExibicao, mascararCliente, formatarMoeda, centavosParaReais } from '@/lib/utils/formatters';
 
 export default function ComunicacaoInternaTab() {
     const { 
@@ -44,7 +44,7 @@ export default function ComunicacaoInternaTab() {
                     <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 mb-6 border-b border-gray-100 dark:border-darkBorder pb-6 shrink-0">
                         <div>
                             <h1 className="text-2xl lg:text-3xl font-black text-gray-900 dark:text-white tracking-tight">Requisição de Material</h1>
-                            <p className="text-[13px] text-gray-500 mt-1.5 font-medium max-w-xl">
+                            <p className="text-[13px] text-gray-500 dark:text-[#A1A1AA] mt-1.5 font-medium max-w-xl">
                                 Solicite materiais para a produção ou escritório.
                             </p>
                         </div>
@@ -83,7 +83,7 @@ export default function ComunicacaoInternaTab() {
                                 <div className="flex flex-col gap-3 p-5 flex-1">
                                     <p className="text-[13px] text-gray-600 dark:text-[#A1A1AA] line-clamp-3 break-words" title={r.itens}>{r.itens}</p>
                                     <div className="mt-auto pt-3 border-t border-gray-100 dark:border-darkBorder flex justify-between items-center">
-                                        <div className="flex items-center gap-1.5 text-[11px] font-semibold text-gray-500">
+                                        <div className="flex items-center gap-1.5 text-[11px] font-semibold text-gray-500 dark:text-[#A1A1AA]">
                                             <Icon name="user" className="w-3.5 h-3.5" /> {r.criado_por}
                                         </div>
                                         <span className={`px-2 py-1 text-[10px] font-bold uppercase rounded ${
@@ -105,7 +105,7 @@ export default function ComunicacaoInternaTab() {
                     <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 mb-6 border-b border-gray-100 dark:border-darkBorder pb-6 shrink-0">
                         <div>
                             <h1 className="text-2xl lg:text-3xl font-black text-gray-900 dark:text-white tracking-tight">Tarefas</h1>
-                            <p className="text-[13px] text-gray-500 mt-1.5 font-medium max-w-xl">
+                            <p className="text-[13px] text-gray-500 dark:text-[#A1A1AA] mt-1.5 font-medium max-w-xl">
                                 Gerencie tarefas internas da equipe.
                             </p>
                         </div>
@@ -151,7 +151,7 @@ export default function ComunicacaoInternaTab() {
                                     <p className="text-[13px] text-gray-600 dark:text-[#A1A1AA] break-words">{t.descricao}</p>
 
                                     <div className="mt-auto pt-3 border-t border-gray-100 dark:border-darkBorder flex justify-between items-center">
-                                        <div className="flex items-center gap-1.5 text-[11px] font-semibold text-gray-500">
+                                        <div className="flex items-center gap-1.5 text-[11px] font-semibold text-gray-500 dark:text-[#A1A1AA]">
                                             <Icon name="user" className="w-3.5 h-3.5" /> {t.responsavel || 'Sem responsável'}
                                         </div>
                                         <span className={`px-2 py-1 text-[10px] font-bold uppercase rounded ${t.fixa ? (t.status === 'Concluída' ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-100 text-blue-700') : t.status === 'Concluída' ? 'bg-gray-100 text-gray-500' : t.status === 'Em Andamento' ? 'bg-blue-100 text-blue-700' : 'bg-yellow-100 text-yellow-700'}`}>{t.fixa ? (t.status === 'Concluída' ? 'Concluída Hoje' : 'Fixa') : t.status}</span>
@@ -170,7 +170,7 @@ export default function ComunicacaoInternaTab() {
                     <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 mb-6 border-b border-gray-100 dark:border-darkBorder pb-6 shrink-0">
                         <div>
                             <h1 className="text-2xl lg:text-3xl font-black text-gray-900 dark:text-white tracking-tight">Links de Pagamento</h1>
-                            <p className="text-[13px] text-gray-500 mt-1.5 font-medium max-w-xl">
+                            <p className="text-[13px] text-gray-500 dark:text-[#A1A1AA] mt-1.5 font-medium max-w-xl">
                                 Organize seus links de pagamento (Mercado Pago, Asaas, etc) para envio rápido.
                             </p>
                         </div>
@@ -213,7 +213,7 @@ export default function ComunicacaoInternaTab() {
                                         </div>
                                     )}
                                     <div className="bg-gray-50 dark:bg-darkElevated p-2 rounded flex items-center justify-between border border-gray-100 dark:border-darkBorder">
-                                        <span className="text-[11px] text-gray-500 truncate mr-2">{l.link}</span>
+                                        <span className="text-[11px] text-gray-500 dark:text-[#A1A1AA] truncate mr-2">{l.link}</span>
                                         <Tooltip label="Copiar Link">
                                             <button onClick={(e) => {
                                                 e.stopPropagation();
@@ -224,7 +224,7 @@ export default function ComunicacaoInternaTab() {
                                         </Tooltip>
                                     </div>
                                     <div className="mt-auto pt-3 border-t border-gray-100 dark:border-darkBorder flex justify-between items-center">
-                                        <div className="flex items-center gap-1.5 text-[11px] font-semibold text-gray-500">
+                                        <div className="flex items-center gap-1.5 text-[11px] font-semibold text-gray-500 dark:text-[#A1A1AA]">
                                             <Icon name="calendar" className="w-3.5 h-3.5" /> {new Date(l.created_at).toLocaleDateString('pt-BR')}
                                         </div>
                                         <span className={`px-2 py-1 text-[10px] font-bold uppercase rounded ${

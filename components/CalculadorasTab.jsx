@@ -2,11 +2,11 @@
 import React from 'react';
 import { useAppContext } from '@/context/AppContext';
 import Icon from '@/components/Icon';
-import { CalculadorasAba } from '@/lib/utils';
+import { CalculadorasAba } from '@/components/calculadoras/CalculadorasAba';
 
 
 export default function CalculadorasTab() {
-    const { setCalculadoraAtiva, calculadoraAtiva, abaAtual, produtos } = useAppContext();
+    const { setCalculadoraAtiva, calculadoraAtiva, produtos } = useAppContext();
 
     return (
         <>
@@ -18,7 +18,7 @@ export default function CalculadorasTab() {
                         {/* Se tiver mais calculadoras, elas aparecem aqui */}
                     </div>
                 )}
-{abaAtual === 'calculadoras' && <CalculadorasAba calculadoraAtiva={calculadoraAtiva} produtos={produtos} />}
+<CalculadorasAba calculadoraAtiva={calculadoraAtiva} produtos={produtos} />
 
         </>
     );

@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from 'react';
 import Icon from '@/components/Icon';
-import { SegmentedControl } from '@/lib/utils';
+import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { supabase } from '@/lib/supabaseClient';
 
 const FORMAS_ENVIO = [

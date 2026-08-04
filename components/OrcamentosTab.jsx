@@ -3,11 +3,11 @@ import React, { useState, useMemo } from 'react';
 import { useAppContext } from '@/context/AppContext';
 import Icon from '@/components/Icon';
 import Tooltip from '@/components/Tooltip';
-import { formatarMoeda, obterDataAtual, mascararCliente } from '@/lib/utils';
+import { formatarMoeda, obterDataAtual, mascararCliente } from '@/lib/utils/formatters';
 
 
 export default function OrcamentosTab() {
-    const { setAbaOrcamentos, abaOrcamentos, setOrcamentoFormalizadoEmEdicao, setBuscaCliente, setItensPedido, setNovoPedido, setModalOrcamentoFormalizadoAberto, orcamentosFormalizados, abaAtual, isAdmin, isDemo, setNovoOrcamentoPre, setModalOrcamentoPreAberto, orcamentosPreProntos, abrirEdicaoOrcamento, transformarEmOS, baixarPDFOrcamento, excluirOrcamentoFormalizado, excluirOrcamentoPre } = useAppContext();
+    const { setAbaOrcamentos, abaOrcamentos, setOrcamentoFormalizadoEmEdicao, setBuscaCliente, setItensPedido, setNovoPedido, setModalOrcamentoFormalizadoAberto, orcamentosFormalizados, isAdmin, isDemo, setNovoOrcamentoPre, setModalOrcamentoPreAberto, orcamentosPreProntos, abrirEdicaoOrcamento, transformarEmOS, baixarPDFOrcamento, excluirOrcamentoFormalizado, excluirOrcamentoPre } = useAppContext();
     const [buscaPreProntos, setBuscaPreProntos] = useState('');
 
     const orcsFiltrados = useMemo(() => {
@@ -36,7 +36,7 @@ export default function OrcamentosTab() {
                         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 mb-6 border-b border-gray-100 dark:border-darkBorder pb-6 shrink-0">
                             <div>
                                 <h1 className="text-2xl lg:text-3xl font-black text-gray-900 dark:text-white tracking-tight">Orçamentos Formalizados</h1>
-                                <p className="text-[13px] text-gray-500 mt-1.5 font-medium max-w-xl">
+                                <p className="text-[13px] text-gray-500 dark:text-[#A1A1AA] mt-1.5 font-medium max-w-xl">
                                     Crie e gerencie orçamentos. Transforme orçamentos aprovados em Ordens de Serviço.
                                 </p>
                             </div>
@@ -118,13 +118,13 @@ export default function OrcamentosTab() {
                         </div>
                     </main>
                 )}
-{abaAtual === 'orcamentos' && abaOrcamentos === 'formalizados'}
+{abaOrcamentos === 'formalizados'}
 { abaOrcamentos === 'pre_prontos' && (
                     <main className="flex-1 p-6 lg:p-10 max-w-[1200px] mx-auto w-full">
                         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 mb-6 border-b border-gray-100 dark:border-darkBorder pb-6 shrink-0">
                             <div>
                                 <h1 className="text-2xl lg:text-3xl font-black text-gray-900 dark:text-white tracking-tight">Textos Pré Prontos</h1>
-                                <p className="text-[13px] text-gray-500 mt-1.5 font-medium max-w-xl">
+                                <p className="text-[13px] text-gray-500 dark:text-[#A1A1AA] mt-1.5 font-medium max-w-xl">
                                     Modelos de texto para orçamentos rápidos (Visíveis para a produção, editáveis apenas por Admin).
                                 </p>
                             </div>
@@ -194,7 +194,7 @@ export default function OrcamentosTab() {
                         )}
                     </main>
                 )}
-{abaAtual === 'orcamentos' && abaOrcamentos === 'pre_prontos'}
+{abaOrcamentos === 'pre_prontos'}
 
         </>
     );

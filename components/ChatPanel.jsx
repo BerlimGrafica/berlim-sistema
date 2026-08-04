@@ -2,7 +2,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useAppContext } from '@/context/AppContext';
 import Icon from '@/components/Icon';
-import { corPorNome } from '@/lib/utils';
+import { corPorNome } from '@/lib/utils/formatters';
 
 function iniciais(nome) {
     if (!nome) return '?';
