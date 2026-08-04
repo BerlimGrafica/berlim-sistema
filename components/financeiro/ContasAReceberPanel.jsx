@@ -7,7 +7,7 @@ import { formatarValorFinanceiro, formatarDataExibicao, centavosParaReais, obter
 import { obterResumoServicos } from '@/lib/utils/servico';
 import { CustomDatePicker } from '@/components/ui/DatePicker';
 
-export default function ContasAReceberPanel() {
+export default function ContasAReceberPanel({ dataInicio, dataFim }) {
     const { pedidos, isDemo, atualizarCampoInline, concluirBoletoContasReceber, abrirEdicao } = useAppContext();
 
     return (
@@ -43,7 +43,12 @@ export default function ContasAReceberPanel() {
                                         try { pagamentos = JSON.parse(pagamentosStr); } catch(e) {}
                                     }
                                     return { ...p, pagamentos };
-                                }).filter(p => p.pagamentos.some(pag => pag.forma === 'Boleto' && !pag.boleto_concluido));
+                                }).filter(p => p.pagamentos.some(pag => pag.forma === 'Boleto' && !pag.boleto_concluido))
+                                  .filter(p => {
+                                    if (dataInicio && (!p.prazo_pagamento || p.prazo_pagamento < dataInicio)) return false;
+                                    if (dataFim && (!p.prazo_pagamento || p.prazo_pagamento > dataFim)) return false;
+                                    return true;
+                                  });
                                 if (pedidosBoleto.length === 0) return (
                                     <tr><td colSpan="8" className="px-4 py-12 text-center text-[13px] text-gray-400">Nenhum pedido com boleto encontrado.</td></tr>
                                 );

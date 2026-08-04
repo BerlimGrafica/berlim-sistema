@@ -83,7 +83,12 @@ export const AppProvider = ({ children }) => {
 
     const [dataFiltroFinInicio, setDataFiltroFinInicio] = useState('');
     const [dataFiltroFinFim, setDataFiltroFinFim] = useState('');
-    
+
+    const [dataFiltroContasPagarInicio, setDataFiltroContasPagarInicio] = useState('');
+    const [dataFiltroContasPagarFim, setDataFiltroContasPagarFim] = useState('');
+    const [dataFiltroContasReceberInicio, setDataFiltroContasReceberInicio] = useState('');
+    const [dataFiltroContasReceberFim, setDataFiltroContasReceberFim] = useState('');
+
     // Financeiro Expandido e Alertas
     const [abaFinanceiro, setAbaFinanceiro] = useState('geral');
     const [produtosSelecionadosGrafico, setProdutosSelecionadosGrafico] = useState(null);
@@ -1818,6 +1823,14 @@ export const AppProvider = ({ children }) => {
         setDataFiltroFinInicio,
         dataFiltroFinFim,
         setDataFiltroFinFim,
+        dataFiltroContasPagarInicio,
+        setDataFiltroContasPagarInicio,
+        dataFiltroContasPagarFim,
+        setDataFiltroContasPagarFim,
+        dataFiltroContasReceberInicio,
+        setDataFiltroContasReceberInicio,
+        dataFiltroContasReceberFim,
+        setDataFiltroContasReceberFim,
         abaFinanceiro,
         setAbaFinanceiro,
         produtosSelecionadosGrafico,

@@ -13,7 +13,7 @@ import NotasFiscaisPanel from '@/components/financeiro/NotasFiscaisPanel';
 import { useState } from 'react';
 
 export default function FinanceiroTab() {
-    const { setAbaFinanceiro, abaFinanceiro, notasFiscais, usuario, isDemo, filtroNotas, dataFiltroFinInicio, setDataFiltroFinInicio, dataFiltroFinFim, setDataFiltroFinFim, pedidos, setNovaConta, setModalContaAberto, setModalEmpresaFaturamentoAberto, buscaNotaFiscal, setBuscaNotaFiscal, setPaginaNotasFiscais, setFiltroNotas } = useAppContext();
+    const { setAbaFinanceiro, abaFinanceiro, notasFiscais, usuario, isDemo, filtroNotas, dataFiltroFinInicio, setDataFiltroFinInicio, dataFiltroFinFim, setDataFiltroFinFim, dataFiltroContasPagarInicio, setDataFiltroContasPagarInicio, dataFiltroContasPagarFim, setDataFiltroContasPagarFim, dataFiltroContasReceberInicio, setDataFiltroContasReceberInicio, dataFiltroContasReceberFim, setDataFiltroContasReceberFim, pedidos, setNovaConta, setModalContaAberto, setModalEmpresaFaturamentoAberto, buscaNotaFiscal, setBuscaNotaFiscal, setPaginaNotasFiscais, setFiltroNotas } = useAppContext();
     const [mostrarContasPagas, setMostrarContasPagas] = useState(false);
 
     return (
@@ -85,6 +85,10 @@ export default function FinanceiroTab() {
 
                                 {abaFinanceiro === 'contas_pagar' && (
                                     <>
+                                        <div className="flex flex-col w-60">
+                                            <span className="text-[10px] font-semibold text-gray-500 dark:text-[#888888] uppercase mb-1">Período:</span>
+                                            <CustomDateRangePicker startValue={dataFiltroContasPagarInicio} endValue={dataFiltroContasPagarFim} onChangeStart={setDataFiltroContasPagarInicio} onChangeEnd={setDataFiltroContasPagarFim} placeholder="Todo o período" className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-md px-3 py-2 text-[13px] outline-none hover:border-brand transition" />
+                                        </div>
                                         <button onClick={() => setMostrarContasPagas(!mostrarContasPagas)} className={`h-[38px] px-4 text-[13px] rounded-md font-semibold border transition flex items-center justify-center ${mostrarContasPagas ? 'bg-gray-100 border-gray-200 text-gray-700 dark:bg-darkElevated dark:border-darkBorder dark:text-gray-300' : 'bg-white border-gray-200 text-gray-600 dark:bg-darkCard dark:border-darkBorder dark:text-gray-400 hover:bg-gray-50'}`}>
                                             {mostrarContasPagas ? 'Ocultar Pagas' : 'Mostrar Histórico'}
                                         </button>
@@ -92,6 +96,13 @@ export default function FinanceiroTab() {
                                             <Icon name="plus" className="w-4 h-4" /> Nova Conta
                                         </button>
                                     </>
+                                )}
+
+                                {abaFinanceiro === 'contas_receber' && (
+                                    <div className="flex flex-col w-60">
+                                        <span className="text-[10px] font-semibold text-gray-500 dark:text-[#888888] uppercase mb-1">Período:</span>
+                                        <CustomDateRangePicker startValue={dataFiltroContasReceberInicio} endValue={dataFiltroContasReceberFim} onChangeStart={setDataFiltroContasReceberInicio} onChangeEnd={setDataFiltroContasReceberFim} placeholder="Todo o período" className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-md px-3 py-2 text-[13px] outline-none hover:border-brand transition" />
+                                    </div>
                                 )}
 
                                 {abaFinanceiro === 'empresas_aprovadas' && (
@@ -141,8 +152,8 @@ export default function FinanceiroTab() {
 
                         {abaFinanceiro === 'geral' && <VisaoGeralPanel />}
                         {abaFinanceiro === 'vendas_produto' && <VendasPorProdutoPanel />}
-                        {abaFinanceiro === 'contas_pagar' && <ContasAPagarPanel mostrarContasPagas={mostrarContasPagas} />}
-                        {abaFinanceiro === 'contas_receber' && <ContasAReceberPanel />}
+                        {abaFinanceiro === 'contas_pagar' && <ContasAPagarPanel mostrarContasPagas={mostrarContasPagas} dataInicio={dataFiltroContasPagarInicio} dataFim={dataFiltroContasPagarFim} />}
+                        {abaFinanceiro === 'contas_receber' && <ContasAReceberPanel dataInicio={dataFiltroContasReceberInicio} dataFim={dataFiltroContasReceberFim} />}
                         {abaFinanceiro === 'empresas_aprovadas' && <EmpresasAprovadasPanel />}
                         {abaFinanceiro === 'notas_fiscais' && <NotasFiscaisPanel />}
                     </main>

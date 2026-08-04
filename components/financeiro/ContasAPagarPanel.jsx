@@ -4,8 +4,15 @@ import Icon from '@/components/Icon';
 import Tooltip from '@/components/Tooltip';
 import { formatarMoeda, formatarValorFinanceiro, formatarDataExibicao, centavosParaReais } from '@/lib/utils/formatters';
 
-export default function ContasAPagarPanel({ mostrarContasPagas }) {
+export default function ContasAPagarPanel({ mostrarContasPagas, dataInicio, dataFim }) {
     const { contasPagar, setNovaConta, setModalContaAberto, concluirConta, excluirConta } = useAppContext();
+
+    const contasFiltradas = contasPagar.filter(c => {
+        if (!mostrarContasPagas && c.status === 'Pago') return false;
+        if (dataInicio && (!c.vencimento || c.vencimento < dataInicio)) return false;
+        if (dataFim && (!c.vencimento || c.vencimento > dataFim)) return false;
+        return true;
+    });
 
     return (
         <div>
@@ -23,10 +30,10 @@ export default function ContasAPagarPanel({ mostrarContasPagas }) {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100 dark:divide-darkBorder">
-                            {contasPagar.filter(c => mostrarContasPagas ? true : c.status !== 'Pago').length === 0 ? (
+                            {contasFiltradas.length === 0 ? (
                                 <tr><td colSpan="6" className="text-center py-8 text-gray-400">Nenhuma conta a pagar registrada.</td></tr>
                             ) : (
-                                contasPagar.filter(c => mostrarContasPagas ? true : c.status !== 'Pago').map(conta => (
+                                contasFiltradas.map(conta => (
                                     <tr key={conta.id} onClick={() => { setNovaConta({...conta, valor: conta.valor ? formatarMoeda(Math.round(conta.valor).toString()) : ''}); setModalContaAberto(true); }} className="hover:bg-gray-50 dark:hover:bg-darkHover/50 transition-colors group cursor-pointer">
                                         <td className="px-6 py-4 text-[13px] text-gray-600 dark:text-[#A1A1AA]">{formatarDataExibicao(conta.vencimento)}</td>
                                         <td className="px-6 py-4 text-[13px] font-medium text-gray-900 dark:text-gray-300">
