@@ -19,7 +19,7 @@ export default function ContaModal() {
     const { modalContaAberto, setModalContaAberto, novaConta, setNovaConta, salvandoConta, salvarConta, fornecedores } = useAppContext();
     const fecharAoClicarFora = useFecharAoClicarFora();
 
-    const tipoFornecedorContaNecessario = novaConta.categoria === 'Manutenção' ? 'Manutenção' : novaConta.categoria === 'Terceirização' ? 'Produção' : novaConta.categoria === 'Material' ? 'Material' : null;
+    const tipoFornecedorContaNecessario = novaConta.categoria === 'Manutenção' ? 'Manutenção' : novaConta.categoria === 'Terceirização' ? 'Terceirização' : novaConta.categoria === 'Material' ? 'Material' : null;
     const fornecedoresParaConta = tipoFornecedorContaNecessario ? fornecedores.filter(f => f.tipo === tipoFornecedorContaNecessario) : [];
 
     if (!modalContaAberto) return null;

@@ -25,12 +25,12 @@ export default function FornecedorModal() {
                     <div>
                         <label className="block text-[13px] font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Tipo de Fornecedor</label>
                         <CustomSelect
-                            value={novoFornecedor.tipo || 'Produção'}
+                            value={novoFornecedor.tipo || 'Terceirização'}
                             onChange={(val) => setNovoFornecedor({...novoFornecedor, tipo: val})}
                             className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-[12px] outline-none focus:border-brand transition dark:text-[#EDEDED] font-medium cursor-pointer"
                             options={[
                                 { value: 'Material', label: 'Material' },
-                                { value: 'Produção', label: 'Produção' },
+                                { value: 'Terceirização', label: 'Terceirização' },
                                 { value: 'Manutenção', label: 'Manutenção' },
                             ]}
                         />
@@ -49,7 +49,7 @@ export default function FornecedorModal() {
                     <button type="button" onClick={async () => {
                         if(!novoFornecedor.nome) return alert('Nome é obrigatório');
                         if (novoFornecedor.id) await supabase.from('fornecedores').update({ nome: novoFornecedor.nome, contato: novoFornecedor.contato, observacoes: novoFornecedor.observacoes, tipo: novoFornecedor.tipo }).eq('id', novoFornecedor.id);
-                        else await supabase.from('fornecedores').insert([{ nome: novoFornecedor.nome, contato: novoFornecedor.contato, observacoes: novoFornecedor.observacoes, tipo: novoFornecedor.tipo || 'Produção' }]);
+                        else await supabase.from('fornecedores').insert([{ nome: novoFornecedor.nome, contato: novoFornecedor.contato, observacoes: novoFornecedor.observacoes, tipo: novoFornecedor.tipo || 'Terceirização' }]);
                         carregarDados();
                         setModalFornecedorAberto(false);
                     }} className="bg-brand hover:bg-brandHover text-white px-5 py-2 text-[12px] font-semibold rounded shadow-sm transition">Salvar</button>

@@ -158,7 +158,7 @@ export default function OrcamentoFormalizadoModal() {
                                                 value={itemAtual.local_producao}
                                                 onChange={(val) => setItemAtual({...itemAtual, local_producao: val})}
                                                 className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded pl-[52px] pr-3 py-2 text-[11px] outline-none focus:border-brand transition dark:text-[#EDEDED] font-medium"
-                                                options={(fornecedores.length > 0 ? fornecedores.filter(f => !f.tipo || f.tipo === 'Produção').map(f => f.nome) : ['Berlim']).map(l => ({ value: l, label: l }))}
+                                                options={(fornecedores.length > 0 ? fornecedores.filter(f => !f.tipo || f.tipo === 'Terceirização').map(f => f.nome) : ['Berlim']).map(l => ({ value: l, label: l }))}
                                             />
                                         </div>
                                         <div className="relative">
