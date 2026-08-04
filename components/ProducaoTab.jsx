@@ -3,7 +3,7 @@ import React from 'react';
 import { useAppContext } from '@/context/AppContext';
 import Icon from '@/components/Icon';
 import Tooltip from '@/components/Tooltip';
-import { STATUSES_PRODUCAO, obterCorStatus } from '@/lib/utils/constants';
+import { STATUSES_PRODUCAO, obterCorFundoStatus } from '@/lib/utils/constants';
 import { mascararCliente } from '@/lib/utils/formatters';
 import { CustomDatePicker } from '@/components/ui/DatePicker';
 import { InlineDropdown, MultiSelectDropdown } from '@/components/ui/Dropdown';
@@ -79,9 +79,9 @@ export default function ProducaoTab() {
 
                                                 return (
                                                     <React.Fragment key={status}>
-                                                        <tr className="bg-gray-50/50 dark:bg-darkElevated/40 select-none">
-                                                            <td colSpan="9" className={`px-4 py-2 border-y border-gray-200 dark:border-darkBorder font-semibold tracking-wide uppercase text-[10px] bg-gray-100/50 dark:bg-darkHover/40 ${obterCorStatus(status)}`}>
-                                                                {status} — <span className="text-gray-400 dark:text-gray-500">{pedidosDoStatus.length} {pedidosDoStatus.length === 1 ? 'pedido' : 'pedidos'}</span>
+                                                        <tr className="select-none">
+                                                            <td colSpan="9" className={`px-4 py-2 border-y border-gray-200 dark:border-darkBorder font-semibold tracking-wide uppercase text-[10px] text-white ${obterCorFundoStatus(status)}`}>
+                                                                {status} — <span className="text-white/70">{pedidosDoStatus.length} {pedidosDoStatus.length === 1 ? 'pedido' : 'pedidos'}</span>
                                                             </td>
                                                         </tr>
                                                         {pedidosDoStatus.map(p => (
