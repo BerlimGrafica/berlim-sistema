@@ -3,7 +3,7 @@ import React from 'react';
 import { useAppContext } from '@/context/AppContext';
 import Icon from '@/components/Icon';
 import Tooltip from '@/components/Tooltip';
-import { formatarDataExibicao, mascararCliente, formatarMoeda, centavosParaReais } from '@/lib/utils';
+import { formatarDataExibicao, mascararCliente, formatarMoeda, centavosParaReais } from '@/lib/utils/formatters';
 
 export default function ComunicacaoInternaTab() {
     const { 

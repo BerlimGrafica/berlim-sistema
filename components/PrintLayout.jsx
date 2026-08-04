@@ -1,7 +1,8 @@
 "use client";
 import React from 'react';
 import { useAppContext } from '@/context/AppContext';
-import { formatarDataExibicao, formatarValorFinanceiro, desconstruirTextoServico, mascararCliente, centavosParaReais } from '@/lib/utils';
+import { formatarDataExibicao, formatarValorFinanceiro, mascararCliente, centavosParaReais } from '@/lib/utils/formatters';
+import { desconstruirTextoServico } from '@/lib/utils/servico';
 import Icon from '@/components/Icon';
 
 function extrairItens(orc) {

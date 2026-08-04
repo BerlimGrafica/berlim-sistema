@@ -1,13 +1,17 @@
 "use client";
 import React, { useEffect, useRef } from "react";
+import Link from "next/link";
+import { useRouter, usePathname } from "next/navigation";
 import { useAppContext } from "@/context/AppContext";
 import Icon from "@/components/Icon";
 import Tooltip from "@/components/Tooltip";
 import ChatPanel from "@/components/ChatPanel";
 
 export default function Navbar() {
-    const { setModalAlertasAberto, modalAlertasAberto, alertasNaoLidos, setAlertasNaoLidos, setAbaAtual, setAbaFinanceiro, pedidos, abrirEdicao, toggleDarkMode, darkMode, usuario, logout, abaAtual, googleVinculado, vincularGoogle, desvincularGoogle, abrirChat, chatNaoLidas } = useAppContext();
+    const { setModalAlertasAberto, modalAlertasAberto, alertasNaoLidos, setAlertasNaoLidos, setAbaFinanceiro, pedidos, abrirEdicao, toggleDarkMode, darkMode, usuario, logout, googleVinculado, vincularGoogle, desvincularGoogle, abrirChat, chatNaoLidas } = useAppContext();
     const notificacoesRef = useRef(null);
+    const router = useRouter();
+    const pathname = usePathname();
 
     useEffect(() => {
         if (!modalAlertasAberto) return;
@@ -63,17 +67,17 @@ export default function Navbar() {
                                                 <div key={alerta.id} className="px-4 py-3 hover:bg-gray-50 dark:hover:bg-darkHover border-b border-gray-50 dark:border-darkBorder/50 last:border-0 cursor-pointer flex justify-between items-start group" onClick={() => {
                                                     setModalAlertasAberto(false);
                                                     if (alerta.tipo === 'faturamento_em_analise') {
-                                                        setAbaAtual('financeiro');
                                                         setAbaFinanceiro('empresas_aprovadas');
+                                                        router.push('/financeiro');
                                                     } else if (alerta.tipo === 'nf_nova' || alerta.tipo === 'nf_preenchida') {
                                                         if (usuario?.nivel === 'Atendimento') {
-                                                            setAbaAtual('notas_fiscais');
+                                                            router.push('/notas-fiscais');
                                                         } else {
-                                                            setAbaAtual('financeiro');
                                                             setAbaFinanceiro('notas_fiscais');
+                                                            router.push('/financeiro');
                                                         }
                                                     } else {
-                                                        setAbaAtual('producao');
+                                                        router.push('/producao');
                                                         if (alerta.os_id) {
                                                             const p = pedidos.find(x => x.id === alerta.os_id);
                                                             if (p) abrirEdicao(p);
@@ -167,48 +171,48 @@ export default function Navbar() {
                 </header>
             <nav className="bg-brand text-white px-6 shadow-sm z-30 sticky top-[64px] h-[48px]">
                     <div className="flex gap-1.5 overflow-x-auto custom-scrollbar no-scrollbar-style items-end pt-2.5 h-full">
-                        <a onClick={() => setAbaAtual('dashboard')} className={`px-4 py-2.5 text-[13px] font-semibold cursor-pointer transition-all duration-200 whitespace-nowrap rounded-t-lg flex items-center gap-2 tracking-wide uppercase border-t-2 ${abaAtual === 'dashboard' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white border-brand shadow-[0_-2px_6px_rgba(0,0,0,0.08)]' : 'border-transparent text-white/85 hover:bg-white/10 hover:text-white'}`}>
-                            <Icon name="layout-dashboard" className={`w-4 h-4 shrink-0 ${abaAtual === 'dashboard' ? 'text-brand' : ''}`} /> Início
-                        </a>
+                        <Link href="/" className={`px-4 py-2.5 text-[13px] font-semibold cursor-pointer transition-all duration-200 whitespace-nowrap rounded-t-lg flex items-center gap-2 tracking-wide uppercase border-t-2 ${pathname === '/' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white border-brand shadow-[0_-2px_6px_rgba(0,0,0,0.08)]' : 'border-transparent text-white/85 hover:bg-white/10 hover:text-white'}`}>
+                            <Icon name="layout-dashboard" className={`w-4 h-4 shrink-0 ${pathname === '/' ? 'text-brand' : ''}`} /> Início
+                        </Link>
                         {(usuario?.nivel === 'Administrador' || usuario?.nivel === 'Atendimento' || usuario?.nivel === 'Produção') && (
-                            <a onClick={() => setAbaAtual('producao')} className={`px-4 py-2.5 text-[13px] font-semibold cursor-pointer transition-all duration-200 whitespace-nowrap rounded-t-lg flex items-center gap-2 tracking-wide uppercase border-t-2 ${abaAtual === 'producao' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white border-brand shadow-[0_-2px_6px_rgba(0,0,0,0.08)]' : 'border-transparent text-white/85 hover:bg-white/10 hover:text-white'}`}>
-                                <Icon name="grid" className={`w-4 h-4 shrink-0 ${abaAtual === 'producao' ? 'text-brand' : ''}`} /> Produção
-                            </a>
+                            <Link href="/producao" className={`px-4 py-2.5 text-[13px] font-semibold cursor-pointer transition-all duration-200 whitespace-nowrap rounded-t-lg flex items-center gap-2 tracking-wide uppercase border-t-2 ${pathname === '/producao' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white border-brand shadow-[0_-2px_6px_rgba(0,0,0,0.08)]' : 'border-transparent text-white/85 hover:bg-white/10 hover:text-white'}`}>
+                                <Icon name="grid" className={`w-4 h-4 shrink-0 ${pathname === '/producao' ? 'text-brand' : ''}`} /> Produção
+                            </Link>
                         )}
-                        <a onClick={() => setAbaAtual('baixa')} className={`px-4 py-2.5 text-[13px] font-semibold cursor-pointer transition-all duration-200 whitespace-nowrap rounded-t-lg flex items-center gap-2 tracking-wide uppercase border-t-2 ${abaAtual === 'baixa' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white border-brand shadow-[0_-2px_6px_rgba(0,0,0,0.08)]' : 'border-transparent text-white/85 hover:bg-white/10 hover:text-white'}`}>
-                            <Icon name="check-circle" className={`w-4 h-4 shrink-0 ${abaAtual === 'baixa' ? 'text-brand' : ''}`} /> O.S.
-                        </a>
+                        <Link href="/baixa" className={`px-4 py-2.5 text-[13px] font-semibold cursor-pointer transition-all duration-200 whitespace-nowrap rounded-t-lg flex items-center gap-2 tracking-wide uppercase border-t-2 ${pathname === '/baixa' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white border-brand shadow-[0_-2px_6px_rgba(0,0,0,0.08)]' : 'border-transparent text-white/85 hover:bg-white/10 hover:text-white'}`}>
+                            <Icon name="check-circle" className={`w-4 h-4 shrink-0 ${pathname === '/baixa' ? 'text-brand' : ''}`} /> O.S.
+                        </Link>
                         {usuario?.nivel !== 'Financeiro' && (
-                            <a onClick={() => setAbaAtual('calculadoras')} className={`px-4 py-2.5 text-[13px] font-semibold cursor-pointer transition-all duration-200 whitespace-nowrap rounded-t-lg flex items-center gap-2 tracking-wide uppercase border-t-2 ${abaAtual === 'calculadoras' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white border-brand shadow-[0_-2px_6px_rgba(0,0,0,0.08)]' : 'border-transparent text-white/85 hover:bg-white/10 hover:text-white'}`}>
-                                <Icon name="calculator" className={`w-4 h-4 shrink-0 ${abaAtual === 'calculadoras' ? 'text-brand' : ''}`} /> Calculadoras
-                            </a>
+                            <Link href="/calculadoras" className={`px-4 py-2.5 text-[13px] font-semibold cursor-pointer transition-all duration-200 whitespace-nowrap rounded-t-lg flex items-center gap-2 tracking-wide uppercase border-t-2 ${pathname === '/calculadoras' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white border-brand shadow-[0_-2px_6px_rgba(0,0,0,0.08)]' : 'border-transparent text-white/85 hover:bg-white/10 hover:text-white'}`}>
+                                <Icon name="calculator" className={`w-4 h-4 shrink-0 ${pathname === '/calculadoras' ? 'text-brand' : ''}`} /> Calculadoras
+                            </Link>
                         )}
 
                         {(usuario?.nivel === 'Administrador' || usuario?.nivel === 'Financeiro') && (
-                            <a onClick={() => setAbaAtual('financeiro')} className={`px-4 py-2.5 text-[13px] font-semibold cursor-pointer transition-all duration-200 whitespace-nowrap rounded-t-lg flex items-center gap-2 tracking-wide uppercase border-t-2 ${abaAtual === 'financeiro' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white border-brand shadow-[0_-2px_6px_rgba(0,0,0,0.08)]' : 'border-transparent text-white/85 hover:bg-white/10 hover:text-white'}`}>
-                                <Icon name="dollar-sign" className={`w-4 h-4 shrink-0 ${abaAtual === 'financeiro' ? 'text-brand' : ''}`} /> Financeiro
-                            </a>
+                            <Link href="/financeiro" className={`px-4 py-2.5 text-[13px] font-semibold cursor-pointer transition-all duration-200 whitespace-nowrap rounded-t-lg flex items-center gap-2 tracking-wide uppercase border-t-2 ${pathname === '/financeiro' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white border-brand shadow-[0_-2px_6px_rgba(0,0,0,0.08)]' : 'border-transparent text-white/85 hover:bg-white/10 hover:text-white'}`}>
+                                <Icon name="dollar-sign" className={`w-4 h-4 shrink-0 ${pathname === '/financeiro' ? 'text-brand' : ''}`} /> Financeiro
+                            </Link>
                         )}
                         {usuario?.nivel === 'Atendimento' && (
-                            <a onClick={() => setAbaAtual('notas_fiscais')} className={`px-4 py-2.5 text-[13px] font-semibold cursor-pointer transition-all duration-200 whitespace-nowrap rounded-t-lg flex items-center gap-2 tracking-wide uppercase border-t-2 ${abaAtual === 'notas_fiscais' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white border-brand shadow-[0_-2px_6px_rgba(0,0,0,0.08)]' : 'border-transparent text-white/85 hover:bg-white/10 hover:text-white'}`}>
-                                <Icon name="file-text" className={`w-4 h-4 shrink-0 ${abaAtual === 'notas_fiscais' ? 'text-brand' : ''}`} /> Notas Fiscais
-                            </a>
+                            <Link href="/notas-fiscais" className={`px-4 py-2.5 text-[13px] font-semibold cursor-pointer transition-all duration-200 whitespace-nowrap rounded-t-lg flex items-center gap-2 tracking-wide uppercase border-t-2 ${pathname === '/notas-fiscais' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white border-brand shadow-[0_-2px_6px_rgba(0,0,0,0.08)]' : 'border-transparent text-white/85 hover:bg-white/10 hover:text-white'}`}>
+                                <Icon name="file-text" className={`w-4 h-4 shrink-0 ${pathname === '/notas-fiscais' ? 'text-brand' : ''}`} /> Notas Fiscais
+                            </Link>
                         )}
 
                         {usuario?.nivel !== 'Financeiro' && (
-                            <a onClick={() => setAbaAtual('orcamentos')} className={`px-4 py-2.5 text-[13px] font-semibold cursor-pointer transition-all duration-200 whitespace-nowrap rounded-t-lg flex items-center gap-2 tracking-wide uppercase border-t-2 ${abaAtual === 'orcamentos' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white border-brand shadow-[0_-2px_6px_rgba(0,0,0,0.08)]' : 'border-transparent text-white/85 hover:bg-white/10 hover:text-white'}`}>
-                                <Icon name="edit-3" className={`w-4 h-4 shrink-0 ${abaAtual === 'orcamentos' ? 'text-brand' : ''}`} /> Orçamentos
-                            </a>
+                            <Link href="/orcamentos" className={`px-4 py-2.5 text-[13px] font-semibold cursor-pointer transition-all duration-200 whitespace-nowrap rounded-t-lg flex items-center gap-2 tracking-wide uppercase border-t-2 ${pathname === '/orcamentos' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white border-brand shadow-[0_-2px_6px_rgba(0,0,0,0.08)]' : 'border-transparent text-white/85 hover:bg-white/10 hover:text-white'}`}>
+                                <Icon name="edit-3" className={`w-4 h-4 shrink-0 ${pathname === '/orcamentos' ? 'text-brand' : ''}`} /> Orçamentos
+                            </Link>
                         )}
 
                         {usuario?.nivel !== 'Financeiro' && (
-                            <a onClick={() => setAbaAtual('cadastros')} className={`px-4 py-2.5 text-[13px] font-semibold cursor-pointer transition-all duration-200 whitespace-nowrap rounded-t-lg flex items-center gap-2 tracking-wide uppercase border-t-2 ${abaAtual === 'cadastros' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white border-brand shadow-[0_-2px_6px_rgba(0,0,0,0.08)]' : 'border-transparent text-white/85 hover:bg-white/10 hover:text-white'}`}>
-                                <Icon name="users" className={`w-4 h-4 shrink-0 ${abaAtual === 'cadastros' ? 'text-brand' : ''}`} /> Cadastros
-                            </a>
+                            <Link href="/cadastros" className={`px-4 py-2.5 text-[13px] font-semibold cursor-pointer transition-all duration-200 whitespace-nowrap rounded-t-lg flex items-center gap-2 tracking-wide uppercase border-t-2 ${pathname === '/cadastros' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white border-brand shadow-[0_-2px_6px_rgba(0,0,0,0.08)]' : 'border-transparent text-white/85 hover:bg-white/10 hover:text-white'}`}>
+                                <Icon name="users" className={`w-4 h-4 shrink-0 ${pathname === '/cadastros' ? 'text-brand' : ''}`} /> Cadastros
+                            </Link>
                         )}
-                        <a onClick={() => setAbaAtual('comunicacao')} className={`px-4 py-2.5 text-[13px] font-semibold cursor-pointer transition-all duration-200 whitespace-nowrap rounded-t-lg flex items-center gap-2 tracking-wide uppercase border-t-2 ${abaAtual === 'comunicacao' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white border-brand shadow-[0_-2px_6px_rgba(0,0,0,0.08)]' : 'border-transparent text-white/85 hover:bg-white/10 hover:text-white'}`}>
-                            <Icon name="mail" className={`w-4 h-4 shrink-0 ${abaAtual === 'comunicacao' ? 'text-brand' : ''}`} /> Comunicação
-                        </a>
+                        <Link href="/comunicacao" className={`px-4 py-2.5 text-[13px] font-semibold cursor-pointer transition-all duration-200 whitespace-nowrap rounded-t-lg flex items-center gap-2 tracking-wide uppercase border-t-2 ${pathname === '/comunicacao' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white border-brand shadow-[0_-2px_6px_rgba(0,0,0,0.08)]' : 'border-transparent text-white/85 hover:bg-white/10 hover:text-white'}`}>
+                            <Icon name="mail" className={`w-4 h-4 shrink-0 ${pathname === '/comunicacao' ? 'text-brand' : ''}`} /> Comunicação
+                        </Link>
                     </div>
                 </nav>
             <ChatPanel />

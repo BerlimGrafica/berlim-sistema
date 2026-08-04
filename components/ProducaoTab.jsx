@@ -3,7 +3,11 @@ import React from 'react';
 import { useAppContext } from '@/context/AppContext';
 import Icon from '@/components/Icon';
 import Tooltip from '@/components/Tooltip';
-import { STATUSES_PRODUCAO, obterCorStatus, mascararCliente, CustomDatePicker, InlineDropdown, MultiSelectDropdown, ItensChecklist } from '@/lib/utils';
+import { STATUSES_PRODUCAO, obterCorStatus } from '@/lib/utils/constants';
+import { mascararCliente } from '@/lib/utils/formatters';
+import { CustomDatePicker } from '@/components/ui/DatePicker';
+import { InlineDropdown, MultiSelectDropdown } from '@/components/ui/Dropdown';
+import { ItensChecklist } from '@/components/ItensChecklist';
 
 
 export default function ProducaoTab() {

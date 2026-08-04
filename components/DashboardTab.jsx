@@ -3,7 +3,9 @@ import React from 'react';
 import { useAppContext } from '@/context/AppContext';
 import Icon from '@/components/Icon';
 import Tooltip from '@/components/Tooltip';
-import { STATUSES_FINALIZADOS, formatarDataExibicao, obterResumoServicos, mascararCliente } from '@/lib/utils';
+import { STATUSES_FINALIZADOS } from '@/lib/utils/constants';
+import { formatarDataExibicao, mascararCliente } from '@/lib/utils/formatters';
+import { obterResumoServicos } from '@/lib/utils/servico';
 
 
 export default function DashboardTab() {

@@ -1,8 +1,14 @@
 "use client";
-import React, { createContext, useContext, useState, useEffect, useRef, useMemo } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
+import { usePathname } from 'next/navigation';
 import { flushSync } from 'react-dom';
-import { supabase, setSomenteLeitura } from '@/lib/supabaseClient';
-import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS, formatarMoeda, parseValorMoeda, paraCentavos, centavosParaReais, obterDataAtual, desconstruirTextoServico } from '@/lib/utils';
+import { supabase } from '@/lib/supabaseClient';
+import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS } from '@/lib/utils/constants';
+import { formatarMoeda, parseValorMoeda, paraCentavos, centavosParaReais, obterDataAtual } from '@/lib/utils/formatters';
+import { desconstruirTextoServico } from '@/lib/utils/servico';
+import { useAuth } from '@/hooks/useAuth';
+import { useAlertas } from '@/hooks/useAlertas';
+import { useChat } from '@/hooks/useChat';
 
 export { supabase };
 
@@ -12,16 +18,18 @@ export const AppContext = createContext();
 const NUMERO_INICIAL_PEDIDO = 17930;
 
 export const AppProvider = ({ children }) => {
-/// ==== CONTROLE DE SESSÃO E USUÁRIOS ====
-    const [usuariosSistema, setUsuariosSistema] = useState([]);
-    const [usuario, setUsuario] = useState(null);
-    const [googleVinculado, setGoogleVinculado] = useState(false);
-
-    const [loginInput, setLoginInput] = useState('');
-    const [senhaInput, setSenhaInput] = useState('');
-    const [erroLogin, setErroLogin] = useState('');
-
-    const [abaAtual, setAbaAtual] = useState('dashboard');
+    const pathname = usePathname();
+    const {
+        isAdmin, isOperador, isDemo,
+        usuariosSistema, setUsuariosSistema,
+        usuario, setUsuario,
+        googleVinculado, vincularGoogle, desvincularGoogle,
+        loginInput, setLoginInput,
+        senhaInput, setSenhaInput,
+        erroLogin, setErroLogin,
+        darkMode, setDarkMode,
+        efetuarLogin, entrarComoDemo, entrarComGoogle, logout, toggleDarkMode,
+    } = useAuth();
     const [pedidos, setPedidos] = useState([]);
     const [produtos, setProdutos] = useState([]);
     const [draggedProdutoIndex, setDraggedProdutoIndex] = useState(null);
@@ -57,20 +65,7 @@ export const AppProvider = ({ children }) => {
     const [notaFiscalEmEdicao, setNotaFiscalEmEdicao] = useState(null);
     const [salvandoNotaFiscal, setSalvandoNotaFiscal] = useState(false);
 
-    const [darkMode, setDarkMode] = useState(false); 
     
-    useEffect(() => {
-        if (darkMode) { document.documentElement.classList.add('dark'); }
-        else { document.documentElement.classList.remove('dark'); }
-    }, [darkMode]);
-    const isAdmin = usuario?.nivel === 'Administrador';
-    const isOperador = usuario?.nivel === 'Atendimento' || usuario?.nivel === 'Produção';
-    const isDemo = usuario?.nivel === 'demo';
-
-    // Espelha isDemo no cliente Supabase para bloquear escrita antes de sair para a rede (ver lib/supabaseClient.js).
-    useEffect(() => {
-        setSomenteLeitura(isDemo);
-    }, [isDemo]);
 
     // Filtros
     const [buscaHistoricoText, setBuscaHistoricoText] = useState('');
@@ -100,24 +95,21 @@ export const AppProvider = ({ children }) => {
     const [empresasFaturamento, setEmpresasFaturamento] = useState([]);
     const [modalEmpresaFaturamentoAberto, setModalEmpresaFaturamentoAberto] = useState(false);
     const [novaEmpresaFaturamento, setNovaEmpresaFaturamento] = useState({ id: null, nome: '', cnpj: '', status: 'Aprovado' });
-    const [alertasNaoLidos, setAlertasNaoLidos] = useState([]);
-    const alertasFuturaDisparados = useRef(new Set());
-    const alertasBoletoDisparados = useRef(new Set());
-    const alertasContaPagarDisparados = useRef(new Set());
-    const alertasRetiradaDisparados = useRef(new Set());
-    const alertasFaturamentoAnaliseDisparados = useRef(new Set());
-    const alertasTarefaDisparadas = useRef(new Set());
-    const alertasNotaFiscalDisparadas = useRef(new Set());
-    const alertasLinkPagamentoDisparados = useRef(new Set());
-    const [modalAlertasAberto, setModalAlertasAberto] = useState(false);
-
-    // === CHAT DA EQUIPE (canal único) ===
-    const [chatAberto, setChatAberto] = useState(false);
-    const [chatMensagens, setChatMensagens] = useState([]);
-    const [chatNaoLidas, setChatNaoLidas] = useState(0);
-    const [enviandoChat, setEnviandoChat] = useState(false);
-    const chatAbertoRef = useRef(false);
-    useEffect(() => { chatAbertoRef.current = chatAberto; }, [chatAberto]);
+    const {
+        alertasNaoLidos, setAlertasNaoLidos,
+        modalAlertasAberto, setModalAlertasAberto,
+        ehUsuario,
+        notificarSeFaturamentoEmAnalise, notificarSeTarefaMinha, notificarSeNotaFiscalPreenchida,
+        notificarSeLinkPagamentoNovo, notificarSeContaPagarUrgente,
+        alertasFuturaDisparados, alertasBoletoDisparados, alertasRetiradaDisparados,
+    } = useAlertas(usuario);
+    const {
+        chatAberto, setChatAberto,
+        chatMensagens, setChatMensagens,
+        chatNaoLidas, setChatNaoLidas,
+        enviandoChat, chatAbertoRef,
+        carregarChat, nomeDoUsuarioChat, abrirChat, enviarMensagemChat, excluirMensagemChat,
+    } = useChat(usuario, usuariosSistema);
 
     // === COMUNICAÇÃO INTERNA ===
     const [abaComunicacao, setAbaComunicacao] = useState('requisicoes');
@@ -312,148 +304,13 @@ export const AppProvider = ({ children }) => {
         return () => document.removeEventListener('visibilitychange', aoVoltarVisivel);
     }, [usuario]);
 
-    // Notificações vivem só em memória e um F5 zera o estado — persiste no
-    // localStorage (por usuário) pra sobreviver a um refresh da página.
-    useEffect(() => {
-        if (!usuario) return;
-        try {
-            const salvas = localStorage.getItem('notificacoes_' + usuario.id);
-            if (salvas) setAlertasNaoLidos(JSON.parse(salvas));
-        } catch (e) { /* localStorage indisponível ou dado corrompido, ignora */ }
-    }, [usuario?.id]);
-
-    useEffect(() => {
-        if (!usuario) return;
-        try {
-            localStorage.setItem('notificacoes_' + usuario.id, JSON.stringify(alertasNaoLidos));
-        } catch (e) { /* localStorage indisponível (modo privado, quota etc.), ignora */ }
-    }, [alertasNaoLidos, usuario?.id]);
 
     const isClienteProblema = (nome) => {
         if (!nome) return false;
         return clientesProblema.includes(nome);
     };
 
-    const ehUsuario = (nome) => (usuario?.nome || '').trim().toLowerCase() === nome.toLowerCase();
 
-    // === CHAT DA EQUIPE ===
-    async function carregarChat() {
-        const { data, error } = await supabase
-            .from('chat_mensagens')
-            .select('*')
-            .order('criado_em', { ascending: true })
-            .limit(200);
-        if (!error && data) setChatMensagens(data);
-    }
-
-    function nomeDoUsuarioChat(usuarioId) {
-        if (usuarioId === usuario?.id) return usuario?.nome || 'Você';
-        return usuariosSistema.find(u => u.id === usuarioId)?.nome || 'Usuário';
-    }
-
-    function abrirChat() {
-        setChatAberto(true);
-        setChatNaoLidas(0);
-    }
-
-    async function enviarMensagemChat(conteudo) {
-        const texto = (conteudo || '').trim();
-        if (!texto || !usuario) return;
-        setEnviandoChat(true);
-        const { error } = await supabase.from('chat_mensagens').insert([{ conteudo: texto, usuario_id: usuario.id }]);
-        setEnviandoChat(false);
-        if (error) alert('Erro ao enviar mensagem: ' + error.message);
-    }
-
-    async function excluirMensagemChat(id) {
-        const { error } = await supabase.from('chat_mensagens').delete().eq('id', id);
-        if (error) alert('Erro ao apagar mensagem: ' + error.message);
-        else setChatMensagens(prev => prev.filter(m => m.id !== id));
-    }
-
-    function notificarSeFaturamentoEmAnalise(empresa) {
-        if (!ehUsuario('Vinicius') || !empresa) return;
-        if (empresa.status === 'Em Análise') {
-            if (!alertasFaturamentoAnaliseDisparados.current.has(empresa.id)) {
-                alertasFaturamentoAnaliseDisparados.current.add(empresa.id);
-                setAlertasNaoLidos(prev => [...prev, { id: Date.now() + Math.random(), msg: `Empresa "${empresa.nome}" está com faturamento em análise.`, tipo: 'faturamento_em_analise' }]);
-            }
-        } else {
-            alertasFaturamentoAnaliseDisparados.current.delete(empresa.id);
-        }
-    }
-
-    function notificarSeTarefaMinha(tarefa) {
-        if (!tarefa || !usuario) return;
-        const nomeUsuario = (usuario.nome || '').trim().toLowerCase();
-        const responsaveis = (tarefa.responsavel || '').split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
-        const souResponsavel = responsaveis.includes(nomeUsuario);
-
-        if (souResponsavel && tarefa.status !== 'Concluída') {
-            if (!alertasTarefaDisparadas.current.has(tarefa.id)) {
-                alertasTarefaDisparadas.current.add(tarefa.id);
-                setAlertasNaoLidos(prev => [...prev, { id: Date.now() + Math.random(), msg: `Você tem uma tarefa: ${tarefa.titulo}`, tipo: 'nova_tarefa' }]);
-            }
-        } else {
-            alertasTarefaDisparadas.current.delete(tarefa.id);
-        }
-    }
-
-    function notificarSeNotaFiscalPreenchida(nota) {
-        if (!nota || !usuario) return;
-        const preenchida = nota.concluido === false && (!!nota.servico_feito || !!nota.valor_pago);
-        const destinatarioCerto = (nota.tipo_nota === 'DANFE' && usuario?.nivel === 'Financeiro') || (nota.tipo_nota === 'Serviço' && ehUsuario('Vinicius'));
-
-        if (preenchida && destinatarioCerto) {
-            if (!alertasNotaFiscalDisparadas.current.has(nota.id)) {
-                alertasNotaFiscalDisparadas.current.add(nota.id);
-                setAlertasNaoLidos(prev => [...prev, { id: Date.now() + Math.random(), msg: `Nota Fiscal (${nota.cliente || nota.cnpj}) preenchida!`, tipo: 'nf_preenchida' }]);
-            }
-        } else {
-            alertasNotaFiscalDisparadas.current.delete(nota.id);
-        }
-    }
-
-    function notificarSeLinkPagamentoNovo(link) {
-        if (!link || !ehUsuario('Giovana')) return;
-        const ativo = link.status !== 'Inativo' && link.status !== 'Pago' && link.status !== 'Concluído';
-
-        if (ativo) {
-            if (!alertasLinkPagamentoDisparados.current.has(link.id)) {
-                alertasLinkPagamentoDisparados.current.add(link.id);
-                setAlertasNaoLidos(prev => [...prev, { id: Date.now() + Math.random(), msg: `Novo link de pagamento para: ${link.cliente}`, tipo: 'novo_link' }]);
-            }
-        } else {
-            alertasLinkPagamentoDisparados.current.delete(link.id);
-        }
-    }
-
-    function notificarSeContaPagarUrgente(conta) {
-        if (!conta || !conta.vencimento) return;
-        if (!(usuario?.nivel === 'Financeiro' || ehUsuario('Giovana'))) return;
-
-        const hoje = new Date();
-        hoje.setHours(0, 0, 0, 0);
-        const amanha = new Date(hoje);
-        amanha.setDate(amanha.getDate() + 1);
-        const hojeStr = hoje.getFullYear() + '-' + String(hoje.getMonth() + 1).padStart(2, '0') + '-' + String(hoje.getDate()).padStart(2, '0');
-        const amanhaStr = amanha.getFullYear() + '-' + String(amanha.getMonth() + 1).padStart(2, '0') + '-' + String(amanha.getDate()).padStart(2, '0');
-
-        const alertId = `${conta.id}_${conta.vencimento}`;
-        const urgente = conta.status !== 'Pago' && conta.vencimento <= amanhaStr;
-
-        if (urgente) {
-            if (!alertasContaPagarDisparados.current.has(alertId)) {
-                alertasContaPagarDisparados.current.add(alertId);
-                let msg = `A conta "${conta.descricao}" vence amanhã!`;
-                if (conta.vencimento === hojeStr) msg = `A conta "${conta.descricao}" vence HOJE!`;
-                else if (conta.vencimento < hojeStr) msg = `A conta "${conta.descricao}" está VENCIDA!`;
-                setAlertasNaoLidos(prev => [...prev, { id: Date.now() + Math.random(), msg, tipo: 'alerta_conta_pagar' }]);
-            }
-        } else {
-            alertasContaPagarDisparados.current.delete(alertId);
-        }
-    }
 
     async function carregarDados() {
         let todosPedidos = [];
@@ -753,8 +610,8 @@ export const AppProvider = ({ children }) => {
     }, [buscaCliente]);
 
     useEffect(() => {
-        if (abaAtual !== 'cadastros' || abaCadastros !== 'clientes' || !usuario) return;
-        
+        if (pathname !== '/cadastros' || abaCadastros !== 'clientes' || !usuario) return;
+
         async function fetchClientesCadastrados() {
             let query = supabase.from('clientes').select('*', { count: 'exact' });
             
@@ -785,166 +642,8 @@ export const AppProvider = ({ children }) => {
         
         const timeout = setTimeout(fetchClientesCadastrados, 300);
         return () => clearTimeout(timeout);
-    }, [usuario, abaAtual, abaCadastros, paginaClientes, buscaCadClientes, letraFiltroCliente, triggerRealtime]);
+    }, [usuario, pathname, abaCadastros, paginaClientes, buscaCadClientes, letraFiltroCliente, triggerRealtime]);
 
-    async function carregarPerfil(userId) {
-        const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).single();
-        if (error || !data) return null;
-        return data;
-    }
-
-    // Reflete se a sessão atual tem uma identidade Google vinculada (usado no botão de "Vincular Google" da Navbar).
-    function atualizarGoogleVinculado(user) {
-        setGoogleVinculado(!!user?.identities?.some(i => i.provider === 'google'));
-        sincronizarAvatarGoogle(user);
-    }
-
-    // Copia a foto de perfil do Google (se ainda não tiver sido salva) para profiles.avatar_url,
-    // via RPC que só grava essa coluna e só na própria linha (ver avatar_google_migration.sql).
-    async function sincronizarAvatarGoogle(user) {
-        const identidadeGoogle = user?.identities?.find(i => i.provider === 'google');
-        const avatarGoogle = identidadeGoogle?.identity_data?.avatar_url || identidadeGoogle?.identity_data?.picture || null;
-        if (!avatarGoogle) return;
-
-        const { error } = await supabase.rpc('atualizar_meu_avatar', { novo_avatar_url: avatarGoogle });
-        if (!error) {
-            setUsuario(prev => (prev && prev.avatar_url !== avatarGoogle ? { ...prev, avatar_url: avatarGoogle } : prev));
-            setUsuariosSistema(prev => prev.map(u => (u.id === user.id && u.avatar_url !== avatarGoogle ? { ...u, avatar_url: avatarGoogle } : u)));
-        }
-    }
-
-    const efetuarLogin = async (e) => {
-        e.preventDefault();
-        setErroLogin('Entrando...');
-
-        const { data, error } = await supabase.auth.signInWithPassword({
-            email: loginInput.trim(),
-            password: senhaInput,
-        });
-
-        if (error) {
-            setErroLogin('E-mail ou senha incorretos.');
-            return;
-        }
-
-        const perfil = await carregarPerfil(data.user.id);
-        if (!perfil) {
-            setErroLogin('Login válido, mas sem perfil cadastrado (tabela profiles). Fale com um administrador.');
-            await supabase.auth.signOut();
-            return;
-        }
-
-        atualizarGoogleVinculado(data.user);
-        setUsuario(perfil);
-        setErroLogin('');
-        setLoginInput('');
-        setSenhaInput('');
-        setAbaAtual('dashboard');
-    };
-
-    // Login de 1 clique com a conta de demonstração (somente leitura), usada no link do
-    // currículo. Credenciais fixas via env — se não estiverem configuradas, avisa em vez
-    // de tentar logar com "undefined".
-    const entrarComoDemo = async () => {
-        setErroLogin('');
-        const email = process.env.NEXT_PUBLIC_DEMO_EMAIL;
-        const senha = process.env.NEXT_PUBLIC_DEMO_SENHA;
-        if (!email || !senha) {
-            setErroLogin('Acesso demo não configurado.');
-            return;
-        }
-
-        const { data, error } = await supabase.auth.signInWithPassword({ email, password: senha });
-        if (error) {
-            setErroLogin('Não foi possível entrar no modo demonstração.');
-            return;
-        }
-
-        const perfil = await carregarPerfil(data.user.id);
-        if (!perfil) {
-            setErroLogin('Conta demo sem perfil cadastrado. Fale com um administrador.');
-            await supabase.auth.signOut();
-            return;
-        }
-
-        setUsuario(perfil);
-        setAbaAtual('dashboard');
-    };
-
-    // Login direto com Google — só entra se essa identidade já estiver vinculada a uma conta
-    // com perfil cadastrado (ver vincularGoogle); senão cai no mesmo aviso de "sem perfil".
-    const entrarComGoogle = async () => {
-        setErroLogin('');
-        const { error } = await supabase.auth.signInWithOAuth({
-            provider: 'google',
-            options: { redirectTo: window.location.origin },
-        });
-        if (error) setErroLogin('Não foi possível iniciar o login com Google.');
-    };
-
-    // Vincula a conta Google à sessão atual (usuário já logado por e-mail/senha).
-    // Depois disso, ele também pode entrar direto pelo botão "Entrar com Google".
-    const vincularGoogle = async () => {
-        const { error } = await supabase.auth.linkIdentity({
-            provider: 'google',
-            options: { redirectTo: window.location.origin },
-        });
-        if (error) alert('Não foi possível vincular a conta Google: ' + error.message);
-    };
-
-    const desvincularGoogle = async () => {
-        const { data: { user } } = await supabase.auth.getUser();
-        const identidadeGoogle = user?.identities?.find(i => i.provider === 'google');
-        if (!identidadeGoogle) return;
-        const { error } = await supabase.auth.unlinkIdentity(identidadeGoogle);
-        if (error) { alert('Não foi possível desvincular a conta Google: ' + error.message); return; }
-        setGoogleVinculado(false);
-
-        const { error: erroAvatar } = await supabase.rpc('atualizar_meu_avatar', { novo_avatar_url: null });
-        if (!erroAvatar) {
-            setUsuario(prev => (prev ? { ...prev, avatar_url: null } : prev));
-            setUsuariosSistema(prev => prev.map(u => (u.id === user.id ? { ...u, avatar_url: null } : u)));
-        }
-    };
-
-    const logout = async () => {
-        await supabase.auth.signOut();
-        setUsuario(null);
-    };
-
-    // Restaura a sessão ao recarregar a página e reage a logout/expiração feitos em outra aba
-    // (e também ao voltar do redirect do Google, seja de login ou de vinculação de conta)
-    useEffect(() => {
-        let ativo = true;
-        supabase.auth.getSession().then(async ({ data: { session } }) => {
-            if (!session || !ativo) return;
-            const perfil = await carregarPerfil(session.user.id);
-            if (!ativo) return;
-            if (perfil) {
-                atualizarGoogleVinculado(session.user);
-                setUsuario(perfil);
-            } else {
-                setErroLogin('Login válido, mas sem perfil cadastrado (tabela profiles). Fale com um administrador.');
-                await supabase.auth.signOut();
-            }
-        });
-
-        const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
-            if (event === 'SIGNED_OUT') { setUsuario(null); setGoogleVinculado(false); }
-            if (event === 'USER_UPDATED' && session?.user) atualizarGoogleVinculado(session.user);
-        });
-
-        return () => {
-            ativo = false;
-            listener?.subscription?.unsubscribe();
-        };
-    }, []);
-
-    const toggleDarkMode = () => {
-        if (darkMode) { document.documentElement.classList.remove('dark'); } 
-        else { document.documentElement.classList.add('dark'); }
-        setDarkMode(!darkMode);
-    };
 
     async function atualizarCampoInline(id, campo, valor) {
         let payload = { [campo]: valor };
@@ -2029,8 +1728,6 @@ export const AppProvider = ({ children }) => {
         setSenhaInput,
         erroLogin,
         setErroLogin,
-        abaAtual,
-        setAbaAtual,
         pedidos,
         setPedidos,
         produtos,

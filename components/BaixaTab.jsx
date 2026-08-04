@@ -3,7 +3,10 @@ import React from 'react';
 import { useAppContext } from '@/context/AppContext';
 import Icon from '@/components/Icon';
 import Tooltip from '@/components/Tooltip';
-import { obterCorStatus, formatarValorFinanceiro, formatarDataExibicao, CustomDateRangePicker, obterResumoServicos, mascararCliente, centavosParaReais } from '@/lib/utils';
+import { obterCorStatus } from '@/lib/utils/constants';
+import { formatarValorFinanceiro, formatarDataExibicao, mascararCliente, centavosParaReais } from '@/lib/utils/formatters';
+import { CustomDateRangePicker } from '@/components/ui/DateRangePicker';
+import { obterResumoServicos } from '@/lib/utils/servico';
 
 
 export default function BaixaTab() {
