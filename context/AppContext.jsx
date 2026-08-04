@@ -137,6 +137,12 @@ export const AppProvider = ({ children }) => {
     const [itemAtual, setItemAtual] = useState({ nome: '', descricao: '', valor: '', desconto: '', local_producao: 'Berlim', id_produto: null });
 
     const [buscaCliente, setBuscaCliente] = useState('');
+    // Guarda o telefone do cliente exatamente clicado no dropdown (não re-busca por
+    // nome depois) — pedidos guardam cliente como texto solto, então quando existe
+    // mais de um cliente com o mesmo nome, buscar de novo por nome é ambíguo e pode
+    // pegar o registro errado. null = nenhuma seleção confirmada nesta sessão (cai
+    // no melhor-esforço por nome, mesmo comportamento de antes).
+    const [clienteSelecionadoInfo, setClienteSelecionadoInfo] = useState(null);
     const [clienteDropdownAberto, setClienteDropdownAberto] = useState(false);
     const [buscaProduto, setBuscaProduto] = useState('');
     const [produtoDropdownAberto, setProdutoDropdownAberto] = useState(false);
@@ -703,6 +709,7 @@ export const AppProvider = ({ children }) => {
         setPedidoEmEdicao(null);
         setIdOrcamentoOrigem(null);
         setBuscaCliente('');
+        setClienteSelecionadoInfo(null);
         setBuscaProduto('');
         setItensPedido([]); 
         setPagamentosPedido([]);
@@ -720,7 +727,8 @@ export const AppProvider = ({ children }) => {
         const dadosDesconstruidos = desconstruirTextoServico(pedido.servico);
         setPedidoEmEdicao(pedido);
         setBuscaCliente(pedido.cliente);
-        setItensPedido(dadosDesconstruidos.itens); 
+        setClienteSelecionadoInfo(null);
+        setItensPedido(dadosDesconstruidos.itens);
         const pagamentosRecuperados = dadosDesconstruidos.pagamentos || [];
         setPagamentosPedido(pagamentosRecuperados);
         
@@ -1058,6 +1066,7 @@ export const AppProvider = ({ children }) => {
         
         setOrcamentoFormalizadoEmEdicao(orcamento);
         setBuscaCliente(orcamento.cliente);
+        setClienteSelecionadoInfo(null);
         setItensPedido(itensCarregados);
         setNovoPedido({
             cliente: orcamento.cliente,
@@ -1077,6 +1086,7 @@ export const AppProvider = ({ children }) => {
         const itensCarregados = extrairItensOrcamento(orcamento);
         setPedidoEmEdicao(null);
         setBuscaCliente(orcamento.cliente);
+        setClienteSelecionadoInfo(null);
         setItensPedido(itensCarregados);
         setNovoPedido({
             cliente: orcamento.cliente,
@@ -1319,7 +1329,7 @@ export const AppProvider = ({ children }) => {
             else alert('Falha ao atualizar: ' + error.message);
         } else {
             const { data, error } = await supabase.from('clientes').insert([clienteFormatado]).select();
-            if (!error && data) { setTriggerRealtime(prev => prev + 1); setNovoPedido({...novoPedido, cliente: data[0].nome}); setBuscaCliente(data[0].nome); setModalClienteAberto(false); setNovoCliente({ id: null, nome: '', telefone: '', email: '', observacoes: '', cliente_problema: false }); } 
+            if (!error && data) { setTriggerRealtime(prev => prev + 1); setNovoPedido({...novoPedido, cliente: data[0].nome}); setBuscaCliente(data[0].nome); setClienteSelecionadoInfo({ id: data[0].id, telefone: data[0].telefone }); setModalClienteAberto(false); setNovoCliente({ id: null, nome: '', telefone: '', email: '', observacoes: '', cliente_problema: false }); } 
             else alert('Falha ao salvar: ' + error.message);
         }
         setSalvandoCliente(false);
@@ -1855,6 +1865,8 @@ export const AppProvider = ({ children }) => {
         setItemAtual,
         buscaCliente,
         setBuscaCliente,
+        clienteSelecionadoInfo,
+        setClienteSelecionadoInfo,
         clienteDropdownAberto,
         setClienteDropdownAberto,
         buscaProduto,

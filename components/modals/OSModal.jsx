@@ -10,7 +10,7 @@ import { ChipNome } from '@/components/ui/ChipNome';
 import { useFecharAoClicarFora } from '@/components/modals/useFecharAoClicarFora';
 
 export default function OSModal() {
-    const { modalAberto, fecharModalOS, pedidoEmEdicao, isModalTrancado, novoPedido, setNovoPedido, opcoesStatusPermitidas, buscaCliente, setBuscaCliente, isDemo, setClienteDropdownAberto, clienteDropdownAberto, clientesFiltrados, setNovoCliente, setModalClienteAberto, isClienteProblema, itensPedido, buscaProduto, setBuscaProduto, setProdutoDropdownAberto, produtoDropdownAberto, produtosFiltrados, setItemAtual, itemAtual, isAdmin, setNovoProduto, setModalProdutoAberto, fornecedores, pagamentosPedido, setPagamentosPedido, novoPagamento, setNovoPagamento, salvandoOS, usuario, salvarOS, removerItemDoCarrinho, adicionarItemAoCarrinho, salvarEdicaoItemCarrinho, usuariosSistema, atualizarCatalogoProdutos } = useAppContext();
+    const { modalAberto, fecharModalOS, pedidoEmEdicao, isModalTrancado, novoPedido, setNovoPedido, opcoesStatusPermitidas, buscaCliente, setBuscaCliente, clienteSelecionadoInfo, setClienteSelecionadoInfo, isDemo, setClienteDropdownAberto, clienteDropdownAberto, clientesFiltrados, setNovoCliente, setModalClienteAberto, isClienteProblema, itensPedido, buscaProduto, setBuscaProduto, setProdutoDropdownAberto, produtoDropdownAberto, produtosFiltrados, setItemAtual, itemAtual, isAdmin, setNovoProduto, setModalProdutoAberto, fornecedores, pagamentosPedido, setPagamentosPedido, novoPagamento, setNovoPagamento, salvandoOS, usuario, salvarOS, removerItemDoCarrinho, adicionarItemAoCarrinho, salvarEdicaoItemCarrinho, usuariosSistema, atualizarCatalogoProdutos } = useAppContext();
     const nomesResponsaveis = usuariosSistema.map(u => u.nome);
 
     const [pagamentoEditandoIdx, setPagamentoEditandoIdx] = useState(null);
@@ -107,14 +107,14 @@ export default function OSModal() {
                             <div className="flex gap-2">
                                 <div className="relative flex-1">
                                     <input required type="text" value={mascararCliente(buscaCliente, isDemo)} disabled={isModalTrancado}
-                                        onChange={e => { setBuscaCliente(e.target.value); setNovoPedido({...novoPedido, cliente: e.target.value}); setClienteDropdownAberto(true); }}
+                                        onChange={e => { setBuscaCliente(e.target.value); setClienteSelecionadoInfo(null); setNovoPedido({...novoPedido, cliente: e.target.value}); setClienteDropdownAberto(true); }}
                                         onFocus={() => { if(!isModalTrancado) setClienteDropdownAberto(true); }} onBlur={() => setTimeout(() => setClienteDropdownAberto(false), 200)}
                                         className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand transition dark:text-[#EDEDED] disabled:opacity-50" placeholder="Buscar cliente..." autoComplete="off" />
                                     <Icon name="chevron-down" className="absolute right-3 top-2.5 w-4 h-4 text-gray-400 pointer-events-none" />
                                     {clienteDropdownAberto && clientesFiltrados.length > 0 && (
                                         <ul className="absolute z-[60] w-full mt-1 max-h-48 overflow-y-auto bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded shadow-xl custom-scrollbar">
                                             {clientesFiltrados.map(c => (
-                                                <li key={c.id} onClick={() => { setBuscaCliente(c.nome); setNovoPedido({...novoPedido, cliente: c.nome}); setClienteDropdownAberto(false); }} className="px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-darkHover cursor-pointer border-b border-gray-100 dark:border-darkBorder last:border-0 flex justify-between items-center transition"><span className="font-medium text-[13px] text-gray-800 dark:text-[#EDEDED]">{c.nome}</span><span className="text-[11px] text-gray-500 dark:text-[#A1A1AA]">{c.telefone}</span></li>
+                                                <li key={c.id} onClick={() => { setBuscaCliente(c.nome); setClienteSelecionadoInfo({ id: c.id, telefone: c.telefone }); setNovoPedido({...novoPedido, cliente: c.nome}); setClienteDropdownAberto(false); }} className="px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-darkHover cursor-pointer border-b border-gray-100 dark:border-darkBorder last:border-0 flex justify-between items-center transition"><span className="font-medium text-[13px] text-gray-800 dark:text-[#EDEDED]">{c.nome}</span><span className="text-[11px] text-gray-500 dark:text-[#A1A1AA]">{c.telefone}</span></li>
                                             ))}
                                         </ul>
                                     )}
@@ -126,10 +126,13 @@ export default function OSModal() {
                                 </Tooltip>
                             </div>
                             {!clienteDropdownAberto && buscaCliente && !isDemo && (() => {
-                                const clienteSelecionado = clientesFiltrados.find(c => c.nome === buscaCliente);
-                                return clienteSelecionado?.telefone ? (
+                                // Prefere o cliente exatamente clicado (sem ambiguidade); só cai na busca
+                                // por nome (pode ser o registro errado se houver nomes duplicados) quando
+                                // não há seleção confirmada nesta sessão, ex: ao abrir uma OS pra editar.
+                                const telefone = clienteSelecionadoInfo?.telefone ?? clientesFiltrados.find(c => c.nome === buscaCliente)?.telefone;
+                                return telefone ? (
                                     <p className="mt-1.5 text-[11px] text-gray-500 dark:text-[#A1A1AA] flex items-center gap-1">
-                                        <Icon name="phone" className="w-3 h-3" /> {clienteSelecionado.telefone}
+                                        <Icon name="phone" className="w-3 h-3" /> {telefone}
                                     </p>
                                 ) : null;
                             })()}
