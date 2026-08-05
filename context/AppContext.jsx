@@ -4,7 +4,7 @@ import { usePathname } from 'next/navigation';
 import { flushSync } from 'react-dom';
 import { supabase } from '@/lib/supabaseClient';
 import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS } from '@/lib/utils/constants';
-import { formatarMoeda, parseValorMoeda, paraCentavos, centavosParaReais, obterDataAtual } from '@/lib/utils/formatters';
+import { formatarMoeda, parseValorMoeda, paraCentavos, centavosParaReais, obterDataAtual, adicionarMesData } from '@/lib/utils/formatters';
 import { desconstruirTextoServico } from '@/lib/utils/servico';
 import { useAuth } from '@/hooks/useAuth';
 import { useAlertas } from '@/hooks/useAlertas';
@@ -1131,7 +1131,7 @@ export const AppProvider = ({ children }) => {
         const copiaPendente = {
             descricao: contaOriginal.descricao,
             valor: 0,
-            vencimento: contaOriginal.vencimento,
+            vencimento: adicionarMesData(contaOriginal.vencimento),
             status: 'Pendente',
             recorrente: true,
             recorrente_total_parcelas: totalParcelas || null,

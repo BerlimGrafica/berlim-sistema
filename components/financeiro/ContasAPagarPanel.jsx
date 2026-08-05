@@ -1,4 +1,5 @@
 "use client";
+import { useState } from 'react';
 import { useAppContext } from '@/context/AppContext';
 import Icon from '@/components/Icon';
 import Tooltip from '@/components/Tooltip';
@@ -6,6 +7,12 @@ import { formatarMoeda, formatarValorFinanceiro, formatarDataExibicao, centavosP
 
 export default function ContasAPagarPanel({ mostrarContasPagas, dataInicio, dataFim }) {
     const { contasPagar, setNovaConta, setModalContaAberto, concluirConta, excluirConta } = useAppContext();
+    // Ordenação simples por clique no header: null = ordem original (mais recente cadastrada primeiro).
+    const [ordenacao, setOrdenacao] = useState({ campo: null, direcao: 'asc' });
+
+    const alternarOrdenacao = (campo) => {
+        setOrdenacao(prev => prev.campo === campo && prev.direcao === 'asc' ? { campo, direcao: 'desc' } : { campo, direcao: 'asc' });
+    };
 
     const contasFiltradas = contasPagar.filter(c => {
         if (!mostrarContasPagas && c.status === 'Pago') return false;
@@ -13,6 +20,30 @@ export default function ContasAPagarPanel({ mostrarContasPagas, dataInicio, data
         if (dataFim && (!c.vencimento || c.vencimento > dataFim)) return false;
         return true;
     });
+
+    const contasOrdenadas = !ordenacao.campo ? contasFiltradas : [...contasFiltradas].sort((a, b) => {
+        let va = a[ordenacao.campo] || '';
+        let vb = b[ordenacao.campo] || '';
+        if (typeof va === 'string') va = va.toLowerCase();
+        if (typeof vb === 'string') vb = vb.toLowerCase();
+        if (va < vb) return ordenacao.direcao === 'asc' ? -1 : 1;
+        if (va > vb) return ordenacao.direcao === 'asc' ? 1 : -1;
+        return 0;
+    });
+
+    const SetaOrdenacao = ({ campo }) => {
+        const ativo = ordenacao.campo === campo;
+        return (
+            <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); alternarOrdenacao(campo); }}
+                className={`ml-1 p-0.5 rounded transition align-middle ${ativo ? 'text-brand' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'}`}
+                aria-label="Ordenar"
+            >
+                <Icon name="chevron-down" className={`w-3.5 h-3.5 stroke-[3] transition-transform ${ativo && ordenacao.direcao === 'asc' ? 'rotate-180' : ''}`} />
+            </button>
+        );
+    };
 
     const hojeStr = obterDataAtual();
     // Deriva "amanhã" a partir da própria string de hoje (em vez de um novo Date()),
@@ -49,19 +80,19 @@ export default function ContasAPagarPanel({ mostrarContasPagas, dataInicio, data
                     <table className="w-full text-left border-collapse">
                         <thead className="bg-gray-50/50 dark:bg-darkHover/50 border-t-2 border-brand">
                             <tr className="border-b border-gray-200 dark:border-darkBorder text-[13px] font-semibold text-gray-500 dark:text-gray-400 tracking-wide uppercase">
-                                <th className="px-6 py-4">Vencimento</th>
-                                <th className="px-6 py-4">Descrição</th>
-                                <th className="px-6 py-4">Categoria</th>
+                                <th className="px-6 py-4"><span className="inline-flex items-center">Vencimento<SetaOrdenacao campo="vencimento" /></span></th>
+                                <th className="px-6 py-4"><span className="inline-flex items-center">Descrição<SetaOrdenacao campo="descricao" /></span></th>
+                                <th className="px-6 py-4"><span className="inline-flex items-center">Categoria<SetaOrdenacao campo="categoria" /></span></th>
                                 <th className="px-6 py-4">Valor</th>
                                 <th className="px-6 py-4">Status Pagamento</th>
                                 <th className="px-6 py-4 text-right">Ações</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100 dark:divide-darkBorder">
-                            {contasFiltradas.length === 0 ? (
+                            {contasOrdenadas.length === 0 ? (
                                 <tr><td colSpan="6" className="text-center py-8 text-gray-400">Nenhuma conta a pagar registrada.</td></tr>
                             ) : (
-                                contasFiltradas.map(conta => (
+                                contasOrdenadas.map(conta => (
                                     <tr key={conta.id} onClick={() => { setNovaConta({...conta, valor: conta.valor ? formatarMoeda(Math.round(conta.valor).toString()) : ''}); setModalContaAberto(true); }} className="hover:bg-gray-50 dark:hover:bg-darkHover/50 transition-colors group cursor-pointer">
                                         <td className="px-6 py-4 text-[13px] text-gray-600 dark:text-[#A1A1AA]">
                                             <span className={`inline-block px-2 py-1 rounded border-2 ${obterCorBordaVencimento(conta)}`}>
