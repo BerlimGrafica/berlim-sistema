@@ -5,7 +5,7 @@ import Icon from '@/components/Icon';
 import { obterDataAtual, formatarDataExibicao } from '@/lib/utils/formatters';
 
 // ==== COMPONENTE DE DATA CUSTOMIZADO ====
-export function CustomDatePicker({ value, onChange, placeholder, disabled, className }) {
+export function CustomDatePicker({ value, onChange, placeholder, disabled, className, clearable }) {
     const [isOpen, setIsOpen] = useState(false);
     const [viewDate, setViewDate] = useState(new Date());
     const [viewMode, setViewMode] = useState('days'); // 'days' | 'months' | 'years'
@@ -146,7 +146,18 @@ export function CustomDatePicker({ value, onChange, placeholder, disabled, class
                 <span className={value ? "text-gray-900 dark:text-[#EDEDED]" : "text-gray-400 dark:text-gray-600 truncate"}>
                     {value ? formatarDataExibicao(value) : placeholder}
                 </span>
-                <Icon name="calendar" className="w-4 h-4 text-gray-400 shrink-0 ml-1" />
+                {clearable && value && !disabled ? (
+                    <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); onChange(''); }}
+                        aria-label="Limpar data"
+                        className="text-gray-400 hover:text-red-500 shrink-0 ml-1 transition"
+                    >
+                        <Icon name="x" className="w-4 h-4" />
+                    </button>
+                ) : (
+                    <Icon name="calendar" className="w-4 h-4 text-gray-400 shrink-0 ml-1" />
+                )}
             </div>
             {isOpen && typeof document !== 'undefined' && createPortal(
                 <>

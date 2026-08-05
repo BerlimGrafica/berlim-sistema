@@ -2,7 +2,6 @@
 import { useAppContext } from '@/context/AppContext';
 import Icon from '@/components/Icon';
 import Tooltip from '@/components/Tooltip';
-import { obterDataAtual, centavosParaReais, mascararCliente } from '@/lib/utils/formatters';
 import { CustomDateRangePicker } from '@/components/ui/DateRangePicker';
 import VisaoGeralPanel from '@/components/financeiro/VisaoGeralPanel';
 import VendasPorProdutoPanel from '@/components/financeiro/VendasPorProdutoPanel';
@@ -13,7 +12,7 @@ import NotasFiscaisPanel from '@/components/financeiro/NotasFiscaisPanel';
 import { useState } from 'react';
 
 export default function FinanceiroTab() {
-    const { setAbaFinanceiro, abaFinanceiro, notasFiscais, usuario, isDemo, filtroNotas, dataFiltroFinInicio, setDataFiltroFinInicio, dataFiltroFinFim, setDataFiltroFinFim, dataFiltroContasPagarInicio, setDataFiltroContasPagarInicio, dataFiltroContasPagarFim, setDataFiltroContasPagarFim, dataFiltroContasReceberInicio, setDataFiltroContasReceberInicio, dataFiltroContasReceberFim, setDataFiltroContasReceberFim, pedidos, setNovaConta, setModalContaAberto, setModalEmpresaFaturamentoAberto, buscaNotaFiscal, setBuscaNotaFiscal, setPaginaNotasFiscais, setFiltroNotas } = useAppContext();
+    const { setAbaFinanceiro, abaFinanceiro, notasFiscais, usuario, filtroNotas, dataFiltroContasPagarInicio, setDataFiltroContasPagarInicio, dataFiltroContasPagarFim, setDataFiltroContasPagarFim, dataFiltroContasReceberInicio, setDataFiltroContasReceberInicio, dataFiltroContasReceberFim, setDataFiltroContasReceberFim, setNovaConta, setModalContaAberto, setModalEmpresaFaturamentoAberto, buscaNotaFiscal, setBuscaNotaFiscal, setPaginaNotasFiscais, setFiltroNotas } = useAppContext();
     const [mostrarContasPagas, setMostrarContasPagas] = useState(false);
 
     return (
@@ -52,37 +51,6 @@ export default function FinanceiroTab() {
                             </div>
 
                             <div className="flex flex-wrap items-end gap-3 w-full lg:w-auto">
-                                {(abaFinanceiro === 'geral' || abaFinanceiro === 'vendas_produto') && (
-                                    <>
-                                        <div className="flex flex-col w-60">
-                                            <span className="text-[10px] font-semibold text-gray-500 dark:text-[#888888] uppercase mb-1">Período:</span>
-                                            <CustomDateRangePicker startValue={dataFiltroFinInicio} endValue={dataFiltroFinFim} onChangeStart={setDataFiltroFinInicio} onChangeEnd={setDataFiltroFinFim} placeholder="Todo o período" className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-md px-3 py-2 text-[13px] outline-none hover:border-brand transition" />
-                                        </div>
-                                        <button type="button" onClick={() => {
-                                                const pedidosExport = pedidos.filter(p => {
-                                                    let match = true;
-                                                    if (dataFiltroFinInicio && (!p.data_pedido || p.data_pedido < dataFiltroFinInicio)) match = false;
-                                                    if (dataFiltroFinFim && (!p.data_pedido || p.data_pedido > dataFiltroFinFim)) match = false;
-                                                    return match;
-                                                });
-                                                const cabecalho = "ID;Data;Cliente;Responsavel;Local;Status;Valor\n";
-                                                const linhas = pedidosExport.map(p => `${p.id};${p.data_pedido};${mascararCliente(p.cliente, isDemo)};${p.responsavel};${p.local_producao};${p.status};${centavosParaReais(p.valor_total)}`).join("\n");
-                                                const blob = new Blob([cabecalho + linhas], { type: 'text/csv;charset=utf-8;' });
-                                                const url = URL.createObjectURL(blob);
-                                                const link = document.createElement("a");
-                                                link.setAttribute("href", url);
-                                                link.setAttribute("download", `relatorio_financeiro_${obterDataAtual()}.csv`);
-                                                document.body.appendChild(link);
-                                                link.click();
-                                                document.body.removeChild(link);
-                                            }}
-                                            className="bg-brand hover:bg-brandHover text-white h-[38px] px-4 text-[13px] rounded-md font-semibold shadow-sm transition flex items-center gap-2"
-                                        >
-                                            <Icon name="printer" className="w-4 h-4" /> Exportar CSV
-                                        </button>
-                                    </>
-                                )}
-
                                 {abaFinanceiro === 'contas_pagar' && (
                                     <>
                                         <div className="flex flex-col w-60">
@@ -92,7 +60,7 @@ export default function FinanceiroTab() {
                                         <button onClick={() => setMostrarContasPagas(!mostrarContasPagas)} className={`h-[38px] px-4 text-[13px] rounded-md font-semibold border transition flex items-center justify-center ${mostrarContasPagas ? 'bg-gray-100 border-gray-200 text-gray-700 dark:bg-darkElevated dark:border-darkBorder dark:text-gray-300' : 'bg-white border-gray-200 text-gray-600 dark:bg-darkCard dark:border-darkBorder dark:text-gray-400 hover:bg-gray-50'}`}>
                                             {mostrarContasPagas ? 'Ocultar Pagas' : 'Mostrar Histórico'}
                                         </button>
-                                        <button onClick={() => { setNovaConta({ id: null, descricao: '', valor: '', vencimento: '', status: 'Pendente', recorrente: false, categoria: 'Despesa', fornecedor_id: null }); setModalContaAberto(true); }} className="bg-brand hover:bg-brandHover text-white h-[38px] px-4 text-[13px] rounded-md font-semibold shadow-sm transition flex items-center gap-2">
+                                        <button onClick={() => { setNovaConta({ id: null, descricao: '', valor: '', vencimento: '', status: 'Pendente', recorrente: false, recorrente_total_parcelas: null, recorrente_parcela_atual: 1, categoria: 'Despesa', fornecedor_id: null }); setModalContaAberto(true); }} className="bg-brand hover:bg-brandHover text-white h-[38px] px-4 text-[13px] rounded-md font-semibold shadow-sm transition flex items-center gap-2">
                                             <Icon name="plus" className="w-4 h-4" /> Nova Conta
                                         </button>
                                     </>

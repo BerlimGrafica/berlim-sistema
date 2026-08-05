@@ -232,7 +232,7 @@ export default function DashboardTab() {
                                                 }
 
                                                 return minhasTarefasInt.map(t => (
-                                                    <tr key={t.id} onClick={() => { setNovaTarefa(t); setModalTarefaAberto(true); }} className="border-b border-gray-50 dark:border-darkBorder/50 hover:bg-gray-50/80 dark:hover:bg-darkHover/80 transition group cursor-pointer">
+                                                    <tr key={t.id} onClick={() => { setNovaTarefa({...t, descricao: t.descricao || ''}); setModalTarefaAberto(true); }} className="border-b border-gray-50 dark:border-darkBorder/50 hover:bg-gray-50/80 dark:hover:bg-darkHover/80 transition group cursor-pointer">
                                                         <td className="px-4 py-3">
                                                             <h4 className={`text-[12px] font-bold ${t.status === 'Concluída' ? 'text-gray-400 line-through' : 'text-gray-900 dark:text-gray-200'}`}>{t.titulo}</h4>
                                                             <p className="text-[11px] font-medium text-gray-500 dark:text-gray-400 max-w-[160px] truncate" title={t.descricao}>{t.descricao || '-'}</p>

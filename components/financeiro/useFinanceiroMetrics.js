@@ -52,6 +52,21 @@ export function useFinanceiroMetrics(pedidos, contasPagar, dataFiltroFinInicio, 
     const parseValorConta = (c) => centavosParaReais(c.valor);
     const totalDespesas = contasFiltradas.reduce((acc, c) => acc + parseValorConta(c), 0);
 
+    // Cards "Despesas", "Total Recebido" e "Total Bruto" do Resumo do Período sempre
+    // olham pro mês corrente, independente do filtro de data selecionado no dashboard.
+    const mesAtualStr = obterDataAtual().substring(0, 7); // yyyy-mm
+    const totalDespesasMesAtual = contasPagar.filter(c => c.vencimento && c.vencimento.startsWith(mesAtualStr)).reduce((acc, c) => acc + parseValorConta(c), 0);
+    const totalRecebidoMesAtual = pedidos
+        .filter(p => p.status !== 'Cancelado' && p.status !== 'Cancelada' && p.data_pedido && p.data_pedido.startsWith(mesAtualStr))
+        .reduce((acc, p) => {
+            const pagoStr = p.servico && p.servico.split('\n\n[PAGAMENTOS]\n')[1];
+            if (pagoStr) return acc + obterTotalPagoPedido(p);
+            if (p.status === 'Concluído' || p.status === 'Finalizado') return acc + valorTotalPedido(p);
+            return acc;
+        }, 0);
+    // "Total Bruto" (nome de exibição definido pelo negócio) = recebido - despesas do mês.
+    const totalBrutoMesAtual = totalRecebidoMesAtual - totalDespesasMesAtual;
+
     const coresCategoriaDespesa = { 'Despesa': 'bg-gray-500', 'Manutenção': 'bg-purple-500', 'Terceirização': 'bg-indigo-500' };
     const agrupadoCategoriaDespesa = contasFiltradas.reduce((acc, c) => {
         const cat = c.categoria || 'Despesa';
@@ -251,6 +266,7 @@ export function useFinanceiroMetrics(pedidos, contasPagar, dataFiltroFinInicio, 
         pedidosFin, valorTotalPedido, obterTotalPagoPedido,
         totalBruto, totalRecebido, totalAReceber, ticketMedio, totalVendasHoje,
         contasFiltradas, parseValorConta, totalDespesas,
+        totalDespesasMesAtual, totalRecebidoMesAtual, totalBrutoMesAtual,
         coresCategoriaDespesa, agrupadoCategoriaDespesa, rankingCategoriaDespesa, maxCategoriaDespesa, totalCategoriaDespesa,
         totalContasPendentes, totalContasPagas, qtdContasVencidas, maxStatusDespesa, totalStatusDespesa,
         maioresContas, maxMaiorConta,

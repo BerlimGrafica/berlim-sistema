@@ -8,7 +8,7 @@ import { useFecharAoClicarFora } from '@/components/modals/useFecharAoClicarFora
 
 export default function TarefaModal() {
     const { modalTarefaAberto, setModalTarefaAberto, novaTarefa, setNovaTarefa, salvarTarefa, usuariosSistema } = useAppContext();
-    const nomesResponsaveis = usuariosSistema.map(u => u.nome);
+    const nomesResponsaveis = usuariosSistema.filter(u => u.nivel !== 'demo').map(u => u.nome);
     const fecharAoClicarFora = useFecharAoClicarFora();
 
     if (!modalTarefaAberto) return null;

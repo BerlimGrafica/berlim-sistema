@@ -11,7 +11,7 @@ import { useFecharAoClicarFora } from '@/components/modals/useFecharAoClicarFora
 
 export default function OSModal() {
     const { modalAberto, fecharModalOS, pedidoEmEdicao, isModalTrancado, novoPedido, setNovoPedido, opcoesStatusPermitidas, buscaCliente, setBuscaCliente, clienteSelecionadoInfo, setClienteSelecionadoInfo, isDemo, setClienteDropdownAberto, clienteDropdownAberto, clientesFiltrados, setNovoCliente, setModalClienteAberto, isClienteProblema, itensPedido, buscaProduto, setBuscaProduto, setProdutoDropdownAberto, produtoDropdownAberto, produtosFiltrados, setItemAtual, itemAtual, isAdmin, setNovoProduto, setModalProdutoAberto, fornecedores, pagamentosPedido, setPagamentosPedido, novoPagamento, setNovoPagamento, salvandoOS, usuario, salvarOS, removerItemDoCarrinho, adicionarItemAoCarrinho, salvarEdicaoItemCarrinho, usuariosSistema, atualizarCatalogoProdutos } = useAppContext();
-    const nomesResponsaveis = usuariosSistema.map(u => u.nome);
+    const nomesResponsaveis = usuariosSistema.filter(u => u.nivel !== 'demo').map(u => u.nome);
 
     const [pagamentoEditandoIdx, setPagamentoEditandoIdx] = useState(null);
     const [pagamentoEditando, setPagamentoEditando] = useState(null);
@@ -97,7 +97,6 @@ export default function OSModal() {
                                 <label className="block text-[13px] font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Tags Especiais</label>
                                 <div className="flex items-center gap-2 mt-1">
                                     <button type="button" onClick={() => setNovoPedido({...novoPedido, entrega: !novoPedido.entrega})} disabled={isModalTrancado} className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded text-[11px] font-semibold transition disabled:opacity-50 ${novoPedido.entrega ? 'text-white bg-orange-500 dark:bg-orange-600 hover:bg-orange-600 dark:hover:bg-orange-700' : 'bg-gray-100 text-gray-500 dark:bg-darkElevated dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-darkHover'}`}><Icon name="package" className="w-4 h-4"/> Entrega</button>
-                                    <button type="button" onClick={() => setNovoPedido({...novoPedido, urgente: !novoPedido.urgente})} disabled={isModalTrancado} className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded text-[11px] font-semibold transition disabled:opacity-50 ${novoPedido.urgente ? 'text-white bg-red-500 dark:bg-red-600 hover:bg-red-600 dark:hover:bg-red-700' : 'bg-gray-100 text-gray-500 dark:bg-darkElevated dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-darkHover'}`}><Icon name="alert-triangle" className="w-3.5 h-3.5"/> Urgente</button>
                                 </div>
                             </div>
                         </div>
@@ -171,7 +170,7 @@ export default function OSModal() {
                                             setItemEditandoId(item.id_temp);
                                         }} className={`flex justify-between items-start gap-3 p-3 bg-white dark:bg-darkElevated border rounded-lg shadow-sm transition ${itemEditandoId === item.id_temp ? 'border-brand ring-1 ring-brand' : 'border-gray-200 dark:border-darkBorder'} ${!isModalTrancado ? 'cursor-pointer hover:border-brand/60' : ''}`}>
                                             <div className="flex items-start gap-3 min-w-0">
-                                                <span className="w-6 h-6 shrink-0 rounded-full bg-blue-100 dark:bg-blue-500/20 text-[11px] font-bold text-blue-700 dark:text-blue-400 flex items-center justify-center mt-0.5">{index + 1}</span>
+                                                <span className="w-6 h-6 shrink-0 rounded-full bg-blue-500 dark:bg-blue-500 text-[11px] font-bold text-white flex items-center justify-center mt-0.5">{index + 1}</span>
                                                 <div className="flex flex-col min-w-0"><span className="font-semibold text-[13px] dark:text-white">{item.nome || 'Serviço Personalizado'}</span><span className="text-[11px] text-gray-500 dark:text-[#A1A1AA] whitespace-pre-wrap mt-1">{item.descricao}</span>{item.local_producao && <span className="mt-1.5 w-max"><ChipNome nome={item.local_producao} /></span>}</div>
                                             </div>
                                             <div className="flex items-center gap-4 shrink-0"><div className="text-right"><span className="font-bold text-[13px] dark:text-white">R$ {item.valor}</span>{item.desconto && <span className="block text-[10px] text-brand font-medium">-{item.desconto}% desc</span>}</div><button type="button" disabled={isModalTrancado} onClick={(e) => { e.stopPropagation(); if (itemEditandoId === item.id_temp) { setItemEditandoId(null); setItemAtual({ nome: '', descricao: '', valor: '', desconto: '', local_producao: 'Berlim', id_produto: null }); setBuscaProduto(''); } removerItemDoCarrinho(item.id_temp); }} className="text-red-400 hover:text-red-600 transition disabled:opacity-30"><Icon name="trash-2" className="w-4 h-4" /></button></div>
@@ -199,7 +198,7 @@ export default function OSModal() {
                                                     {produtosFiltrados.map(p => (
                                                         <li key={p.id} onClick={() => {
                                                             setBuscaProduto(p.nome);
-                                                            setItemAtual({ ...itemAtual, nome: p.nome, descricao: p.texto_padrao, valor: formatarMoeda(Math.round(p.preco_base).toString()), desconto: '', id_produto: p.id });
+                                                            setItemAtual({ ...itemAtual, nome: p.nome, descricao: p.texto_padrao || '', valor: formatarMoeda(Math.round(p.preco_base).toString()), desconto: '', id_produto: p.id });
                                                             setProdutoDropdownAberto(false);
                                                         }} className="px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-darkHover cursor-pointer border-b border-gray-100 dark:border-darkBorder last:border-0 flex flex-col transition">
                                                             <div className="flex justify-between items-center"><span className="font-medium text-[13px] dark:text-[#EDEDED]">{p.nome}</span><span className="text-[11px] font-semibold text-brand">R$ {formatarValorFinanceiro(centavosParaReais(p.preco_base))}</span></div>
@@ -351,7 +350,7 @@ export default function OSModal() {
                                                     <div className="flex items-center gap-3 shrink-0">
                                                         <div className="flex flex-col items-end">
                                                             <span className="font-bold text-[13px] text-emerald-600 dark:text-emerald-400">R$ {pag.valor}</span>
-                                                            {pag.instituicao && <span className="text-[10px] bg-brand/10 text-brand font-semibold px-1.5 py-0.5 rounded mt-1.5 w-max">{pag.instituicao}</span>}
+                                                            {pag.instituicao && <span className="mt-1.5"><ChipNome nome={pag.instituicao} /></span>}
                                                         </div>
                                                         {!isModalTrancado && (
                                                             <button type="button" onClick={(e) => {

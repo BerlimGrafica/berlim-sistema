@@ -63,7 +63,7 @@ export default function ComunicacaoInternaTab() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {requisicoesVisiveis.length > 0 ? requisicoesVisiveis.map(r => (
-                            <div key={r.id} onClick={() => { setNovaRequisicao(r); setModalRequisicaoAberto(true); }} className={`bg-white dark:bg-darkCard rounded-xl shadow-sm border flex flex-col cursor-pointer hover:border-brand/50 transition-colors ${r.status === 'Comprado' ? 'opacity-60 border-gray-200 dark:border-darkBorder' : 'border-gray-200 dark:border-darkBorder'}`}>
+                            <div key={r.id} onClick={() => { setNovaRequisicao({...r, itens: r.itens || '', observacoes: r.observacoes || ''}); setModalRequisicaoAberto(true); }} className={`bg-white dark:bg-darkCard rounded-xl shadow-sm border flex flex-col cursor-pointer hover:border-brand/50 transition-colors ${r.status === 'Comprado' ? 'opacity-60 border-gray-200 dark:border-darkBorder' : 'border-gray-200 dark:border-darkBorder'}`}>
                                 <div className="flex justify-between items-start px-5 py-3.5 bg-gray-50/70 dark:bg-darkElevated/60 rounded-t-xl border-b border-dashed border-gray-300 dark:border-darkBorder">
                                     <div>
                                         <h3 className={`font-bold ${r.status === 'Comprado' ? 'line-through text-gray-500' : 'text-gray-900 dark:text-white'}`}>Requisição #{r.id}</h3>
@@ -124,7 +124,7 @@ export default function ComunicacaoInternaTab() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {tarefasVisiveis.length > 0 ? tarefasVisiveis.map(t => (
-                            <div key={t.id} onClick={() => { setNovaTarefa(t); setModalTarefaAberto(true); }} className={`bg-white dark:bg-darkCard rounded-xl shadow-sm flex flex-col cursor-pointer hover:border-brand/50 transition-colors ${t.fixa ? 'border-2 border-blue-500 dark:border-blue-400' : `border ${t.status === 'Concluída' ? 'opacity-60 border-gray-200 dark:border-darkBorder' : 'border-gray-200 dark:border-darkBorder'}`}`}>
+                            <div key={t.id} onClick={() => { setNovaTarefa({...t, descricao: t.descricao || ''}); setModalTarefaAberto(true); }} className={`bg-white dark:bg-darkCard rounded-xl shadow-sm flex flex-col cursor-pointer hover:border-brand/50 transition-colors ${t.fixa ? 'border-2 border-blue-500 dark:border-blue-400' : `border ${t.status === 'Concluída' ? 'opacity-60 border-gray-200 dark:border-darkBorder' : 'border-gray-200 dark:border-darkBorder'}`}`}>
                                 <div className="flex justify-between items-start px-5 py-3.5 bg-gray-50/70 dark:bg-darkElevated/60 rounded-t-xl border-b border-dashed border-gray-300 dark:border-darkBorder">
                                     <div>
                                         <h3 className={`font-bold ${t.status === 'Concluída' && !t.fixa ? 'line-through text-gray-500' : 'text-gray-900 dark:text-white'}`}>{t.titulo}</h3>
@@ -189,7 +189,7 @@ export default function ComunicacaoInternaTab() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {linksVisiveis.length > 0 ? linksVisiveis.map(l => (
-                            <div key={l.id} onClick={() => { setNovoLink({...l, valor: l.valor ? formatarMoeda(Math.round(l.valor).toString()) : ''}); setModalLinkAberto(true); }} className={`bg-white dark:bg-darkCard rounded-xl shadow-sm border flex flex-col cursor-pointer hover:border-brand/50 transition-colors ${(l.status === 'Pago' || l.status === 'Concluído' || l.status === 'Inativo') ? 'opacity-60 border-gray-200 dark:border-darkBorder' : 'border-gray-200 dark:border-darkBorder'}`}>
+                            <div key={l.id} onClick={() => { setNovoLink({...l, titulo: l.titulo || '', valor: l.valor ? formatarMoeda(Math.round(l.valor).toString()) : ''}); setModalLinkAberto(true); }} className={`bg-white dark:bg-darkCard rounded-xl shadow-sm border flex flex-col cursor-pointer hover:border-brand/50 transition-colors ${(l.status === 'Pago' || l.status === 'Concluído' || l.status === 'Inativo') ? 'opacity-60 border-gray-200 dark:border-darkBorder' : 'border-gray-200 dark:border-darkBorder'}`}>
                                 <div className="flex justify-between items-start px-5 py-3.5 bg-gray-50/70 dark:bg-darkElevated/60 rounded-t-xl border-b border-dashed border-gray-300 dark:border-darkBorder">
                                     <div>
                                         <h3 className={`font-bold ${(l.status === 'Pago' || l.status === 'Concluído' || l.status === 'Inativo') ? 'line-through text-gray-500' : 'text-gray-900 dark:text-white'}`}>{l.titulo}</h3>

@@ -2,7 +2,7 @@
 import { useAppContext } from '@/context/AppContext';
 import Icon from '@/components/Icon';
 import Tooltip from '@/components/Tooltip';
-import { formatarMoeda, formatarValorFinanceiro, formatarDataExibicao, centavosParaReais } from '@/lib/utils/formatters';
+import { formatarMoeda, formatarValorFinanceiro, formatarDataExibicao, centavosParaReais, obterDataAtual } from '@/lib/utils/formatters';
 
 export default function ContasAPagarPanel({ mostrarContasPagas, dataInicio, dataFim }) {
     const { contasPagar, setNovaConta, setModalContaAberto, concluirConta, excluirConta } = useAppContext();
@@ -13,6 +13,34 @@ export default function ContasAPagarPanel({ mostrarContasPagas, dataInicio, data
         if (dataFim && (!c.vencimento || c.vencimento > dataFim)) return false;
         return true;
     });
+
+    const hojeStr = obterDataAtual();
+    // Deriva "amanhã" a partir da própria string de hoje (em vez de um novo Date()),
+    // pra garantir exatamente 1 dia de diferença mesmo com o fuso de obterDataAtual.
+    const [anoHoje, mesHoje, diaHoje] = hojeStr.split('-').map(Number);
+    const amanhaDate = new Date(anoHoje, mesHoje - 1, diaHoje + 1);
+    const amanhaStr = amanhaDate.getFullYear() + '-' + String(amanhaDate.getMonth() + 1).padStart(2, '0') + '-' + String(amanhaDate.getDate()).padStart(2, '0');
+
+    const obterStatusPagamento = (conta) => {
+        if (conta.status === 'Pago') {
+            return { label: 'Pago', cor: 'bg-emerald-50 border-emerald-200 text-emerald-600 dark:bg-emerald-900/20 dark:border-emerald-800/50 dark:text-emerald-400' };
+        }
+        if (conta.vencimento && conta.vencimento <= hojeStr) {
+            return { label: 'Vencido', cor: 'bg-red-50 border-red-200 text-red-600 dark:bg-red-900/20 dark:border-red-800/50 dark:text-red-400' };
+        }
+        if (conta.vencimento === amanhaStr) {
+            return { label: 'Vence amanhã', cor: 'bg-amber-50 border-amber-200 text-amber-600 dark:bg-amber-900/20 dark:border-amber-800/50 dark:text-amber-400' };
+        }
+        return { label: 'Aberto', cor: 'bg-gray-100 border-gray-300 text-gray-600 dark:bg-darkElevated dark:border-darkBorder dark:text-gray-300' };
+    };
+
+    const obterCorBordaVencimento = (conta) => {
+        const { label } = obterStatusPagamento(conta);
+        if (label === 'Vencido') return 'border-red-500 dark:border-red-500';
+        if (label === 'Vence amanhã') return 'border-amber-500 dark:border-amber-400';
+        if (label === 'Pago') return 'border-emerald-500 dark:border-emerald-500';
+        return 'border-transparent';
+    };
 
     return (
         <div>
@@ -25,7 +53,7 @@ export default function ContasAPagarPanel({ mostrarContasPagas, dataInicio, data
                                 <th className="px-6 py-4">Descrição</th>
                                 <th className="px-6 py-4">Categoria</th>
                                 <th className="px-6 py-4">Valor</th>
-                                <th className="px-6 py-4">Status</th>
+                                <th className="px-6 py-4">Status Pagamento</th>
                                 <th className="px-6 py-4 text-right">Ações</th>
                             </tr>
                         </thead>
@@ -35,10 +63,30 @@ export default function ContasAPagarPanel({ mostrarContasPagas, dataInicio, data
                             ) : (
                                 contasFiltradas.map(conta => (
                                     <tr key={conta.id} onClick={() => { setNovaConta({...conta, valor: conta.valor ? formatarMoeda(Math.round(conta.valor).toString()) : ''}); setModalContaAberto(true); }} className="hover:bg-gray-50 dark:hover:bg-darkHover/50 transition-colors group cursor-pointer">
-                                        <td className="px-6 py-4 text-[13px] text-gray-600 dark:text-[#A1A1AA]">{formatarDataExibicao(conta.vencimento)}</td>
+                                        <td className="px-6 py-4 text-[13px] text-gray-600 dark:text-[#A1A1AA]">
+                                            <span className={`inline-block px-2 py-1 rounded border-2 ${obterCorBordaVencimento(conta)}`}>
+                                                {formatarDataExibicao(conta.vencimento)}
+                                            </span>
+                                        </td>
                                         <td className="px-6 py-4 text-[13px] font-medium text-gray-900 dark:text-gray-300">
-                                            {conta.descricao}
-                                            {conta.recorrente && <span className="ml-2 px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">Recorrente</span>}
+                                            <div className="flex items-center gap-1.5">
+                                                {conta.descricao}
+                                                {conta.recorrente && (
+                                                    conta.recorrente_total_parcelas ? (
+                                                        <Tooltip label={`Parcela ${conta.recorrente_parcela_atual || 1} de ${conta.recorrente_total_parcelas}`}>
+                                                            <span className="w-4 h-4 rounded-full bg-blue-500 dark:bg-blue-400 text-white text-[9px] font-bold flex items-center justify-center shrink-0 leading-none">
+                                                                {conta.recorrente_parcela_atual || 1}
+                                                            </span>
+                                                        </Tooltip>
+                                                    ) : (
+                                                        <Tooltip label="Recorrente">
+                                                            <span className="w-4 h-4 rounded-full bg-blue-500 dark:bg-blue-400 flex items-center justify-center shrink-0">
+                                                                <Icon name="repeat" className="w-2.5 h-2.5 text-white" />
+                                                            </span>
+                                                        </Tooltip>
+                                                    )
+                                                )}
+                                            </div>
                                         </td>
                                         <td className="px-6 py-4 text-[13px]">
                                             <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-semibold rounded-full whitespace-nowrap ${
@@ -53,8 +101,8 @@ export default function ContasAPagarPanel({ mostrarContasPagas, dataInicio, data
                                         </td>
                                         <td className="px-6 py-4 text-[13px] font-medium text-emerald-600 dark:text-emerald-400">R$ {formatarValorFinanceiro(centavosParaReais(conta.valor))}</td>
                                         <td className="px-6 py-4 text-[13px]">
-                                            <span className={`whitespace-nowrap px-2.5 py-1 text-[11px] font-semibold rounded border ${conta.status === 'Pago' ? 'bg-emerald-50 border-emerald-200 text-emerald-600 dark:bg-emerald-900/20 dark:border-emerald-800/50 dark:text-emerald-400' : 'bg-red-50 border-red-200 text-red-600 dark:bg-red-900/20 dark:border-red-800/50 dark:text-red-400'}`}>
-                                                {conta.status}
+                                            <span className={`whitespace-nowrap px-2.5 py-1 text-[11px] font-semibold rounded border ${obterStatusPagamento(conta).cor}`}>
+                                                {obterStatusPagamento(conta).label}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 text-[13px] text-right flex justify-end gap-2">

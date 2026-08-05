@@ -228,7 +228,9 @@ function PrintOrcamento({ orc }) {
                     <p>• Retirada na nossa loja: Rua Alencastro, 42 - Bairro Silveira - Santo André (SP);</p>
                     <p>• Forma de pagamento: 50% de sinal e 50% na retirada, podendo ser via pix, dinheiro ou cartão, ou 100% antecipado via link de pagamento;</p>
                     <p>• Não trabalhamos com fidelidade de cor, por isso as cores podem variar conforme o material;</p>
-                    <p>• O corte é aproximado, pois buscamos aproveitamento do material.</p>
+                    <p>• O corte é aproximado, pois buscamos aproveitamento do material;</p>
+                    <p>• Orçamento válido por 7 dias;</p>
+                    <p>• Aprovação do orçamento sujeito validação da arte.</p>
                 </div>
             </div>
 

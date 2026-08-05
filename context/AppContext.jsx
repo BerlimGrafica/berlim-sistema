@@ -95,7 +95,7 @@ export const AppProvider = ({ children }) => {
     const [contasPagar, setContasPagar] = useState([]);
     const [calculadoraAtiva, setCalculadoraAtiva] = useState('banner');
     const [modalContaAberto, setModalContaAberto] = useState(false);
-    const [novaConta, setNovaConta] = useState({ id: null, descricao: '', valor: '', vencimento: '', status: 'Pendente', recorrente: false, categoria: 'Despesa', fornecedor_id: null });
+    const [novaConta, setNovaConta] = useState({ id: null, descricao: '', valor: '', vencimento: '', status: 'Pendente', recorrente: false, recorrente_total_parcelas: null, recorrente_parcela_atual: 1, categoria: 'Despesa', fornecedor_id: null });
     
     const [empresasFaturamento, setEmpresasFaturamento] = useState([]);
     const [modalEmpresaFaturamentoAberto, setModalEmpresaFaturamentoAberto] = useState(false);
@@ -159,7 +159,7 @@ export const AppProvider = ({ children }) => {
         cliente: '', servico: '', valor_total: '', 
         status: 'Produzir', data_pedido: obterDataAtual(),
         prazo: '', responsavel: '', local_producao: 'Berlim', aprovado: false,
-        entrega: false, urgente: false
+        entrega: false
     });
     
     const [modalProdutoAberto, setModalProdutoAberto] = useState(false);
@@ -230,13 +230,6 @@ export const AppProvider = ({ children }) => {
                                 }
                             }
 
-                            // Alerta: Serviço de Urgência (apenas para o responsável pela O.S.)
-                            if (payload.new.urgente && !payload.old?.urgente) {
-                                if (newList.includes(nomeUsuario)) {
-                                    setAlertasNaoLidos(prev => [...prev, { id: Date.now() + 2, msg: `Urgência marcada na O.S. #${payload.new.id}!`, os_id: payload.new.id, tipo: 'urgencia' }]);
-                                }
-                            }
-
                         } else if (payload.eventType === 'INSERT') {
                             const newResponsavel = payload.new?.responsavel || '';
                             const newList = newResponsavel.split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
@@ -244,13 +237,6 @@ export const AppProvider = ({ children }) => {
                             
                             if (newList.includes(nomeUsuario)) {
                                 setAlertasNaoLidos(prev => [...prev, { id: Date.now(), msg: `Nova O.S. #${payload.new.id} atribuída a você`, os_id: payload.new.id, tipo: 'atribuicao' }]);
-                            }
-                            
-                            // Alerta: Serviço de Urgência no cadastro (apenas para o responsável pela O.S.)
-                            if (payload.new.urgente) {
-                                if (newList.includes(nomeUsuario)) {
-                                    setAlertasNaoLidos(prev => [...prev, { id: Date.now() + 2, msg: `Urgência na nova O.S. #${payload.new.id}!`, os_id: payload.new.id, tipo: 'urgencia' }]);
-                                }
                             }
                         }
 
@@ -724,7 +710,7 @@ export const AppProvider = ({ children }) => {
             cliente: '', servico: '', valor_total: '', 
             status: 'Produzir', data_pedido: obterDataAtual(),
             prazo: '', responsavel: '', local_producao: 'Berlim', aprovado: false,
-            entrega: false, urgente: false
+            entrega: false
         });
     }
 
@@ -755,8 +741,7 @@ export const AppProvider = ({ children }) => {
             responsavel: pedido.responsavel || '',
             local_producao: pedido.local_producao || 'Berlim',
             aprovado: pedido.aprovado || false,
-            entrega: pedido.entrega || false,
-            urgente: pedido.urgente || false
+            entrega: pedido.entrega || false
         });
         setModalAberto(true);
     }
@@ -899,8 +884,7 @@ export const AppProvider = ({ children }) => {
             responsavel: novoPedido.responsavel,
             local_producao: locaisOS,
             aprovado: novoPedido.aprovado,
-            entrega: novoPedido.entrega,
-            urgente: novoPedido.urgente
+            entrega: novoPedido.entrega
         };
 
         if (statusFinal === 'Concluído' && (!pedidoEmEdicao || pedidoEmEdicao.status !== 'Concluído')) {
@@ -1081,8 +1065,7 @@ export const AppProvider = ({ children }) => {
             data_pedido: obterDataAtual(),
             prazo: '',
             responsavel: usuario?.nome || '',
-            entrega: false,
-            urgente: false
+            entrega: false
         });
         setModalOrcamentoFormalizadoAberto(true);
     }
@@ -1101,8 +1084,7 @@ export const AppProvider = ({ children }) => {
             data_pedido: obterDataAtual(),
             prazo: '',
             responsavel: usuario?.nome || '',
-            entrega: false,
-            urgente: false
+            entrega: false
         });
         setIdOrcamentoOrigem(orcamento.id);
         setModalAberto(true);
@@ -1141,12 +1123,19 @@ export const AppProvider = ({ children }) => {
     }
 
     async function criarCopiaRecorrente(contaOriginal) {
+        const parcelaAtual = contaOriginal.recorrente_parcela_atual || 1;
+        const totalParcelas = contaOriginal.recorrente_total_parcelas;
+        // Parcelamento com fim definido (ex: 10x): ao pagar a última parcela, não gera cópia nova.
+        if (totalParcelas && parcelaAtual >= totalParcelas) return;
+
         const copiaPendente = {
             descricao: contaOriginal.descricao,
             valor: 0,
             vencimento: contaOriginal.vencimento,
             status: 'Pendente',
             recorrente: true,
+            recorrente_total_parcelas: totalParcelas || null,
+            recorrente_parcela_atual: parcelaAtual + 1,
             categoria: contaOriginal.categoria || 'Despesa',
             fornecedor_id: contaOriginal.fornecedor_id || null
         };
@@ -1183,6 +1172,8 @@ export const AppProvider = ({ children }) => {
             vencimento: novaConta.vencimento,
             status: novaConta.status,
             recorrente: novaConta.recorrente,
+            recorrente_total_parcelas: novaConta.recorrente ? (novaConta.recorrente_total_parcelas || null) : null,
+            recorrente_parcela_atual: novaConta.recorrente_parcela_atual || 1,
             categoria: novaConta.categoria || 'Despesa',
             fornecedor_id: novaConta.categoria && novaConta.categoria !== 'Despesa' ? (novaConta.fornecedor_id || null) : null
         };

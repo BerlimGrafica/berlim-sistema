@@ -25,7 +25,8 @@ export default function VisaoGeralPanel() {
     };
 
     const {
-        totalAnoAtual, crescimentoPercentual, totalDespesas, totalVendasHoje, totalRecebido, totalAReceber, ticketMedio,
+        totalAnoAtual, crescimentoPercentual, totalVendasHoje, totalAReceber, ticketMedio,
+        totalDespesasMesAtual, totalRecebidoMesAtual, totalBrutoMesAtual,
         anosOrdenados, maxBrutoAno, anoAtual, mesesOrdenados, maxBrutoMes, nomeMesAtual, diasOrdenados, maxBrutoDia, diaAtual,
         renderLayer2, renderLayer3, renderLayer4,
         rankingLocal, maxLocal, totalRankingLocal, colorsLocal,
@@ -45,7 +46,7 @@ export default function VisaoGeralPanel() {
                     <span className="w-1 h-4 bg-brand rounded-full"></span>
                     <h2 className="text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Resumo do Período</h2>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-6 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-7 gap-4">
                     <div className="bg-white dark:bg-darkCard p-5 rounded-xl border border-gray-200 dark:border-darkBorder shadow-sm hover:shadow-md transition flex flex-col justify-between">
                         <div className="flex items-start justify-between gap-2">
                             <div className="min-w-0">
@@ -65,11 +66,33 @@ export default function VisaoGeralPanel() {
                         <div className="flex items-start justify-between gap-2">
                             <div className="min-w-0">
                                 <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">Despesas (A Pagar)</span>
-                                <h2 className="text-lg font-black text-red-600 dark:text-red-400">R$ {formatarValorFinanceiro(totalDespesas)}</h2>
+                                <h2 className="text-lg font-black text-red-600 dark:text-red-400">R$ {formatarValorFinanceiro(totalDespesasMesAtual)}</h2>
                             </div>
                             <div className="p-2 rounded-lg bg-red-50 dark:bg-red-500/10 shrink-0"><Icon name="dollar-sign" className="w-4 h-4 text-red-600 dark:text-red-400" /></div>
                         </div>
-                        <p className="text-[11px] text-gray-400 mt-3 font-medium">Gastos no período</p>
+                        <p className="text-[11px] text-gray-400 mt-3 font-medium">{nomeMesAtual}</p>
+                    </div>
+
+                    <div className="bg-white dark:bg-darkCard p-5 rounded-xl border border-gray-200 dark:border-darkBorder shadow-sm hover:shadow-md transition flex flex-col justify-between">
+                        <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0">
+                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">Total Recebido</span>
+                                <h2 className="text-lg font-black text-emerald-600 dark:text-emerald-400">R$ {formatarValorFinanceiro(totalRecebidoMesAtual)}</h2>
+                            </div>
+                            <div className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 shrink-0"><Icon name="check-circle" className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /></div>
+                        </div>
+                        <p className="text-[11px] text-gray-400 mt-3 font-medium">{nomeMesAtual}</p>
+                    </div>
+
+                    <div className="bg-white dark:bg-darkCard p-5 rounded-xl border border-gray-200 dark:border-darkBorder shadow-sm hover:shadow-md transition flex flex-col justify-between">
+                        <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0">
+                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">Total Bruto</span>
+                                <h2 className="text-lg font-black text-cyan-600 dark:text-cyan-400">R$ {formatarValorFinanceiro(totalBrutoMesAtual)}</h2>
+                            </div>
+                            <div className="p-2 rounded-lg bg-cyan-50 dark:bg-cyan-500/10 shrink-0"><Icon name="dollar-sign" className="w-4 h-4 text-cyan-600 dark:text-cyan-400" /></div>
+                        </div>
+                        <p className="text-[11px] text-gray-400 mt-3 font-medium">{nomeMesAtual}</p>
                     </div>
 
                     <div className="bg-white dark:bg-darkCard p-5 rounded-xl border border-gray-200 dark:border-darkBorder shadow-sm hover:shadow-md transition flex flex-col justify-between">
@@ -80,18 +103,7 @@ export default function VisaoGeralPanel() {
                             </div>
                             <div className="p-2 rounded-lg bg-purple-50 dark:bg-purple-500/10 shrink-0"><Icon name="calendar" className="w-4 h-4 text-purple-600 dark:text-purple-400" /></div>
                         </div>
-                        <p className="text-[11px] text-gray-400 mt-3 font-medium">Pedidos lançados hoje</p>
-                    </div>
-
-                    <div className="bg-white dark:bg-darkCard p-5 rounded-xl border border-gray-200 dark:border-darkBorder shadow-sm hover:shadow-md transition flex flex-col justify-between">
-                        <div className="flex items-start justify-between gap-2">
-                            <div className="min-w-0">
-                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">Total Pago</span>
-                                <h2 className="text-lg font-black text-emerald-600 dark:text-emerald-400">R$ {formatarValorFinanceiro(totalRecebido)}</h2>
-                            </div>
-                            <div className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 shrink-0"><Icon name="check-circle" className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /></div>
-                        </div>
-                        <p className="text-[11px] text-gray-400 mt-3 font-medium">Já entrou no caixa</p>
+                        <p className="text-[11px] text-gray-400 mt-3 font-medium">{formatarDataExibicao(obterDataAtual())}</p>
                     </div>
 
                     <div className="bg-white dark:bg-darkCard p-5 rounded-xl border border-gray-200 dark:border-darkBorder shadow-sm hover:shadow-md transition flex flex-col justify-between">

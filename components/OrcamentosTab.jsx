@@ -53,8 +53,7 @@ export default function OrcamentosTab() {
                                         data_pedido: obterDataAtual(),
                                         prazo: '',
                                         responsavel: '',
-                                        entrega: false,
-                                        urgente: false
+                                        entrega: false
                                     });
                                     setModalOrcamentoFormalizadoAberto(true);
                                 }} className="bg-brand hover:bg-brandHover text-white px-4 py-2 text-[13px] rounded-md font-semibold shadow-sm transition flex items-center gap-2">
@@ -163,7 +162,7 @@ export default function OrcamentosTab() {
                         ) : (
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {orcsFiltrados.map(orc => (
-                                    <div key={orc.id} onClick={() => { setNovoOrcamentoPre(orc); setModalOrcamentoPreAberto(true); }} className="bg-white dark:bg-darkCard rounded-xl shadow-sm border border-gray-200 dark:border-darkBorder flex flex-col group relative cursor-pointer hover:border-brand/50 transition-colors">
+                                    <div key={orc.id} onClick={() => { setNovoOrcamentoPre({...orc, texto: orc.texto || ''}); setModalOrcamentoPreAberto(true); }} className="bg-white dark:bg-darkCard rounded-xl shadow-sm border border-gray-200 dark:border-darkBorder flex flex-col group relative cursor-pointer hover:border-brand/50 transition-colors">
                                         <div className="flex justify-between items-start gap-3 px-5 py-3.5 bg-gray-50/70 dark:bg-darkElevated/60 rounded-t-xl border-b border-dashed border-gray-300 dark:border-darkBorder">
                                             <div className="flex flex-col flex-1 min-w-0">
                                                 <h3 className="font-bold text-gray-900 dark:text-white leading-tight truncate">{orc.titulo}</h3>

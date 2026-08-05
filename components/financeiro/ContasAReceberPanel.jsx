@@ -19,7 +19,8 @@ export default function ContasAReceberPanel({ dataInicio, dataFim }) {
                     <table className="w-full text-left border-collapse">
                         <thead className="bg-gray-50/50 dark:bg-darkHover/50 border-t-2 border-brand">
                             <tr className="border-b border-gray-200 dark:border-darkBorder text-[13px] font-semibold text-gray-500 dark:text-gray-400 tracking-wide uppercase">
-                                <th className="px-6 py-4">O.S. / Cliente</th>
+                                <th className="px-6 py-4">O.S.</th>
+                                <th className="px-6 py-4">Cliente</th>
                                 <th className="px-6 py-4">Serviço</th>
                                 <th className="px-6 py-4 text-center">Data Pedido</th>
                                 <th className="px-6 py-4 text-center">Prazo</th>
@@ -32,8 +33,10 @@ export default function ContasAReceberPanel({ dataInicio, dataFim }) {
                         <tbody className="divide-y divide-gray-100 dark:divide-darkBorder">
                             {(() => {
                                 const hojeStr = obterDataAtual();
-                                const amanha = new Date();
-                                amanha.setDate(amanha.getDate() + 1);
+                                // Deriva "amanhã" a partir da própria string de hoje (em vez de um novo Date()),
+                                // pra garantir exatamente 1 dia de diferença mesmo com o fuso de obterDataAtual.
+                                const [anoHoje, mesHoje, diaHoje] = hojeStr.split('-').map(Number);
+                                const amanha = new Date(anoHoje, mesHoje - 1, diaHoje + 1);
                                 const amanhaStr = amanha.getFullYear() + '-' + String(amanha.getMonth() + 1).padStart(2, '0') + '-' + String(amanha.getDate()).padStart(2, '0');
 
                                 const pedidosBoleto = pedidos.map(p => {
@@ -50,12 +53,12 @@ export default function ContasAReceberPanel({ dataInicio, dataFim }) {
                                     return true;
                                   });
                                 if (pedidosBoleto.length === 0) return (
-                                    <tr><td colSpan="8" className="px-4 py-12 text-center text-[13px] text-gray-400">Nenhum pedido com boleto encontrado.</td></tr>
+                                    <tr><td colSpan="9" className="px-4 py-12 text-center text-[13px] text-gray-400">Nenhum pedido com boleto encontrado.</td></tr>
                                 );
                                 return pedidosBoleto.map(p => {
                                     let statusPagamento = 'Aberto';
                                     let statusPagamentoCor = 'bg-gray-100 text-gray-600 border-gray-300 dark:bg-darkElevated dark:text-gray-300 dark:border-darkBorder';
-                                    if (p.prazo_pagamento === hojeStr || p.prazo_pagamento < hojeStr) {
+                                    if (p.prazo_pagamento && p.prazo_pagamento <= hojeStr) {
                                         statusPagamento = 'Vencido';
                                         statusPagamentoCor = 'bg-red-50 text-red-600 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800';
                                     } else if (p.prazo_pagamento === amanhaStr) {
@@ -65,17 +68,17 @@ export default function ContasAReceberPanel({ dataInicio, dataFim }) {
                                     return (
                                         <tr key={p.id} onClick={() => abrirEdicao(p)} className="hover:bg-gray-50 dark:hover:bg-darkHover/50 transition-colors cursor-pointer group">
                                             <td className="px-6 py-4">
-                                                <div className="flex items-center gap-2">
-                                                    <span className="text-[12px] font-bold text-gray-400 dark:text-gray-500 w-8">#{p.id}</span>
-                                                    <span className="text-[13px] font-semibold text-gray-800 dark:text-[#EDEDED] truncate max-w-[200px]" title={mascararCliente(p.cliente, isDemo)}>{mascararCliente(p.cliente, isDemo)}</span>
-                                                </div>
+                                                <span className="text-[12px] font-bold text-gray-400 dark:text-gray-500">#{p.id}</span>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <span className="text-[13px] font-semibold text-gray-800 dark:text-[#EDEDED] truncate max-w-[200px] block" title={mascararCliente(p.cliente, isDemo)}>{mascararCliente(p.cliente, isDemo)}</span>
                                             </td>
                                             <td className="px-6 py-4">
                                                 <div className="text-[13px] text-gray-600 dark:text-gray-400 truncate max-w-[250px]" title={obterResumoServicos(p.servico)}>{obterResumoServicos(p.servico)}</div>
                                             </td>
                                             <td className="px-6 py-4 text-[13px] text-center text-gray-500 dark:text-[#A1A1AA]">{formatarDataExibicao(p.data_pedido)}</td>
                                             <td className="px-6 py-4 text-center" onClick={(e) => e.stopPropagation()}>
-                                                <CustomDatePicker value={p.prazo_pagamento || ''} onChange={val => atualizarCampoInline(p.id, 'prazo_pagamento', val)} placeholder="Definir prazo..." className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-2.5 py-1.5 text-[11px] outline-none hover:border-brand transition text-gray-700 dark:text-[#EDEDED]" />
+                                                <CustomDatePicker value={p.prazo_pagamento || ''} onChange={val => atualizarCampoInline(p.id, 'prazo_pagamento', val)} placeholder="Definir prazo..." clearable className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-2.5 py-1.5 text-[11px] outline-none hover:border-brand transition text-gray-700 dark:text-[#EDEDED]" />
                                             </td>
                                             <td className="px-6 py-4 text-center">
                                                 <span className={`whitespace-nowrap px-2.5 py-1 text-[11px] font-semibold rounded border ${obterCorStatus(p.status)}`}>
