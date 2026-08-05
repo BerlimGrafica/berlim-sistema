@@ -7,7 +7,7 @@ import { formatarMoeda, mascararCliente, centavosParaReais } from '@/lib/utils/f
 
 
 export default function Notas_fiscaisTab() {
-    const { notasFiscais, usuario, isDemo, filtroNotas, setFiltroNotas, buscaNotaFiscal, setBuscaNotaFiscal, setPaginaNotasFiscais, notasFiscaisPaginadas, setNotaFiscalEmEdicao, setModalNotaFiscalAberto, totalPaginasNotasFiscais, paginaNotasFiscais, concluirNotaFiscal, reabrirNotaFiscal } = useAppContext();
+    const { notasFiscais, usuario, isDemo, filtroNotas, setFiltroNotas, buscaNotaFiscal, setBuscaNotaFiscal, setPaginaNotasFiscais, notasFiscaisPaginadas, setNotaFiscalEmEdicao, setModalNotaFiscalAberto, totalPaginasNotasFiscais, paginaNotasFiscais, concluirNotaFiscal, reabrirNotaFiscal, excluirNotaFiscal } = useAppContext();
 
     return (
         <main className="flex-1 p-6 lg:p-10 max-w-[1400px] mx-auto w-full flex flex-col gap-6">
@@ -121,6 +121,13 @@ export default function Notas_fiscaisTab() {
                                                     <Tooltip label="Gerar Nova Nota (Duplicar)">
                                                         <button onClick={(e) => { e.stopPropagation(); reabrirNotaFiscal(n); }} aria-label="Gerar Nova Nota (Duplicar)" className="p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded transition">
                                                             <Icon name="rotate-ccw" className="w-4 h-4" />
+                                                        </button>
+                                                    </Tooltip>
+                                                )}
+                                                {usuario?.nivel === 'Administrador' && (
+                                                    <Tooltip label="Excluir Nota">
+                                                        <button onClick={(e) => { e.stopPropagation(); excluirNotaFiscal(n.id); }} aria-label="Excluir Nota" className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded transition">
+                                                            <Icon name="trash-2" className="w-4 h-4" />
                                                         </button>
                                                     </Tooltip>
                                                 )}

@@ -1,5 +1,5 @@
 "use client";
-import React from 'react';
+import React, { useRef, useLayoutEffect } from 'react';
 import { useAppContext } from '@/context/AppContext';
 import Icon from '@/components/Icon';
 import Tooltip from '@/components/Tooltip';
@@ -11,9 +11,82 @@ import { ItensChecklist } from '@/components/ItensChecklist';
 import { ChipNome } from '@/components/ui/ChipNome';
 
 
+// Anima a linha que trocou de posição na tabela (ex: mudou de status e foi pra
+// outro grupo, ou reordenou por prazo). Técnica FLIP: mede a posição de cada
+// linha, e se ela mudou desde a última medição, aplica um deslocamento
+// instantâneo (sem transição) que a "volta" pro lugar antigo e, no frame
+// seguinte, anima até a posição real via transform.
+// Importante: só remede quando `ordem` (a sequência de IDs renderizada)
+// realmente muda — nunca a cada render — senão qualquer coisa que cause um
+// re-render (abrir um dropdown, rolar a página, digitar na busca) é
+// interpretada como "todas as linhas se moveram" e a tela inteira treme.
+function useAnimacaoLinhas(ordem) {
+    const nodesRef = useRef({});
+    const posicoesRef = useRef({});
+
+    const registrarLinha = (id) => (node) => {
+        if (node) nodesRef.current[id] = node;
+        else delete nodesRef.current[id];
+    };
+
+    useLayoutEffect(() => {
+        const posicoesAnteriores = posicoesRef.current;
+        const novasPosicoes = {};
+        const alteracoes = [];
+
+        Object.entries(nodesRef.current).forEach(([id, node]) => {
+            // Posição absoluta no documento (soma o scroll), pra não confundir
+            // "a página rolou" com "a linha mudou de lugar".
+            const top = node.getBoundingClientRect().top + window.scrollY;
+            novasPosicoes[id] = top;
+            const anterior = posicoesAnteriores[id];
+            if (anterior !== undefined && Math.abs(anterior - top) > 1) {
+                alteracoes.push({ node, delta: anterior - top });
+            }
+        });
+
+        if (alteracoes.length > 0) {
+            alteracoes.forEach(({ node, delta }) => {
+                node.style.transition = 'none';
+                node.style.transform = `translateY(${delta}px)`;
+            });
+            alteracoes[0].node.getBoundingClientRect();
+            requestAnimationFrame(() => {
+                alteracoes.forEach(({ node }) => {
+                    node.style.transition = 'transform 350ms ease';
+                    node.style.transform = '';
+                    const limparTransicao = () => { node.style.transition = ''; node.removeEventListener('transitionend', limparTransicao); };
+                    node.addEventListener('transitionend', limparTransicao);
+                });
+            });
+        }
+
+        posicoesRef.current = novasPosicoes;
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [ordem]);
+
+    return registrarLinha;
+}
+
 export default function ProducaoTab() {
     const { buscaProducaoText, setBuscaProducaoText, setPedidoEmEdicao, setModalAberto, pedidosProducaoAtivos, isClienteProblema, isDemo, opcoesStatusPermitidas, abrirEdicao, atualizarCampoInline, usuariosSistema } = useAppContext();
     const nomesResponsaveis = usuariosSistema.filter(u => u.nivel !== 'demo').map(u => u.nome);
+
+    const gruposStatus = STATUSES_PRODUCAO
+        .map(status => ({
+            status,
+            pedidos: pedidosProducaoAtivos
+                .filter(p => p.status === status)
+                .sort((a, b) => {
+                    if (!a.prazo) return 1;
+                    if (!b.prazo) return -1;
+                    return a.prazo.localeCompare(b.prazo);
+                }),
+        }))
+        .filter(g => g.pedidos.length > 0);
+
+    const ordemLinhas = gruposStatus.flatMap(g => g.pedidos.map(p => p.id)).join(',');
+    const registrarLinha = useAnimacaoLinhas(ordemLinhas);
 
     const handleAtualizarCampo = (id, campo, valor) => {
         if (campo === 'status' && valor === 'Concluído') {
@@ -66,17 +139,7 @@ export default function ProducaoTab() {
                                         {pedidosProducaoAtivos.length === 0 ? (
                                             <tr><td colSpan="9" className="p-8 text-center text-gray-500 italic">Nenhuma OS encontrada.</td></tr>
                                         ) : (
-                                            STATUSES_PRODUCAO.map(status => {
-                                                const pedidosDoStatus = pedidosProducaoAtivos
-                                                    .filter(p => p.status === status)
-                                                    .sort((a, b) => {
-                                                        if (!a.prazo) return 1;
-                                                        if (!b.prazo) return -1;
-                                                        return a.prazo.localeCompare(b.prazo);
-                                                    });
-
-                                                if (pedidosDoStatus.length === 0) return null;
-
+                                            gruposStatus.map(({ status, pedidos: pedidosDoStatus }) => {
                                                 return (
                                                     <React.Fragment key={status}>
                                                         <tr className="select-none">
@@ -85,7 +148,7 @@ export default function ProducaoTab() {
                                                             </td>
                                                         </tr>
                                                         {pedidosDoStatus.map(p => (
-                                                            <tr key={p.id} className="border-b border-gray-100 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover transition group text-[13px]">
+                                                            <tr key={p.id} ref={registrarLinha(p.id)} className="border-b border-gray-100 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover transition group text-[13px]">
                                                                 <td className="px-4 py-3 font-medium text-gray-400 dark:text-gray-600 text-center"><button type="button" onClick={() => abrirEdicao(p)} className="hover:text-brand transition">#{p.id}</button></td>
                                                                 <td className="px-4 py-3"><CustomDatePicker value={p.prazo || ''} onChange={val => handleAtualizarCampo(p.id, 'prazo', val)} placeholder="Definir prazo..." className={`w-full bg-gray-50 dark:bg-darkElevated border-2 ${obterCorContornoPrazo(p.prazo)} rounded px-2.5 py-1.5 text-[11px] outline-none hover:border-brand transition text-gray-700 dark:text-[#EDEDED]`} /></td>
                                                                 <td className="px-4 py-3"><MultiSelectDropdown value={p.responsavel} options={nomesResponsaveis} onChange={(val) => handleAtualizarCampo(p.id, 'responsavel', val)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-2.5 py-1.5 text-[11px] outline-none hover:border-brand" /></td>

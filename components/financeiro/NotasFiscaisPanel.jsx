@@ -7,7 +7,7 @@ import { formatarMoeda, centavosParaReais, mascararCliente } from '@/lib/utils/f
 export default function NotasFiscaisPanel() {
     const {
         notasFiscaisPaginadas, setNotaFiscalEmEdicao, setModalNotaFiscalAberto, isDemo, usuario,
-        concluirNotaFiscal, reabrirNotaFiscal,
+        concluirNotaFiscal, reabrirNotaFiscal, excluirNotaFiscal,
         totalPaginasNotasFiscais, paginaNotasFiscais, setPaginaNotasFiscais,
     } = useAppContext();
 
@@ -77,6 +77,13 @@ export default function NotasFiscaisPanel() {
                                                 <Tooltip label="Gerar Nova Nota (Duplicar)">
                                                     <button onClick={(e) => { e.stopPropagation(); reabrirNotaFiscal(n); }} aria-label="Gerar Nova Nota (Duplicar)" className="p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded transition">
                                                         <Icon name="rotate-ccw" className="w-4 h-4" />
+                                                    </button>
+                                                </Tooltip>
+                                            )}
+                                            {usuario?.nivel === 'Administrador' && (
+                                                <Tooltip label="Excluir Nota">
+                                                    <button onClick={(e) => { e.stopPropagation(); excluirNotaFiscal(n.id); }} aria-label="Excluir Nota" className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded transition">
+                                                        <Icon name="trash-2" className="w-4 h-4" />
                                                     </button>
                                                 </Tooltip>
                                             )}

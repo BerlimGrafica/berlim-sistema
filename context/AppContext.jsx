@@ -1368,6 +1368,13 @@ export const AppProvider = ({ children }) => {
         }
     }
 
+    async function excluirNotaFiscal(id) {
+        if (!confirm('Deseja excluir esta nota fiscal? Essa ação não pode ser desfeita.')) return;
+        const { error } = await supabase.from('notas_fiscais').delete().eq('id', id);
+        if (!error) setNotasFiscais(notasFiscais.filter(n => n.id !== id));
+        else alert('Falha ao excluir: ' + error.message);
+    }
+
     async function reabrirNotaFiscal(nota) {
         if (!confirm(`Deseja gerar uma nova nota pendente para "${nota.razao_social || nota.cnpj}"?`)) return;
 
@@ -1968,6 +1975,7 @@ export const AppProvider = ({ children }) => {
         salvarNotaFiscal,
         concluirNotaFiscal,
         reabrirNotaFiscal,
+        excluirNotaFiscal,
         concluirRequisicao,
         concluirTarefa,
         reabrirTarefaFixa,
