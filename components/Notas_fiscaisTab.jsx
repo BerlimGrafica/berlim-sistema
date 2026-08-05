@@ -105,8 +105,8 @@ export default function Notas_fiscaisTab() {
                                             <div className="text-[13px] dark:text-[#EDEDED]">{n.servico_feito || <span className="text-gray-400 italic">Pendente</span>}</div>
                                             <div className="text-[11px] font-semibold text-orange-500 dark:text-orange-400">{n.valor_pago ? `R$ ${centavosParaReais(n.valor_pago).toFixed(2).replace('.', ',')}` : ''}</div>
                                         </td>
-                                        <td className="px-4 py-3 text-[13px] text-gray-600 dark:text-gray-400 max-w-[200px] truncate" title={n.observacao_cliente || ''}>
-                                            {n.observacao_cliente || <span className="text-gray-400 italic">---</span>}
+                                        <td className="px-4 py-3 text-[13px] text-gray-600 dark:text-gray-400 max-w-[200px] truncate" title={n.observacoes || ''}>
+                                            {n.observacoes || <span className="text-gray-400 italic">---</span>}
                                         </td>
                                         <td className="px-4 py-3 text-right">
                                             <div className="flex items-center justify-end gap-2">
