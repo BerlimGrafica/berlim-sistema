@@ -318,7 +318,7 @@ export const AppProvider = ({ children }) => {
     useEffect(() => {
         if (!usuario) return;
         function aoVoltarVisivel() {
-            if (document.visibilityState === 'visible') carregarDados();
+            if (document.visibilityState === 'visible') { carregarDados(); carregarChat(); }
         }
         document.addEventListener('visibilitychange', aoVoltarVisivel);
         return () => document.removeEventListener('visibilitychange', aoVoltarVisivel);
