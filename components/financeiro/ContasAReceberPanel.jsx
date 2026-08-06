@@ -58,9 +58,12 @@ export default function ContasAReceberPanel({ dataInicio, dataFim }) {
                                 return pedidosBoleto.map(p => {
                                     let statusPagamento = 'Aberto';
                                     let statusPagamentoCor = 'bg-gray-100 text-gray-600 border-gray-300 dark:bg-darkElevated dark:text-gray-300 dark:border-darkBorder';
-                                    if (p.prazo_pagamento && p.prazo_pagamento <= hojeStr) {
+                                    if (p.prazo_pagamento && p.prazo_pagamento < hojeStr) {
                                         statusPagamento = 'Vencido';
                                         statusPagamentoCor = 'bg-red-50 text-red-600 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800';
+                                    } else if (p.prazo_pagamento === hojeStr) {
+                                        statusPagamento = 'Vence hoje';
+                                        statusPagamentoCor = 'bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800';
                                     } else if (p.prazo_pagamento === amanhaStr) {
                                         statusPagamento = 'Vence amanhã';
                                         statusPagamentoCor = 'bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800';
