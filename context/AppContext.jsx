@@ -350,7 +350,11 @@ export const AppProvider = ({ children }) => {
         amanha.setDate(amanha.getDate() + 1);
         const hojeStr = hoje.getFullYear() + '-' + String(hoje.getMonth() + 1).padStart(2, '0') + '-' + String(hoje.getDate()).padStart(2, '0');
         const amanhaStr = amanha.getFullYear() + '-' + String(amanha.getMonth() + 1).padStart(2, '0') + '-' + String(amanha.getDate()).padStart(2, '0');
-        const statusIgnorados = ['Concluída', 'Finalizada', 'Cancelada', 'Abandonada'];
+        const statusIgnorados = STATUSES_FINALIZADOS;
+        // Alerta de boleto não pode ignorar "Concluído": o serviço pode estar pronto
+        // com o boleto ainda em aberto. Só sai do radar quando a OS é encerrada de
+        // fato (Finalizado/Cancelado/Abandonado).
+        const statusIgnoradosBoleto = STATUSES_FINALIZADOS.filter(s => s !== 'Concluído');
 
         while (fetchMore) {
             const { data: batch, error } = await supabase
@@ -424,7 +428,7 @@ export const AppProvider = ({ children }) => {
                         try { pagamentos = JSON.parse(pagamentosStr); } catch(e) {}
                     }
                     return { ...p, pagamentos };
-                }).filter(p => !statusIgnorados.includes(p.status) && p.prazo_pagamento && p.pagamentos.some(pag => pag.forma === 'Boleto' && !pag.boleto_concluido));
+                }).filter(p => !statusIgnoradosBoleto.includes(p.status) && p.prazo_pagamento && p.pagamentos.some(pag => pag.forma === 'Boleto' && !pag.boleto_concluido));
 
                 if (pedidosComBoletoAberto.length > 0) {
                     let novosAlertasBoleto = [];
