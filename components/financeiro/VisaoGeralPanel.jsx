@@ -37,6 +37,14 @@ export default function VisaoGeralPanel() {
         maioresContas, maxMaiorConta, parseValorConta,
     } = useFinanceiroMetrics(pedidos, contasPagar, dataFiltroFinInicio, dataFiltroFinFim);
 
+    // "R$" sempre em cima, número embaixo — e o número encolhe se for ficar
+    // largo demais pro card, em vez de quebrar linha no meio do valor.
+    const tamanhoNumero = (valorFormatado) => {
+        if (valorFormatado.length > 12) return 'text-sm';
+        if (valorFormatado.length > 9) return 'text-base';
+        return 'text-lg';
+    };
+
     return (
         <div className="flex flex-col gap-8">
 
@@ -48,10 +56,11 @@ export default function VisaoGeralPanel() {
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-7 gap-4">
                     <div className="bg-white dark:bg-darkCard p-5 rounded-xl border border-gray-200 dark:border-darkBorder shadow-sm hover:shadow-md transition flex flex-col justify-between">
-                        <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-end justify-between gap-2">
                             <div className="min-w-0">
                                 <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">Crescimento (YoY)</span>
-                                <h2 className="text-lg font-black text-gray-900 dark:text-white">R$ {formatarValorFinanceiro(totalAnoAtual)}</h2>
+                                <span className="block text-lg font-black text-gray-900 dark:text-white leading-tight">R$</span>
+                                <h2 className={`${tamanhoNumero(formatarValorFinanceiro(totalAnoAtual))} font-black text-gray-900 dark:text-white leading-tight`}>{formatarValorFinanceiro(totalAnoAtual)}</h2>
                             </div>
                             <div className={`p-2 rounded-lg shrink-0 ${crescimentoPercentual >= 0 ? 'bg-emerald-50 dark:bg-emerald-500/10' : 'bg-red-50 dark:bg-red-500/10'}`}>
                                 <Icon name={crescimentoPercentual >= 0 ? 'trending-up' : 'trending-down'} className={`w-4 h-4 ${crescimentoPercentual >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`} />
@@ -63,10 +72,11 @@ export default function VisaoGeralPanel() {
                     </div>
 
                     <div className="bg-white dark:bg-darkCard p-5 rounded-xl border border-gray-200 dark:border-darkBorder shadow-sm hover:shadow-md transition flex flex-col justify-between">
-                        <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-end justify-between gap-2">
                             <div className="min-w-0">
                                 <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">Despesas (A Pagar)</span>
-                                <h2 className="text-lg font-black text-red-600 dark:text-red-400">R$ {formatarValorFinanceiro(totalDespesasMesAtual)}</h2>
+                                <span className="block text-lg font-black text-red-600 dark:text-red-400 leading-tight">R$</span>
+                                <h2 className={`${tamanhoNumero(formatarValorFinanceiro(totalDespesasMesAtual))} font-black text-red-600 dark:text-red-400 leading-tight`}>{formatarValorFinanceiro(totalDespesasMesAtual)}</h2>
                             </div>
                             <div className="p-2 rounded-lg bg-red-50 dark:bg-red-500/10 shrink-0"><Icon name="dollar-sign" className="w-4 h-4 text-red-600 dark:text-red-400" /></div>
                         </div>
@@ -74,10 +84,11 @@ export default function VisaoGeralPanel() {
                     </div>
 
                     <div className="bg-white dark:bg-darkCard p-5 rounded-xl border border-gray-200 dark:border-darkBorder shadow-sm hover:shadow-md transition flex flex-col justify-between">
-                        <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-end justify-between gap-2">
                             <div className="min-w-0">
                                 <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">Total Recebido</span>
-                                <h2 className="text-lg font-black text-emerald-600 dark:text-emerald-400">R$ {formatarValorFinanceiro(totalRecebidoMesAtual)}</h2>
+                                <span className="block text-lg font-black text-emerald-600 dark:text-emerald-400 leading-tight">R$</span>
+                                <h2 className={`${tamanhoNumero(formatarValorFinanceiro(totalRecebidoMesAtual))} font-black text-emerald-600 dark:text-emerald-400 leading-tight`}>{formatarValorFinanceiro(totalRecebidoMesAtual)}</h2>
                             </div>
                             <div className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 shrink-0"><Icon name="check-circle" className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /></div>
                         </div>
@@ -85,10 +96,11 @@ export default function VisaoGeralPanel() {
                     </div>
 
                     <div className="bg-white dark:bg-darkCard p-5 rounded-xl border border-gray-200 dark:border-darkBorder shadow-sm hover:shadow-md transition flex flex-col justify-between">
-                        <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-end justify-between gap-2">
                             <div className="min-w-0">
                                 <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">Total Bruto</span>
-                                <h2 className="text-lg font-black text-cyan-600 dark:text-cyan-400">R$ {formatarValorFinanceiro(totalBrutoMesAtual)}</h2>
+                                <span className="block text-lg font-black text-cyan-600 dark:text-cyan-400 leading-tight">R$</span>
+                                <h2 className={`${tamanhoNumero(formatarValorFinanceiro(totalBrutoMesAtual))} font-black text-cyan-600 dark:text-cyan-400 leading-tight`}>{formatarValorFinanceiro(totalBrutoMesAtual)}</h2>
                             </div>
                             <div className="p-2 rounded-lg bg-cyan-50 dark:bg-cyan-500/10 shrink-0"><Icon name="dollar-sign" className="w-4 h-4 text-cyan-600 dark:text-cyan-400" /></div>
                         </div>
@@ -96,10 +108,11 @@ export default function VisaoGeralPanel() {
                     </div>
 
                     <div className="bg-white dark:bg-darkCard p-5 rounded-xl border border-gray-200 dark:border-darkBorder shadow-sm hover:shadow-md transition flex flex-col justify-between">
-                        <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-end justify-between gap-2">
                             <div className="min-w-0">
                                 <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">Vendas Hoje</span>
-                                <h2 className="text-lg font-black text-purple-600 dark:text-purple-400">R$ {formatarValorFinanceiro(totalVendasHoje)}</h2>
+                                <span className="block text-lg font-black text-purple-600 dark:text-purple-400 leading-tight">R$</span>
+                                <h2 className={`${tamanhoNumero(formatarValorFinanceiro(totalVendasHoje))} font-black text-purple-600 dark:text-purple-400 leading-tight`}>{formatarValorFinanceiro(totalVendasHoje)}</h2>
                             </div>
                             <div className="p-2 rounded-lg bg-purple-50 dark:bg-purple-500/10 shrink-0"><Icon name="calendar" className="w-4 h-4 text-purple-600 dark:text-purple-400" /></div>
                         </div>
@@ -107,10 +120,11 @@ export default function VisaoGeralPanel() {
                     </div>
 
                     <div className="bg-white dark:bg-darkCard p-5 rounded-xl border border-gray-200 dark:border-darkBorder shadow-sm hover:shadow-md transition flex flex-col justify-between">
-                        <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-end justify-between gap-2">
                             <div className="min-w-0">
                                 <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">Saldo Devedor</span>
-                                <h2 className="text-lg font-black text-orange-600 dark:text-orange-400">R$ {formatarValorFinanceiro(totalAReceber)}</h2>
+                                <span className="block text-lg font-black text-orange-600 dark:text-orange-400 leading-tight">R$</span>
+                                <h2 className={`${tamanhoNumero(formatarValorFinanceiro(totalAReceber))} font-black text-orange-600 dark:text-orange-400 leading-tight`}>{formatarValorFinanceiro(totalAReceber)}</h2>
                             </div>
                             <div className="p-2 rounded-lg bg-orange-50 dark:bg-orange-500/10 shrink-0"><Icon name="clock" className="w-4 h-4 text-orange-600 dark:text-orange-400" /></div>
                         </div>
@@ -118,10 +132,11 @@ export default function VisaoGeralPanel() {
                     </div>
 
                     <div className="bg-white dark:bg-darkCard p-5 rounded-xl border border-gray-200 dark:border-darkBorder shadow-sm hover:shadow-md transition flex flex-col justify-between">
-                        <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-end justify-between gap-2">
                             <div className="min-w-0">
                                 <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">Ticket Médio</span>
-                                <h2 className="text-lg font-black text-blue-600 dark:text-blue-400">R$ {formatarValorFinanceiro(ticketMedio)}</h2>
+                                <span className="block text-lg font-black text-blue-600 dark:text-blue-400 leading-tight">R$</span>
+                                <h2 className={`${tamanhoNumero(formatarValorFinanceiro(ticketMedio))} font-black text-blue-600 dark:text-blue-400 leading-tight`}>{formatarValorFinanceiro(ticketMedio)}</h2>
                             </div>
                             <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-500/10 shrink-0"><Icon name="tag" className="w-4 h-4 text-blue-600 dark:text-blue-400" /></div>
                         </div>
