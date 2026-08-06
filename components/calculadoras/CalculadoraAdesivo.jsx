@@ -4,8 +4,10 @@ import Icon from '@/components/Icon';
 import Tooltip from '@/components/Tooltip';
 import { CustomSelect } from '@/components/ui/Dropdown';
 import { centavosParaReais } from '@/lib/utils/formatters';
+import { useAppContext } from '@/context/AppContext';
 
 export function CalculadoraAdesivo({ produtos }) {
+    const { avisar } = useAppContext();
     const [largura, setLargura] = useState('');
     const [altura, setAltura] = useState('');
     const [tipo, setTipo] = useState('17');
@@ -36,11 +38,11 @@ export function CalculadoraAdesivo({ produtos }) {
 
     const copiarMaximos = () => {
         if (isNaN(lRawNum) || isNaN(aRawNum) || lRawNum <= 0 || aRawNum <= 0) {
-            alert('Preencha largura e altura para calcular.');
+            avisar('Preencha largura e altura para calcular.');
             return;
         }
         if (isTamanhoInvalido) {
-            alert('O tamanho mínimo permitido é 3x3cm.');
+            avisar('O tamanho mínimo permitido é 3x3cm.');
         }
 
         const l = lRawNum + 0.2;
@@ -99,16 +101,16 @@ export function CalculadoraAdesivo({ produtos }) {
         }
 
         navigator.clipboard.writeText(texto);
-        alert('Orçamentos de quantidades máximas copiados!');
+        avisar('Orçamentos de quantidades máximas copiados!', 'sucesso');
     };
 
     const copiarTexto = () => {
         if (isNaN(lRawNum) || isNaN(aRawNum) || lRawNum <= 0 || aRawNum <= 0) {
-            alert('Preencha largura e altura para calcular.');
+            avisar('Preencha largura e altura para calcular.');
             return;
         }
         if (isTamanhoInvalido) {
-            alert('O tamanho mínimo permitido é 3x3cm.');
+            avisar('O tamanho mínimo permitido é 3x3cm.');
         }
 
         const texto = gerarTextoCopia();

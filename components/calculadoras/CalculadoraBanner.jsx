@@ -3,8 +3,10 @@ import { useState, useEffect, useRef } from 'react';
 import Icon from '@/components/Icon';
 import Tooltip from '@/components/Tooltip';
 import { CustomSelect } from '@/components/ui/Dropdown';
+import { useAppContext } from '@/context/AppContext';
 
 export function CalculadoraBanner() {
+    const { avisar } = useAppContext();
     const [largura, setLargura] = useState('');
     const [altura, setAltura] = useState('');
     const [tipo, setTipo] = useState('simples');
@@ -63,7 +65,7 @@ export function CalculadoraBanner() {
         if (valorCalculado > 300) {
             if (!avisoValorAltoDisparado.current) {
                 avisoValorAltoDisparado.current = true;
-                alert('Consultar disponibilidade com o Murilo/Giovana');
+                avisar('Consultar disponibilidade com o Murilo/Giovana');
             }
         } else {
             avisoValorAltoDisparado.current = false;

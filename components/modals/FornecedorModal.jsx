@@ -5,7 +5,7 @@ import { CustomSelect } from '@/components/ui/Dropdown';
 import { useFecharAoClicarFora } from '@/components/modals/useFecharAoClicarFora';
 
 export default function FornecedorModal() {
-    const { modalFornecedorAberto, setModalFornecedorAberto, novoFornecedor, setNovoFornecedor, carregarDados } = useAppContext();
+    const { modalFornecedorAberto, setModalFornecedorAberto, novoFornecedor, setNovoFornecedor, carregarDados, avisar } = useAppContext();
     const fecharAoClicarFora = useFecharAoClicarFora();
 
     if (!modalFornecedorAberto) return null;
@@ -47,7 +47,7 @@ export default function FornecedorModal() {
                 <div className="px-6 py-4 bg-gray-50 dark:bg-darkHover/30 border-t border-gray-100 dark:border-darkBorder flex justify-end gap-3">
                     <button type="button" onClick={() => setModalFornecedorAberto(false)} className="px-4 py-2 text-[12px] font-semibold text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-darkHover rounded transition">Cancelar</button>
                     <button type="button" onClick={async () => {
-                        if(!novoFornecedor.nome) return alert('Nome é obrigatório');
+                        if(!novoFornecedor.nome) return avisar('Nome é obrigatório');
                         if (novoFornecedor.id) await supabase.from('fornecedores').update({ nome: novoFornecedor.nome, contato: novoFornecedor.contato, observacoes: novoFornecedor.observacoes, tipo: novoFornecedor.tipo }).eq('id', novoFornecedor.id);
                         else await supabase.from('fornecedores').insert([{ nome: novoFornecedor.nome, contato: novoFornecedor.contato, observacoes: novoFornecedor.observacoes, tipo: novoFornecedor.tipo || 'Terceirização' }]);
                         carregarDados();

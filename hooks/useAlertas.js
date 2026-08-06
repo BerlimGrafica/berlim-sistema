@@ -8,6 +8,27 @@ import { STATUSES_FINALIZADOS } from '@/lib/utils/constants';
 // (quem vê o quê, e a persistência no localStorage é por usuario.id).
 export function useAlertas(usuario) {
     const [alertasNaoLidos, setAlertasNaoLidos] = useState([]);
+    const [toasts, setToasts] = useState([]);
+    // Ids de alertas já vistos (pra saber quais são "novos" e merecem um toast).
+    // Alimentado tanto pela hidratação do localStorage (marca os antigos como já
+    // vistos, sem toast) quanto pelo efeito de diff abaixo (marca os novos).
+    const idsConhecidosRef = useRef(new Set());
+    const removerToast = (id) => setToasts(prev => prev.filter(t => t.id !== id));
+    // Substituto de window.alert(): toast avulso, não entra em alertasNaoLidos
+    // (não é uma notificação persistente do sino, é feedback de uma ação pontual).
+    // severidade: 'info' | 'sucesso' | 'erro'.
+    const avisar = (mensagem, severidade = 'info') => {
+        const id = Date.now() + Math.random();
+        idsConhecidosRef.current.add(id);
+        setToasts(prev => [...prev, { id, msg: mensagem, severidade, avisoManual: true }]);
+    };
+    // Substituto de window.confirm(): retorna uma Promise<boolean>, resolvida
+    // quando o usuário clica em Confirmar/Cancelar no ConfirmDialog.
+    const [pendingConfirm, setPendingConfirm] = useState(null);
+    const confirmar = (mensagem) => new Promise(resolve => setPendingConfirm({ mensagem, resolve }));
+    const resolverConfirm = (valor) => {
+        setPendingConfirm(prev => { prev?.resolve(valor); return null; });
+    };
     const alertasFuturaDisparados = useRef(new Set());
     const alertasBoletoDisparados = useRef(new Set());
     const alertasContaPagarDisparados = useRef(new Set());
@@ -24,9 +45,24 @@ export function useAlertas(usuario) {
         if (!usuario) return;
         try {
             const salvas = localStorage.getItem('notificacoes_' + usuario.id);
-            if (salvas) setAlertasNaoLidos(JSON.parse(salvas));
+            if (salvas) {
+                const lista = JSON.parse(salvas);
+                // Marca como "já vistos" antes de popular o estado — são notificações
+                // antigas (de antes deste F5), não devem virar toast de novo.
+                lista.forEach(a => idsConhecidosRef.current.add(a.id));
+                setAlertasNaoLidos(lista);
+            }
         } catch (e) { /* localStorage indisponível ou dado corrompido, ignora */ }
     }, [usuario?.id]);
+
+    // Toast: dispara um pra cada alerta genuinamente novo (id ainda não visto),
+    // não importa qual das funções abaixo (ou o realtime em AppContext.jsx) o criou.
+    useEffect(() => {
+        const novos = alertasNaoLidos.filter(a => !idsConhecidosRef.current.has(a.id));
+        if (novos.length === 0) return;
+        novos.forEach(a => idsConhecidosRef.current.add(a.id));
+        setToasts(prev => [...prev, ...novos]);
+    }, [alertasNaoLidos]);
 
     useEffect(() => {
         if (!usuario) return;
@@ -145,6 +181,8 @@ export function useAlertas(usuario) {
 
     return {
         alertasNaoLidos, setAlertasNaoLidos,
+        toasts, removerToast, avisar,
+        pendingConfirm, confirmar, resolverConfirm,
         modalAlertasAberto, setModalAlertasAberto,
         ehUsuario,
         notificarSeFaturamentoEmAnalise,

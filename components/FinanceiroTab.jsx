@@ -118,12 +118,14 @@ export default function FinanceiroTab() {
                             </div>
                         </div>
 
-                        {abaFinanceiro === 'geral' && <VisaoGeralPanel />}
-                        {abaFinanceiro === 'vendas_produto' && <VendasPorProdutoPanel />}
-                        {abaFinanceiro === 'contas_pagar' && <ContasAPagarPanel mostrarContasPagas={mostrarContasPagas} dataInicio={dataFiltroContasPagarInicio} dataFim={dataFiltroContasPagarFim} />}
-                        {abaFinanceiro === 'contas_receber' && <ContasAReceberPanel dataInicio={dataFiltroContasReceberInicio} dataFim={dataFiltroContasReceberFim} />}
-                        {abaFinanceiro === 'empresas_aprovadas' && <EmpresasAprovadasPanel />}
-                        {abaFinanceiro === 'notas_fiscais' && <NotasFiscaisPanel />}
+                        <div key={abaFinanceiro} className="animate-fade-screen">
+                            {abaFinanceiro === 'geral' && <VisaoGeralPanel />}
+                            {abaFinanceiro === 'vendas_produto' && <VendasPorProdutoPanel />}
+                            {abaFinanceiro === 'contas_pagar' && <ContasAPagarPanel mostrarContasPagas={mostrarContasPagas} dataInicio={dataFiltroContasPagarInicio} dataFim={dataFiltroContasPagarFim} />}
+                            {abaFinanceiro === 'contas_receber' && <ContasAReceberPanel dataInicio={dataFiltroContasReceberInicio} dataFim={dataFiltroContasReceberFim} />}
+                            {abaFinanceiro === 'empresas_aprovadas' && <EmpresasAprovadasPanel />}
+                            {abaFinanceiro === 'notas_fiscais' && <NotasFiscaisPanel />}
+                        </div>
                     </main>
                 )}
 

@@ -4,7 +4,7 @@ import { supabase } from '@/lib/supabaseClient';
 
 // Chat da equipe (canal único). Recebe `usuario`/`usuariosSistema` do useAuth
 // para resolver o nome de quem enviou cada mensagem e marcar mensagens próprias.
-export function useChat(usuario, usuariosSistema) {
+export function useChat(usuario, usuariosSistema, avisar) {
     const [chatAberto, setChatAberto] = useState(false);
     const [chatMensagens, setChatMensagens] = useState([]);
     const [chatNaoLidas, setChatNaoLidas] = useState(0);
@@ -36,12 +36,12 @@ export function useChat(usuario, usuariosSistema) {
         setEnviandoChat(true);
         const { error } = await supabase.from('chat_mensagens').insert([{ conteudo: texto, usuario_id: usuario.id }]);
         setEnviandoChat(false);
-        if (error) alert('Erro ao enviar mensagem: ' + error.message);
+        if (error) avisar('Erro ao enviar mensagem: ' + error.message, 'erro');
     }
 
     async function excluirMensagemChat(id) {
         const { error } = await supabase.from('chat_mensagens').delete().eq('id', id);
-        if (error) alert('Erro ao apagar mensagem: ' + error.message);
+        if (error) avisar('Erro ao apagar mensagem: ' + error.message, 'erro');
         else setChatMensagens(prev => prev.filter(m => m.id !== id));
     }
 

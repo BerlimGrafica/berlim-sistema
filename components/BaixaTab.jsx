@@ -60,7 +60,7 @@ export default function BaixaTab() {
                                         <th className="px-6 py-4 w-24 text-center">Imprimir</th>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                <tbody key={abaOS} className="animate-fade-screen">
                                     {pedidosHistorico.map(p => {
                                         const trancado = isOperador && p.status === 'Finalizado';
                                         return (

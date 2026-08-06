@@ -69,7 +69,7 @@ function useAnimacaoLinhas(ordem) {
 }
 
 export default function ProducaoTab() {
-    const { buscaProducaoText, setBuscaProducaoText, setPedidoEmEdicao, setModalAberto, pedidosProducaoAtivos, isClienteProblema, isDemo, opcoesStatusPermitidas, abrirEdicao, atualizarCampoInline, usuariosSistema } = useAppContext();
+    const { buscaProducaoText, setBuscaProducaoText, setPedidoEmEdicao, setModalAberto, pedidosProducaoAtivos, isClienteProblema, isDemo, opcoesStatusPermitidas, abrirEdicao, atualizarCampoInline, usuariosSistema, confirmar } = useAppContext();
     const nomesResponsaveis = usuariosSistema.filter(u => u.nivel !== 'demo').map(u => u.nome);
 
     const gruposStatus = STATUSES_PRODUCAO
@@ -88,9 +88,9 @@ export default function ProducaoTab() {
     const ordemLinhas = gruposStatus.flatMap(g => g.pedidos.map(p => p.id)).join(',');
     const registrarLinha = useAnimacaoLinhas(ordemLinhas);
 
-    const handleAtualizarCampo = (id, campo, valor) => {
+    const handleAtualizarCampo = async (id, campo, valor) => {
         if (campo === 'status' && valor === 'Concluído') {
-            if (!window.confirm("Deseja realmente concluir esta OS?")) {
+            if (!(await confirmar("Deseja realmente concluir esta OS?"))) {
                 return;
             }
         }

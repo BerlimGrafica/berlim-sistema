@@ -8,7 +8,7 @@ import { obterResumoServicos } from '@/lib/utils/servico';
 import { CustomDatePicker } from '@/components/ui/DatePicker';
 
 export default function ContasAReceberPanel({ dataInicio, dataFim }) {
-    const { pedidos, isDemo, atualizarCampoInline, concluirBoletoContasReceber, abrirEdicao } = useAppContext();
+    const { pedidos, isDemo, atualizarCampoInline, concluirBoletoContasReceber, abrirEdicao, confirmar } = useAppContext();
 
     return (
         <div>
@@ -96,8 +96,8 @@ export default function ContasAReceberPanel({ dataInicio, dataFim }) {
                                                     <button
                                                         type="button"
                                                         aria-label="Concluir Boleto"
-                                                        onClick={() => {
-                                                            if (window.confirm(`Marcar o boleto da O.S. #${p.id} como concluído? Ele sairá desta lista.`)) {
+                                                        onClick={async () => {
+                                                            if (await confirmar(`Marcar o boleto da O.S. #${p.id} como concluído? Ele sairá desta lista.`)) {
                                                                 concluirBoletoContasReceber(p.id);
                                                             }
                                                         }}

@@ -10,7 +10,7 @@ import { ChipNome } from '@/components/ui/ChipNome';
 import { useFecharAoClicarFora } from '@/components/modals/useFecharAoClicarFora';
 
 export default function OSModal() {
-    const { modalAberto, fecharModalOS, pedidoEmEdicao, isModalTrancado, novoPedido, setNovoPedido, opcoesStatusPermitidas, buscaCliente, setBuscaCliente, clienteSelecionadoInfo, setClienteSelecionadoInfo, isDemo, setClienteDropdownAberto, clienteDropdownAberto, clientesFiltrados, setNovoCliente, setModalClienteAberto, isClienteProblema, itensPedido, buscaProduto, setBuscaProduto, setProdutoDropdownAberto, produtoDropdownAberto, produtosFiltrados, setItemAtual, itemAtual, isAdmin, setNovoProduto, setModalProdutoAberto, fornecedores, pagamentosPedido, setPagamentosPedido, novoPagamento, setNovoPagamento, salvandoOS, usuario, salvarOS, removerItemDoCarrinho, adicionarItemAoCarrinho, salvarEdicaoItemCarrinho, usuariosSistema, atualizarCatalogoProdutos } = useAppContext();
+    const { modalAberto, fecharModalOS, pedidoEmEdicao, isModalTrancado, novoPedido, setNovoPedido, opcoesStatusPermitidas, buscaCliente, setBuscaCliente, clienteSelecionadoInfo, setClienteSelecionadoInfo, isDemo, setClienteDropdownAberto, clienteDropdownAberto, clientesFiltrados, setNovoCliente, setModalClienteAberto, isClienteProblema, itensPedido, buscaProduto, setBuscaProduto, setProdutoDropdownAberto, produtoDropdownAberto, produtosFiltrados, setItemAtual, itemAtual, isAdmin, setNovoProduto, setModalProdutoAberto, fornecedores, pagamentosPedido, setPagamentosPedido, novoPagamento, setNovoPagamento, salvandoOS, usuario, salvarOS, removerItemDoCarrinho, adicionarItemAoCarrinho, salvarEdicaoItemCarrinho, usuariosSistema, atualizarCatalogoProdutos, avisar, confirmar } = useAppContext();
     const nomesResponsaveis = usuariosSistema.filter(u => u.nivel !== 'demo').map(u => u.nome);
 
     const [pagamentoEditandoIdx, setPagamentoEditandoIdx] = useState(null);
@@ -478,14 +478,14 @@ export default function OSModal() {
                                 </button>
 
                                 {novoPedido.status !== 'Finalizado' && (usuario?.nivel === 'Administrador' || usuario?.nivel === 'Financeiro') && (
-                                    <button type="button" onClick={(e) => {
+                                    <button type="button" onClick={async (e) => {
                                         const tpago = pagamentosPedido.reduce((acc, p) => acc + parseValorMoeda(p.valor), 0);
                                         const tos = parseValorMoeda(novoPedido.valor_total);
                                         if ((tos - tpago) > 0) {
-                                            alert("Não é possível finalizar a OS: O valor total ainda não foi pago.");
+                                            avisar("Não é possível finalizar a OS: O valor total ainda não foi pago.", 'erro');
                                             return;
                                         }
-                                        if (!window.confirm("Tem certeza que deseja finalizar esta OS?")) {
+                                        if (!(await confirmar("Tem certeza que deseja finalizar esta OS?"))) {
                                             return;
                                         }
                                         salvarOS(e, false, 'Finalizado');

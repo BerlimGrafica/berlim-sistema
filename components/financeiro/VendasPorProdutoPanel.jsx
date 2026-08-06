@@ -44,6 +44,9 @@ export default function VendasPorProdutoPanel() {
 
                     const top5Nomes = rankingProduto.slice(0, 5).map(r => r[0]);
                     const selecionadosAtuais = produtosSelecionadosGrafico || top5Nomes;
+                    const todosNomes = rankingProduto.map(r => r[0]);
+                    const todosSelecionados = todosNomes.length > 0 && todosNomes.every(n => selecionadosAtuais.includes(n));
+                    const alternarTodos = () => setProdutosSelecionadosGrafico(todosSelecionados ? [] : todosNomes);
 
                     const mesesGrafico = [];
                     const dataAtualGrafico = new Date();
@@ -177,6 +180,13 @@ export default function VendasPorProdutoPanel() {
                     return (
                         <>
                             {renderSVG()}
+                            <div className="flex items-center justify-between mb-3">
+                                <span className="text-[11px] text-gray-400 dark:text-gray-500 font-medium">{selecionadosAtuais.length} de {todosNomes.length} produtos selecionados</span>
+                                <button type="button" onClick={alternarTodos} className="flex items-center gap-1.5 text-[11px] font-semibold text-brand hover:text-brandHover transition">
+                                    <Icon name={todosSelecionados ? 'square' : 'check-square'} className="w-3.5 h-3.5" />
+                                    {todosSelecionados ? 'Remover todos' : 'Selecionar todos'}
+                                </button>
+                            </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-3">
                                 {rankingProduto.map((r, index) => {
                                     const isSelected = selecionadosAtuais.includes(r[0]);

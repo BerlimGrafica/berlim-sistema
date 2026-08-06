@@ -23,7 +23,7 @@ export const AppProvider = ({ children }) => {
         isAdmin, isOperador, isDemo,
         usuariosSistema, setUsuariosSistema,
         usuario, setUsuario,
-        googleVinculado, vincularGoogle, desvincularGoogle,
+        googleVinculado, vincularGoogle: vincularGoogleBase, desvincularGoogle: desvincularGoogleBase,
         loginInput, setLoginInput,
         senhaInput, setSenhaInput,
         erroLogin, setErroLogin,
@@ -102,19 +102,31 @@ export const AppProvider = ({ children }) => {
     const [novaEmpresaFaturamento, setNovaEmpresaFaturamento] = useState({ id: null, nome: '', cnpj: '', status: 'Aprovado' });
     const {
         alertasNaoLidos, setAlertasNaoLidos,
+        toasts, removerToast, avisar,
+        pendingConfirm, confirmar, resolverConfirm,
         modalAlertasAberto, setModalAlertasAberto,
         ehUsuario,
         notificarSeFaturamentoEmAnalise, notificarSeTarefaMinha, notificarSeAtribuidoAMim, notificarSeNotaFiscalPreenchida,
         notificarSeLinkPagamentoNovo, notificarSeContaPagarUrgente,
         alertasFuturaDisparados, alertasBoletoDisparados, alertasRetiradaDisparados,
     } = useAlertas(usuario);
+    // Envolve os retornos de useAuth() com avisar() — useAuth() roda antes de
+    // useAlertas() no corpo do componente, então não tem acesso a avisar ainda.
+    const vincularGoogle = async () => {
+        const erro = await vincularGoogleBase();
+        if (erro) avisar('Não foi possível vincular a conta Google: ' + erro, 'erro');
+    };
+    const desvincularGoogle = async () => {
+        const erro = await desvincularGoogleBase();
+        if (erro) avisar('Não foi possível desvincular a conta Google: ' + erro, 'erro');
+    };
     const {
         chatAberto, setChatAberto,
         chatMensagens, setChatMensagens,
         chatNaoLidas, setChatNaoLidas,
         enviandoChat, chatAbertoRef,
         carregarChat, nomeDoUsuarioChat, abrirChat, enviarMensagemChat, excluirMensagemChat,
-    } = useChat(usuario, usuariosSistema);
+    } = useChat(usuario, usuariosSistema, avisar);
 
     // === COMUNICAÇÃO INTERNA ===
     const [abaComunicacao, setAbaComunicacao] = useState('requisicoes');
@@ -670,7 +682,7 @@ export const AppProvider = ({ children }) => {
 
         const { error } = await supabase.from('pedidos').update(payload).eq('id', id);
         if (error) {
-            alert('Erro ao atualizar: ' + error.message);
+            avisar('Erro ao atualizar: ' + error.message, 'erro');
             carregarDados();
         }
     }
@@ -690,7 +702,7 @@ export const AppProvider = ({ children }) => {
 
         const { error } = await supabase.from('pedidos').update({ servico: novoServico }).eq('id', id);
         if (error) {
-            alert('Erro ao concluir boleto: ' + error.message);
+            avisar('Erro ao concluir boleto: ' + error.message, 'erro');
             carregarDados();
         }
     }
@@ -764,7 +776,7 @@ export const AppProvider = ({ children }) => {
     async function salvarUsuario(e) {
         e.preventDefault();
         const { data: { session } } = await supabase.auth.getSession();
-        if (!session) { alert('Sessão expirada, faça login novamente.'); return; }
+        if (!session) { avisar('Sessão expirada, faça login novamente.', 'erro'); return; }
 
         const metodo = novoUsuario.id ? 'PUT' : 'POST';
         const payload = novoUsuario.id
@@ -779,7 +791,7 @@ export const AppProvider = ({ children }) => {
         const resultado = await resposta.json();
 
         if (!resposta.ok) {
-            alert('Falha ao salvar usuário: ' + (resultado.error || 'erro desconhecido'));
+            avisar('Falha ao salvar usuário: ' + (resultado.error || 'erro desconhecido'), 'erro');
             return;
         }
 
@@ -901,7 +913,7 @@ export const AppProvider = ({ children }) => {
             const { data, error } = await supabase.from('pedidos').update(payload).eq('id', pedidoEmEdicao.id).select();
             
             if (error) {
-                alert('Erro ao atualizar OS: ' + error.message);
+                avisar('Erro ao atualizar OS: ' + error.message, 'erro');
             } else if (data && data.length > 0) {
                 setPedidos(pedidos.map(p => p.id === data[0].id ? data[0] : p)); 
                 fecharModalOS(); 
@@ -927,7 +939,7 @@ export const AppProvider = ({ children }) => {
             }
 
             if (error) {
-                alert('Erro ao salvar OS: ' + error.message);
+                avisar('Erro ao salvar OS: ' + error.message, 'erro');
             } else if (data && data.length > 0) {
                 setPedidos([data[0], ...pedidos]); 
                 if (idOrcamentoOrigem) {
@@ -946,7 +958,7 @@ export const AppProvider = ({ children }) => {
                 }
                 carregarDados();
                 fecharModalOS();
-                if (querImprimir) alert('Pedido atualizado com sucesso! Para evitar lentidão, inicie a impressão manualmente através do Histórico.');
+                if (querImprimir) avisar('Pedido atualizado com sucesso! Para evitar lentidão, inicie a impressão manualmente através do Histórico.', 'sucesso');
             }
         }
         setSalvandoOS(false);
@@ -961,21 +973,21 @@ export const AppProvider = ({ children }) => {
             if (!error && data) {
                 setOrcamentosPreProntos(orcamentosPreProntos.map(o => o.id === novoOrcamentoPre.id ? data[0] : o));
                 setModalOrcamentoPreAberto(false);
-            } else alert('Erro: ' + error?.message);
+            } else avisar('Erro: ' + error?.message, 'erro');
         } else {
             const { data, error } = await supabase.from('orcamentos_pre_prontos').insert([payload]).select();
             if (!error && data) {
                 setOrcamentosPreProntos([data[0], ...orcamentosPreProntos]);
                 setModalOrcamentoPreAberto(false);
-            } else alert('Erro: ' + error?.message);
+            } else avisar('Erro: ' + error?.message, 'erro');
         }
     }
-    
+
     async function excluirOrcamentoPre(id) {
-        if (!confirm('Excluir este modelo pré-pronto?')) return;
+        if (!(await confirmar('Excluir este modelo pré-pronto?'))) return;
         const { error } = await supabase.from('orcamentos_pre_prontos').delete().eq('id', id);
         if (!error) setOrcamentosPreProntos(orcamentosPreProntos.filter(o => o.id !== id));
-        else alert('Erro: ' + error.message);
+        else avisar('Erro: ' + error.message, 'erro');
     }
 
     // === FUNÇÕES ORÇAMENTOS FORMALIZADOS ===
@@ -1011,7 +1023,7 @@ export const AppProvider = ({ children }) => {
 
         if (orcamentoFormalizadoEmEdicao) {
             const { data, error } = await supabase.from('orcamentos_formalizados').update(payload).eq('id', orcamentoFormalizadoEmEdicao.id).select();
-            if (error) alert('Erro: ' + error.message);
+            if (error) avisar('Erro: ' + error.message, 'erro');
             else if (data && data.length > 0) {
                 setOrcamentosFormalizados(orcamentosFormalizados.map(o => o.id === data[0].id ? data[0] : o));
                 setModalOrcamentoFormalizadoAberto(false);
@@ -1019,7 +1031,7 @@ export const AppProvider = ({ children }) => {
             }
         } else {
             const { data, error } = await supabase.from('orcamentos_formalizados').insert([payload]).select();
-            if (error) alert('Erro: ' + error.message);
+            if (error) avisar('Erro: ' + error.message, 'erro');
             else if (data && data.length > 0) {
                 setOrcamentosFormalizados([data[0], ...orcamentosFormalizados]);
                 setModalOrcamentoFormalizadoAberto(false);
@@ -1091,10 +1103,10 @@ export const AppProvider = ({ children }) => {
     }
     
     async function excluirOrcamentoFormalizado(id) {
-        if (!confirm('Excluir este orçamento formalizado?')) return;
+        if (!(await confirmar('Excluir este orçamento formalizado?'))) return;
         const { error } = await supabase.from('orcamentos_formalizados').delete().eq('id', id);
         if (!error) setOrcamentosFormalizados(orcamentosFormalizados.filter(o => o.id !== id));
-        else alert('Erro: ' + error.message);
+        else avisar('Erro: ' + error.message, 'erro');
     }
 
     async function salvarProduto(e) {
@@ -1104,12 +1116,12 @@ export const AppProvider = ({ children }) => {
 
         if (novoProduto.id) {
             const { data, error } = await supabase.from('produtos').update(produtoFormatado).eq('id', novoProduto.id).select();
-            if (!error && data) { setProdutos(produtos.map(p => p.id === novoProduto.id ? data[0] : p)); setModalProdutoAberto(false); setNovoProduto({ id: null, nome: '', texto_padrao: '', preco_base: '' }); } 
-            else alert('Falha ao atualizar: ' + error.message);
+            if (!error && data) { setProdutos(produtos.map(p => p.id === novoProduto.id ? data[0] : p)); setModalProdutoAberto(false); setNovoProduto({ id: null, nome: '', texto_padrao: '', preco_base: '' }); }
+            else avisar('Falha ao atualizar: ' + error.message, 'erro');
         } else {
             const { data, error } = await supabase.from('produtos').insert([produtoFormatado]).select();
-            if (!error && data) { setProdutos([...produtos, data[0]]); setModalProdutoAberto(false); setNovoProduto({ id: null, nome: '', texto_padrao: '', preco_base: '' }); } 
-            else alert('Falha ao salvar: ' + error.message);
+            if (!error && data) { setProdutos([...produtos, data[0]]); setModalProdutoAberto(false); setNovoProduto({ id: null, nome: '', texto_padrao: '', preco_base: '' }); }
+            else avisar('Falha ao salvar: ' + error.message, 'erro');
         }
         setSalvandoProduto(false);
     }
@@ -1149,7 +1161,7 @@ export const AppProvider = ({ children }) => {
     async function concluirConta(id) {
         const contaAnterior = contasPagar.find(c => c.id === id);
         if (!contaAnterior || contaAnterior.status === 'Pago') return;
-        if (!confirm(`Deseja marcar a conta "${contaAnterior.descricao}" como paga?`)) return;
+        if (!(await confirmar(`Deseja marcar a conta "${contaAnterior.descricao}" como paga?`))) return;
 
         const { data, error } = await supabase.from('contas_pagar').update({ status: 'Pago' }).eq('id', id).select();
         if (!error && data) {
@@ -1158,7 +1170,7 @@ export const AppProvider = ({ children }) => {
                 await criarCopiaRecorrente(data[0]);
             }
         } else {
-            alert('Falha ao concluir: ' + (error?.message || 'Erro desconhecido'));
+            avisar('Falha ao concluir: ' + (error?.message || 'Erro desconhecido'), 'erro');
         }
     }
 
@@ -1191,7 +1203,7 @@ export const AppProvider = ({ children }) => {
                 }
                 setModalContaAberto(false);
             } else {
-                alert('Falha ao atualizar (Tabela contas_pagar existe no Supabase?): ' + (error?.message || 'Erro desconhecido'));
+                avisar('Falha ao atualizar (Tabela contas_pagar existe no Supabase?): ' + (error?.message || 'Erro desconhecido'), 'erro');
             }
         } else {
             const { data, error } = await supabase.from('contas_pagar').insert([contaFormatada]).select();
@@ -1203,7 +1215,7 @@ export const AppProvider = ({ children }) => {
                 notificarSeContaPagarUrgente(data[0]);
                 setModalContaAberto(false);
             } else {
-                alert('Falha ao salvar (Tabela contas_pagar existe no Supabase?): ' + (error?.message || 'Erro desconhecido'));
+                avisar('Falha ao salvar (Tabela contas_pagar existe no Supabase?): ' + (error?.message || 'Erro desconhecido'), 'erro');
             }
         }
         setSalvandoConta(false);
@@ -1220,21 +1232,21 @@ export const AppProvider = ({ children }) => {
                 setEmpresasFaturamento(empresasFaturamento.map(x => x.id === data[0].id ? data[0] : x));
                 notificarSeFaturamentoEmAnalise(data[0]);
             }
-            else if (error) alert('Falha ao atualizar (A tabela empresas_faturamento foi criada?): ' + error.message);
+            else if (error) avisar('Falha ao atualizar (A tabela empresas_faturamento foi criada?): ' + error.message, 'erro');
         } else {
             const { data, error } = await supabase.from('empresas_faturamento').insert([payload]).select();
             if (!error && data) {
                 setEmpresasFaturamento([...empresasFaturamento, data[0]]);
                 notificarSeFaturamentoEmAnalise(data[0]);
             }
-            else if (error) alert('Falha ao salvar (A tabela empresas_faturamento foi criada?): ' + error.message);
+            else if (error) avisar('Falha ao salvar (A tabela empresas_faturamento foi criada?): ' + error.message, 'erro');
         }
         setModalEmpresaFaturamentoAberto(false);
         setSalvandoEmpresa(false);
     }
 
     async function excluirEmpresaFaturamento(id) {
-        if (!confirm('Deseja excluir esta empresa?')) return;
+        if (!(await confirmar('Deseja excluir esta empresa?'))) return;
         const { error } = await supabase.from('empresas_faturamento').delete().eq('id', id);
         if (!error) setEmpresasFaturamento(empresasFaturamento.filter(x => x.id !== id));
     }
@@ -1242,19 +1254,19 @@ export const AppProvider = ({ children }) => {
     async function excluirProduto(id, e) {
         e.stopPropagation(); // Evita que o clique no lixo abra a tela de edição
         
-        if (!window.confirm("Tem certeza que deseja excluir este produto do catálogo?")) return;
+        if (!(await confirmar("Tem certeza que deseja excluir este produto do catálogo?"))) return;
 
         const { error } = await supabase.from('produtos').delete().eq('id', id);
-        
+
         if (error) {
-            alert('Erro ao excluir produto: ' + error.message);
+            avisar('Erro ao excluir produto: ' + error.message, 'erro');
         } else {
             setProdutos(produtos.filter(p => p.id !== id));
         }
     }
 
     async function excluirConta(id) {
-        if (!confirm('Deseja excluir esta conta?')) return;
+        if (!(await confirmar('Deseja excluir esta conta?'))) return;
         const { error } = await supabase.from('contas_pagar').delete().eq('id', id);
         if (!error) setContasPagar(contasPagar.filter(x => x.id !== id));
     }
@@ -1287,7 +1299,7 @@ export const AppProvider = ({ children }) => {
         const { error } = await supabase.from('produtos').upsert(payloadSupabase);
         if (error) {
             console.error("Erro ao reordenar produtos:", error);
-            alert("Erro ao reordenar produtos: " + error.message);
+            avisar("Erro ao reordenar produtos: " + error.message, 'erro');
         }
     }
 
@@ -1313,7 +1325,7 @@ export const AppProvider = ({ children }) => {
             }
             
             if (duplicado) {
-                alert('Aviso: Este número de WhatsApp/Telefone já está cadastrado no cliente "' + duplicado.nome + '"!');
+                avisar('Aviso: Este número de WhatsApp/Telefone já está cadastrado no cliente "' + duplicado.nome + '"!');
                 setSalvandoCliente(false);
                 return;
             }
@@ -1321,12 +1333,12 @@ export const AppProvider = ({ children }) => {
 
         if (novoCliente.id) {
             const { data, error } = await supabase.from('clientes').update(clienteFormatado).eq('id', novoCliente.id).select();
-            if (!error && data) { setTriggerRealtime(prev => prev + 1); setModalClienteAberto(false); setNovoCliente({ id: null, nome: '', telefone: '', email: '', observacoes: '', cliente_problema: false }); } 
-            else alert('Falha ao atualizar: ' + error.message);
+            if (!error && data) { setTriggerRealtime(prev => prev + 1); setModalClienteAberto(false); setNovoCliente({ id: null, nome: '', telefone: '', email: '', observacoes: '', cliente_problema: false }); }
+            else avisar('Falha ao atualizar: ' + error.message, 'erro');
         } else {
             const { data, error } = await supabase.from('clientes').insert([clienteFormatado]).select();
-            if (!error && data) { setTriggerRealtime(prev => prev + 1); setNovoPedido({...novoPedido, cliente: data[0].nome}); setBuscaCliente(data[0].nome); setClienteSelecionadoInfo({ id: data[0].id, telefone: data[0].telefone }); setModalClienteAberto(false); setNovoCliente({ id: null, nome: '', telefone: '', email: '', observacoes: '', cliente_problema: false }); } 
-            else alert('Falha ao salvar: ' + error.message);
+            if (!error && data) { setTriggerRealtime(prev => prev + 1); setNovoPedido({...novoPedido, cliente: data[0].nome}); setBuscaCliente(data[0].nome); setClienteSelecionadoInfo({ id: data[0].id, telefone: data[0].telefone }); setModalClienteAberto(false); setNovoCliente({ id: null, nome: '', telefone: '', email: '', observacoes: '', cliente_problema: false }); }
+            else avisar('Falha ao salvar: ' + error.message, 'erro');
         }
         setSalvandoCliente(false);
     }
@@ -1353,30 +1365,30 @@ export const AppProvider = ({ children }) => {
             notificarSeNotaFiscalPreenchida(data[0]);
             setModalNotaFiscalAberto(false);
         } else {
-            alert('Falha ao atualizar nota: ' + error.message);
+            avisar('Falha ao atualizar nota: ' + error.message, 'erro');
         }
         setSalvandoNotaFiscal(false);
     }
 
     async function concluirNotaFiscal(id) {
-        if (!confirm('Deseja realmente marcar esta nota como concluída? Ela não aparecerá mais nesta lista.')) return;
+        if (!(await confirmar('Deseja realmente marcar esta nota como concluída? Ela não aparecerá mais nesta lista.'))) return;
         const { data, error } = await supabase.from('notas_fiscais').update({ concluido: true }).eq('id', id).select();
         if (!error && data) {
             setNotasFiscais(notasFiscais.map(n => n.id === id ? data[0] : n));
         } else {
-            alert('Falha ao concluir: ' + error.message);
+            avisar('Falha ao concluir: ' + error.message, 'erro');
         }
     }
 
     async function excluirNotaFiscal(id) {
-        if (!confirm('Deseja excluir esta nota fiscal? Essa ação não pode ser desfeita.')) return;
+        if (!(await confirmar('Deseja excluir esta nota fiscal? Essa ação não pode ser desfeita.'))) return;
         const { error } = await supabase.from('notas_fiscais').delete().eq('id', id);
         if (!error) setNotasFiscais(notasFiscais.filter(n => n.id !== id));
-        else alert('Falha ao excluir: ' + error.message);
+        else avisar('Falha ao excluir: ' + error.message, 'erro');
     }
 
     async function reabrirNotaFiscal(nota) {
-        if (!confirm(`Deseja gerar uma nova nota pendente para "${nota.razao_social || nota.cnpj}"?`)) return;
+        if (!(await confirmar(`Deseja gerar uma nova nota pendente para "${nota.razao_social || nota.cnpj}"?`))) return;
 
         const payload = {
             razao_social: nota.razao_social,
@@ -1402,19 +1414,19 @@ export const AppProvider = ({ children }) => {
                 setAlertasNaoLidos(prev => [...prev, { id: Date.now() + Math.random(), msg: `Nova Nota Fiscal solicitada (${data[0].cliente || data[0].cnpj})`, os_id: null, tipo: 'nf_nova' }]);
             }
         } else {
-            alert('Falha ao gerar nova nota: ' + (error?.message || 'Erro desconhecido'));
+            avisar('Falha ao gerar nova nota: ' + (error?.message || 'Erro desconhecido'), 'erro');
         }
     }
 
     async function concluirRequisicao(id) {
-        if (!confirm('Deseja marcar esta requisição como comprada/concluída?')) return;
+        if (!(await confirmar('Deseja marcar esta requisição como comprada/concluída?'))) return;
         const { data, error } = await supabase.from('requisicoes_material').update({ status: 'Comprado' }).eq('id', id).select();
         if (!error && data) setRequisicoesMaterial(requisicoesMaterial.map(x => x.id === id ? data[0] : x));
     }
 
     async function concluirTarefa(id) {
         const tarefa = tarefasInternas.find(t => t.id === id);
-        if (!tarefa?.fixa && !confirm('Deseja marcar esta tarefa como concluída?')) return;
+        if (!tarefa?.fixa && !(await confirmar('Deseja marcar esta tarefa como concluída?'))) return;
         const payload = tarefa?.fixa ? { status: 'Concluída', ultima_conclusao: obterDataAtual() } : { status: 'Concluída' };
         const { data, error } = await supabase.from('tarefas_internas').update(payload).eq('id', id).select();
         if (!error && data) setTarefasInternas(tarefasInternas.map(x => x.id === id ? data[0] : x));
@@ -1433,7 +1445,7 @@ export const AppProvider = ({ children }) => {
     }
 
     async function concluirLink(id) {
-        if (!confirm('Deseja marcar este link como pago/concluído?')) return;
+        if (!(await confirmar('Deseja marcar este link como pago/concluído?'))) return;
         const { data, error } = await supabase.from('links_pagamento').update({ status: 'Pago' }).eq('id', id).select();
         if (!error && data) {
             setLinksPagamento(linksPagamento.map(x => x.id === id ? data[0] : x));
@@ -1543,7 +1555,7 @@ export const AppProvider = ({ children }) => {
         setModalRequisicaoAberto(false);
     };
     const excluirRequisicao = async (id) => {
-        if(confirm('Tem certeza que deseja excluir esta requisição?')) {
+        if(await confirmar('Tem certeza que deseja excluir esta requisição?')) {
             const { error } = await supabase.from('requisicoes_material').delete().eq('id', id);
             if (!error) setRequisicoesMaterial(requisicoesMaterial.filter(r => r.id !== id));
         }
@@ -1572,7 +1584,7 @@ export const AppProvider = ({ children }) => {
         setModalTarefaAberto(false);
     };
     const excluirTarefa = async (id) => {
-        if(confirm('Tem certeza que deseja excluir esta tarefa?')) {
+        if(await confirmar('Tem certeza que deseja excluir esta tarefa?')) {
             const { error } = await supabase.from('tarefas_internas').delete().eq('id', id);
             if (!error) setTarefasInternas(tarefasInternas.filter(t => t.id !== id));
         }
@@ -1602,7 +1614,7 @@ export const AppProvider = ({ children }) => {
         setModalLinkAberto(false);
     };
     const excluirLink = async (id) => {
-        if(confirm('Tem certeza que deseja excluir este link?')) {
+        if(await confirmar('Tem certeza que deseja excluir este link?')) {
             const { error } = await supabase.from('links_pagamento').delete().eq('id', id);
             if (!error) setLinksPagamento(linksPagamento.filter(l => l.id !== id));
         }
@@ -1849,6 +1861,12 @@ export const AppProvider = ({ children }) => {
         setNovaEmpresaFaturamento,
         alertasNaoLidos,
         setAlertasNaoLidos,
+        toasts,
+        removerToast,
+        avisar,
+        pendingConfirm,
+        confirmar,
+        resolverConfirm,
         modalAlertasAberto,
         setModalAlertasAberto,
         chatAberto,

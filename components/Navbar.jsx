@@ -1,16 +1,17 @@
 "use client";
 import React, { useEffect, useRef } from "react";
 import Link from "next/link";
-import { useRouter, usePathname } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useAppContext } from "@/context/AppContext";
 import Icon from "@/components/Icon";
 import Tooltip from "@/components/Tooltip";
 import ChatPanel from "@/components/ChatPanel";
+import { useNavegarAlerta } from "@/hooks/useNavegarAlerta";
 
 export default function Navbar() {
-    const { setModalAlertasAberto, modalAlertasAberto, alertasNaoLidos, setAlertasNaoLidos, setAbaFinanceiro, pedidos, abrirEdicao, toggleDarkMode, darkMode, usuario, logout, googleVinculado, vincularGoogle, desvincularGoogle, abrirChat, chatNaoLidas } = useAppContext();
+    const { setModalAlertasAberto, modalAlertasAberto, alertasNaoLidos, setAlertasNaoLidos, toggleDarkMode, darkMode, usuario, logout, googleVinculado, vincularGoogle, desvincularGoogle, abrirChat, chatNaoLidas, confirmar } = useAppContext();
     const notificacoesRef = useRef(null);
-    const router = useRouter();
+    const navegarParaAlerta = useNavegarAlerta();
     const pathname = usePathname();
 
     useEffect(() => {
@@ -66,23 +67,7 @@ export default function Navbar() {
                                             alertasNaoLidos.slice().reverse().map(alerta => (
                                                 <div key={alerta.id} className="px-4 py-3 hover:bg-gray-50 dark:hover:bg-darkHover border-b border-gray-50 dark:border-darkBorder/50 last:border-0 cursor-pointer flex justify-between items-start group" onClick={() => {
                                                     setModalAlertasAberto(false);
-                                                    if (alerta.tipo === 'faturamento_em_analise') {
-                                                        setAbaFinanceiro('empresas_aprovadas');
-                                                        router.push('/financeiro');
-                                                    } else if (alerta.tipo === 'nf_nova' || alerta.tipo === 'nf_preenchida') {
-                                                        if (usuario?.nivel === 'Atendimento') {
-                                                            router.push('/notas-fiscais');
-                                                        } else {
-                                                            setAbaFinanceiro('notas_fiscais');
-                                                            router.push('/financeiro');
-                                                        }
-                                                    } else {
-                                                        router.push('/producao');
-                                                        if (alerta.os_id) {
-                                                            const p = pedidos.find(x => x.id === alerta.os_id);
-                                                            if (p) abrirEdicao(p);
-                                                        }
-                                                    }
+                                                    navegarParaAlerta(alerta);
                                                 }}>
                                                     <div className="flex-1 pr-2">
                                                         <p className="text-[11px] text-gray-800 dark:text-[#EDEDED]">{alerta.msg}</p>
@@ -148,9 +133,9 @@ export default function Navbar() {
                             <Tooltip label={googleVinculado ? 'Desvincular conta Google' : 'Vincular conta Google (login rápido)'}>
                                 <button
                                     type="button"
-                                    onClick={() => {
+                                    onClick={async () => {
                                         if (googleVinculado) {
-                                            if (confirm('Desvincular sua conta Google? Você vai deixar de conseguir entrar com o botão "Entrar com Google".')) desvincularGoogle();
+                                            if (await confirmar('Desvincular sua conta Google? Você vai deixar de conseguir entrar com o botão "Entrar com Google".')) desvincularGoogle();
                                         } else {
                                             vincularGoogle();
                                         }

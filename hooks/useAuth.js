@@ -121,12 +121,15 @@ export function useAuth() {
 
     // Vincula a conta Google à sessão atual (usuário já logado por e-mail/senha).
     // Depois disso, ele também pode entrar direto pelo botão "Entrar com Google".
+    // Retornam uma mensagem de erro (string) em caso de falha, ou undefined em caso
+    // de sucesso — quem chama (AppContext) decide como avisar o usuário, já que este
+    // hook roda antes do useAlertas() e não tem acesso ao avisar() ainda.
     const vincularGoogle = async () => {
         const { error } = await supabase.auth.linkIdentity({
             provider: 'google',
             options: { redirectTo: window.location.origin },
         });
-        if (error) alert('Não foi possível vincular a conta Google: ' + error.message);
+        if (error) return error.message;
     };
 
     const desvincularGoogle = async () => {
@@ -134,7 +137,7 @@ export function useAuth() {
         const identidadeGoogle = user?.identities?.find(i => i.provider === 'google');
         if (!identidadeGoogle) return;
         const { error } = await supabase.auth.unlinkIdentity(identidadeGoogle);
-        if (error) { alert('Não foi possível desvincular a conta Google: ' + error.message); return; }
+        if (error) { return error.message; }
         setGoogleVinculado(false);
 
         const { error: erroAvatar } = await supabase.rpc('atualizar_meu_avatar', { novo_avatar_url: null });
