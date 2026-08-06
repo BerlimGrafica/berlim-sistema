@@ -8,7 +8,7 @@ import { obterResumoServicos } from '@/lib/utils/servico';
 import { CustomDatePicker } from '@/components/ui/DatePicker';
 
 export default function ContasAReceberPanel({ dataInicio, dataFim }) {
-    const { pedidos, isDemo, atualizarCampoInline, concluirBoletoContasReceber, abrirEdicao, confirmar } = useAppContext();
+    const { pedidos, isDemo, atualizarCampoInline, concluirBoletoContasReceber, abrirEdicao, confirmar, abrirContextMenu, duplicarOS, imprimirOS, avisar } = useAppContext();
 
     return (
         <div>
@@ -65,8 +65,21 @@ export default function ContasAReceberPanel({ dataInicio, dataFim }) {
                                         statusPagamento = 'Vence amanhã';
                                         statusPagamentoCor = 'bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800';
                                     }
+                                    const itensContexto = [
+                                        { label: 'Editar', icon: 'edit-3', onClick: () => abrirEdicao(p) },
+                                        { label: 'Duplicar', icon: 'layers', onClick: () => duplicarOS(p) },
+                                        { label: 'Imprimir', icon: 'printer', onClick: () => imprimirOS(p) },
+                                        { label: 'Copiar linha', icon: 'copy', onClick: () => {
+                                            const linha = [`#${p.id}`, mascararCliente(p.cliente, isDemo), formatarDataExibicao(p.prazo_pagamento), statusPagamento].join('\t');
+                                            navigator.clipboard.writeText(linha);
+                                            avisar('Linha copiada!', 'sucesso');
+                                        }},
+                                        { label: 'Marcar Boleto Concluído', icon: 'check-circle', divisorAntes: true, onClick: async () => {
+                                            if (await confirmar(`Marcar o boleto da O.S. #${p.id} como concluído? Ele sairá desta lista.`)) concluirBoletoContasReceber(p.id);
+                                        }},
+                                    ];
                                     return (
-                                        <tr key={p.id} onClick={() => abrirEdicao(p)} className="hover:bg-gray-50 dark:hover:bg-darkHover/50 transition-colors cursor-pointer group">
+                                        <tr key={p.id} onClick={() => abrirEdicao(p)} onContextMenu={(e) => abrirContextMenu(e, itensContexto)} className="hover:bg-gray-50 dark:hover:bg-darkHover/50 transition-colors cursor-pointer group">
                                             <td className="px-6 py-4">
                                                 <span className="text-[12px] font-bold text-gray-400 dark:text-gray-500">#{p.id}</span>
                                             </td>

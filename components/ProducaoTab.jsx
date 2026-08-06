@@ -4,7 +4,7 @@ import { useAppContext } from '@/context/AppContext';
 import Icon from '@/components/Icon';
 import Tooltip from '@/components/Tooltip';
 import { STATUSES_PRODUCAO, obterCorFundoStatus, obterCorContornoPrazo } from '@/lib/utils/constants';
-import { mascararCliente } from '@/lib/utils/formatters';
+import { mascararCliente, formatarDataExibicao } from '@/lib/utils/formatters';
 import { CustomDatePicker } from '@/components/ui/DatePicker';
 import { InlineDropdown, MultiSelectDropdown } from '@/components/ui/Dropdown';
 import { ItensChecklist } from '@/components/ItensChecklist';
@@ -69,7 +69,7 @@ function useAnimacaoLinhas(ordem) {
 }
 
 export default function ProducaoTab() {
-    const { buscaProducaoText, setBuscaProducaoText, setPedidoEmEdicao, setModalAberto, pedidosProducaoAtivos, isClienteProblema, isDemo, opcoesStatusPermitidas, abrirEdicao, atualizarCampoInline, usuariosSistema, confirmar } = useAppContext();
+    const { buscaProducaoText, setBuscaProducaoText, setPedidoEmEdicao, setModalAberto, pedidosProducaoAtivos, isClienteProblema, isDemo, opcoesStatusPermitidas, abrirEdicao, atualizarCampoInline, usuariosSistema, confirmar, abrirContextMenu, imprimirOS, duplicarOS, avisar } = useAppContext();
     const nomesResponsaveis = usuariosSistema.filter(u => u.nivel !== 'demo').map(u => u.nome);
 
     const gruposStatus = STATUSES_PRODUCAO
@@ -96,6 +96,18 @@ export default function ProducaoTab() {
         }
         atualizarCampoInline(id, campo, valor);
     };
+
+    const montarItensContexto = (p) => [
+        { label: 'Editar O.S.', icon: 'edit-3', onClick: () => abrirEdicao(p) },
+        { label: 'Duplicar O.S.', icon: 'layers', onClick: () => duplicarOS(p) },
+        { label: 'Imprimir', icon: 'printer', onClick: () => imprimirOS(p) },
+        { label: 'Copiar linha', icon: 'copy', onClick: () => {
+            const linha = [`#${p.id}`, formatarDataExibicao(p.prazo), p.responsavel || '', mascararCliente(p.cliente, isDemo), p.status].join('\t');
+            navigator.clipboard.writeText(linha);
+            avisar('Linha copiada!', 'sucesso');
+        }},
+        { label: 'Marcar Concluído', icon: 'check-circle', divisorAntes: true, onClick: () => handleAtualizarCampo(p.id, 'status', 'Concluído') },
+    ];
 
     return (
         <>
@@ -148,7 +160,7 @@ export default function ProducaoTab() {
                                                             </td>
                                                         </tr>
                                                         {pedidosDoStatus.map(p => (
-                                                            <tr key={p.id} ref={registrarLinha(p.id)} className="border-b border-gray-100 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover transition group text-[13px]">
+                                                            <tr key={p.id} ref={registrarLinha(p.id)} onContextMenu={(e) => abrirContextMenu(e, montarItensContexto(p))} className="border-b border-gray-100 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover transition group text-[13px]">
                                                                 <td className="px-4 py-3 font-medium text-gray-400 dark:text-gray-600 text-center"><button type="button" onClick={() => abrirEdicao(p)} className="hover:text-brand transition">#{p.id}</button></td>
                                                                 <td className="px-4 py-3"><CustomDatePicker value={p.prazo || ''} onChange={val => handleAtualizarCampo(p.id, 'prazo', val)} placeholder="Definir prazo..." className={`w-full bg-gray-50 dark:bg-darkElevated border-2 ${obterCorContornoPrazo(p.prazo)} rounded px-2.5 py-1.5 text-[11px] outline-none hover:border-brand transition text-gray-700 dark:text-[#EDEDED]`} /></td>
                                                                 <td className="px-4 py-3"><MultiSelectDropdown value={p.responsavel} options={nomesResponsaveis} onChange={(val) => handleAtualizarCampo(p.id, 'responsavel', val)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-2.5 py-1.5 text-[11px] outline-none hover:border-brand" /></td>

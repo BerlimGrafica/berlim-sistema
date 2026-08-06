@@ -8,7 +8,7 @@ import { formatarValorFinanceiro, centavosParaReais } from '@/lib/utils/formatte
 
 export default function CadastrosTab() {
     const { 
-    usuario, setAbaCadastros, abaCadastros, isAdmin, buscaCadClientes, setBuscaCadClientes, setNovoCliente, setModalClienteAberto, setLetraFiltroCliente, setPaginaClientes, letraFiltroCliente, clientesPaginados, totalPaginasClientes, paginaClientes, abrirEdicaoCliente, carregarDados, buscaCadProdutos, setBuscaCadProdutos, setNovoProduto, setModalProdutoAberto, produtosCatalogoFiltrados, handleDragStartProduto, handleDropProduto, abrirEdicaoProduto, draggedProdutoIndex, excluirProduto, usuariosSistema, setNovoUsuario, setModalUsuarioAberto, abrirEdicaoUsuario, fornecedores, setNovoFornecedor, setModalFornecedorAberto, confirmar
+    usuario, setAbaCadastros, abaCadastros, isAdmin, buscaCadClientes, setBuscaCadClientes, setNovoCliente, setModalClienteAberto, setLetraFiltroCliente, setPaginaClientes, letraFiltroCliente, clientesPaginados, totalPaginasClientes, paginaClientes, abrirEdicaoCliente, carregarDados, buscaCadProdutos, setBuscaCadProdutos, setNovoProduto, setModalProdutoAberto, produtosCatalogoFiltrados, handleDragStartProduto, handleDropProduto, abrirEdicaoProduto, draggedProdutoIndex, excluirProduto, usuariosSistema, setNovoUsuario, setModalUsuarioAberto, abrirEdicaoUsuario, fornecedores, setNovoFornecedor, setModalFornecedorAberto, confirmar, abrirContextMenu, duplicarProduto, duplicarFornecedor, avisar
 } = useAppContext();
 
     return (
@@ -77,7 +77,16 @@ export default function CadastrosTab() {
                                             onDragStart={(e) => handleDragStartProduto(e, index)}
                                             onDragOver={(e) => e.preventDefault()}
                                             onDrop={(e) => handleDropProduto(e, index)}
-                                            onClick={() => abrirEdicaoProduto(p)} 
+                                            onClick={() => abrirEdicaoProduto(p)}
+                                            onContextMenu={(e) => abrirContextMenu(e, [
+                                                { label: 'Editar', icon: 'edit-3', onClick: () => abrirEdicaoProduto(p) },
+                                                { label: 'Duplicar', icon: 'layers', onClick: () => duplicarProduto(p) },
+                                                { label: 'Copiar linha', icon: 'copy', onClick: () => {
+                                                    navigator.clipboard.writeText([`#${p.id}`, p.nome, p.texto_padrao || '', `R$ ${formatarValorFinanceiro(centavosParaReais(p.preco_base))}`].join('\t'));
+                                                    avisar('Linha copiada!', 'sucesso');
+                                                }},
+                                                { label: 'Excluir', icon: 'trash-2', tom: 'perigo', divisorAntes: true, onClick: () => excluirProduto(p.id, { stopPropagation: () => {} }) },
+                                            ])}
                                             className={`border-b border-gray-100 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover transition cursor-pointer group ${draggedProdutoIndex === index ? 'opacity-50' : ''}`}
                                         >
                                             <td className="px-6 py-4 text-[13px] font-semibold text-gray-900 dark:text-gray-300 cursor-grab active:cursor-grabbing">
@@ -220,7 +229,20 @@ export default function CadastrosTab() {
                                         </tr>
                                     ) : (
                                         fornecedores.map(f => (
-                                            <tr key={f.id} onClick={() => { setNovoFornecedor({...f, observacoes: f.observacoes || ''}); setModalFornecedorAberto(true); }} className="border-b border-gray-100 dark:border-darkBorder/50 hover:bg-gray-50/50 dark:hover:bg-darkHover/50 transition cursor-pointer">
+                                            <tr key={f.id} onClick={() => { setNovoFornecedor({...f, observacoes: f.observacoes || ''}); setModalFornecedorAberto(true); }} onContextMenu={(e) => abrirContextMenu(e, [
+                                                { label: 'Editar', icon: 'edit-3', onClick: () => { setNovoFornecedor({...f, observacoes: f.observacoes || ''}); setModalFornecedorAberto(true); } },
+                                                { label: 'Duplicar', icon: 'layers', onClick: () => duplicarFornecedor(f) },
+                                                { label: 'Copiar linha', icon: 'copy', onClick: () => {
+                                                    navigator.clipboard.writeText([`#${f.id}`, f.nome, f.contato || '', f.observacoes || ''].join('\t'));
+                                                    avisar('Linha copiada!', 'sucesso');
+                                                }},
+                                                { label: 'Excluir', icon: 'trash-2', tom: 'perigo', divisorAntes: true, onClick: async () => {
+                                                    if (await confirmar(`Excluir o fornecedor ${f.nome}?`)) {
+                                                        await supabase.from('fornecedores').delete().eq('id', f.id);
+                                                        carregarDados();
+                                                    }
+                                                }},
+                                            ])} className="border-b border-gray-100 dark:border-darkBorder/50 hover:bg-gray-50/50 dark:hover:bg-darkHover/50 transition cursor-pointer">
                                                 <td className="px-6 py-4 text-[13px] font-semibold text-gray-900 dark:text-gray-300">#{f.id}</td>
                                                 <td className="px-6 py-4 text-[13px] font-medium text-gray-800 dark:text-white">{f.nome}</td>
                                                 <td className="px-6 py-4 text-[13px] text-gray-600 dark:text-gray-400">{f.contato || '-'}</td>

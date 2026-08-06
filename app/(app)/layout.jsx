@@ -6,6 +6,7 @@ import PrintLayout from '@/components/PrintLayout';
 import PageTransition from '@/components/PageTransition';
 import ToastContainer from '@/components/ToastContainer';
 import ConfirmDialog from '@/components/ConfirmDialog';
+import ContextMenu from '@/components/ContextMenu';
 
 export default function AppLayout({ children }) {
     return (
@@ -18,6 +19,7 @@ export default function AppLayout({ children }) {
                 <Modals />
                 <ToastContainer />
                 <ConfirmDialog />
+                <ContextMenu />
             </div>
             <PrintLayout />
         </AppProvider>

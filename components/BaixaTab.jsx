@@ -10,7 +10,7 @@ import { obterResumoServicos } from '@/lib/utils/servico';
 
 
 export default function BaixaTab() {
-    const { setAbaOS, abaOS, buscaHistoricoText, setBuscaHistoricoText, dataFiltroInicio, setDataFiltroInicio, dataFiltroFim, setDataFiltroFim, isAdmin, pedidosHistorico, isOperador, isDemo, isClienteProblema, totalPedidosHistorico, itensPorPagina, paginaHistorico, setPaginaHistorico, abrirEdicao, imprimirOS } = useAppContext();
+    const { setAbaOS, abaOS, buscaHistoricoText, setBuscaHistoricoText, dataFiltroInicio, setDataFiltroInicio, dataFiltroFim, setDataFiltroFim, isAdmin, pedidosHistorico, isOperador, isDemo, isClienteProblema, totalPedidosHistorico, itensPorPagina, paginaHistorico, setPaginaHistorico, abrirEdicao, imprimirOS, abrirContextMenu, duplicarOS, avisar } = useAppContext();
 
     return (
         <>
@@ -64,7 +64,15 @@ export default function BaixaTab() {
                                     {pedidosHistorico.map(p => {
                                         const trancado = isOperador && p.status === 'Finalizado';
                                         return (
-                                            <tr key={p.id} onClick={() => { if (trancado) return; abrirEdicao(p); }} className={`border-b border-gray-100 dark:border-darkBorder transition ${trancado ? 'opacity-30 bg-[#050505] cursor-not-allowed' : 'cursor-pointer hover:bg-gray-50 dark:hover:bg-darkHover'}`}>
+                                            <tr key={p.id} onClick={() => { if (trancado) return; abrirEdicao(p); }} onContextMenu={(e) => abrirContextMenu(e, [
+                                                { label: 'Editar O.S.', icon: 'edit-3', desabilitado: trancado, onClick: () => abrirEdicao(p) },
+                                                { label: 'Duplicar O.S.', icon: 'layers', onClick: () => duplicarOS(p) },
+                                                { label: 'Imprimir', icon: 'printer', onClick: () => imprimirOS(p) },
+                                                { label: 'Copiar linha', icon: 'copy', onClick: () => {
+                                                    navigator.clipboard.writeText([`#${p.id}`, formatarDataExibicao(p.prazo || p.data_pedido), mascararCliente(p.cliente, isDemo), p.status, `R$ ${formatarValorFinanceiro(centavosParaReais(p.valor_total))}`].join('\t'));
+                                                    avisar('Linha copiada!', 'sucesso');
+                                                }},
+                                            ])} className={`border-b border-gray-100 dark:border-darkBorder transition ${trancado ? 'opacity-30 bg-[#050505] cursor-not-allowed' : 'cursor-pointer hover:bg-gray-50 dark:hover:bg-darkHover'}`}>
                                                 <td className="px-6 py-4 text-[13px] font-medium text-gray-500 dark:text-[#A1A1AA]"><span className="flex items-center gap-1.5">{trancado && <Icon name="lock" className="w-3 h-3 text-red-500" />}#{p.id}</span></td>
                                                 {isAdmin && (
                                                     <td className="px-6 py-4">

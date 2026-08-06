@@ -6,7 +6,7 @@ import Tooltip from '@/components/Tooltip';
 import { formatarMoeda, formatarValorFinanceiro, formatarDataExibicao, centavosParaReais, obterDataAtual } from '@/lib/utils/formatters';
 
 export default function ContasAPagarPanel({ mostrarContasPagas, dataInicio, dataFim }) {
-    const { contasPagar, setNovaConta, setModalContaAberto, concluirConta, excluirConta } = useAppContext();
+    const { contasPagar, setNovaConta, setModalContaAberto, concluirConta, excluirConta, abrirContextMenu, duplicarConta, avisar } = useAppContext();
     // Ordenação simples por clique no header: null = ordem original (mais recente cadastrada primeiro).
     const [ordenacao, setOrdenacao] = useState({ campo: null, direcao: 'asc' });
 
@@ -73,6 +73,17 @@ export default function ContasAPagarPanel({ mostrarContasPagas, dataInicio, data
         return 'border-transparent';
     };
 
+    const montarItensContexto = (conta) => [
+        ...(conta.status !== 'Pago' ? [{ label: 'Marcar como Pago', icon: 'check-circle', onClick: () => concluirConta(conta.id) }] : []),
+        { label: 'Duplicar', icon: 'layers', onClick: () => duplicarConta(conta) },
+        { label: 'Copiar linha', icon: 'copy', onClick: () => {
+            const linha = [formatarDataExibicao(conta.vencimento), conta.descricao, conta.categoria || 'Despesa', `R$ ${formatarValorFinanceiro(centavosParaReais(conta.valor))}`, conta.status].join('\t');
+            navigator.clipboard.writeText(linha);
+            avisar('Linha copiada!', 'sucesso');
+        }},
+        { label: 'Excluir', icon: 'trash-2', tom: 'perigo', divisorAntes: true, onClick: () => excluirConta(conta.id) },
+    ];
+
     return (
         <div>
             <div className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded overflow-hidden">
@@ -93,7 +104,7 @@ export default function ContasAPagarPanel({ mostrarContasPagas, dataInicio, data
                                 <tr><td colSpan="6" className="text-center py-8 text-gray-400">Nenhuma conta a pagar registrada.</td></tr>
                             ) : (
                                 contasOrdenadas.map(conta => (
-                                    <tr key={conta.id} onClick={() => { setNovaConta({...conta, valor: conta.valor ? formatarMoeda(Math.round(conta.valor).toString()) : ''}); setModalContaAberto(true); }} className="hover:bg-gray-50 dark:hover:bg-darkHover/50 transition-colors group cursor-pointer">
+                                    <tr key={conta.id} onClick={() => { setNovaConta({...conta, valor: conta.valor ? formatarMoeda(Math.round(conta.valor).toString()) : ''}); setModalContaAberto(true); }} onContextMenu={(e) => abrirContextMenu(e, montarItensContexto(conta))} className="hover:bg-gray-50 dark:hover:bg-darkHover/50 transition-colors group cursor-pointer">
                                         <td className="px-6 py-4 text-[13px] text-gray-600 dark:text-[#A1A1AA]">
                                             <span className={`inline-block px-2 py-1 rounded border-2 ${obterCorBordaVencimento(conta)}`}>
                                                 {formatarDataExibicao(conta.vencimento)}

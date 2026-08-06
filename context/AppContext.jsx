@@ -120,6 +120,17 @@ export const AppProvider = ({ children }) => {
         const erro = await desvincularGoogleBase();
         if (erro) avisar('Não foi possível desvincular a conta Google: ' + erro, 'erro');
     };
+
+    // Menu de contexto (clique direito) genérico — qualquer tabela monta sua
+    // própria lista de itens e chama abrirContextMenu(e, itens); o componente
+    // visual (ContextMenu.jsx) cuida de posição, fechamento e é o mesmo em todo o app.
+    const [contextMenu, setContextMenu] = useState(null); // { x, y, itens } | null
+    const abrirContextMenu = (e, itens) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setContextMenu({ x: e.clientX, y: e.clientY, itens });
+    };
+    const fecharContextMenu = () => setContextMenu(null);
     const {
         chatAberto, setChatAberto,
         chatMensagens, setChatMensagens,
@@ -963,7 +974,42 @@ export const AppProvider = ({ children }) => {
         }
         setSalvandoOS(false);
     }
-    
+
+    // Duplica uma O.S. como um pedido novo e independente: mesmo cliente/serviço/
+    // valor/responsável/local, mas sem os pagamentos já lançados e reiniciando o
+    // fluxo (status inicial, sem prazo, arte/entrega não aprovadas ainda).
+    async function duplicarOS(pedido) {
+        const servicoSemPagamentos = pedido.servico ? pedido.servico.split('\n\n[PAGAMENTOS]\n')[0] : '';
+        const { data: ultimoPedido } = await supabase.from('pedidos').select('id').order('id', { ascending: false }).limit(1);
+        const idBase = ultimoPedido && ultimoPedido.length > 0 ? ultimoPedido[0].id : (pedidos.length > 0 ? Math.max(...pedidos.map(p => p.id)) : 0);
+        let novoId = Math.max(idBase, NUMERO_INICIAL_PEDIDO - 1) + 1;
+        const payload = {
+            cliente: pedido.cliente,
+            servico: servicoSemPagamentos,
+            status: 'Aguardando Pagamento',
+            valor_total: pedido.valor_total,
+            data_pedido: obterDataAtual(),
+            prazo: null,
+            responsavel: pedido.responsavel,
+            local_producao: pedido.local_producao,
+            aprovado: false,
+            entrega: false,
+            criado_por: usuario?.nome || 'Desconhecido',
+        };
+        let data, error;
+        for (let tentativa = 0; tentativa < 5; tentativa++) {
+            payload.id = novoId;
+            ({ data, error } = await supabase.from('pedidos').insert([payload]).select());
+            if (!error || error.code !== '23505') break;
+            novoId += 1;
+        }
+        if (error) { avisar('Erro ao duplicar O.S.: ' + error.message, 'erro'); return; }
+        if (data && data.length > 0) {
+            setPedidos([data[0], ...pedidos]);
+            avisar(`O.S. duplicada como #${data[0].id}.`, 'sucesso');
+        }
+    }
+
     // === FUNÇÕES ORÇAMENTOS PRÉ PRONTOS ===
     async function salvarOrcamentoPre(e) {
         e.preventDefault();
@@ -1269,6 +1315,39 @@ export const AppProvider = ({ children }) => {
         if (!(await confirmar('Deseja excluir esta conta?'))) return;
         const { error } = await supabase.from('contas_pagar').delete().eq('id', id);
         if (!error) setContasPagar(contasPagar.filter(x => x.id !== id));
+    }
+
+    async function duplicarProduto(produto) {
+        const payload = { nome: produto.nome + ' (cópia)', texto_padrao: produto.texto_padrao, preco_base: produto.preco_base, ordem: produtos.length };
+        const { data, error } = await supabase.from('produtos').insert([payload]).select();
+        if (!error && data) { setProdutos([...produtos, data[0]]); avisar('Produto duplicado.', 'sucesso'); }
+        else avisar('Erro ao duplicar produto: ' + (error?.message || 'erro desconhecido'), 'erro');
+    }
+
+    async function duplicarFornecedor(fornecedor) {
+        const payload = { nome: fornecedor.nome + ' (cópia)', contato: fornecedor.contato, observacoes: fornecedor.observacoes, tipo: fornecedor.tipo };
+        const { data, error } = await supabase.from('fornecedores').insert([payload]).select();
+        if (!error && data) { setFornecedores([...fornecedores, data[0]]); avisar('Fornecedor duplicado.', 'sucesso'); }
+        else avisar('Erro ao duplicar fornecedor: ' + (error?.message || 'erro desconhecido'), 'erro');
+    }
+
+    // Duplica uma conta a pagar como um lançamento novo e independente — nunca
+    // como recorrente (evitaria criar um encadeamento de parcelas indesejado).
+    async function duplicarConta(conta) {
+        const payload = {
+            descricao: conta.descricao,
+            valor: conta.valor,
+            vencimento: conta.vencimento,
+            status: 'Pendente',
+            recorrente: false,
+            recorrente_total_parcelas: null,
+            recorrente_parcela_atual: 1,
+            categoria: conta.categoria || 'Despesa',
+            fornecedor_id: conta.fornecedor_id || null,
+        };
+        const { data, error } = await supabase.from('contas_pagar').insert([payload]).select();
+        if (!error && data) { setContasPagar(prev => [...prev, data[0]]); avisar('Conta duplicada.', 'sucesso'); }
+        else avisar('Erro ao duplicar conta: ' + (error?.message || 'erro desconhecido'), 'erro');
     }
 
     async function handleDragStartProduto(e, index) {
@@ -1867,6 +1946,9 @@ export const AppProvider = ({ children }) => {
         pendingConfirm,
         confirmar,
         resolverConfirm,
+        contextMenu,
+        abrirContextMenu,
+        fecharContextMenu,
         modalAlertasAberto,
         setModalAlertasAberto,
         chatAberto,
@@ -1989,6 +2071,11 @@ export const AppProvider = ({ children }) => {
         excluirProduto,
         handleDragStartProduto,
         handleDropProduto,
+        imprimirOS,
+        duplicarOS,
+        duplicarConta,
+        duplicarProduto,
+        duplicarFornecedor,
         salvarCliente,
         salvarNotaFiscal,
         concluirNotaFiscal,
