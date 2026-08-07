@@ -215,6 +215,7 @@ export default function CadastrosTab() {
                                     <tr className="border-b border-gray-200 dark:border-darkBorder text-[13px] font-semibold text-gray-500 dark:text-gray-400 tracking-wide uppercase">
                                         <th className="px-6 py-4 w-24">ID</th>
                                         <th className="px-6 py-4">Nome do Fornecedor / Local</th>
+                                        <th className="px-6 py-4">Tipo</th>
                                         <th className="px-6 py-4">Contato</th>
                                         <th className="px-6 py-4">Observações</th>
                                         <th className="px-6 py-4 w-24 text-center">Ações</th>
@@ -223,7 +224,7 @@ export default function CadastrosTab() {
                                 <tbody>
                                     {fornecedores.length === 0 ? (
                                         <tr>
-                                            <td colSpan="5" className="px-6 py-12 text-center text-[13px] text-gray-400 dark:text-gray-500">
+                                            <td colSpan="6" className="px-6 py-12 text-center text-[13px] text-gray-400 dark:text-gray-500">
                                                 Nenhum fornecedor cadastrado.
                                             </td>
                                         </tr>
@@ -233,7 +234,7 @@ export default function CadastrosTab() {
                                                 { label: 'Editar', icon: 'edit-3', onClick: () => { setNovoFornecedor({...f, observacoes: f.observacoes || ''}); setModalFornecedorAberto(true); } },
                                                 { label: 'Duplicar', icon: 'layers', onClick: () => duplicarFornecedor(f) },
                                                 { label: 'Copiar linha', icon: 'copy', onClick: () => {
-                                                    navigator.clipboard.writeText([`#${f.id}`, f.nome, f.contato || '', f.observacoes || ''].join('\t'));
+                                                    navigator.clipboard.writeText([`#${f.id}`, f.nome, f.tipo || '', f.contato || '', f.observacoes || ''].join('\t'));
                                                     avisar('Linha copiada!', 'sucesso');
                                                 }},
                                                 { label: 'Excluir', icon: 'trash-2', tom: 'perigo', divisorAntes: true, onClick: async () => {
@@ -245,6 +246,11 @@ export default function CadastrosTab() {
                                             ])} className="border-b border-gray-100 dark:border-darkBorder/50 hover:bg-gray-50/50 dark:hover:bg-darkHover/50 transition cursor-pointer">
                                                 <td className="px-6 py-4 text-[13px] font-semibold text-gray-900 dark:text-gray-300">#{f.id}</td>
                                                 <td className="px-6 py-4 text-[13px] font-medium text-gray-800 dark:text-white">{f.nome}</td>
+                                                <td className="px-6 py-4">
+                                                    <span className={`px-2 py-1 rounded text-[11px] font-bold ${f.tipo === 'Material' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' : f.tipo === 'Manutenção' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' : 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'}`}>
+                                                        {f.tipo || 'Terceirização'}
+                                                    </span>
+                                                </td>
                                                 <td className="px-6 py-4 text-[13px] text-gray-600 dark:text-gray-400">{f.contato || '-'}</td>
                                                 <td className="px-6 py-4 text-[13px] text-gray-600 dark:text-gray-400">{f.observacoes || '-'}</td>
                                                 <td className="px-6 py-4 text-center">
