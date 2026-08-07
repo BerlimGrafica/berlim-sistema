@@ -7,7 +7,7 @@ import { formatarMoeda, mascararCliente, centavosParaReais } from '@/lib/utils/f
 
 
 export default function Notas_fiscaisTab() {
-    const { notasFiscais, usuario, isDemo, filtroNotas, setFiltroNotas, buscaNotaFiscal, setBuscaNotaFiscal, setPaginaNotasFiscais, notasFiscaisPaginadas, setNotaFiscalEmEdicao, setModalNotaFiscalAberto, totalPaginasNotasFiscais, paginaNotasFiscais, concluirNotaFiscal, reabrirNotaFiscal, excluirNotaFiscal, abrirContextMenu, avisar } = useAppContext();
+    const { notasFiscais, usuario, isDemo, filtroNotas, setFiltroNotas, buscaNotaFiscal, setBuscaNotaFiscal, setPaginaNotasFiscais, notasFiscaisPaginadas, setNotaFiscalEmEdicao, setModalNotaFiscalAberto, totalPaginasNotasFiscais, paginaNotasFiscais, concluirNotaFiscal, duplicarNotaFiscal, reabrirNotaFiscal, excluirNotaFiscal, abrirContextMenu, avisar } = useAppContext();
 
     const abrirEdicaoNota = (n) => {
         setNotaFiscalEmEdicao({ ...n, valor_pago: n.valor_pago ? formatarMoeda(Math.round(n.valor_pago).toString()) : '' });
@@ -16,6 +16,7 @@ export default function Notas_fiscaisTab() {
 
     const montarItensContexto = (n) => [
         { label: 'Editar', icon: 'edit-3', onClick: () => abrirEdicaoNota(n) },
+        { label: 'Duplicar', icon: 'layers', onClick: () => duplicarNotaFiscal(n) },
         ...(!n.concluido && (usuario?.nivel === 'Administrador' || usuario?.nivel === 'Financeiro') ? [{ label: 'Concluir Nota', icon: 'check-circle', onClick: () => concluirNotaFiscal(n.id) }] : []),
         ...(n.concluido ? [{ label: 'Gerar Nova Nota (Duplicar)', icon: 'rotate-ccw', onClick: () => reabrirNotaFiscal(n) }] : []),
         { label: 'Copiar linha', icon: 'copy', onClick: () => {

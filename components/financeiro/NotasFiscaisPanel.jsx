@@ -7,7 +7,7 @@ import { formatarMoeda, centavosParaReais, mascararCliente } from '@/lib/utils/f
 export default function NotasFiscaisPanel() {
     const {
         notasFiscaisPaginadas, setNotaFiscalEmEdicao, setModalNotaFiscalAberto, isDemo, usuario,
-        concluirNotaFiscal, reabrirNotaFiscal, excluirNotaFiscal,
+        concluirNotaFiscal, duplicarNotaFiscal, reabrirNotaFiscal, excluirNotaFiscal,
         totalPaginasNotasFiscais, paginaNotasFiscais, setPaginaNotasFiscais,
         abrirContextMenu, avisar,
     } = useAppContext();
@@ -19,6 +19,7 @@ export default function NotasFiscaisPanel() {
 
     const montarItensContexto = (n) => [
         { label: 'Editar', icon: 'edit-3', onClick: () => abrirEdicaoNota(n) },
+        { label: 'Duplicar', icon: 'layers', onClick: () => duplicarNotaFiscal(n) },
         ...(!n.concluido && (usuario?.nivel === 'Administrador' || usuario?.nivel === 'Financeiro') ? [{ label: 'Concluir Nota', icon: 'check-circle', onClick: () => concluirNotaFiscal(n.id) }] : []),
         ...(n.concluido && (usuario?.nivel === 'Administrador' || usuario?.nivel === 'Financeiro') ? [{ label: 'Gerar Nova Nota (Duplicar)', icon: 'rotate-ccw', onClick: () => reabrirNotaFiscal(n) }] : []),
         { label: 'Copiar linha', icon: 'copy', onClick: () => {

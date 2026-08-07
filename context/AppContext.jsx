@@ -1453,6 +1453,28 @@ export const AppProvider = ({ children }) => {
         setSalvandoNotaFiscal(false);
     }
 
+    async function duplicarNotaFiscal(nota) {
+        const payload = {
+            cliente: nota.cliente,
+            razao_social: nota.razao_social,
+            cnpj: nota.cnpj,
+            endereco: nota.endereco,
+            contato: nota.contato,
+            forma_envio: nota.forma_envio,
+            observacao_cliente: nota.observacao_cliente,
+            servico_feito: nota.servico_feito,
+            valor_pago: nota.valor_pago,
+            tipo_nota: nota.tipo_nota,
+            forma_pagamento: nota.forma_pagamento,
+            forma_transporte: nota.forma_transporte,
+            observacoes: nota.observacoes,
+            concluido: false,
+        };
+        const { data, error } = await supabase.from('notas_fiscais').insert([payload]).select();
+        if (!error && data) { setNotasFiscais(prev => [data[0], ...prev]); avisar('Nota fiscal duplicada.', 'sucesso'); }
+        else avisar('Erro ao duplicar nota fiscal: ' + (error?.message || 'erro desconhecido'), 'erro');
+    }
+
     async function concluirNotaFiscal(id) {
         if (!(await confirmar('Deseja realmente marcar esta nota como concluída? Ela não aparecerá mais nesta lista.'))) return;
         const { data, error } = await supabase.from('notas_fiscais').update({ concluido: true }).eq('id', id).select();
@@ -2083,6 +2105,7 @@ export const AppProvider = ({ children }) => {
         salvarCliente,
         salvarNotaFiscal,
         concluirNotaFiscal,
+        duplicarNotaFiscal,
         reabrirNotaFiscal,
         excluirNotaFiscal,
         concluirRequisicao,
