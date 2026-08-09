@@ -318,7 +318,7 @@ export const AppProvider = ({ children }) => {
     useEffect(() => {
         if (!usuario) return;
         function aoVoltarVisivel() {
-            if (document.visibilityState === 'visible') carregarDados();
+            if (document.visibilityState === 'visible') { carregarDados(); carregarChat(); }
         }
         document.addEventListener('visibilitychange', aoVoltarVisivel);
         return () => document.removeEventListener('visibilitychange', aoVoltarVisivel);
@@ -350,7 +350,11 @@ export const AppProvider = ({ children }) => {
         amanha.setDate(amanha.getDate() + 1);
         const hojeStr = hoje.getFullYear() + '-' + String(hoje.getMonth() + 1).padStart(2, '0') + '-' + String(hoje.getDate()).padStart(2, '0');
         const amanhaStr = amanha.getFullYear() + '-' + String(amanha.getMonth() + 1).padStart(2, '0') + '-' + String(amanha.getDate()).padStart(2, '0');
-        const statusIgnorados = ['Concluída', 'Finalizada', 'Cancelada', 'Abandonada'];
+        const statusIgnorados = STATUSES_FINALIZADOS;
+        // Alerta de boleto não pode ignorar "Concluído": o serviço pode estar pronto
+        // com o boleto ainda em aberto. Só sai do radar quando a OS é encerrada de
+        // fato (Finalizado/Cancelado/Abandonado).
+        const statusIgnoradosBoleto = STATUSES_FINALIZADOS.filter(s => s !== 'Concluído');
 
         while (fetchMore) {
             const { data: batch, error } = await supabase
@@ -424,7 +428,7 @@ export const AppProvider = ({ children }) => {
                         try { pagamentos = JSON.parse(pagamentosStr); } catch(e) {}
                     }
                     return { ...p, pagamentos };
-                }).filter(p => !statusIgnorados.includes(p.status) && p.prazo_pagamento && p.pagamentos.some(pag => pag.forma === 'Boleto' && !pag.boleto_concluido));
+                }).filter(p => !statusIgnoradosBoleto.includes(p.status) && p.prazo_pagamento && p.pagamentos.some(pag => pag.forma === 'Boleto' && !pag.boleto_concluido));
 
                 if (pedidosComBoletoAberto.length > 0) {
                     let novosAlertasBoleto = [];
@@ -1449,6 +1453,28 @@ export const AppProvider = ({ children }) => {
         setSalvandoNotaFiscal(false);
     }
 
+    async function duplicarNotaFiscal(nota) {
+        const payload = {
+            cliente: nota.cliente,
+            razao_social: nota.razao_social,
+            cnpj: nota.cnpj,
+            endereco: nota.endereco,
+            contato: nota.contato,
+            forma_envio: nota.forma_envio,
+            observacao_cliente: nota.observacao_cliente,
+            servico_feito: nota.servico_feito,
+            valor_pago: nota.valor_pago,
+            tipo_nota: nota.tipo_nota,
+            forma_pagamento: nota.forma_pagamento,
+            forma_transporte: nota.forma_transporte,
+            observacoes: nota.observacoes,
+            concluido: false,
+        };
+        const { data, error } = await supabase.from('notas_fiscais').insert([payload]).select();
+        if (!error && data) { setNotasFiscais(prev => [data[0], ...prev]); avisar('Nota fiscal duplicada.', 'sucesso'); }
+        else avisar('Erro ao duplicar nota fiscal: ' + (error?.message || 'erro desconhecido'), 'erro');
+    }
+
     async function concluirNotaFiscal(id) {
         if (!(await confirmar('Deseja realmente marcar esta nota como concluída? Ela não aparecerá mais nesta lista.'))) return;
         const { data, error } = await supabase.from('notas_fiscais').update({ concluido: true }).eq('id', id).select();
@@ -2079,6 +2105,7 @@ export const AppProvider = ({ children }) => {
         salvarCliente,
         salvarNotaFiscal,
         concluirNotaFiscal,
+        duplicarNotaFiscal,
         reabrirNotaFiscal,
         excluirNotaFiscal,
         concluirRequisicao,

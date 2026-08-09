@@ -7,9 +7,28 @@ import { formatarMoeda, centavosParaReais, mascararCliente } from '@/lib/utils/f
 export default function NotasFiscaisPanel() {
     const {
         notasFiscaisPaginadas, setNotaFiscalEmEdicao, setModalNotaFiscalAberto, isDemo, usuario,
-        concluirNotaFiscal, reabrirNotaFiscal, excluirNotaFiscal,
+        concluirNotaFiscal, duplicarNotaFiscal, reabrirNotaFiscal, excluirNotaFiscal,
         totalPaginasNotasFiscais, paginaNotasFiscais, setPaginaNotasFiscais,
+        abrirContextMenu, avisar,
     } = useAppContext();
+
+    const abrirEdicaoNota = (n) => {
+        setNotaFiscalEmEdicao({ ...n, valor_pago: n.valor_pago ? formatarMoeda(Math.round(n.valor_pago).toString()) : '' });
+        setModalNotaFiscalAberto(true);
+    };
+
+    const montarItensContexto = (n) => [
+        { label: 'Editar', icon: 'edit-3', onClick: () => abrirEdicaoNota(n) },
+        { label: 'Duplicar', icon: 'layers', onClick: () => duplicarNotaFiscal(n) },
+        ...(!n.concluido && (usuario?.nivel === 'Administrador' || usuario?.nivel === 'Financeiro') ? [{ label: 'Concluir Nota', icon: 'check-circle', onClick: () => concluirNotaFiscal(n.id) }] : []),
+        ...(n.concluido && (usuario?.nivel === 'Administrador' || usuario?.nivel === 'Financeiro') ? [{ label: 'Gerar Nova Nota (Duplicar)', icon: 'rotate-ccw', onClick: () => reabrirNotaFiscal(n) }] : []),
+        { label: 'Copiar linha', icon: 'copy', onClick: () => {
+            const linha = [mascararCliente(n.cliente, isDemo) || n.razao_social || '', n.cnpj || '', n.contato || '', n.tipo_nota || '', n.servico_feito || ''].join('\t');
+            navigator.clipboard.writeText(linha);
+            avisar('Linha copiada!', 'sucesso');
+        }},
+        ...(usuario?.nivel === 'Administrador' ? [{ label: 'Excluir', icon: 'trash-2', tom: 'perigo', divisorAntes: true, onClick: () => excluirNotaFiscal(n.id) }] : []),
+    ];
 
     return (
         <div>
@@ -30,13 +49,7 @@ export default function NotasFiscaisPanel() {
                         </thead>
                         <tbody>
                             {notasFiscaisPaginadas.map(n => (
-                                <tr key={n.id} onClick={() => {
-                                    setNotaFiscalEmEdicao({
-                                        ...n,
-                                        valor_pago: n.valor_pago ? formatarMoeda(Math.round(n.valor_pago).toString()) : ''
-                                    });
-                                    setModalNotaFiscalAberto(true);
-                                }} className="border-b border-gray-100 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover transition cursor-pointer">
+                                <tr key={n.id} onClick={() => abrirEdicaoNota(n)} onContextMenu={(e) => abrirContextMenu(e, montarItensContexto(n))} className="border-b border-gray-100 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover transition cursor-pointer">
                                     <td className="px-4 py-3 text-[13px] dark:text-[#EDEDED] whitespace-nowrap">{new Date(n.created_at).toLocaleDateString('pt-BR')}</td>
                                     <td className="px-4 py-3">
                                         <div className="text-[13px] font-semibold dark:text-[#EDEDED]">{mascararCliente(n.cliente, isDemo) || 'Sem Identificação'}</div>

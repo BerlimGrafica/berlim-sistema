@@ -56,8 +56,11 @@ export default function ContasAPagarPanel({ mostrarContasPagas, dataInicio, data
         if (conta.status === 'Pago') {
             return { label: 'Pago', cor: 'bg-emerald-50 border-emerald-200 text-emerald-600 dark:bg-emerald-900/20 dark:border-emerald-800/50 dark:text-emerald-400' };
         }
-        if (conta.vencimento && conta.vencimento <= hojeStr) {
+        if (conta.vencimento && conta.vencimento < hojeStr) {
             return { label: 'Vencido', cor: 'bg-red-50 border-red-200 text-red-600 dark:bg-red-900/20 dark:border-red-800/50 dark:text-red-400' };
+        }
+        if (conta.vencimento === hojeStr) {
+            return { label: 'Vence hoje', cor: 'bg-amber-50 border-amber-200 text-amber-600 dark:bg-amber-900/20 dark:border-amber-800/50 dark:text-amber-400' };
         }
         if (conta.vencimento === amanhaStr) {
             return { label: 'Vence amanhã', cor: 'bg-amber-50 border-amber-200 text-amber-600 dark:bg-amber-900/20 dark:border-amber-800/50 dark:text-amber-400' };
@@ -68,7 +71,7 @@ export default function ContasAPagarPanel({ mostrarContasPagas, dataInicio, data
     const obterCorBordaVencimento = (conta) => {
         const { label } = obterStatusPagamento(conta);
         if (label === 'Vencido') return 'border-red-500 dark:border-red-500';
-        if (label === 'Vence amanhã') return 'border-amber-500 dark:border-amber-400';
+        if (label === 'Vence hoje' || label === 'Vence amanhã') return 'border-amber-500 dark:border-amber-400';
         if (label === 'Pago') return 'border-emerald-500 dark:border-emerald-500';
         return 'border-transparent';
     };

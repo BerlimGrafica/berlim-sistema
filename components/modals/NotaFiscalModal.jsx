@@ -28,12 +28,10 @@ export default function NotaFiscalModal() {
                             <div><label className="text-[11px] text-gray-500 dark:text-[#A1A1AA]">Endereço</label><div className="flex items-center gap-2"><div className="text-[13px] dark:text-[#EDEDED] font-medium truncate">{notaFiscalEmEdicao.endereco || '---'}</div>{notaFiscalEmEdicao.endereco && <Tooltip label="Copiar"><button type="button" onClick={() => navigator.clipboard.writeText(notaFiscalEmEdicao.endereco)} aria-label="Copiar" className="text-gray-400 hover:text-brand transition shrink-0"><Icon name="copy" className="w-3.5 h-3.5" /></button></Tooltip>}</div></div>
                             <div><label className="text-[11px] text-gray-500 dark:text-[#A1A1AA]">Contato ({notaFiscalEmEdicao.forma_envio || 'Whatsapp'})</label><div className="flex items-center gap-1.5"><Icon name={notaFiscalEmEdicao.forma_envio === 'E-mail' ? 'mail' : 'phone'} className="w-3.5 h-3.5 text-gray-400 shrink-0" /><div className="text-[13px] dark:text-[#EDEDED] font-medium truncate">{notaFiscalEmEdicao.contato || '---'}</div></div></div>
                         </div>
-                        {notaFiscalEmEdicao.observacao_cliente && (
-                            <div className="mt-4 pt-4 border-t border-gray-100 dark:border-darkBorder">
-                                <label className="text-[11px] text-gray-500 dark:text-[#A1A1AA]">Observação do Cliente</label>
-                                <div className="text-[13px] dark:text-[#EDEDED] font-medium mt-0.5">{notaFiscalEmEdicao.observacao_cliente}</div>
-                            </div>
-                        )}
+                        <div className="mt-4 pt-4 border-t border-gray-100 dark:border-darkBorder">
+                            <label className="text-[11px] text-gray-500 dark:text-[#A1A1AA]">Observação do Cliente</label>
+                            <div className="flex items-center gap-2"><div className="text-[13px] dark:text-[#EDEDED] font-medium">{notaFiscalEmEdicao.observacao_cliente || '---'}</div>{notaFiscalEmEdicao.observacao_cliente && <Tooltip label="Copiar"><button type="button" onClick={() => navigator.clipboard.writeText(notaFiscalEmEdicao.observacao_cliente)} aria-label="Copiar" className="text-gray-400 hover:text-brand transition shrink-0"><Icon name="copy" className="w-3.5 h-3.5" /></button></Tooltip>}</div>
+                        </div>
                     </div>
                     <form id="formNota" onSubmit={salvarNotaFiscal} className="space-y-4">
                         <div className="flex items-center gap-2">
