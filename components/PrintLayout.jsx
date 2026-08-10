@@ -119,7 +119,7 @@ export default function PrintLayout() {
                                             <div className="text-[11px] text-gray-800">
                                                 {desc.pagamentos.map((pag, idx) => (
                                                     <div key={idx} className="flex justify-between items-center border-b border-dashed border-gray-200 py-0.5 last:border-0">
-                                                        <span>{pag.forma} {pag.parcelas > 1 ? `(${pag.parcelas}x)` : ''} {pag.instituicao ? `(${pag.instituicao})` : ''} <span className="text-[10px] text-gray-500">({pag.data})</span></span>
+                                                        <span>{pag.forma} {pag.parcelas > 1 ? `(${pag.parcelas}x)` : ''} {(pag.instituicao || pag.bandeira) ? `(${pag.instituicao || pag.bandeira})` : ''} <span className="text-[10px] text-gray-500">({formatarDataExibicao(pag.data)})</span></span>
                                                         <span className="font-semibold text-gray-900">R$ {pag.valor}</span>
                                                     </div>
                                                 ))}

@@ -176,7 +176,7 @@ export const AppProvider = ({ children }) => {
     const [produtoDropdownAberto, setProdutoDropdownAberto] = useState(false);
 
     const [pagamentosPedido, setPagamentosPedido] = useState([]);
-    const [novoPagamento, setNovoPagamento] = useState({ valor: '', forma: 'PIX', parcelas: 1, instituicao: 'Itaú', data: obterDataAtual() });
+    const [novoPagamento, setNovoPagamento] = useState({ valor: '', forma: 'PIX', parcelas: 1, instituicao: 'Itaú', bandeira: '', data: obterDataAtual() });
 
     const [novoPedido, setNovoPedido] = useState({ 
         cliente: '', servico: '', valor_total: '', 

@@ -95,7 +95,14 @@ export function CustomSelect({ value, options, onChange, className, placeholder 
                 onClick={toggleDropdown}
                 className={`flex items-center justify-between ${className} ${isOpen ? 'border-brand ring-1 ring-brand/20' : ''} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
-                <span className="truncate" title={selected ? selected.label : ''}>{selected ? selected.label : placeholder}</span>
+                {selected?.icon ? (
+                    <span className="flex items-center gap-1.5 min-w-0" title={selected.label}>
+                        {selected.icon}
+                        <span className="truncate">{selected.label}</span>
+                    </span>
+                ) : (
+                    <span className="truncate" title={selected ? selected.label : ''}>{selected ? selected.label : placeholder}</span>
+                )}
                 <Icon name="chevron-down" className={`w-4 h-4 text-gray-400 shrink-0 ml-1 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
             </div>
             {isOpen && !disabled && typeof document !== 'undefined' && createPortal(
@@ -108,7 +115,14 @@ export function CustomSelect({ value, options, onChange, className, placeholder 
                                 onClick={(e) => { e.stopPropagation(); onChange(opt.value); setIsOpen(false); }}
                                 className={`px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-darkHover cursor-pointer border-b border-gray-100 dark:border-darkBorder last:border-0 transition font-medium flex items-center justify-between gap-2 ${value === opt.value ? 'bg-brand/5 dark:bg-brand/10 text-brand' : 'text-gray-700 dark:text-[#EDEDED]'}`}
                             >
-                                <span className="truncate" title={opt.label}>{opt.label}</span>
+                                {opt.icon ? (
+                                    <span className="flex items-center gap-1.5 min-w-0" title={opt.label}>
+                                        {opt.icon}
+                                        <span className="truncate">{opt.label}</span>
+                                    </span>
+                                ) : (
+                                    <span className="truncate" title={opt.label}>{opt.label}</span>
+                                )}
                                 {value === opt.value && <Icon name="check" className="w-3.5 h-3.5 shrink-0" />}
                             </li>
                         ))}

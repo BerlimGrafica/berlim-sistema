@@ -3,11 +3,14 @@ import { useState } from "react";
 import { useAppContext } from "@/context/AppContext";
 import Icon from "@/components/Icon";
 import Tooltip from "@/components/Tooltip";
-import { formatarValorFinanceiro, formatarMoeda, parseValorMoeda, centavosParaReais, obterDataAtual, mascararCliente } from '@/lib/utils/formatters';
+import { formatarValorFinanceiro, formatarMoeda, parseValorMoeda, centavosParaReais, obterDataAtual, mascararCliente, formatarDataExibicao } from '@/lib/utils/formatters';
 import { CustomDatePicker } from '@/components/ui/DatePicker';
 import { CustomSelect, MultiSelectDropdown } from '@/components/ui/Dropdown';
 import { ChipNome } from '@/components/ui/ChipNome';
+import { BandeiraIcon } from '@/components/ui/BandeiraIcon';
 import { useFecharAoClicarFora } from '@/components/modals/useFecharAoClicarFora';
+
+const OPCOES_BANDEIRA = ['Visa', 'MasterCard', 'Elo', 'American Express', 'HiperCard', 'Maestro', 'RedeShop'].map(b => ({ value: b, label: b, icon: <BandeiraIcon nome={b} /> }));
 
 export default function OSModal() {
     const { modalAberto, fecharModalOS, pedidoEmEdicao, isModalTrancado, novoPedido, setNovoPedido, opcoesStatusPermitidas, buscaCliente, setBuscaCliente, clienteSelecionadoInfo, setClienteSelecionadoInfo, isDemo, setClienteDropdownAberto, clienteDropdownAberto, clientesFiltrados, setNovoCliente, setModalClienteAberto, isClienteProblema, itensPedido, buscaProduto, setBuscaProduto, setProdutoDropdownAberto, produtoDropdownAberto, produtosFiltrados, setItemAtual, itemAtual, isAdmin, setNovoProduto, setModalProdutoAberto, fornecedores, pagamentosPedido, setPagamentosPedido, novoPagamento, setNovoPagamento, salvandoOS, usuario, salvarOS, removerItemDoCarrinho, adicionarItemAoCarrinho, salvarEdicaoItemCarrinho, usuariosSistema, atualizarCatalogoProdutos, avisar, confirmar } = useAppContext();
@@ -31,9 +34,22 @@ export default function OSModal() {
 
     const camposExtrasPagamento = (forma) => {
         const mostrarInstituicao = forma === 'PIX' || forma === 'Link de Pagamento';
+        const mostrarBandeira = forma === 'Cartão de Crédito' || forma === 'Cartão de Débito';
         const mostrarParcelas = forma === 'Cartão de Crédito' || forma === 'Link de Pagamento';
-        const total = 1 + (mostrarInstituicao ? 1 : 0) + (mostrarParcelas ? 1 : 0);
-        return { mostrarInstituicao, mostrarParcelas, gridClass: total === 3 ? 'grid-cols-3' : total === 2 ? 'grid-cols-2' : 'grid-cols-1' };
+        const total = 1 + (mostrarInstituicao ? 1 : 0) + (mostrarBandeira ? 1 : 0) + (mostrarParcelas ? 1 : 0);
+        return { mostrarInstituicao, mostrarBandeira, mostrarParcelas, gridClass: total === 3 ? 'grid-cols-3' : total === 2 ? 'grid-cols-2' : 'grid-cols-1' };
+    };
+
+    // Ao trocar a forma de pagamento, limpa instituição/bandeira que não se
+    // aplicam mais — evita que um valor antigo (ex: "Itaú" de um PIX anterior)
+    // fique salvo escondido e apareça como badge errado num cartão depois.
+    const camposParaNovaForma = (novaForma, atual) => {
+        const mostrarInstituicao = novaForma === 'PIX' || novaForma === 'Link de Pagamento';
+        const mostrarBandeira = novaForma === 'Cartão de Crédito' || novaForma === 'Cartão de Débito';
+        return {
+            instituicao: mostrarInstituicao ? (atual.instituicao || 'Itaú') : '',
+            bandeira: mostrarBandeira ? (atual.bandeira || 'Visa') : '',
+        };
     };
 
     const fecharAoClicarFora = useFecharAoClicarFora();
@@ -264,7 +280,7 @@ export default function OSModal() {
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 bg-white dark:bg-darkCard px-2.5 py-1 rounded-full shadow-sm">Pago: R$ {formatarValorFinanceiro(totalPago)}</span>
-                                        <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full shadow-sm bg-white dark:bg-darkCard ${saldo > 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-400'}`}>Saldo: R$ {formatarValorFinanceiro(saldo)}</span>
+                                        <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full shadow-sm bg-white dark:bg-darkCard ${saldo > 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-400'}`}>{saldo > 0 ? 'Saldo Devedor' : 'Saldo'}: R$ {formatarValorFinanceiro(saldo)}</span>
                                     </div>
                                 </div>
                                 <div className="p-5 flex flex-col gap-4">
@@ -276,7 +292,7 @@ export default function OSModal() {
                                                         <div className="grid grid-cols-2 gap-2">
                                                             <CustomSelect
                                                                 value={pagamentoEditando.forma}
-                                                                onChange={(val) => setPagamentoEditando({...pagamentoEditando, forma: val})}
+                                                                onChange={(val) => setPagamentoEditando({...pagamentoEditando, forma: val, ...camposParaNovaForma(val, pagamentoEditando)})}
                                                                 className="bg-white dark:bg-darkCard border border-gray-300 dark:border-darkBorder rounded px-2 py-1.5 text-[11px] outline-none"
                                                                 options={[
                                                                     { value: 'PIX', label: 'PIX' },
@@ -293,7 +309,7 @@ export default function OSModal() {
                                                             </div>
                                                         </div>
                                                         {(() => {
-                                                            const { mostrarInstituicao, mostrarParcelas, gridClass } = camposExtrasPagamento(pagamentoEditando.forma);
+                                                            const { mostrarInstituicao, mostrarBandeira, mostrarParcelas, gridClass } = camposExtrasPagamento(pagamentoEditando.forma);
                                                             return (
                                                                 <div className={`grid ${gridClass} gap-2`}>
                                                                     <CustomDatePicker
@@ -312,6 +328,14 @@ export default function OSModal() {
                                                                                 { value: 'Infinite Pay', label: 'Infinite Pay' },
                                                                                 { value: 'Pag Seguro', label: 'Pag Seguro' },
                                                                             ]}
+                                                                        />
+                                                                    )}
+                                                                    {mostrarBandeira && (
+                                                                        <CustomSelect
+                                                                            value={pagamentoEditando.bandeira}
+                                                                            onChange={(val) => setPagamentoEditando({...pagamentoEditando, bandeira: val})}
+                                                                            className="w-full bg-white dark:bg-darkCard border border-gray-300 dark:border-darkBorder rounded px-2 py-1.5 text-[11px] outline-none"
+                                                                            options={OPCOES_BANDEIRA}
                                                                         />
                                                                     )}
                                                                     {mostrarParcelas && (
@@ -336,7 +360,7 @@ export default function OSModal() {
                                                         </div>
                                                     </div>
                                                 ) : (
-                                                <div key={idx} onClick={() => { if (isModalTrancado) return; setPagamentoEditandoIdx(idx); setPagamentoEditando({ forma: 'PIX', parcelas: 1, instituicao: 'Itaú', data: obterDataAtual(), ...pag }); }} className={`flex justify-between items-center gap-3 bg-white dark:bg-darkElevated px-3.5 py-3 rounded-lg border border-gray-200 dark:border-darkBorder shadow-sm transition ${!isModalTrancado ? 'cursor-pointer hover:border-brand/60' : ''}`}>
+                                                <div key={idx} onClick={() => { if (isModalTrancado) return; setPagamentoEditandoIdx(idx); setPagamentoEditando({ forma: 'PIX', parcelas: 1, instituicao: 'Itaú', bandeira: 'Visa', data: obterDataAtual(), ...pag }); }} className={`flex justify-between items-center gap-3 bg-white dark:bg-darkElevated px-3.5 py-3 rounded-lg border border-gray-200 dark:border-darkBorder shadow-sm transition ${!isModalTrancado ? 'cursor-pointer hover:border-brand/60' : ''}`}>
                                                     <div className="flex items-center gap-3 min-w-0">
                                                         <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${coresFormaPagamento[pag.forma] || 'bg-gray-400'}`}></span>
                                                         <div className="flex flex-col min-w-0">
@@ -344,13 +368,13 @@ export default function OSModal() {
                                                             {pag.vencimento_boleto && (
                                                                 <span className="text-[11px] text-orange-500 font-semibold">Vencimento: {pag.vencimento_boleto.split('-').reverse().join('/')}</span>
                                                             )}
-                                                            <span className="text-[11px] text-gray-500 dark:text-[#A1A1AA]">{pag.data}</span>
+                                                            <span className="text-[11px] text-gray-500 dark:text-[#A1A1AA]">{formatarDataExibicao(pag.data)}</span>
                                                         </div>
                                                     </div>
                                                     <div className="flex items-center gap-3 shrink-0">
                                                         <div className="flex flex-col items-end">
                                                             <span className="font-bold text-[13px] text-emerald-600 dark:text-emerald-400">R$ {pag.valor}</span>
-                                                            {pag.instituicao && <span className="mt-1.5"><ChipNome nome={pag.instituicao} /></span>}
+                                                            {(pag.instituicao || pag.bandeira) && <span className="mt-1.5"><ChipNome nome={pag.instituicao || pag.bandeira} /></span>}
                                                         </div>
                                                         {!isModalTrancado && (
                                                             <button type="button" onClick={(e) => {
@@ -377,7 +401,7 @@ export default function OSModal() {
                                             <div className="grid grid-cols-2 gap-2">
                                                 <CustomSelect
                                                     value={novoPagamento.forma}
-                                                    onChange={(val) => setNovoPagamento({...novoPagamento, forma: val})}
+                                                    onChange={(val) => setNovoPagamento({...novoPagamento, forma: val, ...camposParaNovaForma(val, novoPagamento)})}
                                                     className="bg-white dark:bg-darkCard border border-gray-300 dark:border-darkBorder rounded px-2 py-1.5 text-[11px] outline-none"
                                                     options={[
                                                         { value: 'PIX', label: 'PIX' },
@@ -394,7 +418,7 @@ export default function OSModal() {
                                                 </div>
                                             </div>
                                             {(() => {
-                                                const { mostrarInstituicao, mostrarParcelas, gridClass } = camposExtrasPagamento(novoPagamento.forma);
+                                                const { mostrarInstituicao, mostrarBandeira, mostrarParcelas, gridClass } = camposExtrasPagamento(novoPagamento.forma);
                                                 return (
                                                     <div className={`grid ${gridClass} gap-2`}>
                                                         <CustomDatePicker
@@ -413,6 +437,14 @@ export default function OSModal() {
                                                                     { value: 'Infinite Pay', label: 'Infinite Pay' },
                                                                     { value: 'Pag Seguro', label: 'Pag Seguro' },
                                                                 ]}
+                                                            />
+                                                        )}
+                                                        {mostrarBandeira && (
+                                                            <CustomSelect
+                                                                value={novoPagamento.bandeira}
+                                                                onChange={(val) => setNovoPagamento({...novoPagamento, bandeira: val})}
+                                                                className="w-full bg-white dark:bg-darkCard border border-gray-300 dark:border-darkBorder rounded px-2 py-1.5 text-[11px] outline-none"
+                                                                options={OPCOES_BANDEIRA}
                                                             />
                                                         )}
                                                         {mostrarParcelas && (
@@ -435,7 +467,7 @@ export default function OSModal() {
                                                 const totalOSStr = parseValorMoeda(novoPedido.valor_total);
                                                 const saldoRestante = totalOSStr - novoTotalPago;
 
-                                                setNovoPagamento({ valor: saldoRestante > 0 ? formatarMoeda((saldoRestante * 100).toFixed(0).toString()) : '', forma: 'PIX', parcelas: 1, instituicao: 'Itaú', data: obterDataAtual() });
+                                                setNovoPagamento({ valor: saldoRestante > 0 ? formatarMoeda((saldoRestante * 100).toFixed(0).toString()) : '', forma: 'PIX', parcelas: 1, instituicao: 'Itaú', bandeira: '', data: obterDataAtual() });
                                             }} className="w-full bg-brand hover:bg-brandHover text-white py-1.5 rounded text-[11px] font-semibold transition">Registrar Pagamento</button>
                                         </div>
                                     )}
