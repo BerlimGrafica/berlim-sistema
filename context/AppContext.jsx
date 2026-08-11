@@ -89,6 +89,7 @@ export const AppProvider = ({ children }) => {
     const [dataFiltroBoletosInicio, setDataFiltroBoletosInicio] = useState('');
     const [dataFiltroBoletosFim, setDataFiltroBoletosFim] = useState('');
     const [pedidosSaldoDevedor, setPedidosSaldoDevedor] = useState([]);
+    const [pedidosBoleto, setPedidosBoleto] = useState([]);
 
     // Financeiro Expandido e Alertas
     const [abaFinanceiro, setAbaFinanceiro] = useState('contas_pagar');
@@ -659,6 +660,13 @@ export const AppProvider = ({ children }) => {
         promise.then(setPedidosSaldoDevedor);
     }, [abaFinanceiro, triggerRealtime]);
 
+    // Mesmo raciocínio de buscarPedidosComSaldoDevedor: só dispara quando a
+    // aba Boletos está aberta.
+    useEffect(() => {
+        const promise = abaFinanceiro === 'boletos' ? buscarPedidosComBoleto() : Promise.resolve([]);
+        promise.then(setPedidosBoleto);
+    }, [abaFinanceiro, triggerRealtime]);
+
     useEffect(() => {
         if (pathname !== '/cadastros' || abaCadastros !== 'clientes' || !usuario) return;
 
@@ -716,6 +724,11 @@ export const AppProvider = ({ children }) => {
             }
             return p;
         }));
+        // pedidosBoleto é uma busca separada (ver buscarPedidosComBoleto) que não
+        // reflete mudanças em `pedidos` automaticamente; sincroniza aqui também
+        // (no-op quando o id não está nessa lista, ex: Prazo/CNPJ/Número editados
+        // na tela de Boletos).
+        setPedidosBoleto(prev => prev.map(p => p.id === id ? { ...p, ...payload } : p));
 
         const { error } = await supabase.from('pedidos').update(payload).eq('id', id);
         if (error) {
@@ -724,24 +737,55 @@ export const AppProvider = ({ children }) => {
         }
     }
 
-    async function concluirBoletoContasReceber(id) {
-        const pedido = pedidos.find(p => p.id === id);
+    // Aplica `patch` ao pagamento "Boleto" da OS (dentro do bloco [PAGAMENTOS]
+    // em pedidos.servico) e persiste. Usado tanto para marcar como concluído
+    // quanto para editar o valor do boleto direto na tabela de Boletos — os
+    // únicos dois campos do pagamento que essa tela manipula, e os únicos que
+    // continuam vinculados/visíveis no modal da O.S.
+    async function atualizarPagamentoBoleto(pedido, patch) {
         if (!pedido || !pedido.servico) return;
 
         const partes = pedido.servico.split('\n\n[PAGAMENTOS]\n');
         let pagamentos = [];
         try { pagamentos = JSON.parse(partes[1] || '[]'); } catch (e) { pagamentos = []; }
 
-        const pagamentosAtualizados = pagamentos.map(pag => pag.forma === 'Boleto' ? { ...pag, boleto_concluido: true } : pag);
+        const pagamentosAtualizados = pagamentos.map(pag => pag.forma === 'Boleto' ? { ...pag, ...patch } : pag);
         const novoServico = partes[0] + '\n\n[PAGAMENTOS]\n' + JSON.stringify(pagamentosAtualizados);
 
-        setPedidos(pedidos.map(p => p.id === id ? { ...p, servico: novoServico } : p));
+        setPedidos(prev => prev.map(p => p.id === pedido.id ? { ...p, servico: novoServico } : p));
+        setPedidosBoleto(prev => prev.map(p => p.id === pedido.id ? { ...p, servico: novoServico, boleto: { ...p.boleto, ...patch } } : p));
 
-        const { error } = await supabase.from('pedidos').update({ servico: novoServico }).eq('id', id);
+        const { error } = await supabase.from('pedidos').update({ servico: novoServico }).eq('id', pedido.id);
         if (error) {
-            avisar('Erro ao concluir boleto: ' + error.message, 'erro');
+            avisar('Erro ao atualizar boleto: ' + error.message, 'erro');
             carregarDados();
         }
+    }
+
+    // Ao concluir, a linha não sai mais da tabela de Boletos — só muda de
+    // Situação para "Pago" e grava a data do clique como data do pagamento
+    // (mesma data exibida no modal da O.S.).
+    async function concluirBoletoContasReceber(pedido) {
+        await atualizarPagamentoBoleto(pedido, { boleto_concluido: true, data: obterDataAtual() });
+    }
+
+    // carregarDados() só traz OS's recentes ou em produção ativa; um boleto de
+    // uma OS antiga (ou já Finalizada — boleto pago costuma levar a
+    // Finalizado) não pode ficar de fora só porque já foi pago. Busca
+    // dedicada, sem filtro de data, incluindo Finalizado de propósito.
+    async function buscarPedidosComBoleto() {
+        const { data, error } = await supabase.from('pedidos').select('*')
+            .not('status', 'in', '("Abandonado","Cancelado")')
+            .order('id', { ascending: true });
+        if (error) { console.error('Erro ao buscar boletos:', error); return []; }
+
+        return (data || [])
+            .map(p => {
+                const { pagamentos } = desconstruirTextoServico(p.servico);
+                const boleto = (pagamentos || []).find(pag => pag.forma === 'Boleto');
+                return boleto ? { ...p, boleto } : null;
+            })
+            .filter(Boolean);
     }
 
     // Busca outras OS's do mesmo cliente com saldo devedor. Não usa o array
@@ -2064,6 +2108,8 @@ export const AppProvider = ({ children }) => {
         dataFiltroBoletosFim,
         setDataFiltroBoletosFim,
         pedidosSaldoDevedor,
+        pedidosBoleto,
+        atualizarPagamentoBoleto,
         abaFinanceiro,
         setAbaFinanceiro,
         abaVendas,
