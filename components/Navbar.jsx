@@ -178,6 +178,11 @@ export default function Navbar() {
                                 <Icon name="dollar-sign" className={`w-4 h-4 shrink-0 ${pathname === '/financeiro' ? 'text-brand' : ''}`} /> Financeiro
                             </Link>
                         )}
+                        {(usuario?.nivel === 'Administrador' || usuario?.nivel === 'Financeiro') && (
+                            <Link href="/vendas" className={`px-4 py-2.5 text-[13px] font-semibold cursor-pointer transition-all duration-200 whitespace-nowrap rounded-t-lg flex items-center gap-2 tracking-wide uppercase border-t-2 ${pathname === '/vendas' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white border-brand shadow-[0_-2px_6px_rgba(0,0,0,0.08)]' : 'border-transparent text-white/85 hover:bg-white/10 hover:text-white'}`}>
+                                <Icon name="trending-up" className={`w-4 h-4 shrink-0 ${pathname === '/vendas' ? 'text-brand' : ''}`} /> Vendas
+                            </Link>
+                        )}
                         {usuario?.nivel === 'Atendimento' && (
                             <Link href="/notas-fiscais" className={`px-4 py-2.5 text-[13px] font-semibold cursor-pointer transition-all duration-200 whitespace-nowrap rounded-t-lg flex items-center gap-2 tracking-wide uppercase border-t-2 ${pathname === '/notas-fiscais' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white border-brand shadow-[0_-2px_6px_rgba(0,0,0,0.08)]' : 'border-transparent text-white/85 hover:bg-white/10 hover:text-white'}`}>
                                 <Icon name="file-text" className={`w-4 h-4 shrink-0 ${pathname === '/notas-fiscais' ? 'text-brand' : ''}`} /> Notas Fiscais

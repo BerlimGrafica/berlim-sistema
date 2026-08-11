@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { flushSync } from "react-dom";
 import { useAppContext } from "@/context/AppContext";
 import Icon from "@/components/Icon";
 import Tooltip from "@/components/Tooltip";
@@ -13,12 +14,14 @@ import { useFecharAoClicarFora } from '@/components/modals/useFecharAoClicarFora
 const OPCOES_BANDEIRA = ['Visa', 'MasterCard', 'Elo', 'American Express', 'HiperCard', 'Maestro', 'RedeShop'].map(b => ({ value: b, label: b, icon: <BandeiraIcon nome={b} /> }));
 
 export default function OSModal() {
-    const { modalAberto, fecharModalOS, pedidoEmEdicao, isModalTrancado, novoPedido, setNovoPedido, opcoesStatusPermitidas, buscaCliente, setBuscaCliente, clienteSelecionadoInfo, setClienteSelecionadoInfo, isDemo, setClienteDropdownAberto, clienteDropdownAberto, clientesFiltrados, setNovoCliente, setModalClienteAberto, isClienteProblema, itensPedido, buscaProduto, setBuscaProduto, setProdutoDropdownAberto, produtoDropdownAberto, produtosFiltrados, setItemAtual, itemAtual, isAdmin, setNovoProduto, setModalProdutoAberto, fornecedores, pagamentosPedido, setPagamentosPedido, novoPagamento, setNovoPagamento, salvandoOS, usuario, salvarOS, removerItemDoCarrinho, adicionarItemAoCarrinho, salvarEdicaoItemCarrinho, usuariosSistema, atualizarCatalogoProdutos, avisar, confirmar } = useAppContext();
+    const { modalAberto, fecharModalOS, pedidoEmEdicao, isModalTrancado, novoPedido, setNovoPedido, opcoesStatusPermitidas, buscaCliente, setBuscaCliente, clienteSelecionadoInfo, setClienteSelecionadoInfo, isDemo, setClienteDropdownAberto, clienteDropdownAberto, clientesFiltrados, setNovoCliente, setModalClienteAberto, isClienteProblema, itensPedido, buscaProduto, setBuscaProduto, setProdutoDropdownAberto, produtoDropdownAberto, produtosFiltrados, setItemAtual, itemAtual, isAdmin, setNovoProduto, setModalProdutoAberto, fornecedores, pagamentosPedido, setPagamentosPedido, novoPagamento, setNovoPagamento, outrasOSAbertas, registrarPagamentoLoteOutrasOS, salvandoOS, usuario, salvarOS, removerItemDoCarrinho, adicionarItemAoCarrinho, salvarEdicaoItemCarrinho, usuariosSistema, atualizarCatalogoProdutos, avisar, confirmar } = useAppContext();
     const nomesResponsaveis = usuariosSistema.filter(u => u.nivel !== 'demo').map(u => u.nome);
 
     const [pagamentoEditandoIdx, setPagamentoEditandoIdx] = useState(null);
     const [pagamentoEditando, setPagamentoEditando] = useState(null);
     const [itemEditandoId, setItemEditandoId] = useState(null);
+    const [osLoteSelecionadas, setOsLoteSelecionadas] = useState({}); // { [pedidoId]: true }
+    const [alocacoesLote, setAlocacoesLote] = useState({});           // { [pedidoId]: '150,00' }
 
     // Limpa a edição de pagamento/item ao fechar o modal, ajustado durante a
     // renderização (em vez de num useEffect) para não disparar um commit extra.
@@ -29,6 +32,8 @@ export default function OSModal() {
             setPagamentoEditandoIdx(null);
             setPagamentoEditando(null);
             setItemEditandoId(null);
+            setOsLoteSelecionadas({});
+            setAlocacoesLote({});
         }
     }
 
@@ -50,6 +55,23 @@ export default function OSModal() {
             instituicao: mostrarInstituicao ? (atual.instituicao || 'Itaú') : '',
             bandeira: mostrarBandeira ? (atual.bandeira || 'Visa') : '',
         };
+    };
+
+    // Sugere a divisão de novoPagamento.valor entre a OS atual e as outras
+    // marcadas, da mais antiga (id menor) pra mais nova, cada uma até o teto do
+    // próprio saldo; sobra vai inteira pra última. É só o valor INICIAL sugerido
+    // — cada linha é editável na hora.
+    const sugerirAlocacaoLote = (valorTotalStr, candidatos) => {
+        const ordenados = [...candidatos].sort((a, b) => a.id - b.id);
+        let restante = parseValorMoeda(valorTotalStr) || 0;
+        const resultado = {};
+        ordenados.forEach((os, idx) => {
+            const ehUltimo = idx === ordenados.length - 1;
+            const valor = ehUltimo ? restante : Math.max(0, Math.min(os.saldo, restante));
+            resultado[os.id] = formatarMoeda(Math.round(Math.max(0, valor) * 100).toString());
+            if (!ehUltimo) restante -= valor;
+        });
+        return resultado;
     };
 
     const fecharAoClicarFora = useFecharAoClicarFora();
@@ -122,14 +144,14 @@ export default function OSModal() {
                             <div className="flex gap-2">
                                 <div className="relative flex-1">
                                     <input required type="text" value={mascararCliente(buscaCliente, isDemo)} disabled={isModalTrancado}
-                                        onChange={e => { setBuscaCliente(e.target.value); setClienteSelecionadoInfo(null); setNovoPedido({...novoPedido, cliente: e.target.value}); setClienteDropdownAberto(true); }}
+                                        onChange={e => { setBuscaCliente(e.target.value); setClienteSelecionadoInfo(null); setNovoPedido({...novoPedido, cliente: e.target.value, cliente_id: null}); setClienteDropdownAberto(true); }}
                                         onFocus={() => { if(!isModalTrancado) setClienteDropdownAberto(true); }} onBlur={() => setTimeout(() => setClienteDropdownAberto(false), 200)}
                                         className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand transition dark:text-[#EDEDED] disabled:opacity-50" placeholder="Buscar cliente..." autoComplete="off" />
                                     <Icon name="chevron-down" className="absolute right-3 top-2.5 w-4 h-4 text-gray-400 pointer-events-none" />
                                     {clienteDropdownAberto && clientesFiltrados.length > 0 && (
                                         <ul className="absolute z-[60] w-full mt-1 max-h-48 overflow-y-auto bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded shadow-xl custom-scrollbar">
                                             {clientesFiltrados.map(c => (
-                                                <li key={c.id} onClick={() => { setBuscaCliente(c.nome); setClienteSelecionadoInfo({ id: c.id, telefone: c.telefone }); setNovoPedido({...novoPedido, cliente: c.nome}); setClienteDropdownAberto(false); }} className="px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-darkHover cursor-pointer border-b border-gray-100 dark:border-darkBorder last:border-0 flex justify-between items-center transition"><span className="font-medium text-[13px] text-gray-800 dark:text-[#EDEDED]">{c.nome}</span><span className="text-[11px] text-gray-500 dark:text-[#A1A1AA]">{c.telefone}</span></li>
+                                                <li key={c.id} onClick={() => { setBuscaCliente(c.nome); setClienteSelecionadoInfo({ id: c.id, telefone: c.telefone }); setNovoPedido({...novoPedido, cliente: c.nome, cliente_id: c.id}); setClienteDropdownAberto(false); }} className="px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-darkHover cursor-pointer border-b border-gray-100 dark:border-darkBorder last:border-0 flex justify-between items-center transition"><span className="font-medium text-[13px] text-gray-800 dark:text-[#EDEDED]">{c.nome}</span><span className="text-[11px] text-gray-500 dark:text-[#A1A1AA]">{c.telefone}</span></li>
                                             ))}
                                         </ul>
                                     )}
@@ -458,17 +480,115 @@ export default function OSModal() {
                                                     </div>
                                                 );
                                             })()}
-                                            <button type="button" onClick={() => {
-                                                if (!novoPagamento.valor) return;
-                                                setPagamentosPedido([...pagamentosPedido, { ...novoPagamento, data: novoPagamento.data || obterDataAtual() }]);
+                                            {outrasOSAbertas.length > 0 && novoPagamento.forma !== 'Boleto' && (
+                                                <div className="flex flex-col gap-2 pt-1 border-t border-dashed border-emerald-200 dark:border-emerald-500/30">
+                                                    <p className="text-[11px] font-semibold text-gray-600 dark:text-gray-300 mt-2">
+                                                        Este cliente tem {outrasOSAbertas.length} outra{outrasOSAbertas.length > 1 ? 's' : ''} OS em aberto com saldo devedor. Incluir neste pagamento?
+                                                    </p>
+                                                    <div className="flex flex-col gap-1.5">
+                                                        {outrasOSAbertas.map(os => (
+                                                            <label key={os.id} className="flex items-center justify-between gap-2 bg-white dark:bg-darkElevated px-3 py-2 rounded border border-gray-200 dark:border-darkBorder cursor-pointer hover:border-emerald-400 transition text-[12px]">
+                                                                <span className="flex items-center gap-2 min-w-0">
+                                                                    <input type="checkbox" checked={!!osLoteSelecionadas[os.id]} onChange={e => {
+                                                                        const marcado = e.target.checked;
+                                                                        const novasSelecionadas = { ...osLoteSelecionadas };
+                                                                        if (marcado) novasSelecionadas[os.id] = true; else delete novasSelecionadas[os.id];
+                                                                        setOsLoteSelecionadas(novasSelecionadas);
+                                                                        const outrasMarcadas = outrasOSAbertas.filter(o => novasSelecionadas[o.id]);
+                                                                        if (outrasMarcadas.length === 0) { setAlocacoesLote({}); return; }
+                                                                        const candidatos = [{ id: pedidoEmEdicao.id, saldo }, ...outrasMarcadas.map(o => ({ id: o.id, saldo: o.saldo }))];
+                                                                        setAlocacoesLote(sugerirAlocacaoLote(novoPagamento.valor, candidatos));
+                                                                    }} className="accent-brand w-3.5 h-3.5 shrink-0" />
+                                                                    <span className="font-semibold text-gray-800 dark:text-white shrink-0">#{os.id}</span>
+                                                                    <span className="text-gray-400 truncate">{formatarDataExibicao(os.data_pedido)}</span>
+                                                                </span>
+                                                                <span className="font-bold text-red-500 dark:text-red-400 shrink-0">R$ {formatarValorFinanceiro(os.saldo)}</span>
+                                                            </label>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+                                            {Object.keys(osLoteSelecionadas).length > 0 && (() => {
+                                                const outrasMarcadas = outrasOSAbertas.filter(os => osLoteSelecionadas[os.id]);
+                                                const somaCent = [pedidoEmEdicao.id, ...outrasMarcadas.map(os => os.id)]
+                                                    .reduce((acc, id) => acc + Math.round(parseValorMoeda(alocacoesLote[id] || '0') * 100), 0);
+                                                const totalCent = Math.round(parseValorMoeda(novoPagamento.valor) * 100);
+                                                const bate = somaCent === totalCent && totalCent > 0;
+                                                const linha = (id, rotulo, saldoOS) => {
+                                                    const valor = alocacoesLote[id] || '';
+                                                    const quita = parseValorMoeda(valor) > 0 && parseValorMoeda(valor) >= saldoOS - 0.001;
+                                                    return (
+                                                        <div key={id} className="flex items-center justify-between gap-2 text-[12px]">
+                                                            <span className="flex items-center gap-1.5 min-w-0 truncate">
+                                                                <span className="font-semibold text-gray-700 dark:text-gray-200">{rotulo}</span>
+                                                                {quita && <span className="text-emerald-600 dark:text-emerald-400 text-[10px] font-bold flex items-center gap-0.5"><Icon name="check-circle" className="w-3 h-3" /> Quita</span>}
+                                                            </span>
+                                                            <div className="relative shrink-0 w-28">
+                                                                <span className="absolute left-2 top-1.5 text-[10px] text-gray-400">R$</span>
+                                                                <input type="text" value={valor} onChange={e => setAlocacoesLote({ ...alocacoesLote, [id]: formatarMoeda(e.target.value) })}
+                                                                    className="w-full bg-white dark:bg-darkCard border border-gray-300 dark:border-darkBorder rounded pl-6 pr-2 py-1.5 text-[11px] outline-none text-right" />
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                };
+                                                return (
+                                                    <div className="flex flex-col gap-2 p-3 rounded-lg bg-white/80 dark:bg-darkElevated/60 border border-gray-200 dark:border-darkBorder">
+                                                        <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Divisão do pagamento por OS</span>
+                                                        {linha(pedidoEmEdicao.id, `OS #${pedidoEmEdicao.id} (esta)`, saldo)}
+                                                        {outrasMarcadas.map(os => linha(os.id, `OS #${os.id}`, os.saldo))}
+                                                        <div className={`text-[11px] font-semibold pt-1.5 border-t border-gray-200 dark:border-darkBorder flex justify-between ${bate ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500 dark:text-red-400'}`}>
+                                                            <span>{bate ? 'Soma confere com o valor do pagamento' : 'A soma precisa bater com o valor do pagamento'}</span>
+                                                            <span>R$ {formatarValorFinanceiro(somaCent / 100)} / R$ {formatarValorFinanceiro(totalCent / 100)}</span>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })()}
+                                            {(() => {
+                                                const outrasMarcadas = outrasOSAbertas.filter(os => osLoteSelecionadas[os.id]);
+                                                const emLote = outrasMarcadas.length > 0;
+                                                const somaCent = emLote ? [pedidoEmEdicao.id, ...outrasMarcadas.map(os => os.id)]
+                                                    .reduce((acc, id) => acc + Math.round(parseValorMoeda(alocacoesLote[id] || '0') * 100), 0) : 0;
+                                                const totalCent = Math.round(parseValorMoeda(novoPagamento.valor) * 100);
+                                                const loteValido = !emLote || (somaCent === totalCent && totalCent > 0 && outrasMarcadas.every(os => parseValorMoeda(alocacoesLote[os.id] || '0') > 0));
 
-                                                // Atualiza sugerindo o restante
-                                                const novoTotalPago = pagamentosPedido.reduce((acc, p) => acc + parseValorMoeda(p.valor), 0) + parseValorMoeda(novoPagamento.valor);
-                                                const totalOSStr = parseValorMoeda(novoPedido.valor_total);
-                                                const saldoRestante = totalOSStr - novoTotalPago;
+                                                return (
+                                                    <button type="button" disabled={!novoPagamento.valor || !loteValido} onClick={async () => {
+                                                        if (!novoPagamento.valor) return;
 
-                                                setNovoPagamento({ valor: saldoRestante > 0 ? formatarMoeda((saldoRestante * 100).toFixed(0).toString()) : '', forma: 'PIX', parcelas: 1, instituicao: 'Itaú', bandeira: '', data: obterDataAtual() });
-                                            }} className="w-full bg-brand hover:bg-brandHover text-white py-1.5 rounded text-[11px] font-semibold transition">Registrar Pagamento</button>
+                                                        if (!emLote) {
+                                                            // Comportamento de hoje, sem nenhuma mudança.
+                                                            setPagamentosPedido([...pagamentosPedido, { ...novoPagamento, data: novoPagamento.data || obterDataAtual() }]);
+                                                            const novoTotalPago = pagamentosPedido.reduce((acc, p) => acc + parseValorMoeda(p.valor), 0) + parseValorMoeda(novoPagamento.valor);
+                                                            const totalOSStr = parseValorMoeda(novoPedido.valor_total);
+                                                            const saldoRestante = totalOSStr - novoTotalPago;
+                                                            setNovoPagamento({ valor: saldoRestante > 0 ? formatarMoeda((saldoRestante * 100).toFixed(0).toString()) : '', forma: 'PIX', parcelas: 1, instituicao: 'Itaú', bandeira: '', data: obterDataAtual() });
+                                                            return;
+                                                        }
+
+                                                        const nomesOS = [`#${pedidoEmEdicao.id}`, ...outrasMarcadas.map(os => `#${os.id}`)].join(', ');
+                                                        if (!(await confirmar(`Confirma o pagamento de R$ ${novoPagamento.valor} dividido entre as OS's ${nomesOS}? Isso grava direto no sistema, para todas elas.`))) return;
+
+                                                        const loteId = `lote_${Date.now()}`;
+                                                        const metadados = { forma: novoPagamento.forma, parcelas: novoPagamento.parcelas, instituicao: novoPagamento.instituicao, bandeira: novoPagamento.bandeira, data: novoPagamento.data || obterDataAtual() };
+
+                                                        const resultado = await registrarPagamentoLoteOutrasOS(loteId, metadados,
+                                                            outrasMarcadas.map(os => ({ pedido: os, valorAlocado: alocacoesLote[os.id] })));
+                                                        if (!resultado.sucesso) return; // já avisou o erro, OS atual não foi tocada
+
+                                                        const podeFinalizar = usuario?.nivel === 'Administrador' || usuario?.nivel === 'Financeiro';
+                                                        const quitaAtual = podeFinalizar && (saldo - parseValorMoeda(alocacoesLote[pedidoEmEdicao.id] || '0')) <= 0.001;
+                                                        const pagamentoAtual = { ...metadados, valor: alocacoesLote[pedidoEmEdicao.id], lote_id: loteId };
+
+                                                        flushSync(() => setPagamentosPedido([...pagamentosPedido, pagamentoAtual]));
+                                                        avisar(`Pagamento registrado em ${1 + outrasMarcadas.length} OS's.`, 'sucesso');
+                                                        await salvarOS(null, false, quitaAtual ? 'Finalizado' : null);
+                                                        setOsLoteSelecionadas({});
+                                                        setAlocacoesLote({});
+                                                    }} className="w-full bg-brand hover:bg-brandHover text-white py-1.5 rounded text-[11px] font-semibold transition disabled:opacity-40 disabled:cursor-not-allowed">
+                                                        {emLote ? `Registrar Pagamento (${1 + outrasMarcadas.length} OS's)` : 'Registrar Pagamento'}
+                                                    </button>
+                                                );
+                                            })()}
                                         </div>
                                     )}
                                 </div>

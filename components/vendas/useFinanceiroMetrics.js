@@ -1,19 +1,13 @@
 "use client";
 import { centavosParaReais, parseValorMoeda, obterDataAtual, formatarDataExibicao } from '@/lib/utils/formatters';
-import { BarRow } from '@/components/financeiro/BarRow';
+import { BarRow } from '@/components/vendas/BarRow';
 
 // Todas as métricas derivadas compartilhadas pelos painéis "Visão Geral" e
 // "Vendas por Produto" (o único dado que atravessa os dois é `pedidosFin`).
 // Extraído tal como estava no FinanceiroTab.jsx original — sem memoização,
 // recalcula a cada render, igual ao comportamento anterior.
-export function useFinanceiroMetrics(pedidos, contasPagar, dataFiltroFinInicio, dataFiltroFinFim) {
-    const pedidosFin = pedidos.filter(p => {
-        if (p.status === 'Cancelado' || p.status === 'Cancelada') return false;
-        let match = true;
-        if (dataFiltroFinInicio && (!p.data_pedido || p.data_pedido < dataFiltroFinInicio)) match = false;
-        if (dataFiltroFinFim && (!p.data_pedido || p.data_pedido > dataFiltroFinFim)) match = false;
-        return match;
-    });
+export function useFinanceiroMetrics(pedidos, contasPagar) {
+    const pedidosFin = pedidos.filter(p => p.status !== 'Cancelado' && p.status !== 'Cancelada');
 
     // Helper: pedidos.valor_total vem do banco em centavos.
     const valorTotalPedido = (p) => centavosParaReais(p.valor_total);
@@ -43,12 +37,7 @@ export function useFinanceiroMetrics(pedidos, contasPagar, dataFiltroFinInicio, 
 
     const totalVendasHoje = pedidos.filter(p => p.data_pedido === obterDataAtual() && p.status !== 'Cancelado' && p.status !== 'Cancelada').reduce((acc, p) => acc + valorTotalPedido(p), 0);
 
-    const contasFiltradas = contasPagar.filter(c => {
-        let match = true;
-        if (dataFiltroFinInicio && (!c.vencimento || c.vencimento < dataFiltroFinInicio)) match = false;
-        if (dataFiltroFinFim && (!c.vencimento || c.vencimento > dataFiltroFinFim)) match = false;
-        return match;
-    });
+    const contasFiltradas = contasPagar;
     const parseValorConta = (c) => centavosParaReais(c.valor);
     const totalDespesas = contasFiltradas.reduce((acc, c) => acc + parseValorConta(c), 0);
 

@@ -10,7 +10,7 @@ import { obterResumoServicos } from '@/lib/utils/servico';
 
 
 export default function BaixaTab() {
-    const { setAbaOS, abaOS, buscaHistoricoText, setBuscaHistoricoText, dataFiltroInicio, setDataFiltroInicio, dataFiltroFim, setDataFiltroFim, isAdmin, pedidosHistorico, isOperador, isDemo, isClienteProblema, totalPedidosHistorico, itensPorPagina, paginaHistorico, setPaginaHistorico, abrirEdicao, imprimirOS, abrirContextMenu, duplicarOS, avisar } = useAppContext();
+    const { setAbaOS, abaOS, buscaHistoricoText, setBuscaHistoricoText, dataFiltroInicio, setDataFiltroInicio, dataFiltroFim, setDataFiltroFim, isAdmin, pedidosHistorico, isOperador, isDemo, isClienteProblema, totalPedidosHistorico, itensPorPagina, paginaHistorico, setPaginaHistorico, ordenacaoHistoricoOS, setOrdenacaoHistoricoOS, abrirEdicao, imprimirOS, abrirContextMenu, duplicarOS, avisar } = useAppContext();
 
     return (
         <>
@@ -50,7 +50,19 @@ export default function BaixaTab() {
                             <table className="w-full text-left border-collapse">
                                 <thead className="bg-gray-50/50 dark:bg-darkHover/50 border-t-2 border-brand">
                                     <tr className="border-b border-gray-200 dark:border-darkBorder text-[13px] font-semibold text-gray-500 dark:text-gray-400 tracking-wide uppercase">
-                                        <th className="px-6 py-4 w-24">OS Nº</th>
+                                        <th className="px-6 py-4 w-24">
+                                            <span className="inline-flex items-center">
+                                                OS Nº
+                                                <button
+                                                    type="button"
+                                                    onClick={(e) => { e.stopPropagation(); setOrdenacaoHistoricoOS(prev => prev === 'asc' ? 'desc' : 'asc'); }}
+                                                    className={`ml-1 p-0.5 rounded transition align-middle ${ordenacaoHistoricoOS === 'asc' ? 'text-brand' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'}`}
+                                                    aria-label="Ordenar por OS Nº"
+                                                >
+                                                    <Icon name="chevron-down" className={`w-3.5 h-3.5 stroke-[3] transition-transform ${ordenacaoHistoricoOS === 'asc' ? 'rotate-180' : ''}`} />
+                                                </button>
+                                            </span>
+                                        </th>
                                         {isAdmin && <th className="px-6 py-4 w-32">Criado Por</th>}
                                         <th className="px-6 py-4 w-32">Data</th>
                                         <th className="px-6 py-4">Cliente</th>

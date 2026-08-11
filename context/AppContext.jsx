@@ -74,6 +74,7 @@ export const AppProvider = ({ children }) => {
     const [paginaHistorico, setPaginaHistorico] = useState(1);
     const [pedidosHistorico, setPedidosHistorico] = useState([]);
     const [totalPedidosHistorico, setTotalPedidosHistorico] = useState(0);
+    const [ordenacaoHistoricoOS, setOrdenacaoHistoricoOS] = useState('desc');
     const [triggerRealtime, setTriggerRealtime] = useState(0);
     const itensPorPagina = 50;
     const [dataFiltroInicio, setDataFiltroInicio] = useState('');
@@ -81,16 +82,17 @@ export const AppProvider = ({ children }) => {
 
     const [buscaProducaoText, setBuscaProducaoText] = useState('');
 
-    const [dataFiltroFinInicio, setDataFiltroFinInicio] = useState('');
-    const [dataFiltroFinFim, setDataFiltroFinFim] = useState('');
-
     const [dataFiltroContasPagarInicio, setDataFiltroContasPagarInicio] = useState('');
     const [dataFiltroContasPagarFim, setDataFiltroContasPagarFim] = useState('');
     const [dataFiltroContasReceberInicio, setDataFiltroContasReceberInicio] = useState('');
     const [dataFiltroContasReceberFim, setDataFiltroContasReceberFim] = useState('');
+    const [dataFiltroBoletosInicio, setDataFiltroBoletosInicio] = useState('');
+    const [dataFiltroBoletosFim, setDataFiltroBoletosFim] = useState('');
+    const [pedidosSaldoDevedor, setPedidosSaldoDevedor] = useState([]);
 
     // Financeiro Expandido e Alertas
-    const [abaFinanceiro, setAbaFinanceiro] = useState('geral');
+    const [abaFinanceiro, setAbaFinanceiro] = useState('contas_pagar');
+    const [abaVendas, setAbaVendas] = useState('geral');
     const [produtosSelecionadosGrafico, setProdutosSelecionadosGrafico] = useState(null);
     const [contasPagar, setContasPagar] = useState([]);
     const [calculadoraAtiva, setCalculadoraAtiva] = useState('banner');
@@ -178,13 +180,14 @@ export const AppProvider = ({ children }) => {
     const [pagamentosPedido, setPagamentosPedido] = useState([]);
     const [novoPagamento, setNovoPagamento] = useState({ valor: '', forma: 'PIX', parcelas: 1, instituicao: 'Itaú', bandeira: '', data: obterDataAtual() });
 
-    const [novoPedido, setNovoPedido] = useState({ 
-        cliente: '', servico: '', valor_total: '', 
+    const [novoPedido, setNovoPedido] = useState({
+        cliente: '', cliente_id: null, servico: '', valor_total: '',
         status: 'Produzir', data_pedido: obterDataAtual(),
         prazo: '', responsavel: '', local_producao: 'Berlim', aprovado: false,
         entrega: false
     });
-    
+    const [outrasOSAbertas, setOutrasOSAbertas] = useState([]);
+
     const [modalProdutoAberto, setModalProdutoAberto] = useState(false);
     const [salvandoProduto, setSalvandoProduto] = useState(false);
     const [novoProduto, setNovoProduto] = useState({ id: null, nome: '', texto_padrao: '', preco_base: '' });
@@ -547,9 +550,9 @@ export const AppProvider = ({ children }) => {
     
     // Reseta a página do histórico quando o filtro muda. Ajustado durante a
     // renderização (em vez de num useEffect) para não disparar um commit extra.
-    const [filtroHistoricoAnterior, setFiltroHistoricoAnterior] = useState({ buscaHistoricoText, dataFiltroInicio, dataFiltroFim });
-    if (filtroHistoricoAnterior.buscaHistoricoText !== buscaHistoricoText || filtroHistoricoAnterior.dataFiltroInicio !== dataFiltroInicio || filtroHistoricoAnterior.dataFiltroFim !== dataFiltroFim) {
-        setFiltroHistoricoAnterior({ buscaHistoricoText, dataFiltroInicio, dataFiltroFim });
+    const [filtroHistoricoAnterior, setFiltroHistoricoAnterior] = useState({ buscaHistoricoText, dataFiltroInicio, dataFiltroFim, ordenacaoHistoricoOS });
+    if (filtroHistoricoAnterior.buscaHistoricoText !== buscaHistoricoText || filtroHistoricoAnterior.dataFiltroInicio !== dataFiltroInicio || filtroHistoricoAnterior.dataFiltroFim !== dataFiltroFim || filtroHistoricoAnterior.ordenacaoHistoricoOS !== ordenacaoHistoricoOS) {
+        setFiltroHistoricoAnterior({ buscaHistoricoText, dataFiltroInicio, dataFiltroFim, ordenacaoHistoricoOS });
         if (paginaHistorico !== 1) setPaginaHistorico(1);
     }
 
@@ -587,8 +590,8 @@ export const AppProvider = ({ children }) => {
             if (dataFiltroInicio) query = query.gte('data_pedido', dataFiltroInicio);
             if (dataFiltroFim) query = query.lte('data_pedido', dataFiltroFim);
 
-            query = query.order('id', { ascending: false });
-            
+            query = query.order('id', { ascending: ordenacaoHistoricoOS === 'asc' });
+
             const from = (paginaHistorico - 1) * itensPorPagina;
             const to = from + itensPorPagina - 1;
             query = query.range(from, to);
@@ -599,10 +602,10 @@ export const AppProvider = ({ children }) => {
                 if (count !== null) setTotalPedidosHistorico(count);
             }
         }
-        
+
         const timeout = setTimeout(fetchHistorico, 300);
         return () => clearTimeout(timeout);
-    }, [usuario, abaOS, paginaHistorico, buscaHistoricoText, dataFiltroInicio, dataFiltroFim, triggerRealtime]);
+    }, [usuario, abaOS, paginaHistorico, buscaHistoricoText, dataFiltroInicio, dataFiltroFim, triggerRealtime, ordenacaoHistoricoOS]);
 
     useEffect(() => {
         if (!usuario) return;
@@ -636,6 +639,25 @@ export const AppProvider = ({ children }) => {
         }, 300);
         return () => clearTimeout(timeout);
     }, [buscaCliente]);
+
+    // Dispara ao abrir o modal pra EDITAR uma OS existente (nunca numa OS nova —
+    // sem id ainda, não entra no lote). Usa o cliente_id/nome como veio do banco
+    // (pedidoEmEdicao), não o que está sendo digitado em novoPedido, pra não
+    // refazer a busca a cada tecla.
+    useEffect(() => {
+        const promise = (modalAberto && pedidoEmEdicao)
+            ? buscarOutrasOSAbertasDoCliente(pedidoEmEdicao.id, pedidoEmEdicao.cliente_id, pedidoEmEdicao.cliente)
+            : Promise.resolve([]);
+        promise.then(setOutrasOSAbertas);
+    }, [modalAberto, pedidoEmEdicao?.id]);
+
+    // Busca (e refaz ao voltar pra aba ou após qualquer gravação que mexa em
+    // pagamentos/status, via triggerRealtime) só quando a aba Contas a Receber
+    // está mesmo aberta — evita consulta desnecessária em toda troca de tela.
+    useEffect(() => {
+        const promise = abaFinanceiro === 'contas_receber' ? buscarPedidosComSaldoDevedor() : Promise.resolve([]);
+        promise.then(setPedidosSaldoDevedor);
+    }, [abaFinanceiro, triggerRealtime]);
 
     useEffect(() => {
         if (pathname !== '/cadastros' || abaCadastros !== 'clientes' || !usuario) return;
@@ -722,6 +744,95 @@ export const AppProvider = ({ children }) => {
         }
     }
 
+    // Busca outras OS's do mesmo cliente com saldo devedor. Não usa o array
+    // `pedidos` em memória: carregarDados() só traz OS's com data_pedido no
+    // último ano OU em produção ativa — uma "Concluído" antiga e ainda não paga
+    // pode ficar de fora. Precisa de consulta própria, sem esse filtro de data.
+    // Casa por cliente_id quando a OS atual já tem; cai pra nome exato
+    // (case-insensitive, sem wildcard — não é busca por substring) só quando não tem.
+    async function buscarOutrasOSAbertasDoCliente(pedidoAtualId, clienteId, clienteNome) {
+        let query = supabase.from('pedidos').select('*')
+            .not('status', 'in', '("Abandonado","Cancelado","Finalizado")')
+            .neq('id', pedidoAtualId);
+
+        if (clienteId) query = query.eq('cliente_id', clienteId);
+        else if (clienteNome && clienteNome.trim()) query = query.ilike('cliente', clienteNome.trim());
+        else return [];
+
+        const { data, error } = await query.order('id', { ascending: true });
+        if (error) { console.error('Erro ao buscar outras OS do cliente:', error); return []; }
+
+        return (data || [])
+            .map(p => {
+                const { pagamentos } = desconstruirTextoServico(p.servico);
+                const totalPago = (pagamentos || []).reduce((acc, pag) => acc + parseValorMoeda(pag.valor), 0);
+                return { ...p, saldo: centavosParaReais(p.valor_total) - totalPago };
+            })
+            .filter(p => p.saldo > 0.001);
+    }
+
+    // Busca TODAS as OS's com saldo devedor (qualquer forma de pagamento, ou
+    // nenhuma ainda), pra a tela Financeiro > Contas a Receber. Mesmo motivo de
+    // buscarOutrasOSAbertasDoCliente pra não usar o array `pedidos` em memória:
+    // carregarDados() só traz OS's recentes ou em produção ativa, e um
+    // "Concluído" antigo ainda não pago não pode sumir de um relatório de
+    // contas a receber.
+    async function buscarPedidosComSaldoDevedor() {
+        const { data, error } = await supabase.from('pedidos').select('*')
+            .not('status', 'in', '("Abandonado","Cancelado","Finalizado")')
+            .order('id', { ascending: true });
+        if (error) { console.error('Erro ao buscar contas a receber:', error); return []; }
+
+        return (data || [])
+            .map(p => {
+                const { pagamentos } = desconstruirTextoServico(p.servico);
+                const totalPago = (pagamentos || []).reduce((acc, pag) => acc + parseValorMoeda(pag.valor), 0);
+                const totalReais = centavosParaReais(p.valor_total);
+                return { ...p, totalPago, totalReais, saldo: totalReais - totalPago };
+            })
+            .filter(p => p.saldo > 0.001);
+    }
+
+    // Grava, em cada uma das "outras" OS's, a fatia que lhe cabe de um pagamento
+    // físico único (nunca chamado para a OS atualmente aberta no modal — essa
+    // vai por salvarOS(), ver OSModal.jsx). Cada fatia carrega um lote_id comum,
+    // pra dar pra rastrear depois que era uma única transação no caixa.
+    // Grava uma OS de cada vez (o Supabase client não expõe transação
+    // multi-linha sem uma function no Postgres) — se alguma falhar no meio, para
+    // e avisa quais já foram gravadas, pra conferência manual.
+    async function registrarPagamentoLoteOutrasOS(loteId, metadados, alocacoes) {
+        const podeFinalizar = usuario?.nivel === 'Administrador' || usuario?.nivel === 'Financeiro';
+        const concluidos = [];
+        for (const { pedido, valorAlocado } of alocacoes) {
+            const pagamento = { ...metadados, valor: valorAlocado, lote_id: loteId };
+            const partes = (pedido.servico || '').split('\n\n[PAGAMENTOS]\n');
+            let pagamentosExistentes = [];
+            try { pagamentosExistentes = JSON.parse(partes[1] || '[]'); } catch (e) { pagamentosExistentes = []; }
+            const novosPagamentos = [...pagamentosExistentes, pagamento];
+            const novoServico = partes[0] + '\n\n[PAGAMENTOS]\n' + JSON.stringify(novosPagamentos);
+
+            const totalPago = novosPagamentos.reduce((acc, p) => acc + parseValorMoeda(p.valor), 0);
+            const saldoRestante = centavosParaReais(pedido.valor_total) - totalPago;
+
+            const payload = { servico: novoServico };
+            if (podeFinalizar && saldoRestante <= 0.001 && pedido.status !== 'Finalizado') payload.status = 'Finalizado';
+
+            const { data, error } = await supabase.from('pedidos').update(payload).eq('id', pedido.id).select();
+            if (error || !data || data.length === 0) {
+                const jaGravadas = concluidos.length > 0 ? ` Já gravado em: ${concluidos.map(c => '#' + c.id).join(', ')}.` : '';
+                avisar(`Pagamento em lote interrompido na OS #${pedido.id}: ${error?.message || 'erro desconhecido'}.${jaGravadas}`, 'erro');
+                carregarDados();
+                return { sucesso: false };
+            }
+            concluidos.push(data[0]);
+        }
+        if (concluidos.length > 0) {
+            setPedidos(prev => prev.map(p => concluidos.find(c => c.id === p.id) || p));
+            setTriggerRealtime(prev => prev + 1);
+        }
+        return { sucesso: true };
+    }
+
     function fecharModalOS() {
         setModalAberto(false);
         setPedidoEmEdicao(null);
@@ -733,12 +844,13 @@ export const AppProvider = ({ children }) => {
         setPagamentosPedido([]);
         setNovoPagamento({ valor: '', forma: 'PIX', parcelas: 1, instituicao: 'Itaú', data: obterDataAtual() });
         setItemAtual({ nome: '', descricao: '', valor: '', desconto: '', local_producao: 'Berlim', id_produto: null });
-        setNovoPedido({ 
-            cliente: '', servico: '', valor_total: '', 
+        setNovoPedido({
+            cliente: '', cliente_id: null, servico: '', valor_total: '',
             status: 'Produzir', data_pedido: obterDataAtual(),
             prazo: '', responsavel: '', local_producao: 'Berlim', aprovado: false,
             entrega: false
         });
+        setOutrasOSAbertas([]);
     }
 
     function abrirEdicao(pedido) {
@@ -760,6 +872,7 @@ export const AppProvider = ({ children }) => {
         });
         setNovoPedido({
             cliente: pedido.cliente,
+            cliente_id: pedido.cliente_id || null,
             servico: dadosDesconstruidos.observacoes,
             status: pedido.status,
             valor_total: formatarMoeda(Math.round(pedido.valor_total).toString()),
@@ -903,6 +1016,7 @@ export const AppProvider = ({ children }) => {
 
         const payload = {
             cliente: novoPedido.cliente,
+            cliente_id: novoPedido.cliente_id || null,
             servico: textoFinalServico,
             status: statusFinal,
             valor_total: valorNumericoFinal,
@@ -989,6 +1103,7 @@ export const AppProvider = ({ children }) => {
         let novoId = Math.max(idBase, NUMERO_INICIAL_PEDIDO - 1) + 1;
         const payload = {
             cliente: pedido.cliente,
+            cliente_id: pedido.cliente_id || null,
             servico: servicoSemPagamentos,
             status: 'Aguardando Pagamento',
             valor_total: pedido.valor_total,
@@ -1420,7 +1535,7 @@ export const AppProvider = ({ children }) => {
             else avisar('Falha ao atualizar: ' + error.message, 'erro');
         } else {
             const { data, error } = await supabase.from('clientes').insert([clienteFormatado]).select();
-            if (!error && data) { setTriggerRealtime(prev => prev + 1); setNovoPedido({...novoPedido, cliente: data[0].nome}); setBuscaCliente(data[0].nome); setClienteSelecionadoInfo({ id: data[0].id, telefone: data[0].telefone }); setModalClienteAberto(false); setNovoCliente({ id: null, nome: '', telefone: '', email: '', observacoes: '', cliente_problema: false }); }
+            if (!error && data) { setTriggerRealtime(prev => prev + 1); setNovoPedido({...novoPedido, cliente: data[0].nome, cliente_id: data[0].id}); setBuscaCliente(data[0].nome); setClienteSelecionadoInfo({ id: data[0].id, telefone: data[0].telefone }); setModalClienteAberto(false); setNovoCliente({ id: null, nome: '', telefone: '', email: '', observacoes: '', cliente_problema: false }); }
             else avisar('Falha ao salvar: ' + error.message, 'erro');
         }
         setSalvandoCliente(false);
@@ -1926,6 +2041,8 @@ export const AppProvider = ({ children }) => {
         setPedidosHistorico,
         totalPedidosHistorico,
         setTotalPedidosHistorico,
+        ordenacaoHistoricoOS,
+        setOrdenacaoHistoricoOS,
         triggerRealtime,
         setTriggerRealtime,
         dataFiltroInicio,
@@ -1934,10 +2051,6 @@ export const AppProvider = ({ children }) => {
         setDataFiltroFim,
         buscaProducaoText,
         setBuscaProducaoText,
-        dataFiltroFinInicio,
-        setDataFiltroFinInicio,
-        dataFiltroFinFim,
-        setDataFiltroFinFim,
         dataFiltroContasPagarInicio,
         setDataFiltroContasPagarInicio,
         dataFiltroContasPagarFim,
@@ -1946,8 +2059,15 @@ export const AppProvider = ({ children }) => {
         setDataFiltroContasReceberInicio,
         dataFiltroContasReceberFim,
         setDataFiltroContasReceberFim,
+        dataFiltroBoletosInicio,
+        setDataFiltroBoletosInicio,
+        dataFiltroBoletosFim,
+        setDataFiltroBoletosFim,
+        pedidosSaldoDevedor,
         abaFinanceiro,
         setAbaFinanceiro,
+        abaVendas,
+        setAbaVendas,
         produtosSelecionadosGrafico,
         setProdutosSelecionadosGrafico,
         contasPagar,
@@ -2014,6 +2134,7 @@ export const AppProvider = ({ children }) => {
         setPagamentosPedido,
         novoPagamento,
         setNovoPagamento,
+        outrasOSAbertas,
         novoPedido,
         setNovoPedido,
         modalProdutoAberto,
@@ -2070,6 +2191,8 @@ export const AppProvider = ({ children }) => {
         atualizarCatalogoProdutos,
         atualizarCampoInline,
         concluirBoletoContasReceber,
+        buscarOutrasOSAbertasDoCliente,
+        registrarPagamentoLoteOutrasOS,
         fecharModalOS,
         abrirEdicao,
         abrirEdicaoProduto,

@@ -3,17 +3,17 @@ import { useAppContext } from '@/context/AppContext';
 import Icon from '@/components/Icon';
 import { formatarValorFinanceiro, parseValorMoeda } from '@/lib/utils/formatters';
 import { desconstruirTextoServico } from '@/lib/utils/servico';
-import { useFinanceiroMetrics } from '@/components/financeiro/useFinanceiroMetrics';
+import { useFinanceiroMetrics } from '@/components/vendas/useFinanceiroMetrics';
 
 export default function VendasPorProdutoPanel() {
-    const { pedidos, contasPagar, dataFiltroFinInicio, dataFiltroFinFim, produtos, produtosSelecionadosGrafico, setProdutosSelecionadosGrafico } = useAppContext();
-    const { pedidosFin } = useFinanceiroMetrics(pedidos, contasPagar, dataFiltroFinInicio, dataFiltroFinFim);
+    const { pedidos, contasPagar, produtos, produtosSelecionadosGrafico, setProdutosSelecionadosGrafico } = useAppContext();
+    const { pedidosFin } = useFinanceiroMetrics(pedidos, contasPagar);
 
     return (
         <div className="bg-white dark:bg-darkCard p-6 rounded-xl border border-gray-200 dark:border-darkBorder flex flex-col gap-4">
             <div>
                 <h3 className="font-semibold text-[13px] text-gray-800 dark:text-white uppercase tracking-wider">Vendas por Produto (Catálogo)</h3>
-                <p className="text-[11px] text-gray-400 mt-0.5">Visão expandida de vendas baseadas nos produtos do sistema referentes ao período filtrado.</p>
+                <p className="text-[11px] text-gray-400 mt-0.5">Visão expandida de vendas baseadas nos produtos do sistema.</p>
             </div>
             <div className="flex flex-col gap-3 mt-4">
                 {(() => {

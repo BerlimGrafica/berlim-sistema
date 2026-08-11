@@ -5,11 +5,11 @@ import Icon from '@/components/Icon';
 import Tooltip from '@/components/Tooltip';
 import { formatarValorFinanceiro, obterDataAtual, formatarDataExibicao, formatarMesAno } from '@/lib/utils/formatters';
 import { StackedCards } from '@/components/StackedCards';
-import { BarRow } from '@/components/financeiro/BarRow';
-import { useFinanceiroMetrics } from '@/components/financeiro/useFinanceiroMetrics';
+import { BarRow } from '@/components/vendas/BarRow';
+import { useFinanceiroMetrics } from '@/components/vendas/useFinanceiroMetrics';
 
 export default function VisaoGeralPanel() {
-    const { pedidos, contasPagar, dataFiltroFinInicio, dataFiltroFinFim } = useAppContext();
+    const { pedidos, contasPagar } = useAppContext();
     const [slidePainelAtivo, setSlidePainelAtivo] = useState(0);
     const painelScrollRef = useRef(null);
     const scrollToSlidePainel = (i) => {
@@ -35,7 +35,7 @@ export default function VisaoGeralPanel() {
         rankingCategoriaDespesa, maxCategoriaDespesa, totalCategoriaDespesa, coresCategoriaDespesa,
         totalContasPendentes, totalContasPagas, qtdContasVencidas, maxStatusDespesa, totalStatusDespesa,
         maioresContas, maxMaiorConta, parseValorConta,
-    } = useFinanceiroMetrics(pedidos, contasPagar, dataFiltroFinInicio, dataFiltroFinFim);
+    } = useFinanceiroMetrics(pedidos, contasPagar);
 
     // "R$" sempre em cima, número embaixo — e o número encolhe se for ficar
     // largo demais pro card, em vez de quebrar linha no meio do valor.
@@ -154,7 +154,7 @@ export default function VisaoGeralPanel() {
                             {['Análise por Período', 'Distribuição no Período', 'Despesas'][slidePainelAtivo]}
                         </h2>
                         <span className="text-[10px] text-gray-400 font-medium normal-case">
-                            {slidePainelAtivo === 0 ? 'clique nos cards para alternar as camadas' : slidePainelAtivo === 2 ? 'contas a pagar no período filtrado' : 'como o faturamento se distribuiu'}
+                            {slidePainelAtivo === 0 ? 'clique nos cards para alternar as camadas' : slidePainelAtivo === 2 ? 'contas a pagar' : 'como o faturamento se distribuiu'}
                         </span>
                     </div>
                     <div className="flex items-center gap-3">
@@ -221,7 +221,7 @@ export default function VisaoGeralPanel() {
                                     <div className="p-2 rounded-lg bg-teal-50 dark:bg-teal-500/10 shrink-0"><Icon name="map-pin" className="w-4 h-4 text-teal-600 dark:text-teal-400" /></div>
                                     <div className="min-w-0">
                                         <h3 className="font-bold text-[13px] text-gray-800 dark:text-white truncate">Receitas por Local</h3>
-                                        <p className="text-[11px] text-gray-400 truncate">Rentabilidade no período filtrado</p>
+                                        <p className="text-[11px] text-gray-400 truncate">Rentabilidade por local</p>
                                     </div>
                                 </div>
                                 <div className="flex flex-col gap-4 p-5 overflow-y-auto max-h-72 custom-scrollbar">
@@ -302,7 +302,7 @@ export default function VisaoGeralPanel() {
                                     <div className="p-2 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 shrink-0"><Icon name="trending-up" className="w-4 h-4 text-indigo-600 dark:text-indigo-400" /></div>
                                     <div className="min-w-0">
                                         <h3 className="font-bold text-[13px] text-gray-800 dark:text-white truncate">Maiores Contas</h3>
-                                        <p className="text-[11px] text-gray-400 truncate">Top despesas do período filtrado</p>
+                                        <p className="text-[11px] text-gray-400 truncate">Top despesas</p>
                                     </div>
                                 </div>
                                 <div className="flex-1 flex flex-col gap-4 p-5 overflow-y-auto max-h-72 custom-scrollbar">

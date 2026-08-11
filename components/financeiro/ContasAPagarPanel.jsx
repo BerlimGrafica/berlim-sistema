@@ -104,7 +104,7 @@ export default function ContasAPagarPanel({ mostrarContasPagas, dataInicio, data
                         </thead>
                         <tbody className="divide-y divide-gray-100 dark:divide-darkBorder">
                             {contasOrdenadas.length === 0 ? (
-                                <tr><td colSpan="6" className="text-center py-8 text-gray-400">Nenhuma conta a pagar registrada.</td></tr>
+                                <tr><td colSpan="6" className="px-4 py-12 text-center text-[13px] text-gray-400">Nenhuma conta a pagar registrada.</td></tr>
                             ) : (
                                 contasOrdenadas.map(conta => (
                                     <tr key={conta.id} onClick={() => { setNovaConta({...conta, valor: conta.valor ? formatarMoeda(Math.round(conta.valor).toString()) : ''}); setModalContaAberto(true); }} onContextMenu={(e) => abrirContextMenu(e, montarItensContexto(conta))} className="hover:bg-gray-50 dark:hover:bg-darkHover/50 transition-colors group cursor-pointer">
