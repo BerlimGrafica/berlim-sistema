@@ -4,7 +4,7 @@ import { flushSync } from "react-dom";
 import { useAppContext } from "@/context/AppContext";
 import Icon from "@/components/Icon";
 import Tooltip from "@/components/Tooltip";
-import { formatarValorFinanceiro, formatarMoeda, parseValorMoeda, centavosParaReais, obterDataAtual, mascararCliente, formatarDataExibicao } from '@/lib/utils/formatters';
+import { formatarValorFinanceiro, formatarMoeda, parseValorMoeda, valorPagamentoComSinal, centavosParaReais, obterDataAtual, mascararCliente, formatarDataExibicao } from '@/lib/utils/formatters';
 import { CustomDatePicker } from '@/components/ui/DatePicker';
 import { CustomSelect, MultiSelectDropdown } from '@/components/ui/Dropdown';
 import { ChipNome } from '@/components/ui/ChipNome';
@@ -14,7 +14,7 @@ import { useFecharAoClicarFora } from '@/components/modals/useFecharAoClicarFora
 const OPCOES_BANDEIRA = ['Visa', 'MasterCard', 'Elo', 'American Express', 'HiperCard', 'Maestro', 'RedeShop'].map(b => ({ value: b, label: b, icon: <BandeiraIcon nome={b} /> }));
 
 export default function OSModal() {
-    const { modalAberto, fecharModalOS, pedidoEmEdicao, isModalTrancado, novoPedido, setNovoPedido, opcoesStatusPermitidas, buscaCliente, setBuscaCliente, clienteSelecionadoInfo, setClienteSelecionadoInfo, isDemo, setClienteDropdownAberto, clienteDropdownAberto, clientesFiltrados, setNovoCliente, setModalClienteAberto, isClienteProblema, itensPedido, buscaProduto, setBuscaProduto, setProdutoDropdownAberto, produtoDropdownAberto, produtosFiltrados, setItemAtual, itemAtual, isAdmin, setNovoProduto, setModalProdutoAberto, fornecedores, pagamentosPedido, setPagamentosPedido, novoPagamento, setNovoPagamento, outrasOSAbertas, registrarPagamentoLoteOutrasOS, salvandoOS, usuario, salvarOS, removerItemDoCarrinho, adicionarItemAoCarrinho, salvarEdicaoItemCarrinho, usuariosSistema, atualizarCatalogoProdutos, avisar, confirmar } = useAppContext();
+    const { modalAberto, fecharModalOS, pedidoEmEdicao, isModalTrancado, novoPedido, setNovoPedido, opcoesStatusPermitidas, buscaCliente, setBuscaCliente, clienteSelecionadoInfo, setClienteSelecionadoInfo, isDemo, setClienteDropdownAberto, clienteDropdownAberto, clientesFiltrados, setNovoCliente, setModalClienteAberto, isClienteProblema, itensPedido, buscaProduto, setBuscaProduto, setProdutoDropdownAberto, produtoDropdownAberto, produtosFiltrados, setItemAtual, itemAtual, isAdmin, setNovoProduto, setModalProdutoAberto, fornecedoresTerceirizacaoNomes, pagamentosPedido, setPagamentosPedido, novoPagamento, setNovoPagamento, outrasOSAbertas, registrarPagamentoLoteOutrasOS, salvandoOS, usuario, salvarOS, removerItemDoCarrinho, adicionarItemAoCarrinho, salvarEdicaoItemCarrinho, usuariosSistema, atualizarCatalogoProdutos, avisar, confirmar } = useAppContext();
     const nomesResponsaveis = usuariosSistema.filter(u => u.nivel !== 'demo').map(u => u.nome);
 
     const [pagamentoEditandoIdx, setPagamentoEditandoIdx] = useState(null);
@@ -263,7 +263,7 @@ export default function OSModal() {
                                                 onChange={(val) => setItemAtual({...itemAtual, local_producao: val})}
                                                 disabled={isModalTrancado}
                                                 className="w-full bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded pl-[52px] pr-3 py-2 text-[11px] outline-none focus:border-brand transition dark:text-[#EDEDED] font-medium"
-                                                options={(fornecedores.length > 0 ? fornecedores.filter(f => !f.tipo || f.tipo === 'Terceirização').map(f => f.nome) : ['Berlim']).map(l => ({ value: l, label: l }))}
+                                                options={(fornecedoresTerceirizacaoNomes.length > 0 ? fornecedoresTerceirizacaoNomes.map(f => f.nome) : ['Berlim']).map(l => ({ value: l, label: l }))}
                                             />
                                         </div>
                                         <div className="relative">
@@ -289,10 +289,10 @@ export default function OSModal() {
 
                     {/* PAGAMENTOS — destacado */}
                     {(() => {
-                        const totalPago = pagamentosPedido.reduce((acc, p) => acc + parseValorMoeda(p.valor), 0);
+                        const totalPago = pagamentosPedido.reduce((acc, p) => acc + valorPagamentoComSinal(p), 0);
                         const totalOS = parseValorMoeda(novoPedido.valor_total);
                         const saldo = totalOS - totalPago;
-                        const coresFormaPagamento = { 'PIX': 'bg-teal-500', 'Boleto': 'bg-orange-500', 'Cartão de Crédito': 'bg-purple-500', 'Cartão de Débito': 'bg-blue-500', 'Dinheiro': 'bg-emerald-500', 'Link de Pagamento': 'bg-sky-500' };
+                        const coresFormaPagamento = { 'PIX': 'bg-teal-500', 'Boleto': 'bg-orange-500', 'Cartão de Crédito': 'bg-purple-500', 'Cartão de Débito': 'bg-blue-500', 'Dinheiro': 'bg-emerald-500', 'Link de Pagamento': 'bg-sky-500', 'Estorno': 'bg-red-500' };
                         return (
                             <div className="rounded-xl border border-emerald-200 dark:border-emerald-500/30 bg-emerald-50/40 dark:bg-emerald-500/5">
                                 <div className="rounded-t-xl px-5 py-3.5 bg-emerald-100/60 dark:bg-emerald-500/10 border-b border-emerald-200 dark:border-emerald-500/20 flex items-center justify-between gap-2 flex-wrap">
@@ -323,6 +323,7 @@ export default function OSModal() {
                                                                     { value: 'Cartão de Débito', label: 'Cartão de Débito' },
                                                                     { value: 'Dinheiro', label: 'Dinheiro' },
                                                                     { value: 'Link de Pagamento', label: 'Link de Pagamento' },
+                                                                    { value: 'Estorno', label: 'Estorno' },
                                                                 ]}
                                                             />
                                                             <div className="relative">
@@ -395,7 +396,7 @@ export default function OSModal() {
                                                     </div>
                                                     <div className="flex items-center gap-3 shrink-0">
                                                         <div className="flex flex-col items-end">
-                                                            <span className="font-bold text-[13px] text-emerald-600 dark:text-emerald-400">R$ {pag.valor}</span>
+                                                            <span className={`font-bold text-[13px] ${pag.forma === 'Estorno' ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400'}`}>{pag.forma === 'Estorno' ? '-' : ''}R$ {pag.valor}</span>
                                                             {(pag.instituicao || pag.bandeira) && <span className="mt-1.5"><ChipNome nome={pag.instituicao || pag.bandeira} /></span>}
                                                         </div>
                                                         {!isModalTrancado && (
@@ -418,7 +419,7 @@ export default function OSModal() {
                                         </div>
                                     )}
 
-                                    {!isModalTrancado && saldo > 0 && (
+                                    {!isModalTrancado && (saldo > 0 || totalPago > 0) && (
                                         <div className="flex flex-col gap-2 p-4 border-2 border-dashed border-emerald-200 dark:border-emerald-500/30 rounded-lg bg-white/60 dark:bg-darkElevated/40">
                                             <div className="grid grid-cols-2 gap-2">
                                                 <CustomSelect
@@ -432,6 +433,7 @@ export default function OSModal() {
                                                         { value: 'Cartão de Débito', label: 'Cartão de Débito' },
                                                         { value: 'Dinheiro', label: 'Dinheiro' },
                                                         { value: 'Link de Pagamento', label: 'Link de Pagamento' },
+                                                        { value: 'Estorno', label: 'Estorno' },
                                                     ]}
                                                 />
                                                 <div className="relative">
@@ -558,7 +560,7 @@ export default function OSModal() {
                                                         if (!emLote) {
                                                             // Comportamento de hoje, sem nenhuma mudança.
                                                             setPagamentosPedido([...pagamentosPedido, { ...novoPagamento, data: novoPagamento.data || obterDataAtual() }]);
-                                                            const novoTotalPago = pagamentosPedido.reduce((acc, p) => acc + parseValorMoeda(p.valor), 0) + parseValorMoeda(novoPagamento.valor);
+                                                            const novoTotalPago = pagamentosPedido.reduce((acc, p) => acc + valorPagamentoComSinal(p), 0) + valorPagamentoComSinal(novoPagamento);
                                                             const totalOSStr = parseValorMoeda(novoPedido.valor_total);
                                                             const saldoRestante = totalOSStr - novoTotalPago;
                                                             setNovoPagamento({ valor: saldoRestante > 0 ? formatarMoeda((saldoRestante * 100).toFixed(0).toString()) : '', forma: 'PIX', parcelas: 1, instituicao: 'Itaú', bandeira: '', data: obterDataAtual() });
@@ -585,7 +587,7 @@ export default function OSModal() {
                                                         setOsLoteSelecionadas({});
                                                         setAlocacoesLote({});
                                                     }} className="w-full bg-brand hover:bg-brandHover text-white py-1.5 rounded text-[11px] font-semibold transition disabled:opacity-40 disabled:cursor-not-allowed">
-                                                        {emLote ? `Registrar Pagamento (${1 + outrasMarcadas.length} OS's)` : 'Registrar Pagamento'}
+                                                        {emLote ? `Registrar Pagamento (${1 + outrasMarcadas.length} OS's)` : (novoPagamento.forma === 'Estorno' ? 'Registrar Estorno' : 'Registrar Pagamento')}
                                                     </button>
                                                 );
                                             })()}
@@ -631,7 +633,7 @@ export default function OSModal() {
 
                                 {novoPedido.status !== 'Finalizado' && (usuario?.nivel === 'Administrador' || usuario?.nivel === 'Financeiro') && (
                                     <button type="button" onClick={async (e) => {
-                                        const tpago = pagamentosPedido.reduce((acc, p) => acc + parseValorMoeda(p.valor), 0);
+                                        const tpago = pagamentosPedido.reduce((acc, p) => acc + valorPagamentoComSinal(p), 0);
                                         const tos = parseValorMoeda(novoPedido.valor_total);
                                         if ((tos - tpago) > 0) {
                                             avisar("Não é possível finalizar a OS: O valor total ainda não foi pago.", 'erro');

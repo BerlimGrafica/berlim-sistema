@@ -4,7 +4,7 @@ import { usePathname } from 'next/navigation';
 import { flushSync } from 'react-dom';
 import { supabase } from '@/lib/supabaseClient';
 import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS } from '@/lib/utils/constants';
-import { formatarMoeda, parseValorMoeda, paraCentavos, centavosParaReais, obterDataAtual, adicionarMesData } from '@/lib/utils/formatters';
+import { formatarMoeda, parseValorMoeda, valorPagamentoComSinal, paraCentavos, centavosParaReais, obterDataAtual, adicionarMesData } from '@/lib/utils/formatters';
 import { desconstruirTextoServico } from '@/lib/utils/servico';
 import { useAuth } from '@/hooks/useAuth';
 import { useAlertas } from '@/hooks/useAlertas';
@@ -48,6 +48,7 @@ export const AppProvider = ({ children }) => {
     const [totalClientesCad, setTotalClientesCad] = useState(0);
     const [clientesProblema, setClientesProblema] = useState([]);
     const [fornecedores, setFornecedores] = useState([]);
+    const [fornecedoresTerceirizacaoNomes, setFornecedoresTerceirizacaoNomes] = useState([]);
     const [abaCadastros, setAbaCadastros] = useState('clientes');
     const [abaOS, setAbaOS] = useState('abertas');
     const [buscaCadClientes, setBuscaCadClientes] = useState('');
@@ -526,6 +527,9 @@ export const AppProvider = ({ children }) => {
         const { data: listaFornecedores } = await supabase.from('fornecedores').select('*').order('id', { ascending: true });
         if (listaFornecedores) setFornecedores(listaFornecedores);
 
+        const { data: listaFornecedoresTerc } = await supabase.from('fornecedores_terceirizacao_nomes').select('*').order('id', { ascending: true });
+        if (listaFornecedoresTerc) setFornecedoresTerceirizacaoNomes(listaFornecedoresTerc);
+
         const { data: listaOrcF } = await supabase.from('orcamentos_formalizados').select('*').order('created_at', { ascending: false });
         if (listaOrcF) setOrcamentosFormalizados(listaOrcF);
 
@@ -809,7 +813,7 @@ export const AppProvider = ({ children }) => {
         return (data || [])
             .map(p => {
                 const { pagamentos } = desconstruirTextoServico(p.servico);
-                const totalPago = (pagamentos || []).reduce((acc, pag) => acc + parseValorMoeda(pag.valor), 0);
+                const totalPago = (pagamentos || []).reduce((acc, pag) => acc + valorPagamentoComSinal(pag), 0);
                 return { ...p, saldo: centavosParaReais(p.valor_total) - totalPago };
             })
             .filter(p => p.saldo > 0.001);
@@ -830,7 +834,7 @@ export const AppProvider = ({ children }) => {
         return (data || [])
             .map(p => {
                 const { pagamentos } = desconstruirTextoServico(p.servico);
-                const totalPago = (pagamentos || []).reduce((acc, pag) => acc + parseValorMoeda(pag.valor), 0);
+                const totalPago = (pagamentos || []).reduce((acc, pag) => acc + valorPagamentoComSinal(pag), 0);
                 const totalReais = centavosParaReais(p.valor_total);
                 return { ...p, totalPago, totalReais, saldo: totalReais - totalPago };
             })
@@ -855,7 +859,7 @@ export const AppProvider = ({ children }) => {
             const novosPagamentos = [...pagamentosExistentes, pagamento];
             const novoServico = partes[0] + '\n\n[PAGAMENTOS]\n' + JSON.stringify(novosPagamentos);
 
-            const totalPago = novosPagamentos.reduce((acc, p) => acc + parseValorMoeda(p.valor), 0);
+            const totalPago = novosPagamentos.reduce((acc, p) => acc + valorPagamentoComSinal(p), 0);
             const saldoRestante = centavosParaReais(pedido.valor_total) - totalPago;
 
             const payload = { servico: novoServico };
@@ -906,7 +910,7 @@ export const AppProvider = ({ children }) => {
         const pagamentosRecuperados = dadosDesconstruidos.pagamentos || [];
         setPagamentosPedido(pagamentosRecuperados);
         
-        const totalPago = pagamentosRecuperados.reduce((acc, p) => acc + parseValorMoeda(p.valor), 0);
+        const totalPago = pagamentosRecuperados.reduce((acc, p) => acc + valorPagamentoComSinal(p), 0);
         const totalOSStr = centavosParaReais(pedido.valor_total);
         const saldoRestante = totalOSStr - totalPago;
         
@@ -2045,6 +2049,7 @@ export const AppProvider = ({ children }) => {
         setClientes,
         fornecedores,
         setFornecedores,
+        fornecedoresTerceirizacaoNomes,
         abaCadastros,
         setAbaCadastros,
         abaOS,

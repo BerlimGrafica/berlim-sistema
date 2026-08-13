@@ -1,5 +1,5 @@
 "use client";
-import { centavosParaReais, parseValorMoeda, obterDataAtual, formatarDataExibicao } from '@/lib/utils/formatters';
+import { centavosParaReais, parseValorMoeda, valorPagamentoComSinal, obterDataAtual, formatarDataExibicao } from '@/lib/utils/formatters';
 import { BarRow } from '@/components/vendas/BarRow';
 
 // Todas as métricas derivadas compartilhadas pelos painéis "Visão Geral" e
@@ -18,7 +18,7 @@ export function useFinanceiroMetrics(pedidos, contasPagar) {
         if (!pagamentosStr) return 0;
         try {
             const pagamentos = JSON.parse(pagamentosStr);
-            return pagamentos.reduce((a, p) => a + parseValorMoeda(p.valor), 0);
+            return pagamentos.reduce((a, p) => a + valorPagamentoComSinal(p), 0);
         } catch (e) { return 0; }
     };
 

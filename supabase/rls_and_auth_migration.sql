@@ -207,6 +207,25 @@ drop policy if exists "links_all" on public.links_pagamento;
 create policy "links_all" on public.links_pagamento for all to authenticated
   using (true) with check (true);
 
+-- ----------------------------------------------------------------------------
+-- 14) fornecedores_terceirizacao_nomes — view pública (id + nome, sem contato/
+--     observações) só com os fornecedores de Terceirização (ou sem tipo).
+--     Existe porque "fornecedores_select" (item 8) restringe a tabela a
+--     Administrador/Financeiro, mas o select de "local de produção" no
+--     OSModal e no OrçamentoFormalizadoModal é usado por qualquer nível
+--     logado (Atendimento, Produção, etc). Rode este bloco como o usuário
+--     padrão do SQL Editor do Supabase (postgres/superuser): a view roda com
+--     os privilégios do dono, que ignora RLS, então o WHERE abaixo é quem
+--     efetivamente filtra as linhas — não a policy de fornecedores.
+-- ----------------------------------------------------------------------------
+drop view if exists public.fornecedores_terceirizacao_nomes;
+create view public.fornecedores_terceirizacao_nomes
+  with (security_invoker = false) as
+  select id, nome from public.fornecedores
+  where tipo is null or tipo = 'Terceirização';
+
+grant select on public.fornecedores_terceirizacao_nomes to authenticated;
+
 -- ============================================================================
 -- FIM. Depois de validar o login novo e cada módulo (ver runbook), rode
 -- separadamente (é destrutivo, por isso não está automático aqui):
