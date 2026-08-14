@@ -1,5 +1,5 @@
 "use client";
-import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 import { flushSync } from 'react-dom';
 import { supabase } from '@/lib/supabaseClient';
@@ -47,6 +47,9 @@ export const AppProvider = ({ children }) => {
     const [clientesCadastrados, setClientesCadastrados] = useState([]);
     const [totalClientesCad, setTotalClientesCad] = useState(0);
     const [clientesProblema, setClientesProblema] = useState([]);
+    // Qual OS pediu o telefone do cliente por último — descarta resposta atrasada
+    // de uma OS que o usuário já fechou (ver abrirEdicao).
+    const clienteInfoPedidoRef = useRef(null);
     const [fornecedores, setFornecedores] = useState([]);
     const [fornecedoresTerceirizacaoNomes, setFornecedoresTerceirizacaoNomes] = useState([]);
     const [abaCadastros, setAbaCadastros] = useState('clientes');
@@ -909,7 +912,22 @@ export const AppProvider = ({ children }) => {
         const dadosDesconstruidos = desconstruirTextoServico(pedido.servico);
         setPedidoEmEdicao(pedido);
         setBuscaCliente(pedido.cliente);
+        // Busca o cliente vinculado pela chave primária. Não dá pra tirar isso da
+        // lista de busca por nome: ela é limitada a 15 resultados, e com dezenas
+        // de homônimos (há 12 clientes chamados só "Vanessa") o cliente da OS
+        // costuma ficar de fora — aí a tela caía no primeiro nome igual e exibia
+        // o telefone de outra pessoa.
         setClienteSelecionadoInfo(null);
+        if (pedido.cliente_id) {
+            clienteInfoPedidoRef.current = pedido.id;
+            supabase.from('clientes').select('id, telefone').eq('id', pedido.cliente_id).single()
+                .then(({ data }) => {
+                    // Ignora a resposta se o usuário já abriu outra OS nesse meio tempo.
+                    if (data && clienteInfoPedidoRef.current === pedido.id) {
+                        setClienteSelecionadoInfo({ id: data.id, telefone: data.telefone });
+                    }
+                });
+        }
         setItensPedido(dadosDesconstruidos.itens);
         const pagamentosRecuperados = dadosDesconstruidos.pagamentos || [];
         setPagamentosPedido(pagamentosRecuperados);
