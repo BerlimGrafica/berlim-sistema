@@ -10,6 +10,9 @@ const montserrat = Montserrat({
 });
 
 export const metadata: Metadata = {
+  // Base para resolver caminhos relativos (ex.: a og:image do /solicitar-nota)
+  // em URLs absolutas, que é o que os leitores de prévia de link exigem.
+  metadataBase: new URL("https://berlim-sistema.vercel.app"),
   title: "Berlim Gráfica | ERP Corporativo",
   description: "ERP Corporativo da Berlim Gráfica",
   icons: {

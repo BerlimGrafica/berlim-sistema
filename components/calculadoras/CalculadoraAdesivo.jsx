@@ -11,6 +11,7 @@ export function CalculadoraAdesivo({ produtos }) {
     const [largura, setLargura] = useState('');
     const [altura, setAltura] = useState('');
     const [tipo, setTipo] = useState('17');
+    const [prazo, setPrazo] = useState('padrao');
     const [quantidade, setQuantidade] = useState('');
 
     const item15 = produtos?.find(p => Number(p.id) === 15);
@@ -27,6 +28,23 @@ export function CalculadoraAdesivo({ produtos }) {
     const preco19 = item19 ? centavosParaReais(item19.preco_base) : 115.0;
     const preco21 = item21 ? centavosParaReais(item21.preco_base) : 55.0;
     const precoMeioMetroTransparente = 80.0;
+
+    // O 1/2 metro tem regra própria por tipo: o transparente usa um valor fixo,
+    // o laminado é o dobro do SRA3 dele (item 21) e o sem laminação sai por
+    // 0,7333 do metro.
+    const precoMeioMetro = (t) => {
+        if (t === '19') return precoMeioMetroTransparente;
+        if (t === '18') return preco21 * 2;
+        return preco17 * 0.7333;
+    };
+
+    // Multiplicador de prazo
+    let multiplicadorPrazo = 1.0;
+    if (prazo === 'outro_dia') multiplicadorPrazo = 1.3; // +30%
+    if (prazo === 'mesmo_dia') multiplicadorPrazo = 1.6; // +60%
+
+    // Todo preço exibido/copiado já sai com o prazo aplicado.
+    const fmtPrazo = (v) => (v * multiplicadorPrazo).toFixed(2).replace('.', ',');
 
     const calculaCabem = (areaW, areaH, adW, adH) => {
         return Math.floor(areaW / adW) * Math.floor(areaH / adH);
@@ -59,13 +77,13 @@ export function CalculadoraAdesivo({ produtos }) {
             const qtd3 = Math.floor(qMetro / 10) * 10;
 
             if (qtd1 > 0) {
-                texto += `${qtd1} Adesivos | ${lRawNum}x${aRawNum}cm | Adesivo Vinil Branco | Impressão Laser ou Látex | Sem Laminação | 1/2 corte | Entregue em folha A3 - R$ ${preco15.toFixed(2).replace('.', ',')}\n\n`;
+                texto += `${qtd1} Adesivos | ${lRawNum}x${aRawNum}cm | Adesivo Vinil Branco | Impressão Laser ou Látex | Sem Laminação | 1/2 corte | Entregue em folha A3 - R$ ${fmtPrazo(preco15)}\n\n`;
             }
             if (qtd2 > 0) {
-                texto += `${qtd2} Adesivos | ${lRawNum}x${aRawNum}cm | Adesivo Vinil Branco | Impressão Laser ou Látex | Sem Laminação | 1/2 corte | Entregue em folha A3 ou 1/2 metro - R$ ${(preco17 * 0.7333).toFixed(2).replace('.', ',')}\n\n`;
+                texto += `${qtd2} Adesivos | ${lRawNum}x${aRawNum}cm | Adesivo Vinil Branco | Impressão Laser ou Látex | Sem Laminação | 1/2 corte | Entregue em folha A3 ou 1/2 metro - R$ ${fmtPrazo(precoMeioMetro('17'))}\n\n`;
             }
             if (qtd3 > 0) {
-                texto += `${qtd3} Adesivos | ${lRawNum}x${aRawNum}cm | Adesivo Vinil Branco | Impressão Látex | Sem Laminação | 1/2 corte | Entregue em folha de 1/2 metro - R$ ${preco17.toFixed(2).replace('.', ',')}\n\n`;
+                texto += `${qtd3} Adesivos | ${lRawNum}x${aRawNum}cm | Adesivo Vinil Branco | Impressão Látex | Sem Laminação | 1/2 corte | Entregue em folha de 1/2 metro - R$ ${fmtPrazo(preco17)}\n\n`;
             }
             texto = texto.trim();
         } else if (tipo === '18') {
@@ -74,13 +92,13 @@ export function CalculadoraAdesivo({ produtos }) {
             const qtd3 = Math.floor(qMetro / 10) * 10;
 
             if (qtd1 > 0) {
-                texto += `${qtd1} Adesivos | ${lRawNum}x${aRawNum}cm | Adesivo Vinil Branco | Impressão Laser ou Látex | Laminado Brilho/Fosco | 1/2 corte | Entregue em folha A3 - R$ ${preco21.toFixed(2).replace('.', ',')}\n\n`;
+                texto += `${qtd1} Adesivos | ${lRawNum}x${aRawNum}cm | Adesivo Vinil Branco | Impressão Laser ou Látex | Laminado Brilho/Fosco | 1/2 corte | Entregue em folha A3 - R$ ${fmtPrazo(preco21)}\n\n`;
             }
             if (qtd2 > 0) {
-                texto += `${qtd2} Adesivos | ${lRawNum}x${aRawNum}cm | Adesivo Vinil Branco | Impressão Laser ou Látex | Laminado Brilho/Fosco | 1/2 corte | Entregue em folha A3 ou 1/2 metro - R$ ${(preco18 * 0.7333).toFixed(2).replace('.', ',')}\n\n`;
+                texto += `${qtd2} Adesivos | ${lRawNum}x${aRawNum}cm | Adesivo Vinil Branco | Impressão Laser ou Látex | Laminado Brilho/Fosco | 1/2 corte | Entregue em folha A3 ou 1/2 metro - R$ ${fmtPrazo(precoMeioMetro('18'))}\n\n`;
             }
             if (qtd3 > 0) {
-                texto += `${qtd3} Adesivos | ${lRawNum}x${aRawNum}cm | Adesivo Vinil Branco | Impressão Látex | Laminado Brilho/Fosco | 1/2 corte | Entregue em folha de 1/2 metro - R$ ${preco18.toFixed(2).replace('.', ',')}\n\n`;
+                texto += `${qtd3} Adesivos | ${lRawNum}x${aRawNum}cm | Adesivo Vinil Branco | Impressão Látex | Laminado Brilho/Fosco | 1/2 corte | Entregue em folha de 1/2 metro - R$ ${fmtPrazo(preco18)}\n\n`;
             }
             texto = texto.trim();
         } else if (tipo === '19') {
@@ -89,13 +107,13 @@ export function CalculadoraAdesivo({ produtos }) {
             const qtd3 = Math.floor(qMetro / 10) * 10;
 
             if (qtd1 > 0) {
-                texto += `${qtd1} Adesivos | ${lRawNum}x${aRawNum}cm | Adesivo Vinil Transparente | Impressão Laser ou Látex | 1/2 corte | Entregue em folha A3 - R$ ${preco16.toFixed(2).replace('.', ',')}\n\n`;
+                texto += `${qtd1} Adesivos | ${lRawNum}x${aRawNum}cm | Adesivo Vinil Transparente | Impressão Laser ou Látex | 1/2 corte | Entregue em folha A3 - R$ ${fmtPrazo(preco16)}\n\n`;
             }
             if (qtd2 > 0) {
-                texto += `${qtd2} Adesivos | ${lRawNum}x${aRawNum}cm | Adesivo Vinil Transparente | Impressão Laser ou Látex | 1/2 corte | Entregue em folha A3 ou 1/2 metro - R$ ${precoMeioMetroTransparente.toFixed(2).replace('.', ',')}\n\n`;
+                texto += `${qtd2} Adesivos | ${lRawNum}x${aRawNum}cm | Adesivo Vinil Transparente | Impressão Laser ou Látex | 1/2 corte | Entregue em folha A3 ou 1/2 metro - R$ ${fmtPrazo(precoMeioMetro('19'))}\n\n`;
             }
             if (qtd3 > 0) {
-                texto += `${qtd3} Adesivos | ${lRawNum}x${aRawNum}cm | Adesivo Vinil Transparente | Impressão Látex | 1/2 corte | Entregue em folha de 1/2 metro - R$ ${preco19.toFixed(2).replace('.', ',')}\n\n`;
+                texto += `${qtd3} Adesivos | ${lRawNum}x${aRawNum}cm | Adesivo Vinil Transparente | Impressão Látex | 1/2 corte | Entregue em folha de 1/2 metro - R$ ${fmtPrazo(preco19)}\n\n`;
             }
             texto = texto.trim();
         }
@@ -150,7 +168,7 @@ export function CalculadoraAdesivo({ produtos }) {
         if (qSRA3 > 0 && qty <= qSRA3) {
             total = sra3Price;
         } else if (qMeio > 0 && qty <= qMeio) {
-            total = tipo === '19' ? precoMeioMetroTransparente : basePrice * 0.7333;
+            total = precoMeioMetro(tipo);
         } else if (qMetro > 0 && qty <= qMetro) {
             total = basePrice;
         } else {
@@ -163,7 +181,7 @@ export function CalculadoraAdesivo({ produtos }) {
             }
         }
 
-        return total.toFixed(2);
+        return (total * multiplicadorPrazo).toFixed(2);
     };
 
     const calcularMetrosTotais = () => {
@@ -256,15 +274,29 @@ export function CalculadoraAdesivo({ produtos }) {
                     />
                 </div>
                 <div>
+                    <label className="block text-[11px] font-semibold text-gray-500 dark:text-[#A1A1AA] mb-1">Prazo de Entrega</label>
+                    <CustomSelect
+                        value={prazo}
+                        onChange={setPrazo}
+                        className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition cursor-pointer"
+                        options={[
+                            { value: 'padrao', label: 'Padrão' },
+                            { value: 'outro_dia', label: 'Para outro dia (+30%)' },
+                            { value: 'mesmo_dia', label: 'Para o mesmo dia (+60%)' },
+                        ]}
+                    />
+                </div>
+                <div>
                     <label className="block text-[11px] font-semibold text-gray-500 dark:text-[#A1A1AA] mb-1">Quantidade</label>
-                    <div className="flex">
-                        <input type="number" min="1" value={quantidade} onChange={e => setQuantidade(e.target.value)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded-l px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition" />
-                        <Tooltip label="Copiar orçamentos de quantidades máximas">
-                            <button onClick={copiarMaximos} aria-label="Copiar orçamentos de quantidades máximas" className="bg-brand text-white px-3 rounded-r flex items-center justify-center hover:bg-brand/90 transition shadow-sm h-full">
-                                <Icon name="copy" className="w-4 h-4" />
-                            </button>
-                        </Tooltip>
-                    </div>
+                    <input type="number" min="1" value={quantidade} onChange={e => setQuantidade(e.target.value)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition" />
+                </div>
+                <div className="flex flex-col justify-end">
+                    <Tooltip label="Copiar orçamentos de quantidades máximas" className="w-full">
+                        <button onClick={copiarMaximos} className="w-full bg-brand text-white px-3 py-2 rounded text-[13px] font-semibold flex items-center justify-center gap-2 hover:bg-brand/90 transition shadow-sm">
+                            <Icon name="copy" className="w-4 h-4" />
+                            Quantidades Máximas
+                        </button>
+                    </Tooltip>
                 </div>
             </div>
 
