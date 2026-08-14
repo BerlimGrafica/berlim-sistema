@@ -330,9 +330,13 @@ export const AppProvider = ({ children }) => {
     }, [usuario]);
 
 
-    const isClienteProblema = (nome) => {
+    // Casa pelo cliente_id sempre que a OS/orçamento tiver um; só cai no nome
+    // pra registro antigo que ainda não tem cliente_id, porque comparar por nome
+    // marca homônimos errados (duas "Vanessa" viram a mesma pessoa).
+    const isClienteProblema = (nome, clienteId) => {
+        if (clienteId) return clientesProblema.some(c => c.id === clienteId);
         if (!nome) return false;
-        return clientesProblema.includes(nome);
+        return clientesProblema.some(c => c.nome === nome);
     };
 
 
@@ -615,8 +619,8 @@ export const AppProvider = ({ children }) => {
     useEffect(() => {
         if (!usuario) return;
         async function fetchProblemas() {
-            const { data } = await supabase.from('clientes').select('nome').eq('cliente_problema', true);
-            if (data) setClientesProblema(data.map(c => c.nome));
+            const { data } = await supabase.from('clientes').select('id, nome').eq('cliente_problema', true);
+            if (data) setClientesProblema(data);
         }
         fetchProblemas();
     }, [usuario, triggerRealtime]);

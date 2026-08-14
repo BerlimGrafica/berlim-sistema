@@ -178,7 +178,7 @@ export default function OSModal() {
                                     </p>
                                 ) : null;
                             })()}
-                            {isClienteProblema(novoPedido.cliente) && (
+                            {isClienteProblema(novoPedido.cliente, novoPedido.cliente_id) && (
                                 <div className="mt-2 p-2.5 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded flex items-start gap-2.5 text-red-600 dark:text-red-400">
                                     <Icon name="alert-triangle" className="w-5 h-5 shrink-0 mt-0.5" />
                                     <div>
