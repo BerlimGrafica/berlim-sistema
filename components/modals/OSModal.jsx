@@ -143,7 +143,7 @@ export default function OSModal() {
                             <label className="block text-[13px] font-medium mb-1.5 text-gray-700 dark:text-[#EDEDED]">Cliente / Empresa</label>
                             <div className="flex gap-2">
                                 <div className="relative flex-1">
-                                    <input required type="text" value={mascararCliente(buscaCliente, isDemo)} disabled={isModalTrancado}
+                                    <input required type="text" autoFocus={!pedidoEmEdicao} value={mascararCliente(buscaCliente, isDemo)} disabled={isModalTrancado}
                                         onChange={e => { setBuscaCliente(e.target.value); setClienteSelecionadoInfo(null); setNovoPedido({...novoPedido, cliente: e.target.value, cliente_id: null}); setClienteDropdownAberto(true); }}
                                         onFocus={() => { if(!isModalTrancado) setClienteDropdownAberto(true); }} onBlur={() => setTimeout(() => setClienteDropdownAberto(false), 200)}
                                         className="w-full bg-white dark:bg-darkElevated border border-gray-300 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand transition dark:text-[#EDEDED] disabled:opacity-50" placeholder="Buscar cliente..." autoComplete="off" />
@@ -163,10 +163,15 @@ export default function OSModal() {
                                 </Tooltip>
                             </div>
                             {!clienteDropdownAberto && buscaCliente && !isDemo && (() => {
-                                // Prefere o cliente exatamente clicado (sem ambiguidade); só cai na busca
-                                // por nome (pode ser o registro errado se houver nomes duplicados) quando
-                                // não há seleção confirmada nesta sessão, ex: ao abrir uma OS pra editar.
-                                const telefone = clienteSelecionadoInfo?.telefone ?? clientesFiltrados.find(c => c.nome === buscaCliente)?.telefone;
+                                // Ordem de preferência, da mais pra menos confiável: o cliente
+                                // clicado agora; o cliente_id gravado na OS (é o que vale ao
+                                // reabrir pra editar, já que a seleção da sessão anterior se
+                                // perdeu); e só então o nome — que devolve o registro errado
+                                // quando há homônimos, e por isso é último recurso, para OS
+                                // antiga que ainda não tem cliente_id.
+                                const telefone = clienteSelecionadoInfo?.telefone
+                                    ?? (novoPedido.cliente_id ? clientesFiltrados.find(c => c.id === novoPedido.cliente_id)?.telefone : undefined)
+                                    ?? clientesFiltrados.find(c => c.nome === buscaCliente)?.telefone;
                                 return telefone ? (
                                     <p className="mt-1.5 text-[11px] text-gray-500 dark:text-[#A1A1AA] flex items-center gap-1">
                                         <Icon name="phone" className="w-3 h-3" /> {telefone}
