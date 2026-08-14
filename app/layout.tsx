@@ -15,9 +15,8 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://berlim-sistema.vercel.app"),
   title: "Berlim Gráfica | ERP Corporativo",
   description: "ERP Corporativo da Berlim Gráfica",
-  icons: {
-    icon: "https://www.google.com/s2/favicons?domain=berlimgraficarapida.com.br&sz=128",
-  },
+  // Sem "icons" aqui de propósito: o Next serve automaticamente o app/icon.png
+  // (nosso símbolo), e declarar um ícone nesta metadata sobrescreveria o arquivo.
 };
 
 export default function RootLayout({
