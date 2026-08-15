@@ -1,8 +1,7 @@
 "use client";
 import { useAppContext } from '@/context/AppContext';
 import Icon from '@/components/Icon';
-import { formatarValorFinanceiro, parseValorMoeda } from '@/lib/utils/formatters';
-import { desconstruirTextoServico } from '@/lib/utils/servico';
+import { formatarValorFinanceiro, centavosParaReais } from '@/lib/utils/formatters';
 import { useFinanceiroMetrics } from '@/components/vendas/useFinanceiroMetrics';
 
 export default function VendasPorProdutoPanel() {
@@ -18,16 +17,12 @@ export default function VendasPorProdutoPanel() {
             <div className="flex flex-col gap-3 mt-4">
                 {(() => {
                     const agrupadoPorProduto = pedidosFin.reduce((acc, p) => {
-                        if (!p.servico) return acc;
-                        const { itens } = desconstruirTextoServico(p.servico);
+                        (p.pedido_itens || []).forEach(item => {
+                            const nomeLimpo = (item.nome || '').trim();
+                            const valorNum = centavosParaReais(item.valor_centavos);
 
-                        itens.forEach(item => {
-                            const id_produto_match = item.id_produto;
-                            const nomeLimpo = item.nome.trim();
-                            const valorNum = parseValorMoeda(item.valor);
-
-                            const prod = id_produto_match
-                                ? produtos.find(p => String(p.id) === String(id_produto_match))
+                            const prod = item.produto_id
+                                ? produtos.find(p => String(p.id) === String(item.produto_id))
                                 : produtos.find(prod => prod.nome.toLowerCase() === nomeLimpo.toLowerCase());
 
                             const finalName = prod ? prod.nome : nomeLimpo;
@@ -67,20 +62,17 @@ export default function VendasPorProdutoPanel() {
                     pedidos.forEach(p => {
                         if (!p.data_pedido || p.data_pedido < limiteData) return;
                         if (p.status === 'Cancelado') return;
-                        if (!p.servico) return;
 
                         const mesAno = p.data_pedido.substring(0, 7);
                         if (!mesesGrafico.includes(mesAno)) return;
 
-                        const { itens } = desconstruirTextoServico(p.servico);
-                        itens.forEach(item => {
-                            const nomeLimpo = item.nome.trim();
-                            const id_match = item.id_produto;
-                            const prod = id_match ? produtos.find(pr => String(pr.id) === String(id_match)) : produtos.find(pr => pr.nome.toLowerCase() === nomeLimpo.toLowerCase());
+                        (p.pedido_itens || []).forEach(item => {
+                            const nomeLimpo = (item.nome || '').trim();
+                            const prod = item.produto_id ? produtos.find(pr => String(pr.id) === String(item.produto_id)) : produtos.find(pr => pr.nome.toLowerCase() === nomeLimpo.toLowerCase());
                             const finalName = prod ? prod.nome : nomeLimpo;
 
                             if (selecionadosAtuais.includes(finalName)) {
-                                const valorNum = parseValorMoeda(item.valor);
+                                const valorNum = centavosParaReais(item.valor_centavos);
                                 dadosMesProduto[finalName][mesAno] += valorNum;
                             }
                         });

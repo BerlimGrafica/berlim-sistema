@@ -4,8 +4,8 @@ import { usePathname } from 'next/navigation';
 import { flushSync } from 'react-dom';
 import { supabase } from '@/lib/supabaseClient';
 import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS } from '@/lib/utils/constants';
-import { formatarMoeda, parseValorMoeda, valorPagamentoComSinal, paraCentavos, centavosParaReais, obterDataAtual, adicionarMesData, apenasDigitos } from '@/lib/utils/formatters';
-import { desconstruirTextoServico } from '@/lib/utils/servico';
+import { formatarMoeda, parseValorMoeda, valorPagamentoComSinal, valorPagamentoComSinalCentavos, paraCentavos, centavosParaReais, obterDataAtual, adicionarMesData, apenasDigitos } from '@/lib/utils/formatters';
+import { desconstruirTextoServico, construirTextoServico, itemDbParaCarrinho, pagamentoDbParaCarrinho } from '@/lib/utils/servico';
 import { useAuth } from '@/hooks/useAuth';
 import { useAlertas } from '@/hooks/useAlertas';
 import { useChat } from '@/hooks/useChat';
@@ -217,25 +217,6 @@ export const AppProvider = ({ children }) => {
                     { event: '*', schema: 'public', table: 'pedidos' }, 
                     (payload) => {
                         console.log('Atualização em tempo real (pedidos) recebida!', payload);
-                        const isFin = usuario?.nivel === 'Financeiro';
-
-                        const extrairBoletos = (servico) => {
-                            const str = servico && servico.split('\n\n[PAGAMENTOS]\n')[1];
-                            if (!str) return [];
-                            try { return JSON.parse(str).filter(pg => pg.forma === 'Boleto'); } catch (e) { return []; }
-                        };
-
-                        // Alerta: Novo boleto registrado na O.S. (para Financeiro e Giovana)
-                        if (isFin || ehUsuario('Giovana')) {
-                            const boletosAntes = extrairBoletos(payload.old?.servico);
-                            const boletosDepois = extrairBoletos(payload.new?.servico);
-                            if (boletosDepois.length > 0 && boletosAntes.length === 0) {
-                                setAlertasNaoLidos(prev => {
-                                    if (prev.some(a => a.os_id === payload.new.id && a.tipo === 'boleto_novo')) return prev;
-                                    return [...prev, { id: Date.now() + 6, msg: `Novo boleto registrado na O.S. #${payload.new.id}`, os_id: payload.new.id, tipo: 'boleto_novo' }];
-                                });
-                            }
-                        }
 
                         // Lógica de alerta
                         if (payload.eventType === 'UPDATE') {
@@ -310,6 +291,23 @@ export const AppProvider = ({ children }) => {
                         setChatMensagens(prev => prev.filter(m => m.id !== payload.old.id));
                     }
                 )
+                .on(
+                    // Alerta: novo pagamento Boleto lançado numa OS (para Financeiro e
+                    // Giovana). Reage direto ao INSERT em pedido_pagamentos em vez de
+                    // diffar payload.old/new.servico — mais simples e correto (o evento
+                    // que importa é "surgiu um pagamento Boleto", não uma heurística de
+                    // diff de texto).
+                    'postgres_changes',
+                    { event: 'INSERT', schema: 'public', table: 'pedido_pagamentos', filter: 'forma=eq.Boleto' },
+                    (payload) => {
+                        if (usuario?.nivel !== 'Financeiro' && !ehUsuario('Giovana')) return;
+                        const pedidoId = payload.new.pedido_id;
+                        setAlertasNaoLidos(prev => {
+                            if (prev.some(a => a.os_id === pedidoId && a.tipo === 'boleto_novo')) return prev;
+                            return [...prev, { id: Date.now() + 6, msg: `Novo boleto registrado na O.S. #${pedidoId}`, os_id: pedidoId, tipo: 'boleto_novo' }];
+                        });
+                    }
+                )
             .subscribe();
 
             // Desliga o radar se o usuário fizer logoff
@@ -372,7 +370,7 @@ export const AppProvider = ({ children }) => {
         while (fetchMore) {
             const { data: batch, error } = await supabase
                 .from('pedidos')
-                .select('*')
+                .select('*, pedido_itens(*), pedido_pagamentos(*)')
                 .or(`data_pedido.gte.${dataCorte},status.in.(Produzir,Arte,Impressão,Acabamento,Retirada)`)
                 .order('id', { ascending: false })
                 .range(from, from + limit - 1);
@@ -434,14 +432,9 @@ export const AppProvider = ({ children }) => {
             }
 
             if (usuario?.nivel === 'Financeiro' || ehUsuario('Giovana')) {
-                const pedidosComBoletoAberto = todosPedidos.map(p => {
-                    const pagamentosStr = p.servico && p.servico.split('\n\n[PAGAMENTOS]\n')[1];
-                    let pagamentos = [];
-                    if (pagamentosStr) {
-                        try { pagamentos = JSON.parse(pagamentosStr); } catch(e) {}
-                    }
-                    return { ...p, pagamentos };
-                }).filter(p => !statusIgnoradosBoleto.includes(p.status) && p.prazo_pagamento && p.pagamentos.some(pag => pag.forma === 'Boleto' && !pag.boleto_concluido));
+                const pedidosComBoletoAberto = todosPedidos
+                    .map(p => ({ ...p, pagamentos: p.pedido_pagamentos || [] }))
+                    .filter(p => !statusIgnoradosBoleto.includes(p.status) && p.prazo_pagamento && p.pagamentos.some(pag => pag.forma === 'Boleto' && !pag.boleto_concluido));
 
                 if (pedidosComBoletoAberto.length > 0) {
                     let novosAlertasBoleto = [];
@@ -538,7 +531,7 @@ export const AppProvider = ({ children }) => {
         const { data: listaFornecedoresTerc } = await supabase.from('fornecedores_terceirizacao_nomes').select('*').order('id', { ascending: true });
         if (listaFornecedoresTerc) setFornecedoresTerceirizacaoNomes(listaFornecedoresTerc);
 
-        const { data: listaOrcF } = await supabase.from('orcamentos_formalizados').select('*').order('created_at', { ascending: false });
+        const { data: listaOrcF } = await supabase.from('orcamentos_formalizados').select('*, orcamento_itens(*)').order('created_at', { ascending: false });
         if (listaOrcF) setOrcamentosFormalizados(listaOrcF);
 
         const { data: listaOrcPP } = await supabase.from('orcamentos_pre_prontos').select('*').order('created_at', { ascending: false });
@@ -759,11 +752,31 @@ export const AppProvider = ({ children }) => {
         }
     }
 
-    // Aplica `patch` ao pagamento "Boleto" da OS (dentro do bloco [PAGAMENTOS]
-    // em pedidos.servico) e persiste. Usado tanto para marcar como concluído
-    // quanto para editar o valor do boleto direto na tabela de Boletos — os
-    // únicos dois campos do pagamento que essa tela manipula, e os únicos que
-    // continuam vinculados/visíveis no modal da O.S.
+    // Alterna o campo concluido de um item específico direto em pedido_itens
+    // (usado pelo checklist de produção — ItensChecklist.jsx). Update de uma
+    // linha só, sem reserializar o carrinho inteiro nem pedidos.servico — o
+    // que eliminava o bug antigo de esquecer [ITENS_JSON] ao reserializar por
+    // aqui. pedidos.servico fica levemente desatualizado nesse campo
+    // especificamente até a OS ser reaberta e salva de novo pelo modal.
+    async function atualizarItemConcluido(pedidoId, itemId, concluido) {
+        setPedidos(prev => prev.map(p => p.id !== pedidoId ? p : {
+            ...p,
+            pedido_itens: (p.pedido_itens || []).map(i => i.id === itemId ? { ...i, concluido } : i),
+        }));
+        const { error } = await supabase.from('pedido_itens').update({ concluido }).eq('id', itemId);
+        if (error) {
+            avisar('Erro ao atualizar item: ' + error.message, 'erro');
+            carregarDados();
+        }
+    }
+
+    // Aplica `patch` ao pagamento "Boleto" da OS. Usado tanto para marcar como
+    // concluído quanto para editar o valor do boleto direto na tabela de
+    // Boletos — os únicos dois campos do pagamento que essa tela manipula, e
+    // os únicos que continuam vinculados/visíveis no modal da O.S.
+    // pedido_pagamentos é a fonte de verdade; o patch equivalente também é
+    // aplicado em pedidos.servico (espelho, ainda lido por PrintLayout,
+    // WhatsApp API e telas de resumo não migradas nesta entrega).
     async function atualizarPagamentoBoleto(pedido, patch) {
         if (!pedido || !pedido.servico) return;
 
@@ -774,12 +787,21 @@ export const AppProvider = ({ children }) => {
         const pagamentosAtualizados = pagamentos.map(pag => pag.forma === 'Boleto' ? { ...pag, ...patch } : pag);
         const novoServico = partes[0] + '\n\n[PAGAMENTOS]\n' + JSON.stringify(pagamentosAtualizados);
 
-        setPedidos(prev => prev.map(p => p.id === pedido.id ? { ...p, servico: novoServico } : p));
+        const patchCentavos = { ...patch };
+        if ('valor' in patch) { patchCentavos.valor_centavos = paraCentavos(patch.valor); delete patchCentavos.valor; }
+
+        setPedidos(prev => prev.map(p => p.id === pedido.id ? {
+            ...p, servico: novoServico,
+            pedido_pagamentos: (p.pedido_pagamentos || []).map(pg => pg.forma === 'Boleto' ? { ...pg, ...patchCentavos } : pg),
+        } : p));
         setPedidosBoleto(prev => prev.map(p => p.id === pedido.id ? { ...p, servico: novoServico, boleto: { ...p.boleto, ...patch } } : p));
 
-        const { error } = await supabase.from('pedidos').update({ servico: novoServico }).eq('id', pedido.id);
-        if (error) {
-            avisar('Erro ao atualizar boleto: ' + error.message, 'erro');
+        const [{ error: errorServico }, { error: errorPagamento }] = await Promise.all([
+            supabase.from('pedidos').update({ servico: novoServico }).eq('id', pedido.id),
+            supabase.from('pedido_pagamentos').update(patchCentavos).eq('pedido_id', pedido.id).eq('forma', 'Boleto'),
+        ]);
+        if (errorServico || errorPagamento) {
+            avisar('Erro ao atualizar boleto: ' + (errorServico || errorPagamento).message, 'erro');
             carregarDados();
         }
     }
@@ -796,15 +818,17 @@ export const AppProvider = ({ children }) => {
     // Finalizado) não pode ficar de fora só porque já foi pago. Busca
     // dedicada, sem filtro de data, incluindo Finalizado de propósito.
     async function buscarPedidosComBoleto() {
-        const { data, error } = await supabase.from('pedidos').select('*')
+        const { data, error } = await supabase.from('pedidos').select('*, pedido_itens(*), pedido_pagamentos(*)')
             .not('status', 'in', '("Abandonado","Cancelado")')
             .order('id', { ascending: true });
         if (error) { console.error('Erro ao buscar boletos:', error); return []; }
 
         return (data || [])
             .map(p => {
-                const { pagamentos } = desconstruirTextoServico(p.servico);
-                const boleto = (pagamentos || []).find(pag => pag.forma === 'Boleto');
+                const pg = (p.pedido_pagamentos || []).find(pag => pag.forma === 'Boleto');
+                // BoletoRow.jsx espera boleto.valor como string formatada (mesmo
+                // padrão do antigo pagamento parseado do texto).
+                const boleto = pg ? { ...pg, valor: formatarMoeda(String(pg.valor_centavos)) } : null;
                 return boleto ? { ...p, boleto } : null;
             })
             .filter(Boolean);
@@ -821,7 +845,7 @@ export const AppProvider = ({ children }) => {
     async function buscarOutrasOSAbertasDoCliente(pedidoAtualId, clienteId) {
         if (!clienteId) return [];
 
-        const { data, error } = await supabase.from('pedidos').select('*')
+        const { data, error } = await supabase.from('pedidos').select('*, pedido_pagamentos(*)')
             .not('status', 'in', '("Abandonado","Cancelado","Finalizado")')
             .neq('id', pedidoAtualId)
             .eq('cliente_id', clienteId)
@@ -830,8 +854,7 @@ export const AppProvider = ({ children }) => {
 
         return (data || [])
             .map(p => {
-                const { pagamentos } = desconstruirTextoServico(p.servico);
-                const totalPago = (pagamentos || []).reduce((acc, pag) => acc + valorPagamentoComSinal(pag), 0);
+                const totalPago = (p.pedido_pagamentos || []).reduce((acc, pag) => acc + valorPagamentoComSinalCentavos(pag), 0);
                 return { ...p, saldo: centavosParaReais(p.valor_total) - totalPago };
             })
             .filter(p => p.saldo > 0.001);
@@ -844,15 +867,14 @@ export const AppProvider = ({ children }) => {
     // "Concluído" antigo ainda não pago não pode sumir de um relatório de
     // contas a receber.
     async function buscarPedidosComSaldoDevedor() {
-        const { data, error } = await supabase.from('pedidos').select('*')
+        const { data, error } = await supabase.from('pedidos').select('*, pedido_itens(*), pedido_pagamentos(*)')
             .not('status', 'in', '("Abandonado","Cancelado","Finalizado")')
             .order('id', { ascending: true });
         if (error) { console.error('Erro ao buscar contas a receber:', error); return []; }
 
         return (data || [])
             .map(p => {
-                const { pagamentos } = desconstruirTextoServico(p.servico);
-                const totalPago = (pagamentos || []).reduce((acc, pag) => acc + valorPagamentoComSinal(pag), 0);
+                const totalPago = (p.pedido_pagamentos || []).reduce((acc, pag) => acc + valorPagamentoComSinalCentavos(pag), 0);
                 const totalReais = centavosParaReais(p.valor_total);
                 return { ...p, totalPago, totalReais, saldo: totalReais - totalPago };
             })
@@ -877,20 +899,32 @@ export const AppProvider = ({ children }) => {
             const novosPagamentos = [...pagamentosExistentes, pagamento];
             const novoServico = partes[0] + '\n\n[PAGAMENTOS]\n' + JSON.stringify(novosPagamentos);
 
-            const totalPago = novosPagamentos.reduce((acc, p) => acc + valorPagamentoComSinal(p), 0);
-            const saldoRestante = centavosParaReais(pedido.valor_total) - totalPago;
+            const pagamentosDb = pedido.pedido_pagamentos || [];
+            const totalPagoCentavos = pagamentosDb.reduce((acc, p) => acc + (p.forma === 'Estorno' ? -1 : 1) * p.valor_centavos, 0) + paraCentavos(valorAlocado);
+            const saldoRestante = centavosParaReais(pedido.valor_total) - centavosParaReais(totalPagoCentavos);
 
             const payload = { servico: novoServico };
             if (podeFinalizar && saldoRestante <= 0.001 && pedido.status !== 'Finalizado') payload.status = 'Finalizado';
 
-            const { data, error } = await supabase.from('pedidos').update(payload).eq('id', pedido.id).select();
-            if (error || !data || data.length === 0) {
+            const linhaPagamento = {
+                pedido_id: pedido.id, ordem: pagamentosDb.length, forma: metadados.forma || 'Indefinido',
+                valor_centavos: paraCentavos(valorAlocado), parcelas: metadados.parcelas ?? null,
+                instituicao: metadados.instituicao || null, bandeira: metadados.bandeira || null,
+                data: metadados.data || null, vencimento_boleto: metadados.vencimento_boleto || null,
+                boleto_concluido: metadados.boleto_concluido ?? null, lote_id: loteId,
+            };
+
+            const [{ data, error }, { data: pagamentoInserido, error: errorPagamento }] = await Promise.all([
+                supabase.from('pedidos').update(payload).eq('id', pedido.id).select(),
+                supabase.from('pedido_pagamentos').insert([linhaPagamento]).select(),
+            ]);
+            if (error || !data || data.length === 0 || errorPagamento) {
                 const jaGravadas = concluidos.length > 0 ? ` Já gravado em: ${concluidos.map(c => '#' + c.id).join(', ')}.` : '';
-                avisar(`Pagamento em lote interrompido na OS #${pedido.id}: ${error?.message || 'erro desconhecido'}.${jaGravadas}`, 'erro');
+                avisar(`Pagamento em lote interrompido na OS #${pedido.id}: ${(error || errorPagamento)?.message || 'erro desconhecido'}.${jaGravadas}`, 'erro');
                 carregarDados();
                 return { sucesso: false };
             }
-            concluidos.push(data[0]);
+            concluidos.push({ ...data[0], pedido_pagamentos: [...pagamentosDb, ...(pagamentoInserido || [])] });
         }
         if (concluidos.length > 0) {
             setPedidos(prev => prev.map(p => concluidos.find(c => c.id === p.id) || p));
@@ -939,10 +973,15 @@ export const AppProvider = ({ children }) => {
                     }
                 });
         }
-        setItensPedido(dadosDesconstruidos.itens);
-        const pagamentosRecuperados = dadosDesconstruidos.pagamentos || [];
+        const itensCarregados = pedido.pedido_itens
+            ? [...pedido.pedido_itens].sort((a, b) => a.ordem - b.ordem).map(itemDbParaCarrinho)
+            : dadosDesconstruidos.itens;
+        setItensPedido(itensCarregados);
+        const pagamentosRecuperados = pedido.pedido_pagamentos
+            ? [...pedido.pedido_pagamentos].sort((a, b) => a.ordem - b.ordem).map(pagamentoDbParaCarrinho)
+            : (dadosDesconstruidos.pagamentos || []);
         setPagamentosPedido(pagamentosRecuperados);
-        
+
         const totalPago = pagamentosRecuperados.reduce((acc, p) => acc + valorPagamentoComSinal(p), 0);
         const totalOSStr = centavosParaReais(pedido.valor_total);
         const saldoRestante = totalOSStr - totalPago;
@@ -1062,6 +1101,47 @@ export const AppProvider = ({ children }) => {
         setBuscaProduto('');
     }
 
+    // Grava pedido_itens/pedido_pagamentos a partir do carrinho do modal
+    // (delete-then-insert por pedido_id, idempotente — reflete exatamente o
+    // carrinho atual, igual ao que já acontece com pedidos.servico). Devolve
+    // as linhas inseridas (com id real do banco) pra manter o pedido em
+    // memória consistente sem precisar de um carregarDados() completo.
+    // Fonte de verdade nova; pedidos.servico continua sendo gravado em
+    // paralelo (espelho) pelos chamadores — ver [[project-segmentacao-2026-08]]
+    // style comment no topo do arquivo de migração SQL.
+    async function salvarItensPagamentosDoPedido(pedidoId, itens, pagamentos) {
+        await Promise.all([
+            supabase.from('pedido_itens').delete().eq('pedido_id', pedidoId),
+            supabase.from('pedido_pagamentos').delete().eq('pedido_id', pedidoId),
+        ]);
+
+        const linhasItens = itens.map((i, idx) => ({
+            pedido_id: pedidoId, produto_id: i.id_produto || null, ordem: idx,
+            nome: i.nome || null, descricao: i.descricao || null,
+            valor_centavos: paraCentavos(i.valor),
+            valor_original_centavos: i.valor_original ? paraCentavos(i.valor_original) : null,
+            desconto_percentual: i.desconto ? Number(i.desconto) : null,
+            local_producao: i.local_producao || null, concluido: !!i.concluido,
+        }));
+        const linhasPagamentos = pagamentos.map((p, idx) => ({
+            pedido_id: pedidoId, ordem: idx, forma: p.forma || 'Indefinido',
+            valor_centavos: paraCentavos(p.valor), parcelas: p.parcelas ?? null,
+            instituicao: p.instituicao || null, bandeira: p.bandeira || null,
+            data: p.data || null, vencimento_boleto: p.vencimento_boleto || null,
+            boleto_concluido: p.boleto_concluido ?? null, lote_id: p.lote_id || null,
+        }));
+
+        const [{ data: itensInseridos, error: errItens }, { data: pagamentosInseridos, error: errPag }] = await Promise.all([
+            linhasItens.length > 0 ? supabase.from('pedido_itens').insert(linhasItens).select() : Promise.resolve({ data: [], error: null }),
+            linhasPagamentos.length > 0 ? supabase.from('pedido_pagamentos').insert(linhasPagamentos).select() : Promise.resolve({ data: [], error: null }),
+        ]);
+        if (errItens || errPag) {
+            console.error('Erro ao gravar itens/pagamentos da OS:', errItens || errPag);
+            avisar('OS salva, mas houve erro ao gravar itens/pagamentos estruturados: ' + (errItens || errPag).message, 'erro');
+        }
+        return { pedido_itens: itensInseridos || [], pedido_pagamentos: pagamentosInseridos || [] };
+    }
+
     async function salvarOS(e, querImprimir = false, statusForcado = null) {
         if (e) e.preventDefault();
 
@@ -1086,28 +1166,7 @@ export const AppProvider = ({ children }) => {
         setSalvandoOS(true);
         const statusFinal = statusForcado || novoPedido.status;
 
-        let textoFinalServico = '';
-        if (itensPedido.length > 0) {
-            const itensTextoArray = itensPedido.map(i => {
-                const strDesconto = i.desconto ? ' (-' + i.desconto + '%)' : '';
-                const strNome = i.nome ? '• ' + (i.id_produto ? `[#${i.id_produto}] ` : '') + i.nome : '• Serviço Personalizado';
-                const strLocal = i.local_producao ? '\n  Local: ' + i.local_producao : '\n  Local: Berlim';
-                const strConcluido = i.concluido ? '\n  [✓] Concluído' : '';
-                return strNome + '\n  ' + i.descricao + '\n  Valor: R$ ' + i.valor + strDesconto + strLocal + strConcluido;
-            });
-            textoFinalServico += itensTextoArray.join('\n\n') + '\n\n';
-            if (novoPedido.servico) textoFinalServico += '[OBSERVAÇÕES GERAIS]\n' + novoPedido.servico;
-            // Cópia exata dos itens em JSON, imune a descrição com linha em branco
-            // (que quebra a reconstrução via texto com marcador "• " — ver
-            // desconstruirTextoServico). Mesmo padrão já usado nos orçamentos.
-            textoFinalServico += '\n\n[ITENS_JSON]\n' + JSON.stringify(itensPedido);
-        } else {
-            textoFinalServico = novoPedido.servico;
-        }
-
-        if (pagamentosPedido.length > 0) {
-            textoFinalServico += '\n\n[PAGAMENTOS]\n' + JSON.stringify(pagamentosPedido);
-        }
+        const textoFinalServico = construirTextoServico({ itens: itensPedido, observacoes: novoPedido.servico, pagamentos: pagamentosPedido });
 
         const valorNumericoFinal = paraCentavos(novoPedido.valor_total);
 
@@ -1140,15 +1199,17 @@ export const AppProvider = ({ children }) => {
 
         if (pedidoEmEdicao) {
             const { data, error } = await supabase.from('pedidos').update(payload).eq('id', pedidoEmEdicao.id).select();
-            
+
             if (error) {
                 avisar('Erro ao atualizar OS: ' + error.message, 'erro');
             } else if (data && data.length > 0) {
-                setPedidos(pedidos.map(p => p.id === data[0].id ? data[0] : p)); 
-                fecharModalOS(); 
-                if (querImprimir) imprimirOS(data[0]); 
+                const itensPagamentos = await salvarItensPagamentosDoPedido(data[0].id, itensPedido, pagamentosPedido);
+                setPedidos(pedidos.map(p => p.id === data[0].id ? { ...data[0], ...itensPagamentos } : p));
+                fecharModalOS();
+                if (querImprimir) imprimirOS({ ...data[0], ...itensPagamentos });
             } else {
                 // Se a resposta for vazia, puxa as informações limpas e fecha sem travar
+                await salvarItensPagamentosDoPedido(pedidoEmEdicao.id, itensPedido, pagamentosPedido);
                 carregarDados();
                 fecharModalOS();
                 if (querImprimir) imprimirOS({ ...pedidoEmEdicao, ...payload });
@@ -1170,16 +1231,18 @@ export const AppProvider = ({ children }) => {
             if (error) {
                 avisar('Erro ao salvar OS: ' + error.message, 'erro');
             } else if (data && data.length > 0) {
-                setPedidos([data[0], ...pedidos]); 
+                const itensPagamentos = await salvarItensPagamentosDoPedido(data[0].id, itensPedido, pagamentosPedido);
+                setPedidos([{ ...data[0], ...itensPagamentos }, ...pedidos]);
                 if (idOrcamentoOrigem) {
                     supabase.from('orcamentos_formalizados').delete().eq('id', idOrcamentoOrigem).then(({ error }) => {
                         if (!error) setOrcamentosFormalizados(prev => prev.filter(o => o.id !== idOrcamentoOrigem));
                     });
                 }
-                fecharModalOS(); 
-                if (querImprimir) imprimirOS(data[0]); 
+                fecharModalOS();
+                if (querImprimir) imprimirOS({ ...data[0], ...itensPagamentos });
             } else {
                 // Se a resposta for vazia, puxa as informações limpas e fecha sem travar
+                await salvarItensPagamentosDoPedido(novoId, itensPedido, pagamentosPedido);
                 if (idOrcamentoOrigem) {
                     supabase.from('orcamentos_formalizados').delete().eq('id', idOrcamentoOrigem).then(({ error }) => {
                         if (!error) setOrcamentosFormalizados(prev => prev.filter(o => o.id !== idOrcamentoOrigem));
@@ -1224,7 +1287,23 @@ export const AppProvider = ({ children }) => {
         }
         if (error) { avisar('Erro ao duplicar O.S.: ' + error.message, 'erro'); return; }
         if (data && data.length > 0) {
-            setPedidos([data[0], ...pedidos]);
+            // Clona pedido_itens (sem pedido_pagamentos, igual ao texto acima
+            // que já descarta os pagamentos da OS original).
+            const itensOrigem = pedido.pedido_itens || [];
+            let itensClonados = [];
+            if (itensOrigem.length > 0) {
+                const linhas = [...itensOrigem].sort((a, b) => a.ordem - b.ordem).map(item => ({
+                    pedido_id: data[0].id, produto_id: item.produto_id, ordem: item.ordem,
+                    nome: item.nome, descricao: item.descricao,
+                    valor_centavos: item.valor_centavos, valor_original_centavos: item.valor_original_centavos,
+                    desconto_percentual: item.desconto_percentual, local_producao: item.local_producao,
+                    concluido: item.concluido,
+                }));
+                const { data: inseridos, error: errItens } = await supabase.from('pedido_itens').insert(linhas).select();
+                if (errItens) console.error('Erro ao clonar itens da OS:', errItens);
+                itensClonados = inseridos || [];
+            }
+            setPedidos([{ ...data[0], pedido_itens: itensClonados, pedido_pagamentos: [] }, ...pedidos]);
             avisar(`O.S. duplicada como #${data[0].id}.`, 'sucesso');
         }
     }
@@ -1272,19 +1351,7 @@ export const AppProvider = ({ children }) => {
             if (!querSalvarAvulso) return;
         }
 
-        let textoFinalServico = '';
-        if (itensPedido.length > 0) {
-            const itensTextoArray = itensPedido.map(i => {
-                const strDesconto = i.desconto ? ' (-' + i.desconto + '%)' : '';
-                const strNome = i.nome ? '• ' + (i.id_produto ? `[#${i.id_produto}] ` : '') + i.nome : '• Serviço Personalizado';
-                const strLocal = i.local_producao ? '\n  Local: ' + i.local_producao : '\n  Local: Berlim';
-                return strNome + '\n  ' + i.descricao + '\n  Valor: R$ ' + i.valor + strDesconto + strLocal;
-            });
-            textoFinalServico += itensTextoArray.join('\n\n') + '\n\n';
-            if (novoPedido.servico) textoFinalServico += '[OBSERVAÇÕES GERAIS]\n' + novoPedido.servico;
-        } else {
-            textoFinalServico = novoPedido.servico;
-        }
+        const textoFinalServico = construirTextoServico({ itens: itensPedido, observacoes: novoPedido.servico, pagamentos: [] });
 
         const valorNumericoFinal = paraCentavos(novoPedido.valor_total);
 
@@ -1299,28 +1366,51 @@ export const AppProvider = ({ children }) => {
                 ?? (novoPedido.cliente_id ? clientes.find(c => c.id === novoPedido.cliente_id)?.telefone : undefined)
                 ?? orcamentoFormalizadoEmEdicao?.telefone ?? '',
             produto: itensPedido.map(i => i.nome).join(', ') || 'Serviços Diversos',
-            descricao: textoFinalServico + (itensPedido.length > 0 ? '\n\n[ITENS_JSON]\n' + JSON.stringify(itensPedido) : ''),
+            descricao: textoFinalServico,
             quantidade: 1,
             valor: valorNumericoFinal,
             observacoes: novoPedido.servico,
             criado_por: usuario?.nome || 'Desconhecido'
         };
 
+        // Grava orcamento_itens a partir do carrinho (delete-then-insert por
+        // orcamento_id, mesmo padrão de salvarItensPagamentosDoPedido).
+        async function salvarItensOrcamento(orcamentoId) {
+            await supabase.from('orcamento_itens').delete().eq('orcamento_id', orcamentoId);
+            if (itensPedido.length === 0) return [];
+            const linhas = itensPedido.map((i, idx) => ({
+                orcamento_id: orcamentoId, produto_id: i.id_produto || null, ordem: idx,
+                nome: i.nome || null, descricao: i.descricao || null,
+                valor_centavos: paraCentavos(i.valor),
+                valor_original_centavos: i.valor_original ? paraCentavos(i.valor_original) : null,
+                desconto_percentual: i.desconto ? Number(i.desconto) : null,
+                local_producao: i.local_producao || null,
+            }));
+            const { data: inseridos, error } = await supabase.from('orcamento_itens').insert(linhas).select();
+            if (error) {
+                console.error('Erro ao gravar itens do orçamento:', error);
+                avisar('Orçamento salvo, mas houve erro ao gravar itens estruturados: ' + error.message, 'erro');
+            }
+            return inseridos || [];
+        }
+
         if (orcamentoFormalizadoEmEdicao) {
             const { data, error } = await supabase.from('orcamentos_formalizados').update(payload).eq('id', orcamentoFormalizadoEmEdicao.id).select();
             if (error) avisar('Erro: ' + error.message, 'erro');
             else if (data && data.length > 0) {
-                setOrcamentosFormalizados(orcamentosFormalizados.map(o => o.id === data[0].id ? data[0] : o));
+                const orcamento_itens = await salvarItensOrcamento(data[0].id);
+                setOrcamentosFormalizados(orcamentosFormalizados.map(o => o.id === data[0].id ? { ...data[0], orcamento_itens } : o));
                 setModalOrcamentoFormalizadoAberto(false);
-                if (querImprimir) baixarPDFOrcamento(data[0]);
+                if (querImprimir) baixarPDFOrcamento({ ...data[0], orcamento_itens });
             }
         } else {
             const { data, error } = await supabase.from('orcamentos_formalizados').insert([payload]).select();
             if (error) avisar('Erro: ' + error.message, 'erro');
             else if (data && data.length > 0) {
-                setOrcamentosFormalizados([data[0], ...orcamentosFormalizados]);
+                const orcamento_itens = await salvarItensOrcamento(data[0].id);
+                setOrcamentosFormalizados([{ ...data[0], orcamento_itens }, ...orcamentosFormalizados]);
                 setModalOrcamentoFormalizadoAberto(false);
-                if (querImprimir) baixarPDFOrcamento(data[0]);
+                if (querImprimir) baixarPDFOrcamento({ ...data[0], orcamento_itens });
             }
         }
     }
@@ -1341,17 +1431,8 @@ export const AppProvider = ({ children }) => {
         setTimeout(() => window.print(), 200);
     }
     
-    function extrairItensOrcamento(orc) {
-        if (!orc.descricao) return [];
-        const match = orc.descricao.match(/\[ITENS_JSON\]\n(.*)/);
-        if (match) {
-            try { return JSON.parse(match[1]); } catch(e) {}
-        }
-        return desconstruirTextoServico(orc.descricao).itens;
-    }
-
     function abrirEdicaoOrcamento(orcamento) {
-        const itensCarregados = extrairItensOrcamento(orcamento);
+        const itensCarregados = [...(orcamento.orcamento_itens || [])].sort((a, b) => a.ordem - b.ordem).map(itemDbParaCarrinho);
         const obs = orcamento.observacoes || (orcamento.descricao ? desconstruirTextoServico(orcamento.descricao.split('\n\n[ITENS_JSON]')[0]).observacoes : '');
         
         setOrcamentoFormalizadoEmEdicao(orcamento);
@@ -1375,7 +1456,7 @@ export const AppProvider = ({ children }) => {
     }
     
     function transformarEmOS(orcamento) {
-        const itensCarregados = extrairItensOrcamento(orcamento);
+        const itensCarregados = [...(orcamento.orcamento_itens || [])].sort((a, b) => a.ordem - b.ordem).map(itemDbParaCarrinho);
         setPedidoEmEdicao(null);
         setBuscaCliente(orcamento.cliente);
         setClienteSelecionadoInfo(null);
@@ -1829,16 +1910,14 @@ export const AppProvider = ({ children }) => {
     const vendasPorProduto = useMemo(() => {
         const mapa = {};
         pedidos.forEach(p => {
-            if (!p.servico) return;
-            const { itens } = desconstruirTextoServico(p.servico);
-            
+            const itens = p.pedido_itens || [];
+
             itens.forEach(item => {
-                const id_produto_match = item.id_produto;
-                const nomeLimpo = item.nome.trim();
-                const valorNum = parseValorMoeda(item.valor);
-                
-                const prod = id_produto_match 
-                    ? produtos.find(p => String(p.id) === String(id_produto_match)) 
+                const nomeLimpo = (item.nome || '').trim();
+                const valorNum = centavosParaReais(item.valor_centavos);
+
+                const prod = item.produto_id
+                    ? produtos.find(p => String(p.id) === String(item.produto_id))
                     : produtos.find(prod => prod.nome.toLowerCase() === nomeLimpo.toLowerCase());
 
                 const finalName = prod ? prod.nome : nomeLimpo;
@@ -2328,6 +2407,7 @@ export const AppProvider = ({ children }) => {
         carregarDados,
         atualizarCatalogoProdutos,
         atualizarCampoInline,
+        atualizarItemConcluido,
         concluirBoletoContasReceber,
         buscarOutrasOSAbertasDoCliente,
         registrarPagamentoLoteOutrasOS,
@@ -2345,7 +2425,6 @@ export const AppProvider = ({ children }) => {
         excluirOrcamentoPre,
         salvarOrcamentoFormalizado,
         baixarPDFOrcamento,
-        extrairItensOrcamento,
         abrirEdicaoOrcamento,
         transformarEmOS,
         excluirOrcamentoFormalizado,

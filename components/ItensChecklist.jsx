@@ -1,40 +1,22 @@
 "use client";
 import Icon from '@/components/Icon';
-import { desconstruirTextoServico } from '@/lib/utils/servico';
+import { useAppContext } from '@/context/AppContext';
 
-export function ItensChecklist({ pedido, atualizarCampoInline }) {
-    const { itens, observacoes, pagamentos } = desconstruirTextoServico(pedido.servico);
+export function ItensChecklist({ pedido }) {
+    const { atualizarItemConcluido } = useAppContext();
+    const itens = [...(pedido.pedido_itens || [])].sort((a, b) => a.ordem - b.ordem);
 
     if (itens.length === 0) {
         return <span className="truncate max-w-[18rem] block">{pedido.servico ? pedido.servico.substring(0, 40) + '...' : '---'}</span>;
     }
 
-    const toggleItem = (idx) => {
-        const novosItens = [...itens];
-        novosItens[idx].concluido = !novosItens[idx].concluido;
-
-        let textoFinal = '';
-        const itensTextoArray = novosItens.map(i => {
-            const strDesconto = i.desconto ? ' (-' + i.desconto + '%)' : '';
-            const strNome = i.nome ? '• ' + (i.id_produto ? `[#${i.id_produto}] ` : '') + i.nome : '• Serviço Personalizado';
-            const strLocal = i.local_producao ? '\n  Local: ' + i.local_producao : '\n  Local: Berlim';
-            const strConcluido = i.concluido ? '\n  [✓] Concluído' : '';
-            return strNome + '\n  ' + i.descricao + '\n  Valor: R$ ' + i.valor + strDesconto + strLocal + strConcluido;
-        });
-        textoFinal += itensTextoArray.join('\n\n') + '\n\n';
-        if (observacoes) textoFinal += '[OBSERVAÇÕES GERAIS]\n' + observacoes;
-        if (pagamentos.length > 0) textoFinal += '\n\n[PAGAMENTOS]\n' + JSON.stringify(pagamentos);
-
-        atualizarCampoInline(pedido.id, 'servico', textoFinal);
-    };
-
     return (
         <div className="flex flex-wrap gap-1.5 items-center w-full min-w-[300px]">
-            {itens.map((item, idx) => (
+            {itens.map((item) => (
                 <button
-                    key={idx}
+                    key={item.id}
                     type="button"
-                    onClick={(e) => { e.stopPropagation(); toggleItem(idx); }}
+                    onClick={(e) => { e.stopPropagation(); atualizarItemConcluido(pedido.id, item.id, !item.concluido); }}
                     className={`flex items-center gap-1 px-2 py-1 text-[10px] uppercase font-semibold rounded shadow-sm transition transform hover:scale-105 ${
                         item.concluido
                             ? 'bg-emerald-500 text-white border border-emerald-600'

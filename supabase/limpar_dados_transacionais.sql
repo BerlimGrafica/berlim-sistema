@@ -13,13 +13,16 @@
 --                                      fora do escopo desta limpeza)
 --
 -- APAGA (TRUNCATE = remove todas as linhas, mantém a tabela e sua estrutura):
---   pedidos, orcamentos_formalizados, notas_fiscais, empresas_faturamento,
---   contas_pagar, requisicoes_material, tarefas_internas, links_pagamento,
---   chat_mensagens
+--   pedidos, pedido_itens, pedido_pagamentos, orcamentos_formalizados,
+--   orcamento_itens, notas_fiscais, empresas_faturamento, contas_pagar,
+--   requisicoes_material, tarefas_internas, links_pagamento, chat_mensagens
 --
 -- Nenhuma das tabelas mantidas acima tem FK apontando para as tabelas
 -- apagadas, então não há risco de CASCADE atingir clientes/produtos/
--- fornecedores/orçamentos pré-prontos/profiles.
+-- fornecedores/orçamentos pré-prontos/profiles. pedido_itens/pedido_pagamentos/
+-- orcamento_itens têm FK (on delete cascade) para pedidos/orcamentos_formalizados
+-- — por isso precisam entrar no MESMO truncate (Postgres exige truncar
+-- referenciadora e referenciada juntas, senão o comando falha).
 --
 -- ATENÇÃO: operação destrutiva e irreversível. Confirme que tem backup/export
 -- antes de rodar (Supabase Dashboard > Database > Backups, ou pg_dump).
@@ -27,7 +30,10 @@
 
 truncate table
   public.pedidos,
+  public.pedido_itens,
+  public.pedido_pagamentos,
   public.orcamentos_formalizados,
+  public.orcamento_itens,
   public.notas_fiscais,
   public.empresas_faturamento,
   public.contas_pagar,

@@ -167,7 +167,7 @@ export default function ProducaoTab() {
                                                                 <td className={`px-4 py-3 font-semibold truncate max-w-[12rem] ${isClienteProblema(p.cliente, p.cliente_id) ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-white'}`}>
                                                                     <div className="flex items-center gap-1.5">{mascararCliente(p.cliente, isDemo)} {isClienteProblema(p.cliente, p.cliente_id) && <Icon name="alert-triangle" className="w-3.5 h-3.5 text-red-500 shrink-0" title="Cliente Problema" />}</div>
                                                                 </td>
-                                                                <td className="px-4 py-3 text-gray-800 dark:text-white font-medium"><ItensChecklist pedido={p} atualizarCampoInline={handleAtualizarCampo} /></td>
+                                                                <td className="px-4 py-3 text-gray-800 dark:text-white font-medium"><ItensChecklist pedido={p} /></td>
                                                                 <td className="px-4 py-3">
                                                                     <div className="flex items-center justify-center gap-1">
                                                                         <Tooltip label="Arte Aprovada">

@@ -1,5 +1,5 @@
 "use client";
-import { centavosParaReais, parseValorMoeda, valorPagamentoComSinal, obterDataAtual, formatarDataExibicao } from '@/lib/utils/formatters';
+import { centavosParaReais, valorPagamentoComSinalCentavos, obterDataAtual, formatarDataExibicao } from '@/lib/utils/formatters';
 import { BarRow } from '@/components/vendas/BarRow';
 
 // Todas as métricas derivadas compartilhadas pelos painéis "Visão Geral" e
@@ -12,21 +12,13 @@ export function useFinanceiroMetrics(pedidos, contasPagar) {
     // Helper: pedidos.valor_total vem do banco em centavos.
     const valorTotalPedido = (p) => centavosParaReais(p.valor_total);
 
-    // Helper para extrair pagamentos de um pedido
-    const obterTotalPagoPedido = (pedido) => {
-        const pagamentosStr = pedido.servico && pedido.servico.split('\n\n[PAGAMENTOS]\n')[1];
-        if (!pagamentosStr) return 0;
-        try {
-            const pagamentos = JSON.parse(pagamentosStr);
-            return pagamentos.reduce((a, p) => a + valorPagamentoComSinal(p), 0);
-        } catch (e) { return 0; }
-    };
+    // Helper para somar os pagamentos de um pedido (pedido_pagamentos, embedado via carregarDados)
+    const obterTotalPagoPedido = (pedido) => (pedido.pedido_pagamentos || []).reduce((a, p) => a + valorPagamentoComSinalCentavos(p), 0);
 
     const totalBruto = pedidosFin.reduce((acc, p) => acc + valorTotalPedido(p), 0);
 
     const totalRecebido = pedidosFin.reduce((acc, p) => {
-        const pagoStr = p.servico && p.servico.split('\n\n[PAGAMENTOS]\n')[1];
-        if (pagoStr) return acc + obterTotalPagoPedido(p);
+        if (p.pedido_pagamentos && p.pedido_pagamentos.length > 0) return acc + obterTotalPagoPedido(p);
         // Compatibilidade com OS antigas:
         if (p.status === 'Concluído' || p.status === 'Finalizado') return acc + valorTotalPedido(p);
         return acc;
@@ -48,8 +40,7 @@ export function useFinanceiroMetrics(pedidos, contasPagar) {
     const totalRecebidoMesAtual = pedidos
         .filter(p => p.status !== 'Cancelado' && p.status !== 'Cancelada' && p.data_pedido && p.data_pedido.startsWith(mesAtualStr))
         .reduce((acc, p) => {
-            const pagoStr = p.servico && p.servico.split('\n\n[PAGAMENTOS]\n')[1];
-            if (pagoStr) return acc + obterTotalPagoPedido(p);
+            if (p.pedido_pagamentos && p.pedido_pagamentos.length > 0) return acc + obterTotalPagoPedido(p);
             if (p.status === 'Concluído' || p.status === 'Finalizado') return acc + valorTotalPedido(p);
             return acc;
         }, 0);
@@ -134,17 +125,11 @@ export function useFinanceiroMetrics(pedidos, contasPagar) {
     const colorsForma = ['bg-amber-500', 'bg-yellow-500', 'bg-orange-500', 'bg-lime-500'];
     const colorsInst = ['bg-emerald-500', 'bg-teal-500', 'bg-cyan-500', 'bg-sky-500'];
 
-    const pagamentosExtraidos = pedidosFin.flatMap(p => {
-        const pagamentosStr = p.servico && p.servico.split('\n\n[PAGAMENTOS]\n')[1];
-        if (!pagamentosStr) return [];
-        try {
-            return JSON.parse(pagamentosStr).map(pag => ({
-                valor: parseValorMoeda(pag.valor),
-                forma: pag.forma || 'Indefinido',
-                instituicao: pag.instituicao || 'Indefinido'
-            }));
-        } catch (e) { return []; }
-    });
+    const pagamentosExtraidos = pedidosFin.flatMap(p => (p.pedido_pagamentos || []).map(pag => ({
+        valor: centavosParaReais(pag.valor_centavos),
+        forma: pag.forma || 'Indefinido',
+        instituicao: pag.instituicao || 'Indefinido'
+    })));
 
     const agrupadoForma = pagamentosExtraidos.reduce((acc, p) => {
         if (!acc[p.forma]) acc[p.forma] = 0;
@@ -188,17 +173,11 @@ export function useFinanceiroMetrics(pedidos, contasPagar) {
     const rankingLocalMesAtual = Object.entries(agrupadoLocalMesAtual).sort((a,b) => b[1] - a[1]);
     const maxLocalMesAtual = Math.max(...rankingLocalMesAtual.map(l => l[1]), 1);
 
-    const pagamentosExtraidosMesAtual = pedidosMesAtual.flatMap(p => {
-        const pagamentosStr = p.servico && p.servico.split('\n\n[PAGAMENTOS]\n')[1];
-        if (!pagamentosStr) return [];
-        try {
-            return JSON.parse(pagamentosStr).map(pag => ({
-                valor: parseValorMoeda(pag.valor),
-                forma: pag.forma || 'Indefinido',
-                instituicao: pag.instituicao || 'Indefinido'
-            }));
-        } catch (e) { return []; }
-    });
+    const pagamentosExtraidosMesAtual = pedidosMesAtual.flatMap(p => (p.pedido_pagamentos || []).map(pag => ({
+        valor: centavosParaReais(pag.valor_centavos),
+        forma: pag.forma || 'Indefinido',
+        instituicao: pag.instituicao || 'Indefinido'
+    })));
 
     const agrupadoFormaMesAtual = pagamentosExtraidosMesAtual.reduce((acc, p) => {
         if (!acc[p.forma]) acc[p.forma] = 0;
