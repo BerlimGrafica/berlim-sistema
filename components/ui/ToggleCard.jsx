@@ -3,10 +3,19 @@ import Icon from '@/components/Icon';
 
 // ==== COMPONENTE DE SWITCH (TOGGLE) ====
 function Switch({ checked, onChange, color = 'brand', className = '' }) {
+    // O `dark:` repetido não é redundante: sem ele o toggle ligado fica cinza no
+    // tema escuro. Os dois utilitários que disputam o fundo do trilho empatam em
+    // especificidade (0,2,0) —
+    //     .peer-checked\:bg-brand:is(:where(.peer):checked~*)
+    //     .dark\:bg-darkBorder:is(.dark *)
+    // — e no empate vale a ordem no CSS gerado, onde `dark:` sai depois e ganha.
+    // No tema claro o concorrente é só `.bg-gray-300` (0,1,0), que perde; por isso
+    // o bug aparecia exclusivamente no escuro. `dark:peer-checked:` soma as duas
+    // condições e vai a (0,3,0), passando à frente das duas.
     const coresAtivas = {
-        brand: 'peer-checked:bg-brand',
-        red: 'peer-checked:bg-red-500',
-        blue: 'peer-checked:bg-blue-500',
+        brand: 'peer-checked:bg-brand dark:peer-checked:bg-brand',
+        red: 'peer-checked:bg-red-500 dark:peer-checked:bg-red-500',
+        blue: 'peer-checked:bg-blue-500 dark:peer-checked:bg-blue-500',
     };
     return (
         <span className={`relative inline-flex items-center shrink-0 ${className}`}>

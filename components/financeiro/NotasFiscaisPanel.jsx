@@ -42,7 +42,14 @@ export default function NotasFiscaisPanel() {
                                 <th className="px-6 py-4 w-36">CPF / CNPJ</th>
                                 <th className="px-6 py-4 w-40">Contato</th>
                                 <th className="px-6 py-4 w-32">Tipo Nota</th>
-                                <th className="px-6 py-4 min-w-[260px]">Serviço / Valor</th>
+                                {/* w-full faz esta coluna absorver toda a folga da tabela, mesmo
+                                    padrão do "Serviço" na Produção. Antes era só min-w-[260px]:
+                                    como o layout automático dimensiona pelo conteúdo, o texto longo
+                                    de uma nota concluída esticava a coluna, a tabela estourava o
+                                    container e o overflow-x-auto levava a coluna Ações pra fora da
+                                    vista. Com w-full a folga vem toda daqui e o texto quebra em vez
+                                    de empurrar as outras colunas. */}
+                                <th className="px-6 py-4 w-full min-w-[260px]">Serviço / Valor</th>
                                 <th className="px-6 py-4 w-48">Observações</th>
                                 <th className="px-6 py-4 w-24 text-right">Ações</th>
                             </tr>

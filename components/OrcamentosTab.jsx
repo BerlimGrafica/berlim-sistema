@@ -48,6 +48,7 @@ export default function OrcamentosTab() {
                                     setItensPedido([]);
                                     setNovoPedido({
                                         cliente: '',
+                                        cliente_id: null,
                                         servico: '',
                                         valor_total: '',
                                         status: 'Orçamento',

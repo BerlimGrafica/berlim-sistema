@@ -163,15 +163,14 @@ export default function OSModal() {
                                 </Tooltip>
                             </div>
                             {!clienteDropdownAberto && buscaCliente && !isDemo && (() => {
-                                // Ordem de preferência, da mais pra menos confiável: o cliente
-                                // clicado agora; o cliente_id gravado na OS (é o que vale ao
-                                // reabrir pra editar, já que a seleção da sessão anterior se
-                                // perdeu); e só então o nome — que devolve o registro errado
-                                // quando há homônimos, e por isso é último recurso, para OS
-                                // antiga que ainda não tem cliente_id.
+                                // Só o cliente clicado agora, ou o cliente_id gravado na OS
+                                // (é o que vale ao reabrir pra editar, já que a seleção da
+                                // sessão anterior se perdeu). Sem vínculo não mostra telefone
+                                // nenhum: buscar por nome exibia o contato de um homônimo —
+                                // dado de outra pessoa na tela, e risco de mandar mensagem
+                                // pro número errado numa venda de balcão.
                                 const telefone = clienteSelecionadoInfo?.telefone
-                                    ?? (novoPedido.cliente_id ? clientesFiltrados.find(c => c.id === novoPedido.cliente_id)?.telefone : undefined)
-                                    ?? clientesFiltrados.find(c => c.nome === buscaCliente)?.telefone;
+                                    ?? (novoPedido.cliente_id ? clientesFiltrados.find(c => c.id === novoPedido.cliente_id)?.telefone : undefined);
                                 return telefone ? (
                                     <p className="mt-1.5 text-[11px] text-gray-500 dark:text-[#A1A1AA] flex items-center gap-1">
                                         <Icon name="phone" className="w-3 h-3" /> {telefone}

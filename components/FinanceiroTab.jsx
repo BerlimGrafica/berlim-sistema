@@ -28,8 +28,11 @@ export default function FinanceiroTab() {
                         </button>
                     </div>
                 )}
-{ (usuario?.nivel === 'Administrador' || usuario?.nivel === 'Financeiro') && (
-                    <main className="flex-1 p-6 lg:p-10 max-w-[1400px] mx-auto w-full flex flex-col gap-6">
+{ /* <main> sem max-w, igual à Produção: as 5 sub-abas são tabelas largas (Boletos
+     tem 11 colunas, Notas Fiscais 8) e o teto de 1400px deixava menos espaço que a
+     soma das larguras mínimas — a última coluna saía pra fora pelo overflow-x-auto. */
+  (usuario?.nivel === 'Administrador' || usuario?.nivel === 'Financeiro') && (
+                    <main className="flex-1 p-6 lg:p-10 mx-auto w-full flex flex-col gap-6">
                         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 border-b border-gray-100 dark:border-darkBorder pb-6 shrink-0">
                             <div>
                                 <h1 className="text-2xl lg:text-3xl font-black text-gray-900 dark:text-white tracking-tight">

@@ -18,7 +18,7 @@ export default function Notas_fiscaisTab() {
         { label: 'Editar', icon: 'edit-3', onClick: () => abrirEdicaoNota(n) },
         { label: 'Duplicar', icon: 'layers', onClick: () => duplicarNotaFiscal(n) },
         ...(!n.concluido && (usuario?.nivel === 'Administrador' || usuario?.nivel === 'Financeiro') ? [{ label: 'Concluir Nota', icon: 'check-circle', onClick: () => concluirNotaFiscal(n.id) }] : []),
-        ...(n.concluido ? [{ label: 'Gerar Nova Nota (Duplicar)', icon: 'rotate-ccw', onClick: () => reabrirNotaFiscal(n) }] : []),
+        ...(n.concluido && (usuario?.nivel === 'Administrador' || usuario?.nivel === 'Financeiro') ? [{ label: 'Gerar Nova Nota (Duplicar)', icon: 'rotate-ccw', onClick: () => reabrirNotaFiscal(n) }] : []),
         { label: 'Copiar linha', icon: 'copy', onClick: () => {
             const linha = [mascararCliente(n.cliente, isDemo) || n.razao_social || '', n.cnpj || '', n.contato || '', n.tipo_nota || '', n.servico_feito || ''].join('\t');
             navigator.clipboard.writeText(linha);
@@ -27,8 +27,10 @@ export default function Notas_fiscaisTab() {
         ...(usuario?.nivel === 'Administrador' ? [{ label: 'Excluir', icon: 'trash-2', tom: 'perigo', divisorAntes: true, onClick: () => excluirNotaFiscal(n.id) }] : []),
     ];
 
+    // <main> sem max-w, igual à Produção: a tabela de notas tem 8 colunas e o teto
+    // de 1400px deixava menos espaço que a soma das larguras mínimas delas.
     return (
-        <main className="flex-1 p-6 lg:p-10 max-w-[1400px] mx-auto w-full flex flex-col gap-6">
+        <main className="flex-1 p-6 lg:p-10 mx-auto w-full flex flex-col gap-6">
             <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 border-b border-gray-100 dark:border-darkBorder pb-6 shrink-0">
                 <div>
                     <h1 className="text-2xl lg:text-3xl font-black text-gray-900 dark:text-white tracking-tight">
@@ -86,7 +88,9 @@ export default function Notas_fiscaisTab() {
                                     <th className="px-6 py-4 w-36">CPF / CNPJ</th>
                                     <th className="px-6 py-4 w-40">Contato</th>
                                     <th className="px-6 py-4 w-32">Tipo Nota</th>
-                                    <th className="px-6 py-4 min-w-[260px]">Serviço / Valor</th>
+                                    {/* w-full absorve a folga da tabela — ver comentário no
+                                        NotasFiscaisPanel, mesmo motivo e mesmo padrão da Produção. */}
+                                    <th className="px-6 py-4 w-full min-w-[260px]">Serviço / Valor</th>
                                     <th className="px-6 py-4 w-48">Observações</th>
                                     <th className="px-6 py-4 w-24 text-right">Ações</th>
                                 </tr>
@@ -129,7 +133,7 @@ export default function Notas_fiscaisTab() {
                                                         </button>
                                                     </Tooltip>
                                                 )}
-                                                {n.concluido && (
+                                                {n.concluido && (usuario?.nivel === 'Administrador' || usuario?.nivel === 'Financeiro') && (
                                                     <Tooltip label="Gerar Nova Nota (Duplicar)">
                                                         <button onClick={(e) => { e.stopPropagation(); reabrirNotaFiscal(n); }} aria-label="Gerar Nova Nota (Duplicar)" className="p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded transition">
                                                             <Icon name="rotate-ccw" className="w-4 h-4" />

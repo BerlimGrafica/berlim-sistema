@@ -333,13 +333,14 @@ export const AppProvider = ({ children }) => {
     }, [usuario]);
 
 
-    // Casa pelo cliente_id sempre que a OS/orçamento tiver um; só cai no nome
-    // pra registro antigo que ainda não tem cliente_id, porque comparar por nome
-    // marca homônimos errados (duas "Vanessa" viram a mesma pessoa).
+    // Casa só pelo cliente_id, em OS e em orçamento. Comparar por nome marcava
+    // homônimo errado — o cadastro tem dezenas de "Lucas"/"Silvana", então uma
+    // venda de balcão com o nome anotado virava "cliente problemático" por causa
+    // de outra pessoa, e o aviso deixava de significar qualquer coisa.
+    // `nome` continua na assinatura só pelos call sites; não é mais consultado.
     const isClienteProblema = (nome, clienteId) => {
-        if (clienteId) return clientesProblema.some(c => c.id === clienteId);
-        if (!nome) return false;
-        return clientesProblema.some(c => c.nome === nome);
+        if (!clienteId) return false;
+        return clientesProblema.some(c => c.id === clienteId);
     };
 
 
@@ -660,12 +661,12 @@ export const AppProvider = ({ children }) => {
     }, [buscaCliente]);
 
     // Dispara ao abrir o modal pra EDITAR uma OS existente (nunca numa OS nova —
-    // sem id ainda, não entra no lote). Usa o cliente_id/nome como veio do banco
+    // sem id ainda, não entra no lote). Usa o cliente_id como veio do banco
     // (pedidoEmEdicao), não o que está sendo digitado em novoPedido, pra não
     // refazer a busca a cada tecla.
     useEffect(() => {
         const promise = (modalAberto && pedidoEmEdicao)
-            ? buscarOutrasOSAbertasDoCliente(pedidoEmEdicao.id, pedidoEmEdicao.cliente_id, pedidoEmEdicao.cliente)
+            ? buscarOutrasOSAbertasDoCliente(pedidoEmEdicao.id, pedidoEmEdicao.cliente_id)
             : Promise.resolve([]);
         promise.then(setOutrasOSAbertas);
     }, [modalAberto, pedidoEmEdicao?.id]);
@@ -813,18 +814,18 @@ export const AppProvider = ({ children }) => {
     // `pedidos` em memória: carregarDados() só traz OS's com data_pedido no
     // último ano OU em produção ativa — uma "Concluído" antiga e ainda não paga
     // pode ficar de fora. Precisa de consulta própria, sem esse filtro de data.
-    // Casa por cliente_id quando a OS atual já tem; cai pra nome exato
-    // (case-insensitive, sem wildcard — não é busca por substring) só quando não tem.
-    async function buscarOutrasOSAbertasDoCliente(pedidoAtualId, clienteId, clienteNome) {
-        let query = supabase.from('pedidos').select('*')
+    // Só casa por cliente_id. Sem vínculo, a OS não se agrupa com ninguém — é venda
+    // de balcão (legítimo) ou vínculo ainda não feito. Casar por nome somava o saldo
+    // de homônimos e oferecia quitar a OS de um cliente com o pagamento de outro,
+    // que é justamente o risco que o cliente_id existe pra eliminar.
+    async function buscarOutrasOSAbertasDoCliente(pedidoAtualId, clienteId) {
+        if (!clienteId) return [];
+
+        const { data, error } = await supabase.from('pedidos').select('*')
             .not('status', 'in', '("Abandonado","Cancelado","Finalizado")')
-            .neq('id', pedidoAtualId);
-
-        if (clienteId) query = query.eq('cliente_id', clienteId);
-        else if (clienteNome && clienteNome.trim()) query = query.ilike('cliente', clienteNome.trim());
-        else return [];
-
-        const { data, error } = await query.order('id', { ascending: true });
+            .neq('id', pedidoAtualId)
+            .eq('cliente_id', clienteId)
+            .order('id', { ascending: true });
         if (error) { console.error('Erro ao buscar outras OS do cliente:', error); return []; }
 
         return (data || [])
@@ -1063,6 +1064,25 @@ export const AppProvider = ({ children }) => {
 
     async function salvarOS(e, querImprimir = false, statusForcado = null) {
         if (e) e.preventDefault();
+
+        // Nome digitado sem escolher ninguém no autocomplete: ou é venda de balcão
+        // (legítimo — cliente_id fica null de propósito) ou o atendente esqueceu de
+        // selecionar. Só quem está cadastrando sabe qual dos dois, então pergunta
+        // antes de gravar. Campo vazio NÃO pergunta: aí a venda avulsa é inequívoca,
+        // e um diálogo em toda venda de balcão vira reflexo de clicar "Confirmar" —
+        // aí ele deixa de funcionar justamente no caso ambíguo, que é o que importa.
+        // Vem antes do setSalvandoOS(true): cancelar aqui não pode deixar o botão
+        // preso em "salvando".
+        if (novoPedido.cliente?.trim() && !novoPedido.cliente_id) {
+            const querSalvarAvulsa = await confirmar(
+                'Nenhum cliente do cadastro foi selecionado para esta OS.\n\n' +
+                'Salvar como venda avulsa (Balcão)? O nome digitado continua na OS como referência, ' +
+                'mas ela não entra na consolidação de pagamentos nem no ranking desse cliente.\n\n' +
+                'Para vincular, cancele e escolha o cliente na lista.'
+            );
+            if (!querSalvarAvulsa) return;
+        }
+
         setSalvandoOS(true);
         const statusFinal = statusForcado || novoPedido.status;
 
@@ -1238,7 +1258,20 @@ export const AppProvider = ({ children }) => {
     // === FUNÇÕES ORÇAMENTOS FORMALIZADOS ===
     async function salvarOrcamentoFormalizado(e, querImprimir = false) {
         if (e) e.preventDefault();
-        
+
+        // Mesma regra do salvarOS: nome digitado sem escolher no autocomplete pode
+        // ser orçamento avulso (legítimo) ou seleção esquecida — só quem cadastra
+        // sabe. Campo vazio não pergunta, pra não virar clique reflexo.
+        if (novoPedido.cliente?.trim() && !novoPedido.cliente_id) {
+            const querSalvarAvulso = await confirmar(
+                'Nenhum cliente do cadastro foi selecionado para este orçamento.\n\n' +
+                'Salvar assim mesmo? O nome digitado continua no orçamento, mas ele não fica ' +
+                'vinculado ao cadastro — sem telefone no PDF e sem aviso de cliente problemático.\n\n' +
+                'Para vincular, cancele e escolha o cliente na lista.'
+            );
+            if (!querSalvarAvulso) return;
+        }
+
         let textoFinalServico = '';
         if (itensPedido.length > 0) {
             const itensTextoArray = itensPedido.map(i => {
@@ -1257,7 +1290,14 @@ export const AppProvider = ({ children }) => {
 
         const payload = {
             cliente: novoPedido.cliente,
-            telefone: clientes.find(c => c.nome === novoPedido.cliente)?.telefone || '',
+            cliente_id: novoPedido.cliente_id || null,
+            // Cliente clicado agora; senão o vínculo gravado; senão o telefone que já
+            // estava no orçamento (reedição sem mexer no cliente). Nunca busca por
+            // nome: com homônimo (13 "Silvana" no cadastro) isso gravava o telefone
+            // de outra pessoa no orçamento e no PDF impresso.
+            telefone: clienteSelecionadoInfo?.telefone
+                ?? (novoPedido.cliente_id ? clientes.find(c => c.id === novoPedido.cliente_id)?.telefone : undefined)
+                ?? orcamentoFormalizadoEmEdicao?.telefone ?? '',
             produto: itensPedido.map(i => i.nome).join(', ') || 'Serviços Diversos',
             descricao: textoFinalServico + (itensPedido.length > 0 ? '\n\n[ITENS_JSON]\n' + JSON.stringify(itensPedido) : ''),
             quantidade: 1,
@@ -1289,9 +1329,13 @@ export const AppProvider = ({ children }) => {
         setOsParaImprimir(null);
         setOrcamentoParaImprimir(orc);
         
-        const { data } = await supabase.from('clientes').select('*').eq('nome', orc.cliente).single();
-        if (data) {
-            setOrcamentoParaImprimir(prev => ({...prev, clienteInfo: data}));
+        // Dados do cliente no PDF vêm do vínculo. Antes era .eq('nome', ...).single(),
+        // que com homônimo tinha dois desfechos, ambos ruins: erro silencioso (single()
+        // exige exatamente 1 linha, e há 13 "Silvana") ou, pior, endereço e documento
+        // de outra pessoa impressos no orçamento. Sem vínculo, imprime sem clienteInfo.
+        if (orc.cliente_id) {
+            const { data } = await supabase.from('clientes').select('*').eq('id', orc.cliente_id).maybeSingle();
+            if (data) setOrcamentoParaImprimir(prev => ({...prev, clienteInfo: data}));
         }
         
         setTimeout(() => window.print(), 200);
@@ -1316,6 +1360,9 @@ export const AppProvider = ({ children }) => {
         setItensPedido(itensCarregados);
         setNovoPedido({
             cliente: orcamento.cliente,
+            // Sem isso, reabrir e salvar um orçamento já vinculado zerava o
+            // cliente_id — a edição apagaria justamente o vínculo que se quer manter.
+            cliente_id: orcamento.cliente_id || null,
             servico: obs || '',
             valor_total: formatarMoeda(Math.round(orcamento.valor).toString()),
             status: 'Orçamento',
@@ -1335,6 +1382,10 @@ export const AppProvider = ({ children }) => {
         setItensPedido(itensCarregados);
         setNovoPedido({
             cliente: orcamento.cliente,
+            // Carrega o vínculo do orçamento pra OS que nasce dele: sem isso, todo
+            // orçamento aprovado geraria uma OS sem cliente_id e a confirmação de
+            // venda avulsa apareceria em cima de um cliente que já estava vinculado.
+            cliente_id: orcamento.cliente_id || null,
             servico: '',
             valor_total: formatarMoeda(Math.round(orcamento.valor).toString()),
             status: 'Produzir',

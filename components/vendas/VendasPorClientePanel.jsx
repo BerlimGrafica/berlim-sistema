@@ -7,11 +7,22 @@ export default function VendasPorClientePanel() {
     const { pedidos, contasPagar, isDemo } = useAppContext();
     const { pedidosFin, valorTotalPedido } = useFinanceiroMetrics(pedidos, contasPagar);
 
+    // Agrupa pelo vínculo (cliente_id), não pelo texto do nome: o cadastro tem
+    // dezenas de homônimos (65 "Lucas", 13 "Silvana"), e somar por nome fundia
+    // pessoas diferentes numa linha só — inflando o ranking com um "cliente"
+    // que na verdade são vários. Sem cliente_id é venda avulsa: cai toda no
+    // balde "Balcão", em vez de virar uma linha por nome digitado no caixa.
     const agrupadoPorCliente = pedidosFin.reduce((acc, p) => {
-        const nome = p.cliente || '---';
-        if (!acc[nome]) acc[nome] = { cliente: nome, total: 0, qtd: 0 };
-        acc[nome].total += valorTotalPedido(p);
-        acc[nome].qtd += 1;
+        const chave = p.cliente_id ?? 'balcao';
+        if (!acc[chave]) acc[chave] = {
+            chave,
+            cliente: p.cliente_id ? (p.cliente || '---') : 'Balcão',
+            ehBalcao: !p.cliente_id,
+            total: 0,
+            qtd: 0,
+        };
+        acc[chave].total += valorTotalPedido(p);
+        acc[chave].qtd += 1;
         return acc;
     }, {});
     const rankingCliente = Object.values(agrupadoPorCliente).sort((a, b) => b.total - a.total);
@@ -33,9 +44,10 @@ export default function VendasPorClientePanel() {
                         {rankingCliente.length === 0 ? (
                             <tr><td colSpan="5" className="px-4 py-12 text-center text-[13px] text-gray-400">Nenhuma venda no período.</td></tr>
                         ) : rankingCliente.map((c, index) => (
-                            <tr key={c.cliente} className="hover:bg-gray-50 dark:hover:bg-darkHover/50 transition-colors">
+                            <tr key={c.chave} className="hover:bg-gray-50 dark:hover:bg-darkHover/50 transition-colors">
                                 <td className="px-6 py-4 text-[12px] font-bold text-gray-400 dark:text-gray-500">{index + 1}</td>
-                                <td className="px-6 py-4 text-[13px] font-semibold text-gray-800 dark:text-[#EDEDED] truncate max-w-[240px]" title={mascararCliente(c.cliente, isDemo)}>{mascararCliente(c.cliente, isDemo)}</td>
+                                {/* "Balcão" não é nome de pessoa — não passa pelo mascaramento do modo demo. */}
+                                <td className="px-6 py-4 text-[13px] font-semibold text-gray-800 dark:text-[#EDEDED] truncate max-w-[240px]" title={c.ehBalcao ? c.cliente : mascararCliente(c.cliente, isDemo)}>{c.ehBalcao ? c.cliente : mascararCliente(c.cliente, isDemo)}</td>
                                 <td className="px-6 py-4 text-[13px] text-center text-gray-500 dark:text-[#A1A1AA]">{c.qtd}</td>
                                 <td className="px-6 py-4 text-[13px] text-gray-500 dark:text-[#A1A1AA] text-right whitespace-nowrap">R$ {formatarValorFinanceiro(c.total / c.qtd)}</td>
                                 <td className="px-6 py-4 text-[13px] font-bold text-gray-900 dark:text-white text-right whitespace-nowrap">R$ {formatarValorFinanceiro(c.total)}</td>
