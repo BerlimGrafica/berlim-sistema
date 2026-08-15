@@ -1,6 +1,7 @@
 "use client";
 import React from 'react';
-import { useAppContext } from '@/context/AppContext';
+import { useSessao } from '@/context/SessaoContext';
+import { usePedidos } from '@/context/PedidosContext';
 import { formatarDataExibicao, formatarValorFinanceiro, mascararCliente, centavosParaReais } from '@/lib/utils/formatters';
 import { desconstruirTextoServico } from '@/lib/utils/servico';
 import Icon from '@/components/Icon';
@@ -15,7 +16,8 @@ function extrairItens(orc) {
 }
 
 export default function PrintLayout() {
-    const { osParaImprimir, orcamentoParaImprimir, isDemo } = useAppContext();
+    const { isDemo } = useSessao();
+    const { osParaImprimir, orcamentoParaImprimir } = usePedidos();
 
     if (!osParaImprimir && !orcamentoParaImprimir) return null;
 
@@ -148,7 +150,7 @@ export default function PrintLayout() {
 }
 
 function PrintOrcamento({ orc }) {
-    const { isDemo } = useAppContext();
+    const { isDemo } = useSessao();
     const itens = extrairItens(orc);
     const telefone = isDemo ? '' : (orc.clienteInfo?.telefone || orc.telefone || '');
     const date = new Date(orc.created_at).toLocaleDateString('pt-BR');

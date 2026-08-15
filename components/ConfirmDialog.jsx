@@ -1,12 +1,12 @@
 "use client";
-import { useAppContext } from '@/context/AppContext';
+import { useUi } from '@/context/UiContext';
 import Icon from '@/components/Icon';
 
 // Substituto estilizado do window.confirm() nativo — mesma linguagem visual
 // dos toasts (cartão, barra colorida, ícone), mas em modal (precisa de uma
 // decisão explícita, então não pode sumir sozinho como um toast).
 export default function ConfirmDialog() {
-    const { pendingConfirm, resolverConfirm } = useAppContext();
+    const { pendingConfirm, resolverConfirm } = useUi();
     if (!pendingConfirm) return null;
 
     return (

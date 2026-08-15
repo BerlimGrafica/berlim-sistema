@@ -1,7 +1,12 @@
 "use client";
 import { useState } from "react";
 import { flushSync } from "react-dom";
-import { useAppContext } from "@/context/AppContext";
+import { useSessao } from "@/context/SessaoContext";
+import { useUi } from "@/context/UiContext";
+import { usePedidos } from "@/context/PedidosContext";
+import { useOsModal } from "@/context/OsModalContext";
+import { useClientes } from "@/context/ClientesContext";
+import { useCadastros } from "@/context/CadastrosContext";
 import Icon from "@/components/Icon";
 import Tooltip from "@/components/Tooltip";
 import { formatarValorFinanceiro, formatarMoeda, parseValorMoeda, valorPagamentoComSinal, centavosParaReais, obterDataAtual, mascararCliente, formatarDataExibicao } from '@/lib/utils/formatters';
@@ -14,7 +19,12 @@ import { useFecharAoClicarFora } from '@/components/modals/useFecharAoClicarFora
 const OPCOES_BANDEIRA = ['Visa', 'MasterCard', 'Elo', 'American Express', 'HiperCard', 'Maestro', 'RedeShop'].map(b => ({ value: b, label: b, icon: <BandeiraIcon nome={b} /> }));
 
 export default function OSModal() {
-    const { modalAberto, fecharModalOS, pedidoEmEdicao, isModalTrancado, novoPedido, setNovoPedido, opcoesStatusPermitidas, buscaCliente, setBuscaCliente, clienteSelecionadoInfo, setClienteSelecionadoInfo, isDemo, setClienteDropdownAberto, clienteDropdownAberto, clientesFiltrados, setNovoCliente, setModalClienteAberto, isClienteProblema, itensPedido, buscaProduto, setBuscaProduto, setProdutoDropdownAberto, produtoDropdownAberto, produtosFiltrados, setItemAtual, itemAtual, isAdmin, setNovoProduto, setModalProdutoAberto, fornecedoresTerceirizacaoNomes, pagamentosPedido, setPagamentosPedido, novoPagamento, setNovoPagamento, outrasOSAbertas, registrarPagamentoLoteOutrasOS, salvandoOS, usuario, salvarOS, removerItemDoCarrinho, adicionarItemAoCarrinho, salvarEdicaoItemCarrinho, usuariosSistema, atualizarCatalogoProdutos, avisar, confirmar } = useAppContext();
+    const { isDemo, isAdmin, usuario, usuariosSistema } = useSessao();
+    const { avisar, confirmar } = useUi();
+    const { opcoesStatusPermitidas } = usePedidos();
+    const { modalAberto, fecharModalOS, pedidoEmEdicao, isModalTrancado, novoPedido, setNovoPedido, buscaCliente, setBuscaCliente, clienteSelecionadoInfo, setClienteSelecionadoInfo, setClienteDropdownAberto, clienteDropdownAberto, itensPedido, buscaProduto, setBuscaProduto, setProdutoDropdownAberto, produtoDropdownAberto, produtosFiltrados, setItemAtual, itemAtual, pagamentosPedido, setPagamentosPedido, novoPagamento, setNovoPagamento, outrasOSAbertas, registrarPagamentoLoteOutrasOS, salvandoOS, salvarOS, removerItemDoCarrinho, adicionarItemAoCarrinho, salvarEdicaoItemCarrinho } = useOsModal();
+    const { clientesFiltrados, setNovoCliente, setModalClienteAberto, isClienteProblema } = useClientes();
+    const { setNovoProduto, setModalProdutoAberto, fornecedoresTerceirizacaoNomes, atualizarCatalogoProdutos } = useCadastros();
     const nomesResponsaveis = usuariosSistema.filter(u => u.nivel !== 'demo').map(u => u.nome);
 
     const [pagamentoEditandoIdx, setPagamentoEditandoIdx] = useState(null);

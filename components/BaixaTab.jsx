@@ -1,6 +1,9 @@
 "use client";
 import React from 'react';
-import { useAppContext } from '@/context/AppContext';
+import { useSessao } from '@/context/SessaoContext';
+import { useUi } from '@/context/UiContext';
+import { usePedidos } from '@/context/PedidosContext';
+import { useClientes } from '@/context/ClientesContext';
 import Icon from '@/components/Icon';
 import Tooltip from '@/components/Tooltip';
 import { obterCorStatus } from '@/lib/utils/constants';
@@ -10,7 +13,10 @@ import { obterResumoServicos } from '@/lib/utils/servico';
 
 
 export default function BaixaTab() {
-    const { setAbaOS, abaOS, buscaHistoricoText, setBuscaHistoricoText, dataFiltroInicio, setDataFiltroInicio, dataFiltroFim, setDataFiltroFim, isAdmin, pedidosHistorico, isOperador, isDemo, isClienteProblema, totalPedidosHistorico, itensPorPagina, paginaHistorico, setPaginaHistorico, ordenacaoHistoricoOS, setOrdenacaoHistoricoOS, abrirEdicao, imprimirOS, abrirContextMenu, duplicarOS, avisar } = useAppContext();
+    const { isAdmin, isOperador, isDemo } = useSessao();
+    const { abrirContextMenu, avisar } = useUi();
+    const { setAbaOS, abaOS, buscaHistoricoText, setBuscaHistoricoText, dataFiltroInicio, setDataFiltroInicio, dataFiltroFim, setDataFiltroFim, pedidosHistorico, totalPedidosHistorico, itensPorPagina, paginaHistorico, setPaginaHistorico, ordenacaoHistoricoOS, setOrdenacaoHistoricoOS, abrirEdicao, imprimirOS, duplicarOS } = usePedidos();
+    const { isClienteProblema } = useClientes();
 
     return (
         <>

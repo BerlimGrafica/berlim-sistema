@@ -1,11 +1,15 @@
 "use client";
-import { useAppContext } from '@/context/AppContext';
+import { usePedidos } from '@/context/PedidosContext';
+import { useCadastros } from '@/context/CadastrosContext';
+import { useFinanceiro } from '@/context/FinanceiroContext';
 import Icon from '@/components/Icon';
 import { formatarValorFinanceiro, centavosParaReais } from '@/lib/utils/formatters';
 import { useFinanceiroMetrics } from '@/components/vendas/useFinanceiroMetrics';
 
 export default function VendasPorProdutoPanel() {
-    const { pedidos, contasPagar, produtos, produtosSelecionadosGrafico, setProdutosSelecionadosGrafico } = useAppContext();
+    const { pedidos, produtosSelecionadosGrafico, setProdutosSelecionadosGrafico } = usePedidos();
+    const { produtos } = useCadastros();
+    const { contasPagar } = useFinanceiro();
     const { pedidosFin } = useFinanceiroMetrics(pedidos, contasPagar);
 
     return (

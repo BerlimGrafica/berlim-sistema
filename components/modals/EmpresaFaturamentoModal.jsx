@@ -1,12 +1,12 @@
 "use client";
-import { useAppContext } from "@/context/AppContext";
+import { useFinanceiro } from "@/context/FinanceiroContext";
 import Icon from "@/components/Icon";
 import { formatarCnpjCpf } from '@/lib/utils/formatters';
 import { CustomSelect } from '@/components/ui/Dropdown';
 import { useFecharAoClicarFora } from '@/components/modals/useFecharAoClicarFora';
 
 export default function EmpresaFaturamentoModal() {
-    const { modalEmpresaFaturamentoAberto, setModalEmpresaFaturamentoAberto, novaEmpresaFaturamento, setNovaEmpresaFaturamento, salvandoEmpresa, salvarEmpresaFaturamento } = useAppContext();
+    const { modalEmpresaFaturamentoAberto, setModalEmpresaFaturamentoAberto, novaEmpresaFaturamento, setNovaEmpresaFaturamento, salvandoEmpresa, salvarEmpresaFaturamento } = useFinanceiro();
     const fecharAoClicarFora = useFecharAoClicarFora();
 
     if (!modalEmpresaFaturamentoAberto) return null;

@@ -1,5 +1,6 @@
 "use client";
-import { useAppContext } from "@/context/AppContext";
+import { useSessao } from "@/context/SessaoContext";
+import { useComunicacao } from "@/context/ComunicacaoContext";
 import Icon from "@/components/Icon";
 import { CustomDatePicker } from '@/components/ui/DatePicker';
 import { CustomSelect } from '@/components/ui/Dropdown';
@@ -7,7 +8,8 @@ import { ToggleCard } from '@/components/ui/ToggleCard';
 import { useFecharAoClicarFora } from '@/components/modals/useFecharAoClicarFora';
 
 export default function TarefaModal() {
-    const { modalTarefaAberto, setModalTarefaAberto, novaTarefa, setNovaTarefa, salvarTarefa, usuariosSistema } = useAppContext();
+    const { usuariosSistema } = useSessao();
+    const { modalTarefaAberto, setModalTarefaAberto, novaTarefa, setNovaTarefa, salvarTarefa } = useComunicacao();
     const nomesResponsaveis = usuariosSistema.filter(u => u.nivel !== 'demo').map(u => u.nome);
     const fecharAoClicarFora = useFecharAoClicarFora();
 

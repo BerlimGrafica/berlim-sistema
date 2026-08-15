@@ -1,11 +1,11 @@
 "use client";
-import { useAppContext } from "@/context/AppContext";
+import { useComunicacao } from "@/context/ComunicacaoContext";
 import Icon from "@/components/Icon";
 import { CustomSelect } from '@/components/ui/Dropdown';
 import { useFecharAoClicarFora } from '@/components/modals/useFecharAoClicarFora';
 
 export default function RequisicaoModal() {
-    const { modalRequisicaoAberto, setModalRequisicaoAberto, novaRequisicao, setNovaRequisicao, salvarRequisicao } = useAppContext();
+    const { modalRequisicaoAberto, setModalRequisicaoAberto, novaRequisicao, setNovaRequisicao, salvarRequisicao } = useComunicacao();
     const fecharAoClicarFora = useFecharAoClicarFora();
 
     if (!modalRequisicaoAberto) return null;

@@ -1,12 +1,12 @@
 "use client";
-import { useAppContext } from "@/context/AppContext";
+import { useClientes } from "@/context/ClientesContext";
 import Icon from "@/components/Icon";
 import { formatarTelefone } from '@/lib/utils/formatters';
 import { ToggleCard } from '@/components/ui/ToggleCard';
 import { useFecharAoClicarFora } from '@/components/modals/useFecharAoClicarFora';
 
 export default function ClienteModal() {
-    const { modalClienteAberto, setModalClienteAberto, novoCliente, setNovoCliente, salvandoCliente, salvarCliente } = useAppContext();
+    const { modalClienteAberto, setModalClienteAberto, novoCliente, setNovoCliente, salvandoCliente, salvarCliente } = useClientes();
     const fecharAoClicarFora = useFecharAoClicarFora();
 
     if (!modalClienteAberto) return null;

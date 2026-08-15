@@ -1,7 +1,10 @@
 "use client";
 import React from 'react';
 import { useRouter } from 'next/navigation';
-import { useAppContext } from '@/context/AppContext';
+import { useSessao } from '@/context/SessaoContext';
+import { useUi } from '@/context/UiContext';
+import { usePedidos } from '@/context/PedidosContext';
+import { useComunicacao } from '@/context/ComunicacaoContext';
 import Icon from '@/components/Icon';
 import Tooltip from '@/components/Tooltip';
 import { STATUSES_FINALIZADOS } from '@/lib/utils/constants';
@@ -10,7 +13,10 @@ import { obterResumoServicos } from '@/lib/utils/servico';
 
 
 export default function DashboardTab() {
-    const { usuario, pedidos, isDemo, alertasNaoLidos, setAlertasNaoLidos, setBuscaProducaoText, abrirEdicao, tarefasInternas, setModalTarefaAberto, setNovaTarefa } = useAppContext();
+    const { usuario, isDemo } = useSessao();
+    const { alertasNaoLidos, setAlertasNaoLidos } = useUi();
+    const { pedidos, setBuscaProducaoText, abrirEdicao } = usePedidos();
+    const { tarefasInternas, setModalTarefaAberto, setNovaTarefa } = useComunicacao();
     const router = useRouter();
 
     return (

@@ -1,6 +1,6 @@
 "use client";
 import { useState, useRef, useEffect } from 'react';
-import { useAppContext } from '@/context/AppContext';
+import { useSessao } from '@/context/SessaoContext';
 import { supabase } from '@/lib/supabaseClient';
 import Icon from '@/components/Icon';
 
@@ -75,7 +75,7 @@ const PROVEDORES = [
 ];
 
 export default function WhatsappSandboxPage() {
-    const { isAdmin } = useAppContext();
+    const { isAdmin } = useSessao();
 
     const [provedor, setProvedor] = useState('claude');
     const [historicoApi, setHistoricoApi] = useState([]);

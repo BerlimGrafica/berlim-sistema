@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from 'react';
-import { useAppContext } from '@/context/AppContext';
+import { useUi } from '@/context/UiContext';
 import Icon from '@/components/Icon';
 
 const LARGURA_MENU = 210;
@@ -11,7 +11,7 @@ const LARGURA_MENU = 210;
 // a tela), fechamento (clique fora, Esc, scroll) e do visual, iguais em
 // qualquer lugar do app.
 export default function ContextMenu() {
-    const { contextMenu, fecharContextMenu } = useAppContext();
+    const { contextMenu, fecharContextMenu } = useUi();
     const menuRef = useRef(null);
     const [pos, setPos] = useState(null);
 

@@ -3,10 +3,10 @@ import { useState, useEffect, useRef } from 'react';
 import Icon from '@/components/Icon';
 import Tooltip from '@/components/Tooltip';
 import { CustomSelect } from '@/components/ui/Dropdown';
-import { useAppContext } from '@/context/AppContext';
+import { useUi } from '@/context/UiContext';
 
 export function CalculadoraBanner() {
-    const { avisar } = useAppContext();
+    const { avisar } = useUi();
     const [largura, setLargura] = useState('');
     const [altura, setAltura] = useState('');
     const [tipo, setTipo] = useState('simples');

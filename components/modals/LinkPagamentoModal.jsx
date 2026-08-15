@@ -1,11 +1,11 @@
 "use client";
-import { useAppContext } from "@/context/AppContext";
+import { useComunicacao } from "@/context/ComunicacaoContext";
 import Icon from "@/components/Icon";
 import { formatarMoeda } from '@/lib/utils/formatters';
 import { useFecharAoClicarFora } from '@/components/modals/useFecharAoClicarFora';
 
 export default function LinkPagamentoModal() {
-    const { modalLinkAberto, setModalLinkAberto, novoLink, setNovoLink, salvarLink } = useAppContext();
+    const { modalLinkAberto, setModalLinkAberto, novoLink, setNovoLink, salvarLink } = useComunicacao();
     const fecharAoClicarFora = useFecharAoClicarFora();
 
     if (!modalLinkAberto) return null;

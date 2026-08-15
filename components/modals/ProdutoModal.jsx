@@ -1,11 +1,11 @@
 "use client";
-import { useAppContext } from "@/context/AppContext";
+import { useCadastros } from "@/context/CadastrosContext";
 import Icon from "@/components/Icon";
 import { formatarMoeda } from '@/lib/utils/formatters';
 import { useFecharAoClicarFora } from '@/components/modals/useFecharAoClicarFora';
 
 export default function ProdutoModal() {
-    const { modalProdutoAberto, setModalProdutoAberto, novoProduto, setNovoProduto, salvandoProduto, salvarProduto } = useAppContext();
+    const { modalProdutoAberto, setModalProdutoAberto, novoProduto, setNovoProduto, salvandoProduto, salvarProduto } = useCadastros();
     const fecharAoClicarFora = useFecharAoClicarFora();
 
     if (!modalProdutoAberto) return null;

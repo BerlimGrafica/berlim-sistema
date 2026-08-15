@@ -1,16 +1,15 @@
 "use client";
-import { useAppContext } from '@/context/AppContext';
+import { useSessao } from '@/context/SessaoContext';
+import { useUi } from '@/context/UiContext';
+import { useNotasFiscais } from '@/context/NotasFiscaisContext';
 import Icon from '@/components/Icon';
 import Tooltip from '@/components/Tooltip';
 import { formatarMoeda, centavosParaReais, mascararCliente } from '@/lib/utils/formatters';
 
 export default function NotasFiscaisPanel() {
-    const {
-        notasFiscaisPaginadas, setNotaFiscalEmEdicao, setModalNotaFiscalAberto, isDemo, usuario,
-        concluirNotaFiscal, duplicarNotaFiscal, reabrirNotaFiscal, excluirNotaFiscal,
-        totalPaginasNotasFiscais, paginaNotasFiscais, setPaginaNotasFiscais,
-        abrirContextMenu, avisar,
-    } = useAppContext();
+    const { isDemo, usuario } = useSessao();
+    const { abrirContextMenu, avisar } = useUi();
+    const { notasFiscaisPaginadas, setNotaFiscalEmEdicao, setModalNotaFiscalAberto, concluirNotaFiscal, duplicarNotaFiscal, reabrirNotaFiscal, excluirNotaFiscal, totalPaginasNotasFiscais, paginaNotasFiscais, setPaginaNotasFiscais } = useNotasFiscais();
 
     const abrirEdicaoNota = (n) => {
         setNotaFiscalEmEdicao({ ...n, valor_pago: n.valor_pago ? formatarMoeda(Math.round(n.valor_pago).toString()) : '' });

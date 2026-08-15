@@ -1,15 +1,20 @@
 "use client";
 import React from 'react';
-import { useAppContext, supabase } from '@/context/AppContext';
+import { supabase } from '@/lib/supabaseClient';
+import { useSessao } from '@/context/SessaoContext';
+import { useUi } from '@/context/UiContext';
+import { useClientes } from '@/context/ClientesContext';
+import { useCadastros } from '@/context/CadastrosContext';
 import Icon from '@/components/Icon';
 import Tooltip from '@/components/Tooltip';
 import { formatarValorFinanceiro, centavosParaReais } from '@/lib/utils/formatters';
 
 
 export default function CadastrosTab() {
-    const { 
-    usuario, setAbaCadastros, abaCadastros, isAdmin, buscaCadClientes, setBuscaCadClientes, setNovoCliente, setModalClienteAberto, setLetraFiltroCliente, setPaginaClientes, letraFiltroCliente, clientesPaginados, totalPaginasClientes, paginaClientes, abrirEdicaoCliente, carregarDados, buscaCadProdutos, setBuscaCadProdutos, setNovoProduto, setModalProdutoAberto, produtosCatalogoFiltrados, handleDragStartProduto, handleDropProduto, abrirEdicaoProduto, draggedProdutoIndex, excluirProduto, usuariosSistema, setNovoUsuario, setModalUsuarioAberto, abrirEdicaoUsuario, fornecedores, setNovoFornecedor, setModalFornecedorAberto, confirmar, abrirContextMenu, duplicarProduto, duplicarFornecedor, avisar
-} = useAppContext();
+    const { usuario, isAdmin, usuariosSistema } = useSessao();
+    const { carregarDados, confirmar, abrirContextMenu, avisar } = useUi();
+    const { buscaCadClientes, setBuscaCadClientes, setNovoCliente, setModalClienteAberto, setLetraFiltroCliente, setPaginaClientes, letraFiltroCliente, clientesPaginados, totalPaginasClientes, paginaClientes, abrirEdicaoCliente } = useClientes();
+    const { setAbaCadastros, abaCadastros, buscaCadProdutos, setBuscaCadProdutos, setNovoProduto, setModalProdutoAberto, produtosCatalogoFiltrados, handleDragStartProduto, handleDropProduto, abrirEdicaoProduto, draggedProdutoIndex, excluirProduto, setNovoUsuario, setModalUsuarioAberto, abrirEdicaoUsuario, fornecedores, setNovoFornecedor, setModalFornecedorAberto, duplicarProduto, duplicarFornecedor } = useCadastros();
 
     return (
         <>

@@ -1,13 +1,17 @@
 "use client";
 import React, { useState, useMemo } from 'react';
-import { useAppContext } from '@/context/AppContext';
+import { useSessao } from '@/context/SessaoContext';
+import { useOsModal } from '@/context/OsModalContext';
+import { useOrcamentos } from '@/context/OrcamentosContext';
 import Icon from '@/components/Icon';
 import Tooltip from '@/components/Tooltip';
 import { formatarMoeda, obterDataAtual, mascararCliente } from '@/lib/utils/formatters';
 
 
 export default function OrcamentosTab() {
-    const { setAbaOrcamentos, abaOrcamentos, setOrcamentoFormalizadoEmEdicao, setBuscaCliente, setItensPedido, setNovoPedido, setModalOrcamentoFormalizadoAberto, orcamentosFormalizados, isAdmin, isDemo, setNovoOrcamentoPre, setModalOrcamentoPreAberto, orcamentosPreProntos, abrirEdicaoOrcamento, transformarEmOS, baixarPDFOrcamento, excluirOrcamentoFormalizado, excluirOrcamentoPre } = useAppContext();
+    const { isAdmin, isDemo } = useSessao();
+    const { setBuscaCliente, setItensPedido, setNovoPedido } = useOsModal();
+    const { setAbaOrcamentos, abaOrcamentos, setOrcamentoFormalizadoEmEdicao, setModalOrcamentoFormalizadoAberto, orcamentosFormalizados, setNovoOrcamentoPre, setModalOrcamentoPreAberto, orcamentosPreProntos, abrirEdicaoOrcamento, transformarEmOS, baixarPDFOrcamento, excluirOrcamentoFormalizado, excluirOrcamentoPre } = useOrcamentos();
     const [buscaPreProntos, setBuscaPreProntos] = useState('');
 
     const orcsFiltrados = useMemo(() => {

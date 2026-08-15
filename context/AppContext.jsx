@@ -1,5 +1,5 @@
 "use client";
-import React, { createContext, useContext, useState, useEffect, useMemo, useRef } from 'react';
+import React, { useContext, useState, useEffect, useMemo, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 import { flushSync } from 'react-dom';
 import { supabase } from '@/lib/supabaseClient';
@@ -9,10 +9,25 @@ import { desconstruirTextoServico, construirTextoServico, itemDbParaCarrinho, pa
 import { useAuth } from '@/hooks/useAuth';
 import { useAlertas } from '@/hooks/useAlertas';
 import { useChat } from '@/hooks/useChat';
+import { SessaoContext } from '@/context/SessaoContext';
+import { UiContext } from '@/context/UiContext';
+import { ChatContext } from '@/context/ChatContext';
+import { PedidosContext } from '@/context/PedidosContext';
+import { OsModalContext } from '@/context/OsModalContext';
+import { OrcamentosContext } from '@/context/OrcamentosContext';
+import { ClientesContext } from '@/context/ClientesContext';
+import { CadastrosContext } from '@/context/CadastrosContext';
+import { NotasFiscaisContext } from '@/context/NotasFiscaisContext';
+import { FinanceiroContext } from '@/context/FinanceiroContext';
+import { ComunicacaoContext } from '@/context/ComunicacaoContext';
 
 export { supabase };
 
-export const AppContext = createContext();
+// O antigo contexto único foi fatiado por domínio (ver context/*Context.jsx).
+// Toda a lógica continua neste AppProvider; o que mudou é a publicação: cada
+// fatia vai num Provider próprio, com valor memoizado, para uma tela assinar
+// só o que usa. useAppContext() segue existindo como camada de
+// compatibilidade que funde todas as fatias (mesmo comportamento de antes).
 
 // Numeração dos pedidos deve continuar a partir do último número usado no sistema anterior.
 const NUMERO_INICIAL_PEDIDO = 17930;
@@ -336,10 +351,13 @@ export const AppProvider = ({ children }) => {
     // venda de balcão com o nome anotado virava "cliente problemático" por causa
     // de outra pessoa, e o aviso deixava de significar qualquer coisa.
     // `nome` continua na assinatura só pelos call sites; não é mais consultado.
-    const isClienteProblema = (nome, clienteId) => {
+    // É chamada durante a renderização das tabelas, então NÃO entra no pacote de
+    // ações estáveis: a identidade precisa mudar junto com clientesProblema para
+    // a fatia de clientes invalidar e as linhas re-renderizarem com o aviso certo.
+    const isClienteProblema = useMemo(() => (nome, clienteId) => {
         if (!clienteId) return false;
         return clientesProblema.some(c => c.id === clienteId);
-    };
+    }, [clientesProblema]);
 
 
     // === CHAT DA EQUIPE e ALERTAS/NOTIFICAÇÕES ===
@@ -1936,40 +1954,43 @@ export const AppProvider = ({ children }) => {
             .map(entry => entry[0]);
     }, [vendasPorProduto]);
 
-    const produtosFiltrados = produtos.filter(p => p.nome.toLowerCase().includes(buscaProduto.toLowerCase()) || p.id.toString().includes(buscaProduto)).sort((a, b) => {
+    // Derivados memoizados: cada um entra numa fatia de contexto, então precisa
+    // manter a identidade enquanto as fontes não mudarem — sem isso a fatia
+    // invalidaria a cada renderização e a divisão por domínio não filtraria nada.
+    const produtosFiltrados = useMemo(() => produtos.filter(p => p.nome.toLowerCase().includes(buscaProduto.toLowerCase()) || p.id.toString().includes(buscaProduto)).sort((a, b) => {
         // Prioriza os top 5 vendidos se não houver busca ativa (ou mesmo se houver, os que sobrarem da busca ainda terão prioridade)
         const indexA = top5Produtos.indexOf(a.nome);
         const indexB = top5Produtos.indexOf(b.nome);
-        
+
         if (indexA !== -1 && indexB !== -1) return indexA - indexB;
         if (indexA !== -1) return -1;
         if (indexB !== -1) return 1;
-        
+
         // Se nenhum for top 5, mantém a ordenação original do catálogo
         return (a.ordem || 0) - (b.ordem || 0);
-    });
-    
+    }), [produtos, buscaProduto, top5Produtos]);
+
     // (Filtros locais de Clientes foram substituídos por busca no servidor e paginação)
 
-    const produtosCatalogoFiltrados = produtos.filter(p => {
+    const produtosCatalogoFiltrados = useMemo(() => produtos.filter(p => {
         if (!buscaCadProdutos) return true;
         const termo = buscaCadProdutos.toLowerCase();
         return (p.nome && p.nome.toLowerCase().includes(termo));
-    });
+    }), [produtos, buscaCadProdutos]);
     const clientesPaginados = clientesCadastrados;
     const totalPaginasClientes = Math.ceil(totalClientesCad / itensPorPagina) || 1;
 
     // Filtros e paginação da aba Notas Fiscais
-    const notasFiscaisAbaFiltro = notasFiscais.filter(n => {
+    const notasFiscaisAbaFiltro = useMemo(() => notasFiscais.filter(n => {
         const checkStatus = filtroNotas === 'pendentes' ? !n.concluido : n.concluido;
         if (!checkStatus) return false;
         if (!buscaNotaFiscal) return true;
         const termo = buscaNotaFiscal.toLowerCase();
-        return (n.cliente && n.cliente.toLowerCase().includes(termo)) || 
-               (n.razao_social && n.razao_social.toLowerCase().includes(termo)) || 
+        return (n.cliente && n.cliente.toLowerCase().includes(termo)) ||
+               (n.razao_social && n.razao_social.toLowerCase().includes(termo)) ||
                (n.cnpj && n.cnpj.toLowerCase().includes(termo));
-    });
-    const notasFiscaisPaginadas = notasFiscaisAbaFiltro.slice((paginaNotasFiscais - 1) * itensPorPagina, paginaNotasFiscais * itensPorPagina);
+    }), [notasFiscais, filtroNotas, buscaNotaFiscal]);
+    const notasFiscaisPaginadas = useMemo(() => notasFiscaisAbaFiltro.slice((paginaNotasFiscais - 1) * itensPorPagina, paginaNotasFiscais * itensPorPagina), [notasFiscaisAbaFiltro, paginaNotasFiscais]);
     const totalPaginasNotasFiscais = Math.ceil(notasFiscaisAbaFiltro.length / itensPorPagina) || 1;
     
     // === COMUNICAÇÃO INTERNA CRUD ===
@@ -2055,22 +2076,22 @@ export const AppProvider = ({ children }) => {
     };
 
     // Filtro Produção Aprimorado (Sem data e buscando em MultiSelect)
-    const pedidosProducaoAtivos = pedidos.filter(p => {
+    const pedidosProducaoAtivos = useMemo(() => pedidos.filter(p => {
         const statusPermitido = STATUSES_PRODUCAO.includes(p.status);
         if (!statusPermitido) return false;
 
         const termo = buscaProducaoText.toLowerCase();
-        const matchTermo = !termo || 
-            (p.cliente && p.cliente.toLowerCase().includes(termo)) || 
-            (p.id && p.id.toString().includes(termo)) || 
+        const matchTermo = !termo ||
+            (p.cliente && p.cliente.toLowerCase().includes(termo)) ||
+            (p.id && p.id.toString().includes(termo)) ||
             (p.responsavel && p.responsavel.toLowerCase().includes(termo));
-        
+
         return matchTermo;
-    });
+    }), [pedidos, buscaProducaoText]);
 
     // (Filtros locais do Histórico foram substituídos por busca no servidor e paginação)
 
-    const opcoesStatusPermitidas = isOperador ? [...STATUSES_PRODUCAO, 'Abandonado', 'Concluído'] : [...STATUSES_PRODUCAO, ...STATUSES_FINALIZADOS];
+    const opcoesStatusPermitidas = useMemo(() => isOperador ? [...STATUSES_PRODUCAO, 'Abandonado', 'Concluído'] : [...STATUSES_PRODUCAO, ...STATUSES_FINALIZADOS], [isOperador]);
     const isModalTrancado = (pedidoEmEdicao && pedidoEmEdicao.status === 'Finalizado' && isOperador) ? true : false;
 
     // Realtime subscriptions
@@ -2120,6 +2141,200 @@ export const AppProvider = ({ children }) => {
             supabase.removeChannel(channel);
         };
     }, [usuario]);
+
+    // === IDENTIDADE ESTÁVEL DAS FUNÇÕES PUBLICADAS ===
+    // Sem useCallback, cada função era recriada a cada renderização e invalidava
+    // o contexto inteiro. Em vez de embrulhar ~70 funções uma a uma (cada qual
+    // com sua lista de dependências), todas passam por um wrapper de identidade
+    // fixa que, na hora da chamada, delega para a versão da renderização mais
+    // recente via ref — identidade nunca muda e não existe closure velha.
+    // (isClienteProblema fica de fora de propósito: é lida durante o render —
+    // ver comentário na declaração dela.)
+    const acoesRef = useRef(null);
+    acoesRef.current = {
+        entrarComoDemo, efetuarLogin, logout, toggleDarkMode, vincularGoogle, desvincularGoogle,
+        removerToast, avisar, confirmar, resolverConfirm, abrirContextMenu, fecharContextMenu,
+        abrirChat, nomeDoUsuarioChat, enviarMensagemChat, excluirMensagemChat,
+        carregarDados, atualizarCampoInline, atualizarItemConcluido,
+        atualizarPagamentoBoleto, concluirBoletoContasReceber, buscarOutrasOSAbertasDoCliente, registrarPagamentoLoteOutrasOS,
+        fecharModalOS, abrirEdicao, adicionarItemAoCarrinho, removerItemDoCarrinho, salvarEdicaoItemCarrinho,
+        salvarOS, duplicarOS, imprimirOS,
+        salvarOrcamentoPre, excluirOrcamentoPre, salvarOrcamentoFormalizado, baixarPDFOrcamento,
+        abrirEdicaoOrcamento, transformarEmOS, excluirOrcamentoFormalizado,
+        abrirEdicaoCliente, salvarCliente,
+        abrirEdicaoProduto, salvarProduto, atualizarCatalogoProdutos, excluirProduto, duplicarProduto,
+        handleDragStartProduto, handleDropProduto, duplicarFornecedor,
+        abrirEdicaoUsuario, salvarUsuario,
+        salvarConta, excluirConta, concluirConta, duplicarConta,
+        salvarEmpresaFaturamento, excluirEmpresaFaturamento,
+        salvarNotaFiscal, concluirNotaFiscal, duplicarNotaFiscal, reabrirNotaFiscal, excluirNotaFiscal,
+        salvarRequisicao, excluirRequisicao, concluirRequisicao,
+        salvarTarefa, excluirTarefa, concluirTarefa, reabrirTarefaFixa,
+        salvarLink, excluirLink, concluirLink,
+    };
+    const [acoes] = useState(() => {
+        const estaveis = {};
+        for (const nome of Object.keys(acoesRef.current)) {
+            estaveis[nome] = (...args) => acoesRef.current[nome](...args);
+        }
+        return estaveis;
+    });
+
+    // === FATIAS DE CONTEXTO (uma por domínio) ===
+    // Setters de useState têm identidade estável por natureza e `acoes` também,
+    // então as dependências de cada fatia são só os estados/derivados dela.
+    const sessaoValue = useMemo(() => ({
+        isAdmin, isOperador, isDemo,
+        usuario, setUsuario, usuariosSistema, setUsuariosSistema,
+        googleVinculado, loginInput, setLoginInput, senhaInput, setSenhaInput, erroLogin, setErroLogin,
+        darkMode, setDarkMode,
+        entrarComoDemo: acoes.entrarComoDemo, efetuarLogin: acoes.efetuarLogin, logout: acoes.logout,
+        toggleDarkMode: acoes.toggleDarkMode, vincularGoogle: acoes.vincularGoogle, desvincularGoogle: acoes.desvincularGoogle,
+    }), [acoes, isAdmin, isOperador, isDemo, usuario, usuariosSistema, googleVinculado, loginInput, senhaInput, erroLogin, darkMode]);
+
+    const uiValue = useMemo(() => ({
+        alertasNaoLidos, setAlertasNaoLidos, toasts, pendingConfirm,
+        contextMenu, modalAlertasAberto, setModalAlertasAberto,
+        calculadoraAtiva, setCalculadoraAtiva,
+        removerToast: acoes.removerToast, avisar: acoes.avisar, confirmar: acoes.confirmar,
+        resolverConfirm: acoes.resolverConfirm, abrirContextMenu: acoes.abrirContextMenu,
+        fecharContextMenu: acoes.fecharContextMenu, carregarDados: acoes.carregarDados,
+    }), [acoes, alertasNaoLidos, toasts, pendingConfirm, contextMenu, modalAlertasAberto, calculadoraAtiva]);
+
+    const chatValue = useMemo(() => ({
+        chatAberto, setChatAberto, chatMensagens, chatNaoLidas, enviandoChat,
+        abrirChat: acoes.abrirChat, nomeDoUsuarioChat: acoes.nomeDoUsuarioChat,
+        enviarMensagemChat: acoes.enviarMensagemChat, excluirMensagemChat: acoes.excluirMensagemChat,
+    }), [acoes, chatAberto, chatMensagens, chatNaoLidas, enviandoChat]);
+
+    const pedidosValue = useMemo(() => ({
+        pedidos, setPedidos, itensPorPagina,
+        abaOS, setAbaOS, buscaHistoricoText, setBuscaHistoricoText,
+        paginaHistorico, setPaginaHistorico, pedidosHistorico, setPedidosHistorico,
+        totalPedidosHistorico, setTotalPedidosHistorico, ordenacaoHistoricoOS, setOrdenacaoHistoricoOS,
+        triggerRealtime, setTriggerRealtime,
+        dataFiltroInicio, setDataFiltroInicio, dataFiltroFim, setDataFiltroFim,
+        buscaProducaoText, setBuscaProducaoText, pedidosProducaoAtivos,
+        vendasPorProduto, top5Produtos,
+        abaVendas, setAbaVendas, produtosSelecionadosGrafico, setProdutosSelecionadosGrafico,
+        osParaImprimir, setOsParaImprimir, orcamentoParaImprimir, setOrcamentoParaImprimir,
+        // Aqui (e não na fatia do modal) para telas como a Produção abrirem o
+        // modal sem assinarem o estado de digitação dele.
+        setModalAberto, setPedidoEmEdicao, opcoesStatusPermitidas,
+        atualizarCampoInline: acoes.atualizarCampoInline, atualizarItemConcluido: acoes.atualizarItemConcluido,
+        abrirEdicao: acoes.abrirEdicao, duplicarOS: acoes.duplicarOS, imprimirOS: acoes.imprimirOS,
+    }), [acoes, pedidos, abaOS, buscaHistoricoText, paginaHistorico, pedidosHistorico, totalPedidosHistorico,
+        ordenacaoHistoricoOS, triggerRealtime, dataFiltroInicio, dataFiltroFim, buscaProducaoText,
+        pedidosProducaoAtivos, vendasPorProduto, top5Produtos, abaVendas, produtosSelecionadosGrafico,
+        osParaImprimir, orcamentoParaImprimir, opcoesStatusPermitidas]);
+
+    const osModalValue = useMemo(() => ({
+        modalAberto, salvandoOS, setSalvandoOS, pedidoEmEdicao,
+        itensPedido, setItensPedido, itemAtual, setItemAtual,
+        buscaCliente, setBuscaCliente, clienteSelecionadoInfo, setClienteSelecionadoInfo,
+        clienteDropdownAberto, setClienteDropdownAberto,
+        buscaProduto, setBuscaProduto, produtoDropdownAberto, setProdutoDropdownAberto,
+        pagamentosPedido, setPagamentosPedido, novoPagamento, setNovoPagamento,
+        outrasOSAbertas, novoPedido, setNovoPedido,
+        produtosFiltrados, isModalTrancado,
+        fecharModalOS: acoes.fecharModalOS, adicionarItemAoCarrinho: acoes.adicionarItemAoCarrinho,
+        removerItemDoCarrinho: acoes.removerItemDoCarrinho, salvarEdicaoItemCarrinho: acoes.salvarEdicaoItemCarrinho,
+        salvarOS: acoes.salvarOS, registrarPagamentoLoteOutrasOS: acoes.registrarPagamentoLoteOutrasOS,
+        buscarOutrasOSAbertasDoCliente: acoes.buscarOutrasOSAbertasDoCliente,
+    }), [acoes, modalAberto, salvandoOS, pedidoEmEdicao, itensPedido, itemAtual, buscaCliente,
+        clienteSelecionadoInfo, clienteDropdownAberto, buscaProduto, produtoDropdownAberto,
+        pagamentosPedido, novoPagamento, outrasOSAbertas, novoPedido, produtosFiltrados, isModalTrancado]);
+
+    const orcamentosValue = useMemo(() => ({
+        abaOrcamentos, setAbaOrcamentos,
+        orcamentosFormalizados, setOrcamentosFormalizados,
+        orcamentosPreProntos, setOrcamentosPreProntos,
+        modalOrcamentoPreAberto, setModalOrcamentoPreAberto, novoOrcamentoPre, setNovoOrcamentoPre,
+        modalOrcamentoFormalizadoAberto, setModalOrcamentoFormalizadoAberto,
+        orcamentoFormalizadoEmEdicao, setOrcamentoFormalizadoEmEdicao,
+        salvarOrcamentoPre: acoes.salvarOrcamentoPre, excluirOrcamentoPre: acoes.excluirOrcamentoPre,
+        salvarOrcamentoFormalizado: acoes.salvarOrcamentoFormalizado, baixarPDFOrcamento: acoes.baixarPDFOrcamento,
+        abrirEdicaoOrcamento: acoes.abrirEdicaoOrcamento, transformarEmOS: acoes.transformarEmOS,
+        excluirOrcamentoFormalizado: acoes.excluirOrcamentoFormalizado,
+    }), [acoes, abaOrcamentos, orcamentosFormalizados, orcamentosPreProntos, modalOrcamentoPreAberto,
+        novoOrcamentoPre, modalOrcamentoFormalizadoAberto, orcamentoFormalizadoEmEdicao]);
+
+    const clientesValue = useMemo(() => ({
+        clientes, setClientes, clientesFiltrados, clientesPaginados, totalPaginasClientes,
+        paginaClientes, setPaginaClientes, letraFiltroCliente, setLetraFiltroCliente,
+        buscaCadClientes, setBuscaCadClientes,
+        modalClienteAberto, setModalClienteAberto, salvandoCliente, setSalvandoCliente,
+        novoCliente, setNovoCliente, isClienteProblema,
+        abrirEdicaoCliente: acoes.abrirEdicaoCliente, salvarCliente: acoes.salvarCliente,
+    }), [acoes, clientes, clientesPaginados, totalPaginasClientes, paginaClientes, letraFiltroCliente,
+        buscaCadClientes, modalClienteAberto, salvandoCliente, novoCliente, isClienteProblema]);
+
+    const cadastrosValue = useMemo(() => ({
+        produtos, setProdutos, draggedProdutoIndex, setDraggedProdutoIndex,
+        buscaCadProdutos, setBuscaCadProdutos, produtosCatalogoFiltrados,
+        modalProdutoAberto, setModalProdutoAberto, salvandoProduto, setSalvandoProduto,
+        novoProduto, setNovoProduto,
+        fornecedores, setFornecedores, fornecedoresTerceirizacaoNomes,
+        modalFornecedorAberto, setModalFornecedorAberto, novoFornecedor, setNovoFornecedor,
+        abaCadastros, setAbaCadastros,
+        modalUsuarioAberto, setModalUsuarioAberto, novoUsuario, setNovoUsuario,
+        abrirEdicaoProduto: acoes.abrirEdicaoProduto, salvarProduto: acoes.salvarProduto,
+        atualizarCatalogoProdutos: acoes.atualizarCatalogoProdutos, excluirProduto: acoes.excluirProduto,
+        duplicarProduto: acoes.duplicarProduto, handleDragStartProduto: acoes.handleDragStartProduto,
+        handleDropProduto: acoes.handleDropProduto, duplicarFornecedor: acoes.duplicarFornecedor,
+        abrirEdicaoUsuario: acoes.abrirEdicaoUsuario, salvarUsuario: acoes.salvarUsuario,
+    }), [acoes, produtos, draggedProdutoIndex, buscaCadProdutos, produtosCatalogoFiltrados,
+        modalProdutoAberto, salvandoProduto, novoProduto, fornecedores, fornecedoresTerceirizacaoNomes,
+        modalFornecedorAberto, novoFornecedor, abaCadastros, modalUsuarioAberto, novoUsuario]);
+
+    const notasFiscaisValue = useMemo(() => ({
+        notasFiscais, setNotasFiscais, filtroNotas, setFiltroNotas,
+        buscaNotaFiscal, setBuscaNotaFiscal, paginaNotasFiscais, setPaginaNotasFiscais,
+        modalNotaFiscalAberto, setModalNotaFiscalAberto, notaFiscalEmEdicao, setNotaFiscalEmEdicao,
+        salvandoNotaFiscal, setSalvandoNotaFiscal,
+        notasFiscaisAbaFiltro, notasFiscaisPaginadas, totalPaginasNotasFiscais,
+        salvarNotaFiscal: acoes.salvarNotaFiscal, concluirNotaFiscal: acoes.concluirNotaFiscal,
+        duplicarNotaFiscal: acoes.duplicarNotaFiscal, reabrirNotaFiscal: acoes.reabrirNotaFiscal,
+        excluirNotaFiscal: acoes.excluirNotaFiscal,
+    }), [acoes, notasFiscais, filtroNotas, buscaNotaFiscal, paginaNotasFiscais, modalNotaFiscalAberto,
+        notaFiscalEmEdicao, salvandoNotaFiscal, notasFiscaisAbaFiltro, notasFiscaisPaginadas, totalPaginasNotasFiscais]);
+
+    const financeiroValue = useMemo(() => ({
+        abaFinanceiro, setAbaFinanceiro,
+        contasPagar, setContasPagar, modalContaAberto, setModalContaAberto,
+        novaConta, setNovaConta, salvandoConta, setSalvandoConta,
+        empresasFaturamento, setEmpresasFaturamento,
+        modalEmpresaFaturamentoAberto, setModalEmpresaFaturamentoAberto,
+        novaEmpresaFaturamento, setNovaEmpresaFaturamento, salvandoEmpresa, setSalvandoEmpresa,
+        dataFiltroContasPagarInicio, setDataFiltroContasPagarInicio, dataFiltroContasPagarFim, setDataFiltroContasPagarFim,
+        dataFiltroContasReceberInicio, setDataFiltroContasReceberInicio, dataFiltroContasReceberFim, setDataFiltroContasReceberFim,
+        dataFiltroBoletosInicio, setDataFiltroBoletosInicio, dataFiltroBoletosFim, setDataFiltroBoletosFim,
+        pedidosSaldoDevedor, pedidosBoleto,
+        salvarConta: acoes.salvarConta, excluirConta: acoes.excluirConta, concluirConta: acoes.concluirConta,
+        duplicarConta: acoes.duplicarConta, salvarEmpresaFaturamento: acoes.salvarEmpresaFaturamento,
+        excluirEmpresaFaturamento: acoes.excluirEmpresaFaturamento,
+        atualizarPagamentoBoleto: acoes.atualizarPagamentoBoleto,
+        concluirBoletoContasReceber: acoes.concluirBoletoContasReceber,
+    }), [acoes, abaFinanceiro, contasPagar, modalContaAberto, novaConta, salvandoConta,
+        empresasFaturamento, modalEmpresaFaturamentoAberto, novaEmpresaFaturamento, salvandoEmpresa,
+        dataFiltroContasPagarInicio, dataFiltroContasPagarFim, dataFiltroContasReceberInicio, dataFiltroContasReceberFim,
+        dataFiltroBoletosInicio, dataFiltroBoletosFim, pedidosSaldoDevedor, pedidosBoleto]);
+
+    const comunicacaoValue = useMemo(() => ({
+        abaComunicacao, setAbaComunicacao,
+        requisicoesMaterial, setRequisicoesMaterial,
+        tarefasInternas, setTarefasInternas,
+        linksPagamento, setLinksPagamento,
+        modalRequisicaoAberto, setModalRequisicaoAberto, novaRequisicao, setNovaRequisicao,
+        modalTarefaAberto, setModalTarefaAberto, novaTarefa, setNovaTarefa,
+        modalLinkAberto, setModalLinkAberto, novoLink, setNovoLink,
+        salvarRequisicao: acoes.salvarRequisicao, excluirRequisicao: acoes.excluirRequisicao,
+        concluirRequisicao: acoes.concluirRequisicao,
+        salvarTarefa: acoes.salvarTarefa, excluirTarefa: acoes.excluirTarefa,
+        concluirTarefa: acoes.concluirTarefa, reabrirTarefaFixa: acoes.reabrirTarefaFixa,
+        salvarLink: acoes.salvarLink, excluirLink: acoes.excluirLink, concluirLink: acoes.concluirLink,
+    }), [acoes, abaComunicacao, requisicoesMaterial, tarefasInternas, linksPagamento,
+        modalRequisicaoAberto, novaRequisicao, modalTarefaAberto, novaTarefa, modalLinkAberto, novoLink]);
 
     // ==== TELA DE LOGIN ====
     if (!usuario) {
@@ -2172,290 +2387,52 @@ export const AppProvider = ({ children }) => {
         );
     }
 
-    const value = {
-        itensPorPagina,
-        isAdmin,
-        isOperador,
-        isDemo,
-        entrarComoDemo,
-        usuariosSistema,
-        setUsuariosSistema,
-        usuario,
-        setUsuario,
-        googleVinculado,
-        vincularGoogle,
-        desvincularGoogle,
-        loginInput,
-        setLoginInput,
-        senhaInput,
-        setSenhaInput,
-        erroLogin,
-        setErroLogin,
-        pedidos,
-        setPedidos,
-        produtos,
-        setProdutos,
-        draggedProdutoIndex,
-        setDraggedProdutoIndex,
-        abaOrcamentos,
-        setAbaOrcamentos,
-        orcamentosFormalizados,
-        setOrcamentosFormalizados,
-        orcamentosPreProntos,
-        setOrcamentosPreProntos,
-        modalOrcamentoPreAberto,
-        setModalOrcamentoPreAberto,
-        novoOrcamentoPre,
-        setNovoOrcamentoPre,
-        modalOrcamentoFormalizadoAberto,
-        setModalOrcamentoFormalizadoAberto,
-        orcamentoFormalizadoEmEdicao,
-        setOrcamentoFormalizadoEmEdicao,
-        clientes,
-        setClientes,
-        fornecedores,
-        setFornecedores,
-        fornecedoresTerceirizacaoNomes,
-        abaCadastros,
-        setAbaCadastros,
-        abaOS,
-        setAbaOS,
-        buscaCadClientes,
-        setBuscaCadClientes,
-        buscaCadProdutos,
-        setBuscaCadProdutos,
-        modalFornecedorAberto,
-        setModalFornecedorAberto,
-        novoFornecedor,
-        setNovoFornecedor,
-        paginaClientes,
-        setPaginaClientes,
-        letraFiltroCliente,
-        setLetraFiltroCliente,
-        notasFiscais,
-        setNotasFiscais,
-        filtroNotas,
-        setFiltroNotas,
-        buscaNotaFiscal,
-        setBuscaNotaFiscal,
-        paginaNotasFiscais,
-        setPaginaNotasFiscais,
-        modalNotaFiscalAberto,
-        setModalNotaFiscalAberto,
-        notaFiscalEmEdicao,
-        setNotaFiscalEmEdicao,
-        salvandoNotaFiscal,
-        setSalvandoNotaFiscal,
-        darkMode,
-        setDarkMode,
-        buscaHistoricoText,
-        setBuscaHistoricoText,
-        paginaHistorico,
-        setPaginaHistorico,
-        pedidosHistorico,
-        setPedidosHistorico,
-        totalPedidosHistorico,
-        setTotalPedidosHistorico,
-        ordenacaoHistoricoOS,
-        setOrdenacaoHistoricoOS,
-        triggerRealtime,
-        setTriggerRealtime,
-        dataFiltroInicio,
-        setDataFiltroInicio,
-        dataFiltroFim,
-        setDataFiltroFim,
-        buscaProducaoText,
-        setBuscaProducaoText,
-        dataFiltroContasPagarInicio,
-        setDataFiltroContasPagarInicio,
-        dataFiltroContasPagarFim,
-        setDataFiltroContasPagarFim,
-        dataFiltroContasReceberInicio,
-        setDataFiltroContasReceberInicio,
-        dataFiltroContasReceberFim,
-        setDataFiltroContasReceberFim,
-        dataFiltroBoletosInicio,
-        setDataFiltroBoletosInicio,
-        dataFiltroBoletosFim,
-        setDataFiltroBoletosFim,
-        pedidosSaldoDevedor,
-        pedidosBoleto,
-        atualizarPagamentoBoleto,
-        abaFinanceiro,
-        setAbaFinanceiro,
-        abaVendas,
-        setAbaVendas,
-        produtosSelecionadosGrafico,
-        setProdutosSelecionadosGrafico,
-        contasPagar,
-        setContasPagar,
-        calculadoraAtiva,
-        setCalculadoraAtiva,
-        modalContaAberto,
-        setModalContaAberto,
-        novaConta,
-        setNovaConta,
-        empresasFaturamento,
-        setEmpresasFaturamento,
-        modalEmpresaFaturamentoAberto,
-        setModalEmpresaFaturamentoAberto,
-        novaEmpresaFaturamento,
-        setNovaEmpresaFaturamento,
-        alertasNaoLidos,
-        setAlertasNaoLidos,
-        toasts,
-        removerToast,
-        avisar,
-        pendingConfirm,
-        confirmar,
-        resolverConfirm,
-        contextMenu,
-        abrirContextMenu,
-        fecharContextMenu,
-        modalAlertasAberto,
-        setModalAlertasAberto,
-        chatAberto,
-        setChatAberto,
-        abrirChat,
-        chatMensagens,
-        chatNaoLidas,
-        enviandoChat,
-        nomeDoUsuarioChat,
-        enviarMensagemChat,
-        excluirMensagemChat,
-        modalAberto,
-        setModalAberto,
-        salvandoOS,
-        setSalvandoOS,
-        osParaImprimir,
-        setOsParaImprimir,
-        orcamentoParaImprimir,
-        setOrcamentoParaImprimir,
-        pedidoEmEdicao,
-        setPedidoEmEdicao,
-        itensPedido,
-        setItensPedido,
-        itemAtual,
-        setItemAtual,
-        buscaCliente,
-        setBuscaCliente,
-        clienteSelecionadoInfo,
-        setClienteSelecionadoInfo,
-        clienteDropdownAberto,
-        setClienteDropdownAberto,
-        buscaProduto,
-        setBuscaProduto,
-        produtoDropdownAberto,
-        setProdutoDropdownAberto,
-        pagamentosPedido,
-        setPagamentosPedido,
-        novoPagamento,
-        setNovoPagamento,
-        outrasOSAbertas,
-        novoPedido,
-        setNovoPedido,
-        modalProdutoAberto,
-        setModalProdutoAberto,
-        salvandoProduto,
-        setSalvandoProduto,
-        novoProduto,
-        setNovoProduto,
-        modalClienteAberto,
-        setModalClienteAberto,
-        salvandoCliente,
-        setSalvandoCliente,
-        novoCliente,
-        setNovoCliente,
-        modalUsuarioAberto,
-        setModalUsuarioAberto,
-        novoUsuario,
-        setNovoUsuario,
-        isClienteProblema,
-        efetuarLogin,
-        logout,
-        toggleDarkMode,
-        salvandoConta,
-        setSalvandoConta,
-        salvandoEmpresa,
-        setSalvandoEmpresa,
-        clientesFiltrados,
-        vendasPorProduto,
-        top5Produtos,
-        produtosFiltrados,
-        produtosCatalogoFiltrados,
-        clientesPaginados,
-        totalPaginasClientes,
-        notasFiscaisAbaFiltro,
-        notasFiscaisPaginadas,
-        totalPaginasNotasFiscais,
-        pedidosProducaoAtivos,
-        opcoesStatusPermitidas,
-        isModalTrancado,
-        abaComunicacao, setAbaComunicacao,
-        requisicoesMaterial, setRequisicoesMaterial,
-        tarefasInternas, setTarefasInternas,
-        linksPagamento, setLinksPagamento,
-        modalRequisicaoAberto, setModalRequisicaoAberto,
-        novaRequisicao, setNovaRequisicao,
-        modalTarefaAberto, setModalTarefaAberto,
-        novaTarefa, setNovaTarefa,
-        modalLinkAberto, setModalLinkAberto,
-        novoLink, setNovoLink,
-        salvarRequisicao, excluirRequisicao,
-        salvarTarefa, excluirTarefa,
-        salvarLink, excluirLink,
-        carregarDados,
-        atualizarCatalogoProdutos,
-        atualizarCampoInline,
-        atualizarItemConcluido,
-        concluirBoletoContasReceber,
-        buscarOutrasOSAbertasDoCliente,
-        registrarPagamentoLoteOutrasOS,
-        fecharModalOS,
-        abrirEdicao,
-        abrirEdicaoProduto,
-        abrirEdicaoCliente,
-        abrirEdicaoUsuario,
-        salvarUsuario,
-        adicionarItemAoCarrinho,
-        removerItemDoCarrinho,
-        salvarEdicaoItemCarrinho,
-        salvarOS,
-        salvarOrcamentoPre,
-        excluirOrcamentoPre,
-        salvarOrcamentoFormalizado,
-        baixarPDFOrcamento,
-        abrirEdicaoOrcamento,
-        transformarEmOS,
-        excluirOrcamentoFormalizado,
-        salvarProduto,
-        salvarConta,
-        salvarEmpresaFaturamento,
-        excluirEmpresaFaturamento,
-        excluirConta,
-        concluirConta,
-        excluirProduto,
-        handleDragStartProduto,
-        handleDropProduto,
-        imprimirOS,
-        duplicarOS,
-        duplicarConta,
-        duplicarProduto,
-        duplicarFornecedor,
-        salvarCliente,
-        salvarNotaFiscal,
-        concluirNotaFiscal,
-        duplicarNotaFiscal,
-        reabrirNotaFiscal,
-        excluirNotaFiscal,
-        concluirRequisicao,
-        concluirTarefa,
-        reabrirTarefaFixa,
-        concluirLink,
-        imprimirOS
-    };
-
-    return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
+    return (
+        <SessaoContext.Provider value={sessaoValue}>
+        <UiContext.Provider value={uiValue}>
+        <ChatContext.Provider value={chatValue}>
+        <ClientesContext.Provider value={clientesValue}>
+        <CadastrosContext.Provider value={cadastrosValue}>
+        <PedidosContext.Provider value={pedidosValue}>
+        <OsModalContext.Provider value={osModalValue}>
+        <OrcamentosContext.Provider value={orcamentosValue}>
+        <NotasFiscaisContext.Provider value={notasFiscaisValue}>
+        <FinanceiroContext.Provider value={financeiroValue}>
+        <ComunicacaoContext.Provider value={comunicacaoValue}>
+            {children}
+        </ComunicacaoContext.Provider>
+        </FinanceiroContext.Provider>
+        </NotasFiscaisContext.Provider>
+        </OrcamentosContext.Provider>
+        </OsModalContext.Provider>
+        </PedidosContext.Provider>
+        </CadastrosContext.Provider>
+        </ClientesContext.Provider>
+        </ChatContext.Provider>
+        </UiContext.Provider>
+        </SessaoContext.Provider>
+    );
 };
 
-export const useAppContext = () => useContext(AppContext);
+// Camada de compatibilidade: devolve a fusão de todas as fatias, no mesmo
+// formato do contexto único antigo. Quem usa este hook re-renderiza quando
+// QUALQUER fatia muda (comportamento igual ao de antes da divisão) — telas
+// migradas trocam por usePedidos()/useFinanceiro()/useClientes()/etc. e
+// passam a re-renderizar só quando a própria fatia mudar.
+export const useAppContext = () => {
+    const sessao = useContext(SessaoContext);
+    const ui = useContext(UiContext);
+    const chat = useContext(ChatContext);
+    const clientes = useContext(ClientesContext);
+    const cadastros = useContext(CadastrosContext);
+    const pedidos = useContext(PedidosContext);
+    const osModal = useContext(OsModalContext);
+    const orcamentos = useContext(OrcamentosContext);
+    const notasFiscais = useContext(NotasFiscaisContext);
+    const financeiro = useContext(FinanceiroContext);
+    const comunicacao = useContext(ComunicacaoContext);
+    return useMemo(() => ({
+        ...sessao, ...ui, ...chat, ...clientes, ...cadastros, ...pedidos,
+        ...osModal, ...orcamentos, ...notasFiscais, ...financeiro, ...comunicacao,
+    }), [sessao, ui, chat, clientes, cadastros, pedidos, osModal, orcamentos, notasFiscais, financeiro, comunicacao]);
+};

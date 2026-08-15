@@ -1,6 +1,7 @@
 "use client";
 import React, { useEffect, useRef, useState } from 'react';
-import { useAppContext } from '@/context/AppContext';
+import { useSessao } from '@/context/SessaoContext';
+import { useChatEquipe } from '@/context/ChatContext';
 import Icon from '@/components/Icon';
 import { corPorNome } from '@/lib/utils/formatters';
 
@@ -40,12 +41,8 @@ function Avatar({ nome, avatarUrl, className = 'w-7 h-7 text-[10px]' }) {
 }
 
 export default function ChatPanel() {
-    const {
-        chatAberto, setChatAberto,
-        chatMensagens, enviandoChat,
-        usuario, usuariosSistema, isAdmin,
-        nomeDoUsuarioChat, enviarMensagemChat, excluirMensagemChat,
-    } = useAppContext();
+    const { usuario, usuariosSistema, isAdmin } = useSessao();
+    const { chatAberto, setChatAberto, chatMensagens, enviandoChat, nomeDoUsuarioChat, enviarMensagemChat, excluirMensagemChat } = useChatEquipe();
 
     const [texto, setTexto] = useState('');
     const listRef = useRef(null);

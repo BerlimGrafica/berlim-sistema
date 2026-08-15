@@ -1,10 +1,10 @@
 "use client";
-import { useAppContext } from '@/context/AppContext';
+import { useFinanceiro } from '@/context/FinanceiroContext';
 import { obterDataAtual } from '@/lib/utils/formatters';
 import BoletoRow from '@/components/financeiro/BoletoRow';
 
 export default function BoletosPanel({ dataInicio, dataFim }) {
-    const { pedidosBoleto } = useAppContext();
+    const { pedidosBoleto } = useFinanceiro();
 
     return (
         <div>

@@ -1,12 +1,14 @@
 "use client";
 import React from 'react';
-import { useAppContext } from '@/context/AppContext';
+import { useUi } from '@/context/UiContext';
+import { useCadastros } from '@/context/CadastrosContext';
 import Icon from '@/components/Icon';
 import { CalculadorasAba } from '@/components/calculadoras/CalculadorasAba';
 
 
 export default function CalculadorasTab() {
-    const { setCalculadoraAtiva, calculadoraAtiva, produtos } = useAppContext();
+    const { setCalculadoraAtiva, calculadoraAtiva } = useUi();
+    const { produtos } = useCadastros();
 
     return (
         <>

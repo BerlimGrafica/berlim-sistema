@@ -1,9 +1,9 @@
 "use client";
 import Icon from '@/components/Icon';
-import { useAppContext } from '@/context/AppContext';
+import { usePedidos } from '@/context/PedidosContext';
 
 export function ItensChecklist({ pedido }) {
-    const { atualizarItemConcluido } = useAppContext();
+    const { atualizarItemConcluido } = usePedidos();
     const itens = [...(pedido.pedido_itens || [])].sort((a, b) => a.ordem - b.ordem);
 
     if (itens.length === 0) {

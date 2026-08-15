@@ -1,6 +1,9 @@
 "use client";
 import React, { useRef, useLayoutEffect } from 'react';
-import { useAppContext } from '@/context/AppContext';
+import { useSessao } from '@/context/SessaoContext';
+import { useUi } from '@/context/UiContext';
+import { usePedidos } from '@/context/PedidosContext';
+import { useClientes } from '@/context/ClientesContext';
 import Icon from '@/components/Icon';
 import Tooltip from '@/components/Tooltip';
 import { STATUSES_PRODUCAO, obterCorFundoStatus, obterCorContornoPrazo } from '@/lib/utils/constants';
@@ -69,7 +72,10 @@ function useAnimacaoLinhas(ordem) {
 }
 
 export default function ProducaoTab() {
-    const { buscaProducaoText, setBuscaProducaoText, setPedidoEmEdicao, setModalAberto, pedidosProducaoAtivos, isClienteProblema, isDemo, opcoesStatusPermitidas, abrirEdicao, atualizarCampoInline, usuariosSistema, confirmar, abrirContextMenu, imprimirOS, duplicarOS, avisar } = useAppContext();
+    const { isDemo, usuariosSistema } = useSessao();
+    const { confirmar, abrirContextMenu, avisar } = useUi();
+    const { buscaProducaoText, setBuscaProducaoText, setPedidoEmEdicao, setModalAberto, pedidosProducaoAtivos, opcoesStatusPermitidas, abrirEdicao, atualizarCampoInline, imprimirOS, duplicarOS } = usePedidos();
+    const { isClienteProblema } = useClientes();
     const nomesResponsaveis = usuariosSistema.filter(u => u.nivel !== 'demo').map(u => u.nome);
 
     const gruposStatus = STATUSES_PRODUCAO

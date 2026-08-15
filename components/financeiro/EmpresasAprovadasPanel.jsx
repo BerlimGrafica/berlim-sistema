@@ -1,10 +1,10 @@
 "use client";
-import { useAppContext } from '@/context/AppContext';
+import { useFinanceiro } from '@/context/FinanceiroContext';
 import Icon from '@/components/Icon';
 import Tooltip from '@/components/Tooltip';
 
 export default function EmpresasAprovadasPanel() {
-    const { empresasFaturamento, setNovaEmpresaFaturamento, setModalEmpresaFaturamentoAberto, excluirEmpresaFaturamento } = useAppContext();
+    const { empresasFaturamento, setNovaEmpresaFaturamento, setModalEmpresaFaturamentoAberto, excluirEmpresaFaturamento } = useFinanceiro();
 
     return (
         <div>

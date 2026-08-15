@@ -1,11 +1,14 @@
 "use client";
-import { useAppContext, supabase } from "@/context/AppContext";
+import { supabase } from "@/lib/supabaseClient";
+import { useUi } from "@/context/UiContext";
+import { useCadastros } from "@/context/CadastrosContext";
 import Icon from "@/components/Icon";
 import { CustomSelect } from '@/components/ui/Dropdown';
 import { useFecharAoClicarFora } from '@/components/modals/useFecharAoClicarFora';
 
 export default function FornecedorModal() {
-    const { modalFornecedorAberto, setModalFornecedorAberto, novoFornecedor, setNovoFornecedor, carregarDados, avisar } = useAppContext();
+    const { carregarDados, avisar } = useUi();
+    const { modalFornecedorAberto, setModalFornecedorAberto, novoFornecedor, setNovoFornecedor } = useCadastros();
     const fecharAoClicarFora = useFecharAoClicarFora();
 
     if (!modalFornecedorAberto) return null;

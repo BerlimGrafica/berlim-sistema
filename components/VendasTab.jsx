@@ -1,12 +1,14 @@
 "use client";
-import { useAppContext } from '@/context/AppContext';
+import { useSessao } from '@/context/SessaoContext';
+import { usePedidos } from '@/context/PedidosContext';
 import Icon from '@/components/Icon';
 import VisaoGeralPanel from '@/components/vendas/VisaoGeralPanel';
 import VendasPorProdutoPanel from '@/components/vendas/VendasPorProdutoPanel';
 import VendasPorClientePanel from '@/components/vendas/VendasPorClientePanel';
 
 export default function VendasTab() {
-    const { setAbaVendas, abaVendas, usuario } = useAppContext();
+    const { usuario } = useSessao();
+    const { setAbaVendas, abaVendas } = usePedidos();
 
     return (
         <>

@@ -1,10 +1,14 @@
 "use client";
-import { useAppContext } from '@/context/AppContext';
+import { useSessao } from '@/context/SessaoContext';
+import { usePedidos } from '@/context/PedidosContext';
+import { useFinanceiro } from '@/context/FinanceiroContext';
 import { formatarValorFinanceiro, mascararCliente } from '@/lib/utils/formatters';
 import { useFinanceiroMetrics } from '@/components/vendas/useFinanceiroMetrics';
 
 export default function VendasPorClientePanel() {
-    const { pedidos, contasPagar, isDemo } = useAppContext();
+    const { isDemo } = useSessao();
+    const { pedidos } = usePedidos();
+    const { contasPagar } = useFinanceiro();
     const { pedidosFin, valorTotalPedido } = useFinanceiroMetrics(pedidos, contasPagar);
 
     // Agrupa pelo vínculo (cliente_id), não pelo texto do nome: o cadastro tem

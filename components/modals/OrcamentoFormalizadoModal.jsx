@@ -1,6 +1,10 @@
 "use client";
 import { useState } from "react";
-import { useAppContext } from "@/context/AppContext";
+import { useSessao } from "@/context/SessaoContext";
+import { useOsModal } from "@/context/OsModalContext";
+import { useOrcamentos } from "@/context/OrcamentosContext";
+import { useClientes } from "@/context/ClientesContext";
+import { useCadastros } from "@/context/CadastrosContext";
 import Icon from "@/components/Icon";
 import Tooltip from "@/components/Tooltip";
 import { formatarValorFinanceiro, formatarMoeda, centavosParaReais, mascararCliente } from '@/lib/utils/formatters';
@@ -8,15 +12,11 @@ import { CustomSelect } from '@/components/ui/Dropdown';
 import { useFecharAoClicarFora } from '@/components/modals/useFecharAoClicarFora';
 
 export default function OrcamentoFormalizadoModal() {
-    const {
-        modalOrcamentoFormalizadoAberto, setModalOrcamentoFormalizadoAberto, orcamentoFormalizadoEmEdicao,
-        buscaCliente, setBuscaCliente, clienteSelecionadoInfo, setClienteSelecionadoInfo, isDemo, setClienteDropdownAberto, clienteDropdownAberto, clientesFiltrados,
-        setNovoCliente, setModalClienteAberto, isClienteProblema, novoPedido, setNovoPedido,
-        itensPedido, buscaProduto, setBuscaProduto, setProdutoDropdownAberto, produtoDropdownAberto, produtosFiltrados,
-        setItemAtual, itemAtual, isAdmin, setNovoProduto, setModalProdutoAberto, fornecedoresTerceirizacaoNomes,
-        removerItemDoCarrinho, adicionarItemAoCarrinho, salvarEdicaoItemCarrinho, atualizarCatalogoProdutos,
-        salvarOrcamentoFormalizado,
-    } = useAppContext();
+    const { isDemo, isAdmin } = useSessao();
+    const { buscaCliente, setBuscaCliente, clienteSelecionadoInfo, setClienteSelecionadoInfo, setClienteDropdownAberto, clienteDropdownAberto, novoPedido, setNovoPedido, itensPedido, buscaProduto, setBuscaProduto, setProdutoDropdownAberto, produtoDropdownAberto, produtosFiltrados, setItemAtual, itemAtual, removerItemDoCarrinho, adicionarItemAoCarrinho, salvarEdicaoItemCarrinho } = useOsModal();
+    const { modalOrcamentoFormalizadoAberto, setModalOrcamentoFormalizadoAberto, orcamentoFormalizadoEmEdicao, salvarOrcamentoFormalizado } = useOrcamentos();
+    const { clientesFiltrados, setNovoCliente, setModalClienteAberto, isClienteProblema } = useClientes();
+    const { setNovoProduto, setModalProdutoAberto, fornecedoresTerceirizacaoNomes, atualizarCatalogoProdutos } = useCadastros();
     const [itemEditandoId, setItemEditandoId] = useState(null);
     const fecharAoClicarFora = useFecharAoClicarFora();
 

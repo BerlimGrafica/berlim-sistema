@@ -2,14 +2,18 @@
 import React, { useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useAppContext } from "@/context/AppContext";
+import { useSessao } from "@/context/SessaoContext";
+import { useUi } from "@/context/UiContext";
+import { useChatEquipe } from "@/context/ChatContext";
 import Icon from "@/components/Icon";
 import Tooltip from "@/components/Tooltip";
 import ChatPanel from "@/components/ChatPanel";
 import { useNavegarAlerta } from "@/hooks/useNavegarAlerta";
 
 export default function Navbar() {
-    const { setModalAlertasAberto, modalAlertasAberto, alertasNaoLidos, setAlertasNaoLidos, toggleDarkMode, darkMode, usuario, logout, googleVinculado, vincularGoogle, desvincularGoogle, abrirChat, chatNaoLidas, confirmar } = useAppContext();
+    const { toggleDarkMode, darkMode, usuario, logout, googleVinculado, vincularGoogle, desvincularGoogle } = useSessao();
+    const { setModalAlertasAberto, modalAlertasAberto, alertasNaoLidos, setAlertasNaoLidos, confirmar } = useUi();
+    const { abrirChat, chatNaoLidas } = useChatEquipe();
     const notificacoesRef = useRef(null);
     const navegarParaAlerta = useNavegarAlerta();
     const pathname = usePathname();

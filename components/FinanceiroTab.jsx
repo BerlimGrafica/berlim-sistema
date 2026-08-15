@@ -1,5 +1,7 @@
 "use client";
-import { useAppContext } from '@/context/AppContext';
+import { useSessao } from '@/context/SessaoContext';
+import { useNotasFiscais } from '@/context/NotasFiscaisContext';
+import { useFinanceiro } from '@/context/FinanceiroContext';
 import Icon from '@/components/Icon';
 import Tooltip from '@/components/Tooltip';
 import { CustomDateRangePicker } from '@/components/ui/DateRangePicker';
@@ -11,7 +13,9 @@ import NotasFiscaisPanel from '@/components/financeiro/NotasFiscaisPanel';
 import { useState } from 'react';
 
 export default function FinanceiroTab() {
-    const { setAbaFinanceiro, abaFinanceiro, notasFiscais, usuario, filtroNotas, dataFiltroContasPagarInicio, setDataFiltroContasPagarInicio, dataFiltroContasPagarFim, setDataFiltroContasPagarFim, dataFiltroContasReceberInicio, setDataFiltroContasReceberInicio, dataFiltroContasReceberFim, setDataFiltroContasReceberFim, dataFiltroBoletosInicio, setDataFiltroBoletosInicio, dataFiltroBoletosFim, setDataFiltroBoletosFim, setNovaConta, setModalContaAberto, setModalEmpresaFaturamentoAberto, buscaNotaFiscal, setBuscaNotaFiscal, setPaginaNotasFiscais, setFiltroNotas } = useAppContext();
+    const { usuario } = useSessao();
+    const { notasFiscais, filtroNotas, buscaNotaFiscal, setBuscaNotaFiscal, setPaginaNotasFiscais, setFiltroNotas } = useNotasFiscais();
+    const { setAbaFinanceiro, abaFinanceiro, dataFiltroContasPagarInicio, setDataFiltroContasPagarInicio, dataFiltroContasPagarFim, setDataFiltroContasPagarFim, dataFiltroContasReceberInicio, setDataFiltroContasReceberInicio, dataFiltroContasReceberFim, setDataFiltroContasReceberFim, dataFiltroBoletosInicio, setDataFiltroBoletosInicio, dataFiltroBoletosFim, setDataFiltroBoletosFim, setNovaConta, setModalContaAberto, setModalEmpresaFaturamentoAberto } = useFinanceiro();
     const [mostrarContasPagas, setMostrarContasPagas] = useState(false);
 
     return (

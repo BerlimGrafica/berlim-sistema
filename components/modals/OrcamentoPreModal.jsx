@@ -1,11 +1,11 @@
 "use client";
-import { useAppContext } from "@/context/AppContext";
+import { useOrcamentos } from "@/context/OrcamentosContext";
 import Icon from "@/components/Icon";
 import { InlineDropdown } from '@/components/ui/Dropdown';
 import { useFecharAoClicarFora } from '@/components/modals/useFecharAoClicarFora';
 
 export default function OrcamentoPreModal() {
-    const { modalOrcamentoPreAberto, setModalOrcamentoPreAberto, novoOrcamentoPre, setNovoOrcamentoPre, salvarOrcamentoPre } = useAppContext();
+    const { modalOrcamentoPreAberto, setModalOrcamentoPreAberto, novoOrcamentoPre, setNovoOrcamentoPre, salvarOrcamentoPre } = useOrcamentos();
     const fecharAoClicarFora = useFecharAoClicarFora();
 
     if (!modalOrcamentoPreAberto) return null;

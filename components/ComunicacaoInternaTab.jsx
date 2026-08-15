@@ -1,21 +1,14 @@
 "use client";
 import React from 'react';
-import { useAppContext } from '@/context/AppContext';
+import { useSessao } from '@/context/SessaoContext';
+import { useComunicacao } from '@/context/ComunicacaoContext';
 import Icon from '@/components/Icon';
 import Tooltip from '@/components/Tooltip';
 import { formatarDataExibicao, mascararCliente, formatarMoeda, centavosParaReais } from '@/lib/utils/formatters';
 
 export default function ComunicacaoInternaTab() {
-    const { 
-        abaComunicacao, setAbaComunicacao, 
-        requisicoesMaterial, tarefasInternas, linksPagamento,
-        setModalRequisicaoAberto, setNovaRequisicao,
-        setModalTarefaAberto, setNovaTarefa,
-        setModalLinkAberto, setNovoLink,
-        excluirRequisicao, excluirTarefa, excluirLink,
-        concluirRequisicao, concluirTarefa, reabrirTarefaFixa, concluirLink,
-        usuario, isAdmin, isDemo
-    } = useAppContext();
+    const { usuario, isAdmin, isDemo } = useSessao();
+    const { abaComunicacao, setAbaComunicacao, requisicoesMaterial, tarefasInternas, linksPagamento, setModalRequisicaoAberto, setNovaRequisicao, setModalTarefaAberto, setNovaTarefa, setModalLinkAberto, setNovoLink, excluirRequisicao, excluirTarefa, excluirLink, concluirRequisicao, concluirTarefa, reabrirTarefaFixa, concluirLink } = useComunicacao();
 
     const [mostrarConcluidosReq, setMostrarConcluidosReq] = React.useState(false);
     const [mostrarConcluidosTarefas, setMostrarConcluidosTarefas] = React.useState(false);

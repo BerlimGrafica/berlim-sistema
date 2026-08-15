@@ -1,12 +1,14 @@
 "use client";
 import { useState } from 'react';
-import { useAppContext } from '@/context/AppContext';
+import { useUi } from '@/context/UiContext';
+import { useFinanceiro } from '@/context/FinanceiroContext';
 import Icon from '@/components/Icon';
 import Tooltip from '@/components/Tooltip';
 import { formatarMoeda, formatarValorFinanceiro, formatarDataExibicao, centavosParaReais, obterDataAtual } from '@/lib/utils/formatters';
 
 export default function ContasAPagarPanel({ mostrarContasPagas, dataInicio, dataFim }) {
-    const { contasPagar, setNovaConta, setModalContaAberto, concluirConta, excluirConta, abrirContextMenu, duplicarConta, avisar } = useAppContext();
+    const { abrirContextMenu, avisar } = useUi();
+    const { contasPagar, setNovaConta, setModalContaAberto, concluirConta, excluirConta, duplicarConta } = useFinanceiro();
     // Ordenação simples por clique no header: null = ordem original (mais recente cadastrada primeiro).
     const [ordenacao, setOrdenacao] = useState({ campo: null, direcao: 'asc' });
 

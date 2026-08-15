@@ -1,5 +1,6 @@
 "use client";
-import { useAppContext } from "@/context/AppContext";
+import { useCadastros } from "@/context/CadastrosContext";
+import { useFinanceiro } from "@/context/FinanceiroContext";
 import Icon from "@/components/Icon";
 import { formatarMoeda } from '@/lib/utils/formatters';
 import { CustomDatePicker } from '@/components/ui/DatePicker';
@@ -15,7 +16,8 @@ const CATEGORIAS_CONTA = [
 ];
 
 export default function ContaModal() {
-    const { modalContaAberto, setModalContaAberto, novaConta, setNovaConta, salvandoConta, salvarConta, fornecedores } = useAppContext();
+    const { fornecedores } = useCadastros();
+    const { modalContaAberto, setModalContaAberto, novaConta, setNovaConta, salvandoConta, salvarConta } = useFinanceiro();
     const fecharAoClicarFora = useFecharAoClicarFora();
 
     const tipoFornecedorContaNecessario = novaConta.categoria === 'Manutenção' ? 'Manutenção' : novaConta.categoria === 'Terceirização' ? 'Terceirização' : novaConta.categoria === 'Material' ? 'Material' : null;

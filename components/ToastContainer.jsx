@@ -1,6 +1,7 @@
 "use client";
 import { useEffect } from 'react';
-import { useAppContext } from '@/context/AppContext';
+import { useSessao } from '@/context/SessaoContext';
+import { useUi } from '@/context/UiContext';
 import { useNavegarAlerta } from '@/hooks/useNavegarAlerta';
 import Icon from '@/components/Icon';
 
@@ -47,7 +48,8 @@ function Toast({ alerta, onFechar, onClicar }) {
 }
 
 export default function ToastContainer() {
-    const { toasts, removerToast, usuario } = useAppContext();
+    const { usuario } = useSessao();
+    const { toasts, removerToast } = useUi();
     const navegarParaAlerta = useNavegarAlerta();
 
     if (!usuario || toasts.length === 0) return null;

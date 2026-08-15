@@ -1,6 +1,9 @@
 "use client";
 import { useState } from 'react';
-import { useAppContext } from '@/context/AppContext';
+import { useSessao } from '@/context/SessaoContext';
+import { useUi } from '@/context/UiContext';
+import { usePedidos } from '@/context/PedidosContext';
+import { useFinanceiro } from '@/context/FinanceiroContext';
 import Icon from '@/components/Icon';
 import Tooltip from '@/components/Tooltip';
 import { formatarCnpjCpf, formatarMoeda, formatarDataExibicao, mascararCliente } from '@/lib/utils/formatters';
@@ -15,7 +18,10 @@ const OPCOES_PROTESTO = [
 const campoClass = "w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-2.5 py-1.5 text-[11px] outline-none hover:border-brand focus:border-brand transition text-gray-700 dark:text-[#EDEDED]";
 
 export default function BoletoRow({ p, statusPagamento, statusPagamentoCor }) {
-    const { isDemo, atualizarCampoInline, atualizarPagamentoBoleto, concluirBoletoContasReceber, abrirEdicao, confirmar, abrirContextMenu, duplicarOS, imprimirOS, avisar } = useAppContext();
+    const { isDemo } = useSessao();
+    const { confirmar, abrirContextMenu, avisar } = useUi();
+    const { atualizarCampoInline, abrirEdicao, duplicarOS, imprimirOS } = usePedidos();
+    const { atualizarPagamentoBoleto, concluirBoletoContasReceber } = useFinanceiro();
 
     const [cnpj, setCnpj] = useState(p.boleto_cnpj || '');
     const [numero, setNumero] = useState(p.boleto_numero || '');

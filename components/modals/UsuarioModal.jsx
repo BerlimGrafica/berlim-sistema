@@ -1,11 +1,11 @@
 "use client";
-import { useAppContext } from "@/context/AppContext";
+import { useCadastros } from "@/context/CadastrosContext";
 import Icon from "@/components/Icon";
 import { CustomSelect } from '@/components/ui/Dropdown';
 import { useFecharAoClicarFora } from '@/components/modals/useFecharAoClicarFora';
 
 export default function UsuarioModal() {
-    const { modalUsuarioAberto, setModalUsuarioAberto, novoUsuario, setNovoUsuario, salvarUsuario } = useAppContext();
+    const { modalUsuarioAberto, setModalUsuarioAberto, novoUsuario, setNovoUsuario, salvarUsuario } = useCadastros();
     const fecharAoClicarFora = useFecharAoClicarFora();
 
     if (!modalUsuarioAberto) return null;

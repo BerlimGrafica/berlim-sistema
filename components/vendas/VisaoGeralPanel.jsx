@@ -1,6 +1,7 @@
 "use client";
 import { useState, useRef } from 'react';
-import { useAppContext } from '@/context/AppContext';
+import { usePedidos } from '@/context/PedidosContext';
+import { useFinanceiro } from '@/context/FinanceiroContext';
 import Icon from '@/components/Icon';
 import Tooltip from '@/components/Tooltip';
 import { formatarValorFinanceiro, obterDataAtual, formatarDataExibicao, formatarMesAno } from '@/lib/utils/formatters';
@@ -9,7 +10,8 @@ import { BarRow } from '@/components/vendas/BarRow';
 import { useFinanceiroMetrics } from '@/components/vendas/useFinanceiroMetrics';
 
 export default function VisaoGeralPanel() {
-    const { pedidos, contasPagar } = useAppContext();
+    const { pedidos } = usePedidos();
+    const { contasPagar } = useFinanceiro();
     const [slidePainelAtivo, setSlidePainelAtivo] = useState(0);
     const painelScrollRef = useRef(null);
     const scrollToSlidePainel = (i) => {

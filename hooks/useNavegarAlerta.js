@@ -1,13 +1,17 @@
 "use client";
 import { useRouter } from 'next/navigation';
-import { useAppContext } from '@/context/AppContext';
+import { useSessao } from '@/context/SessaoContext';
+import { usePedidos } from '@/context/PedidosContext';
+import { useFinanceiro } from '@/context/FinanceiroContext';
 
 // Pra onde a app deve levar o usuário ao clicar num alerta — usado tanto pelo
 // dropdown do sino (Navbar) quanto pelos toasts, pra manter as duas entradas
 // consistentes sem duplicar o switch por tipo.
 export function useNavegarAlerta() {
     const router = useRouter();
-    const { setAbaFinanceiro, pedidos, abrirEdicao, usuario } = useAppContext();
+    const { usuario } = useSessao();
+    const { pedidos, abrirEdicao } = usePedidos();
+    const { setAbaFinanceiro } = useFinanceiro();
 
     return function navegarParaAlerta(alerta) {
         if (alerta.tipo === 'faturamento_em_analise') {

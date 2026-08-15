@@ -1,11 +1,17 @@
 "use client";
-import { useAppContext } from '@/context/AppContext';
+import { useSessao } from '@/context/SessaoContext';
+import { useUi } from '@/context/UiContext';
+import { usePedidos } from '@/context/PedidosContext';
+import { useFinanceiro } from '@/context/FinanceiroContext';
 import { obterCorStatus } from '@/lib/utils/constants';
 import { formatarValorFinanceiro, formatarDataExibicao, mascararCliente } from '@/lib/utils/formatters';
 import { obterResumoServicos } from '@/lib/utils/servico';
 
 export default function ContasAReceberPanel({ dataInicio, dataFim }) {
-    const { pedidosSaldoDevedor, isDemo, abrirEdicao, abrirContextMenu, duplicarOS, imprimirOS, avisar } = useAppContext();
+    const { isDemo } = useSessao();
+    const { abrirContextMenu, avisar } = useUi();
+    const { abrirEdicao, duplicarOS, imprimirOS } = usePedidos();
+    const { pedidosSaldoDevedor } = useFinanceiro();
 
     const pedidosFiltrados = pedidosSaldoDevedor.filter(p => {
         if (dataInicio && (!p.data_pedido || p.data_pedido < dataInicio)) return false;

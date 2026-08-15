@@ -1,5 +1,5 @@
 "use client";
-import { useAppContext } from "@/context/AppContext";
+import { useNotasFiscais } from "@/context/NotasFiscaisContext";
 import Icon from "@/components/Icon";
 import Tooltip from "@/components/Tooltip";
 import { formatarMoeda } from '@/lib/utils/formatters';
@@ -7,7 +7,7 @@ import { InlineDropdown } from '@/components/ui/Dropdown';
 import { useFecharAoClicarFora } from '@/components/modals/useFecharAoClicarFora';
 
 export default function NotaFiscalModal() {
-    const { modalNotaFiscalAberto, notaFiscalEmEdicao, setModalNotaFiscalAberto, setNotaFiscalEmEdicao, salvandoNotaFiscal, salvarNotaFiscal } = useAppContext();
+    const { modalNotaFiscalAberto, notaFiscalEmEdicao, setModalNotaFiscalAberto, setNotaFiscalEmEdicao, salvandoNotaFiscal, salvarNotaFiscal } = useNotasFiscais();
     const fecharAoClicarFora = useFecharAoClicarFora();
 
     if (!modalNotaFiscalAberto || !notaFiscalEmEdicao) return null;
