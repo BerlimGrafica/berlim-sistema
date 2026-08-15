@@ -4,7 +4,7 @@ import { usePathname } from 'next/navigation';
 import { flushSync } from 'react-dom';
 import { supabase } from '@/lib/supabaseClient';
 import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS } from '@/lib/utils/constants';
-import { formatarMoeda, parseValorMoeda, valorPagamentoComSinal, paraCentavos, centavosParaReais, obterDataAtual, adicionarMesData } from '@/lib/utils/formatters';
+import { formatarMoeda, parseValorMoeda, valorPagamentoComSinal, paraCentavos, centavosParaReais, obterDataAtual, adicionarMesData, apenasDigitos } from '@/lib/utils/formatters';
 import { desconstruirTextoServico } from '@/lib/utils/servico';
 import { useAuth } from '@/hooks/useAuth';
 import { useAlertas } from '@/hooks/useAlertas';
@@ -639,10 +639,17 @@ export const AppProvider = ({ children }) => {
     useEffect(() => {
         if (!buscaCliente || buscaCliente.length < 1) return;
         const timeout = setTimeout(async () => {
-            const isNum = !isNaN(buscaCliente);
+            // Só dígitos e pontuação de telefone ("4457-6742", "(11) 99999")
+            // significa busca por telefone. O teste antigo era !isNaN(), que
+            // dava falso para qualquer número com hífen — digitar um telefone
+            // formatado caía na busca por nome e não achava nada.
+            const digitos = apenasDigitos(buscaCliente);
+            const pareceTelefone = digitos.length >= 3 && /^[\d\s().+-]+$/.test(buscaCliente.trim());
             let query = supabase.from('clientes').select('*').limit(15);
-            if (isNum) {
-                query = query.ilike('telefone', `%${buscaCliente}%`);
+            if (pareceTelefone) {
+                // Compara dígito com dígito (coluna gerada telefone_digits);
+                // comparar com a coluna formatada falha por causa do hífen.
+                query = query.ilike('telefone_digits', `%${digitos}%`);
             } else {
                 query = query.ilike('nome', `%${buscaCliente}%`);
             }
@@ -688,9 +695,12 @@ export const AppProvider = ({ children }) => {
                 query = query.ilike('nome', `${letraFiltroCliente}%`);
             }
             if (buscaCadClientes) {
-                const isNum = !isNaN(buscaCadClientes);
-                if (isNum) {
-                    query = query.ilike('telefone', `%${buscaCadClientes}%`);
+                // Mesmo critério da busca do modal: dígitos e pontuação de
+                // telefone caem na coluna de dígitos; o resto busca nome/e-mail.
+                const digitosCad = apenasDigitos(buscaCadClientes);
+                const pareceTelefoneCad = digitosCad.length >= 3 && /^[\d\s().+-]+$/.test(buscaCadClientes.trim());
+                if (pareceTelefoneCad) {
+                    query = query.ilike('telefone_digits', `%${digitosCad}%`);
                 } else {
                     query = query.or(`nome.ilike.%${buscaCadClientes}%,email.ilike.%${buscaCadClientes}%`);
                 }
@@ -1577,11 +1587,15 @@ export const AppProvider = ({ children }) => {
         const clienteFormatado = { nome: novoCliente.nome, telefone: novoCliente.telefone, email: novoCliente.email, observacoes: novoCliente.observacoes, cliente_problema: novoCliente.cliente_problema || false };
 
         if (clienteFormatado.telefone && clienteFormatado.telefone.trim() !== '') {
-            const telNormalizado = clienteFormatado.telefone.replace(/\D/g, '');
+            const telNormalizado = apenasDigitos(clienteFormatado.telefone);
             let duplicado = null;
             if (telNormalizado.length >= 8) {
-                const searchString = `%${telNormalizado.slice(-4)}%`;
-                const { data: dupData } = await supabase.from('clientes').select('id,nome,telefone').ilike('telefone', searchString);
+                // Os 8 últimos dígitos são o número sem DDD — pega tanto quem
+                // está gravado com DDD quanto sem. A busca vai na coluna de
+                // dígitos: procurar no texto formatado não achava a duplicata,
+                // porque o hífen fica no meio do trecho procurado.
+                const searchString = `%${telNormalizado.slice(-8)}%`;
+                const { data: dupData } = await supabase.from('clientes').select('id,nome,telefone').ilike('telefone_digits', searchString);
                 if (dupData) {
                     duplicado = dupData.find(c => {
                         if (novoCliente.id && c.id === novoCliente.id) return false;

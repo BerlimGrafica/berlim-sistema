@@ -28,10 +28,13 @@ export async function GET(req: Request) {
   const admin = getSupabaseAdmin();
 
   const digitos = telefone.replace(/\D/g, '');
+  // Compara na coluna de dígitos, não na `telefone` formatada: "(11)98467-4562"
+  // não contém "84674562" porque o hífen fica no meio do trecho — a busca
+  // antiga não achava nenhum cliente, nem celular.
   const { data: cliente } = await admin
     .from('clientes')
     .select('nome')
-    .ilike('telefone', `%${digitos.slice(-8)}%`)
+    .ilike('telefone_digits', `%${digitos.slice(-8)}%`)
     .limit(1)
     .maybeSingle();
 
