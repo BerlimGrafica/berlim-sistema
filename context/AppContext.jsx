@@ -483,6 +483,15 @@ export const AppProvider = ({ children }) => {
         const anoAnteriorStr = (new Date().getFullYear() - 1).toString();
         const dataCorte = `${anoAnteriorStr}-01-01`;
 
+        // Rede de segurança da janela de data: uma O.S. ainda em produção nunca
+        // pode sumir da tela só por ser antiga. Derivada de STATUSES_PRODUCAO —
+        // nunca redigitar a lista aqui: a versão escrita à mão citava três
+        // status que nunca existiram (Arte, Impressão, Acabamento) e deixava de
+        // fora sete que existem, entre eles "Produção", cobrindo 2 das 9 etapas.
+        // Aspas duplas porque os status têm espaço (mesmo formato usado no
+        // filtro do Histórico).
+        const redeStatusAtivos = STATUSES_PRODUCAO.map(s => `"${s}"`).join(',');
+
         const hoje = new Date();
         hoje.setHours(0, 0, 0, 0);
         const amanha = new Date(hoje);
@@ -499,7 +508,7 @@ export const AppProvider = ({ children }) => {
             const { data: batch, error } = await supabase
                 .from('pedidos')
                 .select('*, pedido_itens(*), pedido_pagamentos(*)')
-                .or(`data_pedido.gte.${dataCorte},status.in.(Produzir,Arte,Impressão,Acabamento,Retirada)`)
+                .or(`data_pedido.gte.${dataCorte},status.in.(${redeStatusAtivos})`)
                 .order('id', { ascending: false })
                 .range(from, from + limit - 1);
                 
