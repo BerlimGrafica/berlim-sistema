@@ -1,11 +1,13 @@
 "use client";
 import { useState, useRef } from 'react';
+import { useSessao } from '@/context/SessaoContext';
+import { usePedidos } from '@/context/PedidosContext';
 import Icon from '@/components/Icon';
 import Tooltip from '@/components/Tooltip';
-import { formatarValorFinanceiro, formatarDataExibicao, formatarMesAno, centavosParaReais, obterDataAtual } from '@/lib/utils/formatters';
+import { formatarValorFinanceiro, formatarDataExibicao, formatarMesAno, centavosParaReais, obterDataAtual, mascararCliente } from '@/lib/utils/formatters';
 import { BarRow } from '@/components/vendas/BarRow';
 
-const SLIDES = ['Faturamento no tempo', 'Distribuição no período', 'Despesas do período'];
+const SLIDES = ['Faturamento no tempo', 'Distribuição no período', 'Despesas e cobranças'];
 
 // "R$" sempre em cima, número embaixo — e o número encolhe se for ficar largo
 // demais pro card, em vez de quebrar linha no meio do valor.
@@ -46,8 +48,13 @@ function CardPainel({ titulo, descricao, icone, fundoIcone, corIcone, children }
 function Barras({ itens, cores, vazio, rotuloDe = (i) => i.rotulo, corFixa }) {
     if (!itens || itens.length === 0) return <p className="text-[11px] text-gray-500 italic">{vazio}</p>;
     const valores = itens.map(i => centavosParaReais(i.centavos));
-    const max = Math.max(...valores, 1);
+    // Módulo na escala: com estorno na lista há valores negativos, e a maior
+    // barra pode ser justamente a devolução.
+    const max = Math.max(...valores.map(Math.abs), 1);
     const total = valores.reduce((a, v) => a + v, 0);
+    // Porcentagem sobre um total de sinais misturados não quer dizer nada —
+    // nesse caso a coluna some em vez de mostrar número sem sentido.
+    const temNegativo = valores.some(v => v < 0);
     return itens.map((item, i) => (
         <BarRow
             key={item.rotulo}
@@ -56,7 +63,7 @@ function Barras({ itens, cores, vazio, rotuloDe = (i) => i.rotulo, corFixa }) {
             maxVal={max}
             color={corFixa || (typeof cores === 'function' ? cores(item, i) : cores[i % cores.length])}
             rank={i + 1}
-            pctTotal={total > 0 ? (valores[i] / total) * 100 : 0}
+            pctTotal={temNegativo || total <= 0 ? null : (valores[i] / total) * 100}
         />
     ));
 }
@@ -69,6 +76,9 @@ const CORES_CATEGORIA = { 'Despesa': 'bg-gray-500', 'Manutenção': 'bg-purple-5
 export default function VisaoGeralPanel({ metricas, rotulo }) {
     const [slide, setSlide] = useState(0);
     const scrollRef = useRef(null);
+    const { isDemo } = useSessao();
+    // Só para abrir a O.S. direto da lista de cobrança pendente.
+    const { pedidos, abrirEdicao } = usePedidos();
 
     const irPara = (i) => {
         const el = scrollRef.current;
@@ -97,7 +107,7 @@ export default function VisaoGeralPanel({ metricas, rotulo }) {
                     <h2 className="text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Resumo do período</h2>
                     <span className="text-[10px] text-gray-400 font-medium normal-case">{rotulo}</span>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-7 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     {/* Crescimento é sempre ano contra ano — não segue o período, e o rótulo diz isso. */}
                     <div className="bg-white dark:bg-darkCard p-5 rounded-xl border border-gray-200 dark:border-darkBorder shadow-sm hover:shadow-md transition flex flex-col justify-between">
                         <div className="flex items-end justify-between gap-2">
@@ -127,6 +137,10 @@ export default function VisaoGeralPanel({ metricas, rotulo }) {
                         icone={{ nome: 'calendar', fundo: 'bg-purple-50 dark:bg-purple-500/10' }} nota={formatarDataExibicao(obterDataAtual())} />
                     <CardIndicador rotulo="Saldo devedor" centavos={resumo.a_receber_centavos} cor="text-orange-600 dark:text-orange-400"
                         icone={{ nome: 'clock', fundo: 'bg-orange-50 dark:bg-orange-500/10' }} nota="Falta receber no período" />
+                    {/* Antes esse valor era somado ao "recebido" como se tivesse entrado. */}
+                    <CardIndicador rotulo="Concluído sem baixa" centavos={metricas.sem_baixa.total_centavos} cor="text-rose-600 dark:text-rose-400"
+                        icone={{ nome: 'alert-triangle', fundo: 'bg-rose-50 dark:bg-rose-500/10' }}
+                        nota={metricas.sem_baixa.qtd === 0 ? 'Nada pendente de baixa' : `${metricas.sem_baixa.qtd} O.S. encerrada(s) sem pagamento`} />
                     <CardIndicador rotulo="Ticket médio" centavos={resumo.ticket_medio_centavos} cor="text-blue-600 dark:text-blue-400"
                         icone={{ nome: 'tag', fundo: 'bg-blue-50 dark:bg-blue-500/10' }} nota={`${resumo.qtd_pedidos} pedido(s) no período`} />
                 </div>
@@ -186,9 +200,9 @@ export default function VisaoGeralPanel({ metricas, rotulo }) {
                         </div>
                     </div>
 
-                    {/* SLIDE 3: DESPESAS DO PERÍODO */}
+                    {/* SLIDE 3: DESPESAS E COBRANÇAS DO PERÍODO */}
                     <div className="w-full shrink-0 snap-start pl-1">
-                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
                             <CardPainel titulo="Despesas por categoria" descricao="Contas com vencimento no período" icone="tag" fundoIcone="bg-gray-100 dark:bg-gray-500/10" corIcone="text-gray-600 dark:text-gray-400">
                                 <Barras itens={despesas.por_categoria} cores={(item) => CORES_CATEGORIA[item.rotulo] || 'bg-gray-500'} vazio="Nenhuma conta no período." />
                             </CardPainel>
@@ -227,6 +241,37 @@ export default function VisaoGeralPanel({ metricas, rotulo }) {
                                         />
                                     ));
                                 })()}
+                            </CardPainel>
+
+                            {/* Cobrança pendente: o que antes era contado como recebido. */}
+                            <CardPainel titulo="Concluído sem baixa" descricao="O.S. encerradas sem pagamento lançado" icone="alert-triangle" fundoIcone="bg-rose-50 dark:bg-rose-500/10" corIcone="text-rose-600 dark:text-rose-400">
+                                {metricas.sem_baixa.pedidos.length === 0 ? (
+                                    <p className="text-[11px] text-gray-500 italic">Toda O.S. encerrada no período tem pagamento lançado.</p>
+                                ) : metricas.sem_baixa.pedidos.map(p => {
+                                    // Só abre a O.S. se ela estiver na lista já carregada; fora
+                                    // da janela de carregamento vira linha simples, sem clique
+                                    // que não faria nada.
+                                    const naMemoria = pedidos.find(x => x.id === p.id);
+                                    const conteudo = (
+                                        <>
+                                            <span className="min-w-0 text-left">
+                                                <span className="block text-[12px] font-bold text-gray-900 dark:text-white tabular-nums">#{p.id}</span>
+                                                <span className="block text-[11px] text-gray-500 dark:text-gray-400 truncate">{mascararCliente(p.cliente, isDemo) || '---'}</span>
+                                            </span>
+                                            <span className="text-[12px] font-bold text-rose-600 dark:text-rose-400 tabular-nums shrink-0">
+                                                R$ {formatarValorFinanceiro(centavosParaReais(p.centavos))}
+                                            </span>
+                                        </>
+                                    );
+                                    return naMemoria ? (
+                                        <button key={p.id} type="button" onClick={() => abrirEdicao(naMemoria)}
+                                            className="w-full flex items-center justify-between gap-3 py-1.5 rounded hover:bg-gray-50 dark:hover:bg-darkHover transition px-1 -mx-1">
+                                            {conteudo}
+                                        </button>
+                                    ) : (
+                                        <div key={p.id} className="w-full flex items-center justify-between gap-3 py-1.5 px-1 -mx-1">{conteudo}</div>
+                                    );
+                                })}
                             </CardPainel>
                         </div>
                     </div>

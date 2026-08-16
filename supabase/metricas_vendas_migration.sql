@@ -15,15 +15,20 @@
 -- nem de quando, não encolhe sozinho quando a janela de carregamento avança, e
 -- receita e despesa passam a ser recortadas pelo MESMO período.
 --
--- SEMÂNTICA PRESERVADA de propósito (para permitir conferência número a número
--- contra a versão antiga). Duas heranças ficam registradas aqui porque são
--- decisões de negócio, não bugs de tradução, e devem ser tratadas à parte:
+-- DUAS HERANÇAS CORRIGIDAS (a versão inicial desta função as preservava de
+-- propósito, para permitir a conferência número a número contra o cálculo
+-- antigo; provada a equivalência, foram corrigidas):
 --
---   1) "recebido" de um pedido SEM nenhum pagamento lançado, mas com status
---      Concluído/Finalizado, conta o valor cheio como recebido. Isso infla o
---      recebido com dinheiro que ninguém registrou ter entrado.
---   2) os rankings por forma de pagamento e por instituição somam o valor bruto
---      da linha, sem inverter o sinal de Estorno (o total recebido inverte).
+--   1) "recebido" contava o valor cheio de um pedido Concluído/Finalizado que
+--      não tivesse NENHUM pagamento lançado — reportava como dinheiro em caixa
+--      algo que ninguém registrou ter entrado, e o erro sempre apontava para
+--      mais. Agora "recebido" só soma o que tem lançamento, e esses pedidos
+--      viram um indicador próprio ("sem_baixa"), com a lista para cobrança.
+--      Efeito colateral correto: eles passam a pesar no saldo devedor.
+--   2) os rankings por forma de pagamento e por instituição somavam o valor
+--      bruto da linha, sem inverter o sinal de Estorno — enquanto o total
+--      recebido invertia. A soma dos rankings não fechava com o recebido.
+--      Agora usam o mesmo sinal.
 --
 -- Valores sempre em CENTAVOS (inteiro), como no resto do sistema. A conversão
 -- para reais acontece só na exibição.
@@ -76,14 +81,19 @@ base_historico as (
       and p.data_pedido is not null
 ),
 
+-- Um pedido encerrado sem nenhum pagamento lançado não é dinheiro recebido:
+-- é cobrança pendente. Fica separado, com nome próprio e lista.
+sem_baixa as (
+    select id, cliente, status, valor_total,
+           to_char(data_pedido, 'YYYY-MM-DD') as data_pedido
+    from base
+    where qtd_pag = 0 and status in ('Concluído', 'Finalizado')
+),
+
 resumo as (
     select
         coalesce(sum(valor_total), 0)::bigint as bruto,
-        coalesce(sum(case
-            when qtd_pag > 0 then pago_centavos
-            when status in ('Concluído', 'Finalizado') then valor_total
-            else 0
-        end), 0)::bigint as recebido,
+        coalesce(sum(case when qtd_pag > 0 then pago_centavos else 0 end), 0)::bigint as recebido,
         count(*)::int as qtd
     from base
 ),
@@ -103,11 +113,13 @@ ranking_local as (
     group by u.local
 ),
 
--- Pagamentos dos pedidos do período (valor bruto da linha — ver nota 2 acima).
+-- Pagamentos dos pedidos do período. Mesmo sinal do total recebido: estorno é
+-- dinheiro voltando ao cliente, então entra negativo. Assim a soma dos rankings
+-- fecha com o "recebido" — antes as duas contas divergiam em silêncio.
 pag_periodo as (
     select coalesce(nullif(trim(pp.forma), ''), 'Indefinido') as forma,
            coalesce(nullif(trim(pp.instituicao), ''), 'Indefinido') as instituicao,
-           pp.valor_centavos
+           case when pp.forma = 'Estorno' then -pp.valor_centavos else pp.valor_centavos end as valor_centavos
     from public.pedido_pagamentos pp
     join base b on b.id = pp.pedido_id
 ),
@@ -264,6 +276,16 @@ select jsonb_build_object(
         -- ticket médio ficaria um centavo abaixo do valor correto.
         'ticket_medio_centavos', case when qtd > 0 then round(bruto::numeric / qtd)::bigint else 0 end
     ) from resumo),
+
+    -- Pedidos encerrados sem nenhum pagamento lançado: não são receita, são
+    -- cobrança. A lista vai junto para a tela poder mostrar o que perseguir.
+    'sem_baixa', jsonb_build_object(
+        'total_centavos', (select coalesce(sum(valor_total), 0)::bigint from sem_baixa),
+        'qtd', (select count(*)::int from sem_baixa),
+        'pedidos', coalesce((select jsonb_agg(jsonb_build_object(
+            'id', id, 'cliente', cliente, 'centavos', valor_total, 'status', status, 'data_pedido', data_pedido
+        ) order by valor_total desc, id) from sem_baixa), '[]'::jsonb)
+    ),
 
     'vendas_hoje_centavos', (select coalesce(sum(valor_total), 0)::bigint from base_historico where data_pedido = (select d from hoje)),
 
