@@ -3,17 +3,8 @@ import React from 'react';
 import { useSessao } from '@/context/SessaoContext';
 import { usePedidos } from '@/context/PedidosContext';
 import { formatarDataExibicao, formatarValorFinanceiro, mascararCliente, centavosParaReais } from '@/lib/utils/formatters';
-import { desconstruirTextoServico } from '@/lib/utils/servico';
+import { itensDoPedido, pagamentosDoPedido, observacoesDoPedido, itensDoOrcamento, observacoesDoOrcamento } from '@/lib/utils/servico';
 import Icon from '@/components/Icon';
-
-function extrairItens(orc) {
-    if (!orc.descricao) return [];
-    const match = orc.descricao.match(/\[ITENS_JSON\]\n([\s\S]*)/);
-    if (match) {
-        try { return JSON.parse(match[1]); } catch(e) { console.error(e) }
-    }
-    return desconstruirTextoServico(orc.descricao).itens;
-}
 
 export default function PrintLayout() {
     const { isDemo } = useSessao();
@@ -29,8 +20,12 @@ export default function PrintLayout() {
         <div className="print-only bg-white text-black font-sans flex flex-col w-full h-[286mm] overflow-hidden justify-between select-none">
             {[1, 2].map((via, index) => {
                 const cInfo = osParaImprimir.clienteInfo;
-                const desc = desconstruirTextoServico(osParaImprimir.servico);
-                
+                const desc = {
+                    itens: itensDoPedido(osParaImprimir),
+                    pagamentos: pagamentosDoPedido(osParaImprimir),
+                    observacoes: observacoesDoPedido(osParaImprimir),
+                };
+
                 return (
                     <div key={via} className={`h-[143mm] flex flex-col p-6 overflow-hidden relative justify-between ${index === 0 ? 'border-b-[2px] border-dashed border-gray-400' : ''}`}>
                         
@@ -151,20 +146,11 @@ export default function PrintLayout() {
 
 function PrintOrcamento({ orc }) {
     const { isDemo } = useSessao();
-    const itens = extrairItens(orc);
+    const itens = itensDoOrcamento(orc);
     const telefone = isDemo ? '' : (orc.clienteInfo?.telefone || orc.telefone || '');
     const date = new Date(orc.created_at).toLocaleDateString('pt-BR');
     
-    // Extract observations: strip [ITENS_JSON] block before parsing
-    let obsPrazo = '';
-    if (orc.observacoes && orc.observacoes.trim()) {
-        obsPrazo = orc.observacoes.trim();
-    } else {
-        // Try to extract from descricao by removing [ITENS_JSON] portion first
-        const descSemItensJson = (orc.descricao || '').replace(/\n\n\[ITENS_JSON\]\n[\s\S]*$/, '');
-        const desc = desconstruirTextoServico(descSemItensJson);
-        obsPrazo = desc.observacoes || '';
-    }
+    let obsPrazo = (observacoesDoOrcamento(orc) || '').trim();
     if (!obsPrazo) obsPrazo = "Prazo e condições a combinar.";
     
     return (

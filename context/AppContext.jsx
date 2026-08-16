@@ -5,7 +5,7 @@ import { flushSync } from 'react-dom';
 import { supabase } from '@/lib/supabaseClient';
 import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS } from '@/lib/utils/constants';
 import { formatarMoeda, parseValorMoeda, valorPagamentoComSinal, valorPagamentoComSinalCentavos, paraCentavos, centavosParaReais, obterDataAtual, adicionarMesData, apenasDigitos } from '@/lib/utils/formatters';
-import { desconstruirTextoServico, construirTextoServico, itemDbParaCarrinho, pagamentoDbParaCarrinho } from '@/lib/utils/servico';
+import { itensDoPedido, pagamentosDoPedido, observacoesDoPedido, itensDoOrcamento, observacoesDoOrcamento } from '@/lib/utils/servico';
 import { useAuth } from '@/hooks/useAuth';
 import { useAlertas } from '@/hooks/useAlertas';
 import { useChat } from '@/hooks/useChat';
@@ -31,6 +31,7 @@ export { supabase };
 
 // Numeração dos pedidos deve continuar a partir do último número usado no sistema anterior.
 const NUMERO_INICIAL_PEDIDO = 17930;
+
 
 export const AppProvider = ({ children }) => {
     const pathname = usePathname();
@@ -592,7 +593,9 @@ export const AppProvider = ({ children }) => {
         if (!usuario) return;
 
         async function fetchHistorico() {
-            let query = supabase.from('pedidos').select('*', { count: 'exact' });
+            // Traz só nome/ordem dos itens: o suficiente para a coluna "Serviço
+            // (Resumo)" da tabela, sem o peso de descrição e valores.
+            let query = supabase.from('pedidos').select('*, pedido_itens(nome, ordem)', { count: 'exact' });
             
             if (abaOS === 'abertas') {
                 query = query.not('status', 'in', '("Concluído","Finalizado","Cancelado","Abandonado")');
@@ -807,34 +810,23 @@ export const AppProvider = ({ children }) => {
     // concluído quanto para editar o valor do boleto direto na tabela de
     // Boletos — os únicos dois campos do pagamento que essa tela manipula, e
     // os únicos que continuam vinculados/visíveis no modal da O.S.
-    // pedido_pagamentos é a fonte de verdade; o patch equivalente também é
-    // aplicado em pedidos.servico (espelho, ainda lido por PrintLayout,
-    // WhatsApp API e telas de resumo não migradas nesta entrega).
+    // Grava só em pedido_pagamentos: desde o fim do espelho em pedidos.servico,
+    // essa é a única fonte de pagamentos.
     async function atualizarPagamentoBoleto(pedido, patch) {
-        if (!pedido || !pedido.servico) return;
-
-        const partes = pedido.servico.split('\n\n[PAGAMENTOS]\n');
-        let pagamentos = [];
-        try { pagamentos = JSON.parse(partes[1] || '[]'); } catch (e) { pagamentos = []; }
-
-        const pagamentosAtualizados = pagamentos.map(pag => pag.forma === 'Boleto' ? { ...pag, ...patch } : pag);
-        const novoServico = partes[0] + '\n\n[PAGAMENTOS]\n' + JSON.stringify(pagamentosAtualizados);
+        if (!pedido) return;
 
         const patchCentavos = { ...patch };
         if ('valor' in patch) { patchCentavos.valor_centavos = paraCentavos(patch.valor); delete patchCentavos.valor; }
 
         setPedidos(prev => prev.map(p => p.id === pedido.id ? {
-            ...p, servico: novoServico,
+            ...p,
             pedido_pagamentos: (p.pedido_pagamentos || []).map(pg => pg.forma === 'Boleto' ? { ...pg, ...patchCentavos } : pg),
         } : p));
-        setPedidosBoleto(prev => prev.map(p => p.id === pedido.id ? { ...p, servico: novoServico, boleto: { ...p.boleto, ...patch } } : p));
+        setPedidosBoleto(prev => prev.map(p => p.id === pedido.id ? { ...p, boleto: { ...p.boleto, ...patch } } : p));
 
-        const [{ error: errorServico }, { error: errorPagamento }] = await Promise.all([
-            supabase.from('pedidos').update({ servico: novoServico }).eq('id', pedido.id),
-            supabase.from('pedido_pagamentos').update(patchCentavos).eq('pedido_id', pedido.id).eq('forma', 'Boleto'),
-        ]);
-        if (errorServico || errorPagamento) {
-            avisar('Erro ao atualizar boleto: ' + (errorServico || errorPagamento).message, 'erro');
+        const { error } = await supabase.from('pedido_pagamentos').update(patchCentavos).eq('pedido_id', pedido.id).eq('forma', 'Boleto');
+        if (error) {
+            avisar('Erro ao atualizar boleto: ' + error.message, 'erro');
             carregarDados();
         }
     }
@@ -925,19 +917,12 @@ export const AppProvider = ({ children }) => {
         const podeFinalizar = usuario?.nivel === 'Administrador' || usuario?.nivel === 'Financeiro';
         const concluidos = [];
         for (const { pedido, valorAlocado } of alocacoes) {
-            const pagamento = { ...metadados, valor: valorAlocado, lote_id: loteId };
-            const partes = (pedido.servico || '').split('\n\n[PAGAMENTOS]\n');
-            let pagamentosExistentes = [];
-            try { pagamentosExistentes = JSON.parse(partes[1] || '[]'); } catch (e) { pagamentosExistentes = []; }
-            const novosPagamentos = [...pagamentosExistentes, pagamento];
-            const novoServico = partes[0] + '\n\n[PAGAMENTOS]\n' + JSON.stringify(novosPagamentos);
-
             const pagamentosDb = pedido.pedido_pagamentos || [];
             const totalPagoCentavos = pagamentosDb.reduce((acc, p) => acc + (p.forma === 'Estorno' ? -1 : 1) * p.valor_centavos, 0) + paraCentavos(valorAlocado);
             const saldoRestante = centavosParaReais(pedido.valor_total) - centavosParaReais(totalPagoCentavos);
-
-            const payload = { servico: novoServico };
-            if (podeFinalizar && saldoRestante <= 0.001 && pedido.status !== 'Finalizado') payload.status = 'Finalizado';
+            // A OS só precisa ser tocada quando o pagamento a quita: o pagamento
+            // em si mora em pedido_pagamentos.
+            const viraFinalizado = podeFinalizar && saldoRestante <= 0.001 && pedido.status !== 'Finalizado';
 
             const linhaPagamento = {
                 pedido_id: pedido.id, ordem: pagamentosDb.length, forma: metadados.forma || 'Indefinido',
@@ -948,7 +933,9 @@ export const AppProvider = ({ children }) => {
             };
 
             const [{ data, error }, { data: pagamentoInserido, error: errorPagamento }] = await Promise.all([
-                supabase.from('pedidos').update(payload).eq('id', pedido.id).select(),
+                viraFinalizado
+                    ? supabase.from('pedidos').update({ status: 'Finalizado' }).eq('id', pedido.id).select()
+                    : Promise.resolve({ data: [pedido], error: null }),
                 supabase.from('pedido_pagamentos').insert([linhaPagamento]).select(),
             ]);
             if (error || !data || data.length === 0 || errorPagamento) {
@@ -987,7 +974,6 @@ export const AppProvider = ({ children }) => {
     }
 
     function abrirEdicao(pedido) {
-        const dadosDesconstruidos = desconstruirTextoServico(pedido.servico);
         setPedidoEmEdicao(pedido);
         setBuscaCliente(pedido.cliente);
         // Busca o cliente vinculado pela chave primária. Não dá pra tirar isso da
@@ -1006,13 +992,8 @@ export const AppProvider = ({ children }) => {
                     }
                 });
         }
-        const itensCarregados = pedido.pedido_itens
-            ? [...pedido.pedido_itens].sort((a, b) => a.ordem - b.ordem).map(itemDbParaCarrinho)
-            : dadosDesconstruidos.itens;
-        setItensPedido(itensCarregados);
-        const pagamentosRecuperados = pedido.pedido_pagamentos
-            ? [...pedido.pedido_pagamentos].sort((a, b) => a.ordem - b.ordem).map(pagamentoDbParaCarrinho)
-            : (dadosDesconstruidos.pagamentos || []);
+        setItensPedido(itensDoPedido(pedido));
+        const pagamentosRecuperados = pagamentosDoPedido(pedido);
         setPagamentosPedido(pagamentosRecuperados);
 
         const totalPago = pagamentosRecuperados.reduce((acc, p) => acc + valorPagamentoComSinal(p), 0);
@@ -1026,7 +1007,7 @@ export const AppProvider = ({ children }) => {
         setNovoPedido({
             cliente: pedido.cliente,
             cliente_id: pedido.cliente_id || null,
-            servico: dadosDesconstruidos.observacoes,
+            servico: observacoesDoPedido(pedido),
             status: pedido.status,
             valor_total: formatarMoeda(Math.round(pedido.valor_total).toString()),
             data_pedido: pedido.data_pedido || null,
@@ -1199,8 +1180,6 @@ export const AppProvider = ({ children }) => {
         setSalvandoOS(true);
         const statusFinal = statusForcado || novoPedido.status;
 
-        const textoFinalServico = construirTextoServico({ itens: itensPedido, observacoes: novoPedido.servico, pagamentos: pagamentosPedido });
-
         const valorNumericoFinal = paraCentavos(novoPedido.valor_total);
 
         // Calcular locais unicos da OS a partir dos itens
@@ -1209,7 +1188,9 @@ export const AppProvider = ({ children }) => {
         const payload = {
             cliente: novoPedido.cliente,
             cliente_id: novoPedido.cliente_id || null,
-            servico: textoFinalServico,
+            // Só as observações, em texto puro: itens e pagamentos são gravados
+            // em pedido_itens/pedido_pagamentos por salvarItensPagamentosDoPedido.
+            servico: novoPedido.servico || '',
             status: statusFinal,
             valor_total: valorNumericoFinal,
             data_pedido: novoPedido.data_pedido || null,
@@ -1293,14 +1274,15 @@ export const AppProvider = ({ children }) => {
     // valor/responsável/local, mas sem os pagamentos já lançados e reiniciando o
     // fluxo (status inicial, sem prazo, arte/entrega não aprovadas ainda).
     async function duplicarOS(pedido) {
-        const servicoSemPagamentos = pedido.servico ? pedido.servico.split('\n\n[PAGAMENTOS]\n')[0] : '';
         const { data: ultimoPedido } = await supabase.from('pedidos').select('id').order('id', { ascending: false }).limit(1);
         const idBase = ultimoPedido && ultimoPedido.length > 0 ? ultimoPedido[0].id : (pedidos.length > 0 ? Math.max(...pedidos.map(p => p.id)) : 0);
         let novoId = Math.max(idBase, NUMERO_INICIAL_PEDIDO - 1) + 1;
         const payload = {
             cliente: pedido.cliente,
             cliente_id: pedido.cliente_id || null,
-            servico: servicoSemPagamentos,
+            // Leva as observações; os itens são clonados logo abaixo e os
+            // pagamentos ficam de fora de propósito (é uma OS nova, ainda não paga).
+            servico: observacoesDoPedido(pedido),
             status: 'Aguardando Pagamento',
             valor_total: pedido.valor_total,
             data_pedido: obterDataAtual(),
@@ -1384,8 +1366,6 @@ export const AppProvider = ({ children }) => {
             if (!querSalvarAvulso) return;
         }
 
-        const textoFinalServico = construirTextoServico({ itens: itensPedido, observacoes: novoPedido.servico, pagamentos: [] });
-
         const valorNumericoFinal = paraCentavos(novoPedido.valor_total);
 
         const payload = {
@@ -1399,7 +1379,9 @@ export const AppProvider = ({ children }) => {
                 ?? (novoPedido.cliente_id ? clientes.find(c => c.id === novoPedido.cliente_id)?.telefone : undefined)
                 ?? orcamentoFormalizadoEmEdicao?.telefone ?? '',
             produto: itensPedido.map(i => i.nome).join(', ') || 'Serviços Diversos',
-            descricao: textoFinalServico,
+            // Coluna legada, mantida preenchida com o mesmo texto de observacoes
+            // (não mais com o bloco serializado). Os itens vivem em orcamento_itens.
+            descricao: novoPedido.servico || '',
             quantidade: 1,
             valor: valorNumericoFinal,
             observacoes: novoPedido.servico,
@@ -1465,13 +1447,12 @@ export const AppProvider = ({ children }) => {
     }
     
     function abrirEdicaoOrcamento(orcamento) {
-        const itensCarregados = [...(orcamento.orcamento_itens || [])].sort((a, b) => a.ordem - b.ordem).map(itemDbParaCarrinho);
-        const obs = orcamento.observacoes || (orcamento.descricao ? desconstruirTextoServico(orcamento.descricao.split('\n\n[ITENS_JSON]')[0]).observacoes : '');
-        
+        const obs = observacoesDoOrcamento(orcamento);
+
         setOrcamentoFormalizadoEmEdicao(orcamento);
         setBuscaCliente(orcamento.cliente);
         setClienteSelecionadoInfo(null);
-        setItensPedido(itensCarregados);
+        setItensPedido(itensDoOrcamento(orcamento));
         setNovoPedido({
             cliente: orcamento.cliente,
             // Sem isso, reabrir e salvar um orçamento já vinculado zerava o
@@ -1489,11 +1470,10 @@ export const AppProvider = ({ children }) => {
     }
     
     function transformarEmOS(orcamento) {
-        const itensCarregados = [...(orcamento.orcamento_itens || [])].sort((a, b) => a.ordem - b.ordem).map(itemDbParaCarrinho);
         setPedidoEmEdicao(null);
         setBuscaCliente(orcamento.cliente);
         setClienteSelecionadoInfo(null);
-        setItensPedido(itensCarregados);
+        setItensPedido(itensDoOrcamento(orcamento));
         setNovoPedido({
             cliente: orcamento.cliente,
             // Carrega o vínculo do orçamento pra OS que nasce dele: sem isso, todo
@@ -1925,6 +1905,19 @@ export const AppProvider = ({ children }) => {
     async function imprimirOS(pedido) {
         setOrcamentoParaImprimir(null);
         setOsParaImprimir(pedido);
+
+        // Busca a OS completa antes de imprimir: as telas que chamam daqui trazem
+        // projeções diferentes (o Histórico, por exemplo, traz só o nome dos itens
+        // para o resumo da tabela), e a impressão precisa de descrição e valor de
+        // cada item. Uma consulta a mais numa ação rara, em troca de nunca
+        // imprimir uma OS pela metade.
+        const { data: completo } = await supabase
+            .from('pedidos')
+            .select('*, pedido_itens(*), pedido_pagamentos(*)')
+            .eq('id', pedido.id)
+            .maybeSingle();
+        if (completo) setOsParaImprimir(prev => ({ ...completo, clienteInfo: prev?.clienteInfo }));
+
         // Pedido guarda o cliente como texto solto (sem vínculo por ID com a tabela
         // clientes) — usa ilike/trim pra não perder o telefone por causa de
         // maiúscula ou espaço divergente entre o nome no pedido e o cadastro atual.

@@ -9,7 +9,7 @@ import Icon from '@/components/Icon';
 import Tooltip from '@/components/Tooltip';
 import { STATUSES_FINALIZADOS } from '@/lib/utils/constants';
 import { formatarDataExibicao, mascararCliente } from '@/lib/utils/formatters';
-import { obterResumoServicos } from '@/lib/utils/servico';
+import { resumoDoPedido } from '@/lib/utils/servico';
 
 
 export default function DashboardTab() {
@@ -181,7 +181,7 @@ export default function DashboardTab() {
                                                             <p className="text-[12px] font-bold text-gray-900 dark:text-gray-200">#{t.id}</p>
                                                             <p className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 max-w-[130px] truncate">{mascararCliente(t.cliente, isDemo)}</p>
                                                         </td>
-                                                        <td className="px-4 py-3 text-[12px] font-medium text-gray-600 dark:text-gray-400 max-w-[120px] truncate">{obterResumoServicos(t.servico)}</td>
+                                                        <td className="px-4 py-3 text-[12px] font-medium text-gray-600 dark:text-gray-400 max-w-[120px] truncate">{resumoDoPedido(t)}</td>
                                                         <td className="px-4 py-3">
                                                             <span className="text-[10px] font-bold px-2 py-1 bg-gray-100 dark:bg-darkElevated text-gray-700 dark:text-gray-300 rounded border border-gray-200 dark:border-darkBorder shadow-sm">
                                                                 {t.prazo ? t.prazo.split('-').reverse().join('/') : '-'}

@@ -3,15 +3,19 @@
 // Devolve o status do pedido mais recente daquele telefone, pra IA
 // responder perguntas do tipo "cadê meu pedido".
 //
-// A tabela "pedidos" guarda o cliente só como nome em texto solto (sem
-// vínculo por ID com "clientes" — ver comentário em context/AppContext.jsx
-// perto de "clientes').select('*').ilike('nome', ...)"). Por isso a busca é
-// em duas etapas: acha o cliente pelo telefone, depois acha o pedido mais
-// recente com esse nome.
+// Casa o pedido por cliente_id, nunca pelo nome do cliente: o cadastro tem
+// dezenas de homônimos (12 "Vanessa", 13 "Silvana"), e casar por nome fazia
+// esta rota devolver o pedido de outra pessoa para quem perguntasse. Cliente
+// sem vínculo (venda de balcão) simplesmente não é encontrado aqui — melhor
+// não achar do que achar errado.
+//
+// A resposta leva só o que o cliente pode saber sobre o próprio pedido:
+// status, prazo e o resumo dos itens. Nunca os pagamentos.
 
 import { NextResponse } from 'next/server';
 import { checkApiKey } from '@/lib/whatsapp-auth';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
+import { resumoDoPedido } from '@/lib/utils/servico';
 
 export async function GET(req: Request) {
   if (!checkApiKey(req)) {
@@ -31,21 +35,24 @@ export async function GET(req: Request) {
   // Compara na coluna de dígitos, não na `telefone` formatada: "(11)98467-4562"
   // não contém "84674562" porque o hífen fica no meio do trecho — a busca
   // antiga não achava nenhum cliente, nem celular.
-  const { data: cliente } = await admin
+  const { data: clientes } = await admin
     .from('clientes')
-    .select('nome')
+    .select('id, nome')
     .ilike('telefone_digits', `%${digitos.slice(-8)}%`)
-    .limit(1)
-    .maybeSingle();
+    .limit(2);
 
-  if (!cliente) {
+  // Nenhum cadastro com esse telefone, ou mais de um (números diferentes que
+  // terminam nos mesmos 8 dígitos). No segundo caso, escolher um seria chutar
+  // entre duas pessoas — a IA deve pedir confirmação em vez de arriscar.
+  if (!clientes || clientes.length !== 1) {
     return NextResponse.json({ encontrado: false });
   }
+  const cliente = clientes[0];
 
   const { data: pedido } = await admin
     .from('pedidos')
-    .select('status, prazo, servico')
-    .ilike('cliente', cliente.nome.trim())
+    .select('id, status, prazo, pedido_itens(nome, ordem)')
+    .eq('cliente_id', cliente.id)
     .order('id', { ascending: false })
     .limit(1)
     .maybeSingle();
@@ -56,8 +63,9 @@ export async function GET(req: Request) {
 
   return NextResponse.json({
     encontrado: true,
+    numeroOS: pedido.id,
     status: pedido.status, // ex: "Produzir", "Impressão", "Retirada", "Concluído"
     previsaoEntrega: pedido.prazo,
-    descricao: pedido.servico,
+    descricao: resumoDoPedido(pedido),
   });
 }

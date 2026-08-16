@@ -6,7 +6,7 @@ import { useFinanceiro } from '@/context/FinanceiroContext';
 import { SkeletonLinhas } from '@/components/ui/SkeletonLinhas';
 import { obterCorStatus } from '@/lib/utils/constants';
 import { formatarValorFinanceiro, formatarDataExibicao, mascararCliente } from '@/lib/utils/formatters';
-import { obterResumoServicos } from '@/lib/utils/servico';
+import { resumoDoPedido } from '@/lib/utils/servico';
 
 export default function ContasAReceberPanel({ dataInicio, dataFim }) {
     const { isDemo } = useSessao();
@@ -62,7 +62,7 @@ export default function ContasAReceberPanel({ dataInicio, dataFim }) {
                                             <span className="text-[13px] font-semibold text-gray-800 dark:text-[#EDEDED] truncate max-w-[200px] block" title={mascararCliente(p.cliente, isDemo)}>{mascararCliente(p.cliente, isDemo)}</span>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <div className="text-[13px] text-gray-600 dark:text-gray-400 truncate max-w-[250px]" title={obterResumoServicos(p.servico)}>{obterResumoServicos(p.servico)}</div>
+                                            <div className="text-[13px] text-gray-600 dark:text-gray-400 truncate max-w-[250px]" title={resumoDoPedido(p)}>{resumoDoPedido(p)}</div>
                                         </td>
                                         <td className="px-6 py-4 text-[13px] text-center text-gray-500 dark:text-[#A1A1AA]">{formatarDataExibicao(p.data_pedido)}</td>
                                         <td className="px-6 py-4 text-center">

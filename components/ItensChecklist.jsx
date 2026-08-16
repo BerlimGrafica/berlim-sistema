@@ -1,13 +1,15 @@
 "use client";
 import Icon from '@/components/Icon';
 import { usePedidos } from '@/context/PedidosContext';
+import { resumoDoPedido } from '@/lib/utils/servico';
 
 export function ItensChecklist({ pedido }) {
     const { atualizarItemConcluido } = usePedidos();
     const itens = [...(pedido.pedido_itens || [])].sort((a, b) => a.ordem - b.ordem);
 
+    // Sem itens não há o que marcar — mostra o resumo (OS antiga ou só observação).
     if (itens.length === 0) {
-        return <span className="truncate max-w-[18rem] block">{pedido.servico ? pedido.servico.substring(0, 40) + '...' : '---'}</span>;
+        return <span className="truncate max-w-[18rem] block">{resumoDoPedido(pedido)}</span>;
     }
 
     return (
