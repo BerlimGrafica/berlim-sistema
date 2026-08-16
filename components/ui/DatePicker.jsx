@@ -125,10 +125,10 @@ export function CustomDatePicker({ value, onChange, placeholder, disabled, class
                 <div
                     key={d}
                     onClick={(e) => { e.stopPropagation(); selectDate(d); }}
-                    className={`w-8 h-8 flex items-center justify-center rounded-md text-[13px] cursor-pointer transition
+                    className={`w-8 h-8 flex items-center justify-center rounded-md text-corpo cursor-pointer transition
                         ${isSelected ? 'bg-brand text-white font-semibold' :
-                          isToday ? 'bg-gray-100 dark:bg-darkElevated text-brand font-semibold hover:bg-gray-200 dark:hover:bg-darkHover' :
-                          'text-gray-700 dark:text-[#EDEDED] hover:bg-gray-100 dark:hover:bg-darkHover'}`}
+                          isToday ? 'bg-realce text-brand font-semibold hover:bg-gray-200 dark:hover:bg-darkHover' :
+                          'text-tinta-corpo hover:bg-realce'}`}
                 >
                     {d}
                 </div>
@@ -143,7 +143,7 @@ export function CustomDatePicker({ value, onChange, placeholder, disabled, class
                 onClick={toggleDropdown}
                 className={`flex justify-between items-center cursor-pointer select-none ${className} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
-                <span className={value ? "text-gray-900 dark:text-[#EDEDED]" : "text-gray-400 dark:text-gray-600 truncate"}>
+                <span className={value ? "text-tinta" : "text-tinta-fraca truncate"}>
                     {value ? formatarDataExibicao(value) : placeholder}
                 </span>
                 {clearable && value && !disabled ? (
@@ -162,16 +162,16 @@ export function CustomDatePicker({ value, onChange, placeholder, disabled, class
             {isOpen && typeof document !== 'undefined' && createPortal(
                 <>
                     <div className="fixed inset-0 z-[90]" onClick={(e) => { e.stopPropagation(); setIsOpen(false); }}></div>
-                    <div style={popoverStyle} className="z-[95] bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-lg shadow-2xl p-4 w-72">
+                    <div style={popoverStyle} className="z-[95] bg-superficie border border-borda rounded-lg shadow-2xl p-4 w-72">
                         {viewMode === 'days' && (
                             <>
                                 <div className="flex justify-between items-center mb-4">
-                                    <button type="button" onClick={(e) => changeMonth(e, -1)} className="p-1 hover:bg-gray-100 dark:hover:bg-darkElevated rounded text-gray-500 dark:text-gray-400"><Icon name="chevron-left" /></button>
-                                    <button type="button" onClick={(e) => { e.stopPropagation(); setViewMode('months'); }} className="font-semibold text-[13px] dark:text-white px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-darkElevated transition">{meses[viewDate.getMonth()]} de {viewDate.getFullYear()}</button>
-                                    <button type="button" onClick={(e) => changeMonth(e, 1)} className="p-1 hover:bg-gray-100 dark:hover:bg-darkElevated rounded text-gray-500 dark:text-gray-400"><Icon name="chevron-right" /></button>
+                                    <button type="button" onClick={(e) => changeMonth(e, -1)} className="p-1 hover:bg-realce rounded text-tinta-suave"><Icon name="chevron-left" /></button>
+                                    <button type="button" onClick={(e) => { e.stopPropagation(); setViewMode('months'); }} className="font-semibold text-corpo dark:text-white px-2 py-1 rounded hover:bg-realce transition">{meses[viewDate.getMonth()]} de {viewDate.getFullYear()}</button>
+                                    <button type="button" onClick={(e) => changeMonth(e, 1)} className="p-1 hover:bg-realce rounded text-tinta-suave"><Icon name="chevron-right" /></button>
                                 </div>
                                 <div className="grid grid-cols-7 mb-2">
-                                    {diasSemana.map(d => <div key={d} className="w-8 h-8 flex items-center justify-center text-[10px] font-semibold text-gray-400">{d}</div>)}
+                                    {diasSemana.map(d => <div key={d} className="w-8 h-8 flex items-center justify-center text-micro font-semibold text-gray-400">{d}</div>)}
                                 </div>
                                 <div className="grid grid-cols-7 gap-y-1">
                                     {renderDias()}
@@ -181,13 +181,13 @@ export function CustomDatePicker({ value, onChange, placeholder, disabled, class
                         {viewMode === 'months' && (
                             <>
                                 <div className="flex justify-between items-center mb-4">
-                                    <button type="button" onClick={(e) => changeYear(e, -1)} className="p-1 hover:bg-gray-100 dark:hover:bg-darkElevated rounded text-gray-500 dark:text-gray-400"><Icon name="chevron-left" /></button>
-                                    <button type="button" onClick={(e) => { e.stopPropagation(); setViewMode('years'); }} className="font-semibold text-[13px] dark:text-white px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-darkElevated transition">{viewDate.getFullYear()}</button>
-                                    <button type="button" onClick={(e) => changeYear(e, 1)} className="p-1 hover:bg-gray-100 dark:hover:bg-darkElevated rounded text-gray-500 dark:text-gray-400"><Icon name="chevron-right" /></button>
+                                    <button type="button" onClick={(e) => changeYear(e, -1)} className="p-1 hover:bg-realce rounded text-tinta-suave"><Icon name="chevron-left" /></button>
+                                    <button type="button" onClick={(e) => { e.stopPropagation(); setViewMode('years'); }} className="font-semibold text-corpo dark:text-white px-2 py-1 rounded hover:bg-realce transition">{viewDate.getFullYear()}</button>
+                                    <button type="button" onClick={(e) => changeYear(e, 1)} className="p-1 hover:bg-realce rounded text-tinta-suave"><Icon name="chevron-right" /></button>
                                 </div>
                                 <div className="grid grid-cols-3 gap-2">
                                     {mesesAbrev.map((m, i) => (
-                                        <div key={m} onClick={(e) => selectMonth(e, i)} className={`py-2.5 text-center text-[13px] rounded-md cursor-pointer transition ${i === viewDate.getMonth() ? 'bg-brand text-white font-semibold' : 'text-gray-700 dark:text-[#EDEDED] hover:bg-gray-100 dark:hover:bg-darkHover'}`}>{m}</div>
+                                        <div key={m} onClick={(e) => selectMonth(e, i)} className={`py-2.5 text-center text-corpo rounded-md cursor-pointer transition ${i === viewDate.getMonth() ? 'bg-brand text-white font-semibold' : 'text-tinta-corpo hover:bg-realce'}`}>{m}</div>
                                     ))}
                                 </div>
                             </>
@@ -195,13 +195,13 @@ export function CustomDatePicker({ value, onChange, placeholder, disabled, class
                         {viewMode === 'years' && (
                             <>
                                 <div className="flex justify-between items-center mb-4">
-                                    <button type="button" onClick={(e) => changeDecade(e, -1)} className="p-1 hover:bg-gray-100 dark:hover:bg-darkElevated rounded text-gray-500 dark:text-gray-400"><Icon name="chevron-left" /></button>
-                                    <span className="font-semibold text-[13px] dark:text-white px-2 py-1">{anosDecada[0]} - {anosDecada[anosDecada.length - 1]}</span>
-                                    <button type="button" onClick={(e) => changeDecade(e, 1)} className="p-1 hover:bg-gray-100 dark:hover:bg-darkElevated rounded text-gray-500 dark:text-gray-400"><Icon name="chevron-right" /></button>
+                                    <button type="button" onClick={(e) => changeDecade(e, -1)} className="p-1 hover:bg-realce rounded text-tinta-suave"><Icon name="chevron-left" /></button>
+                                    <span className="font-semibold text-corpo dark:text-white px-2 py-1">{anosDecada[0]} - {anosDecada[anosDecada.length - 1]}</span>
+                                    <button type="button" onClick={(e) => changeDecade(e, 1)} className="p-1 hover:bg-realce rounded text-tinta-suave"><Icon name="chevron-right" /></button>
                                 </div>
                                 <div className="grid grid-cols-3 gap-2">
                                     {anosDecada.map(y => (
-                                        <div key={y} onClick={(e) => selectYear(e, y)} className={`py-2.5 text-center text-[13px] rounded-md cursor-pointer transition ${y === viewDate.getFullYear() ? 'bg-brand text-white font-semibold' : 'text-gray-700 dark:text-[#EDEDED] hover:bg-gray-100 dark:hover:bg-darkHover'}`}>{y}</div>
+                                        <div key={y} onClick={(e) => selectYear(e, y)} className={`py-2.5 text-center text-corpo rounded-md cursor-pointer transition ${y === viewDate.getFullYear() ? 'bg-brand text-white font-semibold' : 'text-tinta-corpo hover:bg-realce'}`}>{y}</div>
                                     ))}
                                 </div>
                             </>

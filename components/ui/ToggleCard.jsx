@@ -39,13 +39,13 @@ export function ToggleCard({ icon, title, description, checked, onChange, color 
     };
     const e = estilos[color] || estilos.brand;
     return (
-        <label className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors duration-200 select-none ${checked ? e.borda : 'border-gray-200 dark:border-darkBorder bg-white dark:bg-darkElevated hover:bg-gray-50 dark:hover:bg-darkHover'}`}>
-            <span className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 transition-colors duration-200 ${checked ? e.iconeAtivo : 'bg-gray-100 dark:bg-darkBorder/40 text-gray-400 dark:text-gray-500'}`}>
+        <label className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors duration-200 select-none ${checked ? e.borda : 'border-borda bg-elevado hover:bg-sutil'}`}>
+            <span className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 transition-colors duration-200 ${checked ? e.iconeAtivo : 'bg-gray-100 dark:bg-darkBorder/40 text-tinta-fraca'}`}>
                 <Icon name={icon} className="w-4 h-4" />
             </span>
             <span className="flex-1 min-w-0">
-                <span className={`block text-[13px] font-semibold transition-colors duration-200 ${checked ? e.tituloAtivo : 'text-gray-700 dark:text-[#EDEDED]'}`}>{title}</span>
-                {description && <span className="block text-[11px] leading-snug text-gray-500 dark:text-gray-400 mt-0.5">{description}</span>}
+                <span className={`block text-corpo font-semibold transition-colors duration-200 ${checked ? e.tituloAtivo : 'text-tinta-corpo'}`}>{title}</span>
+                {description && <span className="block text-mini leading-snug text-tinta-suave mt-0.5">{description}</span>}
             </span>
             <Switch checked={checked} onChange={onChange} color={color} />
         </label>

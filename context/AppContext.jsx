@@ -284,9 +284,7 @@ export const AppProvider = ({ children }) => {
         // traz tabelas filhas).
         const sincronizarPedido = async (pedidoId) => {
             const { data } = await supabase
-                .from('pedidos')
-                .select('*, pedido_itens(*), pedido_pagamentos(*)')
-                .eq('id', pedidoId)
+                .from('pedidos') .select('*, pedido_itens(*), pedido_pagamentos(*)') .eq('id', pedidoId)
                 .maybeSingle();
             if (!data) return;
             setPedidos(prev => prev.some(p => p.id === data.id)
@@ -432,8 +430,7 @@ export const AppProvider = ({ children }) => {
         // — e, quando isso acontece, o canal inteiro é recusado e o sistema fica
         // sem tempo real nenhum, silenciosamente.
         const canalRealTime = supabase
-            .channel('mudancas-banco')
-            .on('postgres_changes', { event: '*', schema: 'public' }, (payload) => {
+            .channel('mudancas-banco') .on('postgres_changes', { event: '*', schema: 'public' }, (payload) => {
                 const tratar = tratadores[payload.table];
                 if (tratar) tratar(payload);
             })
@@ -517,8 +514,7 @@ export const AppProvider = ({ children }) => {
 
         while (fetchMore) {
             const { data: batch, error } = await supabase
-                .from('pedidos')
-                .select('*, pedido_itens(*), pedido_pagamentos(*)')
+                .from('pedidos') .select('*, pedido_itens(*), pedido_pagamentos(*)')
                 .or(`data_pedido.gte.${dataCorte},status.in.(${redeStatusAtivos})`)
                 .order('id', { ascending: false })
                 .range(from, from + limit - 1);
@@ -978,9 +974,7 @@ export const AppProvider = ({ children }) => {
     // Finalizado) não pode ficar de fora só porque já foi pago. Busca
     // dedicada, sem filtro de data, incluindo Finalizado de propósito.
     async function buscarPedidosComBoleto() {
-        const { data, error } = await supabase.from('pedidos').select('*, pedido_itens(*), pedido_pagamentos(*)')
-            .not('status', 'in', '("Abandonado","Cancelado")')
-            .order('id', { ascending: true });
+        const { data, error } = await supabase.from('pedidos').select('*, pedido_itens(*), pedido_pagamentos(*)') .not('status', 'in', '("Abandonado","Cancelado")') .order('id', { ascending: true });
         if (error) { console.error('Erro ao buscar boletos:', error); return []; }
 
         return (data || [])
@@ -1005,11 +999,7 @@ export const AppProvider = ({ children }) => {
     async function buscarOutrasOSAbertasDoCliente(pedidoAtualId, clienteId) {
         if (!clienteId) return [];
 
-        const { data, error } = await supabase.from('pedidos').select('*, pedido_pagamentos(*)')
-            .not('status', 'in', '("Abandonado","Cancelado","Finalizado")')
-            .neq('id', pedidoAtualId)
-            .eq('cliente_id', clienteId)
-            .order('id', { ascending: true });
+        const { data, error } = await supabase.from('pedidos').select('*, pedido_pagamentos(*)') .not('status', 'in', '("Abandonado","Cancelado","Finalizado")') .neq('id', pedidoAtualId) .eq('cliente_id', clienteId) .order('id', { ascending: true });
         if (error) { console.error('Erro ao buscar outras OS do cliente:', error); return []; }
 
         return (data || [])
@@ -1027,9 +1017,7 @@ export const AppProvider = ({ children }) => {
     // "Concluído" antigo ainda não pago não pode sumir de um relatório de
     // contas a receber.
     async function buscarPedidosComSaldoDevedor() {
-        const { data, error } = await supabase.from('pedidos').select('*, pedido_itens(*), pedido_pagamentos(*)')
-            .not('status', 'in', '("Abandonado","Cancelado","Finalizado")')
-            .order('id', { ascending: true });
+        const { data, error } = await supabase.from('pedidos').select('*, pedido_itens(*), pedido_pagamentos(*)') .not('status', 'in', '("Abandonado","Cancelado","Finalizado")') .order('id', { ascending: true });
         if (error) { console.error('Erro ao buscar contas a receber:', error); return []; }
 
         return (data || [])
@@ -2039,9 +2027,7 @@ export const AppProvider = ({ children }) => {
         // cada item. Uma consulta a mais numa ação rara, em troca de nunca
         // imprimir uma OS pela metade.
         const { data: completo } = await supabase
-            .from('pedidos')
-            .select('*, pedido_itens(*), pedido_pagamentos(*)')
-            .eq('id', pedido.id)
+            .from('pedidos') .select('*, pedido_itens(*), pedido_pagamentos(*)') .eq('id', pedido.id)
             .maybeSingle();
         if (completo) setOsParaImprimir(prev => ({ ...completo, clienteInfo: prev?.clienteInfo }));
 
@@ -2450,31 +2436,31 @@ export const AppProvider = ({ children }) => {
                 <div className="w-full max-w-sm bg-white border border-gray-200 rounded-xl p-8 shadow-sm flex flex-col gap-6">
                     <div className="text-center flex flex-col items-center">
                         <img src="https://www.berlimgraficarapida.com.br/wp-content/uploads/elementor/thumbs/logosite-rm0erpiqj90gcf7ff4jp8ujys78opflob1b9vn5jjs.png" alt="Berlim Gráfica" className="h-12 object-contain mb-3" />
-                        <p className="text-[11px] text-gray-400 mt-1">Insira suas credenciais para acessar o ERP</p>
+                        <p className="text-mini text-gray-400 mt-1">Insira suas credenciais para acessar o ERP</p>
                     </div>
                     
                     <form onSubmit={efetuarLogin} className="flex flex-col gap-4">
                         <div>
-                            <label className="block text-[10px] font-semibold uppercase tracking-wider text-gray-500 mb-1.5">E-mail</label>
-                            <input required type="email" value={loginInput} onChange={e => setLoginInput(e.target.value)} className="w-full bg-white border border-gray-200 rounded px-3 py-2 text-[13px] outline-none focus:border-brand transition text-gray-800" placeholder="seu@email.com" autoComplete="username" />
+                            <label className="block text-micro font-semibold uppercase tracking-wider text-gray-500 mb-1.5">E-mail</label>
+                            <input required type="email" value={loginInput} onChange={e => setLoginInput(e.target.value)} className="w-full bg-white border border-gray-200 rounded px-3 py-2 text-corpo outline-none focus:border-brand transition text-gray-800" placeholder="seu@email.com" autoComplete="username" />
                         </div>
                         <div>
-                            <label className="block text-[10px] font-semibold uppercase tracking-wider text-gray-500 mb-1.5">Senha</label>
-                            <input required type="password" value={senhaInput} onChange={e => setSenhaInput(e.target.value)} className="w-full bg-white border border-gray-200 rounded px-3 py-2 text-[13px] outline-none focus:border-brand transition text-gray-800" placeholder="••••••" autoComplete="current-password" />
+                            <label className="block text-micro font-semibold uppercase tracking-wider text-gray-500 mb-1.5">Senha</label>
+                            <input required type="password" value={senhaInput} onChange={e => setSenhaInput(e.target.value)} className="w-full bg-white border border-gray-200 rounded px-3 py-2 text-corpo outline-none focus:border-brand transition text-gray-800" placeholder="••••••" autoComplete="current-password" />
                         </div>
-                        {erroLogin && <p className="text-[11px] text-red-500 font-medium text-center">{erroLogin}</p>}
-                        <button type="submit" className="w-full bg-brand hover:bg-brandHover text-white py-2 rounded text-[13px] font-semibold shadow transition mt-2">
+                        {erroLogin && <p className="text-mini text-red-500 font-medium text-center">{erroLogin}</p>}
+                        <button type="submit" className="w-full bg-brand hover:bg-brandHover text-white py-2 rounded text-corpo font-semibold shadow transition mt-2">
                             Entrar no Sistema
                         </button>
                     </form>
 
                     <div className="flex items-center gap-3">
                         <div className="flex-1 h-px bg-gray-200"></div>
-                        <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">ou</span>
+                        <span className="text-micro font-semibold text-gray-400 uppercase tracking-wider">ou</span>
                         <div className="flex-1 h-px bg-gray-200"></div>
                     </div>
 
-                    <button type="button" onClick={entrarComGoogle} className="w-full flex items-center justify-center gap-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 py-2 rounded text-[13px] font-semibold shadow-sm transition">
+                    <button type="button" onClick={entrarComGoogle} className="w-full flex items-center justify-center gap-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 py-2 rounded text-corpo font-semibold shadow-sm transition">
                         <svg className="w-4 h-4" viewBox="0 0 48 48" aria-hidden="true">
                             <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.9 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 8 3l6-6C34.5 5.5 29.6 3.5 24 3.5 12.7 3.5 3.5 12.7 3.5 24S12.7 44.5 24 44.5 44.5 35.3 44.5 24c0-1.2-.1-2.4-.3-3.5z"/>
                             <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.9 18.9 13 24 13c3.1 0 5.8 1.1 8 3l6-6C34.5 6.5 29.6 4.5 24 4.5c-7.7 0-14.4 4.4-17.7 10.2z"/>
@@ -2485,7 +2471,7 @@ export const AppProvider = ({ children }) => {
                     </button>
 
                     {process.env.NEXT_PUBLIC_DEMO_EMAIL && (
-                        <button type="button" onClick={entrarComoDemo} className="w-full flex items-center justify-center gap-2 bg-white border border-dashed border-brand text-brand hover:bg-brand/5 py-2 rounded text-[13px] font-semibold transition">
+                        <button type="button" onClick={entrarComoDemo} className="w-full flex items-center justify-center gap-2 bg-white border border-dashed border-brand text-brand hover:bg-brand/5 py-2 rounded text-corpo font-semibold transition">
                             Entrar como Visitante (Demo)
                         </button>
                     )}

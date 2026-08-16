@@ -100,13 +100,13 @@ export default function SolicitarNota() {
                                     <Icon name="check-circle" className="w-8 h-8 text-emerald-600" />
                                 </div>
                                 <h2 className="text-xl font-bold text-gray-800 mb-2">Dados Enviados!</h2>
-                                <p className="text-[13px] text-gray-500 leading-relaxed">Recebemos as suas informações. A Berlim Gráfica fará a emissão da Nota Fiscal em breve e o envio será feito via <strong>{form.forma_envio}</strong>.</p>
+                                <p className="text-corpo text-gray-500 leading-relaxed">Recebemos as suas informações. A Berlim Gráfica fará a emissão da Nota Fiscal em breve e o envio será feito via <strong>{form.forma_envio}</strong>.</p>
                             </div>
                         ) : !tipoPessoa ? (
                             <div className="space-y-3">
                                 <div className="text-center mb-6">
                                     <h1 className="text-xl font-bold text-gray-800 mb-1.5">Solicitação de Nota Fiscal</h1>
-                                    <p className="text-[13px] text-gray-500">Por favor, indique como deseja emitir a sua nota fiscal.</p>
+                                    <p className="text-corpo text-gray-500">Por favor, indique como deseja emitir a sua nota fiscal.</p>
                                 </div>
 
                                 <button onClick={() => setTipoPessoa('F')} className="w-full bg-white hover:bg-gray-50 border border-gray-200 hover:border-brand text-gray-800 font-semibold py-4 px-5 rounded-xl shadow-sm transition group flex items-center justify-between">
@@ -133,38 +133,38 @@ export default function SolicitarNota() {
                             <form onSubmit={handleSubmit} className="space-y-5 fade-in">
                                 <div className="flex items-center justify-between mb-2 border-b border-gray-100 pb-4">
                                     <h2 className="text-lg font-bold text-gray-800">Dados para Emissão</h2>
-                                    <button type="button" onClick={() => setTipoPessoa(null)} className="text-[13px] font-semibold text-gray-500 hover:text-gray-800 transition flex items-center gap-1">
+                                    <button type="button" onClick={() => setTipoPessoa(null)} className="text-corpo font-semibold text-gray-500 hover:text-gray-800 transition flex items-center gap-1">
                                         <Icon name="chevron-left" className="w-4 h-4" /> Voltar
                                     </button>
                                 </div>
 
                                 <div>
-                                    <label className="block text-[11px] font-semibold text-gray-500 uppercase mb-1.5">{tipoPessoa === 'F' ? 'Como quer ser chamado (Apelido)? *' : 'Seu Nome / Nome Fantasia *'}</label>
-                                    <input type="text" name="cliente" required value={form.cliente} onChange={handleChange} className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 text-[13px] text-gray-800 focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand transition" placeholder={tipoPessoa === 'F' ? "Apelido" : "Como devemos identificar você?"} />
+                                    <label className="block text-mini font-semibold text-gray-500 uppercase mb-1.5">{tipoPessoa === 'F' ? 'Como quer ser chamado (Apelido)? *' : 'Seu Nome / Nome Fantasia *'}</label>
+                                    <input type="text" name="cliente" required value={form.cliente} onChange={handleChange} className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 text-corpo text-gray-800 focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand transition" placeholder={tipoPessoa === 'F' ? "Apelido" : "Como devemos identificar você?"} />
                                 </div>
 
                                 <div>
-                                    <label className="block text-[11px] font-semibold text-gray-500 uppercase mb-1.5">{tipoPessoa === 'F' ? 'Nome Completo *' : 'Razão Social *'}</label>
-                                    <input type="text" name="razao_social" required value={form.razao_social} onChange={handleChange} className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 text-[13px] text-gray-800 focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand transition" placeholder={tipoPessoa === 'F' ? 'Seu Nome Completo' : 'Razão Social da Empresa'} />
+                                    <label className="block text-mini font-semibold text-gray-500 uppercase mb-1.5">{tipoPessoa === 'F' ? 'Nome Completo *' : 'Razão Social *'}</label>
+                                    <input type="text" name="razao_social" required value={form.razao_social} onChange={handleChange} className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 text-corpo text-gray-800 focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand transition" placeholder={tipoPessoa === 'F' ? 'Seu Nome Completo' : 'Razão Social da Empresa'} />
                                 </div>
 
                                 <div>
-                                    <label className="block text-[11px] font-semibold text-gray-500 uppercase mb-1.5">{tipoPessoa === 'F' ? 'CPF *' : 'CNPJ *'}</label>
-                                    <input type="text" name="cnpj" required value={form.cnpj} onChange={handleChange} className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 text-[13px] text-gray-800 focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand transition" placeholder={tipoPessoa === 'F' ? '000.000.000-00' : '00.000.000/0000-00'} />
+                                    <label className="block text-mini font-semibold text-gray-500 uppercase mb-1.5">{tipoPessoa === 'F' ? 'CPF *' : 'CNPJ *'}</label>
+                                    <input type="text" name="cnpj" required value={form.cnpj} onChange={handleChange} className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 text-corpo text-gray-800 focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand transition" placeholder={tipoPessoa === 'F' ? '000.000.000-00' : '00.000.000/0000-00'} />
                                 </div>
 
                                 <div>
-                                    <label className="block text-[11px] font-semibold text-gray-500 uppercase mb-1.5">Endereço Completo *</label>
-                                    <textarea name="endereco" required value={form.endereco} onChange={handleChange} rows={3} className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 text-[13px] text-gray-800 focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand transition" placeholder="Rua, Número, Bairro, Cidade, Estado, CEP" />
+                                    <label className="block text-mini font-semibold text-gray-500 uppercase mb-1.5">Endereço Completo *</label>
+                                    <textarea name="endereco" required value={form.endereco} onChange={handleChange} rows={3} className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 text-corpo text-gray-800 focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand transition" placeholder="Rua, Número, Bairro, Cidade, Estado, CEP" />
                                 </div>
 
                                 <div className="pt-1 border-t border-gray-100">
-                                    <label className="block text-[11px] font-semibold text-gray-500 uppercase mb-1.5 mt-4">Como prefere o envio da nota fiscal? *</label>
+                                    <label className="block text-mini font-semibold text-gray-500 uppercase mb-1.5 mt-4">Como prefere o envio da nota fiscal? *</label>
                                     <SegmentedControl options={FORMAS_ENVIO} value={form.forma_envio} onChange={handleFormaEnvio} />
                                 </div>
 
                                 <div>
-                                    <label className="block text-[11px] font-semibold text-gray-500 uppercase mb-1.5">{form.forma_envio === 'Whatsapp' ? 'WhatsApp para Envio *' : 'E-mail para Envio *'}</label>
+                                    <label className="block text-mini font-semibold text-gray-500 uppercase mb-1.5">{form.forma_envio === 'Whatsapp' ? 'WhatsApp para Envio *' : 'E-mail para Envio *'}</label>
                                     <div className="relative">
                                         <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
                                             <Icon name={form.forma_envio === 'Whatsapp' ? 'phone' : 'mail'} className="w-4 h-4" />
@@ -175,15 +175,15 @@ export default function SolicitarNota() {
                                             required
                                             value={form.contato}
                                             onChange={handleChange}
-                                            className="w-full bg-white border border-gray-200 rounded-lg pl-10 pr-4 py-3 text-[13px] text-gray-800 focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand transition"
+                                            className="w-full bg-white border border-gray-200 rounded-lg pl-10 pr-4 py-3 text-corpo text-gray-800 focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand transition"
                                             placeholder={form.forma_envio === 'Whatsapp' ? '(00) 00000-0000' : 'seuemail@exemplo.com'}
                                         />
                                     </div>
                                 </div>
 
                                 <div>
-                                    <label className="block text-[11px] font-semibold text-gray-500 uppercase mb-1.5">Observações <span className="normal-case font-medium text-gray-400">(opcional)</span></label>
-                                    <textarea name="observacao_cliente" value={form.observacao_cliente} onChange={handleChange} rows={2} className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 text-[13px] text-gray-800 focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand transition" placeholder="Alguma informação adicional sobre esta nota?" />
+                                    <label className="block text-mini font-semibold text-gray-500 uppercase mb-1.5">Observações <span className="normal-case font-medium text-gray-400">(opcional)</span></label>
+                                    <textarea name="observacao_cliente" value={form.observacao_cliente} onChange={handleChange} rows={2} className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 text-corpo text-gray-800 focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand transition" placeholder="Alguma informação adicional sobre esta nota?" />
                                 </div>
 
                                 <button type="submit" disabled={loading} className="w-full bg-brand hover:bg-brandHover text-white font-bold py-3 px-4 rounded-lg shadow-lg shadow-brand/20 transition mt-2 disabled:opacity-60 flex items-center justify-center gap-2">
@@ -195,7 +195,7 @@ export default function SolicitarNota() {
                                     ) : 'Enviar Dados'}
                                 </button>
                                 {errorMsg && (
-                                    <p className="flex items-center justify-center gap-1.5 text-center text-[13px] font-semibold text-red-500">
+                                    <p className="flex items-center justify-center gap-1.5 text-center text-corpo font-semibold text-red-500">
                                         <Icon name="alert-triangle" className="w-4 h-4" /> {errorMsg}
                                     </p>
                                 )}

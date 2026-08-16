@@ -16,28 +16,28 @@ const tamanhoNumero = (texto) => (texto.length > 12 ? 'text-sm' : texto.length >
 function CardIndicador({ rotulo, centavos, cor, icone, nota }) {
     const texto = formatarValorFinanceiro(centavosParaReais(centavos));
     return (
-        <div className="bg-white dark:bg-darkCard p-5 rounded-xl border border-gray-200 dark:border-darkBorder shadow-sm hover:shadow-md transition flex flex-col justify-between">
+        <div className="bg-superficie p-5 rounded-xl border border-borda shadow-sm hover:shadow-md transition flex flex-col justify-between">
             <div className="flex items-end justify-between gap-2">
                 <div className="min-w-0">
-                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">{rotulo}</span>
+                    <span className="text-micro font-bold text-gray-400 uppercase tracking-wider block mb-1">{rotulo}</span>
                     <span className={`block text-lg font-black ${cor} leading-tight`}>R$</span>
                     <h2 className={`${tamanhoNumero(texto)} font-black ${cor} leading-tight tabular-nums`}>{texto}</h2>
                 </div>
                 <div className={`p-2 rounded-lg shrink-0 ${icone.fundo}`}><Icon name={icone.nome} className={`w-4 h-4 ${cor}`} /></div>
             </div>
-            <p className="text-[11px] text-gray-400 mt-3 font-medium truncate" title={nota}>{nota}</p>
+            <p className="text-mini text-gray-400 mt-3 font-medium truncate" title={nota}>{nota}</p>
         </div>
     );
 }
 
 function CardPainel({ titulo, descricao, icone, fundoIcone, corIcone, children }) {
     return (
-        <div className="bg-white dark:bg-darkCard rounded-xl border border-gray-200 dark:border-darkBorder flex flex-col">
-            <div className="rounded-t-xl px-5 py-4 border-b border-gray-100 dark:border-darkBorder flex items-center gap-3 shrink-0">
+        <div className="bg-superficie rounded-xl border border-borda flex flex-col">
+            <div className="rounded-t-xl px-5 py-4 border-b border-borda-fraca flex items-center gap-3 shrink-0">
                 <div className={`p-2 rounded-lg shrink-0 ${fundoIcone}`}><Icon name={icone} className={`w-4 h-4 ${corIcone}`} /></div>
                 <div className="min-w-0">
-                    <h3 className="font-bold text-[13px] text-gray-800 dark:text-white truncate">{titulo}</h3>
-                    <p className="text-[11px] text-gray-400 truncate">{descricao}</p>
+                    <h3 className="font-bold text-corpo text-tinta truncate">{titulo}</h3>
+                    <p className="text-mini text-gray-400 truncate">{descricao}</p>
                 </div>
             </div>
             <div className="flex-1 flex flex-col gap-4 p-5 overflow-y-auto max-h-72 custom-scrollbar">{children}</div>
@@ -46,7 +46,7 @@ function CardPainel({ titulo, descricao, icone, fundoIcone, corIcone, children }
 }
 
 function Barras({ itens, cores, vazio, rotuloDe = (i) => i.rotulo, corFixa }) {
-    if (!itens || itens.length === 0) return <p className="text-[11px] text-gray-500 italic">{vazio}</p>;
+    if (!itens || itens.length === 0) return <p className="text-mini text-gray-500 italic">{vazio}</p>;
     const valores = itens.map(i => centavosParaReais(i.centavos));
     // Módulo na escala: com estorno na lista há valores negativos, e a maior
     // barra pode ser justamente a devolução.
@@ -104,16 +104,16 @@ export default function VisaoGeralPanel({ metricas, rotulo }) {
             <div>
                 <div className="flex items-center gap-2 mb-4">
                     <span className="w-1 h-4 bg-brand rounded-full"></span>
-                    <h2 className="text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Resumo do período</h2>
-                    <span className="text-[10px] text-gray-400 font-medium normal-case">{rotulo}</span>
+                    <h2 className="text-mini font-bold uppercase tracking-wider text-tinta-suave">Resumo do período</h2>
+                    <span className="text-micro text-gray-400 font-medium normal-case">{rotulo}</span>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     {/* Crescimento é sempre ano contra ano — não segue o período, e o rótulo diz isso. */}
-                    <div className="bg-white dark:bg-darkCard p-5 rounded-xl border border-gray-200 dark:border-darkBorder shadow-sm hover:shadow-md transition flex flex-col justify-between">
+                    <div className="bg-superficie p-5 rounded-xl border border-borda shadow-sm hover:shadow-md transition flex flex-col justify-between">
                         <div className="flex items-end justify-between gap-2">
                             <div className="min-w-0">
-                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">Crescimento (YoY)</span>
-                                <span className="block text-lg font-black text-gray-900 dark:text-white leading-tight">R$</span>
+                                <span className="text-micro font-bold text-gray-400 uppercase tracking-wider block mb-1">Crescimento (YoY)</span>
+                                <span className="block text-lg font-black text-tinta leading-tight">R$</span>
                                 <h2 className={`${tamanhoNumero(formatarValorFinanceiro(centavosParaReais(ano.atual_centavos)))} font-black text-gray-900 dark:text-white leading-tight tabular-nums`}>
                                     {formatarValorFinanceiro(centavosParaReais(ano.atual_centavos))}
                                 </h2>
@@ -122,7 +122,7 @@ export default function VisaoGeralPanel({ metricas, rotulo }) {
                                 <Icon name={crescimento >= 0 ? 'trending-up' : 'trending-down'} className={`w-4 h-4 ${crescimento >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`} />
                             </div>
                         </div>
-                        <p className={`text-[11px] font-bold mt-3 ${crescimento >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+                        <p className={`text-mini font-bold mt-3 ${crescimento >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
                             {crescimento >= 0 ? '+' : '-'}{Math.abs(crescimento).toFixed(1)}% — {ano.rotulo} vs {anoAnterior}
                         </p>
                     </div>
@@ -151,7 +151,7 @@ export default function VisaoGeralPanel({ metricas, rotulo }) {
                 <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
                     <div className="flex items-center gap-2">
                         <span className="w-1 h-4 bg-brand rounded-full"></span>
-                        <h2 className="text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">{SLIDES[slide]}</h2>
+                        <h2 className="text-mini font-bold uppercase tracking-wider text-tinta-suave">{SLIDES[slide]}</h2>
                     </div>
                     <div className="flex items-center gap-3">
                         <div className="flex items-center gap-1.5">
@@ -162,8 +162,8 @@ export default function VisaoGeralPanel({ metricas, rotulo }) {
                             ))}
                         </div>
                         <div className="flex gap-1">
-                            <button onClick={() => irPara(Math.max(0, slide - 1))} disabled={slide === 0} aria-label="Painel anterior" className="w-7 h-7 flex items-center justify-center rounded-md border border-gray-200 dark:border-darkBorder text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-darkHover disabled:opacity-30 disabled:cursor-not-allowed transition"><Icon name="chevron-left" className="w-4 h-4" /></button>
-                            <button onClick={() => irPara(Math.min(SLIDES.length - 1, slide + 1))} disabled={slide === SLIDES.length - 1} aria-label="Próximo painel" className="w-7 h-7 flex items-center justify-center rounded-md border border-gray-200 dark:border-darkBorder text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-darkHover disabled:opacity-30 disabled:cursor-not-allowed transition"><Icon name="chevron-right" className="w-4 h-4" /></button>
+                            <button onClick={() => irPara(Math.max(0, slide - 1))} disabled={slide === 0} aria-label="Painel anterior" className="w-7 h-7 flex items-center justify-center rounded-md border border-borda text-tinta-suave hover:bg-sutil disabled:opacity-30 disabled:cursor-not-allowed transition"><Icon name="chevron-left" className="w-4 h-4" /></button>
+                            <button onClick={() => irPara(Math.min(SLIDES.length - 1, slide + 1))} disabled={slide === SLIDES.length - 1} aria-label="Próximo painel" className="w-7 h-7 flex items-center justify-center rounded-md border border-borda text-tinta-suave hover:bg-sutil disabled:opacity-30 disabled:cursor-not-allowed transition"><Icon name="chevron-right" className="w-4 h-4" /></button>
                         </div>
                     </div>
                 </div>
@@ -203,13 +203,13 @@ export default function VisaoGeralPanel({ metricas, rotulo }) {
                     {/* SLIDE 3: DESPESAS E COBRANÇAS DO PERÍODO */}
                     <div className="w-full shrink-0 snap-start pl-1">
                         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-                            <CardPainel titulo="Despesas por categoria" descricao="Contas com vencimento no período" icone="tag" fundoIcone="bg-gray-100 dark:bg-gray-500/10" corIcone="text-gray-600 dark:text-gray-400">
+                            <CardPainel titulo="Despesas por categoria" descricao="Contas com vencimento no período" icone="tag" fundoIcone="bg-gray-100 dark:bg-gray-500/10" corIcone="text-tinta-suave">
                                 <Barras itens={despesas.por_categoria} cores={(item) => CORES_CATEGORIA[item.rotulo] || 'bg-gray-500'} vazio="Nenhuma conta no período." />
                             </CardPainel>
 
                             <CardPainel titulo="Status das contas" descricao={despesas.qtd_vencidas > 0 ? `${despesas.qtd_vencidas} conta(s) vencida(s)` : 'Nenhuma conta vencida'} icone="check-circle" fundoIcone="bg-rose-50 dark:bg-rose-500/10" corIcone="text-rose-600 dark:text-rose-400">
                                 {despesas.total_centavos === 0 ? (
-                                    <p className="text-[11px] text-gray-500 italic">Nenhuma conta no período.</p>
+                                    <p className="text-mini text-gray-500 italic">Nenhuma conta no período.</p>
                                 ) : (() => {
                                     const pendente = centavosParaReais(despesas.pendente_centavos);
                                     const pago = centavosParaReais(despesas.pago_centavos);
@@ -226,7 +226,7 @@ export default function VisaoGeralPanel({ metricas, rotulo }) {
 
                             <CardPainel titulo="Maiores contas" descricao="Top despesas do período" icone="trending-up" fundoIcone="bg-indigo-50 dark:bg-indigo-500/10" corIcone="text-indigo-600 dark:text-indigo-400">
                                 {despesas.maiores.length === 0 ? (
-                                    <p className="text-[11px] text-gray-500 italic">Nenhuma conta no período.</p>
+                                    <p className="text-mini text-gray-500 italic">Nenhuma conta no período.</p>
                                 ) : (() => {
                                     const hoje = obterDataAtual();
                                     const max = Math.max(...despesas.maiores.map(c => centavosParaReais(c.centavos)), 1);
@@ -246,7 +246,7 @@ export default function VisaoGeralPanel({ metricas, rotulo }) {
                             {/* Cobrança pendente: o que antes era contado como recebido. */}
                             <CardPainel titulo="Concluído sem baixa" descricao="O.S. encerradas sem pagamento lançado" icone="alert-triangle" fundoIcone="bg-rose-50 dark:bg-rose-500/10" corIcone="text-rose-600 dark:text-rose-400">
                                 {metricas.sem_baixa.pedidos.length === 0 ? (
-                                    <p className="text-[11px] text-gray-500 italic">Toda O.S. encerrada no período tem pagamento lançado.</p>
+                                    <p className="text-mini text-gray-500 italic">Toda O.S. encerrada no período tem pagamento lançado.</p>
                                 ) : metricas.sem_baixa.pedidos.map(p => {
                                     // Só abre a O.S. se ela estiver na lista já carregada; fora
                                     // da janela de carregamento vira linha simples, sem clique
@@ -255,17 +255,17 @@ export default function VisaoGeralPanel({ metricas, rotulo }) {
                                     const conteudo = (
                                         <>
                                             <span className="min-w-0 text-left">
-                                                <span className="block text-[12px] font-bold text-gray-900 dark:text-white tabular-nums">#{p.id}</span>
-                                                <span className="block text-[11px] text-gray-500 dark:text-gray-400 truncate">{mascararCliente(p.cliente, isDemo) || '---'}</span>
+                                                <span className="block text-compacto font-bold text-tinta tabular-nums">#{p.id}</span>
+                                                <span className="block text-mini text-tinta-suave truncate">{mascararCliente(p.cliente, isDemo) || '---'}</span>
                                             </span>
-                                            <span className="text-[12px] font-bold text-rose-600 dark:text-rose-400 tabular-nums shrink-0">
+                                            <span className="text-compacto font-bold text-rose-600 dark:text-rose-400 tabular-nums shrink-0">
                                                 R$ {formatarValorFinanceiro(centavosParaReais(p.centavos))}
                                             </span>
                                         </>
                                     );
                                     return naMemoria ? (
                                         <button key={p.id} type="button" onClick={() => abrirEdicao(naMemoria)}
-                                            className="w-full flex items-center justify-between gap-3 py-1.5 rounded hover:bg-gray-50 dark:hover:bg-darkHover transition px-1 -mx-1">
+                                            className="w-full flex items-center justify-between gap-3 py-1.5 rounded hover:bg-sutil transition px-1 -mx-1">
                                             {conteudo}
                                         </button>
                                     ) : (

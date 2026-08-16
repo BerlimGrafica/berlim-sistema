@@ -36,9 +36,7 @@ export async function GET(req: Request) {
   // não contém "84674562" porque o hífen fica no meio do trecho — a busca
   // antiga não achava nenhum cliente, nem celular.
   const { data: clientes } = await admin
-    .from('clientes')
-    .select('id, nome')
-    .ilike('telefone_digits', `%${digitos.slice(-8)}%`)
+    .from('clientes') .select('id, nome') .ilike('telefone_digits', `%${digitos.slice(-8)}%`)
     .limit(2);
 
   // Nenhum cadastro com esse telefone, ou mais de um (números diferentes que
@@ -50,10 +48,7 @@ export async function GET(req: Request) {
   const cliente = clientes[0];
 
   const { data: pedido } = await admin
-    .from('pedidos')
-    .select('id, status, prazo, pedido_itens(nome, ordem)')
-    .eq('cliente_id', cliente.id)
-    .order('id', { ascending: false })
+    .from('pedidos') .select('id, status, prazo, pedido_itens(nome, ordem)') .eq('cliente_id', cliente.id) .order('id', { ascending: false })
     .limit(1)
     .maybeSingle();
 

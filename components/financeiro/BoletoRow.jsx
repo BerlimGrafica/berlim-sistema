@@ -15,7 +15,7 @@ const OPCOES_PROTESTO = [
     { value: true, label: 'Sim' },
 ];
 
-const campoClass = "w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-2.5 py-1.5 text-[11px] outline-none hover:border-brand focus:border-brand transition text-gray-700 dark:text-[#EDEDED]";
+const campoClass = "w-full bg-sutil border border-borda rounded px-2.5 py-1.5 text-mini outline-none hover:border-brand focus:border-brand transition text-tinta-corpo";
 
 export default function BoletoRow({ p, statusPagamento, statusPagamentoCor }) {
     const { isDemo } = useSessao();
@@ -43,8 +43,7 @@ export default function BoletoRow({ p, statusPagamento, statusPagamentoCor }) {
             const linha = [
                 `#${p.id}`, mascararCliente(p.cliente, isDemo), p.boleto_cnpj || '', p.boleto_numero || '',
                 p.boleto.valor || '', formatarDataExibicao(p.boleto_data_emissao), formatarDataExibicao(p.prazo_pagamento),
-                p.boleto_protesto_negativacao ? 'Sim' : 'Não', statusPagamento,
-            ].join('\t');
+                p.boleto_protesto_negativacao ? 'Sim' : 'Não', statusPagamento, ].join('\t');
             navigator.clipboard.writeText(linha);
             avisar('Linha copiada!', 'sucesso');
         }},
@@ -54,10 +53,10 @@ export default function BoletoRow({ p, statusPagamento, statusPagamentoCor }) {
     return (
         <tr onClick={() => abrirEdicao(p)} onContextMenu={(e) => abrirContextMenu(e, itensContexto)} className="hover:bg-gray-50 dark:hover:bg-darkHover/50 transition-colors cursor-pointer group">
             <td className="px-6 py-4">
-                <span className="text-[12px] font-bold text-gray-400 dark:text-gray-500">#{p.id}</span>
+                <span className="text-compacto font-bold text-tinta-fraca">#{p.id}</span>
             </td>
             <td className="px-6 py-4">
-                <span className="text-[13px] font-semibold text-gray-800 dark:text-[#EDEDED] truncate max-w-[200px] block" title={mascararCliente(p.cliente, isDemo)}>{mascararCliente(p.cliente, isDemo)}</span>
+                <span className="text-corpo font-semibold text-tinta truncate max-w-[200px] block" title={mascararCliente(p.cliente, isDemo)}>{mascararCliente(p.cliente, isDemo)}</span>
             </td>
             <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
                 <input type="text" value={cnpj} onChange={e => setCnpj(formatarCnpjCpf(e.target.value))} onBlur={() => atualizarCampoInline(p.id, 'boleto_cnpj', cnpj)} onKeyDown={e => { if (e.key === 'Enter') e.target.blur(); }} placeholder="00.000.000/0000-00" className={campoClass} />
@@ -67,7 +66,7 @@ export default function BoletoRow({ p, statusPagamento, statusPagamentoCor }) {
             </td>
             <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
                 <div className="relative">
-                    <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[11px] text-gray-400 pointer-events-none">R$</span>
+                    <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-mini text-gray-400 pointer-events-none">R$</span>
                     <input type="text" value={valor} onChange={e => setValor(formatarMoeda(e.target.value))} onBlur={() => atualizarPagamentoBoleto(p, { valor })} onKeyDown={e => { if (e.key === 'Enter') e.target.blur(); }} placeholder="0,00" className={`${campoClass} pl-7 text-right`} />
                 </div>
             </td>
@@ -81,7 +80,7 @@ export default function BoletoRow({ p, statusPagamento, statusPagamentoCor }) {
                 <CustomSelect value={!!p.boleto_protesto_negativacao} onChange={val => atualizarCampoInline(p.id, 'boleto_protesto_negativacao', val)} options={OPCOES_PROTESTO} className={`${campoClass} cursor-pointer`} />
             </td>
             <td className="px-6 py-4 text-center">
-                <span className={`whitespace-nowrap px-2.5 py-1 text-[11px] font-semibold rounded border ${statusPagamentoCor}`}>
+                <span className={`whitespace-nowrap px-2.5 py-1 text-mini font-semibold rounded border ${statusPagamentoCor}`}>
                     {statusPagamento}
                 </span>
             </td>

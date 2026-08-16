@@ -43,7 +43,7 @@ export default function SeletorPeriodo({ inicio, fim, onChange, carregando }) {
 
     return (
         <div className="flex flex-wrap items-center gap-2">
-            <div className="flex items-center gap-1 bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-md p-1">
+            <div className="flex items-center gap-1 bg-superficie border border-borda rounded-md p-1">
                 {lista.map(a => {
                     const ativo = a.inicio === inicio && a.fim === fim;
                     return (
@@ -51,9 +51,9 @@ export default function SeletorPeriodo({ inicio, fim, onChange, carregando }) {
                             key={a.rotulo}
                             type="button"
                             onClick={() => onChange(a.inicio, a.fim)}
-                            className={`px-3 py-1.5 text-[12px] font-semibold rounded transition ${ativo
+                            className={`px-3 py-1.5 text-compacto font-semibold rounded transition ${ativo
                                 ? 'bg-brand text-white shadow-sm'
-                                : 'text-gray-500 dark:text-[#888888] hover:bg-gray-100 dark:hover:bg-darkHover'}`}
+                                : 'text-tinta-suave hover:bg-realce'}`}
                         >
                             {a.rotulo}
                         </button>
@@ -67,11 +67,11 @@ export default function SeletorPeriodo({ inicio, fim, onChange, carregando }) {
                 onChangeStart={(v) => onChange(v, fim)}
                 onChangeEnd={(v) => onChange(inicio, v)}
                 placeholder="Período personalizado"
-                className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-md px-3 py-2 text-[12px] outline-none hover:border-brand transition dark:text-[#EDEDED] min-w-[210px]"
+                className="bg-superficie border border-borda rounded-md px-3 py-2 text-compacto outline-none hover:border-brand transition dark:text-[#EDEDED] min-w-[210px]"
             />
 
             {carregando && (
-                <span className="flex items-center gap-1.5 text-[11px] font-semibold text-gray-400">
+                <span className="flex items-center gap-1.5 text-mini font-semibold text-gray-400">
                     <Icon name="clock" className="w-3.5 h-3.5 animate-pulse" /> somando…
                 </span>
             )}

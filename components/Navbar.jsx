@@ -31,13 +31,13 @@ export default function Navbar() {
 
     return (
         <>
-            <header className="sticky top-0 z-40 bg-white dark:bg-darkBg px-6 h-[64px] flex justify-between items-center">
+            <header className="sticky top-0 z-40 bg-campo px-6 h-[64px] flex justify-between items-center">
                     <div className="flex items-center">
                         <img src="https://www.berlimgraficarapida.com.br/wp-content/uploads/elementor/thumbs/logosite-rm0erpiqj90gcf7ff4jp8ujys78opflob1b9vn5jjs.png" alt="Berlim Gráfica" className="h-8 object-contain" />
                     </div>
                     <div className="flex items-center gap-5">
                         <Tooltip label="Chat da Equipe">
-                            <button onClick={() => abrirChat()} aria-label="Abrir chat" className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-darkHover transition text-gray-600 dark:text-[#888888] relative">
+                            <button onClick={() => abrirChat()} aria-label="Abrir chat" className="p-2 rounded-md hover:bg-realce transition text-gray-600 dark:text-[#888888] relative">
                                 <Icon name="message-circle" className="w-5 h-5" />
                                 {chatNaoLidas > 0 && (
                                     <span className="absolute top-0.5 right-0.5 min-w-[14px] h-[14px] px-1 flex items-center justify-center bg-red-500 text-white text-[9px] font-bold rounded-full shadow-sm">
@@ -48,7 +48,7 @@ export default function Navbar() {
                         </Tooltip>
 
                         <div className="relative" ref={notificacoesRef}>
-                            <button onClick={() => setModalAlertasAberto(!modalAlertasAberto)} className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-darkHover transition text-gray-600 dark:text-[#888888] relative">
+                            <button onClick={() => setModalAlertasAberto(!modalAlertasAberto)} className="p-2 rounded-md hover:bg-realce transition text-gray-600 dark:text-[#888888] relative">
                                 <Icon name="bell" className="w-5 h-5" />
                                 {alertasNaoLidos.length > 0 && (
                                     <span className="absolute top-0.5 right-0.5 min-w-[14px] h-[14px] px-1 flex items-center justify-center bg-red-500 text-white text-[9px] font-bold rounded-full shadow-sm">
@@ -57,25 +57,25 @@ export default function Navbar() {
                                 )}
                             </button>
                             {modalAlertasAberto && (
-                                <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded-lg shadow-lg py-2 z-50">
-                                    <div className="px-4 py-2 border-b border-gray-100 dark:border-darkBorder flex justify-between items-center">
-                                        <h3 className="font-semibold text-[13px] dark:text-white">Notificações</h3>
+                                <div className="absolute right-0 mt-2 w-64 bg-elevado border border-borda rounded-lg shadow-lg py-2 z-50">
+                                    <div className="px-4 py-2 border-b border-borda-fraca flex justify-between items-center">
+                                        <h3 className="font-semibold text-corpo dark:text-white">Notificações</h3>
                                         {alertasNaoLidos.length > 0 && (
-                                            <button onClick={() => setAlertasNaoLidos([])} className="text-[11px] text-brand hover:underline">Limpar</button>
+                                            <button onClick={() => setAlertasNaoLidos([])} className="text-mini text-brand hover:underline">Limpar</button>
                                         )}
                                     </div>
                                     <div className="max-h-60 overflow-y-auto custom-scrollbar">
                                         {alertasNaoLidos.length === 0 ? (
-                                            <p className="px-4 py-4 text-[11px] text-gray-500 text-center">Nenhuma nova notificação.</p>
+                                            <p className="px-4 py-4 text-mini text-gray-500 text-center">Nenhuma nova notificação.</p>
                                         ) : (
                                             alertasNaoLidos.slice().reverse().map(alerta => (
-                                                <div key={alerta.id} className="px-4 py-3 hover:bg-gray-50 dark:hover:bg-darkHover border-b border-gray-50 dark:border-darkBorder/50 last:border-0 cursor-pointer flex justify-between items-start group" onClick={() => {
+                                                <div key={alerta.id} className="px-4 py-3 hover:bg-sutil border-b border-gray-50 dark:border-darkBorder/50 last:border-0 cursor-pointer flex justify-between items-start group" onClick={() => {
                                                     setModalAlertasAberto(false);
                                                     navegarParaAlerta(alerta);
                                                 }}>
                                                     <div className="flex-1 pr-2">
-                                                        <p className="text-[11px] text-gray-800 dark:text-[#EDEDED]">{alerta.msg}</p>
-                                                        <span className="text-[10px] text-gray-400 mt-1 block">Agora</span>
+                                                        <p className="text-mini text-tinta">{alerta.msg}</p>
+                                                        <span className="text-micro text-gray-400 mt-1 block">Agora</span>
                                                     </div>
                                                     <button type="button" onClick={(e) => { 
                                                         e.stopPropagation(); 
@@ -91,7 +91,7 @@ export default function Navbar() {
                             )}
                         </div>
 
-                        <button onClick={toggleDarkMode} className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-darkHover transition text-gray-600 dark:text-[#888888]">
+                        <button onClick={toggleDarkMode} className="p-2 rounded-md hover:bg-realce transition text-gray-600 dark:text-[#888888]">
                             <Icon name={darkMode ? "sun" : "moon"} className="w-5 h-5" />
                         </button>
                         
@@ -101,21 +101,21 @@ export default function Navbar() {
                         <div className="flex items-center gap-1.5">
                             {/* LINK FUTURA IM */}
                             <Tooltip label="Acessar Futura IM">
-                                <a href="https://www.futuraim.com.br/" target="_blank" rel="noopener noreferrer" aria-label="Acessar Futura IM" className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-darkHover transition flex items-center justify-center">
+                                <a href="https://www.futuraim.com.br/" target="_blank" rel="noopener noreferrer" aria-label="Acessar Futura IM" className="p-2 rounded-md hover:bg-realce transition flex items-center justify-center">
                                     <img src="https://www.google.com/s2/favicons?domain=futuraim.com.br&sz=64" alt="Futura IM" className="w-5 h-5 object-contain rounded-sm" />
                                 </a>
                             </Tooltip>
 
                             {/* LINK ATUAL CARD */}
                             <Tooltip label="Acessar Atual Card">
-                                <a href="https://oferta.atualcard.com.br/" target="_blank" rel="noopener noreferrer" aria-label="Acessar Atual Card" className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-darkHover transition flex items-center justify-center">
+                                <a href="https://oferta.atualcard.com.br/" target="_blank" rel="noopener noreferrer" aria-label="Acessar Atual Card" className="p-2 rounded-md hover:bg-realce transition flex items-center justify-center">
                                     <img src="https://www.google.com/s2/favicons?domain=atualcard.com.br&sz=64" alt="Atual Card" className="w-5 h-5 object-contain rounded-sm" />
                                 </a>
                             </Tooltip>
 
                             {/* LINK ALVO PRINT */}
                             <Tooltip label="Acessar Alvo Print">
-                                <a href="https://www.alvoprint.com.br/" target="_blank" rel="noopener noreferrer" aria-label="Acessar Alvo Print" className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-darkHover transition flex items-center justify-center">
+                                <a href="https://www.alvoprint.com.br/" target="_blank" rel="noopener noreferrer" aria-label="Acessar Alvo Print" className="p-2 rounded-md hover:bg-realce transition flex items-center justify-center">
                                     <img src="https://www.google.com/s2/favicons?domain=alvoprint.com.br&sz=64" alt="Alvo Print" className="w-5 h-5 object-contain rounded-sm" />
                                 </a>
                             </Tooltip>
@@ -127,10 +127,10 @@ export default function Navbar() {
                         {/* BLOCO DO USUÁRIO ATUALIZADO */}
                         <div className="flex items-center gap-4 select-none">
                             <div className="flex flex-col text-right">
-                                <span className="text-[13px] font-extrabold text-gray-900 dark:text-white leading-none">
+                                <span className="text-corpo font-extrabold text-tinta leading-none">
                                     {usuario?.nome}
                                 </span>
-                                <span className="text-[11px] font-medium text-brand italic mt-1 tracking-wide">
+                                <span className="text-mini font-medium text-brand italic mt-1 tracking-wide">
                                     {usuario?.nivel}
                                 </span>
                             </div>
@@ -145,7 +145,7 @@ export default function Navbar() {
                                         }
                                     }}
                                     aria-label={googleVinculado ? 'Desvincular conta Google' : 'Vincular conta Google'}
-                                    className={`transition p-2 rounded-md ${googleVinculado ? 'text-emerald-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30' : 'text-gray-400 hover:text-brand hover:bg-gray-100 dark:hover:bg-darkHover'}`}
+                                    className={`transition p-2 rounded-md ${googleVinculado ? 'text-emerald-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30' : 'text-gray-400 hover:text-brand hover:bg-realce'}`}
                                 >
                                     <Icon name="link" className="w-4 h-4" />
                                 </button>
@@ -160,51 +160,51 @@ export default function Navbar() {
                 </header>
             <nav className="bg-brand text-white px-6 shadow-sm z-30 sticky top-[64px] h-[48px]">
                     <div className="flex gap-1.5 overflow-x-auto custom-scrollbar no-scrollbar-style items-end pt-2.5 h-full">
-                        <Link href="/" className={`px-4 py-2.5 text-[13px] font-semibold cursor-pointer transition-all duration-200 whitespace-nowrap rounded-t-lg flex items-center gap-2 tracking-wide uppercase border-t-2 ${pathname === '/' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white border-brand shadow-[0_-2px_6px_rgba(0,0,0,0.08)]' : 'border-transparent text-white/85 hover:bg-white/10 hover:text-white'}`}>
+                        <Link href="/" className={`px-4 py-2.5 text-corpo font-semibold cursor-pointer transition-all duration-200 whitespace-nowrap rounded-t-lg flex items-center gap-2 tracking-wide uppercase border-t-2 ${pathname === '/' ? 'bg-fundo text-tinta border-brand shadow-[0_-2px_6px_rgba(0,0,0,0.08)]' : 'border-transparent text-white/85 hover:bg-white/10 hover:text-white'}`}>
                             <Icon name="layout-dashboard" className={`w-4 h-4 shrink-0 ${pathname === '/' ? 'text-brand' : ''}`} /> Início
                         </Link>
                         {(usuario?.nivel === 'Administrador' || usuario?.nivel === 'Atendimento' || usuario?.nivel === 'Produção') && (
-                            <Link href="/producao" className={`px-4 py-2.5 text-[13px] font-semibold cursor-pointer transition-all duration-200 whitespace-nowrap rounded-t-lg flex items-center gap-2 tracking-wide uppercase border-t-2 ${pathname === '/producao' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white border-brand shadow-[0_-2px_6px_rgba(0,0,0,0.08)]' : 'border-transparent text-white/85 hover:bg-white/10 hover:text-white'}`}>
+                            <Link href="/producao" className={`px-4 py-2.5 text-corpo font-semibold cursor-pointer transition-all duration-200 whitespace-nowrap rounded-t-lg flex items-center gap-2 tracking-wide uppercase border-t-2 ${pathname === '/producao' ? 'bg-fundo text-tinta border-brand shadow-[0_-2px_6px_rgba(0,0,0,0.08)]' : 'border-transparent text-white/85 hover:bg-white/10 hover:text-white'}`}>
                                 <Icon name="grid" className={`w-4 h-4 shrink-0 ${pathname === '/producao' ? 'text-brand' : ''}`} /> Produção
                             </Link>
                         )}
-                        <Link href="/baixa" className={`px-4 py-2.5 text-[13px] font-semibold cursor-pointer transition-all duration-200 whitespace-nowrap rounded-t-lg flex items-center gap-2 tracking-wide uppercase border-t-2 ${pathname === '/baixa' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white border-brand shadow-[0_-2px_6px_rgba(0,0,0,0.08)]' : 'border-transparent text-white/85 hover:bg-white/10 hover:text-white'}`}>
+                        <Link href="/baixa" className={`px-4 py-2.5 text-corpo font-semibold cursor-pointer transition-all duration-200 whitespace-nowrap rounded-t-lg flex items-center gap-2 tracking-wide uppercase border-t-2 ${pathname === '/baixa' ? 'bg-fundo text-tinta border-brand shadow-[0_-2px_6px_rgba(0,0,0,0.08)]' : 'border-transparent text-white/85 hover:bg-white/10 hover:text-white'}`}>
                             <Icon name="check-circle" className={`w-4 h-4 shrink-0 ${pathname === '/baixa' ? 'text-brand' : ''}`} /> O.S.
                         </Link>
                         {usuario?.nivel !== 'Financeiro' && (
-                            <Link href="/calculadoras" className={`px-4 py-2.5 text-[13px] font-semibold cursor-pointer transition-all duration-200 whitespace-nowrap rounded-t-lg flex items-center gap-2 tracking-wide uppercase border-t-2 ${pathname === '/calculadoras' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white border-brand shadow-[0_-2px_6px_rgba(0,0,0,0.08)]' : 'border-transparent text-white/85 hover:bg-white/10 hover:text-white'}`}>
+                            <Link href="/calculadoras" className={`px-4 py-2.5 text-corpo font-semibold cursor-pointer transition-all duration-200 whitespace-nowrap rounded-t-lg flex items-center gap-2 tracking-wide uppercase border-t-2 ${pathname === '/calculadoras' ? 'bg-fundo text-tinta border-brand shadow-[0_-2px_6px_rgba(0,0,0,0.08)]' : 'border-transparent text-white/85 hover:bg-white/10 hover:text-white'}`}>
                                 <Icon name="calculator" className={`w-4 h-4 shrink-0 ${pathname === '/calculadoras' ? 'text-brand' : ''}`} /> Calculadoras
                             </Link>
                         )}
 
                         {(usuario?.nivel === 'Administrador' || usuario?.nivel === 'Financeiro') && (
-                            <Link href="/financeiro" className={`px-4 py-2.5 text-[13px] font-semibold cursor-pointer transition-all duration-200 whitespace-nowrap rounded-t-lg flex items-center gap-2 tracking-wide uppercase border-t-2 ${pathname === '/financeiro' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white border-brand shadow-[0_-2px_6px_rgba(0,0,0,0.08)]' : 'border-transparent text-white/85 hover:bg-white/10 hover:text-white'}`}>
+                            <Link href="/financeiro" className={`px-4 py-2.5 text-corpo font-semibold cursor-pointer transition-all duration-200 whitespace-nowrap rounded-t-lg flex items-center gap-2 tracking-wide uppercase border-t-2 ${pathname === '/financeiro' ? 'bg-fundo text-tinta border-brand shadow-[0_-2px_6px_rgba(0,0,0,0.08)]' : 'border-transparent text-white/85 hover:bg-white/10 hover:text-white'}`}>
                                 <Icon name="dollar-sign" className={`w-4 h-4 shrink-0 ${pathname === '/financeiro' ? 'text-brand' : ''}`} /> Financeiro
                             </Link>
                         )}
                         {(usuario?.nivel === 'Administrador' || usuario?.nivel === 'Financeiro') && (
-                            <Link href="/vendas" className={`px-4 py-2.5 text-[13px] font-semibold cursor-pointer transition-all duration-200 whitespace-nowrap rounded-t-lg flex items-center gap-2 tracking-wide uppercase border-t-2 ${pathname === '/vendas' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white border-brand shadow-[0_-2px_6px_rgba(0,0,0,0.08)]' : 'border-transparent text-white/85 hover:bg-white/10 hover:text-white'}`}>
+                            <Link href="/vendas" className={`px-4 py-2.5 text-corpo font-semibold cursor-pointer transition-all duration-200 whitespace-nowrap rounded-t-lg flex items-center gap-2 tracking-wide uppercase border-t-2 ${pathname === '/vendas' ? 'bg-fundo text-tinta border-brand shadow-[0_-2px_6px_rgba(0,0,0,0.08)]' : 'border-transparent text-white/85 hover:bg-white/10 hover:text-white'}`}>
                                 <Icon name="trending-up" className={`w-4 h-4 shrink-0 ${pathname === '/vendas' ? 'text-brand' : ''}`} /> Vendas
                             </Link>
                         )}
                         {usuario?.nivel === 'Atendimento' && (
-                            <Link href="/notas-fiscais" className={`px-4 py-2.5 text-[13px] font-semibold cursor-pointer transition-all duration-200 whitespace-nowrap rounded-t-lg flex items-center gap-2 tracking-wide uppercase border-t-2 ${pathname === '/notas-fiscais' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white border-brand shadow-[0_-2px_6px_rgba(0,0,0,0.08)]' : 'border-transparent text-white/85 hover:bg-white/10 hover:text-white'}`}>
+                            <Link href="/notas-fiscais" className={`px-4 py-2.5 text-corpo font-semibold cursor-pointer transition-all duration-200 whitespace-nowrap rounded-t-lg flex items-center gap-2 tracking-wide uppercase border-t-2 ${pathname === '/notas-fiscais' ? 'bg-fundo text-tinta border-brand shadow-[0_-2px_6px_rgba(0,0,0,0.08)]' : 'border-transparent text-white/85 hover:bg-white/10 hover:text-white'}`}>
                                 <Icon name="file-text" className={`w-4 h-4 shrink-0 ${pathname === '/notas-fiscais' ? 'text-brand' : ''}`} /> Notas Fiscais
                             </Link>
                         )}
 
                         {usuario?.nivel !== 'Financeiro' && (
-                            <Link href="/orcamentos" className={`px-4 py-2.5 text-[13px] font-semibold cursor-pointer transition-all duration-200 whitespace-nowrap rounded-t-lg flex items-center gap-2 tracking-wide uppercase border-t-2 ${pathname === '/orcamentos' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white border-brand shadow-[0_-2px_6px_rgba(0,0,0,0.08)]' : 'border-transparent text-white/85 hover:bg-white/10 hover:text-white'}`}>
+                            <Link href="/orcamentos" className={`px-4 py-2.5 text-corpo font-semibold cursor-pointer transition-all duration-200 whitespace-nowrap rounded-t-lg flex items-center gap-2 tracking-wide uppercase border-t-2 ${pathname === '/orcamentos' ? 'bg-fundo text-tinta border-brand shadow-[0_-2px_6px_rgba(0,0,0,0.08)]' : 'border-transparent text-white/85 hover:bg-white/10 hover:text-white'}`}>
                                 <Icon name="edit-3" className={`w-4 h-4 shrink-0 ${pathname === '/orcamentos' ? 'text-brand' : ''}`} /> Orçamentos
                             </Link>
                         )}
 
                         {usuario?.nivel !== 'Financeiro' && (
-                            <Link href="/cadastros" className={`px-4 py-2.5 text-[13px] font-semibold cursor-pointer transition-all duration-200 whitespace-nowrap rounded-t-lg flex items-center gap-2 tracking-wide uppercase border-t-2 ${pathname === '/cadastros' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white border-brand shadow-[0_-2px_6px_rgba(0,0,0,0.08)]' : 'border-transparent text-white/85 hover:bg-white/10 hover:text-white'}`}>
+                            <Link href="/cadastros" className={`px-4 py-2.5 text-corpo font-semibold cursor-pointer transition-all duration-200 whitespace-nowrap rounded-t-lg flex items-center gap-2 tracking-wide uppercase border-t-2 ${pathname === '/cadastros' ? 'bg-fundo text-tinta border-brand shadow-[0_-2px_6px_rgba(0,0,0,0.08)]' : 'border-transparent text-white/85 hover:bg-white/10 hover:text-white'}`}>
                                 <Icon name="users" className={`w-4 h-4 shrink-0 ${pathname === '/cadastros' ? 'text-brand' : ''}`} /> Cadastros
                             </Link>
                         )}
-                        <Link href="/comunicacao" className={`px-4 py-2.5 text-[13px] font-semibold cursor-pointer transition-all duration-200 whitespace-nowrap rounded-t-lg flex items-center gap-2 tracking-wide uppercase border-t-2 ${pathname === '/comunicacao' ? 'bg-[#EDEFF0] text-gray-900 dark:bg-darkBg dark:text-white border-brand shadow-[0_-2px_6px_rgba(0,0,0,0.08)]' : 'border-transparent text-white/85 hover:bg-white/10 hover:text-white'}`}>
+                        <Link href="/comunicacao" className={`px-4 py-2.5 text-corpo font-semibold cursor-pointer transition-all duration-200 whitespace-nowrap rounded-t-lg flex items-center gap-2 tracking-wide uppercase border-t-2 ${pathname === '/comunicacao' ? 'bg-fundo text-tinta border-brand shadow-[0_-2px_6px_rgba(0,0,0,0.08)]' : 'border-transparent text-white/85 hover:bg-white/10 hover:text-white'}`}>
                             <Icon name="mail" className={`w-4 h-4 shrink-0 ${pathname === '/comunicacao' ? 'text-brand' : ''}`} /> Comunicação
                         </Link>
                     </div>

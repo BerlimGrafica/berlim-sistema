@@ -28,18 +28,16 @@ export default function VendasTab() {
 
     return (
         <>
-            <div className="bg-[#EDEFF0] dark:bg-darkBg border-b border-gray-200 dark:border-darkBorder px-6 flex gap-6 z-20 overflow-x-auto no-scrollbar-style sticky top-[112px]">
+            <div className="bg-fundo border-b border-borda px-6 flex gap-6 z-20 overflow-x-auto no-scrollbar-style sticky top-[112px]">
                 {[
-                    ['geral', 'Visão Geral', 'pie-chart'],
-                    ['vendas_produto', 'Vendas por Produto', 'tag'],
-                    ['vendas_cliente', 'Vendas por Cliente', 'users'],
+                    ['geral', 'Visão Geral', 'pie-chart'], ['vendas_produto', 'Vendas por Produto', 'tag'], ['vendas_cliente', 'Vendas por Cliente', 'users'],
                 ].map(([chave, rotulo, icone]) => (
                     <button
                         key={chave}
                         onClick={() => setAbaVendas(chave)}
-                        className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitespace-nowrap flex items-center gap-2 ${abaVendas === chave
+                        className={`py-3 text-corpo font-semibold border-b-[3px] transition whitespace-nowrap flex items-center gap-2 ${abaVendas === chave
                             ? 'border-brand text-brand'
-                            : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}
+                            : 'border-transparent text-tinta-suave hover:text-tinta'}`}
                     >
                         <Icon name={icone} className="w-4 h-4" /> {rotulo}
                     </button>
@@ -48,10 +46,10 @@ export default function VendasTab() {
 
             {podeVer && (
                 <main className="flex-1 p-6 lg:p-10 max-w-[1400px] mx-auto w-full flex flex-col gap-6">
-                    <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 border-b border-gray-100 dark:border-darkBorder pb-6 shrink-0">
+                    <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 border-b border-borda-fraca pb-6 shrink-0">
                         <div>
-                            <h1 className="text-2xl lg:text-3xl font-black text-gray-900 dark:text-white tracking-tight">{aba.titulo}</h1>
-                            <p className="text-[13px] text-gray-500 dark:text-[#888888] mt-1">{aba.descricao}</p>
+                            <h1 className="text-2xl lg:text-3xl font-black text-tinta tracking-tight">{aba.titulo}</h1>
+                            <p className="text-corpo text-tinta-suave mt-1">{aba.descricao}</p>
                         </div>
                         <SeletorPeriodo
                             inicio={periodo.inicio}
@@ -65,8 +63,8 @@ export default function VendasTab() {
                         <div className="flex items-start gap-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-lg px-4 py-3">
                             <Icon name="alert-triangle" className="w-4 h-4 text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
                             <div>
-                                <p className="text-[13px] font-semibold text-red-700 dark:text-red-300">Não foi possível somar os números do período.</p>
-                                <p className="text-[11px] text-red-600/80 dark:text-red-400/80 mt-0.5">{erro}</p>
+                                <p className="text-corpo font-semibold text-red-700 dark:text-red-300">Não foi possível somar os números do período.</p>
+                                <p className="text-mini text-red-600/80 dark:text-red-400/80 mt-0.5">{erro}</p>
                             </div>
                         </div>
                     )}
@@ -74,7 +72,7 @@ export default function VendasTab() {
                     {!metricas ? (
                         <div className="flex flex-col items-center justify-center py-24 gap-3">
                             <Icon name="pie-chart" className="w-8 h-8 text-gray-300 dark:text-darkBorder animate-pulse" />
-                            <p className="text-[13px] font-semibold text-gray-400">Somando o período no banco…</p>
+                            <p className="text-corpo font-semibold text-gray-400">Somando o período no banco…</p>
                         </div>
                     ) : (
                         <div key={abaVendas} className="animate-fade-screen">

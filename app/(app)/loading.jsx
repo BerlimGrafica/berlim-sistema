@@ -4,7 +4,7 @@
 export default function Loading() {
     return (
         <main className="flex-1 flex items-center justify-center min-h-[60vh]">
-            <div className="w-8 h-8 border-[3px] border-gray-200 dark:border-darkBorder border-t-brand rounded-full animate-spin" aria-label="Carregando" />
+            <div className="w-8 h-8 border-[3px] border-borda border-t-brand rounded-full animate-spin" aria-label="Carregando" />
         </main>
     );
 }

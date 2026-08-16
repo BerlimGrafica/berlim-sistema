@@ -13,9 +13,7 @@ export function useChat(usuario, usuariosSistema, avisar) {
     useEffect(() => { chatAbertoRef.current = chatAberto; }, [chatAberto]);
     async function carregarChat() {
         const { data, error } = await supabase
-            .from('chat_mensagens')
-            .select('*')
-            .order('criado_em', { ascending: true })
+            .from('chat_mensagens') .select('*') .order('criado_em', { ascending: true })
             .limit(200);
         if (!error && data) setChatMensagens(data);
     }

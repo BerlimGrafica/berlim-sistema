@@ -11,9 +11,9 @@ import ContextMenu from '@/components/ContextMenu';
 export default function AppLayout({ children }) {
     return (
         <AppProvider>
-            <div className="flex flex-col min-h-screen no-print bg-[#EDEFF0] dark:bg-darkBg">
+            <div className="flex flex-col min-h-screen no-print bg-fundo">
                 <Navbar />
-                <div className="flex-1 bg-[#EDEFF0] dark:bg-darkBg relative">
+                <div className="flex-1 bg-fundo relative">
                     <PageTransition>{children}</PageTransition>
                 </div>
                 <Modals />

@@ -20,14 +20,14 @@ export default function ComunicacaoInternaTab() {
 
     return (
         <>
-            <div className="bg-[#EDEFF0] dark:bg-darkBg border-b border-gray-200 dark:border-darkBorder px-6 flex gap-6 z-20 overflow-x-auto no-scrollbar-style sticky top-[112px]">
-                <a onClick={() => setAbaComunicacao('requisicoes')} className={`py-3 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap border-b-[3px] flex items-center gap-2 ${abaComunicacao === 'requisicoes' ? 'border-brand text-brand' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'}`}>
+            <div className="bg-fundo border-b border-borda px-6 flex gap-6 z-20 overflow-x-auto no-scrollbar-style sticky top-[112px]">
+                <a onClick={() => setAbaComunicacao('requisicoes')} className={`py-3 text-corpo font-semibold cursor-pointer transition whitespace-nowrap border-b-[3px] flex items-center gap-2 ${abaComunicacao === 'requisicoes' ? 'border-brand text-brand' : 'border-transparent text-tinta-suave hover:text-gray-800 dark:hover:text-gray-200'}`}>
                     <Icon name="shopping-bag" className="w-4 h-4" /> Requisição de Material
                 </a>
-                <a onClick={() => setAbaComunicacao('tarefas')} className={`py-3 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap border-b-[3px] flex items-center gap-2 ${abaComunicacao === 'tarefas' ? 'border-brand text-brand' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'}`}>
+                <a onClick={() => setAbaComunicacao('tarefas')} className={`py-3 text-corpo font-semibold cursor-pointer transition whitespace-nowrap border-b-[3px] flex items-center gap-2 ${abaComunicacao === 'tarefas' ? 'border-brand text-brand' : 'border-transparent text-tinta-suave hover:text-gray-800 dark:hover:text-gray-200'}`}>
                     <Icon name="check-square" className="w-4 h-4" /> Tarefas
                 </a>
-                <a onClick={() => setAbaComunicacao('links')} className={`py-3 text-[13px] font-semibold cursor-pointer transition whitespace-nowrap border-b-[3px] flex items-center gap-2 ${abaComunicacao === 'links' ? 'border-brand text-brand' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'}`}>
+                <a onClick={() => setAbaComunicacao('links')} className={`py-3 text-corpo font-semibold cursor-pointer transition whitespace-nowrap border-b-[3px] flex items-center gap-2 ${abaComunicacao === 'links' ? 'border-brand text-brand' : 'border-transparent text-tinta-suave hover:text-gray-800 dark:hover:text-gray-200'}`}>
                     <Icon name="link" className="w-4 h-4" /> Link de Pagamento
                 </a>
             </div>
@@ -35,21 +35,21 @@ export default function ComunicacaoInternaTab() {
             <div key={abaComunicacao} className="animate-fade-screen">
             {abaComunicacao === 'requisicoes' && (
                 <main className="flex-1 p-6 lg:p-10 max-w-[1200px] mx-auto w-full">
-                    <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 mb-6 border-b border-gray-100 dark:border-darkBorder pb-6 shrink-0">
+                    <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 mb-6 border-b border-borda-fraca pb-6 shrink-0">
                         <div>
-                            <h1 className="text-2xl lg:text-3xl font-black text-gray-900 dark:text-white tracking-tight">Requisição de Material</h1>
-                            <p className="text-[13px] text-gray-500 dark:text-[#A1A1AA] mt-1.5 font-medium max-w-xl">
+                            <h1 className="text-2xl lg:text-3xl font-black text-tinta tracking-tight">Requisição de Material</h1>
+                            <p className="text-corpo text-tinta-suave mt-1.5 font-medium max-w-xl">
                                 Solicite materiais para a produção ou escritório.
                             </p>
                         </div>
                         <div className="flex gap-2">
-                            <button onClick={() => setMostrarConcluidosReq(!mostrarConcluidosReq)} className={`px-4 py-2 text-[13px] rounded-md font-semibold border transition ${mostrarConcluidosReq ? 'bg-gray-100 border-gray-200 text-gray-700 dark:bg-darkElevated dark:border-darkBorder dark:text-gray-300' : 'bg-white border-gray-200 text-gray-600 dark:bg-darkCard dark:border-darkBorder dark:text-gray-400 hover:bg-gray-50'}`}>
+                            <button onClick={() => setMostrarConcluidosReq(!mostrarConcluidosReq)} className={`px-4 py-2 text-corpo rounded-md font-semibold border transition ${mostrarConcluidosReq ? 'bg-realce border-borda text-tinta-corpo' : 'bg-superficie border-borda text-tinta-suave hover:bg-gray-50'}`}>
                                 {mostrarConcluidosReq ? 'Ocultar Concluídas' : 'Mostrar Histórico'}
                             </button>
                             <button onClick={() => {
                                 setNovaRequisicao({ id: null, itens: '', observacoes: '', status: 'Pendente' });
                                 setModalRequisicaoAberto(true);
-                            }} className="bg-brand hover:bg-brandHover text-white px-4 py-2 text-[13px] rounded-md font-semibold shadow-sm transition flex items-center gap-2">
+                            }} className="bg-brand hover:bg-brandHover text-white px-4 py-2 text-corpo rounded-md font-semibold shadow-sm transition flex items-center gap-2">
                                 <Icon name="plus" className="w-4 h-4" /> Nova Requisição
                             </button>
                         </div>
@@ -57,11 +57,11 @@ export default function ComunicacaoInternaTab() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {requisicoesVisiveis.length > 0 ? requisicoesVisiveis.map(r => (
-                            <div key={r.id} onClick={() => { setNovaRequisicao({...r, itens: r.itens || '', observacoes: r.observacoes || ''}); setModalRequisicaoAberto(true); }} className={`bg-white dark:bg-darkCard rounded-xl shadow-sm border flex flex-col cursor-pointer hover:border-brand/50 transition-colors ${r.status === 'Comprado' ? 'opacity-60 border-gray-200 dark:border-darkBorder' : 'border-gray-200 dark:border-darkBorder'}`}>
-                                <div className="flex justify-between items-start px-5 py-3.5 bg-gray-50/70 dark:bg-darkElevated/60 rounded-t-xl border-b border-dashed border-gray-300 dark:border-darkBorder">
+                            <div key={r.id} onClick={() => { setNovaRequisicao({...r, itens: r.itens || '', observacoes: r.observacoes || ''}); setModalRequisicaoAberto(true); }} className={`bg-white dark:bg-darkCard rounded-xl shadow-sm border flex flex-col cursor-pointer hover:border-brand/50 transition-colors ${r.status === 'Comprado' ? 'opacity-60 border-borda' : 'border-borda'}`}>
+                                <div className="flex justify-between items-start px-5 py-3.5 bg-gray-50/70 dark:bg-darkElevated/60 rounded-t-xl border-b border-dashed border-borda-forte">
                                     <div>
-                                        <h3 className={`font-bold ${r.status === 'Comprado' ? 'line-through text-gray-500' : 'text-gray-900 dark:text-white'}`}>Requisição #{r.id}</h3>
-                                        <p className="text-[11px] font-semibold text-brand mt-1">{new Date(r.created_at).toLocaleDateString('pt-BR')}</p>
+                                        <h3 className={`font-bold ${r.status === 'Comprado' ? 'line-through text-gray-500' : 'text-tinta'}`}>Requisição #{r.id}</h3>
+                                        <p className="text-mini font-semibold text-brand mt-1">{new Date(r.created_at).toLocaleDateString('pt-BR')}</p>
                                     </div>
                                     <div className="flex gap-1 shrink-0">
                                         {r.status !== 'Comprado' && (
@@ -75,12 +75,12 @@ export default function ComunicacaoInternaTab() {
                                     </div>
                                 </div>
                                 <div className="flex flex-col gap-3 p-5 flex-1">
-                                    <p className="text-[13px] text-gray-600 dark:text-[#A1A1AA] line-clamp-3 break-words" title={r.itens}>{r.itens}</p>
-                                    <div className="mt-auto pt-3 border-t border-gray-100 dark:border-darkBorder flex justify-between items-center">
-                                        <div className="flex items-center gap-1.5 text-[11px] font-semibold text-gray-500 dark:text-[#A1A1AA]">
+                                    <p className="text-corpo text-tinta-suave line-clamp-3 break-words" title={r.itens}>{r.itens}</p>
+                                    <div className="mt-auto pt-3 border-t border-borda-fraca flex justify-between items-center">
+                                        <div className="flex items-center gap-1.5 text-mini font-semibold text-tinta-suave">
                                             <Icon name="user" className="w-3.5 h-3.5" /> {r.criado_por}
                                         </div>
-                                        <span className={`px-2 py-1 text-[10px] font-bold uppercase rounded ${
+                                        <span className={`px-2 py-1 text-micro font-bold uppercase rounded ${
                                             r.status === 'Pendente' ? 'bg-yellow-100 text-yellow-800' :
                                             r.status === 'Comprado' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'
                                         }`}>{r.status}</span>
@@ -88,7 +88,7 @@ export default function ComunicacaoInternaTab() {
                                 </div>
                             </div>
                         )) : (
-                            <div className="col-span-full py-12 text-center text-gray-400 text-[13px]">Nenhuma requisição encontrada.</div>
+                            <div className="col-span-full py-12 text-center text-gray-400 text-corpo">Nenhuma requisição encontrada.</div>
                         )}
                     </div>
                 </main>
@@ -96,21 +96,21 @@ export default function ComunicacaoInternaTab() {
 
             {abaComunicacao === 'tarefas' && (
                 <main className="flex-1 p-6 lg:p-10 max-w-[1200px] mx-auto w-full">
-                    <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 mb-6 border-b border-gray-100 dark:border-darkBorder pb-6 shrink-0">
+                    <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 mb-6 border-b border-borda-fraca pb-6 shrink-0">
                         <div>
-                            <h1 className="text-2xl lg:text-3xl font-black text-gray-900 dark:text-white tracking-tight">Tarefas</h1>
-                            <p className="text-[13px] text-gray-500 dark:text-[#A1A1AA] mt-1.5 font-medium max-w-xl">
+                            <h1 className="text-2xl lg:text-3xl font-black text-tinta tracking-tight">Tarefas</h1>
+                            <p className="text-corpo text-tinta-suave mt-1.5 font-medium max-w-xl">
                                 Gerencie tarefas internas da equipe.
                             </p>
                         </div>
                         <div className="flex gap-2">
-                            <button onClick={() => setMostrarConcluidosTarefas(!mostrarConcluidosTarefas)} className={`px-4 py-2 text-[13px] rounded-md font-semibold border transition ${mostrarConcluidosTarefas ? 'bg-gray-100 border-gray-200 text-gray-700 dark:bg-darkElevated dark:border-darkBorder dark:text-gray-300' : 'bg-white border-gray-200 text-gray-600 dark:bg-darkCard dark:border-darkBorder dark:text-gray-400 hover:bg-gray-50'}`}>
+                            <button onClick={() => setMostrarConcluidosTarefas(!mostrarConcluidosTarefas)} className={`px-4 py-2 text-corpo rounded-md font-semibold border transition ${mostrarConcluidosTarefas ? 'bg-realce border-borda text-tinta-corpo' : 'bg-superficie border-borda text-tinta-suave hover:bg-gray-50'}`}>
                                 {mostrarConcluidosTarefas ? 'Ocultar Concluídas' : 'Mostrar Histórico'}
                             </button>
                             <button onClick={() => {
                                 setNovaTarefa({ id: null, titulo: '', descricao: '', responsavel: '', prazo: '', status: 'Pendente', fixa: false });
                                 setModalTarefaAberto(true);
-                            }} className="bg-brand hover:bg-brandHover text-white px-4 py-2 text-[13px] rounded-md font-semibold shadow-sm transition flex items-center gap-2">
+                            }} className="bg-brand hover:bg-brandHover text-white px-4 py-2 text-corpo rounded-md font-semibold shadow-sm transition flex items-center gap-2">
                                 <Icon name="plus" className="w-4 h-4" /> Nova Tarefa
                             </button>
                         </div>
@@ -118,12 +118,12 @@ export default function ComunicacaoInternaTab() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {tarefasVisiveis.length > 0 ? tarefasVisiveis.map(t => (
-                            <div key={t.id} onClick={() => { setNovaTarefa({...t, descricao: t.descricao || ''}); setModalTarefaAberto(true); }} className={`bg-white dark:bg-darkCard rounded-xl shadow-sm flex flex-col cursor-pointer hover:border-brand/50 transition-colors ${t.fixa ? 'border-2 border-blue-500 dark:border-blue-400' : `border ${t.status === 'Concluída' ? 'opacity-60 border-gray-200 dark:border-darkBorder' : 'border-gray-200 dark:border-darkBorder'}`}`}>
-                                <div className="flex justify-between items-start px-5 py-3.5 bg-gray-50/70 dark:bg-darkElevated/60 rounded-t-xl border-b border-dashed border-gray-300 dark:border-darkBorder">
+                            <div key={t.id} onClick={() => { setNovaTarefa({...t, descricao: t.descricao || ''}); setModalTarefaAberto(true); }} className={`bg-white dark:bg-darkCard rounded-xl shadow-sm flex flex-col cursor-pointer hover:border-brand/50 transition-colors ${t.fixa ? 'border-2 border-blue-500 dark:border-blue-400' : `border ${t.status === 'Concluída' ? 'opacity-60 border-borda' : 'border-borda'}`}`}>
+                                <div className="flex justify-between items-start px-5 py-3.5 bg-gray-50/70 dark:bg-darkElevated/60 rounded-t-xl border-b border-dashed border-borda-forte">
                                     <div>
-                                        <h3 className={`font-bold ${t.status === 'Concluída' && !t.fixa ? 'line-through text-gray-500' : 'text-gray-900 dark:text-white'}`}>{t.titulo}</h3>
+                                        <h3 className={`font-bold ${t.status === 'Concluída' && !t.fixa ? 'line-through text-gray-500' : 'text-tinta'}`}>{t.titulo}</h3>
                                         {t.prazo && (
-                                            <p className="text-[11px] font-semibold text-brand mt-1">{formatarDataExibicao(t.prazo)}</p>
+                                            <p className="text-mini font-semibold text-brand mt-1">{formatarDataExibicao(t.prazo)}</p>
                                         )}
                                     </div>
                                     <div className="flex gap-1 shrink-0">
@@ -142,18 +142,18 @@ export default function ComunicacaoInternaTab() {
                                     </div>
                                 </div>
                                 <div className="flex flex-col gap-3 p-5 flex-1">
-                                    <p className="text-[13px] text-gray-600 dark:text-[#A1A1AA] break-words">{t.descricao}</p>
+                                    <p className="text-corpo text-tinta-suave break-words">{t.descricao}</p>
 
-                                    <div className="mt-auto pt-3 border-t border-gray-100 dark:border-darkBorder flex justify-between items-center">
-                                        <div className="flex items-center gap-1.5 text-[11px] font-semibold text-gray-500 dark:text-[#A1A1AA]">
+                                    <div className="mt-auto pt-3 border-t border-borda-fraca flex justify-between items-center">
+                                        <div className="flex items-center gap-1.5 text-mini font-semibold text-tinta-suave">
                                             <Icon name="user" className="w-3.5 h-3.5" /> {t.responsavel || 'Sem responsável'}
                                         </div>
-                                        <span className={`px-2 py-1 text-[10px] font-bold uppercase rounded ${t.fixa ? (t.status === 'Concluída' ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-100 text-blue-700') : t.status === 'Concluída' ? 'bg-gray-100 text-gray-500' : t.status === 'Em Andamento' ? 'bg-blue-100 text-blue-700' : 'bg-yellow-100 text-yellow-700'}`}>{t.fixa ? (t.status === 'Concluída' ? 'Concluída Hoje' : 'Fixa') : t.status}</span>
+                                        <span className={`px-2 py-1 text-micro font-bold uppercase rounded ${t.fixa ? (t.status === 'Concluída' ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-100 text-blue-700') : t.status === 'Concluída' ? 'bg-gray-100 text-gray-500' : t.status === 'Em Andamento' ? 'bg-blue-100 text-blue-700' : 'bg-yellow-100 text-yellow-700'}`}>{t.fixa ? (t.status === 'Concluída' ? 'Concluída Hoje' : 'Fixa') : t.status}</span>
                                     </div>
                                 </div>
                             </div>
                         )) : (
-                            <div className="col-span-full py-12 text-center text-gray-400 text-[13px]">Nenhuma tarefa encontrada.</div>
+                            <div className="col-span-full py-12 text-center text-gray-400 text-corpo">Nenhuma tarefa encontrada.</div>
                         )}
                     </div>
                 </main>
@@ -161,21 +161,21 @@ export default function ComunicacaoInternaTab() {
 
             {abaComunicacao === 'links' && (
                 <main className="flex-1 p-6 lg:p-10 max-w-[1200px] mx-auto w-full">
-                    <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 mb-6 border-b border-gray-100 dark:border-darkBorder pb-6 shrink-0">
+                    <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 mb-6 border-b border-borda-fraca pb-6 shrink-0">
                         <div>
-                            <h1 className="text-2xl lg:text-3xl font-black text-gray-900 dark:text-white tracking-tight">Links de Pagamento</h1>
-                            <p className="text-[13px] text-gray-500 dark:text-[#A1A1AA] mt-1.5 font-medium max-w-xl">
+                            <h1 className="text-2xl lg:text-3xl font-black text-tinta tracking-tight">Links de Pagamento</h1>
+                            <p className="text-corpo text-tinta-suave mt-1.5 font-medium max-w-xl">
                                 Organize seus links de pagamento (Mercado Pago, Asaas, etc) para envio rápido.
                             </p>
                         </div>
                         <div className="flex gap-2">
-                            <button onClick={() => setMostrarConcluidosLinks(!mostrarConcluidosLinks)} className={`px-4 py-2 text-[13px] rounded-md font-semibold border transition ${mostrarConcluidosLinks ? 'bg-gray-100 border-gray-200 text-gray-700 dark:bg-darkElevated dark:border-darkBorder dark:text-gray-300' : 'bg-white border-gray-200 text-gray-600 dark:bg-darkCard dark:border-darkBorder dark:text-gray-400 hover:bg-gray-50'}`}>
+                            <button onClick={() => setMostrarConcluidosLinks(!mostrarConcluidosLinks)} className={`px-4 py-2 text-corpo rounded-md font-semibold border transition ${mostrarConcluidosLinks ? 'bg-realce border-borda text-tinta-corpo' : 'bg-superficie border-borda text-tinta-suave hover:bg-gray-50'}`}>
                                 {mostrarConcluidosLinks ? 'Ocultar Inativos' : 'Mostrar Histórico'}
                             </button>
                             <button onClick={() => {
                                 setNovoLink({ id: null, titulo: '', link: '', valor: '', cliente: '', status: 'Ativo' });
                                 setModalLinkAberto(true);
-                            }} className="bg-brand hover:bg-brandHover text-white px-4 py-2 text-[13px] rounded-md font-semibold shadow-sm transition flex items-center gap-2">
+                            }} className="bg-brand hover:bg-brandHover text-white px-4 py-2 text-corpo rounded-md font-semibold shadow-sm transition flex items-center gap-2">
                                 <Icon name="plus" className="w-4 h-4" /> Novo Link
                             </button>
                         </div>
@@ -183,11 +183,11 @@ export default function ComunicacaoInternaTab() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {linksVisiveis.length > 0 ? linksVisiveis.map(l => (
-                            <div key={l.id} onClick={() => { setNovoLink({...l, titulo: l.titulo || '', valor: l.valor ? formatarMoeda(Math.round(l.valor).toString()) : ''}); setModalLinkAberto(true); }} className={`bg-white dark:bg-darkCard rounded-xl shadow-sm border flex flex-col cursor-pointer hover:border-brand/50 transition-colors ${(l.status === 'Pago' || l.status === 'Concluído' || l.status === 'Inativo') ? 'opacity-60 border-gray-200 dark:border-darkBorder' : 'border-gray-200 dark:border-darkBorder'}`}>
-                                <div className="flex justify-between items-start px-5 py-3.5 bg-gray-50/70 dark:bg-darkElevated/60 rounded-t-xl border-b border-dashed border-gray-300 dark:border-darkBorder">
+                            <div key={l.id} onClick={() => { setNovoLink({...l, titulo: l.titulo || '', valor: l.valor ? formatarMoeda(Math.round(l.valor).toString()) : ''}); setModalLinkAberto(true); }} className={`bg-white dark:bg-darkCard rounded-xl shadow-sm border flex flex-col cursor-pointer hover:border-brand/50 transition-colors ${(l.status === 'Pago' || l.status === 'Concluído' || l.status === 'Inativo') ? 'opacity-60 border-borda' : 'border-borda'}`}>
+                                <div className="flex justify-between items-start px-5 py-3.5 bg-gray-50/70 dark:bg-darkElevated/60 rounded-t-xl border-b border-dashed border-borda-forte">
                                     <div>
-                                        <h3 className={`font-bold ${(l.status === 'Pago' || l.status === 'Concluído' || l.status === 'Inativo') ? 'line-through text-gray-500' : 'text-gray-900 dark:text-white'}`}>{l.titulo}</h3>
-                                        <p className="text-[11px] font-semibold text-brand mt-1">{mascararCliente(l.cliente, isDemo)}</p>
+                                        <h3 className={`font-bold ${(l.status === 'Pago' || l.status === 'Concluído' || l.status === 'Inativo') ? 'line-through text-gray-500' : 'text-tinta'}`}>{l.titulo}</h3>
+                                        <p className="text-mini font-semibold text-brand mt-1">{mascararCliente(l.cliente, isDemo)}</p>
                                     </div>
                                     <div className="flex gap-1 shrink-0">
                                         {l.status !== 'Pago' && l.status !== 'Concluído' && (
@@ -206,8 +206,8 @@ export default function ComunicacaoInternaTab() {
                                             R$ {centavosParaReais(l.valor).toLocaleString('pt-BR', {minimumFractionDigits: 2})}
                                         </div>
                                     )}
-                                    <div className="bg-gray-50 dark:bg-darkElevated p-2 rounded flex items-center justify-between border border-gray-100 dark:border-darkBorder">
-                                        <span className="text-[11px] text-gray-500 dark:text-[#A1A1AA] truncate mr-2">{l.link}</span>
+                                    <div className="bg-sutil p-2 rounded flex items-center justify-between border border-borda-fraca">
+                                        <span className="text-mini text-tinta-suave truncate mr-2">{l.link}</span>
                                         <Tooltip label="Copiar Link">
                                             <button onClick={(e) => {
                                                 e.stopPropagation();
@@ -217,11 +217,11 @@ export default function ComunicacaoInternaTab() {
                                             </button>
                                         </Tooltip>
                                     </div>
-                                    <div className="mt-auto pt-3 border-t border-gray-100 dark:border-darkBorder flex justify-between items-center">
-                                        <div className="flex items-center gap-1.5 text-[11px] font-semibold text-gray-500 dark:text-[#A1A1AA]">
+                                    <div className="mt-auto pt-3 border-t border-borda-fraca flex justify-between items-center">
+                                        <div className="flex items-center gap-1.5 text-mini font-semibold text-tinta-suave">
                                             <Icon name="calendar" className="w-3.5 h-3.5" /> {new Date(l.created_at).toLocaleDateString('pt-BR')}
                                         </div>
-                                        <span className={`px-2 py-1 text-[10px] font-bold uppercase rounded ${
+                                        <span className={`px-2 py-1 text-micro font-bold uppercase rounded ${
                                             l.status === 'Ativo' ? 'bg-yellow-100 text-yellow-800' :
                                             (l.status === 'Pago' || l.status === 'Concluído') ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-500'
                                         }`}>{l.status}</span>
@@ -229,7 +229,7 @@ export default function ComunicacaoInternaTab() {
                                 </div>
                             </div>
                         )) : (
-                            <div className="col-span-full py-12 text-center text-gray-400 text-[13px]">Nenhum link cadastrado.</div>
+                            <div className="col-span-full py-12 text-center text-gray-400 text-corpo">Nenhum link cadastrado.</div>
                         )}
                     </div>
                 </main>

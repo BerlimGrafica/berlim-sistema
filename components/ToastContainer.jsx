@@ -24,7 +24,7 @@ function Toast({ alerta, onFechar, onClicar }) {
     return (
         <div
             onClick={onClicar}
-            className="pointer-events-auto w-80 max-w-[calc(100vw-2rem)] bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded-lg shadow-2xl overflow-hidden cursor-pointer animate-toast-in flex"
+            className="pointer-events-auto w-80 max-w-[calc(100vw-2rem)] bg-elevado border border-borda rounded-lg shadow-2xl overflow-hidden cursor-pointer animate-toast-in flex"
         >
             <div className={`w-1 ${estilo.barra} shrink-0`}></div>
             <div className="flex items-start gap-3 p-3.5 flex-1 min-w-0">
@@ -32,7 +32,7 @@ function Toast({ alerta, onFechar, onClicar }) {
                     <Icon name={estilo.icone} className="w-4 h-4" />
                 </span>
                 <div className="flex-1 min-w-0 pt-0.5">
-                    <p className="text-[12.5px] text-gray-800 dark:text-[#EDEDED] whitespace-pre-line leading-snug">{alerta.msg}</p>
+                    <p className="text-[12.5px] text-tinta whitespace-pre-line leading-snug">{alerta.msg}</p>
                 </div>
                 <button
                     type="button"

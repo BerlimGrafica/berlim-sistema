@@ -22,11 +22,11 @@ export default function ContasAReceberPanel({ dataInicio, dataFim }) {
 
     return (
         <div>
-            <div className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded overflow-hidden">
+            <div className="bg-superficie border border-borda rounded overflow-hidden">
                 <div className="overflow-x-auto min-h-[300px]">
                     <table className="w-full text-left border-collapse">
                         <thead className="bg-gray-50/50 dark:bg-darkHover/50 border-t-2 border-brand">
-                            <tr className="border-b border-gray-200 dark:border-darkBorder text-[13px] font-semibold text-gray-500 dark:text-gray-400 tracking-wide uppercase">
+                            <tr className="border-b border-borda text-corpo font-semibold text-tinta-suave tracking-wide uppercase">
                                 <th className="px-6 py-4">O.S.</th>
                                 <th className="px-6 py-4">Cliente</th>
                                 <th className="px-6 py-4">Serviço</th>
@@ -37,11 +37,11 @@ export default function ContasAReceberPanel({ dataInicio, dataFim }) {
                                 <th className="px-6 py-4 text-right">Saldo Devedor</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-100 dark:divide-darkBorder">
+                        <tbody className="divide-y divide-borda-fraca">
                             {carregandoContasReceber && pedidosFiltrados.length === 0 ? (
                                 <SkeletonLinhas colunas={8} />
                             ) : pedidosFiltrados.length === 0 ? (
-                                <tr><td colSpan="8" className="px-4 py-12 text-center text-[13px] text-gray-400">Nenhuma OS com saldo devedor encontrada.</td></tr>
+                                <tr><td colSpan="8" className="px-4 py-12 text-center text-corpo text-gray-400">Nenhuma OS com saldo devedor encontrada.</td></tr>
                             ) : pedidosFiltrados.map(p => {
                                 const itensContexto = [
                                     { label: 'Editar', icon: 'edit-3', onClick: () => abrirEdicao(p) },
@@ -56,23 +56,23 @@ export default function ContasAReceberPanel({ dataInicio, dataFim }) {
                                 return (
                                     <tr key={p.id} onClick={() => abrirEdicao(p)} onContextMenu={(e) => abrirContextMenu(e, itensContexto)} className="hover:bg-gray-50 dark:hover:bg-darkHover/50 transition-colors cursor-pointer group">
                                         <td className="px-6 py-4">
-                                            <span className="text-[12px] font-bold text-gray-400 dark:text-gray-500">#{p.id}</span>
+                                            <span className="text-compacto font-bold text-tinta-fraca">#{p.id}</span>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <span className="text-[13px] font-semibold text-gray-800 dark:text-[#EDEDED] truncate max-w-[200px] block" title={mascararCliente(p.cliente, isDemo)}>{mascararCliente(p.cliente, isDemo)}</span>
+                                            <span className="text-corpo font-semibold text-tinta truncate max-w-[200px] block" title={mascararCliente(p.cliente, isDemo)}>{mascararCliente(p.cliente, isDemo)}</span>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <div className="text-[13px] text-gray-600 dark:text-gray-400 truncate max-w-[250px]" title={resumoDoPedido(p)}>{resumoDoPedido(p)}</div>
+                                            <div className="text-corpo text-tinta-suave truncate max-w-[250px]" title={resumoDoPedido(p)}>{resumoDoPedido(p)}</div>
                                         </td>
-                                        <td className="px-6 py-4 text-[13px] text-center text-gray-500 dark:text-[#A1A1AA]">{formatarDataExibicao(p.data_pedido)}</td>
+                                        <td className="px-6 py-4 text-corpo text-center text-tinta-suave">{formatarDataExibicao(p.data_pedido)}</td>
                                         <td className="px-6 py-4 text-center">
-                                            <span className={`whitespace-nowrap px-2.5 py-1 text-[11px] font-semibold rounded border ${obterCorStatus(p.status)}`}>
+                                            <span className={`whitespace-nowrap px-2.5 py-1 text-mini font-semibold rounded border ${obterCorStatus(p.status)}`}>
                                                 {p.status}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 text-[13px] text-gray-600 dark:text-gray-400 text-right whitespace-nowrap">R$ {formatarValorFinanceiro(p.totalReais)}</td>
-                                        <td className="px-6 py-4 text-[13px] text-emerald-600 dark:text-emerald-400 text-right whitespace-nowrap">R$ {formatarValorFinanceiro(p.totalPago)}</td>
-                                        <td className="px-6 py-4 text-[13px] font-bold text-red-600 dark:text-red-400 text-right whitespace-nowrap">R$ {formatarValorFinanceiro(p.saldo)}</td>
+                                        <td className="px-6 py-4 text-corpo text-tinta-suave text-right whitespace-nowrap">R$ {formatarValorFinanceiro(p.totalReais)}</td>
+                                        <td className="px-6 py-4 text-corpo text-emerald-600 dark:text-emerald-400 text-right whitespace-nowrap">R$ {formatarValorFinanceiro(p.totalPago)}</td>
+                                        <td className="px-6 py-4 text-corpo font-bold text-red-600 dark:text-red-400 text-right whitespace-nowrap">R$ {formatarValorFinanceiro(p.saldo)}</td>
                                     </tr>
                                 );
                             })}

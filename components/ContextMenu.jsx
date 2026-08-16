@@ -45,11 +45,11 @@ export default function ContextMenu() {
             <div
                 ref={menuRef}
                 style={{ left: pos.left, top: pos.top, width: LARGURA_MENU }}
-                className="fixed z-[191] bg-white dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded-lg shadow-2xl py-1.5 animate-toast-in no-print"
+                className="fixed z-[191] bg-elevado border border-borda rounded-lg shadow-2xl py-1.5 animate-toast-in no-print"
             >
                 {contextMenu.itens.map((item, i) => (
                     <div key={i}>
-                        {item.divisorAntes && <div className="my-1.5 border-t border-gray-100 dark:border-darkBorder"></div>}
+                        {item.divisorAntes && <div className="my-1.5 border-t border-borda-fraca"></div>}
                         <button
                             type="button"
                             disabled={item.desabilitado}
@@ -57,7 +57,7 @@ export default function ContextMenu() {
                             className={`w-full flex items-center gap-2.5 px-3 py-2 text-[12.5px] font-medium text-left transition disabled:opacity-40 disabled:cursor-not-allowed ${
                                 item.tom === 'perigo'
                                     ? 'text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20'
-                                    : 'text-gray-700 dark:text-[#EDEDED] hover:bg-gray-100 dark:hover:bg-darkHover'
+                                    : 'text-tinta-corpo hover:bg-realce'
                             }`}
                         >
                             <Icon name={item.icon} className="w-3.5 h-3.5 shrink-0" />

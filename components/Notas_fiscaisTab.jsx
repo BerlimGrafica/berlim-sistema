@@ -36,12 +36,12 @@ export default function Notas_fiscaisTab() {
     // de 1400px deixava menos espaço que a soma das larguras mínimas delas.
     return (
         <main className="flex-1 p-6 lg:p-10 mx-auto w-full flex flex-col gap-6">
-            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 border-b border-gray-100 dark:border-darkBorder pb-6 shrink-0">
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 border-b border-borda-fraca pb-6 shrink-0">
                 <div>
-                    <h1 className="text-2xl lg:text-3xl font-black text-gray-900 dark:text-white tracking-tight">
+                    <h1 className="text-2xl lg:text-3xl font-black text-tinta tracking-tight">
                         Notas Fiscais {filtroNotas === 'pendentes' ? 'Pendentes' : 'Concluídas'}
                     </h1>
-                    <p className="text-[13px] text-gray-500 dark:text-[#888888] mt-1">
+                    <p className="text-corpo text-tinta-suave mt-1">
                         {filtroNotas === 'pendentes' ? 'Notas enviadas pelos clientes aguardando processamento.' : 'Histórico de notas já emitidas e processadas.'}
                     </p>
                 </div>
@@ -54,7 +54,7 @@ export default function Notas_fiscaisTab() {
                             placeholder="Buscar por nome, razão ou CNPJ..."
                             value={buscaNotaFiscal}
                             onChange={(e) => { setBuscaNotaFiscal(e.target.value); setPaginaNotasFiscais(1); }}
-                            className="w-full pl-9 pr-9 py-1.5 h-[38px] text-[13px] border border-gray-200 dark:border-darkBorder bg-white dark:bg-darkCard rounded-md focus:outline-none focus:ring-2 focus:ring-brand dark:text-white transition"
+                            className="w-full pl-9 pr-9 py-1.5 h-[38px] text-corpo border border-borda bg-superficie rounded-md focus:outline-none focus:ring-2 focus:ring-brand dark:text-white transition"
                         />
                         {buscaNotaFiscal && (
                             <Tooltip label="Limpar Busca" className="absolute right-2.5 top-1/2 -translate-y-1/2">
@@ -62,12 +62,12 @@ export default function Notas_fiscaisTab() {
                             </Tooltip>
                         )}
                     </div>
-                    <div className="flex bg-gray-100/50 dark:bg-darkHover/50 p-1 rounded-lg border border-gray-200 dark:border-darkBorder w-full lg:w-auto">
-                        <button onClick={() => { setFiltroNotas('pendentes'); setPaginaNotasFiscais(1); }} className={`px-4 py-1.5 text-[12px] font-semibold rounded-md transition flex items-center gap-2 ${filtroNotas === 'pendentes' ? 'bg-white dark:bg-darkCard text-brand shadow-sm border border-gray-200 dark:border-darkBorder' : 'text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white'}`}>Pendentes {notasFiscais.some(n => !n.concluido) && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 ml-1"></span>}</button>
-                        <button onClick={() => { setFiltroNotas('concluidas'); setPaginaNotasFiscais(1); }} className={`px-4 py-1.5 text-[12px] font-semibold rounded-md transition flex items-center gap-2 ${filtroNotas === 'concluidas' ? 'bg-white dark:bg-darkCard text-brand shadow-sm border border-gray-200 dark:border-darkBorder' : 'text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white'}`}>Concluídas</button>
+                    <div className="flex bg-gray-100/50 dark:bg-darkHover/50 p-1 rounded-lg border border-borda w-full lg:w-auto">
+                        <button onClick={() => { setFiltroNotas('pendentes'); setPaginaNotasFiscais(1); }} className={`px-4 py-1.5 text-compacto font-semibold rounded-md transition flex items-center gap-2 ${filtroNotas === 'pendentes' ? 'bg-superficie text-brand shadow-sm border border-borda' : 'text-tinta-suave hover:text-tinta'}`}>Pendentes {notasFiscais.some(n => !n.concluido) && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 ml-1"></span>}</button>
+                        <button onClick={() => { setFiltroNotas('concluidas'); setPaginaNotasFiscais(1); }} className={`px-4 py-1.5 text-compacto font-semibold rounded-md transition flex items-center gap-2 ${filtroNotas === 'concluidas' ? 'bg-superficie text-brand shadow-sm border border-borda' : 'text-tinta-suave hover:text-tinta'}`}>Concluídas</button>
                     </div>
                     <div className="flex rounded-md shadow-sm">
-                        <button onClick={() => window.open('/solicitar-nota', '_blank')} className="bg-brand hover:bg-brandHover text-white h-[38px] px-4 text-[13px] rounded-l-md font-semibold transition flex items-center gap-2 border border-brand border-r-0">
+                        <button onClick={() => window.open('/solicitar-nota', '_blank')} className="bg-brand hover:bg-brandHover text-white h-[38px] px-4 text-corpo rounded-l-md font-semibold transition flex items-center gap-2 border border-brand border-r-0">
                             <Icon name="external-link" className="w-4 h-4" /> Formulário
                         </button>
                         <Tooltip label="Copiar Link">
@@ -83,11 +83,11 @@ export default function Notas_fiscaisTab() {
             </div>
 
             <div>
-                <div className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded overflow-hidden">
+                <div className="bg-superficie border border-borda rounded overflow-hidden">
                     <div className="overflow-x-auto custom-scrollbar">
                         <table className="w-full text-left border-collapse min-w-[800px]">
                             <thead className="bg-gray-50/50 dark:bg-darkHover/50 border-t-2 border-brand">
-                                <tr className="border-b border-gray-200 dark:border-darkBorder text-[13px] font-semibold text-gray-500 dark:text-gray-400 tracking-wide uppercase">
+                                <tr className="border-b border-borda text-corpo font-semibold text-tinta-suave tracking-wide uppercase">
                                     <th className="px-6 py-4 w-28">Data</th>
                                     <th className="px-6 py-4 w-48">Cliente / Razão Social</th>
                                     <th className="px-6 py-4 w-36">CPF / CNPJ</th>
@@ -102,14 +102,14 @@ export default function Notas_fiscaisTab() {
                             </thead>
                             <tbody>
                                 {notasFiscaisPaginadas.map(n => (
-                                    <tr key={n.id} onClick={() => abrirEdicaoNota(n)} onContextMenu={(e) => abrirContextMenu(e, montarItensContexto(n))} className="border-b border-gray-100 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover transition cursor-pointer">
-                                        <td className="px-4 py-3 text-[13px] dark:text-[#EDEDED] whitespace-nowrap">{new Date(n.created_at).toLocaleDateString('pt-BR')}</td>
+                                    <tr key={n.id} onClick={() => abrirEdicaoNota(n)} onContextMenu={(e) => abrirContextMenu(e, montarItensContexto(n))} className="border-b border-borda-fraca hover:bg-sutil transition cursor-pointer">
+                                        <td className="px-4 py-3 text-corpo dark:text-[#EDEDED] whitespace-nowrap">{new Date(n.created_at).toLocaleDateString('pt-BR')}</td>
                                         <td className="px-4 py-3">
-                                            <div className="text-[13px] font-semibold dark:text-[#EDEDED]">{mascararCliente(n.cliente, isDemo) || 'Sem Identificação'}</div>
-                                            <div className="text-[11px] text-gray-500 dark:text-[#A1A1AA]">{isDemo ? '' : n.razao_social}</div>
+                                            <div className="text-corpo font-semibold dark:text-[#EDEDED]">{mascararCliente(n.cliente, isDemo) || 'Sem Identificação'}</div>
+                                            <div className="text-mini text-tinta-suave">{isDemo ? '' : n.razao_social}</div>
                                         </td>
-                                        <td className="px-4 py-3 text-[13px] dark:text-[#EDEDED] whitespace-nowrap">{n.cnpj}</td>
-                                        <td className="px-4 py-3 text-[13px] dark:text-[#EDEDED] whitespace-nowrap">
+                                        <td className="px-4 py-3 text-corpo dark:text-[#EDEDED] whitespace-nowrap">{n.cnpj}</td>
+                                        <td className="px-4 py-3 text-corpo dark:text-[#EDEDED] whitespace-nowrap">
                                             {n.contato ? (
                                                 <div className="flex items-center gap-1.5">
                                                     <Icon name={n.forma_envio === 'E-mail' ? 'mail' : 'phone'} className="w-3.5 h-3.5 text-gray-400 shrink-0" />
@@ -117,16 +117,16 @@ export default function Notas_fiscaisTab() {
                                                 </div>
                                             ) : <span className="text-gray-400">---</span>}
                                         </td>
-                                        <td className="px-4 py-3 text-[13px] font-medium text-gray-600 dark:text-gray-400">
-                                            <span className={`px-2 py-1 rounded text-[11px] font-bold ${n.tipo_nota === 'DANFE' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' : (n.tipo_nota === 'Serviço' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400')}`}>
+                                        <td className="px-4 py-3 text-corpo font-medium text-tinta-suave">
+                                            <span className={`px-2 py-1 rounded text-mini font-bold ${n.tipo_nota === 'DANFE' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' : (n.tipo_nota === 'Serviço' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400')}`}>
                                                 {n.tipo_nota || 'N/A'}
                                             </span>
                                         </td>
                                         <td className="px-4 py-3">
-                                            <div className="text-[13px] dark:text-[#EDEDED]">{n.servico_feito || <span className="text-gray-400 italic">Pendente</span>}</div>
-                                            <div className="text-[11px] font-semibold text-orange-500 dark:text-orange-400">{n.valor_pago ? `R$ ${centavosParaReais(n.valor_pago).toFixed(2).replace('.', ',')}` : ''}</div>
+                                            <div className="text-corpo dark:text-[#EDEDED]">{n.servico_feito || <span className="text-gray-400 italic">Pendente</span>}</div>
+                                            <div className="text-mini font-semibold text-orange-500 dark:text-orange-400">{n.valor_pago ? `R$ ${centavosParaReais(n.valor_pago).toFixed(2).replace('.', ',')}` : ''}</div>
                                         </td>
-                                        <td className="px-4 py-3 text-[13px] text-gray-600 dark:text-gray-400 max-w-[200px] truncate" title={n.observacoes || ''}>
+                                        <td className="px-4 py-3 text-corpo text-tinta-suave max-w-[200px] truncate" title={n.observacoes || ''}>
                                             {n.observacoes || <span className="text-gray-400 italic">---</span>}
                                         </td>
                                         <td className="px-4 py-3 text-right">
@@ -160,16 +160,16 @@ export default function Notas_fiscaisTab() {
                                     <SkeletonLinhas colunas={8} />
                                 )}
                                 {dadosCarregados && notasFiscaisPaginadas.length === 0 && (
-                                    <tr><td colSpan="8" className="px-6 py-8 text-center text-gray-500 dark:text-[#A1A1AA]">Nenhuma nota fiscal encontrada.</td></tr>
+                                    <tr><td colSpan="8" className="px-6 py-8 text-center text-tinta-suave">Nenhuma nota fiscal encontrada.</td></tr>
                                 )}
                             </tbody>
                         </table>
                     </div>
                     {totalPaginasNotasFiscais > 1 && (
-                        <div className="mt-6 flex justify-between items-center p-4 border-t border-gray-200 dark:border-darkBorder">
-                            <button onClick={() => setPaginaNotasFiscais(Math.max(1, paginaNotasFiscais - 1))} disabled={paginaNotasFiscais === 1} className="px-4 py-2 text-[13px] font-semibold border border-gray-200 dark:border-darkBorder rounded hover:bg-gray-50 dark:hover:bg-darkHover disabled:opacity-50 dark:text-white transition">Anterior</button>
-                            <span className="text-[13px] font-semibold dark:text-white">Página {paginaNotasFiscais} de {totalPaginasNotasFiscais}</span>
-                            <button onClick={() => setPaginaNotasFiscais(Math.min(totalPaginasNotasFiscais, paginaNotasFiscais + 1))} disabled={paginaNotasFiscais === totalPaginasNotasFiscais} className="px-4 py-2 text-[13px] font-semibold border border-gray-200 dark:border-darkBorder rounded hover:bg-gray-50 dark:hover:bg-darkHover disabled:opacity-50 dark:text-white transition">Próxima</button>
+                        <div className="mt-6 flex justify-between items-center p-4 border-t border-borda">
+                            <button onClick={() => setPaginaNotasFiscais(Math.max(1, paginaNotasFiscais - 1))} disabled={paginaNotasFiscais === 1} className="px-4 py-2 text-corpo font-semibold border border-borda rounded hover:bg-sutil disabled:opacity-50 dark:text-white transition">Anterior</button>
+                            <span className="text-corpo font-semibold dark:text-white">Página {paginaNotasFiscais} de {totalPaginasNotasFiscais}</span>
+                            <button onClick={() => setPaginaNotasFiscais(Math.min(totalPaginasNotasFiscais, paginaNotasFiscais + 1))} disabled={paginaNotasFiscais === totalPaginasNotasFiscais} className="px-4 py-2 text-corpo font-semibold border border-borda rounded hover:bg-sutil disabled:opacity-50 dark:text-white transition">Próxima</button>
                         </div>
                     )}
                 </div>

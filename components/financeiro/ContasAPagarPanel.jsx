@@ -40,7 +40,7 @@ export default function ContasAPagarPanel({ mostrarContasPagas, dataInicio, data
             <button
                 type="button"
                 onClick={(e) => { e.stopPropagation(); alternarOrdenacao(campo); }}
-                className={`ml-1 p-0.5 rounded transition align-middle ${ativo ? 'text-brand' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'}`}
+                className={`ml-1 p-0.5 rounded transition align-middle ${ativo ? 'text-brand' : 'text-tinta-suave hover:text-gray-700 dark:hover:text-gray-200'}`}
                 aria-label="Ordenar"
             >
                 <Icon name="chevron-down" className={`w-3.5 h-3.5 stroke-[3] transition-transform ${ativo && ordenacao.direcao === 'asc' ? 'rotate-180' : ''}`} />
@@ -68,7 +68,7 @@ export default function ContasAPagarPanel({ mostrarContasPagas, dataInicio, data
         if (conta.vencimento === amanhaStr) {
             return { label: 'Vence amanhã', cor: 'bg-amber-50 border-amber-200 text-amber-600 dark:bg-amber-900/20 dark:border-amber-800/50 dark:text-amber-400' };
         }
-        return { label: 'Aberto', cor: 'bg-gray-100 border-gray-300 text-gray-600 dark:bg-darkElevated dark:border-darkBorder dark:text-gray-300' };
+        return { label: 'Aberto', cor: 'bg-realce border-borda-forte text-tinta-suave' };
     };
 
     const obterCorBordaVencimento = (conta) => {
@@ -92,11 +92,11 @@ export default function ContasAPagarPanel({ mostrarContasPagas, dataInicio, data
 
     return (
         <div>
-            <div className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded overflow-hidden">
+            <div className="bg-superficie border border-borda rounded overflow-hidden">
                 <div className="overflow-x-auto min-h-[300px]">
                     <table className="w-full text-left border-collapse">
                         <thead className="bg-gray-50/50 dark:bg-darkHover/50 border-t-2 border-brand">
-                            <tr className="border-b border-gray-200 dark:border-darkBorder text-[13px] font-semibold text-gray-500 dark:text-gray-400 tracking-wide uppercase">
+                            <tr className="border-b border-borda text-corpo font-semibold text-tinta-suave tracking-wide uppercase">
                                 <th className="px-6 py-4"><span className="inline-flex items-center">Vencimento<SetaOrdenacao campo="vencimento" /></span></th>
                                 <th className="px-6 py-4"><span className="inline-flex items-center">Descrição<SetaOrdenacao campo="descricao" /></span></th>
                                 <th className="px-6 py-4"><span className="inline-flex items-center">Categoria<SetaOrdenacao campo="categoria" /></span></th>
@@ -105,20 +105,20 @@ export default function ContasAPagarPanel({ mostrarContasPagas, dataInicio, data
                                 <th className="px-6 py-4 text-right">Ações</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-100 dark:divide-darkBorder">
+                        <tbody className="divide-y divide-borda-fraca">
                             {!dadosCarregados ? (
                                 <SkeletonLinhas colunas={6} />
                             ) : contasOrdenadas.length === 0 ? (
-                                <tr><td colSpan="6" className="px-4 py-12 text-center text-[13px] text-gray-400">Nenhuma conta a pagar registrada.</td></tr>
+                                <tr><td colSpan="6" className="px-4 py-12 text-center text-corpo text-gray-400">Nenhuma conta a pagar registrada.</td></tr>
                             ) : (
                                 contasOrdenadas.map(conta => (
                                     <tr key={conta.id} onClick={() => { setNovaConta({...conta, valor: conta.valor ? formatarMoeda(Math.round(conta.valor).toString()) : ''}); setModalContaAberto(true); }} onContextMenu={(e) => abrirContextMenu(e, montarItensContexto(conta))} className="hover:bg-gray-50 dark:hover:bg-darkHover/50 transition-colors group cursor-pointer">
-                                        <td className="px-6 py-4 text-[13px] text-gray-600 dark:text-[#A1A1AA]">
+                                        <td className="px-6 py-4 text-corpo text-tinta-suave">
                                             <span className={`inline-block px-2 py-1 rounded border-2 ${obterCorBordaVencimento(conta)}`}>
                                                 {formatarDataExibicao(conta.vencimento)}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 text-[13px] font-medium text-gray-900 dark:text-gray-300">
+                                        <td className="px-6 py-4 text-corpo font-medium text-gray-900 dark:text-gray-300">
                                             <div className="flex items-center gap-1.5">
                                                 {conta.descricao}
                                                 {conta.recorrente && (
@@ -138,24 +138,24 @@ export default function ContasAPagarPanel({ mostrarContasPagas, dataInicio, data
                                                 )}
                                             </div>
                                         </td>
-                                        <td className="px-6 py-4 text-[13px]">
-                                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-semibold rounded-full whitespace-nowrap ${
+                                        <td className="px-6 py-4 text-corpo">
+                                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-mini font-semibold rounded-full whitespace-nowrap ${
                                                 conta.categoria === 'Manutenção' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' :
                                                 conta.categoria === 'Terceirização' ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400' :
                                                 conta.categoria === 'Material' ? 'bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400' :
-                                                'bg-gray-100 text-gray-600 dark:bg-darkElevated dark:text-gray-300'
+                                                'bg-realce text-tinta-suave'
                                             }`}>
                                                 <Icon name={conta.categoria === 'Manutenção' ? 'wrench' : conta.categoria === 'Terceirização' ? 'package' : conta.categoria === 'Material' ? 'shopping-bag' : 'dollar-sign'} className="w-3 h-3" />
                                                 {conta.categoria || 'Despesa'}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 text-[13px] font-medium text-emerald-600 dark:text-emerald-400">R$ {formatarValorFinanceiro(centavosParaReais(conta.valor))}</td>
-                                        <td className="px-6 py-4 text-[13px]">
-                                            <span className={`whitespace-nowrap px-2.5 py-1 text-[11px] font-semibold rounded border ${obterStatusPagamento(conta).cor}`}>
+                                        <td className="px-6 py-4 text-corpo font-medium text-emerald-600 dark:text-emerald-400">R$ {formatarValorFinanceiro(centavosParaReais(conta.valor))}</td>
+                                        <td className="px-6 py-4 text-corpo">
+                                            <span className={`whitespace-nowrap px-2.5 py-1 text-mini font-semibold rounded border ${obterStatusPagamento(conta).cor}`}>
                                                 {obterStatusPagamento(conta).label}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 text-[13px] text-right flex justify-end gap-2">
+                                        <td className="px-6 py-4 text-corpo text-right flex justify-end gap-2">
                                             {conta.status !== 'Pago' && (
                                                 <Tooltip label="Marcar como Pago">
                                                 <button onClick={(e) => { e.stopPropagation(); concluirConta(conta.id); }} aria-label="Marcar como Pago" className="p-1 text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded">

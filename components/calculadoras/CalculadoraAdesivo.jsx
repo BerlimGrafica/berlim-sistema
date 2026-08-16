@@ -243,9 +243,9 @@ export function CalculadoraAdesivo({ produtos }) {
     };
 
     return (
-        <div className="bg-white dark:bg-darkCard p-6 rounded border border-gray-200 dark:border-darkBorder border-t-[3px] border-t-brand dark:border-t-brand">
+        <div className="bg-superficie p-6 rounded border border-borda border-t-[3px] border-t-brand dark:border-t-brand">
             {isTamanhoInvalido && (
-                <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-[12px] rounded border border-red-200 dark:border-red-900/50 flex items-center gap-2 font-medium">
+                <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-compacto rounded border border-red-200 dark:border-red-900/50 flex items-center gap-2 font-medium">
                     <Icon name="alert-triangle" className="w-4 h-4 shrink-0" />
                     O tamanho mínimo permitido para adesivos é de 3x3cm.
                 </div>
@@ -253,19 +253,19 @@ export function CalculadoraAdesivo({ produtos }) {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                 <div>
-                    <label className="block text-[11px] font-semibold text-gray-500 dark:text-[#A1A1AA] mb-1">Largura Unitária (cm)</label>
-                    <input type="text" value={largura} onChange={e => setLargura(e.target.value)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition" placeholder="Ex: 5" />
+                    <label className="block text-mini font-semibold text-tinta-suave mb-1">Largura Unitária (cm)</label>
+                    <input type="text" value={largura} onChange={e => setLargura(e.target.value)} className="w-full bg-sutil border border-borda rounded px-3 py-2 text-corpo outline-none focus:border-brand dark:text-white transition" placeholder="Ex: 5" />
                 </div>
                 <div>
-                    <label className="block text-[11px] font-semibold text-gray-500 dark:text-[#A1A1AA] mb-1">Altura Unitária (cm)</label>
-                    <input type="text" value={altura} onChange={e => setAltura(e.target.value)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition" placeholder="Ex: 5" />
+                    <label className="block text-mini font-semibold text-tinta-suave mb-1">Altura Unitária (cm)</label>
+                    <input type="text" value={altura} onChange={e => setAltura(e.target.value)} className="w-full bg-sutil border border-borda rounded px-3 py-2 text-corpo outline-none focus:border-brand dark:text-white transition" placeholder="Ex: 5" />
                 </div>
                 <div>
-                    <label className="block text-[11px] font-semibold text-gray-500 dark:text-[#A1A1AA] mb-1">Tipo de Adesivo</label>
+                    <label className="block text-mini font-semibold text-tinta-suave mb-1">Tipo de Adesivo</label>
                     <CustomSelect
                         value={tipo}
                         onChange={setTipo}
-                        className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition cursor-pointer"
+                        className="w-full bg-sutil border border-borda rounded px-3 py-2 text-corpo outline-none focus:border-brand dark:text-white transition cursor-pointer"
                         options={[
                             { value: '17', label: item17 ? item17.nome : 'Item 17' },
                             { value: '18', label: `${item18 ? item18.nome : 'Item 18'} (Laminado Brilho/Fosco)` },
@@ -274,11 +274,11 @@ export function CalculadoraAdesivo({ produtos }) {
                     />
                 </div>
                 <div>
-                    <label className="block text-[11px] font-semibold text-gray-500 dark:text-[#A1A1AA] mb-1">Prazo de Entrega</label>
+                    <label className="block text-mini font-semibold text-tinta-suave mb-1">Prazo de Entrega</label>
                     <CustomSelect
                         value={prazo}
                         onChange={setPrazo}
-                        className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition cursor-pointer"
+                        className="w-full bg-sutil border border-borda rounded px-3 py-2 text-corpo outline-none focus:border-brand dark:text-white transition cursor-pointer"
                         options={[
                             { value: 'padrao', label: 'Padrão' },
                             { value: 'outro_dia', label: 'Para outro dia (+30%)' },
@@ -287,12 +287,12 @@ export function CalculadoraAdesivo({ produtos }) {
                     />
                 </div>
                 <div>
-                    <label className="block text-[11px] font-semibold text-gray-500 dark:text-[#A1A1AA] mb-1">Quantidade</label>
-                    <input type="number" min="1" value={quantidade} onChange={e => setQuantidade(e.target.value)} className="w-full bg-gray-50 dark:bg-darkElevated border border-gray-200 dark:border-darkBorder rounded px-3 py-2 text-[13px] outline-none focus:border-brand dark:text-white transition" />
+                    <label className="block text-mini font-semibold text-tinta-suave mb-1">Quantidade</label>
+                    <input type="number" min="1" value={quantidade} onChange={e => setQuantidade(e.target.value)} className="w-full bg-sutil border border-borda rounded px-3 py-2 text-corpo outline-none focus:border-brand dark:text-white transition" />
                 </div>
                 <div className="flex flex-col justify-end">
                     <Tooltip label="Copiar orçamentos de quantidades máximas" className="w-full">
-                        <button onClick={copiarMaximos} className="w-full bg-brand text-white px-3 py-2 rounded text-[13px] font-semibold flex items-center justify-center gap-2 hover:bg-brand/90 transition shadow-sm">
+                        <button onClick={copiarMaximos} className="w-full bg-brand text-white px-3 py-2 rounded text-corpo font-semibold flex items-center justify-center gap-2 hover:bg-brand/90 transition shadow-sm">
                             <Icon name="copy" className="w-4 h-4" />
                             Quantidades Máximas
                         </button>
@@ -301,12 +301,12 @@ export function CalculadoraAdesivo({ produtos }) {
             </div>
 
             <div className="flex flex-col md:flex-row gap-4 mb-4">
-                <div className="flex-1 bg-gray-50 dark:bg-darkElevated p-3 rounded border border-gray-100 dark:border-darkBorder flex items-center gap-3 shadow-sm">
-                    <div className="text-[11px] text-gray-600 dark:text-[#A1A1AA] flex-1 font-mono break-all line-clamp-2">
+                <div className="flex-1 bg-sutil p-3 rounded border border-borda-fraca flex items-center gap-3 shadow-sm">
+                    <div className="text-mini text-tinta-suave flex-1 font-mono break-all line-clamp-2">
                         {gerarTextoCopia() || 'Preencha as medidas para gerar o texto da proposta...'}
                     </div>
                     <Tooltip label="Copiar Texto">
-                        <button onClick={copiarTexto} aria-label="Copiar Texto" className="w-8 h-8 flex items-center justify-center shrink-0 bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded hover:text-brand transition shadow-sm">
+                        <button onClick={copiarTexto} aria-label="Copiar Texto" className="w-8 h-8 flex items-center justify-center shrink-0 bg-superficie border border-borda rounded hover:text-brand transition shadow-sm">
                             <Icon name="copy" className="w-4 h-4" />
                         </button>
                     </Tooltip>
@@ -314,9 +314,9 @@ export function CalculadoraAdesivo({ produtos }) {
             </div>
 
             <div className="flex flex-col md:flex-row gap-4">
-                <div className="flex-1 bg-gray-50 dark:bg-darkElevated p-4 rounded-lg flex items-center justify-between border border-gray-100 dark:border-darkBorder">
-                    <span className="font-semibold text-gray-600 dark:text-[#A1A1AA]">Total em Metros</span>
-                    <span className="text-2xl font-black text-gray-900 dark:text-[#EDEDED]">{calcularMetrosTotais().replace('.', ',')} m</span>
+                <div className="flex-1 bg-sutil p-4 rounded-lg flex items-center justify-between border border-borda-fraca">
+                    <span className="font-semibold text-tinta-suave">Total em Metros</span>
+                    <span className="text-2xl font-black text-tinta">{calcularMetrosTotais().replace('.', ',')} m</span>
                 </div>
                 <div className="flex-1 bg-brand/10 p-4 rounded-lg flex items-center justify-between border border-brand/20">
                     <span className="font-semibold text-brand">Total Estimado</span>

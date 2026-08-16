@@ -32,11 +32,11 @@ export default function NotasFiscaisPanel() {
 
     return (
         <div>
-            <div className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded overflow-hidden">
+            <div className="bg-superficie border border-borda rounded overflow-hidden">
                 <div className="overflow-x-auto custom-scrollbar">
                     <table className="w-full text-left border-collapse min-w-[800px]">
                         <thead className="bg-gray-50/50 dark:bg-darkHover/50 border-t-2 border-brand">
-                            <tr className="border-b border-gray-200 dark:border-darkBorder text-[13px] font-semibold text-gray-500 dark:text-gray-400 tracking-wide uppercase">
+                            <tr className="border-b border-borda text-corpo font-semibold text-tinta-suave tracking-wide uppercase">
                                 <th className="px-6 py-4 w-28">Data</th>
                                 <th className="px-6 py-4 w-48">Cliente / Razão Social</th>
                                 <th className="px-6 py-4 w-36">CPF / CNPJ</th>
@@ -56,14 +56,14 @@ export default function NotasFiscaisPanel() {
                         </thead>
                         <tbody>
                             {notasFiscaisPaginadas.map(n => (
-                                <tr key={n.id} onClick={() => abrirEdicaoNota(n)} onContextMenu={(e) => abrirContextMenu(e, montarItensContexto(n))} className="border-b border-gray-100 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover transition cursor-pointer">
-                                    <td className="px-6 py-4 text-[13px] dark:text-[#EDEDED] whitespace-nowrap">{new Date(n.created_at).toLocaleDateString('pt-BR')}</td>
+                                <tr key={n.id} onClick={() => abrirEdicaoNota(n)} onContextMenu={(e) => abrirContextMenu(e, montarItensContexto(n))} className="border-b border-borda-fraca hover:bg-sutil transition cursor-pointer">
+                                    <td className="px-6 py-4 text-corpo dark:text-[#EDEDED] whitespace-nowrap">{new Date(n.created_at).toLocaleDateString('pt-BR')}</td>
                                     <td className="px-6 py-4">
-                                        <div className="text-[13px] font-semibold dark:text-[#EDEDED]">{mascararCliente(n.cliente, isDemo) || 'Sem Identificação'}</div>
-                                        <div className="text-[11px] text-gray-500 dark:text-[#A1A1AA]">{isDemo ? '' : n.razao_social}</div>
+                                        <div className="text-corpo font-semibold dark:text-[#EDEDED]">{mascararCliente(n.cliente, isDemo) || 'Sem Identificação'}</div>
+                                        <div className="text-mini text-tinta-suave">{isDemo ? '' : n.razao_social}</div>
                                     </td>
-                                    <td className="px-6 py-4 text-[13px] dark:text-[#EDEDED] whitespace-nowrap">{n.cnpj}</td>
-                                    <td className="px-6 py-4 text-[13px] dark:text-[#EDEDED] whitespace-nowrap">
+                                    <td className="px-6 py-4 text-corpo dark:text-[#EDEDED] whitespace-nowrap">{n.cnpj}</td>
+                                    <td className="px-6 py-4 text-corpo dark:text-[#EDEDED] whitespace-nowrap">
                                         {n.contato ? (
                                             <div className="flex items-center gap-1.5">
                                                 <Icon name={n.forma_envio === 'E-mail' ? 'mail' : 'phone'} className="w-3.5 h-3.5 text-gray-400 shrink-0" />
@@ -71,16 +71,16 @@ export default function NotasFiscaisPanel() {
                                             </div>
                                         ) : <span className="text-gray-400">---</span>}
                                     </td>
-                                    <td className="px-6 py-4 text-[13px] font-medium text-gray-600 dark:text-gray-400">
-                                        <span className={`px-2 py-1 rounded text-[11px] font-bold ${n.tipo_nota === 'DANFE' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' : (n.tipo_nota === 'Serviço' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400')}`}>
+                                    <td className="px-6 py-4 text-corpo font-medium text-tinta-suave">
+                                        <span className={`px-2 py-1 rounded text-mini font-bold ${n.tipo_nota === 'DANFE' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' : (n.tipo_nota === 'Serviço' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400')}`}>
                                             {n.tipo_nota || 'N/A'}
                                         </span>
                                     </td>
                                     <td className="px-6 py-4">
-                                        <div className="text-[13px] dark:text-[#EDEDED]">{n.servico_feito || <span className="text-gray-400 italic">Pendente</span>}</div>
-                                        <div className="text-[11px] font-semibold text-orange-500 dark:text-orange-400">{n.valor_pago ? `R$ ${centavosParaReais(n.valor_pago).toFixed(2).replace('.', ',')}` : ''}</div>
+                                        <div className="text-corpo dark:text-[#EDEDED]">{n.servico_feito || <span className="text-gray-400 italic">Pendente</span>}</div>
+                                        <div className="text-mini font-semibold text-orange-500 dark:text-orange-400">{n.valor_pago ? `R$ ${centavosParaReais(n.valor_pago).toFixed(2).replace('.', ',')}` : ''}</div>
                                     </td>
-                                    <td className="px-6 py-4 text-[13px] text-gray-600 dark:text-gray-400 max-w-[200px] truncate" title={n.observacoes || ''}>
+                                    <td className="px-6 py-4 text-corpo text-tinta-suave max-w-[200px] truncate" title={n.observacoes || ''}>
                                         {n.observacoes || <span className="text-gray-400 italic">---</span>}
                                     </td>
                                     <td className="px-6 py-4 text-right">
@@ -115,16 +115,16 @@ export default function NotasFiscaisPanel() {
                                 <SkeletonLinhas colunas={8} />
                             )}
                             {dadosCarregados && notasFiscaisPaginadas.length === 0 && (
-                                <tr><td colSpan="8" className="px-4 py-12 text-center text-[13px] text-gray-400">Nenhuma nota fiscal encontrada.</td></tr>
+                                <tr><td colSpan="8" className="px-4 py-12 text-center text-corpo text-gray-400">Nenhuma nota fiscal encontrada.</td></tr>
                             )}
                         </tbody>
                     </table>
                 </div>
                 {totalPaginasNotasFiscais > 1 && (
-                    <div className="mt-6 flex justify-between items-center p-4 border-t border-gray-200 dark:border-darkBorder">
-                        <button onClick={() => setPaginaNotasFiscais(Math.max(1, paginaNotasFiscais - 1))} disabled={paginaNotasFiscais === 1} className="px-4 py-2 text-[13px] font-semibold border border-gray-200 dark:border-darkBorder rounded hover:bg-gray-50 dark:hover:bg-darkHover disabled:opacity-50 dark:text-white transition">Anterior</button>
-                        <span className="text-[13px] font-semibold dark:text-white">Página {paginaNotasFiscais} de {totalPaginasNotasFiscais}</span>
-                        <button onClick={() => setPaginaNotasFiscais(Math.min(totalPaginasNotasFiscais, paginaNotasFiscais + 1))} disabled={paginaNotasFiscais === totalPaginasNotasFiscais} className="px-4 py-2 text-[13px] font-semibold border border-gray-200 dark:border-darkBorder rounded hover:bg-gray-50 dark:hover:bg-darkHover disabled:opacity-50 dark:text-white transition">Próxima</button>
+                    <div className="mt-6 flex justify-between items-center p-4 border-t border-borda">
+                        <button onClick={() => setPaginaNotasFiscais(Math.max(1, paginaNotasFiscais - 1))} disabled={paginaNotasFiscais === 1} className="px-4 py-2 text-corpo font-semibold border border-borda rounded hover:bg-sutil disabled:opacity-50 dark:text-white transition">Anterior</button>
+                        <span className="text-corpo font-semibold dark:text-white">Página {paginaNotasFiscais} de {totalPaginasNotasFiscais}</span>
+                        <button onClick={() => setPaginaNotasFiscais(Math.min(totalPaginasNotasFiscais, paginaNotasFiscais + 1))} disabled={paginaNotasFiscais === totalPaginasNotasFiscais} className="px-4 py-2 text-corpo font-semibold border border-borda rounded hover:bg-sutil disabled:opacity-50 dark:text-white transition">Próxima</button>
                     </div>
                 )}
             </div>

@@ -17,9 +17,7 @@ export async function GET(req: Request) {
 
   const admin = getSupabaseAdmin();
   const { data: produtos, error } = await admin
-    .from('produtos')
-    .select('nome, texto_padrao, preco_base')
-    .order('ordem', { ascending: true });
+    .from('produtos') .select('nome, texto_padrao, preco_base') .order('ordem', { ascending: true });
 
   if (error) {
     return NextResponse.json({ erro: error.message }, { status: 500 });

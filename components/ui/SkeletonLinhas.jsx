@@ -8,11 +8,11 @@ export function SkeletonLinhas({ linhas = 8, colunas }) {
     return (
         <>
             {Array.from({ length: linhas }).map((_, i) => (
-                <tr key={i} className="border-b border-gray-100 dark:border-darkBorder">
+                <tr key={i} className="border-b border-borda-fraca">
                     {Array.from({ length: colunas }).map((_, j) => (
                         <td key={j} className="px-6 py-4">
                             <div
-                                className="h-3.5 rounded bg-gray-100 dark:bg-darkHover animate-pulse"
+                                className="h-3.5 rounded bg-realce animate-pulse"
                                 style={{ width: `${50 + ((i * 7 + j * 13) % 45)}%` }}
                             />
                         </td>

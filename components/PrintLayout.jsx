@@ -36,14 +36,14 @@ export default function PrintLayout() {
                                     
                                     <h2 className="text-xl font-semibold uppercase text-gray-800">O.S. #{osParaImprimir.id}</h2>
                                     <div className="flex items-center gap-3 mt-0.5">
-                                        <p className="text-[11px] text-gray-500 font-medium">Entrada: {formatarDataExibicao(osParaImprimir.data_pedido)}</p>
+                                        <p className="text-mini text-gray-500 font-medium">Entrada: {formatarDataExibicao(osParaImprimir.data_pedido)}</p>
                                         <span className="border border-gray-300 text-gray-400 text-[8px] uppercase tracking-widest px-1.5 py-0.5 rounded">
                                             {index === 0 ? 'Via da Gráfica' : 'Via do Cliente'}
                                         </span>
                                     </div>
                                 </div>
                                 
-                                <div className="text-right text-[11px] text-gray-600 flex flex-col justify-end mt-1">
+                                <div className="text-right text-mini text-gray-600 flex flex-col justify-end mt-1">
                                     <p>CNPJ: 36.117.136/0001-23</p>
                                     <p>R. Alencastro, 42 - Silveira</p>
                                     <p>Santo André - SP, 09110-050</p>
@@ -56,47 +56,47 @@ export default function PrintLayout() {
                             <div className="mb-2">
                                 <div className="flex justify-between items-end mb-1">
                                     <div>
-                                        <h3 className="font-semibold text-[10px] uppercase text-gray-400 mb-0.5 tracking-wider">Cliente</h3>
+                                        <h3 className="font-semibold text-micro uppercase text-gray-400 mb-0.5 tracking-wider">Cliente</h3>
                                         <p className="font-semibold text-base uppercase text-gray-900">{mascararCliente(osParaImprimir.cliente, isDemo)}</p>
                                     </div>
                                     <div className="text-right">
-                                        <h3 className="font-semibold text-[10px] uppercase text-gray-400 mb-0.5 tracking-wider">Contato</h3>
-                                        <p className="font-semibold text-[13px] text-gray-800">{cInfo?.telefone || 'Não informado'}</p>
+                                        <h3 className="font-semibold text-micro uppercase text-gray-400 mb-0.5 tracking-wider">Contato</h3>
+                                        <p className="font-semibold text-corpo text-gray-800">{cInfo?.telefone || 'Não informado'}</p>
                                     </div>
                                 </div>
                                 {cInfo?.observacoes && (
                                     <div className="mt-1">
-                                        <p className="text-[11px] text-gray-600 italic">&quot; {cInfo.observacoes} &quot;</p>
+                                        <p className="text-mini text-gray-600 italic">&quot; {cInfo.observacoes} &quot;</p>
                                     </div>
                                 )}
                             </div>
                         </div>
 
                         <div className="flex-1 overflow-hidden flex flex-col mt-2">
-                            <table className="w-full text-left text-[13px] border-collapse">
+                            <table className="w-full text-left text-corpo border-collapse">
                                 <thead>
                                     <tr className="border-b border-gray-800 text-gray-800">
-                                        <th className="pb-1 uppercase text-[10px] font-extrabold tracking-wider w-full">Serviços Contratados</th>
-                                        <th className="pb-1 uppercase text-[10px] font-extrabold tracking-wider text-right w-32 whitespace-nowrap pl-4">Valor</th>
+                                        <th className="pb-1 uppercase text-micro font-extrabold tracking-wider w-full">Serviços Contratados</th>
+                                        <th className="pb-1 uppercase text-micro font-extrabold tracking-wider text-right w-32 whitespace-nowrap pl-4">Valor</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {desc.itens.length > 0 ? desc.itens.map((item, idx) => (
                                         <tr key={idx} className="border-b border-gray-100 last:border-0">
-                                            <td className="py-0.5 text-gray-900 whitespace-pre-wrap pr-4 align-middle text-[11px] font-medium leading-tight">
+                                            <td className="py-0.5 text-gray-900 whitespace-pre-wrap pr-4 align-middle text-mini font-medium leading-tight">
                                                 {item.descricao || item.nome}
                                             </td>
-                                            <td className="py-0.5 text-right whitespace-nowrap align-middle font-semibold text-[13px]">
+                                            <td className="py-0.5 text-right whitespace-nowrap align-middle font-semibold text-corpo">
                                                 R$ {item.valor}
                                                 {item.desconto && <span className="block text-[9px] text-gray-400 font-normal mt-0.5">(-{item.desconto}%)</span>}
                                             </td>
                                         </tr>
                                     )) : (
                                         <tr>
-                                            <td className="py-2 text-gray-500 whitespace-pre-wrap pr-4 align-middle text-[11px] italic">
+                                            <td className="py-2 text-gray-500 whitespace-pre-wrap pr-4 align-middle text-mini italic">
                                                 Serviço formatado manualmente (Verifique as observações gerais abaixo).
                                             </td>
-                                            <td className="py-2 text-right whitespace-nowrap align-middle font-semibold text-[13px]">
+                                            <td className="py-2 text-right whitespace-nowrap align-middle font-semibold text-corpo">
                                                 R$ {formatarValorFinanceiro(centavosParaReais(osParaImprimir.valor_total))}
                                             </td>
                                         </tr>
@@ -112,11 +112,11 @@ export default function PrintLayout() {
                                 <div className="flex-1 max-w-[60%] flex flex-col gap-3">
                                     {desc.pagamentos && desc.pagamentos.length > 0 && (
                                         <div>
-                                            <h3 className="font-semibold text-[10px] uppercase text-gray-400 mb-1 tracking-wider">Histórico de Pagamentos</h3>
-                                            <div className="text-[11px] text-gray-800">
+                                            <h3 className="font-semibold text-micro uppercase text-gray-400 mb-1 tracking-wider">Histórico de Pagamentos</h3>
+                                            <div className="text-mini text-gray-800">
                                                 {desc.pagamentos.map((pag, idx) => (
                                                     <div key={idx} className="flex justify-between items-center border-b border-dashed border-gray-200 py-0.5 last:border-0">
-                                                        <span>{pag.forma} {pag.parcelas > 1 ? `(${pag.parcelas}x)` : ''} {(pag.instituicao || pag.bandeira) ? `(${pag.instituicao || pag.bandeira})` : ''} <span className="text-[10px] text-gray-500">({formatarDataExibicao(pag.data)})</span></span>
+                                                        <span>{pag.forma} {pag.parcelas > 1 ? `(${pag.parcelas}x)` : ''} {(pag.instituicao || pag.bandeira) ? `(${pag.instituicao || pag.bandeira})` : ''} <span className="text-micro text-gray-500">({formatarDataExibicao(pag.data)})</span></span>
                                                         <span className="font-semibold text-gray-900">{pag.forma === 'Estorno' ? '-' : ''}R$ {pag.valor}</span>
                                                     </div>
                                                 ))}
@@ -124,14 +124,14 @@ export default function PrintLayout() {
                                         </div>
                                     )}
                                     <div>
-                                        <h3 className="font-semibold text-[10px] uppercase text-gray-400 mb-1.5 tracking-wider">Observações Gerais do Pedido</h3>
-                                        <p className="text-[11px] text-gray-800 whitespace-pre-wrap leading-snug">
+                                        <h3 className="font-semibold text-micro uppercase text-gray-400 mb-1.5 tracking-wider">Observações Gerais do Pedido</h3>
+                                        <p className="text-mini text-gray-800 whitespace-pre-wrap leading-snug">
                                             {desc.observacoes || <span className="italic text-gray-400">Nenhuma observação extra registrada.</span>}
                                         </p>
                                     </div>
                                 </div>
                                 <div className="text-right shrink-0">
-                                    <span className="text-[10px] uppercase font-semibold tracking-widest text-gray-500 block mb-0.5">Total do Pedido</span>
+                                    <span className="text-micro uppercase font-semibold tracking-widest text-gray-500 block mb-0.5">Total do Pedido</span>
                                     <h2 className="text-4xl font-black tracking-tight text-gray-900">R$ {formatarValorFinanceiro(centavosParaReais(osParaImprimir.valor_total))}</h2>
                                 </div>
                             </div>
@@ -212,7 +212,7 @@ function PrintOrcamento({ orc }) {
 
             {/* Rules */}
             <div className="px-16 mb-5">
-                <div className="text-[10px] text-gray-500 italic flex flex-col gap-1 font-medium">
+                <div className="text-micro text-gray-500 italic flex flex-col gap-1 font-medium">
                     <p>• Retirada na nossa loja: Rua Alencastro, 42 - Bairro Silveira - Santo André (SP);</p>
                     <p>• Forma de pagamento: 50% de sinal e 50% na retirada, podendo ser via pix, dinheiro ou cartão, ou 100% antecipado via link de pagamento;</p>
                     <p>• Não trabalhamos com fidelidade de cor, por isso as cores podem variar conforme o material;</p>
@@ -239,7 +239,7 @@ function PrintOrcamento({ orc }) {
 
             {/* Orange Footer Bar */}
             <div className="bg-[#F37021] print-color-adjust-exact h-[80px] w-full flex justify-between items-center px-16 text-white shrink-0">
-                <div className="flex flex-col text-[12px] font-semibold gap-1">
+                <div className="flex flex-col text-compacto font-semibold gap-1">
                     <p className="flex items-center gap-2"><Icon name="phone" className="w-4 h-4" /> (11) 95471-6011</p>
                     <p className="flex items-center gap-2"><Icon name="phone" className="w-4 h-4" /> (11) 2677-6057</p>
                     <p className="flex items-center gap-2"><Icon name="instagram" className="w-4 h-4" /> @berlimgraficarapida</p>
@@ -256,7 +256,7 @@ function PrintOrcamento({ orc }) {
                      </svg>
                 </div>
 
-                <div className="flex flex-col text-[12px] font-semibold gap-1 text-right">
+                <div className="flex flex-col text-compacto font-semibold gap-1 text-right">
                     <p className="flex items-center justify-end gap-2">contato@berlimgraficarapida.com.br <Icon name="mail" className="w-4 h-4" /></p>
                     <p className="flex items-center justify-end gap-2 mt-1">Rua Alencastro, 42 - Bairro Silveira<br/>Santo André - SP <Icon name="map-pin" className="w-4 h-4" /></p>
                 </div>

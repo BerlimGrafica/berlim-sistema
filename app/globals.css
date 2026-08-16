@@ -1,5 +1,78 @@
 ﻿@import "tailwindcss";
 
+@custom-variant dark (&:is(.dark *));
+
+/* ---------------------------------------------------------------------------
+   Tokens do tema
+   ---------------------------------------------------------------------------
+   Cada nome abaixo descreve uma FUNÇÃO na tela — superfície, borda, tinta — e
+   não uma cor. O tema escuro é definido uma única vez, aqui, redefinindo esses
+   nomes dentro de `.dark`. Na marcação isso vira uma classe só:
+
+       antes:  className="bg-white dark:bg-darkCard border-gray-200 dark:border-darkBorder"
+       agora:  className="bg-superficie border-borda"
+
+   Vale para estados também: `hover:text-tinta` já funciona nos dois temas,
+   enquanto antes exigia `hover:text-gray-900 dark:hover:text-white`.
+
+   Os tons claros apontam para a paleta do próprio Tailwind (`--color-gray-*`,
+   em OKLCH na v4) em vez de hexadecimais transcritos, então a conversão é
+   idêntica por construção — não depende de eu ter copiado o valor certo.
+
+   `@theme inline` é obrigatório aqui: sem ele o utilitário geraria
+   `var(--color-borda)` resolvido no `:root`, e a redefinição dentro de `.dark`
+   nunca chegaria ao elemento. Com `inline`, o utilitário emite `var(--borda)`,
+   que resolve no ponto de uso — que é o que faz o tema trocar.
+--------------------------------------------------------------------------- */
+
+:root {
+    /* Superfícies, do fundo da página para cima */
+    --fundo: #EDEFF0;
+    --superficie: #ffffff;
+    --elevado: #ffffff;
+    --sutil: var(--color-gray-50);
+    --realce: var(--color-gray-100);
+
+    /* Bordas. Os três pesos existem no tema claro; no escuro o sistema sempre
+       usou um só, e isso continua verdade — a diferença fica visível aqui, num
+       lugar onde dá para decidir se é intencional. */
+    --borda-fraca: var(--color-gray-100);
+    --borda: var(--color-gray-200);
+    --borda-forte: var(--color-gray-300);
+
+    /* Tinta, do mais forte ao mais apagado */
+    --tinta: var(--color-gray-900);
+    --tinta-corpo: var(--color-gray-700);
+    --tinta-suave: var(--color-gray-500);
+    --tinta-fraca: var(--color-gray-400);
+
+    /* Campos de formulário */
+    --campo: #ffffff;
+}
+
+.dark {
+    --fundo: #0d1117;
+    --superficie: #161b22;
+    --elevado: #21262d;
+    --sutil: #21262d;
+    --realce: #21262d;
+
+    --borda-fraca: #30363d;
+    --borda: #30363d;
+    --borda-forte: #30363d;
+
+    /* #EDEDED em vez de branco puro: era a forma majoritária no código (76
+       ocorrências contra 40) e é a mais confortável sobre fundo escuro.
+       #A1A1AA e gray-400 são a mesma cor medida em OKLCH (L 71,2 vs 70,7),
+       escritas de dois jeitos — aqui viram uma. */
+    --tinta: #EDEDED;
+    --tinta-corpo: #EDEDED;
+    --tinta-suave: #A1A1AA;
+    --tinta-fraca: #888888;
+
+    --campo: #0d1117;
+}
+
 @theme inline {
   --color-brand: #F69F00;
   --color-brandHover: #d98b00;
@@ -10,9 +83,35 @@
   --color-darkBorder: #30363d;
   --color-darkInput: #0d1117;
   --font-sans: var(--font-montserrat), sans-serif;
-}
 
-@custom-variant dark (&:is(.dark *));
+  --color-fundo: var(--fundo);
+  --color-superficie: var(--superficie);
+  --color-elevado: var(--elevado);
+  --color-sutil: var(--sutil);
+  --color-realce: var(--realce);
+
+  --color-borda-fraca: var(--borda-fraca);
+  --color-borda: var(--borda);
+  --color-borda-forte: var(--borda-forte);
+
+  --color-tinta: var(--tinta);
+  --color-tinta-corpo: var(--tinta-corpo);
+  --color-tinta-suave: var(--tinta-suave);
+  --color-tinta-fraca: var(--tinta-fraca);
+
+  --color-campo: var(--campo);
+
+  /* Escala tipográfica.
+     Não é a escala padrão do Tailwind: a interface é densa e sempre usou
+     13/12/11/10px, digitados à mão 688 vezes. A escala existia — só não tinha
+     nome. Os tamanhos maiores continuam vindo da escala nativa (lg, xl, 2xl).
+     Sem `--text-*--line-height` de propósito: `text-[13px]` também não definia
+     entrelinha, então declarar uma agora mudaria a altura de tudo. */
+  --text-corpo: 13px;
+  --text-compacto: 12px;
+  --text-mini: 11px;
+  --text-micro: 10px;
+}
 
 body { 
     transition: background-color 0.3s ease; 

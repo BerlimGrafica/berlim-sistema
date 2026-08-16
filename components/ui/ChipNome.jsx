@@ -4,7 +4,7 @@ import { corPorNome } from '@/lib/utils/formatters';
 export function ChipNome({ nome, className = '' }) {
     const { bg, text } = corPorNome(nome);
     return (
-        <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold ${text} leading-tight truncate ${bg} ${className}`} title={nome}>
+        <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-micro font-semibold ${text} leading-tight truncate ${bg} ${className}`} title={nome}>
             {nome}
         </span>
     );

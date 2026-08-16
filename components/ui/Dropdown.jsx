@@ -36,11 +36,11 @@ export function InlineDropdown({ value, options, onChange, className, hasIndefin
             {isOpen && (
                 <>
                     <div className="fixed inset-0 z-[55]" onClick={(e) => { e.stopPropagation(); setIsOpen(false); }}></div>
-                    <ul className={`absolute left-0 z-[60] w-full min-w-[160px] max-h-48 overflow-y-auto bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded shadow-xl custom-scrollbar text-[11px] ${openUpwards ? 'bottom-full mb-1' : 'top-full mt-1'}`}>
+                    <ul className={`absolute left-0 z-[60] w-full min-w-[160px] max-h-48 overflow-y-auto bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded shadow-xl custom-scrollbar text-mini ${openUpwards ? 'bottom-full mb-1' : 'top-full mt-1'}`}>
                         {hasIndefinido && (
                             <li
                                 onClick={(e) => { e.stopPropagation(); onChange(''); setIsOpen(false); }}
-                                className="px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-darkHover cursor-pointer border-b border-gray-100 dark:border-darkBorder text-gray-500 dark:text-gray-400 transition"
+                                className="px-3 py-2.5 hover:bg-sutil cursor-pointer border-b border-borda-fraca text-tinta-suave transition"
                             >
                                 Indefinido
                             </li>
@@ -108,12 +108,12 @@ export function CustomSelect({ value, options, onChange, className, placeholder 
             {isOpen && !disabled && typeof document !== 'undefined' && createPortal(
                 <>
                     <div className="fixed inset-0 z-[90]" onClick={(e) => { e.stopPropagation(); setIsOpen(false); }}></div>
-                    <ul style={popoverStyle} className="z-[95] max-h-60 overflow-y-auto bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded shadow-xl custom-scrollbar text-[13px]">
+                    <ul style={popoverStyle} className="z-[95] max-h-60 overflow-y-auto bg-superficie border border-borda rounded shadow-xl custom-scrollbar text-corpo">
                         {options.map(opt => (
                             <li
                                 key={opt.value}
                                 onClick={(e) => { e.stopPropagation(); onChange(opt.value); setIsOpen(false); }}
-                                className={`px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-darkHover cursor-pointer border-b border-gray-100 dark:border-darkBorder last:border-0 transition font-medium flex items-center justify-between gap-2 ${value === opt.value ? 'bg-brand/5 dark:bg-brand/10 text-brand' : 'text-gray-700 dark:text-[#EDEDED]'}`}
+                                className={`px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-darkHover cursor-pointer border-b border-gray-100 dark:border-darkBorder last:border-0 transition font-medium flex items-center justify-between gap-2 ${value === opt.value ? 'bg-brand/5 dark:bg-brand/10 text-brand' : 'text-tinta-corpo'}`}
                             >
                                 {opt.icon ? (
                                     <span className="flex items-center gap-1.5 min-w-0" title={opt.label}>
@@ -172,7 +172,7 @@ export function MultiSelectDropdown({ value, options, onChange, className, disab
                     {selectedArr.length > 0 ? (
                         selectedArr.map(nome => <ChipNome key={nome} nome={nome} />)
                     ) : (
-                        <span className="truncate font-medium text-gray-500 dark:text-gray-400">{placeholder}</span>
+                        <span className="truncate font-medium text-tinta-suave">{placeholder}</span>
                     )}
                 </div>
                 <Icon name="chevron-down" className={`w-3 h-3 text-gray-400 shrink-0 ml-1 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
@@ -180,14 +180,14 @@ export function MultiSelectDropdown({ value, options, onChange, className, disab
             {isOpen && (
                 <>
                     <div className="fixed inset-0 z-[55]" onClick={(e) => { e.stopPropagation(); setIsOpen(false); }}></div>
-                    <ul className={`absolute left-0 z-[60] w-full min-w-[160px] max-h-48 overflow-y-auto bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded shadow-xl custom-scrollbar text-[11px] ${openUpwards ? 'bottom-full mb-1' : 'top-full mt-1'}`}>
+                    <ul className={`absolute left-0 z-[60] w-full min-w-[160px] max-h-48 overflow-y-auto bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded shadow-xl custom-scrollbar text-mini ${openUpwards ? 'bottom-full mb-1' : 'top-full mt-1'}`}>
                         {options.map(opt => {
                             const isSelected = selectedArr.includes(opt);
                             return (
                                 <li
                                     key={opt}
                                     onClick={(e) => toggleOption(opt, e)}
-                                    className={`px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-darkHover cursor-pointer border-b border-gray-100 dark:border-darkBorder last:border-0 transition font-medium flex items-center justify-between gap-2 ${isSelected ? 'text-brand bg-brand/5 dark:bg-brand/10' : 'text-gray-700 dark:text-[#EDEDED]'}`}
+                                    className={`px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-darkHover cursor-pointer border-b border-gray-100 dark:border-darkBorder last:border-0 transition font-medium flex items-center justify-between gap-2 ${isSelected ? 'text-brand bg-brand/5 dark:bg-brand/10' : 'text-tinta-corpo'}`}
                                 >
                                     <span className="flex items-center gap-1.5 min-w-0"><span className={`w-2 h-2 rounded-full shrink-0 ${corPorNome(opt).bg}`}></span><span className="truncate">{opt}</span></span>
                                     {isSelected ? <Icon name="check-square" className="w-3.5 h-3.5 shrink-0" /> : <Icon name="square" className="w-3.5 h-3.5 text-gray-300 dark:text-gray-600 shrink-0" />}

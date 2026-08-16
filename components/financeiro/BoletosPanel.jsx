@@ -9,11 +9,11 @@ export default function BoletosPanel({ dataInicio, dataFim }) {
 
     return (
         <div>
-            <div className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded overflow-hidden">
+            <div className="bg-superficie border border-borda rounded overflow-hidden">
                 <div className="overflow-x-auto min-h-[300px]">
                     <table className="w-full text-left border-collapse">
                         <thead className="bg-gray-50/50 dark:bg-darkHover/50 border-t-2 border-brand">
-                            <tr className="border-b border-gray-200 dark:border-darkBorder text-[13px] font-semibold text-gray-500 dark:text-gray-400 tracking-wide uppercase">
+                            <tr className="border-b border-borda text-corpo font-semibold text-tinta-suave tracking-wide uppercase">
                                 <th className="px-6 py-4">O.S.</th>
                                 <th className="px-6 py-4">Cliente</th>
                                 <th className="px-6 py-4 w-52">CNPJ</th>
@@ -26,7 +26,7 @@ export default function BoletosPanel({ dataInicio, dataFim }) {
                                 <th className="px-6 py-4 w-24 text-center">Ação</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-100 dark:divide-darkBorder">
+                        <tbody className="divide-y divide-borda-fraca">
                             {(() => {
                                 const hojeStr = obterDataAtual();
                                 // Deriva "amanhã" a partir da própria string de hoje (em vez de um novo Date()),
@@ -46,12 +46,12 @@ export default function BoletosPanel({ dataInicio, dataFim }) {
                                 );
 
                                 if (pedidosFiltrados.length === 0) return (
-                                    <tr><td colSpan="10" className="px-4 py-12 text-center text-[13px] text-gray-400">Nenhum pedido com boleto encontrado.</td></tr>
+                                    <tr><td colSpan="10" className="px-4 py-12 text-center text-corpo text-gray-400">Nenhum pedido com boleto encontrado.</td></tr>
                                 );
 
                                 return pedidosFiltrados.map(p => {
                                     let statusPagamento = 'A Pagar';
-                                    let statusPagamentoCor = 'bg-gray-100 text-gray-600 border-gray-300 dark:bg-darkElevated dark:text-gray-300 dark:border-darkBorder';
+                                    let statusPagamentoCor = 'bg-realce text-tinta-suave border-borda-forte';
                                     if (p.boleto.boleto_concluido) {
                                         statusPagamento = 'Pago';
                                         statusPagamentoCor = 'bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800';

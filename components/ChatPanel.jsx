@@ -28,7 +28,7 @@ function bordaBolha(minha, primeiraDoGrupo, ultimaDoGrupo) {
     return `rounded-2xl rounded-t${lado}-md rounded-b${lado}-md`;
 }
 
-function Avatar({ nome, avatarUrl, className = 'w-7 h-7 text-[10px]' }) {
+function Avatar({ nome, avatarUrl, className = 'w-7 h-7 text-micro' }) {
     if (avatarUrl) {
         return <img src={avatarUrl} alt={nome} referrerPolicy="no-referrer" className={`${className} rounded-full object-cover shrink-0`} />;
     }
@@ -83,25 +83,25 @@ export default function ChatPanel() {
             />
             <div className={`fixed top-0 right-0 h-full w-full sm:w-[400px] bg-white dark:bg-darkCard border-l border-gray-200 dark:border-darkBorder shadow-2xl z-50 flex flex-col transition-transform duration-300 ${chatAberto ? 'translate-x-0' : 'translate-x-full'}`}>
                 {/* Cabeçalho */}
-                <div className="flex items-center justify-between px-4 h-14 border-b border-gray-100 dark:border-darkBorder shrink-0">
-                    <h2 className="font-bold text-gray-900 dark:text-white">Chat</h2>
-                    <button onClick={() => setChatAberto(false)} aria-label="Fechar chat" className="p-1.5 rounded-md text-gray-400 hover:text-gray-700 hover:bg-gray-100 dark:hover:bg-darkHover dark:hover:text-white transition">
+                <div className="flex items-center justify-between px-4 h-14 border-b border-borda-fraca shrink-0">
+                    <h2 className="font-bold text-tinta">Chat</h2>
+                    <button onClick={() => setChatAberto(false)} aria-label="Fechar chat" className="p-1.5 rounded-md text-gray-400 hover:text-tinta-corpo hover:bg-realce transition">
                         <Icon name="x" className="w-4 h-4" />
                     </button>
                 </div>
 
                 {/* Canal + participantes */}
-                <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-darkBorder shrink-0">
+                <div className="flex items-center justify-between px-4 py-3 border-b border-borda-fraca shrink-0">
                     <div>
-                        <p className="text-[13px] font-semibold text-gray-900 dark:text-white">Equipe Berlim</p>
-                        <p className="text-[11px] text-gray-400">{usuariosSistema.length} pessoa{usuariosSistema.length === 1 ? '' : 's'}</p>
+                        <p className="text-corpo font-semibold text-tinta">Equipe Berlim</p>
+                        <p className="text-mini text-gray-400">{usuariosSistema.length} pessoa{usuariosSistema.length === 1 ? '' : 's'}</p>
                     </div>
                     <div className="flex items-center -space-x-2">
                         {participantes.map(p => (
-                            <Avatar key={p.id} nome={p.nome} avatarUrl={p.avatar_url} className="w-7 h-7 text-[10px] border-2 border-white dark:border-darkCard" />
+                            <Avatar key={p.id} nome={p.nome} avatarUrl={p.avatar_url} className="w-7 h-7 text-micro border-2 border-white dark:border-darkCard" />
                         ))}
                         {extras > 0 && (
-                            <div className="w-7 h-7 rounded-full bg-gray-500 border-2 border-white dark:border-darkCard flex items-center justify-center text-[10px] font-bold text-white">
+                            <div className="w-7 h-7 rounded-full bg-gray-500 border-2 border-white dark:border-darkCard flex items-center justify-center text-micro font-bold text-white">
                                 +{extras}
                             </div>
                         )}
@@ -109,9 +109,9 @@ export default function ChatPanel() {
                 </div>
 
                 {/* Mensagens */}
-                <div ref={listRef} className="flex-1 overflow-y-auto custom-scrollbar px-4 py-4 bg-gray-50 dark:bg-darkBg">
+                <div ref={listRef} className="flex-1 overflow-y-auto custom-scrollbar px-4 py-4 bg-sutil">
                     {chatMensagens.length === 0 ? (
-                        <p className="text-center text-[12px] text-gray-400 mt-6">Nenhuma mensagem ainda. Diga oi!</p>
+                        <p className="text-center text-compacto text-gray-400 mt-6">Nenhuma mensagem ainda. Diga oi!</p>
                     ) : (
                         chatMensagens.map((msg, idx) => {
                             const minha = msg.usuario_id === usuario?.id;
@@ -124,15 +124,15 @@ export default function ChatPanel() {
                             return (
                                 <div key={msg.id} className={`flex items-end gap-2 group ${minha ? 'flex-row-reverse' : ''} ${idx === 0 ? '' : primeiraDoGrupo ? 'mt-3' : 'mt-0.5'}`}>
                                     {ultimaDoGrupo ? (
-                                        <Avatar nome={nome} avatarUrl={avatarPara(msg.usuario_id)} className="w-7 h-7 text-[10px]" />
+                                        <Avatar nome={nome} avatarUrl={avatarPara(msg.usuario_id)} className="w-7 h-7 text-micro" />
                                     ) : (
                                         <div className="w-7 shrink-0" />
                                     )}
                                     <div className={`flex flex-col max-w-[75%] ${minha ? 'items-end' : 'items-start'}`}>
                                         {primeiraDoGrupo && !minha && (
-                                            <span className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 mb-1 px-1">{nome}</span>
+                                            <span className="text-mini font-semibold text-tinta-suave mb-1 px-1">{nome}</span>
                                         )}
-                                        <div className={`relative px-3.5 py-2 text-[13px] leading-snug break-words ${bordaBolha(minha, primeiraDoGrupo, ultimaDoGrupo)} ${minha ? 'bg-brand text-white' : 'bg-white dark:bg-darkElevated text-gray-800 dark:text-[#EDEDED] border border-gray-100 dark:border-darkBorder'}`}>
+                                        <div className={`relative px-3.5 py-2 text-corpo leading-snug break-words ${bordaBolha(minha, primeiraDoGrupo, ultimaDoGrupo)} ${minha ? 'bg-brand text-white' : 'bg-elevado text-tinta border border-borda-fraca'}`}>
                                             {msg.conteudo}
                                             {(minha || isAdmin) && (
                                                 <button
@@ -145,7 +145,7 @@ export default function ChatPanel() {
                                             )}
                                         </div>
                                         {ultimaDoGrupo && (
-                                            <span className="text-[10px] text-gray-400 mt-1 px-1">{formatarHora(msg.criado_em)}</span>
+                                            <span className="text-micro text-gray-400 mt-1 px-1">{formatarHora(msg.criado_em)}</span>
                                         )}
                                     </div>
                                 </div>
@@ -155,14 +155,14 @@ export default function ChatPanel() {
                 </div>
 
                 {/* Envio */}
-                <form onSubmit={handleEnviar} className="flex items-center gap-2 p-3 border-t border-gray-100 dark:border-darkBorder shrink-0">
-                    <Avatar nome={usuario?.nome} avatarUrl={usuario?.avatar_url} className="w-8 h-8 text-[10px]" />
+                <form onSubmit={handleEnviar} className="flex items-center gap-2 p-3 border-t border-borda-fraca shrink-0">
+                    <Avatar nome={usuario?.nome} avatarUrl={usuario?.avatar_url} className="w-8 h-8 text-micro" />
                     <input
                         type="text"
                         value={texto}
                         onChange={(e) => setTexto(e.target.value)}
                         placeholder="Escreva uma mensagem..."
-                        className="flex-1 bg-gray-100 dark:bg-darkElevated text-[13px] text-gray-900 dark:text-white placeholder-gray-400 rounded-full px-4 py-2 outline-none focus:ring-2 focus:ring-brand/40"
+                        className="flex-1 bg-realce text-corpo text-tinta placeholder-gray-400 rounded-full px-4 py-2 outline-none focus:ring-2 focus:ring-brand/40"
                     />
                     <button
                         type="submit"

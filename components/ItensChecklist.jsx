@@ -19,10 +19,10 @@ export function ItensChecklist({ pedido }) {
                     key={item.id}
                     type="button"
                     onClick={(e) => { e.stopPropagation(); atualizarItemConcluido(pedido.id, item.id, !item.concluido); }}
-                    className={`flex items-center gap-1 px-2 py-1 text-[10px] uppercase font-semibold rounded shadow-sm transition transform hover:scale-105 ${
+                    className={`flex items-center gap-1 px-2 py-1 text-micro uppercase font-semibold rounded shadow-sm transition transform hover:scale-105 ${
                         item.concluido
                             ? 'bg-emerald-500 text-white border border-emerald-600'
-                            : 'bg-gray-100 dark:bg-darkElevated text-gray-500 dark:text-[#A1A1AA] border border-gray-200 dark:border-darkBorder hover:bg-gray-200 dark:hover:bg-darkHover'
+                            : 'bg-realce text-tinta-suave border border-borda hover:bg-gray-200 dark:hover:bg-darkHover'
                     }`}
                     title={item.concluido ? 'Marcar como pendente' : 'Marcar como concluído'}
                 >

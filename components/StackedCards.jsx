@@ -39,12 +39,12 @@ export function StackedCards({ title, description, icon, cards }) {
 
                     const isFirstCard = i === 0;
                     const cardBgClass = isFirstCard
-                        ? "bg-white dark:bg-darkCard bg-gradient-to-br from-brand/5 to-transparent dark:from-brand/10 border-brand/20 dark:border-brand/30"
-                        : "bg-white dark:bg-darkCard border-gray-100 dark:border-darkBorder";
+                        ? "bg-superficie bg-gradient-to-br from-brand/5 to-transparent dark:from-brand/10 border-brand/20 dark:border-brand/30"
+                        : "bg-superficie border-borda-fraca";
 
                     const titleClass = isFirstCard
                         ? "text-brand dark:text-brand"
-                        : "text-gray-600 dark:text-gray-300";
+                        : "text-tinta-suave";
 
                     return (
                         <div
@@ -62,23 +62,23 @@ export function StackedCards({ title, description, icon, cards }) {
                             <div className="flex justify-between items-center mb-4 pb-3 border-b border-gray-100 dark:border-darkBorder/50">
                                 <div className="flex items-center gap-3">
                                     {icon && (
-                                        <div className="w-8 h-8 rounded-full bg-white dark:bg-darkCard flex items-center justify-center shadow-sm text-brand border border-gray-100 dark:border-darkBorder/50">
+                                        <div className="w-8 h-8 rounded-full bg-superficie flex items-center justify-center shadow-sm text-brand border border-gray-100 dark:border-darkBorder/50">
                                             <Icon name={icon} className="w-4 h-4" />
                                         </div>
                                     )}
                                     <div>
-                                        <h3 className="font-extrabold text-[13px] text-gray-900 dark:text-white capitalize leading-tight">{title}</h3>
+                                        <h3 className="font-extrabold text-corpo text-tinta capitalize leading-tight">{title}</h3>
                                     </div>
                                 </div>
                                 {cards.length > 1 && (
-                                    <span className="text-[10px] font-semibold text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-darkBorder/30 border border-gray-200 dark:border-darkBorder px-2 py-1 rounded-full">
+                                    <span className="text-micro font-semibold text-tinta-suave bg-gray-50 dark:bg-darkBorder/30 border border-borda px-2 py-1 rounded-full">
                                         {i + 1}/{cards.length}
                                     </span>
                                 )}
                             </div>
 
                             <div className="flex justify-between items-center mb-3">
-                                <h4 className={`text-[11px] font-semibold flex items-center ${titleClass}`}>
+                                <h4 className={`text-mini font-semibold flex items-center ${titleClass}`}>
                                     {isFirstCard && <i className="fas fa-crown mr-1.5 opacity-70"></i>}
                                     {card.title}
                                 </h4>

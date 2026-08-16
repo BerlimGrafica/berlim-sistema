@@ -21,12 +21,12 @@ export default function FinanceiroTab() {
     return (
         <>
             { (
-                    <div className="bg-[#EDEFF0] dark:bg-darkBg border-b border-gray-200 dark:border-darkBorder px-6 flex gap-6 z-20 overflow-x-auto no-scrollbar-style sticky top-[112px]">
-                        <button onClick={() => setAbaFinanceiro('contas_pagar')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitespace-nowrap flex items-center gap-2 ${abaFinanceiro === 'contas_pagar' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}><Icon name="file-text" className="w-4 h-4" /> Contas a Pagar</button>
-                        <button onClick={() => setAbaFinanceiro('contas_receber')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitespace-nowrap flex items-center gap-2 ${abaFinanceiro === 'contas_receber' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}><Icon name="dollar-sign" className="w-4 h-4" /> Contas a Receber</button>
-                        <button onClick={() => setAbaFinanceiro('boletos')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitespace-nowrap flex items-center gap-2 ${abaFinanceiro === 'boletos' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}><Icon name="calendar" className="w-4 h-4" /> Boletos</button>
-                        <button onClick={() => setAbaFinanceiro('empresas_aprovadas')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitespace-nowrap flex items-center gap-2 ${abaFinanceiro === 'empresas_aprovadas' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}><Icon name="check-circle" className="w-4 h-4" /> Faturamento</button>
-                        <button onClick={() => setAbaFinanceiro('notas_fiscais')} className={`py-3 text-[13px] font-semibold border-b-[3px] transition whitespace-nowrap flex items-center gap-2 ${abaFinanceiro === 'notas_fiscais' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-[#888888] dark:hover:text-white'}`}>
+                    <div className="bg-fundo border-b border-borda px-6 flex gap-6 z-20 overflow-x-auto no-scrollbar-style sticky top-[112px]">
+                        <button onClick={() => setAbaFinanceiro('contas_pagar')} className={`py-3 text-corpo font-semibold border-b-[3px] transition whitespace-nowrap flex items-center gap-2 ${abaFinanceiro === 'contas_pagar' ? 'border-brand text-brand' : 'border-transparent text-tinta-suave hover:text-tinta'}`}><Icon name="file-text" className="w-4 h-4" /> Contas a Pagar</button>
+                        <button onClick={() => setAbaFinanceiro('contas_receber')} className={`py-3 text-corpo font-semibold border-b-[3px] transition whitespace-nowrap flex items-center gap-2 ${abaFinanceiro === 'contas_receber' ? 'border-brand text-brand' : 'border-transparent text-tinta-suave hover:text-tinta'}`}><Icon name="dollar-sign" className="w-4 h-4" /> Contas a Receber</button>
+                        <button onClick={() => setAbaFinanceiro('boletos')} className={`py-3 text-corpo font-semibold border-b-[3px] transition whitespace-nowrap flex items-center gap-2 ${abaFinanceiro === 'boletos' ? 'border-brand text-brand' : 'border-transparent text-tinta-suave hover:text-tinta'}`}><Icon name="calendar" className="w-4 h-4" /> Boletos</button>
+                        <button onClick={() => setAbaFinanceiro('empresas_aprovadas')} className={`py-3 text-corpo font-semibold border-b-[3px] transition whitespace-nowrap flex items-center gap-2 ${abaFinanceiro === 'empresas_aprovadas' ? 'border-brand text-brand' : 'border-transparent text-tinta-suave hover:text-tinta'}`}><Icon name="check-circle" className="w-4 h-4" /> Faturamento</button>
+                        <button onClick={() => setAbaFinanceiro('notas_fiscais')} className={`py-3 text-corpo font-semibold border-b-[3px] transition whitespace-nowrap flex items-center gap-2 ${abaFinanceiro === 'notas_fiscais' ? 'border-brand text-brand' : 'border-transparent text-tinta-suave hover:text-tinta'}`}>
                             <Icon name="file-text" className="w-4 h-4" /> Notas Fiscais
                             {notasFiscais.some(n => !n.concluido) && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 ml-1"></span>}
                         </button>
@@ -37,16 +37,16 @@ export default function FinanceiroTab() {
      soma das larguras mínimas — a última coluna saía pra fora pelo overflow-x-auto. */
   (usuario?.nivel === 'Administrador' || usuario?.nivel === 'Financeiro') && (
                     <main className="flex-1 p-6 lg:p-10 mx-auto w-full flex flex-col gap-6">
-                        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 border-b border-gray-100 dark:border-darkBorder pb-6 shrink-0">
+                        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 border-b border-borda-fraca pb-6 shrink-0">
                             <div>
-                                <h1 className="text-2xl lg:text-3xl font-black text-gray-900 dark:text-white tracking-tight">
+                                <h1 className="text-2xl lg:text-3xl font-black text-tinta tracking-tight">
                                     {abaFinanceiro === 'contas_pagar' ? 'Contas a Pagar' :
                                      abaFinanceiro === 'contas_receber' ? 'Contas a Receber' :
                                      abaFinanceiro === 'boletos' ? 'Boletos' :
                                      abaFinanceiro === 'empresas_aprovadas' ? 'Faturamento' :
                                      abaFinanceiro === 'notas_fiscais' ? `Notas Fiscais ${filtroNotas === 'pendentes' ? 'Pendentes' : 'Concluídas'}` : ''}
                                 </h1>
-                                <p className="text-[13px] text-gray-500 dark:text-[#888888] mt-1">
+                                <p className="text-corpo text-tinta-suave mt-1">
                                     {abaFinanceiro === 'contas_pagar' ? 'Gerencie as despesas da empresa.' :
                                      abaFinanceiro === 'contas_receber' ? 'Todas as OS\'s com saldo devedor.' :
                                      abaFinanceiro === 'boletos' ? 'Pedidos com pagamento via Boleto.' :
@@ -59,13 +59,13 @@ export default function FinanceiroTab() {
                                 {abaFinanceiro === 'contas_pagar' && (
                                     <>
                                         <div className="flex flex-col w-60">
-                                            <span className="text-[10px] font-semibold text-gray-500 dark:text-[#888888] uppercase mb-1">Período:</span>
-                                            <CustomDateRangePicker startValue={dataFiltroContasPagarInicio} endValue={dataFiltroContasPagarFim} onChangeStart={setDataFiltroContasPagarInicio} onChangeEnd={setDataFiltroContasPagarFim} placeholder="Todo o período" className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-md px-3 py-2 text-[13px] outline-none hover:border-brand transition" />
+                                            <span className="text-micro font-semibold text-tinta-suave uppercase mb-1">Período:</span>
+                                            <CustomDateRangePicker startValue={dataFiltroContasPagarInicio} endValue={dataFiltroContasPagarFim} onChangeStart={setDataFiltroContasPagarInicio} onChangeEnd={setDataFiltroContasPagarFim} placeholder="Todo o período" className="bg-superficie border border-borda rounded-md px-3 py-2 text-corpo outline-none hover:border-brand transition" />
                                         </div>
-                                        <button onClick={() => setMostrarContasPagas(!mostrarContasPagas)} className={`h-[38px] px-4 text-[13px] rounded-md font-semibold border transition flex items-center justify-center ${mostrarContasPagas ? 'bg-gray-100 border-gray-200 text-gray-700 dark:bg-darkElevated dark:border-darkBorder dark:text-gray-300' : 'bg-white border-gray-200 text-gray-600 dark:bg-darkCard dark:border-darkBorder dark:text-gray-400 hover:bg-gray-50'}`}>
+                                        <button onClick={() => setMostrarContasPagas(!mostrarContasPagas)} className={`h-[38px] px-4 text-corpo rounded-md font-semibold border transition flex items-center justify-center ${mostrarContasPagas ? 'bg-realce border-borda text-tinta-corpo' : 'bg-superficie border-borda text-tinta-suave hover:bg-gray-50'}`}>
                                             {mostrarContasPagas ? 'Ocultar Pagas' : 'Mostrar Histórico'}
                                         </button>
-                                        <button onClick={() => { setNovaConta({ id: null, descricao: '', valor: '', vencimento: '', status: 'Pendente', recorrente: false, recorrente_total_parcelas: null, recorrente_parcela_atual: 1, categoria: 'Despesa', fornecedor_id: null }); setModalContaAberto(true); }} className="bg-brand hover:bg-brandHover text-white h-[38px] px-4 text-[13px] rounded-md font-semibold shadow-sm transition flex items-center gap-2">
+                                        <button onClick={() => { setNovaConta({ id: null, descricao: '', valor: '', vencimento: '', status: 'Pendente', recorrente: false, recorrente_total_parcelas: null, recorrente_parcela_atual: 1, categoria: 'Despesa', fornecedor_id: null }); setModalContaAberto(true); }} className="bg-brand hover:bg-brandHover text-white h-[38px] px-4 text-corpo rounded-md font-semibold shadow-sm transition flex items-center gap-2">
                                             <Icon name="plus" className="w-4 h-4" /> Nova Conta
                                         </button>
                                     </>
@@ -73,20 +73,20 @@ export default function FinanceiroTab() {
 
                                 {abaFinanceiro === 'contas_receber' && (
                                     <div className="flex flex-col w-60">
-                                        <span className="text-[10px] font-semibold text-gray-500 dark:text-[#888888] uppercase mb-1">Período (data do pedido):</span>
-                                        <CustomDateRangePicker startValue={dataFiltroContasReceberInicio} endValue={dataFiltroContasReceberFim} onChangeStart={setDataFiltroContasReceberInicio} onChangeEnd={setDataFiltroContasReceberFim} placeholder="Todo o período" className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-md px-3 py-2 text-[13px] outline-none hover:border-brand transition" />
+                                        <span className="text-micro font-semibold text-tinta-suave uppercase mb-1">Período (data do pedido):</span>
+                                        <CustomDateRangePicker startValue={dataFiltroContasReceberInicio} endValue={dataFiltroContasReceberFim} onChangeStart={setDataFiltroContasReceberInicio} onChangeEnd={setDataFiltroContasReceberFim} placeholder="Todo o período" className="bg-superficie border border-borda rounded-md px-3 py-2 text-corpo outline-none hover:border-brand transition" />
                                     </div>
                                 )}
 
                                 {abaFinanceiro === 'boletos' && (
                                     <div className="flex flex-col w-60">
-                                        <span className="text-[10px] font-semibold text-gray-500 dark:text-[#888888] uppercase mb-1">Período (vencimento):</span>
-                                        <CustomDateRangePicker startValue={dataFiltroBoletosInicio} endValue={dataFiltroBoletosFim} onChangeStart={setDataFiltroBoletosInicio} onChangeEnd={setDataFiltroBoletosFim} placeholder="Todo o período" className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-md px-3 py-2 text-[13px] outline-none hover:border-brand transition" />
+                                        <span className="text-micro font-semibold text-tinta-suave uppercase mb-1">Período (vencimento):</span>
+                                        <CustomDateRangePicker startValue={dataFiltroBoletosInicio} endValue={dataFiltroBoletosFim} onChangeStart={setDataFiltroBoletosInicio} onChangeEnd={setDataFiltroBoletosFim} placeholder="Todo o período" className="bg-superficie border border-borda rounded-md px-3 py-2 text-corpo outline-none hover:border-brand transition" />
                                     </div>
                                 )}
 
                                 {abaFinanceiro === 'empresas_aprovadas' && (
-                                    <button onClick={() => setModalEmpresaFaturamentoAberto(true)} className="bg-brand hover:bg-brandHover text-white h-[38px] px-4 text-[13px] rounded-md font-semibold shadow-sm transition flex items-center gap-2">
+                                    <button onClick={() => setModalEmpresaFaturamentoAberto(true)} className="bg-brand hover:bg-brandHover text-white h-[38px] px-4 text-corpo rounded-md font-semibold shadow-sm transition flex items-center gap-2">
                                         <Icon name="plus" className="w-4 h-4" /> Adicionar Empresa
                                     </button>
                                 )}
@@ -100,7 +100,7 @@ export default function FinanceiroTab() {
                                                 placeholder="Buscar por nome, razão ou CNPJ..."
                                                 value={buscaNotaFiscal}
                                                 onChange={(e) => { setBuscaNotaFiscal(e.target.value); setPaginaNotasFiscais(1); }}
-                                                className="w-full pl-9 pr-9 py-1.5 h-[38px] text-[13px] border border-gray-200 dark:border-darkBorder bg-white dark:bg-darkCard rounded-md focus:outline-none focus:ring-2 focus:ring-brand dark:text-white transition"
+                                                className="w-full pl-9 pr-9 py-1.5 h-[38px] text-corpo border border-borda bg-superficie rounded-md focus:outline-none focus:ring-2 focus:ring-brand dark:text-white transition"
                                             />
                                             {buscaNotaFiscal && (
                                                 <Tooltip label="Limpar Busca" className="absolute right-2.5 top-1/2 -translate-y-1/2">
@@ -108,12 +108,12 @@ export default function FinanceiroTab() {
                                                 </Tooltip>
                                             )}
                                         </div>
-                                        <div className="flex h-[38px] bg-gray-100/50 dark:bg-darkHover/50 p-1 rounded-lg border border-gray-200 dark:border-darkBorder w-full lg:w-auto mt-3 lg:mt-0">
-                                            <button onClick={() => { setFiltroNotas('pendentes'); setPaginaNotasFiscais(1); }} className={`h-full px-4 text-[12px] font-semibold rounded-md transition flex items-center gap-2 ${filtroNotas === 'pendentes' ? 'bg-white dark:bg-darkCard text-brand shadow-sm border border-gray-200 dark:border-darkBorder' : 'text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white'}`}>Pendentes {notasFiscais.some(n => !n.concluido) && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 ml-1"></span>}</button>
-                                            <button onClick={() => { setFiltroNotas('concluidas'); setPaginaNotasFiscais(1); }} className={`h-full px-4 text-[12px] font-semibold rounded-md transition flex items-center gap-2 ${filtroNotas === 'concluidas' ? 'bg-white dark:bg-darkCard text-brand shadow-sm border border-gray-200 dark:border-darkBorder' : 'text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white'}`}>Concluídas</button>
+                                        <div className="flex h-[38px] bg-gray-100/50 dark:bg-darkHover/50 p-1 rounded-lg border border-borda w-full lg:w-auto mt-3 lg:mt-0">
+                                            <button onClick={() => { setFiltroNotas('pendentes'); setPaginaNotasFiscais(1); }} className={`h-full px-4 text-compacto font-semibold rounded-md transition flex items-center gap-2 ${filtroNotas === 'pendentes' ? 'bg-superficie text-brand shadow-sm border border-borda' : 'text-tinta-suave hover:text-tinta'}`}>Pendentes {notasFiscais.some(n => !n.concluido) && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 ml-1"></span>}</button>
+                                            <button onClick={() => { setFiltroNotas('concluidas'); setPaginaNotasFiscais(1); }} className={`h-full px-4 text-compacto font-semibold rounded-md transition flex items-center gap-2 ${filtroNotas === 'concluidas' ? 'bg-superficie text-brand shadow-sm border border-borda' : 'text-tinta-suave hover:text-tinta'}`}>Concluídas</button>
                                         </div>
                                         <div className="flex rounded-md shadow-sm">
-                                            <button onClick={() => window.open('/solicitar-nota', '_blank')} className="bg-brand hover:bg-brandHover text-white h-[38px] px-4 text-[13px] rounded-l-md font-semibold transition flex items-center gap-2 border border-brand border-r-0">
+                                            <button onClick={() => window.open('/solicitar-nota', '_blank')} className="bg-brand hover:bg-brandHover text-white h-[38px] px-4 text-corpo rounded-l-md font-semibold transition flex items-center gap-2 border border-brand border-r-0">
                                                 <Icon name="external-link" className="w-4 h-4" /> Formulário
                                             </button>
                                             <Tooltip label="Copiar Link">

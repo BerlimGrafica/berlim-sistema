@@ -18,9 +18,9 @@ export default function VendasPorProdutoPanel({ metricas }) {
 
     if (ranking.length === 0) {
         return (
-            <div className="bg-white dark:bg-darkCard p-6 rounded-xl border border-gray-200 dark:border-darkBorder">
-                <h3 className="font-semibold text-[13px] text-gray-800 dark:text-white uppercase tracking-wider">Vendas por produto (catálogo)</h3>
-                <p className="text-[11px] text-gray-500 italic mt-4">Nenhum produto faturado no período.</p>
+            <div className="bg-superficie p-6 rounded-xl border border-borda">
+                <h3 className="font-semibold text-corpo text-tinta uppercase tracking-wider">Vendas por produto (catálogo)</h3>
+                <p className="text-mini text-gray-500 italic mt-4">Nenhum produto faturado no período.</p>
             </div>
         );
     }
@@ -47,20 +47,20 @@ export default function VendasPorProdutoPanel({ metricas }) {
     };
 
     return (
-        <div className="bg-white dark:bg-darkCard p-6 rounded-xl border border-gray-200 dark:border-darkBorder flex flex-col gap-4">
+        <div className="bg-superficie p-6 rounded-xl border border-borda flex flex-col gap-4">
             <div>
-                <h3 className="font-semibold text-[13px] text-gray-800 dark:text-white uppercase tracking-wider">Vendas por produto (catálogo)</h3>
-                <p className="text-[11px] text-gray-400 mt-0.5">A lista abaixo segue o período escolhido. O gráfico mostra sempre os últimos 12 meses.</p>
+                <h3 className="font-semibold text-corpo text-tinta uppercase tracking-wider">Vendas por produto (catálogo)</h3>
+                <p className="text-mini text-gray-400 mt-0.5">A lista abaixo segue o período escolhido. O gráfico mostra sempre os últimos 12 meses.</p>
             </div>
 
-            <div className="w-full overflow-x-auto bg-white dark:bg-darkCard rounded-xl p-4 border border-gray-100 dark:border-darkBorder mb-2 relative">
+            <div className="w-full overflow-x-auto bg-superficie rounded-xl p-4 border border-borda-fraca mb-2 relative">
                 {selecionados.length === 0 ? (
-                    <div className="text-center py-12 text-gray-400 dark:text-gray-500 text-[13px] italic font-medium">Nenhum produto selecionado para gerar o gráfico.</div>
+                    <div className="text-center py-12 text-tinta-fraca text-corpo italic font-medium">Nenhum produto selecionado para gerar o gráfico.</div>
                 ) : (
                     <>
                         <div className="flex flex-wrap gap-2 mb-6 justify-center px-4">
                             {selecionados.map((produto, i) => (
-                                <span key={produto} className="text-[10px] font-semibold px-2 py-1 rounded-full flex items-center gap-1.5 bg-gray-50 dark:bg-darkElevated border border-gray-100 dark:border-darkBorder dark:text-gray-200">
+                                <span key={produto} className="text-micro font-semibold px-2 py-1 rounded-full flex items-center gap-1.5 bg-sutil border border-borda-fraca dark:text-gray-200">
                                     <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: CORES[i % CORES.length] }}></span>
                                     {produto}
                                 </span>
@@ -72,7 +72,7 @@ export default function VendasPorProdutoPanel({ metricas }) {
                                 return (
                                     <g key={f}>
                                         <line x1={PAD_X} y1={y} x2={LARGURA - PAD_X} y2={y} stroke="currentColor" className="text-gray-200/70 dark:text-gray-800/70" strokeDasharray="3 3" />
-                                        <text x={PAD_X - 10} y={y + 4} textAnchor="end" fontSize="11" fill="currentColor" className="text-gray-400 dark:text-gray-500 font-semibold">
+                                        <text x={PAD_X - 10} y={y + 4} textAnchor="end" fontSize="11" fill="currentColor" className="text-tinta-fraca font-semibold">
                                             R$ {formatarValorFinanceiro(f * maxY)}
                                         </text>
                                     </g>
@@ -86,7 +86,7 @@ export default function VendasPorProdutoPanel({ metricas }) {
                                         {i > 0 && i < meses.length - 1 && (
                                             <line x1={x} y1={PAD_Y} x2={x} y2={ALTURA - PAD_Y} stroke="currentColor" className="text-gray-200/50 dark:text-gray-800/50" strokeDasharray="2 4" />
                                         )}
-                                        <text x={x} y={ALTURA} textAnchor="middle" fontSize="11" fill="currentColor" className="text-gray-400 dark:text-gray-500 font-semibold">
+                                        <text x={x} y={ALTURA} textAnchor="middle" fontSize="11" fill="currentColor" className="text-tinta-fraca font-semibold">
                                             {m}/{ano.substring(2)}
                                         </text>
                                     </g>
@@ -110,8 +110,8 @@ export default function VendasPorProdutoPanel({ metricas }) {
             </div>
 
             <div className="flex items-center justify-between mb-1">
-                <span className="text-[11px] text-gray-400 dark:text-gray-500 font-medium">{selecionados.length} de {nomes.length} produtos selecionados</span>
-                <button type="button" onClick={() => setProdutosSelecionadosGrafico(todosSelecionados ? [] : nomes)} className="flex items-center gap-1.5 text-[11px] font-semibold text-brand hover:text-brandHover transition">
+                <span className="text-mini text-tinta-fraca font-medium">{selecionados.length} de {nomes.length} produtos selecionados</span>
+                <button type="button" onClick={() => setProdutosSelecionadosGrafico(todosSelecionados ? [] : nomes)} className="flex items-center gap-1.5 text-mini font-semibold text-brand hover:text-brandHover transition">
                     <Icon name={todosSelecionados ? 'square' : 'check-square'} className="w-3.5 h-3.5" />
                     {todosSelecionados ? 'Remover todos' : 'Selecionar todos'}
                 </button>
@@ -128,16 +128,16 @@ export default function VendasPorProdutoPanel({ metricas }) {
                             type="button"
                             onClick={() => alternarProduto(item.rotulo)}
                             aria-pressed={selecionado}
-                            className={`text-left flex flex-col gap-2 p-3 rounded-lg transition border ${selecionado ? 'border-gray-300 dark:border-gray-600 bg-gray-50/50 dark:bg-darkHover shadow-sm' : 'border-gray-100 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkElevated'}`}
+                            className={`text-left flex flex-col gap-2 p-3 rounded-lg transition border ${selecionado ? 'border-gray-300 dark:border-gray-600 bg-gray-50/50 dark:bg-darkHover shadow-sm' : 'border-borda-fraca hover:bg-sutil'}`}
                         >
                             <div className="flex items-start justify-between gap-2">
                                 <div className="flex items-center gap-2 overflow-hidden">
                                     <span className="flex-shrink-0 flex items-center justify-center w-4 h-4 rounded border border-gray-300 dark:border-gray-600 transition-colors" style={{ backgroundColor: cor, borderColor: selecionado ? cor : '' }}>
                                         {selecionado && <Icon name="check" className="w-3 h-3 text-white" />}
                                     </span>
-                                    <span className="text-[11px] font-semibold text-gray-700 dark:text-gray-200 truncate" title={item.rotulo}>{item.rotulo}</span>
+                                    <span className="text-mini font-semibold text-gray-700 dark:text-gray-200 truncate" title={item.rotulo}>{item.rotulo}</span>
                                 </div>
-                                <span className="text-right text-[11px] font-black text-gray-900 dark:text-white whitespace-nowrap tabular-nums">R$ {formatarValorFinanceiro(valor)}</span>
+                                <span className="text-right text-mini font-black text-tinta whitespace-nowrap tabular-nums">R$ {formatarValorFinanceiro(valor)}</span>
                             </div>
                             <span className="w-full bg-gray-200 dark:bg-darkBg rounded-full h-1.5 overflow-hidden relative block">
                                 <span className="h-full block transition-all duration-1000 ease-out opacity-90" style={{ width: `${(valor / maiorDoRanking) * 100}%`, backgroundColor: selecionado ? cor : '#9ca3af' }}></span>
