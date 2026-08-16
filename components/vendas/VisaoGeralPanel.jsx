@@ -1,51 +1,91 @@
 "use client";
 import { useState, useRef } from 'react';
-import { usePedidos } from '@/context/PedidosContext';
-import { useFinanceiro } from '@/context/FinanceiroContext';
 import Icon from '@/components/Icon';
 import Tooltip from '@/components/Tooltip';
-import { formatarValorFinanceiro, obterDataAtual, formatarDataExibicao, formatarMesAno } from '@/lib/utils/formatters';
-import { StackedCards } from '@/components/StackedCards';
+import { formatarValorFinanceiro, formatarDataExibicao, formatarMesAno, centavosParaReais, obterDataAtual } from '@/lib/utils/formatters';
 import { BarRow } from '@/components/vendas/BarRow';
-import { useFinanceiroMetrics } from '@/components/vendas/useFinanceiroMetrics';
 
-export default function VisaoGeralPanel() {
-    const { pedidos } = usePedidos();
-    const { contasPagar } = useFinanceiro();
-    const [slidePainelAtivo, setSlidePainelAtivo] = useState(0);
-    const painelScrollRef = useRef(null);
-    const scrollToSlidePainel = (i) => {
-        const el = painelScrollRef.current;
+const SLIDES = ['Faturamento no tempo', 'Distribuição no período', 'Despesas do período'];
+
+// "R$" sempre em cima, número embaixo — e o número encolhe se for ficar largo
+// demais pro card, em vez de quebrar linha no meio do valor.
+const tamanhoNumero = (texto) => (texto.length > 12 ? 'text-sm' : texto.length > 9 ? 'text-base' : 'text-lg');
+
+function CardIndicador({ rotulo, centavos, cor, icone, nota }) {
+    const texto = formatarValorFinanceiro(centavosParaReais(centavos));
+    return (
+        <div className="bg-white dark:bg-darkCard p-5 rounded-xl border border-gray-200 dark:border-darkBorder shadow-sm hover:shadow-md transition flex flex-col justify-between">
+            <div className="flex items-end justify-between gap-2">
+                <div className="min-w-0">
+                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">{rotulo}</span>
+                    <span className={`block text-lg font-black ${cor} leading-tight`}>R$</span>
+                    <h2 className={`${tamanhoNumero(texto)} font-black ${cor} leading-tight tabular-nums`}>{texto}</h2>
+                </div>
+                <div className={`p-2 rounded-lg shrink-0 ${icone.fundo}`}><Icon name={icone.nome} className={`w-4 h-4 ${cor}`} /></div>
+            </div>
+            <p className="text-[11px] text-gray-400 mt-3 font-medium truncate" title={nota}>{nota}</p>
+        </div>
+    );
+}
+
+function CardPainel({ titulo, descricao, icone, fundoIcone, corIcone, children }) {
+    return (
+        <div className="bg-white dark:bg-darkCard rounded-xl border border-gray-200 dark:border-darkBorder flex flex-col">
+            <div className="rounded-t-xl px-5 py-4 border-b border-gray-100 dark:border-darkBorder flex items-center gap-3 shrink-0">
+                <div className={`p-2 rounded-lg shrink-0 ${fundoIcone}`}><Icon name={icone} className={`w-4 h-4 ${corIcone}`} /></div>
+                <div className="min-w-0">
+                    <h3 className="font-bold text-[13px] text-gray-800 dark:text-white truncate">{titulo}</h3>
+                    <p className="text-[11px] text-gray-400 truncate">{descricao}</p>
+                </div>
+            </div>
+            <div className="flex-1 flex flex-col gap-4 p-5 overflow-y-auto max-h-72 custom-scrollbar">{children}</div>
+        </div>
+    );
+}
+
+function Barras({ itens, cores, vazio, rotuloDe = (i) => i.rotulo, corFixa }) {
+    if (!itens || itens.length === 0) return <p className="text-[11px] text-gray-500 italic">{vazio}</p>;
+    const valores = itens.map(i => centavosParaReais(i.centavos));
+    const max = Math.max(...valores, 1);
+    const total = valores.reduce((a, v) => a + v, 0);
+    return itens.map((item, i) => (
+        <BarRow
+            key={item.rotulo}
+            label={rotuloDe(item)}
+            valor={valores[i]}
+            maxVal={max}
+            color={corFixa || (typeof cores === 'function' ? cores(item, i) : cores[i % cores.length])}
+            rank={i + 1}
+            pctTotal={total > 0 ? (valores[i] / total) * 100 : 0}
+        />
+    ));
+}
+
+const CORES_LOCAL = ['bg-teal-500', 'bg-emerald-500', 'bg-cyan-500', 'bg-sky-500', 'bg-blue-500'];
+const CORES_FORMA = ['bg-amber-500', 'bg-yellow-500', 'bg-orange-500', 'bg-lime-500'];
+const CORES_INST = ['bg-emerald-500', 'bg-teal-500', 'bg-cyan-500', 'bg-sky-500'];
+const CORES_CATEGORIA = { 'Despesa': 'bg-gray-500', 'Manutenção': 'bg-purple-500', 'Terceirização': 'bg-indigo-500', 'Material': 'bg-blue-500' };
+
+export default function VisaoGeralPanel({ metricas, rotulo }) {
+    const [slide, setSlide] = useState(0);
+    const scrollRef = useRef(null);
+
+    const irPara = (i) => {
+        const el = scrollRef.current;
         if (!el) return;
         el.scrollTo({ left: i * el.clientWidth, behavior: 'smooth' });
-        setSlidePainelAtivo(i);
+        setSlide(i);
     };
-    const handlePainelScroll = () => {
-        const el = painelScrollRef.current;
+    const aoRolar = () => {
+        const el = scrollRef.current;
         if (!el || !el.clientWidth) return;
-        setSlidePainelAtivo(Math.round(el.scrollLeft / el.clientWidth));
+        setSlide(Math.round(el.scrollLeft / el.clientWidth));
     };
 
-    const {
-        totalAnoAtual, crescimentoPercentual, totalVendasHoje, totalAReceber, ticketMedio,
-        totalDespesasMesAtual, totalRecebidoMesAtual, totalBrutoMesAtual,
-        anosOrdenados, maxBrutoAno, anoAtual, mesesOrdenados, maxBrutoMes, nomeMesAtual, diasOrdenados, maxBrutoDia, diaAtual,
-        renderLayer2, renderLayer3, renderLayer4,
-        rankingLocal, maxLocal, totalRankingLocal, colorsLocal,
-        rankingForma, maxForma, totalRankingForma, colorsForma,
-        rankingInstituicao, maxInstituicao, totalRankingInstituicao, colorsInst,
-        rankingCategoriaDespesa, maxCategoriaDespesa, totalCategoriaDespesa, coresCategoriaDespesa,
-        totalContasPendentes, totalContasPagas, qtdContasVencidas, maxStatusDespesa, totalStatusDespesa,
-        maioresContas, maxMaiorConta, parseValorConta,
-    } = useFinanceiroMetrics(pedidos, contasPagar);
-
-    // "R$" sempre em cima, número embaixo — e o número encolhe se for ficar
-    // largo demais pro card, em vez de quebrar linha no meio do valor.
-    const tamanhoNumero = (valorFormatado) => {
-        if (valorFormatado.length > 12) return 'text-sm';
-        if (valorFormatado.length > 9) return 'text-base';
-        return 'text-lg';
-    };
+    const { resumo, ano, despesas } = metricas;
+    const anoAnterior = String(Number(ano.rotulo) - 1);
+    const brutoMenosDespesas = resumo.recebido_centavos - despesas.total_centavos;
+    const crescimento = Number(ano.crescimento_pct) || 0;
 
     return (
         <div className="flex flex-col gap-8">
@@ -54,271 +94,145 @@ export default function VisaoGeralPanel() {
             <div>
                 <div className="flex items-center gap-2 mb-4">
                     <span className="w-1 h-4 bg-brand rounded-full"></span>
-                    <h2 className="text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Resumo do Período</h2>
+                    <h2 className="text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Resumo do período</h2>
+                    <span className="text-[10px] text-gray-400 font-medium normal-case">{rotulo}</span>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-7 gap-4">
+                    {/* Crescimento é sempre ano contra ano — não segue o período, e o rótulo diz isso. */}
                     <div className="bg-white dark:bg-darkCard p-5 rounded-xl border border-gray-200 dark:border-darkBorder shadow-sm hover:shadow-md transition flex flex-col justify-between">
                         <div className="flex items-end justify-between gap-2">
                             <div className="min-w-0">
                                 <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">Crescimento (YoY)</span>
                                 <span className="block text-lg font-black text-gray-900 dark:text-white leading-tight">R$</span>
-                                <h2 className={`${tamanhoNumero(formatarValorFinanceiro(totalAnoAtual))} font-black text-gray-900 dark:text-white leading-tight`}>{formatarValorFinanceiro(totalAnoAtual)}</h2>
+                                <h2 className={`${tamanhoNumero(formatarValorFinanceiro(centavosParaReais(ano.atual_centavos)))} font-black text-gray-900 dark:text-white leading-tight tabular-nums`}>
+                                    {formatarValorFinanceiro(centavosParaReais(ano.atual_centavos))}
+                                </h2>
                             </div>
-                            <div className={`p-2 rounded-lg shrink-0 ${crescimentoPercentual >= 0 ? 'bg-emerald-50 dark:bg-emerald-500/10' : 'bg-red-50 dark:bg-red-500/10'}`}>
-                                <Icon name={crescimentoPercentual >= 0 ? 'trending-up' : 'trending-down'} className={`w-4 h-4 ${crescimentoPercentual >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`} />
+                            <div className={`p-2 rounded-lg shrink-0 ${crescimento >= 0 ? 'bg-emerald-50 dark:bg-emerald-500/10' : 'bg-red-50 dark:bg-red-500/10'}`}>
+                                <Icon name={crescimento >= 0 ? 'trending-up' : 'trending-down'} className={`w-4 h-4 ${crescimento >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`} />
                             </div>
                         </div>
-                        <p className={`text-[11px] font-bold mt-3 ${crescimentoPercentual >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
-                            {crescimentoPercentual >= 0 ? '+' : '-'}{Math.abs(crescimentoPercentual).toFixed(1)}% vs. ano anterior
+                        <p className={`text-[11px] font-bold mt-3 ${crescimento >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+                            {crescimento >= 0 ? '+' : '-'}{Math.abs(crescimento).toFixed(1)}% — {ano.rotulo} vs {anoAnterior}
                         </p>
                     </div>
 
-                    <div className="bg-white dark:bg-darkCard p-5 rounded-xl border border-gray-200 dark:border-darkBorder shadow-sm hover:shadow-md transition flex flex-col justify-between">
-                        <div className="flex items-end justify-between gap-2">
-                            <div className="min-w-0">
-                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">Despesas (A Pagar)</span>
-                                <span className="block text-lg font-black text-red-600 dark:text-red-400 leading-tight">R$</span>
-                                <h2 className={`${tamanhoNumero(formatarValorFinanceiro(totalDespesasMesAtual))} font-black text-red-600 dark:text-red-400 leading-tight`}>{formatarValorFinanceiro(totalDespesasMesAtual)}</h2>
-                            </div>
-                            <div className="p-2 rounded-lg bg-red-50 dark:bg-red-500/10 shrink-0"><Icon name="dollar-sign" className="w-4 h-4 text-red-600 dark:text-red-400" /></div>
-                        </div>
-                        <p className="text-[11px] text-gray-400 mt-3 font-medium">{nomeMesAtual}</p>
-                    </div>
-
-                    <div className="bg-white dark:bg-darkCard p-5 rounded-xl border border-gray-200 dark:border-darkBorder shadow-sm hover:shadow-md transition flex flex-col justify-between">
-                        <div className="flex items-end justify-between gap-2">
-                            <div className="min-w-0">
-                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">Total Recebido</span>
-                                <span className="block text-lg font-black text-emerald-600 dark:text-emerald-400 leading-tight">R$</span>
-                                <h2 className={`${tamanhoNumero(formatarValorFinanceiro(totalRecebidoMesAtual))} font-black text-emerald-600 dark:text-emerald-400 leading-tight`}>{formatarValorFinanceiro(totalRecebidoMesAtual)}</h2>
-                            </div>
-                            <div className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 shrink-0"><Icon name="check-circle" className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /></div>
-                        </div>
-                        <p className="text-[11px] text-gray-400 mt-3 font-medium">{nomeMesAtual}</p>
-                    </div>
-
-                    <div className="bg-white dark:bg-darkCard p-5 rounded-xl border border-gray-200 dark:border-darkBorder shadow-sm hover:shadow-md transition flex flex-col justify-between">
-                        <div className="flex items-end justify-between gap-2">
-                            <div className="min-w-0">
-                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">Total Bruto</span>
-                                <span className="block text-lg font-black text-cyan-600 dark:text-cyan-400 leading-tight">R$</span>
-                                <h2 className={`${tamanhoNumero(formatarValorFinanceiro(totalBrutoMesAtual))} font-black text-cyan-600 dark:text-cyan-400 leading-tight`}>{formatarValorFinanceiro(totalBrutoMesAtual)}</h2>
-                            </div>
-                            <div className="p-2 rounded-lg bg-cyan-50 dark:bg-cyan-500/10 shrink-0"><Icon name="dollar-sign" className="w-4 h-4 text-cyan-600 dark:text-cyan-400" /></div>
-                        </div>
-                        <p className="text-[11px] text-gray-400 mt-3 font-medium">{nomeMesAtual}</p>
-                    </div>
-
-                    <div className="bg-white dark:bg-darkCard p-5 rounded-xl border border-gray-200 dark:border-darkBorder shadow-sm hover:shadow-md transition flex flex-col justify-between">
-                        <div className="flex items-end justify-between gap-2">
-                            <div className="min-w-0">
-                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">Vendas Hoje</span>
-                                <span className="block text-lg font-black text-purple-600 dark:text-purple-400 leading-tight">R$</span>
-                                <h2 className={`${tamanhoNumero(formatarValorFinanceiro(totalVendasHoje))} font-black text-purple-600 dark:text-purple-400 leading-tight`}>{formatarValorFinanceiro(totalVendasHoje)}</h2>
-                            </div>
-                            <div className="p-2 rounded-lg bg-purple-50 dark:bg-purple-500/10 shrink-0"><Icon name="calendar" className="w-4 h-4 text-purple-600 dark:text-purple-400" /></div>
-                        </div>
-                        <p className="text-[11px] text-gray-400 mt-3 font-medium">{formatarDataExibicao(obterDataAtual())}</p>
-                    </div>
-
-                    <div className="bg-white dark:bg-darkCard p-5 rounded-xl border border-gray-200 dark:border-darkBorder shadow-sm hover:shadow-md transition flex flex-col justify-between">
-                        <div className="flex items-end justify-between gap-2">
-                            <div className="min-w-0">
-                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">Saldo Devedor</span>
-                                <span className="block text-lg font-black text-orange-600 dark:text-orange-400 leading-tight">R$</span>
-                                <h2 className={`${tamanhoNumero(formatarValorFinanceiro(totalAReceber))} font-black text-orange-600 dark:text-orange-400 leading-tight`}>{formatarValorFinanceiro(totalAReceber)}</h2>
-                            </div>
-                            <div className="p-2 rounded-lg bg-orange-50 dark:bg-orange-500/10 shrink-0"><Icon name="clock" className="w-4 h-4 text-orange-600 dark:text-orange-400" /></div>
-                        </div>
-                        <p className="text-[11px] text-gray-400 mt-3 font-medium">Falta receber</p>
-                    </div>
-
-                    <div className="bg-white dark:bg-darkCard p-5 rounded-xl border border-gray-200 dark:border-darkBorder shadow-sm hover:shadow-md transition flex flex-col justify-between">
-                        <div className="flex items-end justify-between gap-2">
-                            <div className="min-w-0">
-                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">Ticket Médio</span>
-                                <span className="block text-lg font-black text-blue-600 dark:text-blue-400 leading-tight">R$</span>
-                                <h2 className={`${tamanhoNumero(formatarValorFinanceiro(ticketMedio))} font-black text-blue-600 dark:text-blue-400 leading-tight`}>{formatarValorFinanceiro(ticketMedio)}</h2>
-                            </div>
-                            <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-500/10 shrink-0"><Icon name="tag" className="w-4 h-4 text-blue-600 dark:text-blue-400" /></div>
-                        </div>
-                        <p className="text-[11px] text-gray-400 mt-3 font-medium">Média por pedido</p>
-                    </div>
+                    <CardIndicador rotulo="Despesas (a pagar)" centavos={despesas.total_centavos} cor="text-red-600 dark:text-red-400"
+                        icone={{ nome: 'dollar-sign', fundo: 'bg-red-50 dark:bg-red-500/10' }} nota={rotulo} />
+                    <CardIndicador rotulo="Total recebido" centavos={resumo.recebido_centavos} cor="text-emerald-600 dark:text-emerald-400"
+                        icone={{ nome: 'check-circle', fundo: 'bg-emerald-50 dark:bg-emerald-500/10' }} nota={rotulo} />
+                    <CardIndicador rotulo="Total bruto" centavos={brutoMenosDespesas} cor="text-cyan-600 dark:text-cyan-400"
+                        icone={{ nome: 'dollar-sign', fundo: 'bg-cyan-50 dark:bg-cyan-500/10' }} nota="Recebido menos despesas" />
+                    <CardIndicador rotulo="Vendas hoje" centavos={metricas.vendas_hoje_centavos} cor="text-purple-600 dark:text-purple-400"
+                        icone={{ nome: 'calendar', fundo: 'bg-purple-50 dark:bg-purple-500/10' }} nota={formatarDataExibicao(obterDataAtual())} />
+                    <CardIndicador rotulo="Saldo devedor" centavos={resumo.a_receber_centavos} cor="text-orange-600 dark:text-orange-400"
+                        icone={{ nome: 'clock', fundo: 'bg-orange-50 dark:bg-orange-500/10' }} nota="Falta receber no período" />
+                    <CardIndicador rotulo="Ticket médio" centavos={resumo.ticket_medio_centavos} cor="text-blue-600 dark:text-blue-400"
+                        icone={{ nome: 'tag', fundo: 'bg-blue-50 dark:bg-blue-500/10' }} nota={`${resumo.qtd_pedidos} pedido(s) no período`} />
                 </div>
             </div>
 
-            {/* PAINEL COM ROLAGEM LATERAL: ANÁLISE / DISTRIBUIÇÃO / DESPESAS */}
+            {/* PAINEL COM ROLAGEM LATERAL */}
             <div>
                 <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
                     <div className="flex items-center gap-2">
                         <span className="w-1 h-4 bg-brand rounded-full"></span>
-                        <h2 className="text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                            {['Análise por Período', 'Distribuição no Período', 'Despesas'][slidePainelAtivo]}
-                        </h2>
-                        <span className="text-[10px] text-gray-400 font-medium normal-case">
-                            {slidePainelAtivo === 0 ? 'clique nos cards para alternar as camadas' : slidePainelAtivo === 2 ? 'contas a pagar' : 'como o faturamento se distribuiu'}
-                        </span>
+                        <h2 className="text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">{SLIDES[slide]}</h2>
                     </div>
                     <div className="flex items-center gap-3">
                         <div className="flex items-center gap-1.5">
-                            {[0, 1, 2].map(i => (
-                                <Tooltip key={i} label={['Análise por Período', 'Distribuição no Período', 'Despesas'][i]}>
-                                    <button onClick={() => scrollToSlidePainel(i)} aria-label={['Análise por Período', 'Distribuição no Período', 'Despesas'][i]} className={`h-1.5 rounded-full transition-all ${slidePainelAtivo === i ? 'w-5 bg-brand' : 'w-1.5 bg-gray-300 dark:bg-darkBorder hover:bg-gray-400'}`}></button>
+                            {SLIDES.map((nome, i) => (
+                                <Tooltip key={nome} label={nome}>
+                                    <button onClick={() => irPara(i)} aria-label={nome} className={`h-1.5 rounded-full transition-all ${slide === i ? 'w-5 bg-brand' : 'w-1.5 bg-gray-300 dark:bg-darkBorder hover:bg-gray-400'}`}></button>
                                 </Tooltip>
                             ))}
                         </div>
                         <div className="flex gap-1">
-                            <button onClick={() => scrollToSlidePainel(Math.max(0, slidePainelAtivo - 1))} disabled={slidePainelAtivo === 0} className="w-7 h-7 flex items-center justify-center rounded-md border border-gray-200 dark:border-darkBorder text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-darkHover disabled:opacity-30 disabled:cursor-not-allowed transition"><Icon name="chevron-left" className="w-4 h-4" /></button>
-                            <button onClick={() => scrollToSlidePainel(Math.min(2, slidePainelAtivo + 1))} disabled={slidePainelAtivo === 2} className="w-7 h-7 flex items-center justify-center rounded-md border border-gray-200 dark:border-darkBorder text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-darkHover disabled:opacity-30 disabled:cursor-not-allowed transition"><Icon name="chevron-right" className="w-4 h-4" /></button>
+                            <button onClick={() => irPara(Math.max(0, slide - 1))} disabled={slide === 0} aria-label="Painel anterior" className="w-7 h-7 flex items-center justify-center rounded-md border border-gray-200 dark:border-darkBorder text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-darkHover disabled:opacity-30 disabled:cursor-not-allowed transition"><Icon name="chevron-left" className="w-4 h-4" /></button>
+                            <button onClick={() => irPara(Math.min(SLIDES.length - 1, slide + 1))} disabled={slide === SLIDES.length - 1} aria-label="Próximo painel" className="w-7 h-7 flex items-center justify-center rounded-md border border-gray-200 dark:border-darkBorder text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-darkHover disabled:opacity-30 disabled:cursor-not-allowed transition"><Icon name="chevron-right" className="w-4 h-4" /></button>
                         </div>
                     </div>
                 </div>
 
-                <div ref={painelScrollRef} onScroll={handlePainelScroll} className="flex overflow-x-auto overflow-y-hidden snap-x snap-mandatory no-scrollbar-style">
+                <div ref={scrollRef} onScroll={aoRolar} className="flex overflow-x-auto overflow-y-hidden snap-x snap-mandatory no-scrollbar-style">
 
-                    {/* SLIDE 1: ANÁLISE POR PERÍODO */}
+                    {/* SLIDE 1: FATURAMENTO NO TEMPO */}
                     <div className="w-full shrink-0 snap-start pr-1">
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                            <StackedCards
-                                title="Visão Anual"
-                                icon="calendar"
-                                description="Evolução e Análise (Anos)"
-                                cards={[
-                                    { title: "Faturamento Histórico", content: anosOrdenados.length === 0 ? <p className="text-[11px] text-gray-500 italic">Sem dados.</p> : <div className="flex flex-col gap-3">{anosOrdenados.map((a, index) => <BarRow key={a.ano} label={a.ano} valor={a.bruto} maxVal={maxBrutoAno} color="bg-blue-500" rank={index + 1} />)}</div> },
-                                    { title: `Local de Produção (${anoAtual})`, content: renderLayer2() },
-                                    { title: `Formas de Pagamento (${anoAtual})`, content: renderLayer3() },
-                                    { title: `Vendas por Instituição (${anoAtual})`, content: renderLayer4() }
-                                ]}
-                            />
-                            <StackedCards
-                                title="Visão Mensal"
-                                icon="layout-dashboard"
-                                description="Evolução e Análise (Meses)"
-                                cards={[
-                                    { title: `Faturamento (${anoAtual})`, content: mesesOrdenados.length === 0 ? <p className="text-[11px] text-gray-500 italic">Sem dados.</p> : <div className="flex flex-col gap-3">{mesesOrdenados.map((m, index) => <BarRow key={m.mesAno} label={formatarMesAno(m.mesAno)} valor={m.bruto} maxVal={maxBrutoMes} color="bg-emerald-500" rank={index + 1} />)}</div> },
-                                    { title: `Local de Produção (${nomeMesAtual})`, content: renderLayer2() },
-                                    { title: `Formas de Pagamento (${nomeMesAtual})`, content: renderLayer3() },
-                                    { title: `Vendas por Instituição (${nomeMesAtual})`, content: renderLayer4() }
-                                ]}
-                            />
-                            <StackedCards
-                                title="Visão Diária"
-                                icon="list"
-                                description="Evolução e Análise (Dias)"
-                                cards={[
-                                    { title: `Faturamento (${nomeMesAtual})`, content: diasOrdenados.length === 0 ? <p className="text-[11px] text-gray-500 italic">Sem dados.</p> : <div className="flex flex-col gap-3">{diasOrdenados.map((d, index) => <BarRow key={d.dia} label={formatarDataExibicao(d.dia).substring(0,5)} valor={d.bruto} maxVal={maxBrutoDia} color="bg-purple-500" rank={index + 1} />)}</div> },
-                                    { title: `Local de Produção (${diaAtual})`, content: renderLayer2() },
-                                    { title: `Formas de Pagamento (${diaAtual})`, content: renderLayer3() },
-                                    { title: `Vendas por Instituição (${diaAtual})`, content: renderLayer4() }
-                                ]}
-                            />
+                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                            <CardPainel titulo="Por ano" descricao="Todo o histórico, fora do período" icone="calendar" fundoIcone="bg-blue-50 dark:bg-blue-500/10" corIcone="text-blue-600 dark:text-blue-400">
+                                <Barras itens={metricas.serie_ano} corFixa="bg-blue-500" vazio="Sem faturamento registrado." />
+                            </CardPainel>
+                            <CardPainel titulo="Por mês" descricao="Meses dentro do período" icone="layout-dashboard" fundoIcone="bg-emerald-50 dark:bg-emerald-500/10" corIcone="text-emerald-600 dark:text-emerald-400">
+                                <Barras itens={metricas.serie_mes} corFixa="bg-emerald-500" rotuloDe={(i) => formatarMesAno(i.rotulo)} vazio="Nenhum mês com faturamento no período." />
+                            </CardPainel>
+                            <CardPainel titulo="Por dia" descricao="Dias dentro do período" icone="list" fundoIcone="bg-purple-50 dark:bg-purple-500/10" corIcone="text-purple-600 dark:text-purple-400">
+                                <Barras itens={metricas.serie_dia} corFixa="bg-purple-500" rotuloDe={(i) => formatarDataExibicao(i.rotulo).substring(0, 5)} vazio="Nenhum dia com faturamento no período." />
+                            </CardPainel>
                         </div>
                     </div>
 
                     {/* SLIDE 2: DISTRIBUIÇÃO NO PERÍODO */}
                     <div className="w-full shrink-0 snap-start px-1">
                         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                            <div className="bg-white dark:bg-darkCard rounded-xl border border-gray-200 dark:border-darkBorder flex flex-col">
-                                <div className="rounded-t-xl px-5 py-4 border-b border-gray-100 dark:border-darkBorder flex items-center gap-3 shrink-0">
-                                    <div className="p-2 rounded-lg bg-teal-50 dark:bg-teal-500/10 shrink-0"><Icon name="map-pin" className="w-4 h-4 text-teal-600 dark:text-teal-400" /></div>
-                                    <div className="min-w-0">
-                                        <h3 className="font-bold text-[13px] text-gray-800 dark:text-white truncate">Receitas por Local</h3>
-                                        <p className="text-[11px] text-gray-400 truncate">Rentabilidade por local</p>
-                                    </div>
-                                </div>
-                                <div className="flex flex-col gap-4 p-5 overflow-y-auto max-h-72 custom-scrollbar">
-                                    {rankingLocal.length === 0 ? <p className="text-[11px] text-gray-500 italic">Nenhum local registrado.</p> :
-                                        rankingLocal.map((loc, index) => <BarRow key={loc[0]} label={loc[0]} valor={loc[1]} maxVal={maxLocal} color={colorsLocal[index % colorsLocal.length]} rank={index + 1} pctTotal={totalRankingLocal > 0 ? (loc[1] / totalRankingLocal) * 100 : 0} />)
-                                    }
-                                </div>
-                            </div>
-
-                            <div className="bg-white dark:bg-darkCard rounded-xl border border-gray-200 dark:border-darkBorder flex flex-col">
-                                <div className="rounded-t-xl px-5 py-4 border-b border-gray-100 dark:border-darkBorder flex items-center gap-3 shrink-0">
-                                    <div className="p-2 rounded-lg bg-amber-50 dark:bg-amber-500/10 shrink-0"><Icon name="dollar-sign" className="w-4 h-4 text-amber-600 dark:text-amber-400" /></div>
-                                    <div className="min-w-0">
-                                        <h3 className="font-bold text-[13px] text-gray-800 dark:text-white truncate">Formas de Pagamento</h3>
-                                        <p className="text-[11px] text-gray-400 truncate">Como os clientes pagaram</p>
-                                    </div>
-                                </div>
-                                <div className="flex flex-col gap-4 p-5 overflow-y-auto max-h-72 custom-scrollbar">
-                                    {rankingForma.length === 0 ? <p className="text-[11px] text-gray-500 italic">Nenhum pagamento registrado.</p> :
-                                        rankingForma.map((f, index) => <BarRow key={f[0]} label={f[0]} valor={f[1]} maxVal={maxForma} color={colorsForma[index % colorsForma.length]} rank={index + 1} pctTotal={totalRankingForma > 0 ? (f[1] / totalRankingForma) * 100 : 0} />)
-                                    }
-                                </div>
-                            </div>
-
-                            <div className="bg-white dark:bg-darkCard rounded-xl border border-gray-200 dark:border-darkBorder flex flex-col">
-                                <div className="rounded-t-xl px-5 py-4 border-b border-gray-100 dark:border-darkBorder flex items-center gap-3 shrink-0">
-                                    <div className="p-2 rounded-lg bg-sky-50 dark:bg-sky-500/10 shrink-0"><Icon name="link" className="w-4 h-4 text-sky-600 dark:text-sky-400" /></div>
-                                    <div className="min-w-0">
-                                        <h3 className="font-bold text-[13px] text-gray-800 dark:text-white truncate">Instituições</h3>
-                                        <p className="text-[11px] text-gray-400 truncate">Volume por conta (PIX, Boleto e Link)</p>
-                                    </div>
-                                </div>
-                                <div className="flex flex-col gap-4 p-5 overflow-y-auto max-h-72 custom-scrollbar">
-                                    {rankingInstituicao.length === 0 ? <p className="text-[11px] text-gray-500 italic">Nenhuma instituição registrada.</p> :
-                                        rankingInstituicao.map((i, index) => <BarRow key={i[0]} label={i[0]} valor={i[1]} maxVal={maxInstituicao} color={colorsInst[index % colorsInst.length]} rank={index + 1} pctTotal={totalRankingInstituicao > 0 ? (i[1] / totalRankingInstituicao) * 100 : 0} />)
-                                    }
-                                </div>
-                            </div>
+                            <CardPainel titulo="Receitas por local" descricao="Rateado entre os locais da O.S." icone="map-pin" fundoIcone="bg-teal-50 dark:bg-teal-500/10" corIcone="text-teal-600 dark:text-teal-400">
+                                <Barras itens={metricas.ranking_local} cores={CORES_LOCAL} vazio="Nenhum local registrado no período." />
+                            </CardPainel>
+                            <CardPainel titulo="Formas de pagamento" descricao="Como os clientes pagaram" icone="dollar-sign" fundoIcone="bg-amber-50 dark:bg-amber-500/10" corIcone="text-amber-600 dark:text-amber-400">
+                                <Barras itens={metricas.ranking_forma} cores={CORES_FORMA} vazio="Nenhum pagamento registrado no período." />
+                            </CardPainel>
+                            <CardPainel titulo="Instituições" descricao="Volume por conta (PIX, Boleto e Link)" icone="link" fundoIcone="bg-sky-50 dark:bg-sky-500/10" corIcone="text-sky-600 dark:text-sky-400">
+                                <Barras itens={metricas.ranking_instituicao} cores={CORES_INST} vazio="Nenhuma instituição registrada no período." />
+                            </CardPainel>
                         </div>
                     </div>
 
-                    {/* SLIDE 3: DESPESAS (CONTAS A PAGAR) */}
+                    {/* SLIDE 3: DESPESAS DO PERÍODO */}
                     <div className="w-full shrink-0 snap-start pl-1">
                         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                            <div className="bg-white dark:bg-darkCard rounded-xl border border-gray-200 dark:border-darkBorder flex flex-col">
-                                <div className="rounded-t-xl px-5 py-4 border-b border-gray-100 dark:border-darkBorder flex items-center gap-3 shrink-0">
-                                    <div className="p-2 rounded-lg bg-gray-100 dark:bg-gray-500/10 shrink-0"><Icon name="tag" className="w-4 h-4 text-gray-600 dark:text-gray-400" /></div>
-                                    <div className="min-w-0">
-                                        <h3 className="font-bold text-[13px] text-gray-800 dark:text-white truncate">Despesas por Categoria</h3>
-                                        <p className="text-[11px] text-gray-400 truncate">Despesa, Manutenção e Terceirização</p>
-                                    </div>
-                                </div>
-                                <div className="flex-1 flex flex-col gap-4 p-5 overflow-y-auto max-h-72 custom-scrollbar">
-                                    {rankingCategoriaDespesa.length === 0 ? <p className="text-[11px] text-gray-500 italic">Nenhuma conta registrada.</p> :
-                                        rankingCategoriaDespesa.map((cat, index) => <BarRow key={cat[0]} label={cat[0]} valor={cat[1]} maxVal={maxCategoriaDespesa} color={coresCategoriaDespesa[cat[0]] || 'bg-gray-500'} rank={index + 1} pctTotal={totalCategoriaDespesa > 0 ? (cat[1] / totalCategoriaDespesa) * 100 : 0} />)
-                                    }
-                                </div>
-                            </div>
+                            <CardPainel titulo="Despesas por categoria" descricao="Contas com vencimento no período" icone="tag" fundoIcone="bg-gray-100 dark:bg-gray-500/10" corIcone="text-gray-600 dark:text-gray-400">
+                                <Barras itens={despesas.por_categoria} cores={(item) => CORES_CATEGORIA[item.rotulo] || 'bg-gray-500'} vazio="Nenhuma conta no período." />
+                            </CardPainel>
 
-                            <div className="bg-white dark:bg-darkCard rounded-xl border border-gray-200 dark:border-darkBorder flex flex-col">
-                                <div className="rounded-t-xl px-5 py-4 border-b border-gray-100 dark:border-darkBorder flex items-center gap-3 shrink-0">
-                                    <div className="p-2 rounded-lg bg-rose-50 dark:bg-rose-500/10 shrink-0"><Icon name="check-circle" className="w-4 h-4 text-rose-600 dark:text-rose-400" /></div>
-                                    <div className="min-w-0">
-                                        <h3 className="font-bold text-[13px] text-gray-800 dark:text-white truncate">Status das Contas</h3>
-                                        <p className="text-[11px] text-gray-400 truncate">{qtdContasVencidas > 0 ? `${qtdContasVencidas} conta(s) vencida(s)` : 'Nenhuma conta vencida'}</p>
-                                    </div>
-                                </div>
-                                <div className="flex-1 flex flex-col gap-4 p-5 overflow-y-auto max-h-72 custom-scrollbar">
-                                    {totalStatusDespesa === 0 ? <p className="text-[11px] text-gray-500 italic">Nenhuma conta registrada.</p> : <>
-                                        <BarRow label="Pendente" valor={totalContasPendentes} maxVal={maxStatusDespesa} color="bg-red-500" pctTotal={totalStatusDespesa > 0 ? (totalContasPendentes / totalStatusDespesa) * 100 : 0} />
-                                        <BarRow label="Pago" valor={totalContasPagas} maxVal={maxStatusDespesa} color="bg-emerald-500" pctTotal={totalStatusDespesa > 0 ? (totalContasPagas / totalStatusDespesa) * 100 : 0} />
-                                    </>}
-                                </div>
-                            </div>
+                            <CardPainel titulo="Status das contas" descricao={despesas.qtd_vencidas > 0 ? `${despesas.qtd_vencidas} conta(s) vencida(s)` : 'Nenhuma conta vencida'} icone="check-circle" fundoIcone="bg-rose-50 dark:bg-rose-500/10" corIcone="text-rose-600 dark:text-rose-400">
+                                {despesas.total_centavos === 0 ? (
+                                    <p className="text-[11px] text-gray-500 italic">Nenhuma conta no período.</p>
+                                ) : (() => {
+                                    const pendente = centavosParaReais(despesas.pendente_centavos);
+                                    const pago = centavosParaReais(despesas.pago_centavos);
+                                    const max = Math.max(pendente, pago, 1);
+                                    const total = pendente + pago;
+                                    return (
+                                        <>
+                                            <BarRow label="Pendente" valor={pendente} maxVal={max} color="bg-red-500" pctTotal={total > 0 ? (pendente / total) * 100 : 0} />
+                                            <BarRow label="Pago" valor={pago} maxVal={max} color="bg-emerald-500" pctTotal={total > 0 ? (pago / total) * 100 : 0} />
+                                        </>
+                                    );
+                                })()}
+                            </CardPainel>
 
-                            <div className="bg-white dark:bg-darkCard rounded-xl border border-gray-200 dark:border-darkBorder flex flex-col">
-                                <div className="rounded-t-xl px-5 py-4 border-b border-gray-100 dark:border-darkBorder flex items-center gap-3 shrink-0">
-                                    <div className="p-2 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 shrink-0"><Icon name="trending-up" className="w-4 h-4 text-indigo-600 dark:text-indigo-400" /></div>
-                                    <div className="min-w-0">
-                                        <h3 className="font-bold text-[13px] text-gray-800 dark:text-white truncate">Maiores Contas</h3>
-                                        <p className="text-[11px] text-gray-400 truncate">Top despesas</p>
-                                    </div>
-                                </div>
-                                <div className="flex-1 flex flex-col gap-4 p-5 overflow-y-auto max-h-72 custom-scrollbar">
-                                    {maioresContas.length === 0 ? <p className="text-[11px] text-gray-500 italic">Nenhuma conta registrada.</p> :
-                                        maioresContas.map((c, index) => <BarRow key={c.id} label={c.descricao} valor={parseValorConta(c)} maxVal={maxMaiorConta} color={c.status === 'Pago' ? 'bg-emerald-500' : (c.vencimento && c.vencimento < obterDataAtual() ? 'bg-red-500' : 'bg-amber-500')} rank={index + 1} />)
-                                    }
-                                </div>
-                            </div>
+                            <CardPainel titulo="Maiores contas" descricao="Top despesas do período" icone="trending-up" fundoIcone="bg-indigo-50 dark:bg-indigo-500/10" corIcone="text-indigo-600 dark:text-indigo-400">
+                                {despesas.maiores.length === 0 ? (
+                                    <p className="text-[11px] text-gray-500 italic">Nenhuma conta no período.</p>
+                                ) : (() => {
+                                    const hoje = obterDataAtual();
+                                    const max = Math.max(...despesas.maiores.map(c => centavosParaReais(c.centavos)), 1);
+                                    return despesas.maiores.map((c, i) => (
+                                        <BarRow
+                                            key={c.id}
+                                            label={c.descricao}
+                                            valor={centavosParaReais(c.centavos)}
+                                            maxVal={max}
+                                            rank={i + 1}
+                                            color={c.status === 'Pago' ? 'bg-emerald-500' : (c.vencimento && c.vencimento < hoje ? 'bg-red-500' : 'bg-amber-500')}
+                                        />
+                                    ));
+                                })()}
+                            </CardPainel>
                         </div>
                     </div>
 
                 </div>
             </div>
-
         </div>
     );
 }

@@ -1,35 +1,14 @@
 "use client";
 import { useSessao } from '@/context/SessaoContext';
-import { usePedidos } from '@/context/PedidosContext';
-import { useFinanceiro } from '@/context/FinanceiroContext';
-import { formatarValorFinanceiro, mascararCliente } from '@/lib/utils/formatters';
-import { useFinanceiroMetrics } from '@/components/vendas/useFinanceiroMetrics';
+import { formatarValorFinanceiro, mascararCliente, centavosParaReais } from '@/lib/utils/formatters';
 
-export default function VendasPorClientePanel() {
+export default function VendasPorClientePanel({ metricas }) {
     const { isDemo } = useSessao();
-    const { pedidos } = usePedidos();
-    const { contasPagar } = useFinanceiro();
-    const { pedidosFin, valorTotalPedido } = useFinanceiroMetrics(pedidos, contasPagar);
 
-    // Agrupa pelo vínculo (cliente_id), não pelo texto do nome: o cadastro tem
-    // dezenas de homônimos (65 "Lucas", 13 "Silvana"), e somar por nome fundia
-    // pessoas diferentes numa linha só — inflando o ranking com um "cliente"
-    // que na verdade são vários. Sem cliente_id é venda avulsa: cai toda no
-    // balde "Balcão", em vez de virar uma linha por nome digitado no caixa.
-    const agrupadoPorCliente = pedidosFin.reduce((acc, p) => {
-        const chave = p.cliente_id ?? 'balcao';
-        if (!acc[chave]) acc[chave] = {
-            chave,
-            cliente: p.cliente_id ? (p.cliente || '---') : 'Balcão',
-            ehBalcao: !p.cliente_id,
-            total: 0,
-            qtd: 0,
-        };
-        acc[chave].total += valorTotalPedido(p);
-        acc[chave].qtd += 1;
-        return acc;
-    }, {});
-    const rankingCliente = Object.values(agrupadoPorCliente).sort((a, b) => b.total - a.total);
+    // O agrupamento é feito no banco pelo VÍNCULO (cliente_id), nunca pelo nome
+    // digitado: o cadastro tem centenas de homônimos e somar por texto fundiria
+    // pessoas diferentes numa linha só. Sem vínculo é venda avulsa ("Balcão").
+    const ranking = metricas.ranking_cliente;
 
     return (
         <div className="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded overflow-hidden">
@@ -39,24 +18,28 @@ export default function VendasPorClientePanel() {
                         <tr className="border-b border-gray-200 dark:border-darkBorder text-[13px] font-semibold text-gray-500 dark:text-gray-400 tracking-wide uppercase">
                             <th className="px-6 py-4 w-12">#</th>
                             <th className="px-6 py-4">Cliente</th>
-                            <th className="px-6 py-4 text-center">Qtd. OS</th>
-                            <th className="px-6 py-4 text-right">Ticket Médio</th>
-                            <th className="px-6 py-4 text-right">Total Vendido</th>
+                            <th className="px-6 py-4 text-center">Qtd. O.S.</th>
+                            <th className="px-6 py-4 text-right">Ticket médio</th>
+                            <th className="px-6 py-4 text-right">Total vendido</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100 dark:divide-darkBorder">
-                        {rankingCliente.length === 0 ? (
+                        {ranking.length === 0 ? (
                             <tr><td colSpan="5" className="px-4 py-12 text-center text-[13px] text-gray-400">Nenhuma venda no período.</td></tr>
-                        ) : rankingCliente.map((c, index) => (
-                            <tr key={c.chave} className="hover:bg-gray-50 dark:hover:bg-darkHover/50 transition-colors">
-                                <td className="px-6 py-4 text-[12px] font-bold text-gray-400 dark:text-gray-500">{index + 1}</td>
-                                {/* "Balcão" não é nome de pessoa — não passa pelo mascaramento do modo demo. */}
-                                <td className="px-6 py-4 text-[13px] font-semibold text-gray-800 dark:text-[#EDEDED] truncate max-w-[240px]" title={c.ehBalcao ? c.cliente : mascararCliente(c.cliente, isDemo)}>{c.ehBalcao ? c.cliente : mascararCliente(c.cliente, isDemo)}</td>
-                                <td className="px-6 py-4 text-[13px] text-center text-gray-500 dark:text-[#A1A1AA]">{c.qtd}</td>
-                                <td className="px-6 py-4 text-[13px] text-gray-500 dark:text-[#A1A1AA] text-right whitespace-nowrap">R$ {formatarValorFinanceiro(c.total / c.qtd)}</td>
-                                <td className="px-6 py-4 text-[13px] font-bold text-gray-900 dark:text-white text-right whitespace-nowrap">R$ {formatarValorFinanceiro(c.total)}</td>
-                            </tr>
-                        ))}
+                        ) : ranking.map((c, index) => {
+                            // "Balcão" não é nome de pessoa — não passa pelo mascaramento do modo demo.
+                            const nome = c.eh_balcao ? c.rotulo : mascararCliente(c.rotulo, isDemo);
+                            const total = centavosParaReais(c.centavos);
+                            return (
+                                <tr key={c.chave} className="hover:bg-gray-50 dark:hover:bg-darkHover/50 transition-colors">
+                                    <td className="px-6 py-4 text-[12px] font-bold text-gray-400 dark:text-gray-500 tabular-nums">{index + 1}</td>
+                                    <td className="px-6 py-4 text-[13px] font-semibold text-gray-800 dark:text-[#EDEDED] truncate max-w-[240px]" title={nome}>{nome}</td>
+                                    <td className="px-6 py-4 text-[13px] text-center text-gray-500 dark:text-[#A1A1AA] tabular-nums">{c.qtd}</td>
+                                    <td className="px-6 py-4 text-[13px] text-gray-500 dark:text-[#A1A1AA] text-right whitespace-nowrap tabular-nums">R$ {formatarValorFinanceiro(c.qtd > 0 ? total / c.qtd : 0)}</td>
+                                    <td className="px-6 py-4 text-[13px] font-bold text-gray-900 dark:text-white text-right whitespace-nowrap tabular-nums">R$ {formatarValorFinanceiro(total)}</td>
+                                </tr>
+                            );
+                        })}
                     </tbody>
                 </table>
             </div>
