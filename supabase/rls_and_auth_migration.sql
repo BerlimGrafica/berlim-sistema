@@ -232,4 +232,7 @@ grant select on public.fornecedores_terceirizacao_nomes to authenticated;
 --
 --   drop table public.usuarios;
 --
+-- [2026-08-15] JÁ EXECUTADO: verificado via service role que public.usuarios
+-- não existe mais no banco (PGRST205 no schema; profiles respondendo normal).
+-- Pendência encerrada — nenhuma senha em texto puro restante.
 -- ============================================================================

@@ -241,8 +241,6 @@ export const AppProvider = ({ children }) => {
                     'postgres_changes', 
                     { event: '*', schema: 'public', table: 'pedidos' }, 
                     (payload) => {
-                        console.log('Atualização em tempo real (pedidos) recebida!', payload);
-
                         // Lógica de alerta
                         if (payload.eventType === 'UPDATE') {
                             const oldResponsavel = payload.old?.responsavel || '';
@@ -285,8 +283,6 @@ export const AppProvider = ({ children }) => {
                     'postgres_changes', 
                     { event: '*', schema: 'public', table: 'notas_fiscais' }, 
                     (payload) => {
-                        console.log('Atualização em tempo real (notas_fiscais) recebida!', payload);
-
                         if (payload.eventType === 'INSERT') {
                             if (usuario?.nivel === 'Atendimento') {
                                 setAlertasNaoLidos(prev => [...prev, { id: Date.now() + 3, msg: `Nova Nota Fiscal solicitada (${payload.new.cliente || payload.new.cnpj})`, os_id: null, tipo: 'nf_nova' }]);
