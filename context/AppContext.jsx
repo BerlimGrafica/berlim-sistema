@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS, STATUSES_JA_RETIRADO_DA_FUTURA } from '@/lib/utils/constants';
 import { formatarMoeda, parseValorMoeda, valorPagamentoComSinal, valorPagamentoComSinalCentavos, paraCentavos, centavosParaReais, obterDataAtual, adicionarMesData, apenasDigitos } from '@/lib/utils/formatters';
 import { itensDoPedido, pagamentosDoPedido, observacoesDoPedido, itensDoOrcamento, observacoesDoOrcamento } from '@/lib/utils/servico';
+import { gravarItensPagamentos, clonarItensParaPedido, gravarItensOrcamento } from '@/lib/pedidos/gravacao';
 import { useAuth } from '@/hooks/useAuth';
 import { useAlertas } from '@/hooks/useAlertas';
 import { useChat } from '@/hooks/useChat';
@@ -1249,45 +1250,18 @@ export const AppProvider = ({ children }) => {
         setBuscaProduto('');
     }
 
-    // Grava pedido_itens/pedido_pagamentos a partir do carrinho do modal
-    // (delete-then-insert por pedido_id, idempotente — reflete exatamente o
-    // carrinho atual, igual ao que já acontece com pedidos.servico). Devolve
-    // as linhas inseridas (com id real do banco) pra manter o pedido em
-    // memória consistente sem precisar de um carregarDados() completo.
-    // Fonte de verdade nova; pedidos.servico continua sendo gravado em
-    // paralelo (espelho) pelos chamadores — ver [[project-segmentacao-2026-08]]
-    // style comment no topo do arquivo de migração SQL.
+    // Gravação transacional das linhas filhas: a conversão do carrinho e as
+    // chamadas ao banco vivem em lib/pedidos/gravacao.js. Aqui fica só a
+    // decisão de UI — devolve null quando NADA foi gravado, para o chamador não
+    // anunciar um sucesso que não houve.
     async function salvarItensPagamentosDoPedido(pedidoId, itens, pagamentos) {
-        await Promise.all([
-            supabase.from('pedido_itens').delete().eq('pedido_id', pedidoId),
-            supabase.from('pedido_pagamentos').delete().eq('pedido_id', pedidoId),
-        ]);
-
-        const linhasItens = itens.map((i, idx) => ({
-            pedido_id: pedidoId, produto_id: i.id_produto || null, ordem: idx,
-            nome: i.nome || null, descricao: i.descricao || null,
-            valor_centavos: paraCentavos(i.valor),
-            valor_original_centavos: i.valor_original ? paraCentavos(i.valor_original) : null,
-            desconto_percentual: i.desconto ? Number(i.desconto) : null,
-            local_producao: i.local_producao || null, concluido: !!i.concluido,
-        }));
-        const linhasPagamentos = pagamentos.map((p, idx) => ({
-            pedido_id: pedidoId, ordem: idx, forma: p.forma || 'Indefinido',
-            valor_centavos: paraCentavos(p.valor), parcelas: p.parcelas ?? null,
-            instituicao: p.instituicao || null, bandeira: p.bandeira || null,
-            data: p.data || null, vencimento_boleto: p.vencimento_boleto || null,
-            boleto_concluido: p.boleto_concluido ?? null, lote_id: p.lote_id || null,
-        }));
-
-        const [{ data: itensInseridos, error: errItens }, { data: pagamentosInseridos, error: errPag }] = await Promise.all([
-            linhasItens.length > 0 ? supabase.from('pedido_itens').insert(linhasItens).select() : Promise.resolve({ data: [], error: null }),
-            linhasPagamentos.length > 0 ? supabase.from('pedido_pagamentos').insert(linhasPagamentos).select() : Promise.resolve({ data: [], error: null }),
-        ]);
-        if (errItens || errPag) {
-            console.error('Erro ao gravar itens/pagamentos da OS:', errItens || errPag);
-            avisar('OS salva, mas houve erro ao gravar itens/pagamentos estruturados: ' + (errItens || errPag).message, 'erro');
+        const { pedido_itens, pedido_pagamentos, erro } = await gravarItensPagamentos(pedidoId, itens, pagamentos);
+        if (erro) {
+            console.error('Erro ao gravar itens/pagamentos da OS:', erro);
+            avisar('Não foi possível gravar os itens e pagamentos: ' + erro.message + '\n\nNada foi alterado — os itens anteriores continuam salvos. Tente novamente.', 'erro');
+            return null;
         }
-        return { pedido_itens: itensInseridos || [], pedido_pagamentos: pagamentosInseridos || [] };
+        return { pedido_itens, pedido_pagamentos };
     }
 
     async function salvarOS(e, querImprimir = false, statusForcado = null) {
@@ -1352,15 +1326,25 @@ export const AppProvider = ({ children }) => {
                 avisar('Erro ao atualizar OS: ' + error.message, 'erro');
             } else if (data && data.length > 0) {
                 const itensPagamentos = await salvarItensPagamentosDoPedido(data[0].id, itensPedido, pagamentosPedido);
-                setPedidos(pedidos.map(p => p.id === data[0].id ? { ...data[0], ...itensPagamentos } : p));
-                fecharModalOS();
-                if (querImprimir) imprimirOS({ ...data[0], ...itensPagamentos });
+                if (itensPagamentos) {
+                    setPedidos(pedidos.map(p => p.id === data[0].id ? { ...data[0], ...itensPagamentos } : p));
+                    fecharModalOS();
+                    if (querImprimir) imprimirOS({ ...data[0], ...itensPagamentos });
+                } else {
+                    // O cabeçalho gravou, os itens não — e, sendo transacional, não
+                    // foram tocados. Reflete só o cabeçalho (o espalhamento preserva
+                    // as linhas filhas em memória) e mantém o modal aberto para nova
+                    // tentativa, em vez de fechar anunciando um sucesso que não houve.
+                    setPedidos(pedidos.map(p => (p.id === data[0].id ? { ...p, ...data[0] } : p)));
+                }
             } else {
                 // Se a resposta for vazia, puxa as informações limpas e fecha sem travar
-                await salvarItensPagamentosDoPedido(pedidoEmEdicao.id, itensPedido, pagamentosPedido);
-                carregarDados();
-                fecharModalOS();
-                if (querImprimir) imprimirOS({ ...pedidoEmEdicao, ...payload });
+                const itensPagamentos = await salvarItensPagamentosDoPedido(pedidoEmEdicao.id, itensPedido, pagamentosPedido);
+                if (itensPagamentos) {
+                    carregarDados();
+                    fecharModalOS();
+                    if (querImprimir) imprimirOS({ ...pedidoEmEdicao, ...payload });
+                }
             }
         } else {
             const { data: ultimoPedido } = await supabase.from('pedidos').select('id').order('id', { ascending: false }).limit(1);
@@ -1380,25 +1364,37 @@ export const AppProvider = ({ children }) => {
                 avisar('Erro ao salvar OS: ' + error.message, 'erro');
             } else if (data && data.length > 0) {
                 const itensPagamentos = await salvarItensPagamentosDoPedido(data[0].id, itensPedido, pagamentosPedido);
-                setPedidos([{ ...data[0], ...itensPagamentos }, ...pedidos]);
-                if (idOrcamentoOrigem) {
-                    supabase.from('orcamentos_formalizados').delete().eq('id', idOrcamentoOrigem).then(({ error }) => {
-                        if (!error) setOrcamentosFormalizados(prev => prev.filter(o => o.id !== idOrcamentoOrigem));
-                    });
+                if (itensPagamentos) {
+                    setPedidos([{ ...data[0], ...itensPagamentos }, ...pedidos]);
+                    if (idOrcamentoOrigem) {
+                        supabase.from('orcamentos_formalizados').delete().eq('id', idOrcamentoOrigem).then(({ error }) => {
+                            if (!error) setOrcamentosFormalizados(prev => prev.filter(o => o.id !== idOrcamentoOrigem));
+                        });
+                    }
+                    fecharModalOS();
+                    if (querImprimir) imprimirOS({ ...data[0], ...itensPagamentos });
+                } else {
+                    // A O.S. já existe no banco, sem itens. Passa a ser uma edição:
+                    // sem isso, "Salvar" de novo criaria uma segunda O.S. em vez de
+                    // completar esta. O orçamento de origem só é apagado quando a
+                    // O.S. estiver completa.
+                    const criada = { ...data[0], pedido_itens: [], pedido_pagamentos: [] };
+                    setPedidos([criada, ...pedidos]);
+                    setPedidoEmEdicao(criada);
                 }
-                fecharModalOS();
-                if (querImprimir) imprimirOS({ ...data[0], ...itensPagamentos });
             } else {
                 // Se a resposta for vazia, puxa as informações limpas e fecha sem travar
-                await salvarItensPagamentosDoPedido(novoId, itensPedido, pagamentosPedido);
-                if (idOrcamentoOrigem) {
-                    supabase.from('orcamentos_formalizados').delete().eq('id', idOrcamentoOrigem).then(({ error }) => {
-                        if (!error) setOrcamentosFormalizados(prev => prev.filter(o => o.id !== idOrcamentoOrigem));
-                    });
+                const itensPagamentos = await salvarItensPagamentosDoPedido(novoId, itensPedido, pagamentosPedido);
+                if (itensPagamentos) {
+                    if (idOrcamentoOrigem) {
+                        supabase.from('orcamentos_formalizados').delete().eq('id', idOrcamentoOrigem).then(({ error }) => {
+                            if (!error) setOrcamentosFormalizados(prev => prev.filter(o => o.id !== idOrcamentoOrigem));
+                        });
+                    }
+                    carregarDados();
+                    fecharModalOS();
+                    if (querImprimir) avisar('Pedido atualizado com sucesso! Para evitar lentidão, inicie a impressão manualmente através do Histórico.', 'sucesso');
                 }
-                carregarDados();
-                fecharModalOS();
-                if (querImprimir) avisar('Pedido atualizado com sucesso! Para evitar lentidão, inicie a impressão manualmente através do Histórico.', 'sucesso');
             }
         }
         setSalvandoOS(false);
@@ -1438,22 +1434,14 @@ export const AppProvider = ({ children }) => {
         if (data && data.length > 0) {
             // Clona pedido_itens (sem pedido_pagamentos, igual ao texto acima
             // que já descarta os pagamentos da OS original).
-            const itensOrigem = pedido.pedido_itens || [];
-            let itensClonados = [];
-            if (itensOrigem.length > 0) {
-                const linhas = [...itensOrigem].sort((a, b) => a.ordem - b.ordem).map(item => ({
-                    pedido_id: data[0].id, produto_id: item.produto_id, ordem: item.ordem,
-                    nome: item.nome, descricao: item.descricao,
-                    valor_centavos: item.valor_centavos, valor_original_centavos: item.valor_original_centavos,
-                    desconto_percentual: item.desconto_percentual, local_producao: item.local_producao,
-                    concluido: item.concluido,
-                }));
-                const { data: inseridos, error: errItens } = await supabase.from('pedido_itens').insert(linhas).select();
-                if (errItens) console.error('Erro ao clonar itens da OS:', errItens);
-                itensClonados = inseridos || [];
-            }
-            setPedidos([{ ...data[0], pedido_itens: itensClonados, pedido_pagamentos: [] }, ...pedidos]);
-            avisar(`O.S. duplicada como #${data[0].id}.`, 'sucesso');
+            // Clone transacional. Antes a falha ao copiar os itens só aparecia
+            // no console: a O.S. nascia vazia e ninguém era avisado.
+            const { pedido_itens, erro } = await clonarItensParaPedido(data[0].id, pedido.pedido_itens);
+            if (erro) console.error('Erro ao clonar itens da OS:', erro);
+
+            setPedidos([{ ...data[0], pedido_itens: pedido_itens || [], pedido_pagamentos: [] }, ...pedidos]);
+            if (erro) avisar(`O.S. #${data[0].id} foi criada, mas sem os itens: ${erro.message}`, 'erro');
+            else avisar(`O.S. duplicada como #${data[0].id}.`, 'sucesso');
         }
     }
 
@@ -1522,25 +1510,16 @@ export const AppProvider = ({ children }) => {
             criado_por: usuario?.nome || 'Desconhecido'
         };
 
-        // Grava orcamento_itens a partir do carrinho (delete-then-insert por
-        // orcamento_id, mesmo padrão de salvarItensPagamentosDoPedido).
+        // Mesma correção do salvarItensPagamentosDoPedido, pelo mesmo motivo.
+        // Devolve null quando nada foi gravado.
         async function salvarItensOrcamento(orcamentoId) {
-            await supabase.from('orcamento_itens').delete().eq('orcamento_id', orcamentoId);
-            if (itensPedido.length === 0) return [];
-            const linhas = itensPedido.map((i, idx) => ({
-                orcamento_id: orcamentoId, produto_id: i.id_produto || null, ordem: idx,
-                nome: i.nome || null, descricao: i.descricao || null,
-                valor_centavos: paraCentavos(i.valor),
-                valor_original_centavos: i.valor_original ? paraCentavos(i.valor_original) : null,
-                desconto_percentual: i.desconto ? Number(i.desconto) : null,
-                local_producao: i.local_producao || null,
-            }));
-            const { data: inseridos, error } = await supabase.from('orcamento_itens').insert(linhas).select();
-            if (error) {
-                console.error('Erro ao gravar itens do orçamento:', error);
-                avisar('Orçamento salvo, mas houve erro ao gravar itens estruturados: ' + error.message, 'erro');
+            const { orcamento_itens, erro } = await gravarItensOrcamento(orcamentoId, itensPedido);
+            if (erro) {
+                console.error('Erro ao gravar itens do orçamento:', erro);
+                avisar('Não foi possível gravar os itens do orçamento: ' + erro.message + '\n\nNada foi alterado — os itens anteriores continuam salvos. Tente novamente.', 'erro');
+                return null;
             }
-            return inseridos || [];
+            return orcamento_itens;
         }
 
         if (orcamentoFormalizadoEmEdicao) {
@@ -1548,18 +1527,32 @@ export const AppProvider = ({ children }) => {
             if (error) avisar('Erro: ' + error.message, 'erro');
             else if (data && data.length > 0) {
                 const orcamento_itens = await salvarItensOrcamento(data[0].id);
-                setOrcamentosFormalizados(orcamentosFormalizados.map(o => o.id === data[0].id ? { ...data[0], orcamento_itens } : o));
-                setModalOrcamentoFormalizadoAberto(false);
-                if (querImprimir) baixarPDFOrcamento({ ...data[0], orcamento_itens });
+                if (orcamento_itens) {
+                    setOrcamentosFormalizados(orcamentosFormalizados.map(o => o.id === data[0].id ? { ...data[0], orcamento_itens } : o));
+                    setModalOrcamentoFormalizadoAberto(false);
+                    if (querImprimir) baixarPDFOrcamento({ ...data[0], orcamento_itens });
+                } else {
+                    // Cabeçalho gravou, itens não foram tocados: reflete só o
+                    // cabeçalho e deixa o modal aberto para nova tentativa.
+                    setOrcamentosFormalizados(orcamentosFormalizados.map(o => (o.id === data[0].id ? { ...o, ...data[0] } : o)));
+                }
             }
         } else {
             const { data, error } = await supabase.from('orcamentos_formalizados').insert([payload]).select();
             if (error) avisar('Erro: ' + error.message, 'erro');
             else if (data && data.length > 0) {
                 const orcamento_itens = await salvarItensOrcamento(data[0].id);
-                setOrcamentosFormalizados([{ ...data[0], orcamento_itens }, ...orcamentosFormalizados]);
-                setModalOrcamentoFormalizadoAberto(false);
-                if (querImprimir) baixarPDFOrcamento({ ...data[0], orcamento_itens });
+                if (orcamento_itens) {
+                    setOrcamentosFormalizados([{ ...data[0], orcamento_itens }, ...orcamentosFormalizados]);
+                    setModalOrcamentoFormalizadoAberto(false);
+                    if (querImprimir) baixarPDFOrcamento({ ...data[0], orcamento_itens });
+                } else {
+                    // O orçamento já existe no banco, sem itens. Vira edição para
+                    // que "Salvar" de novo o complete em vez de criar um segundo.
+                    const criado = { ...data[0], orcamento_itens: [] };
+                    setOrcamentosFormalizados([criado, ...orcamentosFormalizados]);
+                    setOrcamentoFormalizadoEmEdicao(criado);
+                }
             }
         }
     }
