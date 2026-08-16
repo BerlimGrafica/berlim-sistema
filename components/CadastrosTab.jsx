@@ -7,13 +7,14 @@ import { useClientes } from '@/context/ClientesContext';
 import { useCadastros } from '@/context/CadastrosContext';
 import Icon from '@/components/Icon';
 import Tooltip from '@/components/Tooltip';
+import { SkeletonLinhas } from '@/components/ui/SkeletonLinhas';
 import { formatarValorFinanceiro, centavosParaReais } from '@/lib/utils/formatters';
 
 
 export default function CadastrosTab() {
     const { usuario, isAdmin, usuariosSistema } = useSessao();
     const { carregarDados, confirmar, abrirContextMenu, avisar } = useUi();
-    const { buscaCadClientes, setBuscaCadClientes, setNovoCliente, setModalClienteAberto, setLetraFiltroCliente, setPaginaClientes, letraFiltroCliente, clientesPaginados, totalPaginasClientes, paginaClientes, abrirEdicaoCliente } = useClientes();
+    const { buscaCadClientes, setBuscaCadClientes, setNovoCliente, setModalClienteAberto, setLetraFiltroCliente, setPaginaClientes, letraFiltroCliente, clientesPaginados, clientesCadCarregados, totalPaginasClientes, paginaClientes, abrirEdicaoCliente } = useClientes();
     const { setAbaCadastros, abaCadastros, buscaCadProdutos, setBuscaCadProdutos, setNovoProduto, setModalProdutoAberto, produtosCatalogoFiltrados, handleDragStartProduto, handleDropProduto, abrirEdicaoProduto, draggedProdutoIndex, excluirProduto, setNovoUsuario, setModalUsuarioAberto, abrirEdicaoUsuario, fornecedores, setNovoFornecedor, setModalFornecedorAberto, duplicarProduto, duplicarFornecedor } = useCadastros();
 
     return (
@@ -152,7 +153,9 @@ export default function CadastrosTab() {
                                 <tbody>
                                     {clientesPaginados.length > 0 ? clientesPaginados.map(c => (
                                         <tr key={c.id} onClick={() => abrirEdicaoCliente(c)} className="border-b border-gray-100 dark:border-darkBorder/50 hover:bg-gray-50/50 dark:hover:bg-darkHover/50 transition cursor-pointer"><td className={`px-6 py-4 text-[13px] font-semibold ${c.cliente_problema ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-gray-300'}`}>{c.nome} {c.cliente_problema && <Icon name="alert-triangle" className="w-3.5 h-3.5 inline text-red-500 ml-1" title="Cliente Problema" />}</td><td className="px-6 py-4 text-[13px] font-medium text-gray-800 dark:text-white">{c.telefone || '---'}</td><td className="px-6 py-4 text-[13px] text-gray-600 dark:text-gray-400">{c.email || '---'}</td><td className="px-6 py-4 text-[13px] text-gray-600 dark:text-gray-400 truncate max-w-xs">{c.observacoes || '---'}</td><td className="px-6 py-4 text-center">{isAdmin && <Tooltip label="Excluir Cliente"><button type="button" onClick={async (e) => { e.stopPropagation(); if(await confirmar(`Excluir o cliente ${c.nome}?`)) { supabase.from('clientes').delete().eq('id', c.id).then(() => carregarDados()); } }} aria-label="Excluir Cliente" className="p-2 text-red-500 hover:text-red-600 transition rounded hover:bg-red-50 dark:hover:bg-red-950/30"><Icon name="trash-2" className="w-4 h-4" /></button></Tooltip>}</td></tr>
-                                    )) : (
+                                    )) : !clientesCadCarregados ? (
+                                        <SkeletonLinhas colunas={5} />
+                                    ) : (
                                         <tr><td colSpan="5" className="px-6 py-8 text-center text-gray-500 dark:text-[#A1A1AA]">Nenhum cliente encontrado.</td></tr>
                                     )}
                                 </tbody>

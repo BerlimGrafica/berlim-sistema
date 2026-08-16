@@ -9,13 +9,14 @@ import Tooltip from '@/components/Tooltip';
 import { obterCorStatus } from '@/lib/utils/constants';
 import { formatarValorFinanceiro, formatarDataExibicao, mascararCliente, centavosParaReais } from '@/lib/utils/formatters';
 import { CustomDateRangePicker } from '@/components/ui/DateRangePicker';
+import { SkeletonLinhas } from '@/components/ui/SkeletonLinhas';
 import { obterResumoServicos } from '@/lib/utils/servico';
 
 
 export default function BaixaTab() {
     const { isAdmin, isOperador, isDemo } = useSessao();
     const { abrirContextMenu, avisar } = useUi();
-    const { setAbaOS, abaOS, buscaHistoricoText, setBuscaHistoricoText, dataFiltroInicio, setDataFiltroInicio, dataFiltroFim, setDataFiltroFim, pedidosHistorico, totalPedidosHistorico, itensPorPagina, paginaHistorico, setPaginaHistorico, ordenacaoHistoricoOS, setOrdenacaoHistoricoOS, abrirEdicao, imprimirOS, duplicarOS } = usePedidos();
+    const { setAbaOS, abaOS, buscaHistoricoText, setBuscaHistoricoText, dataFiltroInicio, setDataFiltroInicio, dataFiltroFim, setDataFiltroFim, pedidosHistorico, historicoCarregado, totalPedidosHistorico, itensPorPagina, paginaHistorico, setPaginaHistorico, ordenacaoHistoricoOS, setOrdenacaoHistoricoOS, abrirEdicao, imprimirOS, duplicarOS } = usePedidos();
     const { isClienteProblema } = useClientes();
 
     return (
@@ -79,6 +80,9 @@ export default function BaixaTab() {
                                     </tr>
                                 </thead>
                                 <tbody key={abaOS} className="animate-fade-screen">
+                                    {!historicoCarregado && pedidosHistorico.length === 0 && (
+                                        <SkeletonLinhas colunas={isAdmin ? 8 : 7} />
+                                    )}
                                     {pedidosHistorico.map(p => {
                                         const trancado = isOperador && p.status === 'Finalizado';
                                         return (

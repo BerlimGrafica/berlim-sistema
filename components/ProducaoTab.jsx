@@ -12,6 +12,7 @@ import { CustomDatePicker } from '@/components/ui/DatePicker';
 import { InlineDropdown, MultiSelectDropdown } from '@/components/ui/Dropdown';
 import { ItensChecklist } from '@/components/ItensChecklist';
 import { ChipNome } from '@/components/ui/ChipNome';
+import { SkeletonLinhas } from '@/components/ui/SkeletonLinhas';
 
 
 // Anima a linha que trocou de posição na tabela (ex: mudou de status e foi pra
@@ -74,7 +75,7 @@ function useAnimacaoLinhas(ordem) {
 export default function ProducaoTab() {
     const { isDemo, usuariosSistema } = useSessao();
     const { confirmar, abrirContextMenu, avisar } = useUi();
-    const { buscaProducaoText, setBuscaProducaoText, setPedidoEmEdicao, setModalAberto, pedidosProducaoAtivos, opcoesStatusPermitidas, abrirEdicao, atualizarCampoInline, imprimirOS, duplicarOS } = usePedidos();
+    const { buscaProducaoText, setBuscaProducaoText, setPedidoEmEdicao, setModalAberto, pedidosProducaoAtivos, dadosCarregados, opcoesStatusPermitidas, abrirEdicao, atualizarCampoInline, imprimirOS, duplicarOS } = usePedidos();
     const { isClienteProblema } = useClientes();
     const nomesResponsaveis = usuariosSistema.filter(u => u.nivel !== 'demo').map(u => u.nome);
 
@@ -154,7 +155,9 @@ export default function ProducaoTab() {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {pedidosProducaoAtivos.length === 0 ? (
+                                        {!dadosCarregados ? (
+                                            <SkeletonLinhas colunas={9} />
+                                        ) : pedidosProducaoAtivos.length === 0 ? (
                                             <tr><td colSpan="9" className="p-8 text-center text-gray-500 italic">Nenhuma OS encontrada.</td></tr>
                                         ) : (
                                             gruposStatus.map(({ status, pedidos: pedidosDoStatus }) => {

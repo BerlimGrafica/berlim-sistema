@@ -3,6 +3,7 @@ import { useSessao } from '@/context/SessaoContext';
 import { useUi } from '@/context/UiContext';
 import { usePedidos } from '@/context/PedidosContext';
 import { useFinanceiro } from '@/context/FinanceiroContext';
+import { SkeletonLinhas } from '@/components/ui/SkeletonLinhas';
 import { obterCorStatus } from '@/lib/utils/constants';
 import { formatarValorFinanceiro, formatarDataExibicao, mascararCliente } from '@/lib/utils/formatters';
 import { obterResumoServicos } from '@/lib/utils/servico';
@@ -11,7 +12,7 @@ export default function ContasAReceberPanel({ dataInicio, dataFim }) {
     const { isDemo } = useSessao();
     const { abrirContextMenu, avisar } = useUi();
     const { abrirEdicao, duplicarOS, imprimirOS } = usePedidos();
-    const { pedidosSaldoDevedor } = useFinanceiro();
+    const { pedidosSaldoDevedor, carregandoContasReceber } = useFinanceiro();
 
     const pedidosFiltrados = pedidosSaldoDevedor.filter(p => {
         if (dataInicio && (!p.data_pedido || p.data_pedido < dataInicio)) return false;
@@ -37,7 +38,9 @@ export default function ContasAReceberPanel({ dataInicio, dataFim }) {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100 dark:divide-darkBorder">
-                            {pedidosFiltrados.length === 0 ? (
+                            {carregandoContasReceber && pedidosFiltrados.length === 0 ? (
+                                <SkeletonLinhas colunas={8} />
+                            ) : pedidosFiltrados.length === 0 ? (
                                 <tr><td colSpan="8" className="px-4 py-12 text-center text-[13px] text-gray-400">Nenhuma OS com saldo devedor encontrada.</td></tr>
                             ) : pedidosFiltrados.map(p => {
                                 const itensContexto = [

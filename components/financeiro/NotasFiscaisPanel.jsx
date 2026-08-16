@@ -3,13 +3,14 @@ import { useSessao } from '@/context/SessaoContext';
 import { useUi } from '@/context/UiContext';
 import { useNotasFiscais } from '@/context/NotasFiscaisContext';
 import Icon from '@/components/Icon';
+import { SkeletonLinhas } from '@/components/ui/SkeletonLinhas';
 import Tooltip from '@/components/Tooltip';
 import { formatarMoeda, centavosParaReais, mascararCliente } from '@/lib/utils/formatters';
 
 export default function NotasFiscaisPanel() {
     const { isDemo, usuario } = useSessao();
     const { abrirContextMenu, avisar } = useUi();
-    const { notasFiscaisPaginadas, setNotaFiscalEmEdicao, setModalNotaFiscalAberto, concluirNotaFiscal, duplicarNotaFiscal, reabrirNotaFiscal, excluirNotaFiscal, totalPaginasNotasFiscais, paginaNotasFiscais, setPaginaNotasFiscais } = useNotasFiscais();
+    const { notasFiscaisPaginadas, dadosCarregados, setNotaFiscalEmEdicao, setModalNotaFiscalAberto, concluirNotaFiscal, duplicarNotaFiscal, reabrirNotaFiscal, excluirNotaFiscal, totalPaginasNotasFiscais, paginaNotasFiscais, setPaginaNotasFiscais } = useNotasFiscais();
 
     const abrirEdicaoNota = (n) => {
         setNotaFiscalEmEdicao({ ...n, valor_pago: n.valor_pago ? formatarMoeda(Math.round(n.valor_pago).toString()) : '' });
@@ -110,7 +111,10 @@ export default function NotasFiscaisPanel() {
                                     </td>
                                 </tr>
                             ))}
-                            {notasFiscaisPaginadas.length === 0 && (
+                            {!dadosCarregados && notasFiscaisPaginadas.length === 0 && (
+                                <SkeletonLinhas colunas={8} />
+                            )}
+                            {dadosCarregados && notasFiscaisPaginadas.length === 0 && (
                                 <tr><td colSpan="8" className="px-4 py-12 text-center text-[13px] text-gray-400">Nenhuma nota fiscal encontrada.</td></tr>
                             )}
                         </tbody>

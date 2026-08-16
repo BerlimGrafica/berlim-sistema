@@ -1,10 +1,11 @@
 "use client";
 import { useFinanceiro } from '@/context/FinanceiroContext';
+import { SkeletonLinhas } from '@/components/ui/SkeletonLinhas';
 import { obterDataAtual } from '@/lib/utils/formatters';
 import BoletoRow from '@/components/financeiro/BoletoRow';
 
 export default function BoletosPanel({ dataInicio, dataFim }) {
-    const { pedidosBoleto } = useFinanceiro();
+    const { pedidosBoleto, carregandoBoletos } = useFinanceiro();
 
     return (
         <div>
@@ -39,6 +40,10 @@ export default function BoletosPanel({ dataInicio, dataFim }) {
                                     if (dataFim && (!p.prazo_pagamento || p.prazo_pagamento > dataFim)) return false;
                                     return true;
                                 });
+
+                                if (carregandoBoletos && pedidosFiltrados.length === 0) return (
+                                    <SkeletonLinhas colunas={10} />
+                                );
 
                                 if (pedidosFiltrados.length === 0) return (
                                     <tr><td colSpan="10" className="px-4 py-12 text-center text-[13px] text-gray-400">Nenhum pedido com boleto encontrado.</td></tr>

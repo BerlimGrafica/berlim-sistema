@@ -36,6 +36,7 @@ export const AppProvider = ({ children }) => {
     const pathname = usePathname();
     const {
         isAdmin, isOperador, isDemo,
+        restaurandoSessao,
         usuariosSistema, setUsuariosSistema,
         usuario, setUsuario,
         googleVinculado, vincularGoogle: vincularGoogleBase, desvincularGoogle: desvincularGoogleBase,
@@ -47,6 +48,15 @@ export const AppProvider = ({ children }) => {
     } = useAuth();
     const [pedidos, setPedidos] = useState([]);
     const [produtos, setProdutos] = useState([]);
+    // Flags de primeira carga — controlam os esqueletos das listagens.
+    // dadosCarregados vira true quando o primeiro carregarDados() completa e
+    // nunca volta a false (refetches do realtime são invisíveis de propósito);
+    // as demais cobrem as buscas sob demanda que têm ciclo próprio.
+    const [dadosCarregados, setDadosCarregados] = useState(false);
+    const [historicoCarregado, setHistoricoCarregado] = useState(false);
+    const [clientesCadCarregados, setClientesCadCarregados] = useState(false);
+    const [carregandoContasReceber, setCarregandoContasReceber] = useState(false);
+    const [carregandoBoletos, setCarregandoBoletos] = useState(false);
     const [draggedProdutoIndex, setDraggedProdutoIndex] = useState(null);
     
     // ESTADOS ORÇAMENTOS
@@ -570,6 +580,8 @@ export const AppProvider = ({ children }) => {
             setLinksPagamento(listaLnk);
             listaLnk.forEach(notificarSeLinkPagamentoNovo);
         }
+
+        setDadosCarregados(true);
     }
     
     // Reseta a página do histórico quando o filtro muda. Ajustado durante a
@@ -625,6 +637,8 @@ export const AppProvider = ({ children }) => {
                 setPedidosHistorico(data);
                 if (count !== null) setTotalPedidosHistorico(count);
             }
+            // Mesmo com erro: melhor a lista vazia do que esqueleto eterno.
+            setHistoricoCarregado(true);
         }
 
         const timeout = setTimeout(fetchHistorico, 300);
@@ -686,15 +700,19 @@ export const AppProvider = ({ children }) => {
     // pagamentos/status, via triggerRealtime) só quando a aba Contas a Receber
     // está mesmo aberta — evita consulta desnecessária em toda troca de tela.
     useEffect(() => {
-        const promise = abaFinanceiro === 'contas_receber' ? buscarPedidosComSaldoDevedor() : Promise.resolve([]);
-        promise.then(setPedidosSaldoDevedor);
+        const buscando = abaFinanceiro === 'contas_receber';
+        if (buscando) setCarregandoContasReceber(true);
+        const promise = buscando ? buscarPedidosComSaldoDevedor() : Promise.resolve([]);
+        promise.then((lista) => { setPedidosSaldoDevedor(lista); setCarregandoContasReceber(false); });
     }, [abaFinanceiro, triggerRealtime]);
 
     // Mesmo raciocínio de buscarPedidosComSaldoDevedor: só dispara quando a
     // aba Boletos está aberta.
     useEffect(() => {
-        const promise = abaFinanceiro === 'boletos' ? buscarPedidosComBoleto() : Promise.resolve([]);
-        promise.then(setPedidosBoleto);
+        const buscando = abaFinanceiro === 'boletos';
+        if (buscando) setCarregandoBoletos(true);
+        const promise = buscando ? buscarPedidosComBoleto() : Promise.resolve([]);
+        promise.then((lista) => { setPedidosBoleto(lista); setCarregandoBoletos(false); });
     }, [abaFinanceiro, triggerRealtime]);
 
     useEffect(() => {
@@ -729,6 +747,7 @@ export const AppProvider = ({ children }) => {
                 setClientesCadastrados(data);
                 if (count !== null) setTotalClientesCad(count);
             }
+            setClientesCadCarregados(true);
         }
         
         const timeout = setTimeout(fetchClientesCadastrados, 300);
@@ -2209,6 +2228,7 @@ export const AppProvider = ({ children }) => {
 
     const pedidosValue = useMemo(() => ({
         pedidos, setPedidos, itensPorPagina,
+        dadosCarregados, historicoCarregado,
         abaOS, setAbaOS, buscaHistoricoText, setBuscaHistoricoText,
         paginaHistorico, setPaginaHistorico, pedidosHistorico, setPedidosHistorico,
         totalPedidosHistorico, setTotalPedidosHistorico, ordenacaoHistoricoOS, setOrdenacaoHistoricoOS,
@@ -2223,7 +2243,7 @@ export const AppProvider = ({ children }) => {
         setModalAberto, setPedidoEmEdicao, opcoesStatusPermitidas,
         atualizarCampoInline: acoes.atualizarCampoInline, atualizarItemConcluido: acoes.atualizarItemConcluido,
         abrirEdicao: acoes.abrirEdicao, duplicarOS: acoes.duplicarOS, imprimirOS: acoes.imprimirOS,
-    }), [acoes, pedidos, abaOS, buscaHistoricoText, paginaHistorico, pedidosHistorico, totalPedidosHistorico,
+    }), [acoes, pedidos, dadosCarregados, historicoCarregado, abaOS, buscaHistoricoText, paginaHistorico, pedidosHistorico, totalPedidosHistorico,
         ordenacaoHistoricoOS, triggerRealtime, dataFiltroInicio, dataFiltroFim, buscaProducaoText,
         pedidosProducaoAtivos, vendasPorProduto, top5Produtos, abaVendas, produtosSelecionadosGrafico,
         osParaImprimir, orcamentoParaImprimir, opcoesStatusPermitidas]);
@@ -2260,13 +2280,13 @@ export const AppProvider = ({ children }) => {
         novoOrcamentoPre, modalOrcamentoFormalizadoAberto, orcamentoFormalizadoEmEdicao]);
 
     const clientesValue = useMemo(() => ({
-        clientes, setClientes, clientesFiltrados, clientesPaginados, totalPaginasClientes,
+        clientes, setClientes, clientesFiltrados, clientesPaginados, clientesCadCarregados, totalPaginasClientes,
         paginaClientes, setPaginaClientes, letraFiltroCliente, setLetraFiltroCliente,
         buscaCadClientes, setBuscaCadClientes,
         modalClienteAberto, setModalClienteAberto, salvandoCliente, setSalvandoCliente,
         novoCliente, setNovoCliente, isClienteProblema,
         abrirEdicaoCliente: acoes.abrirEdicaoCliente, salvarCliente: acoes.salvarCliente,
-    }), [acoes, clientes, clientesPaginados, totalPaginasClientes, paginaClientes, letraFiltroCliente,
+    }), [acoes, clientes, clientesPaginados, clientesCadCarregados, totalPaginasClientes, paginaClientes, letraFiltroCliente,
         buscaCadClientes, modalClienteAberto, salvandoCliente, novoCliente, isClienteProblema]);
 
     const cadastrosValue = useMemo(() => ({
@@ -2288,7 +2308,7 @@ export const AppProvider = ({ children }) => {
         modalFornecedorAberto, novoFornecedor, abaCadastros, modalUsuarioAberto, novoUsuario]);
 
     const notasFiscaisValue = useMemo(() => ({
-        notasFiscais, setNotasFiscais, filtroNotas, setFiltroNotas,
+        notasFiscais, setNotasFiscais, dadosCarregados, filtroNotas, setFiltroNotas,
         buscaNotaFiscal, setBuscaNotaFiscal, paginaNotasFiscais, setPaginaNotasFiscais,
         modalNotaFiscalAberto, setModalNotaFiscalAberto, notaFiscalEmEdicao, setNotaFiscalEmEdicao,
         salvandoNotaFiscal, setSalvandoNotaFiscal,
@@ -2296,7 +2316,7 @@ export const AppProvider = ({ children }) => {
         salvarNotaFiscal: acoes.salvarNotaFiscal, concluirNotaFiscal: acoes.concluirNotaFiscal,
         duplicarNotaFiscal: acoes.duplicarNotaFiscal, reabrirNotaFiscal: acoes.reabrirNotaFiscal,
         excluirNotaFiscal: acoes.excluirNotaFiscal,
-    }), [acoes, notasFiscais, filtroNotas, buscaNotaFiscal, paginaNotasFiscais, modalNotaFiscalAberto,
+    }), [acoes, notasFiscais, dadosCarregados, filtroNotas, buscaNotaFiscal, paginaNotasFiscais, modalNotaFiscalAberto,
         notaFiscalEmEdicao, salvandoNotaFiscal, notasFiscaisAbaFiltro, notasFiscaisPaginadas, totalPaginasNotasFiscais]);
 
     const financeiroValue = useMemo(() => ({
@@ -2310,6 +2330,7 @@ export const AppProvider = ({ children }) => {
         dataFiltroContasReceberInicio, setDataFiltroContasReceberInicio, dataFiltroContasReceberFim, setDataFiltroContasReceberFim,
         dataFiltroBoletosInicio, setDataFiltroBoletosInicio, dataFiltroBoletosFim, setDataFiltroBoletosFim,
         pedidosSaldoDevedor, pedidosBoleto,
+        dadosCarregados, carregandoContasReceber, carregandoBoletos,
         salvarConta: acoes.salvarConta, excluirConta: acoes.excluirConta, concluirConta: acoes.concluirConta,
         duplicarConta: acoes.duplicarConta, salvarEmpresaFaturamento: acoes.salvarEmpresaFaturamento,
         excluirEmpresaFaturamento: acoes.excluirEmpresaFaturamento,
@@ -2318,7 +2339,8 @@ export const AppProvider = ({ children }) => {
     }), [acoes, abaFinanceiro, contasPagar, modalContaAberto, novaConta, salvandoConta,
         empresasFaturamento, modalEmpresaFaturamentoAberto, novaEmpresaFaturamento, salvandoEmpresa,
         dataFiltroContasPagarInicio, dataFiltroContasPagarFim, dataFiltroContasReceberInicio, dataFiltroContasReceberFim,
-        dataFiltroBoletosInicio, dataFiltroBoletosFim, pedidosSaldoDevedor, pedidosBoleto]);
+        dataFiltroBoletosInicio, dataFiltroBoletosFim, pedidosSaldoDevedor, pedidosBoleto,
+        dadosCarregados, carregandoContasReceber, carregandoBoletos]);
 
     const comunicacaoValue = useMemo(() => ({
         abaComunicacao, setAbaComunicacao,
@@ -2338,6 +2360,16 @@ export const AppProvider = ({ children }) => {
 
     // ==== TELA DE LOGIN ====
     if (!usuario) {
+        // Sessão ainda sendo restaurada (F5 já logado, volta do redirect do
+        // Google): splash neutra em vez de piscar a tela de login. É também o
+        // que fica no HTML pré-renderizado.
+        if (restaurandoSessao) {
+            return (
+                <div className="flex min-h-screen items-center justify-center bg-[#EDEFF0] select-none">
+                    <img src="https://www.berlimgraficarapida.com.br/wp-content/uploads/elementor/thumbs/logosite-rm0erpiqj90gcf7ff4jp8ujys78opflob1b9vn5jjs.png" alt="Berlim Gráfica" className="h-12 object-contain animate-pulse" />
+                </div>
+            );
+        }
         return (
             <div className="flex min-h-screen items-center justify-center bg-[#EDEFF0] text-[#454545] p-4 select-none font-sans">
                 <div className="w-full max-w-sm bg-white border border-gray-200 rounded-xl p-8 shadow-sm flex flex-col gap-6">

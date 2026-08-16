@@ -2,13 +2,14 @@
 import { useState } from 'react';
 import { useUi } from '@/context/UiContext';
 import { useFinanceiro } from '@/context/FinanceiroContext';
+import { SkeletonLinhas } from '@/components/ui/SkeletonLinhas';
 import Icon from '@/components/Icon';
 import Tooltip from '@/components/Tooltip';
 import { formatarMoeda, formatarValorFinanceiro, formatarDataExibicao, centavosParaReais, obterDataAtual } from '@/lib/utils/formatters';
 
 export default function ContasAPagarPanel({ mostrarContasPagas, dataInicio, dataFim }) {
     const { abrirContextMenu, avisar } = useUi();
-    const { contasPagar, setNovaConta, setModalContaAberto, concluirConta, excluirConta, duplicarConta } = useFinanceiro();
+    const { contasPagar, dadosCarregados, setNovaConta, setModalContaAberto, concluirConta, excluirConta, duplicarConta } = useFinanceiro();
     // Ordenação simples por clique no header: null = ordem original (mais recente cadastrada primeiro).
     const [ordenacao, setOrdenacao] = useState({ campo: null, direcao: 'asc' });
 
@@ -105,7 +106,9 @@ export default function ContasAPagarPanel({ mostrarContasPagas, dataInicio, data
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100 dark:divide-darkBorder">
-                            {contasOrdenadas.length === 0 ? (
+                            {!dadosCarregados ? (
+                                <SkeletonLinhas colunas={6} />
+                            ) : contasOrdenadas.length === 0 ? (
                                 <tr><td colSpan="6" className="px-4 py-12 text-center text-[13px] text-gray-400">Nenhuma conta a pagar registrada.</td></tr>
                             ) : (
                                 contasOrdenadas.map(conta => (

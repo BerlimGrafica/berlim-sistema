@@ -4,6 +4,7 @@ import { useSessao } from '@/context/SessaoContext';
 import { useUi } from '@/context/UiContext';
 import { useNotasFiscais } from '@/context/NotasFiscaisContext';
 import Icon from '@/components/Icon';
+import { SkeletonLinhas } from '@/components/ui/SkeletonLinhas';
 import Tooltip from '@/components/Tooltip';
 import { formatarMoeda, mascararCliente, centavosParaReais } from '@/lib/utils/formatters';
 
@@ -11,7 +12,7 @@ import { formatarMoeda, mascararCliente, centavosParaReais } from '@/lib/utils/f
 export default function Notas_fiscaisTab() {
     const { usuario, isDemo } = useSessao();
     const { abrirContextMenu, avisar } = useUi();
-    const { notasFiscais, filtroNotas, setFiltroNotas, buscaNotaFiscal, setBuscaNotaFiscal, setPaginaNotasFiscais, notasFiscaisPaginadas, setNotaFiscalEmEdicao, setModalNotaFiscalAberto, totalPaginasNotasFiscais, paginaNotasFiscais, concluirNotaFiscal, duplicarNotaFiscal, reabrirNotaFiscal, excluirNotaFiscal } = useNotasFiscais();
+    const { notasFiscais, dadosCarregados, filtroNotas, setFiltroNotas, buscaNotaFiscal, setBuscaNotaFiscal, setPaginaNotasFiscais, notasFiscaisPaginadas, setNotaFiscalEmEdicao, setModalNotaFiscalAberto, totalPaginasNotasFiscais, paginaNotasFiscais, concluirNotaFiscal, duplicarNotaFiscal, reabrirNotaFiscal, excluirNotaFiscal } = useNotasFiscais();
 
     const abrirEdicaoNota = (n) => {
         setNotaFiscalEmEdicao({ ...n, valor_pago: n.valor_pago ? formatarMoeda(Math.round(n.valor_pago).toString()) : '' });
@@ -155,7 +156,10 @@ export default function Notas_fiscaisTab() {
                                         </td>
                                     </tr>
                                 ))}
-                                {notasFiscaisPaginadas.length === 0 && (
+                                {!dadosCarregados && notasFiscaisPaginadas.length === 0 && (
+                                    <SkeletonLinhas colunas={8} />
+                                )}
+                                {dadosCarregados && notasFiscaisPaginadas.length === 0 && (
                                     <tr><td colSpan="8" className="px-6 py-8 text-center text-gray-500 dark:text-[#A1A1AA]">Nenhuma nota fiscal encontrada.</td></tr>
                                 )}
                             </tbody>

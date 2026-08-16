@@ -13,6 +13,10 @@ export function useAuth() {
     const [loginInput, setLoginInput] = useState('');
     const [senhaInput, setSenhaInput] = useState('');
     const [erroLogin, setErroLogin] = useState('');
+    // true enquanto o getSession() do carregamento inicial não resolveu — o
+    // AppProvider mostra uma splash neutra nesse meio-tempo, em vez de piscar
+    // a tela de login para quem já está logado (F5, volta do redirect Google).
+    const [restaurandoSessao, setRestaurandoSessao] = useState(true);
     const [darkMode, setDarkMode] = useState(false);
     useEffect(() => {
         if (darkMode) { document.documentElement.classList.add('dark'); }
@@ -157,7 +161,8 @@ export function useAuth() {
     useEffect(() => {
         let ativo = true;
         supabase.auth.getSession().then(async ({ data: { session } }) => {
-            if (!session || !ativo) return;
+            if (!ativo) return;
+            if (!session) { setRestaurandoSessao(false); return; }
             const perfil = await carregarPerfil(session.user.id);
             if (!ativo) return;
             if (perfil) {
@@ -167,7 +172,10 @@ export function useAuth() {
                 setErroLogin('Login válido, mas sem perfil cadastrado (tabela profiles). Fale com um administrador.');
                 await supabase.auth.signOut();
             }
-        });
+            // Junto (em batch) com o setUsuario acima: a splash sai de cena no
+            // mesmo commit em que o app (ou a tela de login) entra.
+            setRestaurandoSessao(false);
+        }).catch(() => { if (ativo) setRestaurandoSessao(false); });
 
         const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
             if (event === 'SIGNED_OUT') { setUsuario(null); setGoogleVinculado(false); }
@@ -188,6 +196,7 @@ export function useAuth() {
 
     return {
         isAdmin, isOperador, isDemo,
+        restaurandoSessao,
         usuariosSistema, setUsuariosSistema,
         usuario, setUsuario,
         googleVinculado, vincularGoogle, desvincularGoogle,
