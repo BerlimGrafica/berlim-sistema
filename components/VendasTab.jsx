@@ -61,7 +61,7 @@ export default function VendasTab() {
 
                     {erro && (
                         <div className="flex items-start gap-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-lg px-4 py-3">
-                            <Icon name="alert-triangle" className="w-4 h-4 text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
+                            <Icon name="alert-triangle" className="w-4 h-4 text-perigo shrink-0 mt-0.5" />
                             <div>
                                 <p className="text-corpo font-semibold text-red-700 dark:text-red-300">Não foi possível somar os números do período.</p>
                                 <p className="text-mini text-red-600/80 dark:text-red-400/80 mt-0.5">{erro}</p>

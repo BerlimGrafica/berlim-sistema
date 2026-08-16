@@ -54,16 +54,16 @@ export default function BoletosPanel({ dataInicio, dataFim }) {
                                     let statusPagamentoCor = 'bg-realce text-tinta-suave border-borda-forte';
                                     if (p.boleto.boleto_concluido) {
                                         statusPagamento = 'Pago';
-                                        statusPagamentoCor = 'bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800';
+                                        statusPagamentoCor = 'bg-emerald-50 text-sucesso border-emerald-200 dark:bg-emerald-900/30 dark:border-emerald-800';
                                     } else if (p.prazo_pagamento && p.prazo_pagamento < hojeStr) {
                                         statusPagamento = 'Vencido';
-                                        statusPagamentoCor = 'bg-red-50 text-red-600 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800';
+                                        statusPagamentoCor = 'bg-red-50 text-perigo border-red-200 dark:bg-red-900/30 dark:border-red-800';
                                     } else if (p.prazo_pagamento === hojeStr) {
                                         statusPagamento = 'Vence hoje';
-                                        statusPagamentoCor = 'bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800';
+                                        statusPagamentoCor = 'bg-amber-50 text-aviso border-amber-200 dark:bg-amber-900/30 dark:border-amber-800';
                                     } else if (p.prazo_pagamento === amanhaStr) {
                                         statusPagamento = 'Vence amanhã';
-                                        statusPagamentoCor = 'bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800';
+                                        statusPagamentoCor = 'bg-amber-50 text-aviso border-amber-200 dark:bg-amber-900/30 dark:border-amber-800';
                                     }
                                     return <BoletoRow key={p.id} p={p} statusPagamento={statusPagamento} statusPagamentoCor={statusPagamentoCor} />;
                                 });

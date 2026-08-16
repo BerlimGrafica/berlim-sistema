@@ -9,8 +9,8 @@ const DURACAO_MS = 6000;
 
 const ESTILOS_TIPO = {
     info: { icone: 'bell', barra: 'bg-brand', iconeBg: 'bg-brand/10', iconeCor: 'text-brand' },
-    sucesso: { icone: 'check-circle', barra: 'bg-emerald-500', iconeBg: 'bg-emerald-50 dark:bg-emerald-500/10', iconeCor: 'text-emerald-600 dark:text-emerald-400' },
-    erro: { icone: 'alert-triangle', barra: 'bg-red-500', iconeBg: 'bg-red-50 dark:bg-red-500/10', iconeCor: 'text-red-600 dark:text-red-400' },
+    sucesso: { icone: 'check-circle', barra: 'bg-emerald-500', iconeBg: 'bg-emerald-50 dark:bg-emerald-500/10', iconeCor: 'text-sucesso' },
+    erro: { icone: 'alert-triangle', barra: 'bg-red-500', iconeBg: 'bg-red-50 dark:bg-red-500/10', iconeCor: 'text-perigo' },
 };
 
 function Toast({ alerta, onFechar, onClicar }) {

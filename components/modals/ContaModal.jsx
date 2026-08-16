@@ -83,7 +83,7 @@ export default function ContaModal() {
                                 />
                             </div>
                             {fornecedoresParaConta.length === 0 && (
-                                <p className="text-mini text-amber-600 dark:text-amber-400 mt-1">Nenhum fornecedor com a flag &ldquo;{tipoFornecedorContaNecessario}&rdquo; cadastrado. Cadastre em Cadastros → Fornecedores.</p>
+                                <p className="text-mini text-aviso mt-1">Nenhum fornecedor com a flag &ldquo;{tipoFornecedorContaNecessario}&rdquo; cadastrado. Cadastre em Cadastros → Fornecedores.</p>
                             )}
                         </div>
                     )}
@@ -153,7 +153,7 @@ export default function ContaModal() {
                                 </div>
                             ) : null}
                             {novaConta.recorrente_total_parcelas && novaConta.recorrente_parcela_atual > 1 && (
-                                <span className="self-start text-mini font-medium px-2 py-1 rounded bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400">
+                                <span className="self-start text-mini font-medium px-2 py-1 rounded bg-blue-50 dark:bg-blue-900/20 text-info">
                                     Esta é a parcela {novaConta.recorrente_parcela_atual} de {novaConta.recorrente_total_parcelas}
                                 </span>
                             )}

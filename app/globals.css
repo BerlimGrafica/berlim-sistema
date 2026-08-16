@@ -48,6 +48,18 @@
 
     /* Campos de formulário */
     --campo: #ffffff;
+
+    /* Estados. Só existem quatro porque só quatro são de fato semânticos no
+       sistema: vermelho para o que dá errado ou é negativo (excluir, caixa de
+       erro, saldo devedor, estorno), verde para o positivo, azul para
+       informação e âmbar para atenção. As outras cores da interface — roxo,
+       rosa, azul-petróleo nos cartões e nos ícones — são categóricas, servem
+       para distinguir um cartão do outro, e continuam literais de propósito:
+       dar a elas um nome de estado inventaria um significado que não existe. */
+    --perigo: var(--color-red-600);
+    --sucesso: var(--color-emerald-600);
+    --info: var(--color-blue-600);
+    --aviso: var(--color-amber-600);
 }
 
 .dark {
@@ -71,6 +83,13 @@
     --tinta-fraca: #888888;
 
     --campo: #0d1117;
+
+    /* No escuro cada estado sobe dois degraus, que era exatamente o par escrito
+       à mão em todo lugar: X-600 no claro, X-400 no escuro. */
+    --perigo: var(--color-red-400);
+    --sucesso: var(--color-emerald-400);
+    --info: var(--color-blue-400);
+    --aviso: var(--color-amber-400);
 }
 
 @theme inline {
@@ -100,6 +119,11 @@
   --color-tinta-fraca: var(--tinta-fraca);
 
   --color-campo: var(--campo);
+
+  --color-perigo: var(--perigo);
+  --color-sucesso: var(--sucesso);
+  --color-info: var(--info);
+  --color-aviso: var(--aviso);
 
   /* Escala tipográfica.
      Não é a escala padrão do Tailwind: a interface é densa e sempre usou

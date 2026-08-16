@@ -245,7 +245,7 @@ export function CalculadoraAdesivo({ produtos }) {
     return (
         <div className="bg-superficie p-6 rounded border border-borda border-t-[3px] border-t-brand dark:border-t-brand">
             {isTamanhoInvalido && (
-                <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-compacto rounded border border-red-200 dark:border-red-900/50 flex items-center gap-2 font-medium">
+                <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 text-perigo text-compacto rounded border border-red-200 dark:border-red-900/50 flex items-center gap-2 font-medium">
                     <Icon name="alert-triangle" className="w-4 h-4 shrink-0" />
                     O tamanho mínimo permitido para adesivos é de 3x3cm.
                 </div>

@@ -71,8 +71,8 @@ export default function ContasAReceberPanel({ dataInicio, dataFim }) {
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 text-corpo text-tinta-suave text-right whitespace-nowrap">R$ {formatarValorFinanceiro(p.totalReais)}</td>
-                                        <td className="px-6 py-4 text-corpo text-emerald-600 dark:text-emerald-400 text-right whitespace-nowrap">R$ {formatarValorFinanceiro(p.totalPago)}</td>
-                                        <td className="px-6 py-4 text-corpo font-bold text-red-600 dark:text-red-400 text-right whitespace-nowrap">R$ {formatarValorFinanceiro(p.saldo)}</td>
+                                        <td className="px-6 py-4 text-corpo text-sucesso text-right whitespace-nowrap">R$ {formatarValorFinanceiro(p.totalPago)}</td>
+                                        <td className="px-6 py-4 text-corpo font-bold text-perigo text-right whitespace-nowrap">R$ {formatarValorFinanceiro(p.saldo)}</td>
                                     </tr>
                                 );
                             })}

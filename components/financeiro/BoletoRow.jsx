@@ -89,7 +89,7 @@ export default function BoletoRow({ p, statusPagamento, statusPagamentoCor }) {
                     <Icon name="check-circle" className="w-4 h-4 text-emerald-500 dark:text-emerald-400 inline-block" />
                 ) : (
                     <Tooltip label="Concluir Boleto">
-                        <button type="button" aria-label="Concluir Boleto" onClick={marcarConcluido} className="p-2 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded transition">
+                        <button type="button" aria-label="Concluir Boleto" onClick={marcarConcluido} className="p-2 text-sucesso hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded transition">
                             <Icon name="check-circle" className="w-4 h-4" />
                         </button>
                     </Tooltip>

@@ -188,7 +188,7 @@ export default function OSModal() {
                                 ) : null;
                             })()}
                             {isClienteProblema(novoPedido.cliente, novoPedido.cliente_id) && (
-                                <div className="mt-2 p-2.5 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded flex items-start gap-2.5 text-red-600 dark:text-red-400">
+                                <div className="mt-2 p-2.5 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded flex items-start gap-2.5 text-perigo">
                                     <Icon name="alert-triangle" className="w-5 h-5 shrink-0 mt-0.5" />
                                     <div>
                                         <span className="text-corpo font-semibold block">Atenção: Cliente Problemático</span>
@@ -204,7 +204,7 @@ export default function OSModal() {
                     <div className="rounded-xl border border-blue-200 dark:border-blue-500/30 bg-blue-50/40 dark:bg-blue-500/5">
                         <div className="rounded-t-xl px-5 py-3.5 bg-blue-100/60 dark:bg-blue-500/10 border-b border-blue-200 dark:border-blue-500/20 flex items-center justify-between gap-2 flex-wrap">
                             <div className="flex items-center gap-2.5">
-                                <div className="p-1.5 rounded-lg bg-superficie shadow-sm shrink-0"><Icon name="shopping-bag" className="w-4 h-4 text-blue-600 dark:text-blue-400" /></div>
+                                <div className="p-1.5 rounded-lg bg-superficie shadow-sm shrink-0"><Icon name="shopping-bag" className="w-4 h-4 text-info" /></div>
                                 <h4 className="font-bold text-corpo text-tinta">Carrinho de Itens do Orçamento</h4>
                             </div>
                             {itensPedido.length > 0 && (
@@ -311,12 +311,12 @@ export default function OSModal() {
                             <div className="rounded-xl border border-emerald-200 dark:border-emerald-500/30 bg-emerald-50/40 dark:bg-emerald-500/5">
                                 <div className="rounded-t-xl px-5 py-3.5 bg-emerald-100/60 dark:bg-emerald-500/10 border-b border-emerald-200 dark:border-emerald-500/20 flex items-center justify-between gap-2 flex-wrap">
                                     <div className="flex items-center gap-2.5">
-                                        <div className="p-1.5 rounded-lg bg-superficie shadow-sm shrink-0"><Icon name="dollar-sign" className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /></div>
+                                        <div className="p-1.5 rounded-lg bg-superficie shadow-sm shrink-0"><Icon name="dollar-sign" className="w-4 h-4 text-sucesso" /></div>
                                         <h4 className="font-bold text-corpo text-tinta">Pagamentos</h4>
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <span className="text-mini font-bold text-emerald-700 dark:text-emerald-400 bg-superficie px-2.5 py-1 rounded-full shadow-sm">Pago: R$ {formatarValorFinanceiro(totalPago)}</span>
-                                        <span className={`text-mini font-bold px-2.5 py-1 rounded-full shadow-sm bg-white dark:bg-darkCard ${saldo > 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-400'}`}>{saldo > 0 ? 'Saldo Devedor' : 'Saldo'}: R$ {formatarValorFinanceiro(saldo)}</span>
+                                        <span className={`text-mini font-bold px-2.5 py-1 rounded-full shadow-sm bg-white dark:bg-darkCard ${saldo > 0 ? 'text-perigo' : 'text-gray-400'}`}>{saldo > 0 ? 'Saldo Devedor' : 'Saldo'}: R$ {formatarValorFinanceiro(saldo)}</span>
                                     </div>
                                 </div>
                                 <div className="p-5 flex flex-col gap-4">
@@ -410,7 +410,7 @@ export default function OSModal() {
                                                     </div>
                                                     <div className="flex items-center gap-3 shrink-0">
                                                         <div className="flex flex-col items-end">
-                                                            <span className={`font-bold text-corpo ${pag.forma === 'Estorno' ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400'}`}>{pag.forma === 'Estorno' ? '-' : ''}R$ {pag.valor}</span>
+                                                            <span className={`font-bold text-corpo ${pag.forma === 'Estorno' ? 'text-perigo' : 'text-sucesso'}`}>{pag.forma === 'Estorno' ? '-' : ''}R$ {pag.valor}</span>
                                                             {(pag.instituicao || pag.bandeira) && <span className="mt-1.5"><ChipNome nome={pag.instituicao || pag.bandeira} /></span>}
                                                         </div>
                                                         {!isModalTrancado && (
@@ -537,7 +537,7 @@ export default function OSModal() {
                                                         <div key={id} className="flex items-center justify-between gap-2 text-compacto">
                                                             <span className="flex items-center gap-1.5 min-w-0 truncate">
                                                                 <span className="font-semibold text-gray-700 dark:text-gray-200">{rotulo}</span>
-                                                                {quita && <span className="text-emerald-600 dark:text-emerald-400 text-micro font-bold flex items-center gap-0.5"><Icon name="check-circle" className="w-3 h-3" /> Quita</span>}
+                                                                {quita && <span className="text-sucesso text-micro font-bold flex items-center gap-0.5"><Icon name="check-circle" className="w-3 h-3" /> Quita</span>}
                                                             </span>
                                                             <div className="relative shrink-0 w-28">
                                                                 <span className="absolute left-2 top-1.5 text-micro text-gray-400">R$</span>
@@ -552,7 +552,7 @@ export default function OSModal() {
                                                         <span className="text-micro font-bold uppercase tracking-wider text-gray-400">Divisão do pagamento por OS</span>
                                                         {linha(pedidoEmEdicao.id, `OS #${pedidoEmEdicao.id} (esta)`, saldo)}
                                                         {outrasMarcadas.map(os => linha(os.id, `OS #${os.id}`, os.saldo))}
-                                                        <div className={`text-mini font-semibold pt-1.5 border-t border-gray-200 dark:border-darkBorder flex justify-between ${bate ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500 dark:text-red-400'}`}>
+                                                        <div className={`text-mini font-semibold pt-1.5 border-t border-gray-200 dark:border-darkBorder flex justify-between ${bate ? 'text-sucesso' : 'text-red-500 dark:text-red-400'}`}>
                                                             <span>{bate ? 'Soma confere com o valor do pagamento' : 'A soma precisa bater com o valor do pagamento'}</span>
                                                             <span>R$ {formatarValorFinanceiro(somaCent / 100)} / R$ {formatarValorFinanceiro(totalCent / 100)}</span>
                                                         </div>

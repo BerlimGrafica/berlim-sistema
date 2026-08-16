@@ -34,8 +34,8 @@ function Switch({ checked, onChange, color = 'brand', className = '' }) {
 export function ToggleCard({ icon, title, description, checked, onChange, color = 'brand' }) {
     const estilos = {
         brand: { borda: 'border-brand/40 bg-brand/5 dark:bg-brand/10', iconeAtivo: 'bg-brand/15 text-brand', tituloAtivo: 'text-brand' },
-        red: { borda: 'border-red-300 dark:border-red-800/60 bg-red-50 dark:bg-red-950/20', iconeAtivo: 'bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400', tituloAtivo: 'text-red-700 dark:text-red-400' },
-        blue: { borda: 'border-blue-300 dark:border-blue-800/60 bg-blue-50 dark:bg-blue-950/20', iconeAtivo: 'bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400', tituloAtivo: 'text-blue-700 dark:text-blue-400' },
+        red: { borda: 'border-red-300 dark:border-red-800/60 bg-red-50 dark:bg-red-950/20', iconeAtivo: 'bg-red-100 dark:bg-red-900/40 text-perigo', tituloAtivo: 'text-red-700 dark:text-red-400' },
+        blue: { borda: 'border-blue-300 dark:border-blue-800/60 bg-blue-50 dark:bg-blue-950/20', iconeAtivo: 'bg-blue-100 dark:bg-blue-900/40 text-info', tituloAtivo: 'text-blue-700 dark:text-blue-400' },
     };
     const e = estilos[color] || estilos.brand;
     return (

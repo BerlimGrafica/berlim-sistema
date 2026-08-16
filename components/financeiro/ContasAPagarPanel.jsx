@@ -57,16 +57,16 @@ export default function ContasAPagarPanel({ mostrarContasPagas, dataInicio, data
 
     const obterStatusPagamento = (conta) => {
         if (conta.status === 'Pago') {
-            return { label: 'Pago', cor: 'bg-emerald-50 border-emerald-200 text-emerald-600 dark:bg-emerald-900/20 dark:border-emerald-800/50 dark:text-emerald-400' };
+            return { label: 'Pago', cor: 'bg-emerald-50 border-emerald-200 text-sucesso dark:bg-emerald-900/20 dark:border-emerald-800/50' };
         }
         if (conta.vencimento && conta.vencimento < hojeStr) {
-            return { label: 'Vencido', cor: 'bg-red-50 border-red-200 text-red-600 dark:bg-red-900/20 dark:border-red-800/50 dark:text-red-400' };
+            return { label: 'Vencido', cor: 'bg-red-50 border-red-200 text-perigo dark:bg-red-900/20 dark:border-red-800/50' };
         }
         if (conta.vencimento === hojeStr) {
-            return { label: 'Vence hoje', cor: 'bg-amber-50 border-amber-200 text-amber-600 dark:bg-amber-900/20 dark:border-amber-800/50 dark:text-amber-400' };
+            return { label: 'Vence hoje', cor: 'bg-amber-50 border-amber-200 text-aviso dark:bg-amber-900/20 dark:border-amber-800/50' };
         }
         if (conta.vencimento === amanhaStr) {
-            return { label: 'Vence amanhã', cor: 'bg-amber-50 border-amber-200 text-amber-600 dark:bg-amber-900/20 dark:border-amber-800/50 dark:text-amber-400' };
+            return { label: 'Vence amanhã', cor: 'bg-amber-50 border-amber-200 text-aviso dark:bg-amber-900/20 dark:border-amber-800/50' };
         }
         return { label: 'Aberto', cor: 'bg-realce border-borda-forte text-tinta-suave' };
     };
@@ -149,7 +149,7 @@ export default function ContasAPagarPanel({ mostrarContasPagas, dataInicio, data
                                                 {conta.categoria || 'Despesa'}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 text-corpo font-medium text-emerald-600 dark:text-emerald-400">R$ {formatarValorFinanceiro(centavosParaReais(conta.valor))}</td>
+                                        <td className="px-6 py-4 text-corpo font-medium text-sucesso">R$ {formatarValorFinanceiro(centavosParaReais(conta.valor))}</td>
                                         <td className="px-6 py-4 text-corpo">
                                             <span className={`whitespace-nowrap px-2.5 py-1 text-mini font-semibold rounded border ${obterStatusPagamento(conta).cor}`}>
                                                 {obterStatusPagamento(conta).label}

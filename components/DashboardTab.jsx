@@ -70,7 +70,7 @@ export default function DashboardTab() {
                                                     <p className="text-4xl font-black text-gray-800 dark:text-gray-100 tracking-tight">{totalMinhasTarefas}</p>
                                                 </div>
                                                 <div className="bg-blue-50 dark:bg-blue-500/10 p-3 rounded-md border border-blue-100 dark:border-blue-500/20">
-                                                    <Icon name="layout-dashboard" className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                                                    <Icon name="layout-dashboard" className="w-6 h-6 text-info" />
                                                 </div>
                                             </div>
                                             <p className="text-corpo font-medium text-tinta-suave">Tarefas em andamento designadas a você.</p>

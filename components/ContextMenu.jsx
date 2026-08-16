@@ -56,7 +56,7 @@ export default function ContextMenu() {
                             onClick={() => { item.onClick(); fecharContextMenu(); }}
                             className={`w-full flex items-center gap-2.5 px-3 py-2 text-[12.5px] font-medium text-left transition disabled:opacity-40 disabled:cursor-not-allowed ${
                                 item.tom === 'perigo'
-                                    ? 'text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20'
+                                    ? 'text-perigo hover:bg-red-50 dark:hover:bg-red-900/20'
                                     : 'text-tinta-corpo hover:bg-realce'
                             }`}
                         >

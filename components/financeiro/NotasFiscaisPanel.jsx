@@ -88,14 +88,14 @@ export default function NotasFiscaisPanel() {
 
                                             {!n.concluido && (usuario?.nivel === 'Administrador' || usuario?.nivel === 'Financeiro') && (
                                                 <Tooltip label="Concluir Nota">
-                                                    <button onClick={(e) => { e.stopPropagation(); concluirNotaFiscal(n.id); }} aria-label="Concluir Nota" className="p-2 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded transition">
+                                                    <button onClick={(e) => { e.stopPropagation(); concluirNotaFiscal(n.id); }} aria-label="Concluir Nota" className="p-2 text-sucesso hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded transition">
                                                         <Icon name="check-circle" className="w-4 h-4" />
                                                     </button>
                                                 </Tooltip>
                                             )}
                                             {n.concluido && (usuario?.nivel === 'Administrador' || usuario?.nivel === 'Financeiro') && (
                                                 <Tooltip label="Gerar Nova Nota (Duplicar)">
-                                                    <button onClick={(e) => { e.stopPropagation(); reabrirNotaFiscal(n); }} aria-label="Gerar Nova Nota (Duplicar)" className="p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded transition">
+                                                    <button onClick={(e) => { e.stopPropagation(); reabrirNotaFiscal(n); }} aria-label="Gerar Nova Nota (Duplicar)" className="p-2 text-info hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded transition">
                                                         <Icon name="rotate-ccw" className="w-4 h-4" />
                                                     </button>
                                                 </Tooltip>

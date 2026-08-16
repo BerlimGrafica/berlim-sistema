@@ -89,10 +89,10 @@ export default function OrcamentosTab() {
                                                     <div className="text-mini text-gray-400 mt-0.5">{new Date(orc.created_at).toLocaleDateString('pt-BR')}</div>
                                                 </td>
                                                 <td className="px-6 py-4 text-corpo font-medium text-gray-900 dark:text-gray-300">{mascararCliente(orc.cliente, isDemo)}</td>
-                                                <td className="px-6 py-4 text-corpo font-medium text-emerald-600 dark:text-emerald-400">R$ {formatarMoeda(Math.round(orc.valor).toString())}</td>
+                                                <td className="px-6 py-4 text-corpo font-medium text-sucesso">R$ {formatarMoeda(Math.round(orc.valor).toString())}</td>
                                                 <td className="px-6 py-4 text-corpo text-right flex justify-end gap-1">
                                                     <Tooltip label="Aprovar e Transformar em O.S.">
-                                                        <button onClick={(e) => { e.stopPropagation(); transformarEmOS(orc); }} aria-label="Aprovar e Transformar em O.S." className="p-2 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded transition inline-block">
+                                                        <button onClick={(e) => { e.stopPropagation(); transformarEmOS(orc); }} aria-label="Aprovar e Transformar em O.S." className="p-2 text-sucesso hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded transition inline-block">
                                                             <Icon name="check-circle" className="w-5 h-5 inline-block" />
                                                         </button>
                                                     </Tooltip>
@@ -172,7 +172,7 @@ export default function OrcamentosTab() {
                                         <div className="flex justify-between items-start gap-3 px-5 py-3.5 bg-gray-50/70 dark:bg-darkElevated/60 rounded-t-xl border-b border-dashed border-borda-forte">
                                             <div className="flex flex-col flex-1 min-w-0">
                                                 <h3 className="font-bold text-tinta leading-tight truncate">{orc.titulo}</h3>
-                                                <p className={`text-mini font-semibold uppercase tracking-wide mt-1 ${orc.empresa === 'Futura' ? 'text-blue-600 dark:text-blue-400' : 'text-orange-600 dark:text-orange-400'}`}>
+                                                <p className={`text-mini font-semibold uppercase tracking-wide mt-1 ${orc.empresa === 'Futura' ? 'text-info' : 'text-orange-600 dark:text-orange-400'}`}>
                                                     {orc.empresa === 'Futura' ? 'Futura' : 'Berlim'}
                                                 </p>
                                             </div>

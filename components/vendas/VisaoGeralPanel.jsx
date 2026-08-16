@@ -119,17 +119,17 @@ export default function VisaoGeralPanel({ metricas, rotulo }) {
                                 </h2>
                             </div>
                             <div className={`p-2 rounded-lg shrink-0 ${crescimento >= 0 ? 'bg-emerald-50 dark:bg-emerald-500/10' : 'bg-red-50 dark:bg-red-500/10'}`}>
-                                <Icon name={crescimento >= 0 ? 'trending-up' : 'trending-down'} className={`w-4 h-4 ${crescimento >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`} />
+                                <Icon name={crescimento >= 0 ? 'trending-up' : 'trending-down'} className={`w-4 h-4 ${crescimento >= 0 ? 'text-sucesso' : 'text-perigo'}`} />
                             </div>
                         </div>
-                        <p className={`text-mini font-bold mt-3 ${crescimento >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+                        <p className={`text-mini font-bold mt-3 ${crescimento >= 0 ? 'text-sucesso' : 'text-perigo'}`}>
                             {crescimento >= 0 ? '+' : '-'}{Math.abs(crescimento).toFixed(1)}% — {ano.rotulo} vs {anoAnterior}
                         </p>
                     </div>
 
-                    <CardIndicador rotulo="Despesas (a pagar)" centavos={despesas.total_centavos} cor="text-red-600 dark:text-red-400"
+                    <CardIndicador rotulo="Despesas (a pagar)" centavos={despesas.total_centavos} cor="text-perigo"
                         icone={{ nome: 'dollar-sign', fundo: 'bg-red-50 dark:bg-red-500/10' }} nota={rotulo} />
-                    <CardIndicador rotulo="Total recebido" centavos={resumo.recebido_centavos} cor="text-emerald-600 dark:text-emerald-400"
+                    <CardIndicador rotulo="Total recebido" centavos={resumo.recebido_centavos} cor="text-sucesso"
                         icone={{ nome: 'check-circle', fundo: 'bg-emerald-50 dark:bg-emerald-500/10' }} nota={rotulo} />
                     <CardIndicador rotulo="Total bruto" centavos={brutoMenosDespesas} cor="text-cyan-600 dark:text-cyan-400"
                         icone={{ nome: 'dollar-sign', fundo: 'bg-cyan-50 dark:bg-cyan-500/10' }} nota="Recebido menos despesas" />
@@ -141,7 +141,7 @@ export default function VisaoGeralPanel({ metricas, rotulo }) {
                     <CardIndicador rotulo="Concluído sem baixa" centavos={metricas.sem_baixa.total_centavos} cor="text-rose-600 dark:text-rose-400"
                         icone={{ nome: 'alert-triangle', fundo: 'bg-rose-50 dark:bg-rose-500/10' }}
                         nota={metricas.sem_baixa.qtd === 0 ? 'Nada pendente de baixa' : `${metricas.sem_baixa.qtd} O.S. encerrada(s) sem pagamento`} />
-                    <CardIndicador rotulo="Ticket médio" centavos={resumo.ticket_medio_centavos} cor="text-blue-600 dark:text-blue-400"
+                    <CardIndicador rotulo="Ticket médio" centavos={resumo.ticket_medio_centavos} cor="text-info"
                         icone={{ nome: 'tag', fundo: 'bg-blue-50 dark:bg-blue-500/10' }} nota={`${resumo.qtd_pedidos} pedido(s) no período`} />
                 </div>
             </div>
@@ -173,10 +173,10 @@ export default function VisaoGeralPanel({ metricas, rotulo }) {
                     {/* SLIDE 1: FATURAMENTO NO TEMPO */}
                     <div className="w-full shrink-0 snap-start pr-1">
                         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                            <CardPainel titulo="Por ano" descricao="Todo o histórico, fora do período" icone="calendar" fundoIcone="bg-blue-50 dark:bg-blue-500/10" corIcone="text-blue-600 dark:text-blue-400">
+                            <CardPainel titulo="Por ano" descricao="Todo o histórico, fora do período" icone="calendar" fundoIcone="bg-blue-50 dark:bg-blue-500/10" corIcone="text-info">
                                 <Barras itens={metricas.serie_ano} corFixa="bg-blue-500" vazio="Sem faturamento registrado." />
                             </CardPainel>
-                            <CardPainel titulo="Por mês" descricao="Meses dentro do período" icone="layout-dashboard" fundoIcone="bg-emerald-50 dark:bg-emerald-500/10" corIcone="text-emerald-600 dark:text-emerald-400">
+                            <CardPainel titulo="Por mês" descricao="Meses dentro do período" icone="layout-dashboard" fundoIcone="bg-emerald-50 dark:bg-emerald-500/10" corIcone="text-sucesso">
                                 <Barras itens={metricas.serie_mes} corFixa="bg-emerald-500" rotuloDe={(i) => formatarMesAno(i.rotulo)} vazio="Nenhum mês com faturamento no período." />
                             </CardPainel>
                             <CardPainel titulo="Por dia" descricao="Dias dentro do período" icone="list" fundoIcone="bg-purple-50 dark:bg-purple-500/10" corIcone="text-purple-600 dark:text-purple-400">
@@ -191,7 +191,7 @@ export default function VisaoGeralPanel({ metricas, rotulo }) {
                             <CardPainel titulo="Receitas por local" descricao="Rateado entre os locais da O.S." icone="map-pin" fundoIcone="bg-teal-50 dark:bg-teal-500/10" corIcone="text-teal-600 dark:text-teal-400">
                                 <Barras itens={metricas.ranking_local} cores={CORES_LOCAL} vazio="Nenhum local registrado no período." />
                             </CardPainel>
-                            <CardPainel titulo="Formas de pagamento" descricao="Como os clientes pagaram" icone="dollar-sign" fundoIcone="bg-amber-50 dark:bg-amber-500/10" corIcone="text-amber-600 dark:text-amber-400">
+                            <CardPainel titulo="Formas de pagamento" descricao="Como os clientes pagaram" icone="dollar-sign" fundoIcone="bg-amber-50 dark:bg-amber-500/10" corIcone="text-aviso">
                                 <Barras itens={metricas.ranking_forma} cores={CORES_FORMA} vazio="Nenhum pagamento registrado no período." />
                             </CardPainel>
                             <CardPainel titulo="Instituições" descricao="Volume por conta (PIX, Boleto e Link)" icone="link" fundoIcone="bg-sky-50 dark:bg-sky-500/10" corIcone="text-sky-600 dark:text-sky-400">

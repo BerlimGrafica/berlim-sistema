@@ -76,7 +76,7 @@ export default function OrcamentoFormalizadoModal() {
                                 ) : null;
                             })()}
                             {isClienteProblema(novoPedido.cliente, novoPedido.cliente_id) && (
-                                <div className="mt-2 p-2.5 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded flex items-start gap-2.5 text-red-600 dark:text-red-400">
+                                <div className="mt-2 p-2.5 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded flex items-start gap-2.5 text-perigo">
                                     <Icon name="alert-triangle" className="w-5 h-5 shrink-0 mt-0.5" />
                                     <div>
                                         <span className="text-corpo font-semibold block">Atenção: Cliente Problemático</span>
@@ -91,7 +91,7 @@ export default function OrcamentoFormalizadoModal() {
                     <div className="rounded-xl border border-blue-200 dark:border-blue-500/30 bg-blue-50/40 dark:bg-blue-500/5">
                         <div className="rounded-t-xl px-5 py-3.5 bg-blue-100/60 dark:bg-blue-500/10 border-b border-blue-200 dark:border-blue-500/20 flex items-center justify-between gap-2 flex-wrap">
                             <div className="flex items-center gap-2.5">
-                                <div className="p-1.5 rounded-lg bg-superficie shadow-sm shrink-0"><Icon name="shopping-bag" className="w-4 h-4 text-blue-600 dark:text-blue-400" /></div>
+                                <div className="p-1.5 rounded-lg bg-superficie shadow-sm shrink-0"><Icon name="shopping-bag" className="w-4 h-4 text-info" /></div>
                                 <h4 className="font-bold text-corpo text-tinta">Carrinho de Itens do Orçamento</h4>
                             </div>
                             {itensPedido.length > 0 && (

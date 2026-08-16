@@ -17,7 +17,7 @@ export function BarRow({ label, valor, maxVal, color, rank, pctTotal }) {
             <div className="flex-1 min-w-0">
                 <div className="flex justify-between items-baseline gap-2 mb-1">
                     <span className="text-compacto font-semibold text-tinta-corpo truncate">{label}</span>
-                    <span className={`text-compacto font-bold tabular-nums shrink-0 ${negativo ? 'text-red-600 dark:text-red-400' : 'text-tinta'}`}>
+                    <span className={`text-compacto font-bold tabular-nums shrink-0 ${negativo ? 'text-perigo' : 'text-tinta'}`}>
                         {negativo ? '− ' : ''}R$ {formatarValorFinanceiro(Math.abs(valor))}
                     </span>
                 </div>

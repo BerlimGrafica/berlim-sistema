@@ -173,7 +173,7 @@ export default function ProducaoTab() {
                                                                 <td className="px-4 py-3 font-medium text-tinta-fraca text-center"><button type="button" onClick={() => abrirEdicao(p)} className="hover:text-brand transition">#{p.id}</button></td>
                                                                 <td className="px-4 py-3"><CustomDatePicker value={p.prazo || ''} onChange={val => handleAtualizarCampo(p.id, 'prazo', val)} placeholder="Definir prazo..." className={`w-full bg-gray-50 dark:bg-darkElevated border-2 ${obterCorContornoPrazo(p.prazo)} rounded px-2.5 py-1.5 text-mini outline-none hover:border-brand transition text-gray-700 dark:text-[#EDEDED]`} /></td>
                                                                 <td className="px-4 py-3"><MultiSelectDropdown value={p.responsavel} options={nomesResponsaveis} onChange={(val) => handleAtualizarCampo(p.id, 'responsavel', val)} className="w-full bg-sutil border border-borda rounded px-2.5 py-1.5 text-mini outline-none hover:border-brand" /></td>
-                                                                <td className={`px-4 py-3 font-semibold truncate max-w-[12rem] ${isClienteProblema(p.cliente, p.cliente_id) ? 'text-red-600 dark:text-red-400' : 'text-tinta'}`}>
+                                                                <td className={`px-4 py-3 font-semibold truncate max-w-[12rem] ${isClienteProblema(p.cliente, p.cliente_id) ? 'text-perigo' : 'text-tinta'}`}>
                                                                     <div className="flex items-center gap-1.5">{mascararCliente(p.cliente, isDemo)} {isClienteProblema(p.cliente, p.cliente_id) && <Icon name="alert-triangle" className="w-3.5 h-3.5 text-red-500 shrink-0" title="Cliente Problema" />}</div>
                                                                 </td>
                                                                 <td className="px-4 py-3 text-tinta font-medium"><ItensChecklist pedido={p} /></td>
@@ -201,7 +201,7 @@ export default function ProducaoTab() {
                                                                 </td>
                                                                 <td className="px-4 py-3 text-right">
                                                                     <Tooltip label="Marcar como Concluído">
-                                                                        <button type="button" onClick={() => handleAtualizarCampo(p.id, 'status', 'Concluído')} aria-label="Marcar como Concluído" className="p-2 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition rounded inline-block">
+                                                                        <button type="button" onClick={() => handleAtualizarCampo(p.id, 'status', 'Concluído')} aria-label="Marcar como Concluído" className="p-2 text-sucesso hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition rounded inline-block">
                                                                             <Icon name="check-circle" className="w-5 h-5 inline-block" />
                                                                         </button>
                                                                     </Tooltip>

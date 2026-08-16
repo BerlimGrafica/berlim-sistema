@@ -103,7 +103,7 @@ export default function BaixaTab() {
                                                     </td>
                                                 )}
                                                 <td className="px-6 py-4 text-corpo text-tinta-suave">{formatarDataExibicao(p.prazo || p.data_pedido)}</td>
-                                                <td className={`px-6 py-4 font-semibold text-corpo ${isClienteProblema(p.cliente, p.cliente_id) ? 'text-red-600 dark:text-red-400' : 'text-tinta'}`}>
+                                                <td className={`px-6 py-4 font-semibold text-corpo ${isClienteProblema(p.cliente, p.cliente_id) ? 'text-perigo' : 'text-tinta'}`}>
                                                     <div className="flex items-center gap-1.5">{mascararCliente(p.cliente, isDemo)} {isClienteProblema(p.cliente, p.cliente_id) && <Icon name="alert-triangle" className="w-4 h-4 text-red-500 shrink-0" title="Cliente Problema" />}</div>
                                                 </td>
                                                 <td className="px-6 py-4 text-corpo text-tinta-suave truncate max-w-xs">{resumoDoPedido(p)}</td>

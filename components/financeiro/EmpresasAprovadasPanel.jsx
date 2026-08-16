@@ -32,7 +32,7 @@ export default function EmpresasAprovadasPanel() {
                                         <td className="px-6 py-4 text-corpo text-tinta-suave">{emp.cnpj}</td>
                                         <td className="px-6 py-4 text-corpo text-tinta-suave truncate max-w-[200px]" title={emp.observacoes}>{emp.observacoes || '-'}</td>
                                         <td className="px-6 py-4 text-center">
-                                            <span className={`whitespace-nowrap px-2.5 py-1 text-mini font-semibold rounded border ${emp.status === 'Aprovado' ? 'bg-emerald-50 border-emerald-200 text-emerald-600 dark:bg-emerald-900/20 dark:border-emerald-800/50 dark:text-emerald-400' : 'bg-red-50 border-red-200 text-red-600 dark:bg-red-900/20 dark:border-red-800/50 dark:text-red-400'}`}>
+                                            <span className={`whitespace-nowrap px-2.5 py-1 text-mini font-semibold rounded border ${emp.status === 'Aprovado' ? 'bg-emerald-50 border-emerald-200 text-sucesso dark:bg-emerald-900/20 dark:border-emerald-800/50' : 'bg-red-50 border-red-200 text-perigo dark:bg-red-900/20 dark:border-red-800/50'}`}>
                                                 {emp.status}
                                             </span>
                                         </td>
