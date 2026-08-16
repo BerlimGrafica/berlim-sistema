@@ -3,7 +3,7 @@ import React, { useContext, useState, useEffect, useMemo, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 import { flushSync } from 'react-dom';
 import { supabase } from '@/lib/supabaseClient';
-import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS } from '@/lib/utils/constants';
+import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS, STATUSES_JA_RETIRADO_DA_FUTURA } from '@/lib/utils/constants';
 import { formatarMoeda, parseValorMoeda, valorPagamentoComSinal, valorPagamentoComSinalCentavos, paraCentavos, centavosParaReais, obterDataAtual, adicionarMesData, apenasDigitos } from '@/lib/utils/formatters';
 import { itensDoPedido, pagamentosDoPedido, observacoesDoPedido, itensDoOrcamento, observacoesDoOrcamento } from '@/lib/utils/servico';
 import { useAuth } from '@/hooks/useAuth';
@@ -320,6 +320,16 @@ export const AppProvider = ({ children }) => {
                     if (payload.new.status === 'Avisar Cliente' && payload.old?.status !== 'Avisar Cliente' && usuario?.nivel === 'Atendimento') {
                         setAlertasNaoLidos(prev => [...prev, { id: Date.now() + 5, msg: `Avisar cliente: ${payload.new.cliente} (O.S. #${payload.new.id})`, os_id: payload.new.id, tipo: 'avisar_cliente' }]);
                     }
+                    // O alerta de prazo da Futura sai do mural assim que a O.S.
+                    // avança para uma etapa em que o material já voltou — senão
+                    // ficaria o dia inteiro pedindo para retirar algo que já está
+                    // na loja. Tira também do registro de "já disparado", para
+                    // que volte a valer se a O.S. retroceder para produção.
+                    if (STATUSES_JA_RETIRADO_DA_FUTURA.includes(payload.new.status) && !STATUSES_JA_RETIRADO_DA_FUTURA.includes(payload.old?.status)) {
+                        alertasFuturaDisparados.current.delete(payload.new.id);
+                        const ehDaFutura = (a) => a.os_id === payload.new.id && a.tipo === 'alerta_futura';
+                        setAlertasNaoLidos(prev => (prev.some(ehDaFutura) ? prev.filter(a => !ehDaFutura(a)) : prev));
+                    }
                 } else if (payload.eventType === 'INSERT') {
                     const newList = (payload.new?.responsavel || '').split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
                     if (newList.includes((usuario.nome || '').trim().toLowerCase())) {
@@ -548,22 +558,34 @@ export const AppProvider = ({ children }) => {
             todosPedidos.forEach(notificarSeAtribuidoAMim);
 
             if (usuario?.nivel === 'Administrador') {
-                const pedidosFuturaAlertar = todosPedidos.filter(p => p.local_producao && p.local_producao.toLowerCase().includes('futura') && !statusIgnorados.includes(p.status) && p.prazo && p.prazo <= amanhaStr);
+                // Fora as encerradas, ficam de fora também as que já voltaram da
+                // Futura (Avisar Cliente / Retirada / Entrega): o alerta é para
+                // lembrar de buscar o material lá, e nesse ponto já foi buscado.
+                const statusSemAlertaFutura = [...statusIgnorados, ...STATUSES_JA_RETIRADO_DA_FUTURA];
+                const pedidosFuturaAlertar = todosPedidos.filter(p => p.local_producao && p.local_producao.toLowerCase().includes('futura') && !statusSemAlertaFutura.includes(p.status) && p.prazo && p.prazo <= amanhaStr);
 
-                if (pedidosFuturaAlertar.length > 0) {
+                // A montagem dos avisos e a marcação de "já disparado" ficam FORA
+                // do setState. O atualizador precisa ser puro: em desenvolvimento
+                // o React o executa duas vezes (Strict Mode, ligado por padrão no
+                // App Router), e mutar o Set lá dentro fazia a segunda passada
+                // concluir que o aviso já existia — devolvendo a lista sem ele.
+                // Mesmo formato que os alertas de boleto e de retirada já usam.
+                const novosAlertasFutura = [];
+                pedidosFuturaAlertar.forEach(p => {
+                    if (alertasFuturaDisparados.current.has(p.id)) return;
+
+                    let msg = `Prazo da Futura termina amanhã (O.S. #${p.id}). Retirar!`;
+                    if (p.prazo === hojeStr) msg = `Prazo da Futura é HOJE (O.S. #${p.id}). Retirar o quanto antes!`;
+                    else if (p.prazo < hojeStr) msg = `Prazo da Futura VENCIDO (O.S. #${p.id}). Verifique imediatamente!`;
+
+                    novosAlertasFutura.push({ id: Date.now() + Math.random(), msg, os_id: p.id, tipo: 'alerta_futura' });
+                    alertasFuturaDisparados.current.add(p.id);
+                });
+
+                if (novosAlertasFutura.length > 0) {
                     setAlertasNaoLidos(prev => {
-                        let novosAlertas = [...prev];
-                        pedidosFuturaAlertar.forEach(p => {
-                            if (!novosAlertas.some(a => a.os_id === p.id && a.tipo === 'alerta_futura') && !alertasFuturaDisparados.current.has(p.id)) {
-                                let msg = `Prazo da Futura termina amanhã (O.S. #${p.id}). Retirar!`;
-                                if (p.prazo === hojeStr) msg = `Prazo da Futura é HOJE (O.S. #${p.id}). Retirar o quanto antes!`;
-                                else if (p.prazo < hojeStr) msg = `Prazo da Futura VENCIDO (O.S. #${p.id}). Verifique imediatamente!`;
-
-                                novosAlertas.push({ id: Date.now() + Math.random(), msg, os_id: p.id, tipo: 'alerta_futura' });
-                                alertasFuturaDisparados.current.add(p.id);
-                            }
-                        });
-                        return novosAlertas;
+                        const faltando = novosAlertasFutura.filter(n => !prev.some(a => a.os_id === n.os_id && a.tipo === 'alerta_futura'));
+                        return faltando.length > 0 ? [...prev, ...faltando] : prev;
                     });
                 }
             }
