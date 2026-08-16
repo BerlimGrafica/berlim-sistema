@@ -32,6 +32,34 @@ export { supabase };
 // Numeração dos pedidos deve continuar a partir do último número usado no sistema anterior.
 const NUMERO_INICIAL_PEDIDO = 17930;
 
+// ---------------------------------------------------------------------------
+// Tempo real: aplicar o evento, não recarregar o banco.
+//
+// O payload do Supabase já traz a linha inteira em `new` (e a chave em `old`),
+// então dá para atualizar a lista em memória sem nenhuma consulta. Antes, cada
+// evento — de QUALQUER tabela — disparava uma varredura de 13 tabelas.
+// ---------------------------------------------------------------------------
+function aplicarEventoNaLista(setLista, payload, ordenar) {
+    setLista(prev => {
+        if (payload.eventType === 'DELETE') {
+            const idRemovido = payload.old?.id;
+            return idRemovido === undefined ? prev : prev.filter(x => x.id !== idRemovido);
+        }
+        const linha = payload.new;
+        if (!linha || linha.id === undefined) return prev;
+        const existe = prev.some(x => x.id === linha.id);
+        const lista = existe
+            ? prev.map(x => (x.id === linha.id ? { ...x, ...linha } : x))
+            : [linha, ...prev];
+        return ordenar ? [...lista].sort(ordenar) : lista;
+    });
+}
+
+const porNome = (a, b) => (a.nome || '').localeCompare(b.nome || '');
+const porId = (a, b) => (a.id || 0) - (b.id || 0);
+const porOrdem = (a, b) => (a.ordem || 0) - (b.ordem || 0);
+const porCriacaoDesc = (a, b) => String(b.created_at || '').localeCompare(String(a.created_at || ''));
+const porVencimento = (a, b) => String(a.vencimento || '').localeCompare(String(b.vencimento || ''));
 
 export const AppProvider = ({ children }) => {
     const pathname = usePathname();
@@ -230,113 +258,188 @@ export const AppProvider = ({ children }) => {
     const [modalUsuarioAberto, setModalUsuarioAberto] = useState(false);
     const [novoUsuario, setNovoUsuario] = useState({ id: null, nome: '', email: '', senha: '', nivel: 'Atendimento' });
 
+    // Espelho de `pedidos` para consulta dentro dos tratadores de tempo real,
+    // que capturam o estado da renderização em que foram registrados.
+    const pedidosRef = useRef([]);
+    pedidosRef.current = pedidos;
+
+    // Coalescedor de rajadas: salvar uma O.S. regrava todos os itens e
+    // pagamentos (delete + insert), o que produz uma dezena de eventos em
+    // poucos milissegundos. Sem isso, cada evento viraria uma consulta.
+    const timersRealtimeRef = useRef({});
+    const agendarRealtime = (chave, fn, ms = 350) => {
+        clearTimeout(timersRealtimeRef.current[chave]);
+        timersRealtimeRef.current[chave] = setTimeout(fn, ms);
+    };
+
     useEffect(() => {
-        if(usuario) {
-            carregarDados();
-            carregarChat();
+        if (!usuario) return;
 
-            // LIGA O RADAR DE TEMPO REAL DO SUPABASE
-            const canalRealTime = supabase
-                .channel('mudancas-banco')
-                .on(
-                    'postgres_changes', 
-                    { event: '*', schema: 'public', table: 'pedidos' }, 
-                    (payload) => {
-                        // Lógica de alerta
-                        if (payload.eventType === 'UPDATE') {
-                            const oldResponsavel = payload.old?.responsavel || '';
-                            const newResponsavel = payload.new?.responsavel || '';
-                            
-                            const oldList = oldResponsavel.split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
-                            const newList = newResponsavel.split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+        carregarDados();
+        carregarChat();
 
-                            const nomeUsuario = (usuario.nome || '').trim().toLowerCase();
+        // Busca UMA O.S. com seus filhos — usada quando itens/pagamentos mudaram,
+        // ou quando outra pessoa criou uma O.S. nova (o payload de um evento não
+        // traz tabelas filhas).
+        const sincronizarPedido = async (pedidoId) => {
+            const { data } = await supabase
+                .from('pedidos')
+                .select('*, pedido_itens(*), pedido_pagamentos(*)')
+                .eq('id', pedidoId)
+                .maybeSingle();
+            if (!data) return;
+            setPedidos(prev => prev.some(p => p.id === data.id)
+                ? prev.map(p => (p.id === data.id ? { ...p, ...data } : p))
+                : [data, ...prev]);
+        };
+        const agendarSincronia = (pedidoId) => {
+            if (pedidoId) agendarRealtime(`pedido-${pedidoId}`, () => sincronizarPedido(pedidoId));
+        };
+        // Telas com busca própria (Histórico, Contas a Receber, Boletos, clientes
+        // problemáticos) reagem a este contador. Agrupado para que uma rajada de
+        // eventos resulte numa única rodada de consultas.
+        const marcarParaRebuscar = () => agendarRealtime('trigger', () => setTriggerRealtime(prev => prev + 1));
 
-                            if (!oldList.includes(nomeUsuario) && newList.includes(nomeUsuario)) {
-                                setAlertasNaoLidos(prev => {
-                                    if(prev.some(a => a.os_id === payload.new.id && a.tipo === 'atribuicao')) return prev;
-                                    return [...prev, { id: Date.now(), msg: `Você foi designado para a O.S. #${payload.new.id}`, os_id: payload.new.id, tipo: 'atribuicao' }];
-                                });
-                            }
+        // Um tratador por tabela. O que não está aqui é simplesmente ignorado.
+        const tratadores = {
+            pedidos: (payload) => {
+                if (payload.eventType === 'UPDATE') {
+                    const oldResponsavel = payload.old?.responsavel || '';
+                    const newResponsavel = payload.new?.responsavel || '';
+                    const oldList = oldResponsavel.split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+                    const newList = newResponsavel.split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+                    const nomeUsuario = (usuario.nome || '').trim().toLowerCase();
 
-                            // Alerta: Avisar Cliente (apenas Atendimento)
-                            if (payload.new.status === 'Avisar Cliente' && payload.old?.status !== 'Avisar Cliente') {
-                                if (usuario?.nivel === 'Atendimento') {
-                                    setAlertasNaoLidos(prev => [...prev, { id: Date.now() + 5, msg: `Avisar cliente: ${payload.new.cliente} (O.S. #${payload.new.id})`, os_id: payload.new.id, tipo: 'avisar_cliente' }]);
-                                }
-                            }
-
-                        } else if (payload.eventType === 'INSERT') {
-                            const newResponsavel = payload.new?.responsavel || '';
-                            const newList = newResponsavel.split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
-                            const nomeUsuario = (usuario.nome || '').trim().toLowerCase();
-                            
-                            if (newList.includes(nomeUsuario)) {
-                                setAlertasNaoLidos(prev => [...prev, { id: Date.now(), msg: `Nova O.S. #${payload.new.id} atribuída a você`, os_id: payload.new.id, tipo: 'atribuicao' }]);
-                            }
-                        }
-
-                        carregarDados(); // Puxa os dados novos invisivelmente
-                        setTriggerRealtime(prev => prev + 1);
-                    }
-                )
-                .on(
-                    'postgres_changes', 
-                    { event: '*', schema: 'public', table: 'notas_fiscais' }, 
-                    (payload) => {
-                        if (payload.eventType === 'INSERT') {
-                            if (usuario?.nivel === 'Atendimento') {
-                                setAlertasNaoLidos(prev => [...prev, { id: Date.now() + 3, msg: `Nova Nota Fiscal solicitada (${payload.new.cliente || payload.new.cnpj})`, os_id: null, tipo: 'nf_nova' }]);
-                            }
-                        } else if (payload.eventType === 'UPDATE') {
-                            notificarSeNotaFiscalPreenchida(payload.new);
-                        }
-
-                        carregarDados(); // Puxa os dados novos invisivelmente
-                        setTriggerRealtime(prev => prev + 1);
-                    }
-                )
-                .on(
-                    'postgres_changes',
-                    { event: 'INSERT', schema: 'public', table: 'chat_mensagens' },
-                    (payload) => {
-                        setChatMensagens(prev => prev.some(m => m.id === payload.new.id) ? prev : [...prev, payload.new]);
-                        if (!chatAbertoRef.current && payload.new.usuario_id !== usuario?.id) {
-                            setChatNaoLidas(prev => prev + 1);
-                        }
-                    }
-                )
-                .on(
-                    'postgres_changes',
-                    { event: 'DELETE', schema: 'public', table: 'chat_mensagens' },
-                    (payload) => {
-                        setChatMensagens(prev => prev.filter(m => m.id !== payload.old.id));
-                    }
-                )
-                .on(
-                    // Alerta: novo pagamento Boleto lançado numa OS (para Financeiro e
-                    // Giovana). Reage direto ao INSERT em pedido_pagamentos em vez de
-                    // diffar payload.old/new.servico — mais simples e correto (o evento
-                    // que importa é "surgiu um pagamento Boleto", não uma heurística de
-                    // diff de texto).
-                    'postgres_changes',
-                    { event: 'INSERT', schema: 'public', table: 'pedido_pagamentos', filter: 'forma=eq.Boleto' },
-                    (payload) => {
-                        if (usuario?.nivel !== 'Financeiro' && !ehUsuario('Giovana')) return;
-                        const pedidoId = payload.new.pedido_id;
+                    if (!oldList.includes(nomeUsuario) && newList.includes(nomeUsuario)) {
                         setAlertasNaoLidos(prev => {
-                            if (prev.some(a => a.os_id === pedidoId && a.tipo === 'boleto_novo')) return prev;
-                            return [...prev, { id: Date.now() + 6, msg: `Novo boleto registrado na O.S. #${pedidoId}`, os_id: pedidoId, tipo: 'boleto_novo' }];
+                            if (prev.some(a => a.os_id === payload.new.id && a.tipo === 'atribuicao')) return prev;
+                            return [...prev, { id: Date.now(), msg: `Você foi designado para a O.S. #${payload.new.id}`, os_id: payload.new.id, tipo: 'atribuicao' }];
                         });
                     }
-                )
-            .subscribe();
+                    // Alerta: Avisar Cliente (apenas Atendimento)
+                    if (payload.new.status === 'Avisar Cliente' && payload.old?.status !== 'Avisar Cliente' && usuario?.nivel === 'Atendimento') {
+                        setAlertasNaoLidos(prev => [...prev, { id: Date.now() + 5, msg: `Avisar cliente: ${payload.new.cliente} (O.S. #${payload.new.id})`, os_id: payload.new.id, tipo: 'avisar_cliente' }]);
+                    }
+                } else if (payload.eventType === 'INSERT') {
+                    const newList = (payload.new?.responsavel || '').split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+                    if (newList.includes((usuario.nome || '').trim().toLowerCase())) {
+                        setAlertasNaoLidos(prev => [...prev, { id: Date.now(), msg: `Nova O.S. #${payload.new.id} atribuída a você`, os_id: payload.new.id, tipo: 'atribuicao' }]);
+                    }
+                }
 
-            // Desliga o radar se o usuário fizer logoff
-            return () => {
-                supabase.removeChannel(canalRealTime);
-            };
-        }
+                if (payload.eventType === 'DELETE') {
+                    if (payload.old?.id !== undefined) setPedidos(prev => prev.filter(p => p.id !== payload.old.id));
+                } else if (payload.eventType === 'INSERT') {
+                    agendarSincronia(payload.new.id);
+                } else {
+                    const anterior = pedidosRef.current.find(p => p.id === payload.new.id);
+                    // Mescla preservando pedido_itens/pedido_pagamentos, que não vêm
+                    // no payload por serem tabelas separadas.
+                    setPedidos(prev => prev.map(p => (p.id === payload.new.id ? { ...p, ...payload.new } : p)));
+                    // Valor total diferente significa carrinho mexido — só aí vale
+                    // buscar os filhos. Edição de status/prazo/responsável, que é o
+                    // caso comum, não custa consulta nenhuma.
+                    if (anterior && anterior.valor_total !== payload.new.valor_total) agendarSincronia(payload.new.id);
+                }
+                marcarParaRebuscar();
+            },
+
+            pedido_itens: (payload) => agendarSincronia(payload.new?.pedido_id ?? payload.old?.pedido_id),
+
+            pedido_pagamentos: (payload) => {
+                agendarSincronia(payload.new?.pedido_id ?? payload.old?.pedido_id);
+                marcarParaRebuscar();
+                // Alerta de boleto novo (Financeiro e Giovana).
+                if (payload.eventType !== 'INSERT' || payload.new?.forma !== 'Boleto') return;
+                if (usuario?.nivel !== 'Financeiro' && !ehUsuario('Giovana')) return;
+                const pedidoId = payload.new.pedido_id;
+                setAlertasNaoLidos(prev => {
+                    if (prev.some(a => a.os_id === pedidoId && a.tipo === 'boleto_novo')) return prev;
+                    return [...prev, { id: Date.now() + 6, msg: `Novo boleto registrado na O.S. #${pedidoId}`, os_id: pedidoId, tipo: 'boleto_novo' }];
+                });
+            },
+
+            notas_fiscais: (payload) => {
+                if (payload.eventType === 'INSERT' && usuario?.nivel === 'Atendimento') {
+                    setAlertasNaoLidos(prev => [...prev, { id: Date.now() + 3, msg: `Nova Nota Fiscal solicitada (${payload.new.cliente || payload.new.cnpj})`, os_id: null, tipo: 'nf_nova' }]);
+                } else if (payload.eventType === 'UPDATE') {
+                    notificarSeNotaFiscalPreenchida(payload.new);
+                }
+                aplicarEventoNaLista(setNotasFiscais, payload, porCriacaoDesc);
+            },
+
+            chat_mensagens: (payload) => {
+                if (payload.eventType === 'INSERT') {
+                    setChatMensagens(prev => prev.some(m => m.id === payload.new.id) ? prev : [...prev, payload.new]);
+                    if (!chatAbertoRef.current && payload.new.usuario_id !== usuario?.id) setChatNaoLidas(prev => prev + 1);
+                } else if (payload.eventType === 'DELETE') {
+                    setChatMensagens(prev => prev.filter(m => m.id !== payload.old.id));
+                }
+            },
+
+            // Cadastros e listas simples: o payload basta, sem consulta nenhuma.
+            produtos: (payload) => aplicarEventoNaLista(setProdutos, payload, porOrdem),
+            profiles: (payload) => aplicarEventoNaLista(setUsuariosSistema, payload, porNome),
+            fornecedores: (payload) => aplicarEventoNaLista(setFornecedores, payload, porId),
+            fornecedores_terceirizacao_nomes: (payload) => aplicarEventoNaLista(setFornecedoresTerceirizacaoNomes, payload, porId),
+            orcamentos_formalizados: (payload) => aplicarEventoNaLista(setOrcamentosFormalizados, payload, porCriacaoDesc),
+            orcamentos_pre_prontos: (payload) => aplicarEventoNaLista(setOrcamentosPreProntos, payload, porCriacaoDesc),
+
+            // As telas de clientes buscam sob demanda (paginadas/por busca), então
+            // basta pedir que elas rebusquem.
+            clientes: () => marcarParaRebuscar(),
+
+            tarefas_internas: (payload) => {
+                aplicarEventoNaLista(setTarefasInternas, payload, porCriacaoDesc);
+                if (payload.new) notificarSeTarefaMinha(payload.new);
+            },
+            requisicoes_material: (payload) => {
+                aplicarEventoNaLista(setRequisicoesMaterial, payload, porCriacaoDesc);
+                if (payload.eventType === 'INSERT' && ehUsuario('Vinicius')) {
+                    setAlertasNaoLidos(prev => [...prev, { id: Date.now() + Math.random(), msg: `Nova requisição de material!\nItem(s): ${payload.new.itens}`, tipo: 'nova_requisicao' }]);
+                }
+            },
+            links_pagamento: (payload) => {
+                aplicarEventoNaLista(setLinksPagamento, payload, porCriacaoDesc);
+                if (payload.new) notificarSeLinkPagamentoNovo(payload.new);
+            },
+            contas_pagar: (payload) => {
+                aplicarEventoNaLista(setContasPagar, payload, porVencimento);
+                if (payload.eventType === 'INSERT' && (usuario?.nivel === 'Financeiro' || ehUsuario('Giovana'))) {
+                    setAlertasNaoLidos(prev => [...prev, { id: Date.now() + Math.random(), msg: `Nova conta a pagar: ${payload.new.descricao}`, tipo: 'nova_conta_pagar' }]);
+                }
+                if (payload.new) notificarSeContaPagarUrgente(payload.new);
+            },
+            empresas_faturamento: (payload) => {
+                aplicarEventoNaLista(setEmpresasFaturamento, payload, porNome);
+                if (payload.new) notificarSeFaturamentoEmAnalise(payload.new);
+            },
+        };
+
+        // UMA assinatura para todo o schema, com despacho por tabela. Assinar
+        // tabela a tabela estourava o limite de assinaturas por canal do Supabase
+        // — e, quando isso acontece, o canal inteiro é recusado e o sistema fica
+        // sem tempo real nenhum, silenciosamente.
+        const canalRealTime = supabase
+            .channel('mudancas-banco')
+            .on('postgres_changes', { event: '*', schema: 'public' }, (payload) => {
+                const tratar = tratadores[payload.table];
+                if (tratar) tratar(payload);
+            })
+            .subscribe((status) => {
+                // Sem isto, uma falha de assinatura passa despercebida: a tela
+                // simplesmente para de atualizar sozinha, sem nenhum sinal.
+                if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+                    console.error('Tempo real indisponível (' + status + '). A tela só atualiza ao recarregar.');
+                }
+            });
+
+        // Desliga o radar se o usuário fizer logoff
+        return () => {
+            supabase.removeChannel(canalRealTime);
+            Object.values(timersRealtimeRef.current).forEach(clearTimeout);
+            timersRealtimeRef.current = {};
+        };
     }, [usuario]);
 
     // Redundância pro Realtime: se a aba ficar em segundo plano por um tempo, o
@@ -2102,53 +2205,12 @@ export const AppProvider = ({ children }) => {
     const opcoesStatusPermitidas = useMemo(() => isOperador ? [...STATUSES_PRODUCAO, 'Abandonado', 'Concluído'] : [...STATUSES_PRODUCAO, ...STATUSES_FINALIZADOS], [isOperador]);
     const isModalTrancado = (pedidoEmEdicao && pedidoEmEdicao.status === 'Finalizado' && isOperador) ? true : false;
 
-    // Realtime subscriptions
-    useEffect(() => {
-        if (!usuario) return;
-
-        const channel = supabase.channel('system-alerts')
-            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'tarefas_internas' }, (payload) => {
-                notificarSeTarefaMinha(payload.new);
-            })
-            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'tarefas_internas' }, (payload) => {
-                notificarSeTarefaMinha(payload.new);
-            })
-            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'requisicoes_material' }, (payload) => {
-                if (ehUsuario('Vinicius')) {
-                    setAlertasNaoLidos(prev => [...prev, { id: Date.now() + Math.random(), msg: `Nova requisição de material!\nItem(s): ${payload.new.itens}`, tipo: 'nova_requisicao' }]);
-                }
-            })
-            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'links_pagamento' }, (payload) => {
-                notificarSeLinkPagamentoNovo(payload.new);
-            })
-            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'links_pagamento' }, (payload) => {
-                notificarSeLinkPagamentoNovo(payload.new);
-            })
-            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'contas_pagar' }, (payload) => {
-                if (usuario?.nivel === 'Financeiro' || ehUsuario('Giovana')) {
-                    setAlertasNaoLidos(prev => [...prev, { id: Date.now() + Math.random(), msg: `Nova conta a pagar: ${payload.new.descricao}`, tipo: 'nova_conta_pagar' }]);
-                }
-                notificarSeContaPagarUrgente(payload.new);
-            })
-            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'contas_pagar' }, (payload) => {
-                notificarSeContaPagarUrgente(payload.new);
-            })
-            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'empresas_faturamento' }, (payload) => {
-                notificarSeFaturamentoEmAnalise(payload.new);
-            })
-            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'empresas_faturamento' }, (payload) => {
-                notificarSeFaturamentoEmAnalise(payload.new);
-            })
-            // Atualiza os dados da tela em tempo real para qualquer alteração no banco
-            .on('postgres_changes', { event: '*', schema: 'public' }, () => {
-                carregarDados();
-            })
-            .subscribe();
-
-        return () => {
-            supabase.removeChannel(channel);
-        };
-    }, [usuario]);
+    // A segunda assinatura de tempo real ("system-alerts") foi absorvida pelo
+    // canal único acima. Ela terminava num curinga — { event: '*', schema:
+    // 'public' } → carregarDados() — que fazia QUALQUER alteração em QUALQUER
+    // tabela varrer as 13 tabelas do sistema, e uma edição de O.S. varrer duas
+    // vezes (o tratador de `pedidos` chamava a mesma função). Hoje cada evento
+    // atualiza apenas a lista a que pertence, a partir do próprio payload.
 
     // === IDENTIDADE ESTÁVEL DAS FUNÇÕES PUBLICADAS ===
     // Sem useCallback, cada função era recriada a cada renderização e invalidava
