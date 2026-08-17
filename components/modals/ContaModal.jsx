@@ -126,14 +126,14 @@ export default function ContaModal() {
                                         onClick={() => setNovaConta({...novaConta, recorrente_total_parcelas: null})}
                                         className={`h-8 px-3 rounded-md text-compacto font-semibold transition ${!novaConta.recorrente_total_parcelas ? 'bg-brand text-white shadow-sm' : 'text-tinta-suave hover:text-gray-700 dark:hover:text-gray-200'}`}
                                     >
-                                        Para sempre
+                                        Indefinido
                                     </button>
                                     <button
                                         type="button"
                                         onClick={() => setNovaConta({...novaConta, recorrente_total_parcelas: novaConta.recorrente_total_parcelas || 10})}
                                         className={`h-8 px-3 rounded-md text-compacto font-semibold transition ${novaConta.recorrente_total_parcelas ? 'bg-brand text-white shadow-sm' : 'text-tinta-suave hover:text-gray-700 dark:hover:text-gray-200'}`}
                                     >
-                                        Por um período
+                                        Parcelado
                                     </button>
                                 </div>
                             </div>

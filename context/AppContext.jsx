@@ -1654,10 +1654,27 @@ export const AppProvider = ({ children }) => {
             recorrente_total_parcelas: totalParcelas || null,
             recorrente_parcela_atual: parcelaAtual + 1,
             categoria: contaOriginal.categoria || 'Despesa',
-            fornecedor_id: contaOriginal.fornecedor_id || null
+            fornecedor_id: contaOriginal.fornecedor_id || null,
+            // Vínculo com quem gerou. O banco tem índice único nesta coluna
+            // (ver supabase/contas_recorrentes_sem_duplicata_migration.sql):
+            // uma conta gera no máximo uma sucessora, aconteça o que acontecer
+            // na tela.
+            recorrente_origem_id: contaOriginal.id,
         };
         const { data: novaCopia, error } = await supabase.from('contas_pagar').insert([copiaPendente]).select();
-        if (!error && novaCopia) {
+
+        // 23505 = a sucessora desta conta já existe. Não é erro: é a trava
+        // fazendo o trabalho dela quando a conta é paga, reaberta e paga de
+        // novo. Seguir em silêncio é o comportamento certo — o usuário não
+        // pediu uma cobrança nova, ele só marcou a conta como paga.
+        if (error?.code === '23505') return;
+
+        if (error) {
+            console.error('Erro ao gerar a próxima cobrança recorrente:', error);
+            avisar(`A conta foi marcada como paga, mas a próxima cobrança de "${contaOriginal.descricao}" não foi criada: ${error.message}\n\nLance-a manualmente ou tente pagar novamente.`, 'erro');
+            return;
+        }
+        if (novaCopia) {
             setContasPagar(prev => [...prev, novaCopia[0]]);
             notificarSeContaPagarUrgente(novaCopia[0]);
         }

@@ -158,53 +158,58 @@ export default function Navbar() {
                         </div>
                     </div>
                 </header>
-            <nav className="bg-brand text-white px-6 shadow-sm z-30 sticky top-[64px] h-[48px]">
+            {/* A barra usa a cor do tema, não a da marca. O laranja ficou só no
+                detalhe: o filete e o ícone da aba ativa. Antes, "Berlim" — o
+                local padrão, presente em quase toda O.S. — dividia o mesmo
+                laranja com a navegação inteira, o que gastava o destaque na
+                informação mais banal da tela. */}
+            <nav className="bg-superficie px-6 shadow-sm z-30 sticky top-[64px] h-[48px]">
                     <div className="flex gap-1.5 overflow-x-auto custom-scrollbar no-scrollbar-style items-end pt-2.5 h-full">
-                        <Link href="/" className={`px-4 py-2.5 text-corpo font-semibold cursor-pointer transition-all duration-200 whitespace-nowrap rounded-t-lg flex items-center gap-2 tracking-wide uppercase border-t-2 ${pathname === '/' ? 'bg-fundo text-tinta border-brand shadow-[0_-2px_6px_rgba(0,0,0,0.08)]' : 'border-transparent text-white/85 hover:bg-white/10 hover:text-white'}`}>
+                        <Link href="/" className={`px-4 py-2.5 text-corpo font-semibold cursor-pointer transition-all duration-200 whitespace-nowrap rounded-t-lg flex items-center gap-2 tracking-wide uppercase border-t-2 ${pathname === '/' ? 'bg-fundo text-tinta border-brand shadow-[0_-2px_6px_rgba(0,0,0,0.08)]' : 'border-transparent text-tinta-suave hover:bg-sutil hover:text-tinta'}`}>
                             <Icon name="layout-dashboard" className={`w-4 h-4 shrink-0 ${pathname === '/' ? 'text-brand' : ''}`} /> Início
                         </Link>
                         {(usuario?.nivel === 'Administrador' || usuario?.nivel === 'Atendimento' || usuario?.nivel === 'Produção') && (
-                            <Link href="/producao" className={`px-4 py-2.5 text-corpo font-semibold cursor-pointer transition-all duration-200 whitespace-nowrap rounded-t-lg flex items-center gap-2 tracking-wide uppercase border-t-2 ${pathname === '/producao' ? 'bg-fundo text-tinta border-brand shadow-[0_-2px_6px_rgba(0,0,0,0.08)]' : 'border-transparent text-white/85 hover:bg-white/10 hover:text-white'}`}>
+                            <Link href="/producao" className={`px-4 py-2.5 text-corpo font-semibold cursor-pointer transition-all duration-200 whitespace-nowrap rounded-t-lg flex items-center gap-2 tracking-wide uppercase border-t-2 ${pathname === '/producao' ? 'bg-fundo text-tinta border-brand shadow-[0_-2px_6px_rgba(0,0,0,0.08)]' : 'border-transparent text-tinta-suave hover:bg-sutil hover:text-tinta'}`}>
                                 <Icon name="grid" className={`w-4 h-4 shrink-0 ${pathname === '/producao' ? 'text-brand' : ''}`} /> Produção
                             </Link>
                         )}
-                        <Link href="/baixa" className={`px-4 py-2.5 text-corpo font-semibold cursor-pointer transition-all duration-200 whitespace-nowrap rounded-t-lg flex items-center gap-2 tracking-wide uppercase border-t-2 ${pathname === '/baixa' ? 'bg-fundo text-tinta border-brand shadow-[0_-2px_6px_rgba(0,0,0,0.08)]' : 'border-transparent text-white/85 hover:bg-white/10 hover:text-white'}`}>
+                        <Link href="/baixa" className={`px-4 py-2.5 text-corpo font-semibold cursor-pointer transition-all duration-200 whitespace-nowrap rounded-t-lg flex items-center gap-2 tracking-wide uppercase border-t-2 ${pathname === '/baixa' ? 'bg-fundo text-tinta border-brand shadow-[0_-2px_6px_rgba(0,0,0,0.08)]' : 'border-transparent text-tinta-suave hover:bg-sutil hover:text-tinta'}`}>
                             <Icon name="check-circle" className={`w-4 h-4 shrink-0 ${pathname === '/baixa' ? 'text-brand' : ''}`} /> O.S.
                         </Link>
                         {usuario?.nivel !== 'Financeiro' && (
-                            <Link href="/calculadoras" className={`px-4 py-2.5 text-corpo font-semibold cursor-pointer transition-all duration-200 whitespace-nowrap rounded-t-lg flex items-center gap-2 tracking-wide uppercase border-t-2 ${pathname === '/calculadoras' ? 'bg-fundo text-tinta border-brand shadow-[0_-2px_6px_rgba(0,0,0,0.08)]' : 'border-transparent text-white/85 hover:bg-white/10 hover:text-white'}`}>
+                            <Link href="/calculadoras" className={`px-4 py-2.5 text-corpo font-semibold cursor-pointer transition-all duration-200 whitespace-nowrap rounded-t-lg flex items-center gap-2 tracking-wide uppercase border-t-2 ${pathname === '/calculadoras' ? 'bg-fundo text-tinta border-brand shadow-[0_-2px_6px_rgba(0,0,0,0.08)]' : 'border-transparent text-tinta-suave hover:bg-sutil hover:text-tinta'}`}>
                                 <Icon name="calculator" className={`w-4 h-4 shrink-0 ${pathname === '/calculadoras' ? 'text-brand' : ''}`} /> Calculadoras
                             </Link>
                         )}
 
                         {(usuario?.nivel === 'Administrador' || usuario?.nivel === 'Financeiro') && (
-                            <Link href="/financeiro" className={`px-4 py-2.5 text-corpo font-semibold cursor-pointer transition-all duration-200 whitespace-nowrap rounded-t-lg flex items-center gap-2 tracking-wide uppercase border-t-2 ${pathname === '/financeiro' ? 'bg-fundo text-tinta border-brand shadow-[0_-2px_6px_rgba(0,0,0,0.08)]' : 'border-transparent text-white/85 hover:bg-white/10 hover:text-white'}`}>
+                            <Link href="/financeiro" className={`px-4 py-2.5 text-corpo font-semibold cursor-pointer transition-all duration-200 whitespace-nowrap rounded-t-lg flex items-center gap-2 tracking-wide uppercase border-t-2 ${pathname === '/financeiro' ? 'bg-fundo text-tinta border-brand shadow-[0_-2px_6px_rgba(0,0,0,0.08)]' : 'border-transparent text-tinta-suave hover:bg-sutil hover:text-tinta'}`}>
                                 <Icon name="dollar-sign" className={`w-4 h-4 shrink-0 ${pathname === '/financeiro' ? 'text-brand' : ''}`} /> Financeiro
                             </Link>
                         )}
                         {(usuario?.nivel === 'Administrador' || usuario?.nivel === 'Financeiro') && (
-                            <Link href="/vendas" className={`px-4 py-2.5 text-corpo font-semibold cursor-pointer transition-all duration-200 whitespace-nowrap rounded-t-lg flex items-center gap-2 tracking-wide uppercase border-t-2 ${pathname === '/vendas' ? 'bg-fundo text-tinta border-brand shadow-[0_-2px_6px_rgba(0,0,0,0.08)]' : 'border-transparent text-white/85 hover:bg-white/10 hover:text-white'}`}>
+                            <Link href="/vendas" className={`px-4 py-2.5 text-corpo font-semibold cursor-pointer transition-all duration-200 whitespace-nowrap rounded-t-lg flex items-center gap-2 tracking-wide uppercase border-t-2 ${pathname === '/vendas' ? 'bg-fundo text-tinta border-brand shadow-[0_-2px_6px_rgba(0,0,0,0.08)]' : 'border-transparent text-tinta-suave hover:bg-sutil hover:text-tinta'}`}>
                                 <Icon name="trending-up" className={`w-4 h-4 shrink-0 ${pathname === '/vendas' ? 'text-brand' : ''}`} /> Vendas
                             </Link>
                         )}
                         {usuario?.nivel === 'Atendimento' && (
-                            <Link href="/notas-fiscais" className={`px-4 py-2.5 text-corpo font-semibold cursor-pointer transition-all duration-200 whitespace-nowrap rounded-t-lg flex items-center gap-2 tracking-wide uppercase border-t-2 ${pathname === '/notas-fiscais' ? 'bg-fundo text-tinta border-brand shadow-[0_-2px_6px_rgba(0,0,0,0.08)]' : 'border-transparent text-white/85 hover:bg-white/10 hover:text-white'}`}>
+                            <Link href="/notas-fiscais" className={`px-4 py-2.5 text-corpo font-semibold cursor-pointer transition-all duration-200 whitespace-nowrap rounded-t-lg flex items-center gap-2 tracking-wide uppercase border-t-2 ${pathname === '/notas-fiscais' ? 'bg-fundo text-tinta border-brand shadow-[0_-2px_6px_rgba(0,0,0,0.08)]' : 'border-transparent text-tinta-suave hover:bg-sutil hover:text-tinta'}`}>
                                 <Icon name="file-text" className={`w-4 h-4 shrink-0 ${pathname === '/notas-fiscais' ? 'text-brand' : ''}`} /> Notas Fiscais
                             </Link>
                         )}
 
                         {usuario?.nivel !== 'Financeiro' && (
-                            <Link href="/orcamentos" className={`px-4 py-2.5 text-corpo font-semibold cursor-pointer transition-all duration-200 whitespace-nowrap rounded-t-lg flex items-center gap-2 tracking-wide uppercase border-t-2 ${pathname === '/orcamentos' ? 'bg-fundo text-tinta border-brand shadow-[0_-2px_6px_rgba(0,0,0,0.08)]' : 'border-transparent text-white/85 hover:bg-white/10 hover:text-white'}`}>
+                            <Link href="/orcamentos" className={`px-4 py-2.5 text-corpo font-semibold cursor-pointer transition-all duration-200 whitespace-nowrap rounded-t-lg flex items-center gap-2 tracking-wide uppercase border-t-2 ${pathname === '/orcamentos' ? 'bg-fundo text-tinta border-brand shadow-[0_-2px_6px_rgba(0,0,0,0.08)]' : 'border-transparent text-tinta-suave hover:bg-sutil hover:text-tinta'}`}>
                                 <Icon name="edit-3" className={`w-4 h-4 shrink-0 ${pathname === '/orcamentos' ? 'text-brand' : ''}`} /> Orçamentos
                             </Link>
                         )}
 
                         {usuario?.nivel !== 'Financeiro' && (
-                            <Link href="/cadastros" className={`px-4 py-2.5 text-corpo font-semibold cursor-pointer transition-all duration-200 whitespace-nowrap rounded-t-lg flex items-center gap-2 tracking-wide uppercase border-t-2 ${pathname === '/cadastros' ? 'bg-fundo text-tinta border-brand shadow-[0_-2px_6px_rgba(0,0,0,0.08)]' : 'border-transparent text-white/85 hover:bg-white/10 hover:text-white'}`}>
+                            <Link href="/cadastros" className={`px-4 py-2.5 text-corpo font-semibold cursor-pointer transition-all duration-200 whitespace-nowrap rounded-t-lg flex items-center gap-2 tracking-wide uppercase border-t-2 ${pathname === '/cadastros' ? 'bg-fundo text-tinta border-brand shadow-[0_-2px_6px_rgba(0,0,0,0.08)]' : 'border-transparent text-tinta-suave hover:bg-sutil hover:text-tinta'}`}>
                                 <Icon name="users" className={`w-4 h-4 shrink-0 ${pathname === '/cadastros' ? 'text-brand' : ''}`} /> Cadastros
                             </Link>
                         )}
-                        <Link href="/comunicacao" className={`px-4 py-2.5 text-corpo font-semibold cursor-pointer transition-all duration-200 whitespace-nowrap rounded-t-lg flex items-center gap-2 tracking-wide uppercase border-t-2 ${pathname === '/comunicacao' ? 'bg-fundo text-tinta border-brand shadow-[0_-2px_6px_rgba(0,0,0,0.08)]' : 'border-transparent text-white/85 hover:bg-white/10 hover:text-white'}`}>
+                        <Link href="/comunicacao" className={`px-4 py-2.5 text-corpo font-semibold cursor-pointer transition-all duration-200 whitespace-nowrap rounded-t-lg flex items-center gap-2 tracking-wide uppercase border-t-2 ${pathname === '/comunicacao' ? 'bg-fundo text-tinta border-brand shadow-[0_-2px_6px_rgba(0,0,0,0.08)]' : 'border-transparent text-tinta-suave hover:bg-sutil hover:text-tinta'}`}>
                             <Icon name="mail" className={`w-4 h-4 shrink-0 ${pathname === '/comunicacao' ? 'text-brand' : ''}`} /> Comunicação
                         </Link>
                     </div>
