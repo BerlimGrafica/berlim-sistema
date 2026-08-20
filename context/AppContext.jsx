@@ -714,9 +714,13 @@ export const AppProvider = ({ children }) => {
     
     // Reseta a página do histórico quando o filtro muda. Ajustado durante a
     // renderização (em vez de num useEffect) para não disparar um commit extra.
-    const [filtroHistoricoAnterior, setFiltroHistoricoAnterior] = useState({ buscaHistoricoText, dataFiltroInicio, dataFiltroFim, ordenacaoHistoricoOS });
-    if (filtroHistoricoAnterior.buscaHistoricoText !== buscaHistoricoText || filtroHistoricoAnterior.dataFiltroInicio !== dataFiltroInicio || filtroHistoricoAnterior.dataFiltroFim !== dataFiltroFim || filtroHistoricoAnterior.ordenacaoHistoricoOS !== ordenacaoHistoricoOS) {
-        setFiltroHistoricoAnterior({ buscaHistoricoText, dataFiltroInicio, dataFiltroFim, ordenacaoHistoricoOS });
+    // A aba entra aqui junto com os filtros: cada uma tem um número diferente de
+    // páginas, então guardar a página ao trocar de aba levava a um range vazio —
+    // sair da página 3 de "À dar Baixa" (208 O.S.) para "Baixadas" (21) mostrava
+    // uma lista vazia, como se não houvesse nada ali.
+    const [filtroHistoricoAnterior, setFiltroHistoricoAnterior] = useState({ abaOS, buscaHistoricoText, dataFiltroInicio, dataFiltroFim, ordenacaoHistoricoOS });
+    if (filtroHistoricoAnterior.abaOS !== abaOS || filtroHistoricoAnterior.buscaHistoricoText !== buscaHistoricoText || filtroHistoricoAnterior.dataFiltroInicio !== dataFiltroInicio || filtroHistoricoAnterior.dataFiltroFim !== dataFiltroFim || filtroHistoricoAnterior.ordenacaoHistoricoOS !== ordenacaoHistoricoOS) {
+        setFiltroHistoricoAnterior({ abaOS, buscaHistoricoText, dataFiltroInicio, dataFiltroFim, ordenacaoHistoricoOS });
         if (paginaHistorico !== 1) setPaginaHistorico(1);
     }
 
