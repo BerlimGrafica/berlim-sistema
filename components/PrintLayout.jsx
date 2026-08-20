@@ -133,6 +133,12 @@ export default function PrintLayout() {
                                 <div className="text-right shrink-0">
                                     <span className="text-micro uppercase font-semibold tracking-widest text-gray-500 block mb-0.5">Total do Pedido</span>
                                     <h2 className="text-4xl font-black tracking-tight text-gray-900">R$ {formatarValorFinanceiro(centavosParaReais(osParaImprimir.valor_total))}</h2>
+                                    {/* Linha de visto: quem retira assina a via da gráfica, e o cliente
+                                        fica com a dele já assinada. A borda acompanha a largura do total,
+                                        então continua alinhada com qualquer valor. */}
+                                    <div className="mt-4 border-t border-gray-500 pt-0.5">
+                                        <span className="text-micro uppercase tracking-widest text-gray-500">Visto</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
