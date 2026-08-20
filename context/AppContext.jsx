@@ -724,9 +724,13 @@ export const AppProvider = ({ children }) => {
         if (!usuario) return;
 
         async function fetchHistorico() {
-            // Traz só nome/ordem dos itens: o suficiente para a coluna "Serviço
-            // (Resumo)" da tabela, sem o peso de descrição e valores.
-            let query = supabase.from('pedidos').select('*, pedido_itens(nome, ordem)', { count: 'exact' });
+            // Traz itens e pagamentos COMPLETOS. A tabela em si só precisaria do
+            // nome do item para a coluna "Serviço (Resumo)", mas a mesma linha é
+            // entregue a abrirEdicao() no clique — e o modal grava de volta o que
+            // recebeu. Com a projeção parcial, abrir e salvar uma O.S. daqui zerava
+            // valor/descrição/produto de cada item e apagava todos os pagamentos,
+            // porque os campos ausentes viravam 0/null na conversão de volta.
+            let query = supabase.from('pedidos').select('*, pedido_itens(*), pedido_pagamentos(*)', { count: 'exact' });
             
             if (abaOS === 'abertas') {
                 query = query.not('status', 'in', '("Concluído","Finalizado","Cancelado","Abandonado")');
@@ -1096,7 +1100,30 @@ export const AppProvider = ({ children }) => {
         setOutrasOSAbertas([]);
     }
 
-    function abrirEdicao(pedido) {
+    // Uma linha de pedido só pode alimentar o modal se trouxer itens e pagamentos
+    // COMPLETOS: o modal grava de volta o que recebeu, então um item sem
+    // valor_centavos volta para o banco valendo zero e um pagamento ausente é
+    // apagado. `id` só vem quando a consulta pediu a linha inteira — é o que
+    // separa uma projeção parcial de uma O.S. que de fato não tem filhos.
+    function projecaoIncompleta(pedido) {
+        const semId = (linhas) => (linhas || []).some(l => l.id === undefined);
+        return pedido.pedido_itens === undefined || pedido.pedido_pagamentos === undefined
+            || semId(pedido.pedido_itens) || semId(pedido.pedido_pagamentos);
+    }
+
+    async function abrirEdicao(pedido) {
+        // Rede de segurança: se a tela que chamou trouxe uma projeção reduzida,
+        // recarrega a O.S. inteira antes de montar o carrinho (ver acima).
+        if (projecaoIncompleta(pedido)) {
+            const { data } = await supabase.from('pedidos')
+                .select('*, pedido_itens(*), pedido_pagamentos(*)')
+                .eq('id', pedido.id).maybeSingle();
+            if (!data) {
+                avisar('Não foi possível carregar os itens desta O.S. Tente novamente.', 'erro');
+                return;
+            }
+            pedido = data;
+        }
         setPedidoEmEdicao(pedido);
         setBuscaCliente(pedido.cliente);
         // Busca o cliente vinculado pela chave primária. Não dá pra tirar isso da
