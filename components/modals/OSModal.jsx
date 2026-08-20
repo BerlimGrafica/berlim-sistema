@@ -9,7 +9,7 @@ import { useClientes } from "@/context/ClientesContext";
 import { useCadastros } from "@/context/CadastrosContext";
 import Icon from "@/components/Icon";
 import Tooltip from "@/components/Tooltip";
-import { formatarValorFinanceiro, formatarMoeda, parseValorMoeda, valorPagamentoComSinal, centavosParaReais, obterDataAtual, mascararCliente, formatarDataExibicao } from '@/lib/utils/formatters';
+import { formatarValorFinanceiro, formatarMoeda, parseValorMoeda, valorPagamentoComSinal, centavosParaReais, obterDataAtual, mascararCliente, formatarDataExibicao, corPorNome } from '@/lib/utils/formatters';
 import { CustomDatePicker } from '@/components/ui/DatePicker';
 import { CustomSelect, MultiSelectDropdown } from '@/components/ui/Dropdown';
 import { ChipNome } from '@/components/ui/ChipNome';
@@ -272,12 +272,17 @@ export default function OSModal() {
                                     <div className="grid grid-cols-4 gap-3">
                                         <div className="relative col-span-2">
                                             <span className="absolute left-3 top-2.5 text-mini text-gray-400 font-medium z-[1]">Local:</span>
+                                            {/* A mesma cor do chip do item aparece já na escolha, para o local
+                                                ser reconhecido pela cor antes de ler o nome (ver corPorNome). */}
                                             <CustomSelect
                                                 value={itemAtual.local_producao}
                                                 onChange={(val) => setItemAtual({...itemAtual, local_producao: val})}
                                                 disabled={isModalTrancado}
                                                 className="w-full bg-elevado border border-borda rounded pl-[52px] pr-3 py-2 text-mini outline-none focus:border-brand transition dark:text-[#EDEDED] font-medium"
-                                                options={(fornecedoresTerceirizacaoNomes.length > 0 ? fornecedoresTerceirizacaoNomes.map(f => f.nome) : ['Berlim']).map(l => ({ value: l, label: l }))}
+                                                options={(fornecedoresTerceirizacaoNomes.length > 0 ? fornecedoresTerceirizacaoNomes.map(f => f.nome) : ['Berlim']).map(l => ({
+                                                    value: l, label: l,
+                                                    icon: <span className={`w-2 h-2 rounded-full shrink-0 ${corPorNome(l).bg}`} />,
+                                                }))}
                                             />
                                         </div>
                                         <div className="relative">
