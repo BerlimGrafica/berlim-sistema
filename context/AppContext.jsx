@@ -136,6 +136,22 @@ export const AppProvider = ({ children }) => {
     const [ordenacaoHistoricoOS, setOrdenacaoHistoricoOS] = useState('desc');
     const [triggerRealtime, setTriggerRealtime] = useState(0);
     const itensPorPagina = 50;
+
+    // pedidos e pedidosHistorico são duas visões da mesma tabela: a lista geral,
+    // carregada de uma vez, e a página filtrada que o Histórico/Baixa monta no
+    // servidor. Toda gravação precisa alcançar as duas — mexer só na primeira
+    // deixava a segunda entregando a versão anterior da O.S. a quem clicasse
+    // nela. Só altera quem já está em cada lista: inserir uma O.S. nova por aqui
+    // furaria o filtro e a contagem de páginas do Histórico, que são resolvidos
+    // no servidor.
+    const aplicarNasListasDePedidos = (id, atualizar) => {
+        setPedidos(prev => prev.map(p => (p.id === id ? atualizar(p) : p)));
+        setPedidosHistorico(prev => prev.map(p => (p.id === id ? atualizar(p) : p)));
+    };
+    const removerDasListasDePedidos = (id) => {
+        setPedidos(prev => prev.filter(p => p.id !== id));
+        setPedidosHistorico(prev => prev.filter(p => p.id !== id));
+    };
     const [dataFiltroInicio, setDataFiltroInicio] = useState('');
     const [dataFiltroFim, setDataFiltroFim] = useState('');
 
@@ -290,6 +306,7 @@ export const AppProvider = ({ children }) => {
             setPedidos(prev => prev.some(p => p.id === data.id)
                 ? prev.map(p => (p.id === data.id ? { ...p, ...data } : p))
                 : [data, ...prev]);
+            setPedidosHistorico(prev => prev.map(p => (p.id === data.id ? { ...p, ...data } : p)));
         };
         const agendarSincronia = (pedidoId) => {
             if (pedidoId) agendarRealtime(`pedido-${pedidoId}`, () => sincronizarPedido(pedidoId));
@@ -337,14 +354,14 @@ export const AppProvider = ({ children }) => {
                 }
 
                 if (payload.eventType === 'DELETE') {
-                    if (payload.old?.id !== undefined) setPedidos(prev => prev.filter(p => p.id !== payload.old.id));
+                    if (payload.old?.id !== undefined) removerDasListasDePedidos(payload.old.id);
                 } else if (payload.eventType === 'INSERT') {
                     agendarSincronia(payload.new.id);
                 } else {
                     const anterior = pedidosRef.current.find(p => p.id === payload.new.id);
                     // Mescla preservando pedido_itens/pedido_pagamentos, que não vêm
                     // no payload por serem tabelas separadas.
-                    setPedidos(prev => prev.map(p => (p.id === payload.new.id ? { ...p, ...payload.new } : p)));
+                    aplicarNasListasDePedidos(payload.new.id, p => ({ ...p, ...payload.new }));
                     // Valor total diferente significa carrinho mexido — só aí vale
                     // buscar os filhos. Edição de status/prazo/responsável, que é o
                     // caso comum, não custa consulta nenhuma.
@@ -353,7 +370,12 @@ export const AppProvider = ({ children }) => {
                 marcarParaRebuscar();
             },
 
-            pedido_itens: (payload) => agendarSincronia(payload.new?.pedido_id ?? payload.old?.pedido_id),
+            pedido_itens: (payload) => {
+                agendarSincronia(payload.new?.pedido_id ?? payload.old?.pedido_id);
+                // Sem isto o Histórico não refazia a busca quando o carrinho mudava,
+                // e continuava exibindo o resumo antigo dos itens.
+                marcarParaRebuscar();
+            },
 
             pedido_pagamentos: (payload) => {
                 agendarSincronia(payload.new?.pedido_id ?? payload.old?.pedido_id);
@@ -908,12 +930,7 @@ export const AppProvider = ({ children }) => {
             payload.cancelado_em = new Date().toISOString();
         }
 
-        setPedidos(pedidos.map(p => {
-            if (p.id === id) {
-                return { ...p, ...payload };
-            }
-            return p;
-        }));
+        aplicarNasListasDePedidos(id, p => ({ ...p, ...payload }));
         // pedidosBoleto é uma busca separada (ver buscarPedidosComBoleto) que não
         // reflete mudanças em `pedidos` automaticamente; sincroniza aqui também
         // (no-op quando o id não está nessa lista, ex: Prazo/CNPJ/Número editados
@@ -934,7 +951,7 @@ export const AppProvider = ({ children }) => {
     // aqui. pedidos.servico fica levemente desatualizado nesse campo
     // especificamente até a OS ser reaberta e salva de novo pelo modal.
     async function atualizarItemConcluido(pedidoId, itemId, concluido) {
-        setPedidos(prev => prev.map(p => p.id !== pedidoId ? p : {
+        aplicarNasListasDePedidos(pedidoId, p => ({
             ...p,
             pedido_itens: (p.pedido_itens || []).map(i => i.id === itemId ? { ...i, concluido } : i),
         }));
@@ -957,10 +974,10 @@ export const AppProvider = ({ children }) => {
         const patchCentavos = { ...patch };
         if ('valor' in patch) { patchCentavos.valor_centavos = paraCentavos(patch.valor); delete patchCentavos.valor; }
 
-        setPedidos(prev => prev.map(p => p.id === pedido.id ? {
+        aplicarNasListasDePedidos(pedido.id, p => ({
             ...p,
             pedido_pagamentos: (p.pedido_pagamentos || []).map(pg => pg.forma === 'Boleto' ? { ...pg, ...patchCentavos } : pg),
-        } : p));
+        }));
         setPedidosBoleto(prev => prev.map(p => p.id === pedido.id ? { ...p, boleto: { ...p.boleto, ...patch } } : p));
 
         const { error } = await supabase.from('pedido_pagamentos').update(patchCentavos).eq('pedido_id', pedido.id).eq('forma', 'Boleto');
@@ -1078,7 +1095,7 @@ export const AppProvider = ({ children }) => {
             concluidos.push({ ...data[0], pedido_pagamentos: [...pagamentosDb, ...(pagamentoInserido || [])] });
         }
         if (concluidos.length > 0) {
-            setPedidos(prev => prev.map(p => concluidos.find(c => c.id === p.id) || p));
+            concluidos.forEach(c => aplicarNasListasDePedidos(c.id, () => c));
             setTriggerRealtime(prev => prev + 1);
         }
         return { sucesso: true };
@@ -1104,30 +1121,29 @@ export const AppProvider = ({ children }) => {
         setOutrasOSAbertas([]);
     }
 
-    // Uma linha de pedido só pode alimentar o modal se trouxer itens e pagamentos
-    // COMPLETOS: o modal grava de volta o que recebeu, então um item sem
-    // valor_centavos volta para o banco valendo zero e um pagamento ausente é
-    // apagado. `id` só vem quando a consulta pediu a linha inteira — é o que
-    // separa uma projeção parcial de uma O.S. que de fato não tem filhos.
-    function projecaoIncompleta(pedido) {
-        const semId = (linhas) => (linhas || []).some(l => l.id === undefined);
-        return pedido.pedido_itens === undefined || pedido.pedido_pagamentos === undefined
-            || semId(pedido.pedido_itens) || semId(pedido.pedido_pagamentos);
-    }
-
+    // Recarrega SEMPRE a O.S. antes de abrir o modal, em vez de confiar na linha
+    // que a tela clicada tinha em mãos. Duas razões, e a segunda só ficou clara
+    // depois de a primeira ser corrigida:
+    //
+    //   1. projeção parcial — o Histórico chegou a trazer só nome/ordem dos itens;
+    //   2. projeção velha — pedidosHistorico não é atualizado por salvarOS, então
+    //      reabrir uma O.S. recém-salva pela aba de Baixa devolvia a versão
+    //      anterior. Gravar de novo por cima desfazia o que tinha acabado de ser
+    //      salvo.
+    //
+    // Testar a forma do objeto resolvia (1) e não enxergava (2): o registro velho
+    // é completo, só não é o atual. Uma consulta por chave primária ao abrir um
+    // modal é barata perto de gravar em cima de dado defasado — mesmo raciocínio
+    // do imprimirOS.
     async function abrirEdicao(pedido) {
-        // Rede de segurança: se a tela que chamou trouxe uma projeção reduzida,
-        // recarrega a O.S. inteira antes de montar o carrinho (ver acima).
-        if (projecaoIncompleta(pedido)) {
-            const { data } = await supabase.from('pedidos')
-                .select('*, pedido_itens(*), pedido_pagamentos(*)')
-                .eq('id', pedido.id).maybeSingle();
-            if (!data) {
-                avisar('Não foi possível carregar os itens desta O.S. Tente novamente.', 'erro');
-                return;
-            }
-            pedido = data;
+        const { data } = await supabase.from('pedidos')
+            .select('*, pedido_itens(*), pedido_pagamentos(*)')
+            .eq('id', pedido.id).maybeSingle();
+        if (!data) {
+            avisar('Não foi possível carregar esta O.S. Tente novamente.', 'erro');
+            return;
         }
+        pedido = data;
         setPedidoEmEdicao(pedido);
         setBuscaCliente(pedido.cliente);
         // Busca o cliente vinculado pela chave primária. Não dá pra tirar isso da
@@ -1346,7 +1362,7 @@ export const AppProvider = ({ children }) => {
             } else if (data && data.length > 0) {
                 const itensPagamentos = await salvarItensPagamentosDoPedido(data[0].id, itensPedido, pagamentosPedido);
                 if (itensPagamentos) {
-                    setPedidos(pedidos.map(p => p.id === data[0].id ? { ...data[0], ...itensPagamentos } : p));
+                    aplicarNasListasDePedidos(data[0].id, () => ({ ...data[0], ...itensPagamentos }));
                     fecharModalOS();
                     if (querImprimir) imprimirOS({ ...data[0], ...itensPagamentos });
                 } else {
@@ -1354,7 +1370,7 @@ export const AppProvider = ({ children }) => {
                     // foram tocados. Reflete só o cabeçalho (o espalhamento preserva
                     // as linhas filhas em memória) e mantém o modal aberto para nova
                     // tentativa, em vez de fechar anunciando um sucesso que não houve.
-                    setPedidos(pedidos.map(p => (p.id === data[0].id ? { ...p, ...data[0] } : p)));
+                    aplicarNasListasDePedidos(data[0].id, p => ({ ...p, ...data[0] }));
                 }
             } else {
                 // Se a resposta for vazia, puxa as informações limpas e fecha sem travar
