@@ -32,6 +32,9 @@ export default function OSModal() {
     const [itemEditandoId, setItemEditandoId] = useState(null);
     const [osLoteSelecionadas, setOsLoteSelecionadas] = useState({}); // { [pedidoId]: true }
     const [alocacoesLote, setAlocacoesLote] = useState({});           // { [pedidoId]: '150,00' }
+    // O valor do novo pagamento já nasce preenchido com o saldo da O.S., então
+    // "tem valor" não quer dizer "foi digitado". Este sinal separa os dois.
+    const [pagamentoTocado, setPagamentoTocado] = useState(false);
 
     // Limpa a edição de pagamento/item ao fechar o modal, ajustado durante a
     // renderização (em vez de num useEffect) para não disparar um commit extra.
@@ -44,7 +47,70 @@ export default function OSModal() {
             setItemEditandoId(null);
             setOsLoteSelecionadas({});
             setAlocacoesLote({});
+            setPagamentoTocado(false);
         }
+    }
+
+    // ==== RASCUNHOS QUE AINDA NÃO VIRARAM LINHA DA O.S. ====
+    // Os campos do carrinho e os do bloco de pagamento são rascunhos: só entram
+    // na O.S. ao clicar em "Inserir Item"/"Salvar Alterações" e em "Registrar
+    // Pagamento". salvarOS grava apenas itensPedido e pagamentosPedido, então
+    // salvar com algo digitado aqui descarta esse algo sem dizer nada — foi
+    // assim que um item da O.S. #18008 acabou gravado zerado.
+    const perfil = (obj, campos) => obj ? campos.map(c => obj[c] ?? '').join('') : '';
+
+    const itemNoCarrinho = itensPedido.find(i => i.id_temp === itemEditandoId);
+    const CAMPOS_ITEM = ['nome', 'descricao', 'desconto', 'local_producao'];
+    // Ao abrir um item para edição o formulário recebe valor_original (o bruto,
+    // antes do desconto), não o valor final — comparar com o campo errado
+    // acusaria alteração em todo item que tem desconto.
+    // O formulário preenche padrões ao abrir um item (nome/descrição/desconto
+    // viram '' e o local vira 'Berlim' quando estão nulos). A comparação aplica
+    // os mesmos padrões do outro lado, senão um item antigo sem local gravado
+    // acusaria alteração toda vez — e um aviso que aparece sempre deixa de ser
+    // lido.
+    const itemComPadroes = (i) => i ? {
+        ...i, nome: i.nome || '', descricao: i.descricao || '',
+        desconto: i.desconto || '', local_producao: i.local_producao || 'Berlim',
+    } : null;
+    const rascunhoItem = itemEditandoId !== null
+        ? perfil(itemAtual, CAMPOS_ITEM) !== perfil(itemComPadroes(itemNoCarrinho), CAMPOS_ITEM)
+          || (itemAtual.valor || '') !== (itemNoCarrinho?.valor_original || itemNoCarrinho?.valor || '')
+        : !!((itemAtual.nome || '').trim() || (itemAtual.descricao || '').trim() || (itemAtual.valor || '').trim());
+
+    // Todo onChange do bloco de novo pagamento passa por aqui, para o aviso
+    // distinguir digitação de valor sugerido automaticamente.
+    const editarNovoPagamento = (patch) => {
+        setPagamentoTocado(true);
+        setNovoPagamento({ ...novoPagamento, ...patch });
+    };
+
+    const rascunhoNovoPagamento = pagamentoTocado && parseValorMoeda(novoPagamento.valor) > 0;
+
+    // A edição de um pagamento existente preenche os campos vazios com padrões
+    // (PIX, Itaú, Visa, hoje); a comparação aplica os mesmos padrões do outro
+    // lado, senão um pagamento antigo sem bandeira pareceria alterado.
+    const CAMPOS_PAG = ['forma', 'valor', 'parcelas', 'instituicao', 'bandeira', 'data'];
+    const comPadroes = (pag) => pag ? { forma: 'PIX', parcelas: 1, instituicao: 'Itaú', bandeira: 'Visa', data: obterDataAtual(), ...pag } : null;
+    const rascunhoPagamentoEditado = pagamentoEditandoIdx !== null
+        && perfil(pagamentoEditando, CAMPOS_PAG) !== perfil(comPadroes(pagamentosPedido[pagamentoEditandoIdx]), CAMPOS_PAG);
+
+    // Avisa em vez de bloquear: quem digitou pode ter desistido de propósito, e
+    // travar o botão sem explicar por quê é pior do que perguntar.
+    async function salvarComAviso(e, querImprimir = false, statusForcado = null) {
+        if (e) e.preventDefault();
+        const pendencias = [];
+        if (rascunhoItem) pendencias.push(`• Item do carrinho — falta clicar em "${itemEditandoId !== null ? 'Salvar Alterações' : 'Inserir Item no Orçamento'}"`);
+        if (rascunhoNovoPagamento) pendencias.push('• Novo pagamento — falta clicar em "Registrar Pagamento"');
+        if (rascunhoPagamentoEditado) pendencias.push('• Pagamento aberto para edição — falta confirmar a alteração');
+        if (pendencias.length > 0) {
+            const querSalvar = await confirmar(
+                'Há informação digitada que ainda não entrou nesta O.S.:\n\n' + pendencias.join('\n') +
+                '\n\nSalvar assim mesmo? O que está digitado será descartado.'
+            );
+            if (!querSalvar) return;
+        }
+        await salvarOS(null, querImprimir, statusForcado);
     }
 
     const camposExtrasPagamento = (forma) => {
@@ -105,7 +171,7 @@ export default function OSModal() {
                     <button type="button" onClick={modal.fechar} className="text-white/70 hover:text-white transition"><Icon name="x" className="w-5 h-5" /></button>
                 </div>
 
-                <form onSubmit={(e) => salvarOS(e, false)} className="p-6 sm:p-8 overflow-y-auto custom-scrollbar flex flex-col gap-7">
+                <form onSubmit={(e) => salvarComAviso(e, false)} className="p-6 sm:p-8 overflow-y-auto custom-scrollbar flex flex-col gap-7">
                     {isModalTrancado && <div className="p-3 bg-red-950/20 border border-red-900/50 rounded text-mini text-red-400">Nota liquidada. Peça para um Admin ou Financeiro destravar para edições.</div>}
 
                     <div className="flex flex-col gap-4 pb-6 border-b border-borda">
@@ -447,7 +513,7 @@ export default function OSModal() {
                                             <div className="grid grid-cols-2 gap-2">
                                                 <CustomSelect
                                                     value={novoPagamento.forma}
-                                                    onChange={(val) => setNovoPagamento({...novoPagamento, forma: val, ...camposParaNovaForma(val, novoPagamento)})}
+                                                    onChange={(val) => editarNovoPagamento({ forma: val, ...camposParaNovaForma(val, novoPagamento)})}
                                                     className="bg-superficie border border-borda-forte rounded px-2 py-1.5 text-mini outline-none"
                                                     options={[
                                                         { value: 'PIX', label: 'PIX' },
@@ -461,7 +527,7 @@ export default function OSModal() {
                                                 />
                                                 <div className="relative">
                                                     <span className="absolute left-2 top-2 text-micro text-gray-400">R$</span>
-                                                    <input type="text" value={novoPagamento.valor} onChange={e => setNovoPagamento({...novoPagamento, valor: formatarMoeda(e.target.value)})} className="w-full bg-superficie border border-borda-forte rounded pl-6 pr-2 py-1.5 text-mini outline-none" placeholder="Valor" />
+                                                    <input type="text" value={novoPagamento.valor} onChange={e => editarNovoPagamento({ valor: formatarMoeda(e.target.value)})} className="w-full bg-superficie border border-borda-forte rounded pl-6 pr-2 py-1.5 text-mini outline-none" placeholder="Valor" />
                                                 </div>
                                             </div>
                                             {(() => {
@@ -470,14 +536,14 @@ export default function OSModal() {
                                                     <div className={`grid ${gridClass} gap-2`}>
                                                         <CustomDatePicker
                                                             value={novoPagamento.data}
-                                                            onChange={val => setNovoPagamento({...novoPagamento, data: val})}
+                                                            onChange={val => editarNovoPagamento({ data: val})}
                                                             placeholder="Data do pagamento"
                                                             className="w-full bg-superficie border border-borda-forte rounded px-2 py-1.5 text-mini outline-none"
                                                         />
                                                         {mostrarInstituicao && (
                                                             <CustomSelect
                                                                 value={novoPagamento.instituicao}
-                                                                onChange={(val) => setNovoPagamento({...novoPagamento, instituicao: val})}
+                                                                onChange={(val) => editarNovoPagamento({ instituicao: val})}
                                                                 className="w-full bg-superficie border border-borda-forte rounded px-2 py-1.5 text-mini outline-none"
                                                                 options={[
                                                                     { value: 'Itaú', label: 'Itaú' },
@@ -489,7 +555,7 @@ export default function OSModal() {
                                                         {mostrarBandeira && (
                                                             <CustomSelect
                                                                 value={novoPagamento.bandeira}
-                                                                onChange={(val) => setNovoPagamento({...novoPagamento, bandeira: val})}
+                                                                onChange={(val) => editarNovoPagamento({ bandeira: val})}
                                                                 className="w-full bg-superficie border border-borda-forte rounded px-2 py-1.5 text-mini outline-none"
                                                                 options={OPCOES_BANDEIRA}
                                                             />
@@ -497,7 +563,7 @@ export default function OSModal() {
                                                         {mostrarParcelas && (
                                                             <CustomSelect
                                                                 value={novoPagamento.parcelas}
-                                                                onChange={(val) => setNovoPagamento({...novoPagamento, parcelas: parseInt(val)})}
+                                                                onChange={(val) => editarNovoPagamento({ parcelas: parseInt(val)})}
                                                                 className="w-full bg-superficie border border-borda-forte rounded px-2 py-1.5 text-mini outline-none"
                                                                 options={[1,2,3,4,5,6,7,8,9,10,11,12].map(n => ({ value: n, label: `${n}x` }))}
                                                             />
@@ -587,6 +653,7 @@ export default function OSModal() {
                                                             const totalOSStr = parseValorMoeda(novoPedido.valor_total);
                                                             const saldoRestante = totalOSStr - novoTotalPago;
                                                             setNovoPagamento({ valor: saldoRestante > 0 ? formatarMoeda((saldoRestante * 100).toFixed(0).toString()) : '', forma: 'PIX', parcelas: 1, instituicao: 'Itaú', bandeira: '', data: obterDataAtual() });
+                                                            setPagamentoTocado(false);
                                                             return;
                                                         }
 
@@ -644,12 +711,12 @@ export default function OSModal() {
                     <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center lg:justify-end gap-2 sm:gap-3 w-full lg:w-auto">
                         {!isModalTrancado && (
                             <>
-                                <button type="button" onClick={(e) => salvarOS(e, true)} disabled={salvandoOS} className="w-full sm:w-44 px-2 py-2.5 rounded-lg text-corpo font-bold bg-superficie text-tinta-corpo border border-borda hover:bg-sutil hover:border-gray-300 dark:hover:border-gray-600 shadow-sm transition disabled:opacity-50 flex items-center justify-center gap-2 whitespace-nowrap">
+                                <button type="button" onClick={(e) => salvarComAviso(e, true)} disabled={salvandoOS} className="w-full sm:w-44 px-2 py-2.5 rounded-lg text-corpo font-bold bg-superficie text-tinta-corpo border border-borda hover:bg-sutil hover:border-gray-300 dark:hover:border-gray-600 shadow-sm transition disabled:opacity-50 flex items-center justify-center gap-2 whitespace-nowrap">
                                     <Icon name="printer" className="w-4 h-4 shrink-0" />
                                     {salvandoOS ? 'Salvando...' : 'Salvar e Imprimir'}
                                 </button>
 
-                                <button type="button" onClick={(e) => salvarOS(e, false)} disabled={salvandoOS} className="w-full sm:w-44 px-2 py-2.5 rounded-lg text-corpo font-bold bg-brand text-white hover:bg-brandHover shadow-md shadow-brand/20 transition disabled:opacity-50 flex items-center justify-center gap-2 whitespace-nowrap">
+                                <button type="button" onClick={(e) => salvarComAviso(e, false)} disabled={salvandoOS} className="w-full sm:w-44 px-2 py-2.5 rounded-lg text-corpo font-bold bg-brand text-white hover:bg-brandHover shadow-md shadow-brand/20 transition disabled:opacity-50 flex items-center justify-center gap-2 whitespace-nowrap">
                                     <Icon name="save" className="w-4 h-4 shrink-0" />
                                     {salvandoOS ? 'Salvando...' : pedidoEmEdicao ? 'Atualizar' : 'Salvar OS'}
                                 </button>
@@ -665,7 +732,7 @@ export default function OSModal() {
                                         if (!(await confirmar("Tem certeza que deseja finalizar esta OS?"))) {
                                             return;
                                         }
-                                        salvarOS(e, false, 'Finalizado');
+                                        salvarComAviso(e, false, 'Finalizado');
                                     }} disabled={salvandoOS} className="w-full sm:w-44 px-2 py-2.5 rounded-lg text-corpo font-bold bg-emerald-500 hover:bg-emerald-600 text-white shadow-md shadow-emerald-500/20 transition disabled:opacity-50 flex items-center justify-center gap-2 border border-emerald-600/50 whitespace-nowrap">
                                         <Icon name="check-circle" className="w-4 h-4 shrink-0" />
                                         Finalizar OS
