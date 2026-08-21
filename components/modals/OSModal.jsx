@@ -14,7 +14,7 @@ import { CustomDatePicker } from '@/components/ui/DatePicker';
 import { CustomSelect, MultiSelectDropdown } from '@/components/ui/Dropdown';
 import { ChipNome } from '@/components/ui/ChipNome';
 import { BandeiraIcon } from '@/components/ui/BandeiraIcon';
-import { useFecharAoClicarFora } from '@/components/modals/useFecharAoClicarFora';
+import { useModal } from '@/components/modals/useModal';
 
 const OPCOES_BANDEIRA = ['Visa', 'MasterCard', 'Elo', 'American Express', 'HiperCard', 'Maestro', 'RedeShop'].map(b => ({ value: b, label: b, icon: <BandeiraIcon nome={b} /> }));
 
@@ -84,12 +84,16 @@ export default function OSModal() {
         return resultado;
     };
 
-    const fecharAoClicarFora = useFecharAoClicarFora();
+    // Itens e pagamentos vivem no carrinho, não em campos de formulário, então
+    // entram por assinatura: o hook guarda o valor na abertura e compara no
+    // fechamento. É o que faz "editar uma O.S. e fechar sem mexer" não pedir
+    // confirmação, mas "adicionar um item e clicar fora" pedir.
+    const modal = useModal(modalAberto, fecharModalOS, () => JSON.stringify({ itensPedido, pagamentosPedido }));
 
     if (!modalAberto) return null;
 
     return (
-        <div {...fecharAoClicarFora(fecharModalOS)} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer animate-modal-backdrop">
+        <div {...modal.props} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer animate-modal-backdrop">
             <div onClick={(e) => e.stopPropagation()} className="bg-fundo w-full max-w-6xl rounded border border-borda shadow-2xl flex flex-col max-h-[95vh] cursor-default overflow-hidden animate-modal-in">
                 <div className="px-6 py-5 flex justify-between items-center bg-brand text-white rounded-t">
                     <div className="flex items-center gap-3">
@@ -98,7 +102,7 @@ export default function OSModal() {
                         </h3>
                         {isModalTrancado && <span className="flex items-center gap-1 text-mini font-semibold bg-white/20 text-white border border-white/30 px-2 py-0.5 rounded"><Icon name="lock" className="w-3 h-3" /> Trancado</span>}
                     </div>
-                    <button type="button" onClick={fecharModalOS} className="text-white/70 hover:text-white transition"><Icon name="x" className="w-5 h-5" /></button>
+                    <button type="button" onClick={modal.fechar} className="text-white/70 hover:text-white transition"><Icon name="x" className="w-5 h-5" /></button>
                 </div>
 
                 <form onSubmit={(e) => salvarOS(e, false)} className="p-6 sm:p-8 overflow-y-auto custom-scrollbar flex flex-col gap-7">

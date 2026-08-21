@@ -9,7 +9,7 @@ import Icon from "@/components/Icon";
 import Tooltip from "@/components/Tooltip";
 import { formatarValorFinanceiro, formatarMoeda, centavosParaReais, mascararCliente } from '@/lib/utils/formatters';
 import { CustomSelect } from '@/components/ui/Dropdown';
-import { useFecharAoClicarFora } from '@/components/modals/useFecharAoClicarFora';
+import { useModal } from '@/components/modals/useModal';
 
 export default function OrcamentoFormalizadoModal() {
     const { isDemo, isAdmin } = useSessao();
@@ -18,12 +18,12 @@ export default function OrcamentoFormalizadoModal() {
     const { clientesFiltrados, setNovoCliente, setModalClienteAberto, isClienteProblema } = useClientes();
     const { setNovoProduto, setModalProdutoAberto, fornecedoresTerceirizacaoNomes, atualizarCatalogoProdutos } = useCadastros();
     const [itemEditandoId, setItemEditandoId] = useState(null);
-    const fecharAoClicarFora = useFecharAoClicarFora();
+    const modal = useModal(modalOrcamentoFormalizadoAberto, () => setModalOrcamentoFormalizadoAberto(false));
 
     if (!modalOrcamentoFormalizadoAberto) return null;
 
     return (
-        <div {...fecharAoClicarFora(() => setModalOrcamentoFormalizadoAberto(false))} className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer animate-modal-backdrop">
+        <div {...modal.props} className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer animate-modal-backdrop">
             <div onClick={(e) => e.stopPropagation()} className="bg-fundo w-full max-w-4xl rounded border border-borda shadow-2xl flex flex-col max-h-[95vh] cursor-default overflow-hidden animate-modal-in">
                 <div className="px-6 py-5 flex justify-between items-center bg-brand text-white rounded-t">
                     <div className="flex items-center gap-3">
@@ -31,7 +31,7 @@ export default function OrcamentoFormalizadoModal() {
                             {orcamentoFormalizadoEmEdicao ? 'Editar Orçamento Formalizado' : 'Novo Orçamento Formalizado'}
                         </h3>
                     </div>
-                    <button type="button" onClick={() => setModalOrcamentoFormalizadoAberto(false)} className="text-white/70 hover:text-white transition"><Icon name="x" className="w-5 h-5" /></button>
+                    <button type="button" onClick={modal.fechar} className="text-white/70 hover:text-white transition"><Icon name="x" className="w-5 h-5" /></button>
                 </div>
 
                 <form className="p-6 sm:p-8 overflow-y-auto custom-scrollbar flex flex-col gap-7">

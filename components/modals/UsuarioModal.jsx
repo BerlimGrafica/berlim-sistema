@@ -2,18 +2,18 @@
 import { useCadastros } from "@/context/CadastrosContext";
 import Icon from "@/components/Icon";
 import { CustomSelect } from '@/components/ui/Dropdown';
-import { useFecharAoClicarFora } from '@/components/modals/useFecharAoClicarFora';
+import { useModal } from '@/components/modals/useModal';
 
 export default function UsuarioModal() {
     const { modalUsuarioAberto, setModalUsuarioAberto, novoUsuario, setNovoUsuario, salvarUsuario } = useCadastros();
-    const fecharAoClicarFora = useFecharAoClicarFora();
+    const modal = useModal(modalUsuarioAberto, () => setModalUsuarioAberto(false));
 
     if (!modalUsuarioAberto) return null;
 
     return (
-        <div {...fecharAoClicarFora(() => setModalUsuarioAberto(false))} className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer animate-modal-backdrop">
+        <div {...modal.props} className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer animate-modal-backdrop">
             <div className="bg-fundo w-full max-w-md rounded shadow-2xl border border-borda animate-modal-in" onClick={(e) => e.stopPropagation()}>
-                <div className="px-6 py-5 flex justify-between items-center bg-brand text-white rounded-t"><h3 className="font-semibold text-lg tracking-tight">{novoUsuario.id ? 'Editar Conta' : 'Nova Conta de Acesso'}</h3><button onClick={() => setModalUsuarioAberto(false)} className="text-white/70 hover:text-white transition"><Icon name="x" /></button></div>
+                <div className="px-6 py-5 flex justify-between items-center bg-brand text-white rounded-t"><h3 className="font-semibold text-lg tracking-tight">{novoUsuario.id ? 'Editar Conta' : 'Nova Conta de Acesso'}</h3><button onClick={modal.fechar} className="text-white/70 hover:text-white transition"><Icon name="x" /></button></div>
                 <form onSubmit={salvarUsuario} className="p-6 flex flex-col gap-4">
                     <div>
                         <label className="block text-corpo font-medium mb-1.5 text-tinta-corpo">Nome de Exibição</label>
@@ -45,7 +45,7 @@ export default function UsuarioModal() {
                         />
                     </div>
                     <p className="text-micro text-gray-500 italic mt-1">* Nota: O usuário terá acesso imediato após salvar.</p>
-                    <div className="flex justify-end gap-3 mt-2"><button type="button" onClick={() => setModalUsuarioAberto(false)} className="px-4 py-2 rounded text-corpo font-medium text-tinta-suave hover:bg-realce transition">Cancelar</button><button type="submit" className="px-5 py-2 rounded text-corpo font-medium bg-brand text-white hover:bg-brandHover transition shadow-sm">Salvar Acesso</button></div>
+                    <div className="flex justify-end gap-3 mt-2"><button type="button" onClick={modal.fechar} className="px-4 py-2 rounded text-corpo font-medium text-tinta-suave hover:bg-realce transition">Cancelar</button><button type="submit" className="px-5 py-2 rounded text-corpo font-medium bg-brand text-white hover:bg-brandHover transition shadow-sm">Salvar Acesso</button></div>
                 </form>
             </div>
         </div>

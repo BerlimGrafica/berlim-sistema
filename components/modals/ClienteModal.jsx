@@ -3,18 +3,18 @@ import { useClientes } from "@/context/ClientesContext";
 import Icon from "@/components/Icon";
 import { formatarTelefone } from '@/lib/utils/formatters';
 import { ToggleCard } from '@/components/ui/ToggleCard';
-import { useFecharAoClicarFora } from '@/components/modals/useFecharAoClicarFora';
+import { useModal } from '@/components/modals/useModal';
 
 export default function ClienteModal() {
     const { modalClienteAberto, setModalClienteAberto, novoCliente, setNovoCliente, salvandoCliente, salvarCliente } = useClientes();
-    const fecharAoClicarFora = useFecharAoClicarFora();
+    const modal = useModal(modalClienteAberto, () => setModalClienteAberto(false));
 
     if (!modalClienteAberto) return null;
 
     return (
-        <div {...fecharAoClicarFora(() => setModalClienteAberto(false))} className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer animate-modal-backdrop">
+        <div {...modal.props} className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer animate-modal-backdrop">
             <div className="bg-fundo w-full max-w-md rounded shadow-2xl overflow-hidden border border-borda animate-modal-in" onClick={(e) => e.stopPropagation()}>
-                <div className="px-6 py-5 flex justify-between items-center bg-brand text-white rounded-t"><h3 className="font-semibold text-lg tracking-tight">{novoCliente.id ? 'Editar Cliente' : 'Novo Cliente'}</h3><button onClick={() => setModalClienteAberto(false)} className="text-white/70 hover:text-white transition"><Icon name="x" /></button></div>
+                <div className="px-6 py-5 flex justify-between items-center bg-brand text-white rounded-t"><h3 className="font-semibold text-lg tracking-tight">{novoCliente.id ? 'Editar Cliente' : 'Novo Cliente'}</h3><button onClick={modal.fechar} className="text-white/70 hover:text-white transition"><Icon name="x" /></button></div>
                 <form onSubmit={salvarCliente} className="p-6 flex flex-col gap-4">
                     <div>
                         <label className="block text-corpo font-medium mb-1.5 text-tinta-corpo">Nome</label>
@@ -42,7 +42,7 @@ export default function ClienteModal() {
                         onChange={val => setNovoCliente({...novoCliente, cliente_problema: val})}
                         color="red"
                     />
-                    <div className="flex justify-end gap-3 mt-2"><button type="button" onClick={() => setModalClienteAberto(false)} className="px-4 py-2 rounded text-corpo font-medium text-tinta-suave hover:bg-realce transition">Cancelar</button><button type="submit" disabled={salvandoCliente} className="px-5 py-2 rounded text-corpo font-medium bg-brand text-white hover:bg-brandHover transition shadow-sm disabled:opacity-50">{salvandoCliente ? 'Salvando...' : 'Salvar'}</button></div>
+                    <div className="flex justify-end gap-3 mt-2"><button type="button" onClick={modal.fechar} className="px-4 py-2 rounded text-corpo font-medium text-tinta-suave hover:bg-realce transition">Cancelar</button><button type="submit" disabled={salvandoCliente} className="px-5 py-2 rounded text-corpo font-medium bg-brand text-white hover:bg-brandHover transition shadow-sm disabled:opacity-50">{salvandoCliente ? 'Salvando...' : 'Salvar'}</button></div>
                 </form>
             </div>
         </div>

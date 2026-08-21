@@ -4,18 +4,18 @@ import Icon from "@/components/Icon";
 import Tooltip from "@/components/Tooltip";
 import { formatarMoeda } from '@/lib/utils/formatters';
 import { InlineDropdown } from '@/components/ui/Dropdown';
-import { useFecharAoClicarFora } from '@/components/modals/useFecharAoClicarFora';
+import { useModal } from '@/components/modals/useModal';
 
 export default function NotaFiscalModal() {
     const { modalNotaFiscalAberto, notaFiscalEmEdicao, setModalNotaFiscalAberto, setNotaFiscalEmEdicao, salvandoNotaFiscal, salvarNotaFiscal } = useNotasFiscais();
-    const fecharAoClicarFora = useFecharAoClicarFora();
+    const modal = useModal(!!modalNotaFiscalAberto && !!notaFiscalEmEdicao, () => setModalNotaFiscalAberto(false));
 
     if (!modalNotaFiscalAberto || !notaFiscalEmEdicao) return null;
 
     return (
-        <div {...fecharAoClicarFora(() => setModalNotaFiscalAberto(false))} className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer animate-modal-backdrop">
+        <div {...modal.props} className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer animate-modal-backdrop">
             <div className="bg-fundo w-full max-w-2xl rounded shadow-2xl overflow-hidden border border-borda max-h-[90vh] flex flex-col animate-modal-in" onClick={(e) => e.stopPropagation()}>
-                <div className="px-6 py-5 flex justify-between items-center bg-brand text-white rounded-t shrink-0"><h3 className="font-semibold text-lg tracking-tight">Detalhes e Edição da Nota Fiscal</h3><button onClick={() => setModalNotaFiscalAberto(false)} className="text-white/70 hover:text-white transition"><Icon name="x" /></button></div>
+                <div className="px-6 py-5 flex justify-between items-center bg-brand text-white rounded-t shrink-0"><h3 className="font-semibold text-lg tracking-tight">Detalhes e Edição da Nota Fiscal</h3><button onClick={modal.fechar} className="text-white/70 hover:text-white transition"><Icon name="x" /></button></div>
                 <div className="p-6 overflow-y-auto custom-scrollbar">
                     <div className="bg-sutil p-4 rounded border border-borda-fraca mb-6">
                         <div className="flex items-center gap-2 mb-3">
@@ -81,7 +81,7 @@ export default function NotaFiscalModal() {
                     </form>
                 </div>
                 <div className="flex justify-end gap-3 px-6 py-4 border-t border-borda-fraca shrink-0">
-                    <button type="button" onClick={() => setModalNotaFiscalAberto(false)} className="px-4 py-2 rounded text-corpo font-medium text-tinta-suave hover:bg-realce transition">Cancelar</button>
+                    <button type="button" onClick={modal.fechar} className="px-4 py-2 rounded text-corpo font-medium text-tinta-suave hover:bg-realce transition">Cancelar</button>
                     <button type="submit" form="formNota" disabled={salvandoNotaFiscal} className="px-5 py-2 rounded text-corpo font-medium bg-brand text-white hover:bg-brandHover transition disabled:opacity-50">{salvandoNotaFiscal ? 'Salvando...' : 'Salvar Alterações'}</button>
                 </div>
             </div>

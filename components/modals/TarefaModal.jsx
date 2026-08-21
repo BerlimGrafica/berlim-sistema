@@ -5,20 +5,20 @@ import Icon from "@/components/Icon";
 import { CustomDatePicker } from '@/components/ui/DatePicker';
 import { CustomSelect } from '@/components/ui/Dropdown';
 import { ToggleCard } from '@/components/ui/ToggleCard';
-import { useFecharAoClicarFora } from '@/components/modals/useFecharAoClicarFora';
+import { useModal } from '@/components/modals/useModal';
 
 export default function TarefaModal() {
     const { usuariosSistema } = useSessao();
     const { modalTarefaAberto, setModalTarefaAberto, novaTarefa, setNovaTarefa, salvarTarefa } = useComunicacao();
     const nomesResponsaveis = usuariosSistema.filter(u => u.nivel !== 'demo').map(u => u.nome);
-    const fecharAoClicarFora = useFecharAoClicarFora();
+    const modal = useModal(modalTarefaAberto, () => setModalTarefaAberto(false));
 
     if (!modalTarefaAberto) return null;
 
     return (
-        <div {...fecharAoClicarFora(() => setModalTarefaAberto(false))} className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer animate-modal-backdrop">
+        <div {...modal.props} className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer animate-modal-backdrop">
             <div className="bg-fundo w-full max-w-lg rounded shadow-2xl overflow-hidden border border-borda animate-modal-in" onClick={(e) => e.stopPropagation()}>
-                <div className="px-6 py-5 border-b border-borda-fraca flex justify-between items-center bg-brand text-white"><h3 className="font-semibold text-lg tracking-tight">{novaTarefa.id ? 'Editar Tarefa' : 'Nova Tarefa'}</h3><button onClick={() => setModalTarefaAberto(false)} className="text-white/70 hover:text-white transition"><Icon name="x" className="w-5 h-5"/></button></div>
+                <div className="px-6 py-5 border-b border-borda-fraca flex justify-between items-center bg-brand text-white"><h3 className="font-semibold text-lg tracking-tight">{novaTarefa.id ? 'Editar Tarefa' : 'Nova Tarefa'}</h3><button onClick={modal.fechar} className="text-white/70 hover:text-white transition"><Icon name="x" className="w-5 h-5"/></button></div>
                 <div className="p-6 flex flex-col gap-4">
                     <div>
                         <label className="block text-corpo font-medium mb-1.5 text-tinta-corpo">Título</label>
@@ -70,7 +70,7 @@ export default function TarefaModal() {
                         color="blue"
                     />
                     <div className="flex justify-end gap-3 mt-2">
-                        <button type="button" onClick={() => setModalTarefaAberto(false)} className="px-4 py-2 rounded text-corpo font-medium text-tinta-suave hover:bg-realce transition">Cancelar</button>
+                        <button type="button" onClick={modal.fechar} className="px-4 py-2 rounded text-corpo font-medium text-tinta-suave hover:bg-realce transition">Cancelar</button>
                         <button type="button" onClick={async (e) => { e.preventDefault(); await salvarTarefa(); }} className="px-5 py-2 rounded text-corpo font-medium bg-brand text-white hover:bg-brandHover transition shadow-sm">Salvar</button>
                     </div>
                 </div>

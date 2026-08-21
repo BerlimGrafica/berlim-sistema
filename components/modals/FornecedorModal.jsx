@@ -4,21 +4,21 @@ import { useUi } from "@/context/UiContext";
 import { useCadastros } from "@/context/CadastrosContext";
 import Icon from "@/components/Icon";
 import { CustomSelect } from '@/components/ui/Dropdown';
-import { useFecharAoClicarFora } from '@/components/modals/useFecharAoClicarFora';
+import { useModal } from '@/components/modals/useModal';
 
 export default function FornecedorModal() {
     const { carregarDados, avisar } = useUi();
     const { modalFornecedorAberto, setModalFornecedorAberto, novoFornecedor, setNovoFornecedor } = useCadastros();
-    const fecharAoClicarFora = useFecharAoClicarFora();
+    const modal = useModal(modalFornecedorAberto, () => setModalFornecedorAberto(false));
 
     if (!modalFornecedorAberto) return null;
 
     return (
-        <div {...fecharAoClicarFora(() => setModalFornecedorAberto(false))} className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer animate-modal-backdrop">
+        <div {...modal.props} className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer animate-modal-backdrop">
             <div onClick={e => e.stopPropagation()} className="bg-fundo rounded shadow-2xl w-full max-w-md overflow-hidden cursor-default border border-borda-fraca animate-modal-in">
                 <div className="px-6 py-5 flex justify-between items-center bg-brand text-white rounded-t">
                     <h3 className="font-semibold text-lg tracking-tight">{novoFornecedor.id ? 'Editar Fornecedor' : 'Novo Fornecedor'}</h3>
-                    <button type="button" onClick={() => setModalFornecedorAberto(false)} className="text-white/70 hover:text-white transition"><Icon name="x" /></button>
+                    <button type="button" onClick={modal.fechar} className="text-white/70 hover:text-white transition"><Icon name="x" /></button>
                 </div>
                 <div className="p-6 space-y-4">
                     <div>
@@ -48,7 +48,7 @@ export default function FornecedorModal() {
                     </div>
                 </div>
                 <div className="px-6 py-4 bg-gray-50 dark:bg-darkHover/30 border-t border-borda-fraca flex justify-end gap-3">
-                    <button type="button" onClick={() => setModalFornecedorAberto(false)} className="px-4 py-2 text-compacto font-semibold text-tinta-suave hover:bg-realce rounded transition">Cancelar</button>
+                    <button type="button" onClick={modal.fechar} className="px-4 py-2 text-compacto font-semibold text-tinta-suave hover:bg-realce rounded transition">Cancelar</button>
                     <button type="button" onClick={async () => {
                         if(!novoFornecedor.nome) return avisar('Nome é obrigatório');
                         if (novoFornecedor.id) await supabase.from('fornecedores').update({ nome: novoFornecedor.nome, contato: novoFornecedor.contato, observacoes: novoFornecedor.observacoes, tipo: novoFornecedor.tipo }).eq('id', novoFornecedor.id);
