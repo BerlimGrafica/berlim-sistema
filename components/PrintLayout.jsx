@@ -108,7 +108,7 @@ export default function PrintLayout() {
                         <div className="shrink-0 flex flex-col mt-auto pt-2">
                             <hr className="border-t-2 border-black mb-3" />
 
-                            <div className="flex justify-between items-start gap-6 mb-2">
+                            <div className="flex justify-between items-stretch gap-6 mb-2">
                                 <div className="flex-1 max-w-[60%] flex flex-col gap-3">
                                     {desc.pagamentos && desc.pagamentos.length > 0 && (
                                         <div>
@@ -130,14 +130,23 @@ export default function PrintLayout() {
                                         </p>
                                     </div>
                                 </div>
-                                <div className="text-right shrink-0">
+                                <div className="text-right shrink-0 flex flex-col">
                                     <span className="text-micro uppercase font-semibold tracking-widest text-gray-500 block mb-0.5">Total do Pedido</span>
                                     <h2 className="text-4xl font-black tracking-tight text-gray-900">R$ {formatarValorFinanceiro(centavosParaReais(osParaImprimir.valor_total))}</h2>
-                                    {/* Linha de visto: quem retira assina a via da gráfica, e o cliente
-                                        fica com a dele já assinada. A borda acompanha a largura do total,
-                                        então continua alinhada com qualquer valor. */}
-                                    <div className="mt-4 border-t border-gray-500 pt-0.5">
-                                        <span className="text-micro uppercase tracking-widest text-gray-500">Visto</span>
+                                    {/* O rodapé é ancorado embaixo pelo mt-auto, então a ALTURA dele decide
+                                        onde o valor fica: afastar o visto do total aumentaria o bloco e
+                                        empurraria o valor para cima, roubando altura da tabela de itens.
+                                        Por isso o afastamento não é margem — é deslocamento. O elemento
+                                        mantém o lugar no fluxo (top-5 não altera altura) e só o desenho
+                                        desce 20px, ocupando a margem que já existe abaixo do rodapé
+                                        (mb-2 + p-6 = 32px). Nada mais se move e a tabela não perde nada.
+                                    
+                                        O mt-auto continua valendo para o caso de a coluna de observações
+                                        ficar mais alta que a do total: aí o visto acompanha o pé dela. */}
+                                    <div className="mt-auto pt-3 relative top-5">
+                                        <div className="border-t border-gray-500 pt-1">
+                                            <span className="text-micro uppercase tracking-widest text-gray-500">Visto</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
