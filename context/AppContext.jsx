@@ -915,6 +915,18 @@ export const AppProvider = ({ children }) => {
     }, [usuario, pathname, abaCadastros, paginaClientes, buscaCadClientes, letraFiltroCliente, triggerRealtime]);
 
 
+    // Quem dá baixa assume a O.S.: ao passar para Finalizado, o responsável vira
+    // o usuário logado. É a pergunta que se faz depois ("quem fechou esta nota?")
+    // e não havia onde ler — criado_por guarda quem abriu, não quem fechou.
+    //
+    // Só age na transição para Finalizado. Regravar uma O.S. já finalizada não
+    // reescreve o nome, senão o último a abrir a nota levaria o crédito de quem
+    // de fato a fechou.
+    const marcaDeQuemFinalizou = (statusNovo, statusAnterior) =>
+        (statusNovo === 'Finalizado' && statusAnterior !== 'Finalizado' && usuario?.nome)
+            ? { responsavel: usuario.nome }
+            : null;
+
     async function atualizarCampoInline(id, campo, valor) {
         let payload = { [campo]: valor };
         if (campo === 'status' && valor === 'Concluído') {
@@ -928,6 +940,11 @@ export const AppProvider = ({ children }) => {
         }
         if (campo === 'status' && valor === 'Cancelado') {
             payload.cancelado_em = new Date().toISOString();
+        }
+        if (campo === 'status') {
+            // A O.S. pode estar só na lista do Histórico: `pedidos` guarda as ativas.
+            const anterior = pedidos.find(p => p.id === id) || pedidosHistorico.find(p => p.id === id);
+            Object.assign(payload, marcaDeQuemFinalizou(valor, anterior?.status));
         }
 
         aplicarNasListasDePedidos(id, p => ({ ...p, ...payload }));
@@ -1082,7 +1099,7 @@ export const AppProvider = ({ children }) => {
 
             const [{ data, error }, { data: pagamentoInserido, error: errorPagamento }] = await Promise.all([
                 viraFinalizado
-                    ? supabase.from('pedidos').update({ status: 'Finalizado' }).eq('id', pedido.id).select()
+                    ? supabase.from('pedidos').update({ status: 'Finalizado', ...marcaDeQuemFinalizou('Finalizado', pedido.status) }).eq('id', pedido.id).select()
                     : Promise.resolve({ data: [pedido], error: null }),
                 supabase.from('pedido_pagamentos').insert([linhaPagamento]).select(),
             ]);
@@ -1353,6 +1370,7 @@ export const AppProvider = ({ children }) => {
         if (statusFinal === 'Cancelado' && (!pedidoEmEdicao || pedidoEmEdicao.status !== 'Cancelado')) {
             payload.cancelado_em = new Date().toISOString();
         }
+        Object.assign(payload, marcaDeQuemFinalizou(statusFinal, pedidoEmEdicao?.status));
 
         if (pedidoEmEdicao) {
             const { data, error } = await supabase.from('pedidos').update(payload).eq('id', pedidoEmEdicao.id).select();
