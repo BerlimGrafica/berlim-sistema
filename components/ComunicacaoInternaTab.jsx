@@ -5,6 +5,8 @@ import { useComunicacao } from '@/context/ComunicacaoContext';
 import Icon from '@/components/Icon';
 import Tooltip from '@/components/Tooltip';
 import { formatarDataExibicao, mascararCliente, formatarMoeda, centavosParaReais } from '@/lib/utils/formatters';
+import { SubAbas } from '@/components/ui/SubAbas';
+import { BarraAcoes } from '@/components/ui/BarraAcoes';
 
 export default function ComunicacaoInternaTab() {
     const { usuario, isAdmin, isDemo } = useSessao();
@@ -20,17 +22,15 @@ export default function ComunicacaoInternaTab() {
 
     return (
         <>
-            <div className="bg-fundo border-b border-borda px-6 flex gap-6 z-20 overflow-x-auto no-scrollbar-style sticky top-[112px]">
-                <a onClick={() => setAbaComunicacao('requisicoes')} className={`py-3 text-corpo font-semibold cursor-pointer transition whitespace-nowrap border-b-[3px] flex items-center gap-2 ${abaComunicacao === 'requisicoes' ? 'border-brand text-brand' : 'border-transparent text-tinta-suave hover:text-gray-800 dark:hover:text-gray-200'}`}>
-                    <Icon name="shopping-bag" className="w-4 h-4" /> Requisição de Material
-                </a>
-                <a onClick={() => setAbaComunicacao('tarefas')} className={`py-3 text-corpo font-semibold cursor-pointer transition whitespace-nowrap border-b-[3px] flex items-center gap-2 ${abaComunicacao === 'tarefas' ? 'border-brand text-brand' : 'border-transparent text-tinta-suave hover:text-gray-800 dark:hover:text-gray-200'}`}>
-                    <Icon name="check-square" className="w-4 h-4" /> Tarefas
-                </a>
-                <a onClick={() => setAbaComunicacao('links')} className={`py-3 text-corpo font-semibold cursor-pointer transition whitespace-nowrap border-b-[3px] flex items-center gap-2 ${abaComunicacao === 'links' ? 'border-brand text-brand' : 'border-transparent text-tinta-suave hover:text-gray-800 dark:hover:text-gray-200'}`}>
-                    <Icon name="link" className="w-4 h-4" /> Link de Pagamento
-                </a>
-            </div>
+            <SubAbas
+                valor={abaComunicacao}
+                aoMudar={setAbaComunicacao}
+                abas={[
+                    { id: 'requisicoes', rotulo: 'Requisição de Material', icone: 'shopping-bag' },
+                    { id: 'tarefas',     rotulo: 'Tarefas',                icone: 'check-square' },
+                    { id: 'links',       rotulo: 'Link de Pagamento',      icone: 'link' },
+                ]}
+            />
 
             <div key={abaComunicacao} className="animate-fade-screen">
             {abaComunicacao === 'requisicoes' && (
@@ -42,7 +42,7 @@ export default function ComunicacaoInternaTab() {
                                 Solicite materiais para a produção ou escritório.
                             </p>
                         </div>
-                        <div className="flex gap-2">
+                        <div className="hidden lg:flex gap-2">
                             <button onClick={() => setMostrarConcluidosReq(!mostrarConcluidosReq)} className={`px-4 py-2 text-corpo rounded-md font-semibold border transition ${mostrarConcluidosReq ? 'bg-realce border-borda text-tinta-corpo' : 'bg-superficie border-borda text-tinta-suave hover:bg-gray-50'}`}>
                                 {mostrarConcluidosReq ? 'Ocultar Concluídas' : 'Mostrar Histórico'}
                             </button>
@@ -103,7 +103,7 @@ export default function ComunicacaoInternaTab() {
                                 Gerencie tarefas internas da equipe.
                             </p>
                         </div>
-                        <div className="flex gap-2">
+                        <div className="hidden lg:flex gap-2">
                             <button onClick={() => setMostrarConcluidosTarefas(!mostrarConcluidosTarefas)} className={`px-4 py-2 text-corpo rounded-md font-semibold border transition ${mostrarConcluidosTarefas ? 'bg-realce border-borda text-tinta-corpo' : 'bg-superficie border-borda text-tinta-suave hover:bg-gray-50'}`}>
                                 {mostrarConcluidosTarefas ? 'Ocultar Concluídas' : 'Mostrar Histórico'}
                             </button>
@@ -168,7 +168,7 @@ export default function ComunicacaoInternaTab() {
                                 Organize seus links de pagamento (Mercado Pago, Asaas, etc) para envio rápido.
                             </p>
                         </div>
-                        <div className="flex gap-2">
+                        <div className="hidden lg:flex gap-2">
                             <button onClick={() => setMostrarConcluidosLinks(!mostrarConcluidosLinks)} className={`px-4 py-2 text-corpo rounded-md font-semibold border transition ${mostrarConcluidosLinks ? 'bg-realce border-borda text-tinta-corpo' : 'bg-superficie border-borda text-tinta-suave hover:bg-gray-50'}`}>
                                 {mostrarConcluidosLinks ? 'Ocultar Inativos' : 'Mostrar Histórico'}
                             </button>
@@ -235,6 +235,42 @@ export default function ComunicacaoInternaTab() {
                 </main>
             )}
             </div>
+            {/* Mesmos controles do topo, no rodapé fixo do celular. A ação primária
+                acompanha a sub-aba: cada seção desta tela cria um tipo diferente de
+                registro, e um botão genérico obrigaria a escolher o tipo depois. */}
+            <BarraAcoes
+                acoes={[
+                    {
+                        id: 'historico', icone: 'list',
+                        rotulo: abaComunicacao === 'links' ? 'Inativos' : 'Concluídas',
+                        ativo: abaComunicacao === 'requisicoes' ? mostrarConcluidosReq
+                            : abaComunicacao === 'tarefas' ? mostrarConcluidosTarefas
+                            : mostrarConcluidosLinks,
+                        aoClicar: () => {
+                            if (abaComunicacao === 'requisicoes') setMostrarConcluidosReq(v => !v);
+                            else if (abaComunicacao === 'tarefas') setMostrarConcluidosTarefas(v => !v);
+                            else setMostrarConcluidosLinks(v => !v);
+                        },
+                    },
+                    {
+                        id: 'novo', icone: 'plus', destaque: true,
+                        rotulo: abaComunicacao === 'requisicoes' ? 'Nova Requisição'
+                            : abaComunicacao === 'tarefas' ? 'Nova Tarefa' : 'Novo Link',
+                        aoClicar: () => {
+                            if (abaComunicacao === 'requisicoes') {
+                                setNovaRequisicao({ id: null, itens: '', observacoes: '', status: 'Pendente' });
+                                setModalRequisicaoAberto(true);
+                            } else if (abaComunicacao === 'tarefas') {
+                                setNovaTarefa({ id: null, titulo: '', descricao: '', responsavel: '', prazo: '', status: 'Pendente', fixa: false });
+                                setModalTarefaAberto(true);
+                            } else {
+                                setNovoLink({ id: null, titulo: '', link: '', valor: '', cliente: '', status: 'Ativo' });
+                                setModalLinkAberto(true);
+                            }
+                        },
+                    },
+                ]}
+            />
         </>
     );
 }

@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useUi } from '@/context/UiContext';
 import { useFinanceiro } from '@/context/FinanceiroContext';
-import { SkeletonLinhas } from '@/components/ui/SkeletonLinhas';
+import { TabelaCartoes } from '@/components/ui/TabelaCartoes';
 import Icon from '@/components/Icon';
 import Tooltip from '@/components/Tooltip';
 import { formatarMoeda, formatarValorFinanceiro, formatarDataExibicao, centavosParaReais, obterDataAtual } from '@/lib/utils/formatters';
@@ -93,88 +93,110 @@ export default function ContasAPagarPanel({ mostrarContasPagas, dataInicio, data
     return (
         <div>
             <div className="bg-superficie border border-borda rounded overflow-hidden">
-                <div className="overflow-x-auto min-h-[300px]">
-                    <table className="w-full text-left border-collapse">
-                        <thead className="bg-gray-50/50 dark:bg-darkHover/50 border-t-2 border-brand">
-                            <tr className="border-b border-borda text-corpo font-semibold text-tinta-suave tracking-wide uppercase">
-                                <th className="px-6 py-4"><span className="inline-flex items-center">Vencimento<SetaOrdenacao campo="vencimento" /></span></th>
-                                <th className="px-6 py-4"><span className="inline-flex items-center">Descrição<SetaOrdenacao campo="descricao" /></span></th>
-                                <th className="px-6 py-4"><span className="inline-flex items-center">Categoria<SetaOrdenacao campo="categoria" /></span></th>
-                                <th className="px-6 py-4">Valor</th>
-                                <th className="px-6 py-4">Status Pagamento</th>
-                                <th className="px-6 py-4 text-right">Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-borda-fraca">
-                            {!dadosCarregados ? (
-                                <SkeletonLinhas colunas={6} />
-                            ) : contasOrdenadas.length === 0 ? (
-                                <tr><td colSpan="6" className="px-4 py-12 text-center text-corpo text-gray-400">Nenhuma conta a pagar registrada.</td></tr>
-                            ) : (
-                                contasOrdenadas.map(conta => (
-                                    <tr key={conta.id} onClick={() => { setNovaConta({...conta, valor: conta.valor ? formatarMoeda(Math.round(conta.valor).toString()) : ''}); setModalContaAberto(true); }} onContextMenu={(e) => abrirContextMenu(e, montarItensContexto(conta))} className="hover:bg-gray-50 dark:hover:bg-darkHover/50 transition-colors group cursor-pointer">
-                                        <td className="px-6 py-4 text-corpo text-tinta-suave">
-                                            <span className={`inline-block px-2 py-1 rounded border-2 ${obterCorBordaVencimento(conta)}`}>
-                                                {formatarDataExibicao(conta.vencimento)}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 text-corpo font-medium text-gray-900 dark:text-gray-300">
-                                            <div className="flex items-center gap-1.5">
-                                                {conta.descricao}
-                                                {conta.recorrente && (
-                                                    conta.recorrente_total_parcelas ? (
-                                                        <Tooltip label={`Parcela ${conta.recorrente_parcela_atual || 1} de ${conta.recorrente_total_parcelas}`}>
-                                                            <span className="w-4 h-4 rounded-full bg-blue-500 dark:bg-blue-400 text-white text-[9px] font-bold flex items-center justify-center shrink-0 leading-none">
-                                                                {conta.recorrente_parcela_atual || 1}
-                                                            </span>
-                                                        </Tooltip>
-                                                    ) : (
-                                                        <Tooltip label="Recorrente">
-                                                            <span className="w-4 h-4 rounded-full bg-blue-500 dark:bg-blue-400 flex items-center justify-center shrink-0">
-                                                                <Icon name="repeat" className="w-2.5 h-2.5 text-white" />
-                                                            </span>
-                                                        </Tooltip>
-                                                    )
-                                                )}
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 text-corpo">
-                                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-mini font-semibold rounded-full whitespace-nowrap ${
-                                                conta.categoria === 'Manutenção' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' :
-                                                conta.categoria === 'Terceirização' ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400' :
-                                                conta.categoria === 'Material' ? 'bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400' :
-                                                'bg-realce text-tinta-suave'
-                                            }`}>
-                                                <Icon name={conta.categoria === 'Manutenção' ? 'wrench' : conta.categoria === 'Terceirização' ? 'package' : conta.categoria === 'Material' ? 'shopping-bag' : 'dollar-sign'} className="w-3 h-3" />
-                                                {conta.categoria || 'Despesa'}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 text-corpo font-medium text-sucesso">R$ {formatarValorFinanceiro(centavosParaReais(conta.valor))}</td>
-                                        <td className="px-6 py-4 text-corpo">
-                                            <span className={`whitespace-nowrap px-2.5 py-1 text-mini font-semibold rounded border ${obterStatusPagamento(conta).cor}`}>
-                                                {obterStatusPagamento(conta).label}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 text-corpo text-right flex justify-end gap-2">
-                                            {conta.status !== 'Pago' && (
-                                                <Tooltip label="Marcar como Pago">
-                                                <button onClick={(e) => { e.stopPropagation(); concluirConta(conta.id); }} aria-label="Marcar como Pago" className="p-1 text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded">
-                                                    <Icon name="check-circle" className="w-4 h-4" />
-                                                </button>
-                                                </Tooltip>
-                                            )}
-                                            <Tooltip label="Excluir Conta">
-                                                <button onClick={(e) => { e.stopPropagation(); excluirConta(conta.id); }} aria-label="Excluir Conta" className="p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded">
-                                                    <Icon name="trash-2" className="w-4 h-4" />
-                                                </button>
+                {/* Ver components/ui/TabelaCartoes.jsx. No cartão o valor vira o
+                    destaque e o vencimento sobe para o selo: numa conta a pagar são
+                    esses dois que decidem se ela precisa de ação hoje. */}
+                <TabelaCartoes
+                    itens={contasOrdenadas}
+                    chave={conta => conta.id}
+                    carregando={!dadosCarregados}
+                    vazio={<span className="text-corpo text-gray-400">Nenhuma conta a pagar registrada.</span>}
+                    aoClicar={conta => { setNovaConta({...conta, valor: conta.valor ? formatarMoeda(Math.round(conta.valor).toString()) : ''}); setModalContaAberto(true); }}
+                    aoContextMenu={(conta, e) => abrirContextMenu(e, montarItensContexto(conta))}
+                    colunas={[
+                        {
+                            papel: 'titulo',
+                            titulo: <span className="inline-flex items-center">Descrição<SetaOrdenacao campo="descricao" /></span>,
+                            rotuloCartao: 'Descrição',
+                            tdClassName: 'px-6 py-4 text-corpo font-medium text-gray-900 dark:text-gray-300',
+                            celula: conta => (
+                                <div className="flex items-center gap-1.5">
+                                    {conta.descricao}
+                                    {conta.recorrente && (
+                                        conta.recorrente_total_parcelas ? (
+                                            <Tooltip label={`Parcela ${conta.recorrente_parcela_atual || 1} de ${conta.recorrente_total_parcelas}`}>
+                                                <span className="w-4 h-4 rounded-full bg-blue-500 dark:bg-blue-400 text-white text-[9px] font-bold flex items-center justify-center shrink-0 leading-none">
+                                                    {conta.recorrente_parcela_atual || 1}
+                                                </span>
                                             </Tooltip>
-                                        </td>
-                                    </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
-                </div>
+                                        ) : (
+                                            <Tooltip label="Recorrente">
+                                                <span className="w-4 h-4 rounded-full bg-blue-500 dark:bg-blue-400 flex items-center justify-center shrink-0">
+                                                    <Icon name="repeat" className="w-2.5 h-2.5 text-white" />
+                                                </span>
+                                            </Tooltip>
+                                        )
+                                    )}
+                                </div>
+                            ),
+                        },
+                        {
+                            papel: 'selo',
+                            titulo: <span className="inline-flex items-center">Vencimento<SetaOrdenacao campo="vencimento" /></span>,
+                            rotuloCartao: 'Vencimento',
+                            tdClassName: 'px-6 py-4 text-corpo text-tinta-suave',
+                            celula: conta => (
+                                <span className={`inline-block px-2 py-1 rounded border-2 text-mini ${obterCorBordaVencimento(conta)}`}>
+                                    {formatarDataExibicao(conta.vencimento)}
+                                </span>
+                            ),
+                        },
+                        {
+                            papel: 'destaque',
+                            titulo: 'Valor',
+                            tdClassName: 'px-6 py-4 text-corpo font-medium text-sucesso',
+                            celula: conta => <span className="text-sucesso">R$ {formatarValorFinanceiro(centavosParaReais(conta.valor))}</span>,
+                        },
+                        {
+                            titulo: <span className="inline-flex items-center">Categoria<SetaOrdenacao campo="categoria" /></span>,
+                            rotuloCartao: 'Categoria',
+                            tdClassName: 'px-6 py-4 text-corpo',
+                            celula: conta => (
+                                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-mini font-semibold rounded-full whitespace-nowrap ${
+                                    conta.categoria === 'Manutenção' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' :
+                                    conta.categoria === 'Terceirização' ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400' :
+                                    conta.categoria === 'Material' ? 'bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400' :
+                                    'bg-realce text-tinta-suave'
+                                }`}>
+                                    <Icon name={conta.categoria === 'Manutenção' ? 'wrench' : conta.categoria === 'Terceirização' ? 'package' : conta.categoria === 'Material' ? 'shopping-bag' : 'dollar-sign'} className="w-3 h-3" />
+                                    {conta.categoria || 'Despesa'}
+                                </span>
+                            ),
+                        },
+                        {
+                            titulo: 'Status Pagamento',
+                            rotuloCartao: 'Pagamento',
+                            tdClassName: 'px-6 py-4 text-corpo',
+                            celula: conta => (
+                                <span className={`whitespace-nowrap px-2.5 py-1 text-mini font-semibold rounded border ${obterStatusPagamento(conta).cor}`}>
+                                    {obterStatusPagamento(conta).label}
+                                </span>
+                            ),
+                        },
+                        {
+                            papel: 'acoes',
+                            titulo: 'Ações',
+                            thClassName: 'px-6 py-4 text-right',
+                            tdClassName: 'px-6 py-4 text-corpo text-right',
+                            celula: conta => (
+                                <div className="flex justify-end gap-2">
+                                    {conta.status !== 'Pago' && (
+                                        <Tooltip label="Marcar como Pago">
+                                            <button onClick={(e) => { e.stopPropagation(); concluirConta(conta.id); }} aria-label="Marcar como Pago" className="p-1 text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded">
+                                                <Icon name="check-circle" className="w-4 h-4" />
+                                            </button>
+                                        </Tooltip>
+                                    )}
+                                    <Tooltip label="Excluir Conta">
+                                        <button onClick={(e) => { e.stopPropagation(); excluirConta(conta.id); }} aria-label="Excluir Conta" className="p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded">
+                                            <Icon name="trash-2" className="w-4 h-4" />
+                                        </button>
+                                    </Tooltip>
+                                </div>
+                            ),
+                        },
+                    ]}
+                />
             </div>
         </div>
     );

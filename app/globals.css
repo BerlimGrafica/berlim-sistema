@@ -26,6 +26,29 @@
 --------------------------------------------------------------------------- */
 
 :root {
+    /* Alturas da barra fixa. Estavam digitadas à mão em nove lugares: a barra
+       (64px), a faixa de abas (48px) e a soma das duas (112px), esta última
+       repetida em sete telas como `sticky top-[112px]`. Qualquer mudança de
+       altura — e o celular vai pedir uma — descolava as sete de uma vez, sem
+       erro visível, só o conteúdo passando por baixo do cabeçalho. */
+    --altura-barra: 64px;
+    --altura-abas: 48px;
+    --altura-cabecalho: calc(var(--altura-barra) + var(--altura-abas));
+
+    /* Escala tipográfica. Os quatro tamanhos densos da interface (13/12/11/10)
+       foram desenhados para monitor, a meio metro de distância. No celular, a
+       mesma medida física fica pequena demais — e não é só conforto: texto
+       miúdo faz errar o alvo do toque, porque a pessoa aproxima o olho em vez
+       de acertar o dedo.
+
+       Crescem 2px abaixo de 1024px, o mesmo ponto em que as listas viram
+       cartões. O passo entre os degraus é preservado, então a hierarquia da
+       tela continua a mesma — só a base muda. */
+    --fonte-corpo: 13px;
+    --fonte-compacto: 12px;
+    --fonte-mini: 11px;
+    --fonte-micro: 10px;
+
     /* Superfícies, do fundo da página para cima */
     --fundo: #EDEFF0;
     --superficie: #ffffff;
@@ -130,11 +153,18 @@
      13/12/11/10px, digitados à mão 688 vezes. A escala existia — só não tinha
      nome. Os tamanhos maiores continuam vindo da escala nativa (lg, xl, 2xl).
      Sem `--text-*--line-height` de propósito: `text-[13px]` também não definia
-     entrelinha, então declarar uma agora mudaria a altura de tudo. */
-  --text-corpo: 13px;
-  --text-compacto: 12px;
-  --text-mini: 11px;
-  --text-micro: 10px;
+     entrelinha, então declarar uma agora mudaria a altura de tudo.
+
+     Os valores apontam para `--fonte-*` em vez de trazerem o número aqui, pelo
+     mesmo motivo das cores logo acima: com `@theme inline`, um número escrito
+     neste ponto é EMITIDO LITERALMENTE no utilitário (`.text-corpo{font-size:
+     13px}`), e nenhuma media query consegue mudá-lo depois. Apontando para uma
+     variável, o utilitário emite `var(--fonte-corpo)`, que resolve no ponto de
+     uso — é o que permite a escala crescer no celular (ver :root). */
+  --text-corpo: var(--fonte-corpo);
+  --text-compacto: var(--fonte-compacto);
+  --text-mini: var(--fonte-mini);
+  --text-micro: var(--fonte-micro);
 }
 
 body { 
@@ -207,4 +237,47 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover { opacity: 1; }
 
 @media (prefers-reduced-motion: reduce) {
     .animate-toast-in { animation: none; }
+}
+
+
+/* ---- Alvo de toque em tela sensível ao toque ---- */
+/* O ponteiro do mouse acerta um botão de 28px; o dedo não. 44px é o mínimo
+   praticável. Cresce só a área clicável (min-width/min-height), não o padding:
+   o ícone continua do mesmo tamanho e o desenho no desktop fica intacto,
+   porque a regra vive atrás de `pointer: coarse`.
+
+   `:has(> svg:only-child)` isola o botão que é só ícone — os que têm texto já
+   passam da medida pela própria largura, e forçá-los a 44px de altura
+   engordaria linha de formulário sem necessidade.
+
+   Crescer a caixa não basta: o botão centraliza o conteúdo na horizontal,
+   mas não na vertical. Só com min-height o ícone fica encostado no topo da área
+   nova, e o botão parece torto. Daí o inline-flex com centralização nos dois
+   eixos.
+
+   O :not(.hidden) existe porque esta regra é mais específica que uma classe
+   isolada do Tailwind — sem ele, um botão de ícone marcado como `hidden`
+   voltaria a aparecer no celular, que é justamente onde a regra vale. */
+@media (pointer: coarse) {
+    button:has(> svg:only-child):not(.hidden),
+    a:has(> svg:only-child):not(.hidden) {
+        min-width: 44px;
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+}
+/* ---- Escala tipográfica no celular ---- */
+/* Ver o comentário em :root. Só os quatro tamanhos densos da interface sobem;
+   títulos (lg, xl, 2xl) vêm da escala do Tailwind e já são grandes o bastante.
+   1023.98px em vez de 1024px para não colidir com o `lg:` do Tailwind, que
+   começa exatamente em 1024. */
+@media (max-width: 1023.98px) {
+    :root {
+        --fonte-corpo: 15px;
+        --fonte-compacto: 14px;
+        --fonte-mini: 13px;
+        --fonte-micro: 12px;
+    }
 }

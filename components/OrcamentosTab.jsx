@@ -6,6 +6,8 @@ import { useOrcamentos } from '@/context/OrcamentosContext';
 import Icon from '@/components/Icon';
 import Tooltip from '@/components/Tooltip';
 import { formatarMoeda, obterDataAtual, mascararCliente } from '@/lib/utils/formatters';
+import { SubAbas } from '@/components/ui/SubAbas';
+import { BarraAcoes } from '@/components/ui/BarraAcoes';
 
 
 export default function OrcamentosTab() {
@@ -26,14 +28,14 @@ export default function OrcamentosTab() {
     return (
         <>
             { (
-                    <div className="bg-fundo border-b border-borda px-6 flex gap-6 z-20 overflow-x-auto no-scrollbar-style sticky top-[112px]">
-                        <a onClick={() => setAbaOrcamentos('formalizados')} className={`py-3 text-corpo font-semibold cursor-pointer transition whitespace-nowrap border-b-[3px] flex items-center gap-2 ${abaOrcamentos === 'formalizados' ? 'border-brand text-brand' : 'border-transparent text-tinta-suave hover:text-gray-800 dark:hover:text-gray-200'}`}>
-                            <Icon name="file-text" className="w-4 h-4" /> Formalizados
-                        </a>
-                        <a onClick={() => setAbaOrcamentos('pre_prontos')} className={`py-3 text-corpo font-semibold cursor-pointer transition whitespace-nowrap border-b-[3px] flex items-center gap-2 ${abaOrcamentos === 'pre_prontos' ? 'border-brand text-brand' : 'border-transparent text-tinta-suave hover:text-gray-800 dark:hover:text-gray-200'}`}>
-                            <Icon name="file-text" className="w-4 h-4" /> Pré Prontos
-                        </a>
-                    </div>
+                    <SubAbas
+                        valor={abaOrcamentos}
+                        aoMudar={setAbaOrcamentos}
+                        abas={[
+                            { id: 'formalizados', rotulo: 'Formalizados', icone: 'file-text' },
+                            { id: 'pre_prontos',  rotulo: 'Pré Prontos',  icone: 'file-text' },
+                        ]}
+                    />
                 )}
                 <div key={abaOrcamentos} className="animate-fade-screen">
 { abaOrcamentos === 'formalizados' && (
@@ -45,7 +47,7 @@ export default function OrcamentosTab() {
                                     Crie e gerencie orçamentos. Transforme orçamentos aprovados em Ordens de Serviço.
                                 </p>
                             </div>
-                            <div className="flex gap-2">
+                            <div className="hidden lg:flex gap-2">
                                 <button onClick={() => {
                                     setOrcamentoFormalizadoEmEdicao(null);
                                     setBuscaCliente('');
@@ -134,7 +136,7 @@ export default function OrcamentosTab() {
                                 </p>
                             </div>
                             {isAdmin && (
-                                <div className="flex gap-2">
+                                <div className="hidden lg:flex gap-2">
                                     <button onClick={() => {
                                         setNovoOrcamentoPre({ id: null, titulo: '', texto: '', empresa: 'Berlim' });
                                         setModalOrcamentoPreAberto(true);
@@ -145,7 +147,7 @@ export default function OrcamentosTab() {
                             )}
                         </div>
 
-                        <div className="relative mb-6">
+                        <div className="relative mb-6 hidden lg:block">
                             <Icon name="search" className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
                             <input
                                 type="text"
@@ -202,6 +204,55 @@ export default function OrcamentosTab() {
 {abaOrcamentos === 'pre_prontos'}
                 </div>
 
+            {/* A ação primária muda com a sub-aba. Em "Pré Prontos" ela só existe para
+                administrador, e a busca entra como painel — é a única das duas seções
+                que tem campo de pesquisa. */}
+            <BarraAcoes
+                acoes={[
+                    abaOrcamentos === 'pre_prontos' && {
+                        id: 'buscar', icone: 'search', rotulo: 'Buscar',
+                        ativo: !!buscaPreProntos,
+                        conteudo: (
+                            <div className="relative">
+                                <Icon name="search" className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+                                <input
+                                    type="text"
+                                    autoFocus
+                                    placeholder="Título ou conteúdo..."
+                                    value={buscaPreProntos}
+                                    onChange={(e) => setBuscaPreProntos(e.target.value)}
+                                    className="w-full bg-elevado border border-borda rounded-lg pl-10 pr-9 py-2 text-corpo focus:outline-none focus:border-brand transition"
+                                />
+                                {buscaPreProntos && (
+                                    <button type="button" onClick={() => setBuscaPreProntos('')} aria-label="Limpar Busca" className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-brand transition">
+                                        <Icon name="x" className="w-4 h-4" />
+                                    </button>
+                                )}
+                            </div>
+                        ),
+                    },
+                    (abaOrcamentos === 'formalizados' || isAdmin) && {
+                        id: 'novo', icone: 'plus', destaque: true,
+                        rotulo: abaOrcamentos === 'formalizados' ? 'Novo Orçamento' : 'Novo Texto',
+                        aoClicar: () => {
+                            if (abaOrcamentos === 'formalizados') {
+                                setOrcamentoFormalizadoEmEdicao(null);
+                                setBuscaCliente('');
+                                setItensPedido([]);
+                                setNovoPedido({
+                                    cliente: '', cliente_id: null, servico: '', valor_total: '',
+                                    status: 'Orçamento', data_pedido: obterDataAtual(), prazo: '',
+                                    responsavel: '', entrega: false,
+                                });
+                                setModalOrcamentoFormalizadoAberto(true);
+                            } else {
+                                setNovoOrcamentoPre({ id: null, titulo: '', texto: '', empresa: 'Berlim' });
+                                setModalOrcamentoPreAberto(true);
+                            }
+                        },
+                    },
+                ].filter(Boolean)}
+            />
         </>
     );
 }

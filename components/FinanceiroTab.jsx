@@ -11,6 +11,8 @@ import BoletosPanel from '@/components/financeiro/BoletosPanel';
 import EmpresasAprovadasPanel from '@/components/financeiro/EmpresasAprovadasPanel';
 import NotasFiscaisPanel from '@/components/financeiro/NotasFiscaisPanel';
 import { useState } from 'react';
+import { SubAbas } from '@/components/ui/SubAbas';
+import { BarraAcoes } from '@/components/ui/BarraAcoes';
 
 export default function FinanceiroTab() {
     const { usuario } = useSessao();
@@ -21,16 +23,17 @@ export default function FinanceiroTab() {
     return (
         <>
             { (
-                    <div className="bg-fundo border-b border-borda px-6 flex gap-6 z-20 overflow-x-auto no-scrollbar-style sticky top-[112px]">
-                        <button onClick={() => setAbaFinanceiro('contas_pagar')} className={`py-3 text-corpo font-semibold border-b-[3px] transition whitespace-nowrap flex items-center gap-2 ${abaFinanceiro === 'contas_pagar' ? 'border-brand text-brand' : 'border-transparent text-tinta-suave hover:text-tinta'}`}><Icon name="file-text" className="w-4 h-4" /> Contas a Pagar</button>
-                        <button onClick={() => setAbaFinanceiro('contas_receber')} className={`py-3 text-corpo font-semibold border-b-[3px] transition whitespace-nowrap flex items-center gap-2 ${abaFinanceiro === 'contas_receber' ? 'border-brand text-brand' : 'border-transparent text-tinta-suave hover:text-tinta'}`}><Icon name="dollar-sign" className="w-4 h-4" /> Contas a Receber</button>
-                        <button onClick={() => setAbaFinanceiro('boletos')} className={`py-3 text-corpo font-semibold border-b-[3px] transition whitespace-nowrap flex items-center gap-2 ${abaFinanceiro === 'boletos' ? 'border-brand text-brand' : 'border-transparent text-tinta-suave hover:text-tinta'}`}><Icon name="calendar" className="w-4 h-4" /> Boletos</button>
-                        <button onClick={() => setAbaFinanceiro('empresas_aprovadas')} className={`py-3 text-corpo font-semibold border-b-[3px] transition whitespace-nowrap flex items-center gap-2 ${abaFinanceiro === 'empresas_aprovadas' ? 'border-brand text-brand' : 'border-transparent text-tinta-suave hover:text-tinta'}`}><Icon name="check-circle" className="w-4 h-4" /> Faturamento</button>
-                        <button onClick={() => setAbaFinanceiro('notas_fiscais')} className={`py-3 text-corpo font-semibold border-b-[3px] transition whitespace-nowrap flex items-center gap-2 ${abaFinanceiro === 'notas_fiscais' ? 'border-brand text-brand' : 'border-transparent text-tinta-suave hover:text-tinta'}`}>
-                            <Icon name="file-text" className="w-4 h-4" /> Notas Fiscais
-                            {notasFiscais.some(n => !n.concluido) && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 ml-1"></span>}
-                        </button>
-                    </div>
+                    <SubAbas
+                        valor={abaFinanceiro}
+                        aoMudar={setAbaFinanceiro}
+                        abas={[
+                            { id: 'contas_pagar',       rotulo: 'Contas a Pagar',   icone: 'file-text' },
+                            { id: 'contas_receber',     rotulo: 'Contas a Receber', icone: 'dollar-sign' },
+                            { id: 'boletos',            rotulo: 'Boletos',          icone: 'calendar' },
+                            { id: 'empresas_aprovadas', rotulo: 'Faturamento',      icone: 'check-circle' },
+                            { id: 'notas_fiscais',      rotulo: 'Notas Fiscais',    icone: 'file-text', sinal: notasFiscais.some(n => !n.concluido) },
+                        ]}
+                    />
                 )}
 { /* <main> sem max-w, igual à Produção: as 5 sub-abas são tabelas largas (Boletos
      tem 11 colunas, Notas Fiscais 8) e o teto de 1400px deixava menos espaço que a
@@ -55,7 +58,7 @@ export default function FinanceiroTab() {
                                 </p>
                             </div>
 
-                            <div className="flex flex-wrap items-end gap-3 w-full lg:w-auto">
+                            <div className="hidden lg:flex flex-wrap items-end gap-3 w-full lg:w-auto">
                                 {abaFinanceiro === 'contas_pagar' && (
                                     <>
                                         <div className="flex flex-col w-60">
@@ -140,6 +143,94 @@ export default function FinanceiroTab() {
                     </main>
                 )}
 
+            {/* Cada sub-aba do Financeiro tem controles próprios: três filtram por
+                período, duas criam registro e uma busca. A barra monta as ações da
+                aba ativa, então o rodapé nunca mostra um filtro que não se aplica. */}
+            <BarraAcoes
+                acoes={[
+                    abaFinanceiro === 'contas_pagar' && {
+                        id: 'periodo', icone: 'calendar', rotulo: 'Período',
+                        ativo: !!(dataFiltroContasPagarInicio || dataFiltroContasPagarFim),
+                        conteudo: (
+                            <CustomDateRangePicker
+                                startValue={dataFiltroContasPagarInicio} endValue={dataFiltroContasPagarFim}
+                                onChangeStart={setDataFiltroContasPagarInicio} onChangeEnd={setDataFiltroContasPagarFim}
+                                placeholder="Todo o período"
+                                className="w-full bg-elevado border border-borda rounded-md px-3 py-2 text-corpo outline-none hover:border-brand transition"
+                            />
+                        ),
+                    },
+                    abaFinanceiro === 'contas_pagar' && {
+                        id: 'pagas', icone: 'list', rotulo: 'Pagas',
+                        ativo: mostrarContasPagas,
+                        aoClicar: () => setMostrarContasPagas(v => !v),
+                    },
+                    abaFinanceiro === 'contas_pagar' && {
+                        id: 'nova', icone: 'plus', rotulo: 'Nova Conta', destaque: true,
+                        aoClicar: () => { setNovaConta({ id: null, descricao: '', valor: '', vencimento: '', status: 'Pendente', recorrente: false, recorrente_total_parcelas: null, recorrente_parcela_atual: 1, categoria: 'Despesa', fornecedor_id: null }); setModalContaAberto(true); },
+                    },
+                    abaFinanceiro === 'contas_receber' && {
+                        id: 'periodo', icone: 'calendar', rotulo: 'Período',
+                        ativo: !!(dataFiltroContasReceberInicio || dataFiltroContasReceberFim),
+                        conteudo: (
+                            <CustomDateRangePicker
+                                startValue={dataFiltroContasReceberInicio} endValue={dataFiltroContasReceberFim}
+                                onChangeStart={setDataFiltroContasReceberInicio} onChangeEnd={setDataFiltroContasReceberFim}
+                                placeholder="Todo o período"
+                                className="w-full bg-elevado border border-borda rounded-md px-3 py-2 text-corpo outline-none hover:border-brand transition"
+                            />
+                        ),
+                    },
+                    abaFinanceiro === 'boletos' && {
+                        id: 'periodo', icone: 'calendar', rotulo: 'Vencimento',
+                        ativo: !!(dataFiltroBoletosInicio || dataFiltroBoletosFim),
+                        conteudo: (
+                            <CustomDateRangePicker
+                                startValue={dataFiltroBoletosInicio} endValue={dataFiltroBoletosFim}
+                                onChangeStart={setDataFiltroBoletosInicio} onChangeEnd={setDataFiltroBoletosFim}
+                                placeholder="Todo o período"
+                                className="w-full bg-elevado border border-borda rounded-md px-3 py-2 text-corpo outline-none hover:border-brand transition"
+                            />
+                        ),
+                    },
+                    abaFinanceiro === 'empresas_aprovadas' && {
+                        id: 'empresa', icone: 'plus', rotulo: 'Adicionar Empresa', destaque: true,
+                        aoClicar: () => setModalEmpresaFaturamentoAberto(true),
+                    },
+                    abaFinanceiro === 'notas_fiscais' && {
+                        id: 'buscar', icone: 'search', rotulo: 'Buscar',
+                        ativo: !!buscaNotaFiscal,
+                        conteudo: (
+                            <div className="relative">
+                                <Icon name="search" className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                                <input
+                                    type="text"
+                                    autoFocus
+                                    placeholder="Nome, razão ou CNPJ..."
+                                    value={buscaNotaFiscal}
+                                    onChange={(e) => { setBuscaNotaFiscal(e.target.value); setPaginaNotasFiscais(1); }}
+                                    className="w-full pl-9 pr-9 py-2 text-corpo border border-borda bg-elevado rounded-md focus:outline-none focus:border-brand dark:text-white transition"
+                                />
+                                {buscaNotaFiscal && (
+                                    <button type="button" onClick={() => { setBuscaNotaFiscal(''); setPaginaNotasFiscais(1); }} aria-label="Limpar Busca" className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-brand transition">
+                                        <Icon name="x" className="w-4 h-4" />
+                                    </button>
+                                )}
+                            </div>
+                        ),
+                    },
+                    abaFinanceiro === 'notas_fiscais' && {
+                        id: 'situacao', icone: 'check-square',
+                        rotulo: filtroNotas === 'pendentes' ? 'Pendentes' : 'Concluídas',
+                        ativo: filtroNotas === 'pendentes' && notasFiscais.some(n => !n.concluido),
+                        aoClicar: () => { setFiltroNotas(filtroNotas === 'pendentes' ? 'concluidas' : 'pendentes'); setPaginaNotasFiscais(1); },
+                    },
+                    abaFinanceiro === 'notas_fiscais' && {
+                        id: 'formulario', icone: 'external-link', rotulo: 'Formulário', destaque: true,
+                        aoClicar: () => window.open('/solicitar-nota', '_blank'),
+                    },
+                ].filter(Boolean)}
+            />
         </>
     );
 }

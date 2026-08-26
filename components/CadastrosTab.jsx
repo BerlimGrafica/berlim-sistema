@@ -9,6 +9,8 @@ import Icon from '@/components/Icon';
 import Tooltip from '@/components/Tooltip';
 import { SkeletonLinhas } from '@/components/ui/SkeletonLinhas';
 import { formatarValorFinanceiro, centavosParaReais } from '@/lib/utils/formatters';
+import { SubAbas } from '@/components/ui/SubAbas';
+import { BarraAcoes } from '@/components/ui/BarraAcoes';
 
 
 export default function CadastrosTab() {
@@ -20,26 +22,16 @@ export default function CadastrosTab() {
     return (
         <>
             { (
-                    <div className="bg-fundo border-b border-borda px-6 flex gap-6 z-20 overflow-x-auto no-scrollbar-style sticky top-[112px]">
-                        {(usuario?.nivel === 'Administrador' || usuario?.nivel === 'Atendimento' || usuario?.nivel === 'Produção') && (
-                            <a onClick={() => setAbaCadastros('clientes')} className={`py-3 text-corpo font-semibold cursor-pointer transition whitespace-nowrap border-b-[3px] flex items-center gap-2 ${abaCadastros === 'clientes' ? 'border-brand text-brand' : 'border-transparent text-tinta-suave hover:text-gray-800 dark:hover:text-gray-200'}`}>
-                                <Icon name="users" className="w-4 h-4" /> Clientes
-                            </a>
-                        )}
-                        {isAdmin && (
-                            <>
-                                <a onClick={() => setAbaCadastros('produtos')} className={`py-3 text-corpo font-semibold cursor-pointer transition whitespace-nowrap border-b-[3px] flex items-center gap-2 ${abaCadastros === 'produtos' ? 'border-brand text-brand' : 'border-transparent text-tinta-suave hover:text-gray-800 dark:hover:text-gray-200'}`}>
-                                    <Icon name="package" className="w-4 h-4" /> Catálogo
-                                </a>
-                                <a onClick={() => setAbaCadastros('fornecedores')} className={`py-3 text-corpo font-semibold cursor-pointer transition whitespace-nowrap border-b-[3px] flex items-center gap-2 ${abaCadastros === 'fornecedores' ? 'border-brand text-brand' : 'border-transparent text-tinta-suave hover:text-gray-800 dark:hover:text-gray-200'}`}>
-                                    <Icon name="truck" className="w-4 h-4" /> Fornecedores / Locais
-                                </a>
-                                <a onClick={() => setAbaCadastros('usuarios')} className={`py-3 text-corpo font-semibold cursor-pointer transition whitespace-nowrap border-b-[3px] flex items-center gap-2 ${abaCadastros === 'usuarios' ? 'border-brand text-brand' : 'border-transparent text-tinta-suave hover:text-gray-800 dark:hover:text-gray-200'}`}>
-                                    <Icon name="user" className="w-4 h-4" /> Usuários
-                                </a>
-                            </>
-                        )}
-                    </div>
+                    <SubAbas
+                        valor={abaCadastros}
+                        aoMudar={setAbaCadastros}
+                        abas={[
+                            { id: 'clientes',     rotulo: 'Clientes',              icone: 'users',   ve: usuario?.nivel === 'Administrador' || usuario?.nivel === 'Atendimento' || usuario?.nivel === 'Produção' },
+                            { id: 'produtos',     rotulo: 'Catálogo',              icone: 'package', ve: isAdmin },
+                            { id: 'fornecedores', rotulo: 'Fornecedores / Locais', icone: 'truck',   ve: isAdmin },
+                            { id: 'usuarios',     rotulo: 'Usuários',              icone: 'user',    ve: isAdmin },
+                        ].filter(a => a.ve !== false)}
+                    />
                 )}
                 <div key={abaCadastros} className="animate-fade-screen">
                 {abaCadastros === 'produtos' && isAdmin && (
@@ -49,7 +41,7 @@ export default function CadastrosTab() {
                                 <h1 className="text-2xl lg:text-3xl font-black text-tinta tracking-tight">Catálogo</h1>
                                 <p className="text-corpo text-tinta-suave mt-1">Gerencie os serviços, itens e preços base para orçamentos.</p>
                             </div>
-                            <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
+                            <div className="hidden lg:flex flex-wrap items-center gap-3 w-full lg:w-auto">
                                 <div className="relative">
                                     <Icon name="search" className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
                                     <input type="text" value={buscaCadProdutos} onChange={e => setBuscaCadProdutos(e.target.value)} placeholder="Buscar produto..." className="w-56 bg-superficie border border-borda rounded-md pl-9 pr-9 py-2 text-corpo outline-none focus:border-brand transition dark:text-[#EDEDED]" />
@@ -126,7 +118,7 @@ export default function CadastrosTab() {
                                 <h1 className="text-2xl lg:text-3xl font-black text-tinta tracking-tight">Clientes</h1>
                                 <p className="text-corpo text-tinta-suave mt-1">Base de dados e informações de contato dos seus clientes.</p>
                             </div>
-                            <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
+                            <div className="hidden lg:flex flex-wrap items-center gap-3 w-full lg:w-auto">
                                 <div className="relative">
                                     <Icon name="search" className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
                                     <input type="text" value={buscaCadClientes} onChange={e => setBuscaCadClientes(e.target.value)} placeholder="Buscar cliente..." className="w-56 bg-superficie border border-borda rounded-md pl-9 pr-9 py-2 text-corpo outline-none focus:border-brand transition dark:text-[#EDEDED]" />
@@ -178,7 +170,7 @@ export default function CadastrosTab() {
                                 <h1 className="text-2xl lg:text-3xl font-black text-tinta tracking-tight">Usuários do Sistema</h1>
                                 <p className="text-corpo text-tinta-suave mt-1">Gerencie os acessos da equipe (Administrador, Atendimento, Produção, Financeiro).</p>
                             </div>
-                            <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
+                            <div className="hidden lg:flex flex-wrap items-center gap-3 w-full lg:w-auto">
                                 <button onClick={() => { setNovoUsuario({ id: null, nome: '', email: '', senha: '', nivel: 'Atendimento' }); setModalUsuarioAberto(true); }} className="bg-brand hover:bg-brandHover text-white h-[38px] px-4 text-corpo rounded-md font-semibold shadow-sm transition flex items-center gap-2">
                                     <Icon name="plus" className="w-4 h-4" /> Novo Usuário
                                 </button>
@@ -211,7 +203,7 @@ export default function CadastrosTab() {
                                 <h1 className="text-2xl lg:text-3xl font-black text-tinta tracking-tight">Fornecedores e Locais</h1>
                                 <p className="text-corpo text-tinta-suave mt-1">Gerencie os locais de produção e fornecedores externos.</p>
                             </div>
-                            <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
+                            <div className="hidden lg:flex flex-wrap items-center gap-3 w-full lg:w-auto">
                                 <button onClick={() => { setNovoFornecedor({ id: null, nome: '', contato: '', observacoes: '' }); setModalFornecedorAberto(true); }} className="bg-brand hover:bg-brandHover text-white h-[38px] px-4 text-corpo rounded-md font-semibold shadow-sm transition flex items-center gap-2">
                                     <Icon name="plus" className="w-4 h-4" /> Novo Fornecedor
                                 </button>
@@ -285,6 +277,78 @@ export default function CadastrosTab() {
                 </div>
 
 
+            {/* Cada sub-aba cria um tipo diferente de cadastro, então a ação primária
+                acompanha a aba ativa. Só Catálogo e Clientes têm busca — as outras duas
+                são listas curtas. */}
+            <BarraAcoes
+                acoes={[
+                    abaCadastros === 'produtos' && {
+                        id: 'buscar', icone: 'search', rotulo: 'Buscar',
+                        ativo: !!buscaCadProdutos,
+                        conteudo: (
+                            <div className="relative">
+                                <Icon name="search" className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                <input
+                                    type="text"
+                                    autoFocus
+                                    value={buscaCadProdutos}
+                                    onChange={e => setBuscaCadProdutos(e.target.value)}
+                                    placeholder="Buscar produto..."
+                                    className="w-full bg-elevado border border-borda rounded-md pl-9 pr-9 py-2 text-corpo outline-none focus:border-brand transition dark:text-[#EDEDED]"
+                                />
+                                {buscaCadProdutos && (
+                                    <button type="button" onClick={() => setBuscaCadProdutos('')} aria-label="Limpar Busca" className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-brand transition">
+                                        <Icon name="x" className="w-4 h-4" />
+                                    </button>
+                                )}
+                            </div>
+                        ),
+                    },
+                    abaCadastros === 'clientes' && {
+                        id: 'buscar', icone: 'search', rotulo: 'Buscar',
+                        ativo: !!buscaCadClientes,
+                        conteudo: (
+                            <div className="relative">
+                                <Icon name="search" className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                <input
+                                    type="text"
+                                    autoFocus
+                                    value={buscaCadClientes}
+                                    onChange={e => setBuscaCadClientes(e.target.value)}
+                                    placeholder="Buscar cliente..."
+                                    className="w-full bg-elevado border border-borda rounded-md pl-9 pr-9 py-2 text-corpo outline-none focus:border-brand transition dark:text-[#EDEDED]"
+                                />
+                                {buscaCadClientes && (
+                                    <button type="button" onClick={() => setBuscaCadClientes('')} aria-label="Limpar Busca" className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-brand transition">
+                                        <Icon name="x" className="w-4 h-4" />
+                                    </button>
+                                )}
+                            </div>
+                        ),
+                    },
+                    {
+                        id: 'novo', icone: 'plus', destaque: true,
+                        rotulo: abaCadastros === 'produtos' ? 'Novo Produto'
+                            : abaCadastros === 'clientes' ? 'Novo Cliente'
+                            : abaCadastros === 'usuarios' ? 'Novo Usuário' : 'Novo Fornecedor',
+                        aoClicar: () => {
+                            if (abaCadastros === 'produtos') {
+                                setNovoProduto({ id: null, nome: '', texto_padrao: '', preco_base: '' });
+                                setModalProdutoAberto(true);
+                            } else if (abaCadastros === 'clientes') {
+                                setNovoCliente({ id: null, nome: '', telefone: '', email: '', observacoes: '', cliente_problema: false });
+                                setModalClienteAberto(true);
+                            } else if (abaCadastros === 'usuarios') {
+                                setNovoUsuario({ id: null, nome: '', email: '', senha: '', nivel: 'Atendimento' });
+                                setModalUsuarioAberto(true);
+                            } else {
+                                setNovoFornecedor({ id: null, nome: '', contato: '', observacoes: '' });
+                                setModalFornecedorAberto(true);
+                            }
+                        },
+                    },
+                ].filter(Boolean)}
+            />
         </>
     );
 }

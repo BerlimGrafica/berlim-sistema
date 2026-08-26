@@ -8,6 +8,7 @@ import VendasPorProdutoPanel from '@/components/vendas/VendasPorProdutoPanel';
 import VendasPorClientePanel from '@/components/vendas/VendasPorClientePanel';
 import SeletorPeriodo, { periodoPadrao, rotuloPeriodo } from '@/components/vendas/SeletorPeriodo';
 import { useMetricasVendas } from '@/hooks/useMetricasVendas';
+import { SubAbas } from '@/components/ui/SubAbas';
 
 const ABAS = {
     geral: { titulo: 'Dashboard de Vendas', descricao: 'Análise de receitas, centros de custo e desempenho.' },
@@ -28,21 +29,15 @@ export default function VendasTab() {
 
     return (
         <>
-            <div className="bg-fundo border-b border-borda px-6 flex gap-6 z-20 overflow-x-auto no-scrollbar-style sticky top-[112px]">
-                {[
-                    ['geral', 'Visão Geral', 'pie-chart'], ['vendas_produto', 'Vendas por Produto', 'tag'], ['vendas_cliente', 'Vendas por Cliente', 'users'],
-                ].map(([chave, rotulo, icone]) => (
-                    <button
-                        key={chave}
-                        onClick={() => setAbaVendas(chave)}
-                        className={`py-3 text-corpo font-semibold border-b-[3px] transition whitespace-nowrap flex items-center gap-2 ${abaVendas === chave
-                            ? 'border-brand text-brand'
-                            : 'border-transparent text-tinta-suave hover:text-tinta'}`}
-                    >
-                        <Icon name={icone} className="w-4 h-4" /> {rotulo}
-                    </button>
-                ))}
-            </div>
+            <SubAbas
+                valor={abaVendas}
+                aoMudar={setAbaVendas}
+                abas={[
+                    { id: 'geral',          rotulo: 'Visão Geral',        icone: 'pie-chart' },
+                    { id: 'vendas_produto', rotulo: 'Vendas por Produto', icone: 'tag' },
+                    { id: 'vendas_cliente', rotulo: 'Vendas por Cliente', icone: 'users' },
+                ]}
+            />
 
             {podeVer && (
                 <main className="flex-1 p-6 lg:p-10 max-w-[1400px] mx-auto w-full flex flex-col gap-6">

@@ -1,5 +1,5 @@
 "use client";
-import React, { useRef, useLayoutEffect } from 'react';
+import { useRef, useLayoutEffect } from 'react';
 import { useSessao } from '@/context/SessaoContext';
 import { useUi } from '@/context/UiContext';
 import { usePedidos } from '@/context/PedidosContext';
@@ -12,7 +12,8 @@ import { CustomDatePicker } from '@/components/ui/DatePicker';
 import { InlineDropdown, MultiSelectDropdown } from '@/components/ui/Dropdown';
 import { ItensChecklist } from '@/components/ItensChecklist';
 import { ChipNome } from '@/components/ui/ChipNome';
-import { SkeletonLinhas } from '@/components/ui/SkeletonLinhas';
+import { TabelaCartoes } from '@/components/ui/TabelaCartoes';
+import { BarraAcoes } from '@/components/ui/BarraAcoes';
 
 
 // Anima a linha que trocou de posição na tabela (ex: mudou de status e foi pra
@@ -125,7 +126,7 @@ export default function ProducaoTab() {
                                 <h1 className="text-2xl lg:text-3xl font-black text-tinta tracking-tight">Produção</h1>
                                 <p className="text-corpo text-tinta-suave mt-1">Gerencie a esteira de pedidos ativos.</p>
                             </div>
-                            <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
+                            <div className="hidden lg:flex flex-wrap items-center gap-3 w-full lg:w-auto">
                                 <div className="relative flex-1 min-w-[300px]">
                                     <Icon name="search" className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
                                     <input type="text" value={buscaProducaoText} onChange={e => setBuscaProducaoText(e.target.value)} placeholder="Pesquisar por cliente, OS ou responsável..." className="w-full bg-superficie border border-borda rounded-md pl-9 pr-9 py-2 text-corpo outline-none focus:border-brand transition dark:text-[#EDEDED]" />
@@ -139,82 +140,160 @@ export default function ProducaoTab() {
                             </div>
                         </div>
 
-                        <div className="flex-1 bg-superficie rounded border border-borda overflow-x-auto custom-scrollbar">
-                            <table className="w-full text-left border-collapse whitespace-nowrap">
-                                <thead className="rounded-t bg-gray-50/50 dark:bg-darkHover/50 border-t-2 border-brand">
-                                        <tr className="border-b border-borda text-corpo font-semibold text-tinta-suave tracking-wide uppercase text-center">
-                                            <th className="px-6 py-4 w-24">ID</th>
-                                            <th className="px-6 py-4 w-32">Prazo</th>
-                                            <th className="px-6 py-4 w-32">Resp.</th>
-                                            <th className="px-6 py-4">Cliente</th>
-                                            <th className="px-6 py-4 w-full min-w-[300px] text-left">Serviço</th>
-                                            <th className="px-6 py-4 w-32">Ações</th>
-                                            <th className="px-6 py-4 w-40">Status</th>
-                                            <th className="px-6 py-4 w-32">Local</th>
-                                            <th className="px-6 py-4 w-24 text-right">Concluir</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {!dadosCarregados ? (
-                                            <SkeletonLinhas colunas={9} />
-                                        ) : pedidosProducaoAtivos.length === 0 ? (
-                                            <tr><td colSpan="9" className="p-8 text-center text-gray-500 italic">Nenhuma OS encontrada.</td></tr>
-                                        ) : (
-                                            gruposStatus.map(({ status, pedidos: pedidosDoStatus }) => {
-                                                return (
-                                                    <React.Fragment key={status}>
-                                                        <tr className="select-none">
-                                                            <td colSpan="9" className={`px-4 py-2 border-y border-gray-200 dark:border-darkBorder font-semibold tracking-wide uppercase text-micro text-white ${obterCorFundoStatus(status)}`}>
-                                                                {status} — <span className="text-white/70">{pedidosDoStatus.length} {pedidosDoStatus.length === 1 ? 'pedido' : 'pedidos'}</span>
-                                                            </td>
-                                                        </tr>
-                                                        {pedidosDoStatus.map(p => (
-                                                            <tr key={p.id} ref={registrarLinha(p.id)} onContextMenu={(e) => abrirContextMenu(e, montarItensContexto(p))} className="border-b border-borda-fraca hover:bg-sutil transition group text-corpo">
-                                                                <td className="px-4 py-3 font-medium text-tinta-fraca text-center"><button type="button" onClick={() => abrirEdicao(p)} className="hover:text-brand transition">#{p.id}</button></td>
-                                                                <td className="px-4 py-3"><CustomDatePicker value={p.prazo || ''} onChange={val => handleAtualizarCampo(p.id, 'prazo', val)} placeholder="Definir prazo..." className={`w-full bg-gray-50 dark:bg-darkElevated border-2 ${obterCorContornoPrazo(p.prazo)} rounded px-2.5 py-1.5 text-mini outline-none hover:border-brand transition text-gray-700 dark:text-[#EDEDED]`} /></td>
-                                                                <td className="px-4 py-3"><MultiSelectDropdown value={p.responsavel} options={nomesResponsaveis} onChange={(val) => handleAtualizarCampo(p.id, 'responsavel', val)} className="w-full bg-sutil border border-borda rounded px-2.5 py-1.5 text-mini outline-none hover:border-brand" /></td>
-                                                                <td className={`px-4 py-3 font-semibold truncate max-w-[12rem] ${isClienteProblema(p.cliente, p.cliente_id) ? 'text-perigo' : 'text-tinta'}`}>
-                                                                    <div className="flex items-center gap-1.5">{mascararCliente(p.cliente, isDemo)} {isClienteProblema(p.cliente, p.cliente_id) && <Icon name="alert-triangle" className="w-3.5 h-3.5 text-red-500 shrink-0" title="Cliente Problema" />}</div>
-                                                                </td>
-                                                                <td className="px-4 py-3 text-tinta font-medium"><ItensChecklist pedido={p} /></td>
-                                                                <td className="px-4 py-3">
-                                                                    <div className="flex items-center justify-center gap-1">
-                                                                        <Tooltip label="Arte Aprovada">
-                                                                            <button type="button" onClick={() => handleAtualizarCampo(p.id, 'aprovado', !p.aprovado)} aria-label="Arte Aprovada" className={`p-2 rounded transition ${p.aprovado ? 'text-white bg-blue-500 dark:bg-blue-600 hover:bg-blue-600 dark:hover:bg-blue-700' : 'text-gray-300 dark:text-gray-600 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30'}`}>
-                                                                                <Icon name="thumbs-up" className="w-4 h-4" />
-                                                                            </button>
-                                                                        </Tooltip>
-                                                                        <Tooltip label="Pronto para Entrega">
-                                                                            <button type="button" onClick={() => handleAtualizarCampo(p.id, 'entrega', !p.entrega)} aria-label="Pronto para Entrega" className={`p-2 rounded transition ${p.entrega ? 'text-white bg-orange-500 dark:bg-orange-600 hover:bg-orange-600 dark:hover:bg-orange-700' : 'text-gray-300 dark:text-gray-600 hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/30'}`}>
-                                                                                <Icon name="package" className="w-4 h-4" />
-                                                                            </button>
-                                                                        </Tooltip>
-                                                                    </div>
-                                                                </td>
-                                                                <td className="px-4 py-3"><InlineDropdown value={p.status} options={opcoesStatusPermitidas} onChange={(val) => handleAtualizarCampo(p.id, 'status', val)} className="w-full bg-sutil border border-borda rounded px-2.5 py-1.5 text-mini outline-none hover:border-brand" /></td>
-                                                                <td className="px-4 py-3 align-middle">
-                                                                    <div className="flex items-center justify-center flex-wrap gap-1 min-h-[32px]">
-                                                                        {(p.local_producao || 'Berlim').split(',').map(s => s.trim()).filter(Boolean).map(local => (
-                                                                            <ChipNome key={local} nome={local} />
-                                                                        ))}
-                                                                    </div>
-                                                                </td>
-                                                                <td className="px-4 py-3 text-right">
-                                                                    <Tooltip label="Marcar como Concluído">
-                                                                        <button type="button" onClick={() => handleAtualizarCampo(p.id, 'status', 'Concluído')} aria-label="Marcar como Concluído" className="p-2 text-sucesso hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition rounded inline-block">
-                                                                            <Icon name="check-circle" className="w-5 h-5 inline-block" />
-                                                                        </button>
-                                                                    </Tooltip>
-                                                                </td>
-                                                            </tr>
-                                                        ))}
-                                                    </React.Fragment>
-                                                );
-                                            })
-                                        )}
-                                    </tbody>
-                            </table>
+                        <div className="flex-1 bg-superficie rounded border border-borda">
+                            {/* Uma definição de colunas, dois desenhos — ver
+                                components/ui/TabelaCartoes.jsx. Os grupos por status
+                                viram faixa na tabela e título acima dos cartões.
+
+                                A `faixa` repete a cor do cabeçalho do grupo de
+                                propósito: o título rola para fora da tela, e sem o
+                                filete o cartão perde, no meio de uma lista longa, a
+                                única marca de qual etapa ele é. */}
+                            <TabelaCartoes
+                                grupos={gruposStatus.map(g => ({
+                                    chave: g.status,
+                                    classeCabecalho: obterCorFundoStatus(g.status),
+                                    itens: g.pedidos,
+                                    cabecalho: (
+                                        <>
+                                            {g.status} — <span className="text-white/70">{g.pedidos.length} {g.pedidos.length === 1 ? 'pedido' : 'pedidos'}</span>
+                                        </>
+                                    ),
+                                }))}
+                                chave={p => p.id}
+                                faixa={p => obterCorFundoStatus(p.status)}
+                                refDaLinha={p => registrarLinha(p.id)}
+                                carregando={!dadosCarregados}
+                                vazio={<span className="text-gray-500 italic">Nenhuma OS encontrada.</span>}
+                                aoContextMenu={(p, e) => abrirContextMenu(e, montarItensContexto(p))}
+                                colunas={[
+                                    {
+                                        papel: 'titulo',
+                                        titulo: 'ID',
+                                        thClassName: 'px-6 py-4 w-24 text-center',
+                                        tdClassName: 'px-4 py-3 font-medium text-tinta-fraca text-center',
+                                        celula: p => <button type="button" onClick={() => abrirEdicao(p)} className="hover:text-brand transition">#{p.id}</button>,
+                                    },
+                                    {
+                                        papel: 'subtitulo',
+                                        titulo: 'Cliente',
+                                        thClassName: 'px-6 py-4 text-center',
+                                        tdClassName: `px-4 py-3 font-semibold truncate max-w-[12rem]`,
+                                        celula: p => (
+                                            <div className={`flex items-center gap-1.5 ${isClienteProblema(p.cliente, p.cliente_id) ? 'text-perigo' : 'text-tinta'}`}>
+                                                {mascararCliente(p.cliente, isDemo)}
+                                                {isClienteProblema(p.cliente, p.cliente_id) && <Icon name="alert-triangle" className="w-3.5 h-3.5 text-red-500 shrink-0" title="Cliente Problema" />}
+                                            </div>
+                                        ),
+                                    },
+                                    {
+                                        papel: 'bloco',
+                                        titulo: 'Serviço',
+                                        thClassName: 'px-6 py-4 w-full min-w-[300px] text-left',
+                                        tdClassName: 'px-4 py-3 text-tinta font-medium',
+                                        celula: p => <ItensChecklist pedido={p} />,
+                                    },
+                                    {
+                                        papel: 'bloco',
+                                        titulo: 'Prazo',
+                                        thClassName: 'px-6 py-4 w-32 text-center',
+                                        tdClassName: 'px-4 py-3',
+                                        celula: p => <CustomDatePicker value={p.prazo || ''} onChange={val => handleAtualizarCampo(p.id, 'prazo', val)} placeholder="Definir prazo..." className={`w-full bg-gray-50 dark:bg-darkElevated border-2 ${obterCorContornoPrazo(p.prazo)} rounded px-2.5 py-1.5 text-mini outline-none hover:border-brand transition text-gray-700 dark:text-[#EDEDED]`} />,
+                                    },
+                                    {
+                                        papel: 'bloco',
+                                        titulo: 'Resp.',
+                                        thClassName: 'px-6 py-4 w-32 text-center',
+                                        tdClassName: 'px-4 py-3',
+                                        celula: p => <MultiSelectDropdown value={p.responsavel} options={nomesResponsaveis} onChange={(val) => handleAtualizarCampo(p.id, 'responsavel', val)} className="w-full bg-sutil border border-borda rounded px-2.5 py-1.5 text-mini outline-none hover:border-brand" />,
+                                    },
+                                    {
+                                        papel: 'bloco',
+                                        titulo: 'Status',
+                                        thClassName: 'px-6 py-4 w-40 text-center',
+                                        tdClassName: 'px-4 py-3',
+                                        celula: p => <InlineDropdown value={p.status} options={opcoesStatusPermitidas} onChange={(val) => handleAtualizarCampo(p.id, 'status', val)} className="w-full bg-sutil border border-borda rounded px-2.5 py-1.5 text-mini outline-none hover:border-brand" />,
+                                    },
+                                    {
+                                        titulo: 'Local',
+                                        thClassName: 'px-6 py-4 w-32 text-center',
+                                        tdClassName: 'px-4 py-3 align-middle',
+                                        celula: p => (
+                                            <div className="flex items-center justify-end lg:justify-center flex-wrap gap-1 min-h-[32px]">
+                                                {(p.local_producao || 'Berlim').split(',').map(s => s.trim()).filter(Boolean).map(local => (
+                                                    <ChipNome key={local} nome={local} />
+                                                ))}
+                                            </div>
+                                        ),
+                                    },
+                                    {
+                                        papel: 'acoes',
+                                        titulo: 'Ações',
+                                        thClassName: 'px-6 py-4 w-32 text-center',
+                                        tdClassName: 'px-4 py-3',
+                                        celula: p => (
+                                            <div className="flex items-center justify-center gap-1">
+                                                <Tooltip label="Arte Aprovada">
+                                                    <button type="button" onClick={() => handleAtualizarCampo(p.id, 'aprovado', !p.aprovado)} aria-label="Arte Aprovada" className={`p-2 rounded transition ${p.aprovado ? 'text-white bg-blue-500 dark:bg-blue-600 hover:bg-blue-600 dark:hover:bg-blue-700' : 'text-gray-300 dark:text-gray-600 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30'}`}>
+                                                        <Icon name="thumbs-up" className="w-4 h-4" />
+                                                    </button>
+                                                </Tooltip>
+                                                <Tooltip label="Pronto para Entrega">
+                                                    <button type="button" onClick={() => handleAtualizarCampo(p.id, 'entrega', !p.entrega)} aria-label="Pronto para Entrega" className={`p-2 rounded transition ${p.entrega ? 'text-white bg-orange-500 dark:bg-orange-600 hover:bg-orange-600 dark:hover:bg-orange-700' : 'text-gray-300 dark:text-gray-600 hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/30'}`}>
+                                                        <Icon name="package" className="w-4 h-4" />
+                                                    </button>
+                                                </Tooltip>
+                                            </div>
+                                        ),
+                                    },
+                                    {
+                                        papel: 'acoes',
+                                        titulo: 'Concluir',
+                                        thClassName: 'px-6 py-4 w-24 text-right',
+                                        tdClassName: 'px-4 py-3 text-right',
+                                        celula: p => (
+                                            <Tooltip label="Marcar como Concluído">
+                                                <button type="button" onClick={() => handleAtualizarCampo(p.id, 'status', 'Concluído')} aria-label="Marcar como Concluído" className="p-2 text-sucesso hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition rounded inline-block">
+                                                    <Icon name="check-circle" className="w-5 h-5 inline-block" />
+                                                </button>
+                                            </Tooltip>
+                                        ),
+                                    },
+                                ]}
+                            />
                         </div>
+                        {/* No celular os mesmos controles do topo viram rodapé fixo: lá em cima
+                            eles roubam altura da lista e somem assim que a pessoa rola. */}
+                        <BarraAcoes
+                            acoes={[
+                                {
+                                    id: 'buscar', icone: 'search', rotulo: 'Buscar',
+                                    ativo: !!buscaProducaoText,
+                                    conteudo: (
+                                        <div className="relative">
+                                            <Icon name="search" className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
+                                            <input
+                                                type="text"
+                                                autoFocus
+                                                value={buscaProducaoText}
+                                                onChange={e => setBuscaProducaoText(e.target.value)}
+                                                placeholder="Cliente, O.S. ou responsável..."
+                                                className="w-full bg-elevado border border-borda rounded-md pl-9 pr-9 py-2 text-corpo outline-none focus:border-brand transition dark:text-[#EDEDED]"
+                                            />
+                                            {buscaProducaoText && (
+                                                <button type="button" onClick={() => setBuscaProducaoText('')} aria-label="Limpar Busca" className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-brand transition">
+                                                    <Icon name="x" className="w-4 h-4" />
+                                                </button>
+                                            )}
+                                        </div>
+                                    ),
+                                },
+                                {
+                                    id: 'nova', icone: 'plus', rotulo: 'Nova O.S.', destaque: true,
+                                    aoClicar: () => { setPedidoEmEdicao(null); setModalAberto(true); },
+                                },
+                            ]}
+                        />
                     </main>
                 )}
 
