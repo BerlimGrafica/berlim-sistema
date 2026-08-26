@@ -23,8 +23,8 @@ export default function OrcamentoFormalizadoModal() {
     if (!modalOrcamentoFormalizadoAberto) return null;
 
     return (
-        <div {...modal.props} className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer animate-modal-backdrop">
-            <div onClick={(e) => e.stopPropagation()} className="bg-fundo w-full max-w-4xl rounded border border-borda shadow-2xl flex flex-col max-h-[95vh] cursor-default overflow-hidden animate-modal-in">
+        <div {...modal.props} className="fixed inset-0 z-[60] flex items-stretch sm:items-center justify-center p-0 sm:p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer animate-modal-backdrop">
+            <div onClick={(e) => e.stopPropagation()} className="bg-fundo w-full max-w-none sm:max-w-4xl h-full sm:h-auto rounded-none sm:rounded border border-borda shadow-2xl flex flex-col max-h-full sm:max-h-[95vh] cursor-default overflow-hidden animate-modal-in">
                 <div className="px-6 py-5 flex justify-between items-center bg-brand text-white rounded-t">
                     <div className="flex items-center gap-3">
                         <h3 className="font-semibold text-xl tracking-tight">
@@ -155,7 +155,7 @@ export default function OrcamentoFormalizadoModal() {
                                     </div>
 
                                     <textarea rows="2" value={itemAtual.descricao} onChange={e => setItemAtual({...itemAtual, descricao: e.target.value})} className="w-full bg-elevado border border-borda rounded px-3 py-2 text-corpo outline-none focus:border-brand transition dark:text-[#EDEDED]" placeholder="Especificações do item (Ex: Medida, quantidade, material...)"></textarea>
-                                    <div className="grid grid-cols-4 gap-3">
+                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                                         <div className="relative col-span-2">
                                             <span className="absolute left-3 top-2.5 text-mini text-gray-400 font-medium z-[1]">Local:</span>
                                             <CustomSelect

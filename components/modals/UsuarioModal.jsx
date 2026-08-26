@@ -11,8 +11,8 @@ export default function UsuarioModal() {
     if (!modalUsuarioAberto) return null;
 
     return (
-        <div {...modal.props} className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer animate-modal-backdrop">
-            <div className="bg-fundo w-full max-w-md rounded shadow-2xl border border-borda animate-modal-in" onClick={(e) => e.stopPropagation()}>
+        <div {...modal.props} className="fixed inset-0 z-[80] flex items-stretch sm:items-center justify-center p-0 sm:p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer animate-modal-backdrop">
+            <div className="bg-fundo w-full max-w-none sm:max-w-md h-full sm:h-auto rounded-none sm:rounded shadow-2xl border border-borda animate-modal-in" onClick={(e) => e.stopPropagation()}>
                 <div className="px-6 py-5 flex justify-between items-center bg-brand text-white rounded-t"><h3 className="font-semibold text-lg tracking-tight">{novoUsuario.id ? 'Editar Conta' : 'Nova Conta de Acesso'}</h3><button onClick={modal.fechar} className="text-white/70 hover:text-white transition"><Icon name="x" /></button></div>
                 <form onSubmit={salvarUsuario} className="p-6 flex flex-col gap-4">
                     <div>

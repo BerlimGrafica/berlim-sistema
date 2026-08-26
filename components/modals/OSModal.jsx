@@ -118,7 +118,7 @@ export default function OSModal() {
         const mostrarBandeira = forma === 'Cartão de Crédito' || forma === 'Cartão de Débito';
         const mostrarParcelas = forma === 'Cartão de Crédito' || forma === 'Link de Pagamento';
         const total = 1 + (mostrarInstituicao ? 1 : 0) + (mostrarBandeira ? 1 : 0) + (mostrarParcelas ? 1 : 0);
-        return { mostrarInstituicao, mostrarBandeira, mostrarParcelas, gridClass: total === 3 ? 'grid-cols-3' : total === 2 ? 'grid-cols-2' : 'grid-cols-1' };
+        return { mostrarInstituicao, mostrarBandeira, mostrarParcelas, gridClass: total === 3 ? 'grid-cols-1 sm:grid-cols-3' : total === 2 ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1' };
     };
 
     // Ao trocar a forma de pagamento, limpa instituição/bandeira que não se
@@ -159,8 +159,8 @@ export default function OSModal() {
     if (!modalAberto) return null;
 
     return (
-        <div {...modal.props} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer animate-modal-backdrop">
-            <div onClick={(e) => e.stopPropagation()} className="bg-fundo w-full max-w-6xl rounded border border-borda shadow-2xl flex flex-col max-h-[95vh] cursor-default overflow-hidden animate-modal-in">
+        <div {...modal.props} className="fixed inset-0 z-50 flex items-stretch sm:items-center justify-center p-0 sm:p-4 bg-slate-900/40 dark:bg-black/80 glass no-print transition-all cursor-pointer animate-modal-backdrop">
+            <div onClick={(e) => e.stopPropagation()} className="bg-fundo w-full max-w-none sm:max-w-6xl h-full sm:h-auto rounded-none sm:rounded border border-borda shadow-2xl flex flex-col max-h-full sm:max-h-[95vh] cursor-default overflow-hidden animate-modal-in">
                 <div className="px-6 py-5 flex justify-between items-center bg-brand text-white rounded-t">
                     <div className="flex items-center gap-3">
                         <h3 className="font-semibold text-xl tracking-tight">
@@ -179,22 +179,27 @@ export default function OSModal() {
                             <span className="w-1 h-3.5 bg-brand rounded-full"></span>
                             <h4 className="text-micro font-bold uppercase tracking-wider text-tinta-suave">Dados da O.S.</h4>
                         </div>
-                        <div className="grid grid-cols-3 gap-4">
-                            <div>
-                                <label className="block text-corpo font-medium mb-1.5 text-tinta-corpo">Data da Venda</label>
+                        {/* Três campos numa linha só pedem largura de verdade. Entre 640 e
+                            1023px cada coluna fica com ~200px, e basta o texto crescer um
+                            pouco — a fonte maior do celular, ou o ajuste de tamanho de fonte
+                            do Android — para o rótulo quebrar em duas linhas e desalinhar os
+                            campos vizinhos. Duas colunas nessa faixa, três só no desktop. */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <div className="min-w-0">
+                                <label className="block text-corpo font-medium mb-1.5 text-tinta-corpo truncate">Data da Venda</label>
                                 <CustomDatePicker value={novoPedido.data_pedido} onChange={val => setNovoPedido({...novoPedido, data_pedido: val})} disabled={isModalTrancado} className="w-full bg-elevado border border-borda-forte rounded px-3 py-2 text-corpo outline-none transition" />
                             </div>
-                            <div>
-                                <label className="block text-corpo font-medium mb-1.5 text-tinta-corpo">Prazo</label>
+                            <div className="min-w-0">
+                                <label className="block text-corpo font-medium mb-1.5 text-tinta-corpo truncate">Prazo</label>
                                 <CustomDatePicker value={novoPedido.prazo} onChange={val => setNovoPedido({...novoPedido, prazo: val})} disabled={isModalTrancado} placeholder="Data final..." className="w-full bg-elevado border border-borda-forte rounded px-3 py-2 text-corpo outline-none transition" />
                             </div>
-                            <div>
-                                <label className="block text-corpo font-medium mb-1.5 text-tinta-corpo">Status Inicial</label>
+                            <div className="min-w-0">
+                                <label className="block text-corpo font-medium mb-1.5 text-tinta-corpo truncate">Status Inicial</label>
                                 <CustomSelect
                                     value={novoPedido.status}
                                     onChange={(val) => setNovoPedido({...novoPedido, status: val})}
                                     disabled={isModalTrancado}
-                                    className="w-full bg-elevado border border-borda-forte rounded px-3 py-2.5 text-corpo outline-none focus:border-brand transition dark:text-white font-semibold cursor-pointer"
+                                    className="w-full bg-elevado border border-borda-forte rounded px-3 py-2 text-corpo outline-none focus:border-brand transition dark:text-white font-semibold cursor-pointer"
                                     options={opcoesStatusPermitidas.map(s => ({ value: s, label: s }))}
                                 />
                             </div>
@@ -213,8 +218,13 @@ export default function OSModal() {
                             </div>
                             <div>
                                 <label className="block text-corpo font-medium mb-1.5 text-tinta-corpo">Tags Especiais</label>
-                                <div className="flex items-center gap-2 mt-1">
-                                    <button type="button" onClick={() => setNovoPedido({...novoPedido, entrega: !novoPedido.entrega})} disabled={isModalTrancado} className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded text-mini font-semibold transition disabled:opacity-50 ${novoPedido.entrega ? 'text-white bg-orange-500 dark:bg-orange-600 hover:bg-orange-600 dark:hover:bg-orange-700' : 'bg-realce text-tinta-suave hover:bg-gray-200 dark:hover:bg-darkHover'}`}><Icon name="package" className="w-4 h-4"/> Entrega</button>
+                                {/* Sem o mt-1: o rótulo já reserva o espaço com mb-1.5, e a
+                                    margem extra descia o botão em relação ao campo
+                                    "Resp." ao lado. Altura e tamanho de texto seguem o
+                                    padrão dos campos do modal (py-2 / text-corpo) para os
+                                    dois lados da linha fecharem na mesma base. */}
+                                <div className="flex items-center gap-2">
+                                    <button type="button" onClick={() => setNovoPedido({...novoPedido, entrega: !novoPedido.entrega})} disabled={isModalTrancado} className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded text-corpo font-semibold transition disabled:opacity-50 ${novoPedido.entrega ? 'text-white bg-orange-500 dark:bg-orange-600 hover:bg-orange-600 dark:hover:bg-orange-700' : 'bg-realce text-tinta-suave hover:bg-gray-200 dark:hover:bg-darkHover'}`}><Icon name="package" className="w-4 h-4"/> Entrega</button>
                                 </div>
                             </div>
                         </div>
@@ -339,7 +349,7 @@ export default function OSModal() {
                                     </div>
 
                                     <textarea rows="2" value={itemAtual.descricao} disabled={isModalTrancado} onChange={e => setItemAtual({...itemAtual, descricao: e.target.value})} className="w-full bg-elevado border border-borda rounded px-3 py-2 text-corpo outline-none focus:border-brand transition dark:text-[#EDEDED] disabled:opacity-50" placeholder="Especificações do item (Ex: Medida, quantidade, material...)"></textarea>
-                                    <div className="grid grid-cols-4 gap-3">
+                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                                         <div className="relative col-span-2">
                                             <span className="absolute left-3 top-2.5 text-mini text-gray-400 font-medium z-[1]">Local:</span>
                                             {/* A mesma cor do chip do item aparece já na escolha, para o local
@@ -400,7 +410,7 @@ export default function OSModal() {
                                             {pagamentosPedido.map((pag, idx) => (
                                                 pagamentoEditandoIdx === idx ? (
                                                     <div key={idx} className="flex flex-col gap-2 bg-elevado p-3.5 rounded-lg border border-brand shadow-sm">
-                                                        <div className="grid grid-cols-2 gap-2">
+                                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                                             <CustomSelect
                                                                 value={pagamentoEditando.forma}
                                                                 onChange={(val) => setPagamentoEditando({...pagamentoEditando, forma: val, ...camposParaNovaForma(val, pagamentoEditando)})}
@@ -510,7 +520,7 @@ export default function OSModal() {
 
                                     {!isModalTrancado && (saldo > 0 || totalPago > 0) && (
                                         <div className="flex flex-col gap-2 p-4 border-2 border-dashed border-emerald-200 dark:border-emerald-500/30 rounded-lg bg-white/60 dark:bg-darkElevated/40">
-                                            <div className="grid grid-cols-2 gap-2">
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                                 <CustomSelect
                                                     value={novoPagamento.forma}
                                                     onChange={(val) => editarNovoPagamento({ forma: val, ...camposParaNovaForma(val, novoPagamento)})}

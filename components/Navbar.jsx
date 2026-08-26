@@ -124,8 +124,14 @@ export default function Navbar() {
                                     </span>
                                 )}
                             </button>
+                            {/* No celular o sino fica à esquerda da barra, e um painel
+                                ancorado nele com `right-0` cresce para a esquerda —
+                                saindo da tela. Abaixo de sm ele passa a se ancorar na
+                                JANELA (fixed, preso às duas margens), logo abaixo da
+                                barra; de sm em diante volta a pendurar no ícone, que é
+                                onde há espaço de sobra. */}
                             {modalAlertasAberto && (
-                                <div className="absolute right-0 mt-2 w-64 bg-elevado border border-borda rounded-lg shadow-lg py-2 z-50">
+                                <div className="fixed left-2 right-2 top-[calc(var(--altura-barra)+0.25rem)] w-auto sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-2 sm:w-64 bg-elevado border border-borda rounded-lg shadow-lg py-2 z-50">
                                     <div className="px-4 py-2 border-b border-borda-fraca flex justify-between items-center">
                                         <h3 className="font-semibold text-corpo dark:text-white">Notificações</h3>
                                         {alertasNaoLidos.length > 0 && (
