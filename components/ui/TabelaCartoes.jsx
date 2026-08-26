@@ -49,6 +49,12 @@ import { SkeletonLinhas } from '@/components/ui/SkeletonLinhas';
 // `refDaLinha` é aplicado só nas linhas da TABELA. A animação que o usa mede
 // posição na tela, e um elemento escondido por CSS mede zero — registrar
 // cartão e linha com o mesmo id faria a medida vir do que estiver invisível.
+//
+// `propsDaLinha(item, indice)` é a saída de emergência para o que não cabe numa
+// coluna: hoje, os atributos de arrastar-e-soltar que reordenam o catálogo. Vale
+// só para a TABELA, e de propósito — os eventos de drag do HTML não disparam no
+// toque, então a reordenação nunca funcionou no celular e o cartão não perde
+// nada por não tê-la.
 
 const PONTO_DE_CORTE = 'lg'; // abaixo disso, cartões
 
@@ -61,6 +67,7 @@ export function TabelaCartoes({
     aoContextMenu,
     classeDaLinha,
     refDaLinha,
+    propsDaLinha,
     carregando = false,
     vazio = null,
     faixa,
@@ -112,10 +119,11 @@ export function TabelaCartoes({
                                         </td>
                                     </tr>
                                 )}
-                                {secao.itens.map(item => (
+                                {secao.itens.map((item, indice) => (
                                     <tr
                                         key={chave(item)}
                                         ref={refDaLinha ? refDaLinha(item) : undefined}
+                                        {...(propsDaLinha ? propsDaLinha(item, indice) : null)}
                                         onClick={aoAtivar(item)}
                                         onContextMenu={aoMenu(item)}
                                         className={`border-b border-borda-fraca transition group ${clicavel ? 'cursor-pointer hover:bg-sutil' : 'hover:bg-sutil'} ${classeDaLinha ? classeDaLinha(item) : ''}`}

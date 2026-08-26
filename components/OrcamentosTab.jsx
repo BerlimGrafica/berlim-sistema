@@ -8,6 +8,7 @@ import Tooltip from '@/components/Tooltip';
 import { formatarMoeda, obterDataAtual, mascararCliente } from '@/lib/utils/formatters';
 import { SubAbas } from '@/components/ui/SubAbas';
 import { BarraAcoes } from '@/components/ui/BarraAcoes';
+import { TabelaCartoes } from '@/components/ui/TabelaCartoes';
 
 
 export default function OrcamentosTab() {
@@ -71,57 +72,69 @@ export default function OrcamentosTab() {
                         </div>
 
                         <div className="bg-superficie border border-borda rounded overflow-hidden">
-                            <div className="overflow-x-auto min-h-[300px]">
-                                <table className="w-full text-left border-collapse">
-                                    <thead className="bg-gray-50/50 dark:bg-darkHover/50 border-t-2 border-brand">
-                                        <tr className="border-b border-borda text-corpo font-semibold text-tinta-suave tracking-wide uppercase">
-                                            <th className="px-6 py-4">ID</th>
-                                            <th className="px-6 py-4">Criado por</th>
-                                            <th className="px-6 py-4">Cliente</th>
-                                            <th className="px-6 py-4">Valor</th>
-                                            <th className="px-6 py-4 text-right">Ações</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-borda-fraca">
-                                        {orcamentosFormalizados.map(orc => (
-                                            <tr key={orc.id} onClick={() => abrirEdicaoOrcamento(orc)} className="hover:bg-gray-50 dark:hover:bg-darkHover/50 transition-colors cursor-pointer group">
-                                                <td className="px-6 py-4 text-corpo font-medium text-gray-900 dark:text-gray-300">#{orc.id}</td>
-                                                <td className="px-6 py-4">
-                                                    <div className="text-corpo font-semibold text-tinta">{orc.criado_por || '---'}</div>
-                                                    <div className="text-mini text-gray-400 mt-0.5">{new Date(orc.created_at).toLocaleDateString('pt-BR')}</div>
-                                                </td>
-                                                <td className="px-6 py-4 text-corpo font-medium text-gray-900 dark:text-gray-300">{mascararCliente(orc.cliente, isDemo)}</td>
-                                                <td className="px-6 py-4 text-corpo font-medium text-sucesso">R$ {formatarMoeda(Math.round(orc.valor).toString())}</td>
-                                                <td className="px-6 py-4 text-corpo text-right flex justify-end gap-1">
-                                                    <Tooltip label="Aprovar e Transformar em O.S.">
-                                                        <button onClick={(e) => { e.stopPropagation(); transformarEmOS(orc); }} aria-label="Aprovar e Transformar em O.S." className="p-2 text-sucesso hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded transition inline-block">
-                                                            <Icon name="check-circle" className="w-5 h-5 inline-block" />
+                            {/* Ver components/ui/TabelaCartoes.jsx. */}
+                            <TabelaCartoes
+                                itens={orcamentosFormalizados}
+                                chave={orc => orc.id}
+                                vazio={<span className="text-corpo text-gray-400">Nenhum orçamento formalizado encontrado.</span>}
+                                aoClicar={orc => abrirEdicaoOrcamento(orc)}
+                                colunas={[
+                                    {
+                                        papel: 'titulo',
+                                        titulo: 'ID',
+                                        tdClassName: 'px-6 py-4 text-corpo font-medium text-gray-900 dark:text-gray-300',
+                                        celula: orc => `#${orc.id}`,
+                                    },
+                                    {
+                                        papel: 'subtitulo',
+                                        titulo: 'Cliente',
+                                        tdClassName: 'px-6 py-4 text-corpo font-medium text-gray-900 dark:text-gray-300',
+                                        celula: orc => mascararCliente(orc.cliente, isDemo),
+                                    },
+                                    {
+                                        papel: 'destaque',
+                                        titulo: 'Valor',
+                                        tdClassName: 'px-6 py-4 text-corpo font-medium text-sucesso',
+                                        celula: orc => <span className="text-sucesso">R$ {formatarMoeda(Math.round(orc.valor).toString())}</span>,
+                                    },
+                                    {
+                                        titulo: 'Criado por',
+                                        celula: orc => (
+                                            <>
+                                                <span className="block text-corpo font-semibold text-tinta">{orc.criado_por || '---'}</span>
+                                                <span className="block text-mini text-gray-400 mt-0.5">{new Date(orc.created_at).toLocaleDateString('pt-BR')}</span>
+                                            </>
+                                        ),
+                                    },
+                                    {
+                                        papel: 'acoes',
+                                        titulo: 'Ações',
+                                        thClassName: 'px-6 py-4 text-right',
+                                        tdClassName: 'px-6 py-4 text-corpo text-right',
+                                        celula: orc => (
+                                            <div className="flex justify-end gap-1">
+                                                <Tooltip label="Aprovar e Transformar em O.S.">
+                                                    <button onClick={(e) => { e.stopPropagation(); transformarEmOS(orc); }} aria-label="Aprovar e Transformar em O.S." className="p-2 text-sucesso hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded transition inline-block">
+                                                        <Icon name="check-circle" className="w-5 h-5 inline-block" />
+                                                    </button>
+                                                </Tooltip>
+                                                <Tooltip label="Imprimir Orçamento">
+                                                    <button onClick={(e) => { e.stopPropagation(); baixarPDFOrcamento(orc); }} aria-label="Imprimir Orçamento" className="p-2 text-blue-500 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded transition inline-block">
+                                                        <Icon name="file-text" className="w-5 h-5 inline-block" />
+                                                    </button>
+                                                </Tooltip>
+                                                {isAdmin && (
+                                                    <Tooltip label="Excluir Orçamento">
+                                                        <button onClick={(e) => { e.stopPropagation(); excluirOrcamentoFormalizado(orc.id); }} aria-label="Excluir Orçamento" className="p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded">
+                                                            <Icon name="trash-2" className="w-5 h-5 inline-block" />
                                                         </button>
                                                     </Tooltip>
-                                                    <Tooltip label="Imprimir Orçamento">
-                                                        <button onClick={(e) => { e.stopPropagation(); baixarPDFOrcamento(orc); }} aria-label="Imprimir Orçamento" className="p-2 text-blue-500 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded transition inline-block">
-                                                            <Icon name="file-text" className="w-5 h-5 inline-block" />
-                                                        </button>
-                                                    </Tooltip>
-
-                                                    {isAdmin && (
-                                                        <Tooltip label="Excluir Orçamento">
-                                                            <button onClick={(e) => { e.stopPropagation(); excluirOrcamentoFormalizado(orc.id); }} aria-label="Excluir Orçamento" className="p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded">
-                                                                <Icon name="trash-2" className="w-5 h-5 inline-block" />
-                                                            </button>
-                                                        </Tooltip>
-                                                    )}
-                                                </td>
-                                            </tr>
-                                        ))}
-                                        {orcamentosFormalizados.length === 0 && (
-                                            <tr>
-                                                <td colSpan="5" className="px-4 py-12 text-center text-corpo text-gray-400">Nenhum orçamento formalizado encontrado.</td>
-                                            </tr>
-                                        )}
-                                    </tbody>
-                                </table>
-                            </div>
+                                                )}
+                                            </div>
+                                        ),
+                                    },
+                                ]}
+                            />
                         </div>
                     </main>
                 )}

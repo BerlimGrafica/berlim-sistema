@@ -57,6 +57,22 @@ export default function ContasAReceberPanel({ dataInicio, dataFim }) {
                         ),
                     },
                     {
+                        titulo: 'Serviço',
+                        tdClassName: 'px-6 py-4',
+                        celula: p => (
+                            <span className="text-corpo text-tinta-suave block truncate max-w-[250px]" title={resumoDoPedido(p)}>
+                                {resumoDoPedido(p)}
+                            </span>
+                        ),
+                    },
+                    {
+                        titulo: 'Data Pedido',
+                        rotuloCartao: 'Data',
+                        thClassName: 'px-6 py-4 text-center',
+                        tdClassName: 'px-6 py-4 text-corpo text-center text-tinta-suave',
+                        celula: p => formatarDataExibicao(p.data_pedido),
+                    },
+                    {
                         papel: 'selo',
                         titulo: 'Status',
                         thClassName: 'px-6 py-4 text-center',
@@ -64,23 +80,6 @@ export default function ContasAReceberPanel({ dataInicio, dataFim }) {
                         celula: p => (
                             <span className={`whitespace-nowrap px-2.5 py-1 text-mini font-semibold rounded border ${obterCorStatus(p.status)}`}>
                                 {p.status}
-                            </span>
-                        ),
-                    },
-                    {
-                        papel: 'destaque',
-                        titulo: 'Saldo Devedor',
-                        rotuloCartao: 'Saldo devedor',
-                        thClassName: 'px-6 py-4 text-right',
-                        tdClassName: 'px-6 py-4 text-corpo font-bold text-perigo text-right whitespace-nowrap',
-                        celula: p => <span className="text-perigo">R$ {formatarValorFinanceiro(p.saldo)}</span>,
-                    },
-                    {
-                        titulo: 'Serviço',
-                        tdClassName: 'px-6 py-4',
-                        celula: p => (
-                            <span className="text-corpo text-tinta-suave block truncate max-w-[250px]" title={resumoDoPedido(p)}>
-                                {resumoDoPedido(p)}
                             </span>
                         ),
                     },
@@ -99,11 +98,12 @@ export default function ContasAReceberPanel({ dataInicio, dataFim }) {
                         celula: p => <span className="text-sucesso">R$ {formatarValorFinanceiro(p.totalPago)}</span>,
                     },
                     {
-                        titulo: 'Data Pedido',
-                        rotuloCartao: 'Data',
-                        thClassName: 'px-6 py-4 text-center',
-                        tdClassName: 'px-6 py-4 text-corpo text-center text-tinta-suave',
-                        celula: p => formatarDataExibicao(p.data_pedido),
+                        papel: 'destaque',
+                        titulo: 'Saldo Devedor',
+                        rotuloCartao: 'Saldo devedor',
+                        thClassName: 'px-6 py-4 text-right',
+                        tdClassName: 'px-6 py-4 text-corpo font-bold text-perigo text-right whitespace-nowrap',
+                        celula: p => <span className="text-perigo">R$ {formatarValorFinanceiro(p.saldo)}</span>,
                     },
                 ]}
             />

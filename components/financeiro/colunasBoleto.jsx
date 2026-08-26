@@ -106,32 +106,6 @@ export function useColunasBoleto() {
             ),
         },
         {
-            papel: 'selo',
-            titulo: 'Situação',
-            thClassName: 'px-6 py-4 w-32 text-center',
-            tdClassName: 'px-6 py-4 text-center',
-            celula: p => {
-                const s = situacaoBoleto(p);
-                return <span className={`whitespace-nowrap px-2.5 py-1 text-mini font-semibold rounded border ${s.cor}`}>{s.label}</span>;
-            },
-        },
-        {
-            papel: 'bloco',
-            titulo: 'Valor',
-            thClassName: 'px-6 py-4 w-40 text-right',
-            celula: p => (
-                <CampoRascunho
-                    key={`valor-${p.id}`}
-                    inicial={p.boleto.valor}
-                    formatar={formatarMoeda}
-                    prefixo="R$"
-                    placeholder="0,00"
-                    className="pl-7 text-right"
-                    aoConfirmar={valor => atualizarPagamentoBoleto(p, { valor })}
-                />
-            ),
-        },
-        {
             papel: 'bloco',
             titulo: 'CNPJ',
             thClassName: 'px-6 py-4 w-52',
@@ -156,6 +130,22 @@ export function useColunasBoleto() {
                     inicial={p.boleto_numero}
                     placeholder="Nº do boleto"
                     aoConfirmar={v => atualizarCampoInline(p.id, 'boleto_numero', v)}
+                />
+            ),
+        },
+        {
+            papel: 'bloco',
+            titulo: 'Valor',
+            thClassName: 'px-6 py-4 w-40 text-right',
+            celula: p => (
+                <CampoRascunho
+                    key={`valor-${p.id}`}
+                    inicial={p.boleto.valor}
+                    formatar={formatarMoeda}
+                    prefixo="R$"
+                    placeholder="0,00"
+                    className="pl-7 text-right"
+                    aoConfirmar={valor => atualizarPagamentoBoleto(p, { valor })}
                 />
             ),
         },
@@ -193,6 +183,16 @@ export function useColunasBoleto() {
                     <CustomSelect value={!!p.boleto_protesto_negativacao} onChange={val => atualizarCampoInline(p.id, 'boleto_protesto_negativacao', val)} options={OPCOES_PROTESTO} className={`${campoClass} cursor-pointer`} />
                 </SemPropagar>
             ),
+        },
+        {
+            papel: 'selo',
+            titulo: 'Situação',
+            thClassName: 'px-6 py-4 w-32 text-center',
+            tdClassName: 'px-6 py-4 text-center',
+            celula: p => {
+                const s = situacaoBoleto(p);
+                return <span className={`whitespace-nowrap px-2.5 py-1 text-mini font-semibold rounded border ${s.cor}`}>{s.label}</span>;
+            },
         },
         {
             papel: 'acoes',

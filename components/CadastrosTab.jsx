@@ -11,6 +11,7 @@ import { SkeletonLinhas } from '@/components/ui/SkeletonLinhas';
 import { formatarValorFinanceiro, centavosParaReais } from '@/lib/utils/formatters';
 import { SubAbas } from '@/components/ui/SubAbas';
 import { BarraAcoes } from '@/components/ui/BarraAcoes';
+import { TabelaCartoes } from '@/components/ui/TabelaCartoes';
 
 
 export default function CadastrosTab() {
@@ -57,56 +58,74 @@ export default function CadastrosTab() {
                             </div>
                         </div>
                         <div className="bg-superficie border border-borda rounded overflow-hidden">
-                            <table className="w-full text-left border-collapse">
-                                <thead className="bg-gray-50/50 dark:bg-darkHover/50 border-t-2 border-brand">
-                                    <tr className="border-b border-borda text-corpo font-semibold text-tinta-suave tracking-wide uppercase">
-                                        <th className="px-6 py-4 w-24">ID</th>
-                                        <th className="px-6 py-4">Nome do Produto</th>
-                                        <th className="px-6 py-4">Descrição Base</th>
-                                        <th className="px-6 py-4 w-36 text-right">Preço Base</th>
-                                        <th className="px-6 py-4 w-24 text-center">Excluir</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {produtosCatalogoFiltrados.map((p, index) => (
-                                        <tr 
-                                            key={p.id} 
-                                            draggable
-                                            onDragStart={(e) => handleDragStartProduto(e, index)}
-                                            onDragOver={(e) => e.preventDefault()}
-                                            onDrop={(e) => handleDropProduto(e, index)}
-                                            onClick={() => abrirEdicaoProduto(p)}
-                                            onContextMenu={(e) => abrirContextMenu(e, [
-                                                { label: 'Editar', icon: 'edit-3', onClick: () => abrirEdicaoProduto(p) },
-                                                { label: 'Duplicar', icon: 'layers', onClick: () => duplicarProduto(p) },
-                                                { label: 'Copiar linha', icon: 'copy', onClick: () => {
-                                                    navigator.clipboard.writeText([`#${p.id}`, p.nome, p.texto_padrao || '', `R$ ${formatarValorFinanceiro(centavosParaReais(p.preco_base))}`].join('\t'));
-                                                    avisar('Linha copiada!', 'sucesso');
-                                                }},
-                                                { label: 'Excluir', icon: 'trash-2', tom: 'perigo', divisorAntes: true, onClick: () => excluirProduto(p.id, { stopPropagation: () => {} }) },
-                                            ])}
-                                            className={`border-b border-gray-100 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkHover transition cursor-pointer group ${draggedProdutoIndex === index ? 'opacity-50' : ''}`}
-                                        >
-                                            <td className="px-6 py-4 text-corpo font-semibold text-gray-900 dark:text-gray-300 cursor-grab active:cursor-grabbing">
-                                                <div className="flex items-center gap-2 whitespace-nowrap">
-                                                    <Icon name="list" className="w-4 h-4 opacity-50" />
-                                                    <span>#{p.id}</span>
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4 text-corpo font-medium text-tinta">{p.nome}</td>
-                                            <td className="px-6 py-4 text-corpo text-tinta-suave truncate max-w-xs">{p.texto_padrao}</td>
-                                            <td className="px-6 py-4 text-corpo font-semibold text-gray-900 dark:text-gray-300 text-right">R$ {formatarValorFinanceiro(centavosParaReais(p.preco_base))}</td>
-                                            <td className="px-6 py-4 text-center">
-                                                <Tooltip label="Excluir Produto">
+                            {/* propsDaLinha carrega os atributos de arrastar-e-soltar: são de linha,
+                                não de coluna, e valem só na tabela — eventos de drag do HTML não
+                                disparam no toque, então a reordenação sempre foi de desktop. */}
+                            <TabelaCartoes
+                                itens={produtosCatalogoFiltrados}
+                                chave={p => p.id}
+                                aoClicar={p => abrirEdicaoProduto(p)}
+                                propsDaLinha={(p, index) => ({
+                                    draggable: true,
+                                    onDragStart: (e) => handleDragStartProduto(e, index),
+                                    onDragOver: (e) => e.preventDefault(),
+                                    onDrop: (e) => handleDropProduto(e, index),
+                                    className: draggedProdutoIndex === index ? 'opacity-50' : '',
+                                })}
+                                aoContextMenu={(p, e) => abrirContextMenu(e, [
+                                    { label: 'Editar', icon: 'edit-3', onClick: () => abrirEdicaoProduto(p) },
+                                    { label: 'Duplicar', icon: 'layers', onClick: () => duplicarProduto(p) },
+                                    { label: 'Copiar linha', icon: 'copy', onClick: () => {
+                                        navigator.clipboard.writeText([`#${p.id}`, p.nome, p.texto_padrao || '', `R$ ${formatarValorFinanceiro(centavosParaReais(p.preco_base))}`].join('\t'));
+                                        avisar('Linha copiada!', 'sucesso');
+                                    }},
+                                    { label: 'Excluir', icon: 'trash-2', tom: 'perigo', divisorAntes: true, onClick: () => excluirProduto(p.id, { stopPropagation: () => {} }) },
+                                ])}
+                                colunas={[
+                                    {
+                                        papel: 'titulo',
+                                        titulo: 'Nome do Produto',
+                                        tdClassName: 'px-6 py-4 text-corpo font-medium text-tinta',
+                                        celula: p => p.nome,
+                                    },
+                                    {
+                                        papel: 'destaque',
+                                        titulo: 'Preço Base',
+                                        thClassName: 'px-6 py-4 w-36 text-right',
+                                        tdClassName: 'px-6 py-4 text-corpo font-semibold text-gray-900 dark:text-gray-300 text-right',
+                                        celula: p => `R$ ${formatarValorFinanceiro(centavosParaReais(p.preco_base))}`,
+                                    },
+                                    {
+                                        titulo: 'ID',
+                                        thClassName: 'px-6 py-4 w-24',
+                                        tdClassName: 'px-6 py-4 text-corpo font-semibold text-gray-900 dark:text-gray-300 cursor-grab active:cursor-grabbing',
+                                        celula: p => (
+                                            <span className="flex items-center gap-2 whitespace-nowrap justify-end lg:justify-start">
+                                                <Icon name="list" className="w-4 h-4 opacity-50 hidden lg:inline" />
+                                                <span>#{p.id}</span>
+                                            </span>
+                                        ),
+                                    },
+                                    {
+                                        titulo: 'Descrição Base',
+                                        tdClassName: 'px-6 py-4 text-corpo text-tinta-suave truncate max-w-xs',
+                                        celula: p => p.texto_padrao,
+                                    },
+                                    {
+                                        papel: 'acoes',
+                                        titulo: 'Excluir',
+                                        thClassName: 'px-6 py-4 w-24 text-center',
+                                        tdClassName: 'px-6 py-4 text-center',
+                                        celula: p => (
+                                            <Tooltip label="Excluir Produto">
                                                 <button type="button" onClick={(e) => excluirProduto(p.id, e)} aria-label="Excluir Produto" className="p-2 text-red-500 hover:text-red-600 transition rounded hover:bg-red-50 dark:hover:bg-red-950/30">
                                                     <Icon name="trash-2" className="w-4 h-4" />
                                                 </button>
-                                                </Tooltip>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                                            </Tooltip>
+                                        ),
+                                    },
+                                ]}
+                            />
                         </div>
                     </main>
                 )}
@@ -140,18 +159,58 @@ export default function CadastrosTab() {
                                     <button key={letra} onClick={() => { setLetraFiltroCliente(letra); setPaginaClientes(1); }} className={`px-2 py-1 text-mini font-semibold rounded border ${letraFiltroCliente === letra ? 'bg-brand text-white border-brand' : 'bg-superficie text-tinta-suave border-borda hover:bg-sutil'}`}>{letra}</button>
                                 ))}
                             </div>
-                            <table className="w-full text-left border-collapse">
-                                <thead className="bg-gray-50/50 dark:bg-darkHover/50 border-t-2 border-brand"><tr className="border-b border-borda text-corpo font-semibold text-tinta-suave tracking-wide uppercase"><th className="px-6 py-4">Cliente</th><th className="px-6 py-4 w-48">WhatsApp</th><th className="px-6 py-4 w-64">E-mail</th><th className="px-6 py-4">Observações</th><th className="px-6 py-4 w-24 text-center">Ações</th></tr></thead>
-                                <tbody>
-                                    {clientesPaginados.length > 0 ? clientesPaginados.map(c => (
-                                        <tr key={c.id} onClick={() => abrirEdicaoCliente(c)} className="border-b border-gray-100 dark:border-darkBorder/50 hover:bg-gray-50/50 dark:hover:bg-darkHover/50 transition cursor-pointer"><td className={`px-6 py-4 text-corpo font-semibold ${c.cliente_problema ? 'text-perigo' : 'text-gray-900 dark:text-gray-300'}`}>{c.nome} {c.cliente_problema && <Icon name="alert-triangle" className="w-3.5 h-3.5 inline text-red-500 ml-1" title="Cliente Problema" />}</td><td className="px-6 py-4 text-corpo font-medium text-tinta">{c.telefone || '---'}</td><td className="px-6 py-4 text-corpo text-tinta-suave">{c.email || '---'}</td><td className="px-6 py-4 text-corpo text-tinta-suave truncate max-w-xs">{c.observacoes || '---'}</td><td className="px-6 py-4 text-center">{isAdmin && <Tooltip label="Excluir Cliente"><button type="button" onClick={async (e) => { e.stopPropagation(); if(await confirmar(`Excluir o cliente ${c.nome}?`)) { supabase.from('clientes').delete().eq('id', c.id).then(() => carregarDados()); } }} aria-label="Excluir Cliente" className="p-2 text-red-500 hover:text-red-600 transition rounded hover:bg-red-50 dark:hover:bg-red-950/30"><Icon name="trash-2" className="w-4 h-4" /></button></Tooltip>}</td></tr>
-                                    )) : !clientesCadCarregados ? (
-                                        <SkeletonLinhas colunas={5} />
-                                    ) : (
-                                        <tr><td colSpan="5" className="px-6 py-8 text-center text-tinta-suave">Nenhum cliente encontrado.</td></tr>
-                                    )}
-                                </tbody>
-                            </table>
+                            {/* Ver components/ui/TabelaCartoes.jsx. */}
+                            <TabelaCartoes
+                                itens={clientesPaginados}
+                                chave={c => c.id}
+                                carregando={!clientesCadCarregados && clientesPaginados.length === 0}
+                                vazio={<span className="text-tinta-suave">Nenhum cliente encontrado.</span>}
+                                aoClicar={c => abrirEdicaoCliente(c)}
+                                colunas={[
+                                    {
+                                        papel: 'titulo',
+                                        titulo: 'Cliente',
+                                        tdClassName: 'px-6 py-4 text-corpo font-semibold',
+                                        celula: c => (
+                                            <span className={c.cliente_problema ? 'text-perigo' : 'text-gray-900 dark:text-gray-300'}>
+                                                {c.nome}
+                                                {c.cliente_problema && <Icon name="alert-triangle" className="w-3.5 h-3.5 inline text-red-500 ml-1" title="Cliente Problema" />}
+                                            </span>
+                                        ),
+                                    },
+                                    {
+                                        papel: 'subtitulo',
+                                        titulo: 'WhatsApp',
+                                        thClassName: 'px-6 py-4 w-48',
+                                        tdClassName: 'px-6 py-4 text-corpo font-medium text-tinta',
+                                        celula: c => c.telefone || '---',
+                                    },
+                                    {
+                                        titulo: 'E-mail',
+                                        thClassName: 'px-6 py-4 w-64',
+                                        tdClassName: 'px-6 py-4 text-corpo text-tinta-suave',
+                                        celula: c => c.email || '---',
+                                    },
+                                    {
+                                        titulo: 'Observações',
+                                        tdClassName: 'px-6 py-4 text-corpo text-tinta-suave truncate max-w-xs',
+                                        celula: c => c.observacoes || '---',
+                                    },
+                                    {
+                                        papel: 'acoes',
+                                        titulo: 'Ações',
+                                        thClassName: 'px-6 py-4 w-24 text-center',
+                                        tdClassName: 'px-6 py-4 text-center',
+                                        celula: c => isAdmin && (
+                                            <Tooltip label="Excluir Cliente">
+                                                <button type="button" onClick={async (e) => { e.stopPropagation(); if (await confirmar(`Excluir o cliente ${c.nome}?`)) { supabase.from('clientes').delete().eq('id', c.id).then(() => carregarDados()); } }} aria-label="Excluir Cliente" className="p-2 text-red-500 hover:text-red-600 transition rounded hover:bg-red-50 dark:hover:bg-red-950/30">
+                                                    <Icon name="trash-2" className="w-4 h-4" />
+                                                </button>
+                                            </Tooltip>
+                                        ),
+                                    },
+                                ]}
+                            />
                         </div>
                         {totalPaginasClientes > 1 && (
                             <div className="mt-6 flex justify-between items-center p-4">
@@ -177,21 +236,32 @@ export default function CadastrosTab() {
                             </div>
                         </div>
                         <div className="bg-superficie border border-borda rounded overflow-hidden">
-                            <table className="w-full text-left border-collapse">
-                                <thead className="bg-gray-50/50 dark:bg-darkHover/50 border-t-2 border-brand"><tr className="border-b border-borda text-corpo font-semibold text-tinta-suave tracking-wide uppercase"><th className="px-6 py-4">Nome do Usuário</th><th className="px-6 py-4 w-48 text-right">Nível de Acesso</th></tr></thead>
-                                <tbody>
-                                    {usuariosSistema.map(u => (
-                                        <tr key={u.id} onClick={() => abrirEdicaoUsuario(u)} className="border-b border-gray-100 dark:border-darkBorder/50 hover:bg-gray-50/50 dark:hover:bg-darkHover/50 transition cursor-pointer">
-                                            <td className="px-6 py-4 text-corpo font-semibold text-gray-900 dark:text-gray-300">{u.nome}</td>
-                                            <td className="px-6 py-4 text-corpo font-semibold text-gray-900 dark:text-gray-300 text-right">
-                                                <span className={`px-2 py-1 rounded text-micro uppercase tracking-wider border ${u.nivel === 'Administrador' ? 'bg-red-50 text-red-600 border-red-200' : u.nivel === 'Financeiro' ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-blue-50 text-blue-600 border-blue-200'}`}>
-                                                    {u.nivel}
-                                                </span>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                            {/* Ver components/ui/TabelaCartoes.jsx. */}
+                            <TabelaCartoes
+                                itens={usuariosSistema}
+                                chave={u => u.id}
+                                aoClicar={u => abrirEdicaoUsuario(u)}
+                                colunas={[
+                                    {
+                                        papel: 'titulo',
+                                        titulo: 'Nome do Usuário',
+                                        tdClassName: 'px-6 py-4 text-corpo font-semibold text-gray-900 dark:text-gray-300',
+                                        celula: u => u.nome,
+                                    },
+                                    {
+                                        papel: 'selo',
+                                        titulo: 'Nível de Acesso',
+                                        rotuloCartao: 'Nível',
+                                        thClassName: 'px-6 py-4 w-48 text-right',
+                                        tdClassName: 'px-6 py-4 text-right',
+                                        celula: u => (
+                                            <span className={`px-2 py-1 rounded text-micro uppercase tracking-wider border ${u.nivel === 'Administrador' ? 'bg-red-50 text-red-600 border-red-200' : u.nivel === 'Financeiro' ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-blue-50 text-blue-600 border-blue-200'}`}>
+                                                {u.nivel}
+                                            </span>
+                                        ),
+                                    },
+                                ]}
+                            />
                         </div>
                     </main>
                 )}
@@ -210,67 +280,80 @@ export default function CadastrosTab() {
                             </div>
                         </div>
                         <div className="bg-superficie border border-borda rounded overflow-hidden">
-                            <table className="w-full text-left border-collapse">
-                                <thead className="bg-gray-50/50 dark:bg-darkHover/50 border-t-2 border-brand">
-                                    <tr className="border-b border-borda text-corpo font-semibold text-tinta-suave tracking-wide uppercase">
-                                        <th className="px-6 py-4 w-24">ID</th>
-                                        <th className="px-6 py-4">Nome do Fornecedor / Local</th>
-                                        <th className="px-6 py-4">Tipo</th>
-                                        <th className="px-6 py-4">Contato</th>
-                                        <th className="px-6 py-4">Observações</th>
-                                        <th className="px-6 py-4 w-24 text-center">Ações</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {fornecedores.length === 0 ? (
-                                        <tr>
-                                            <td colSpan="6" className="px-6 py-12 text-center text-corpo text-tinta-fraca">
-                                                Nenhum fornecedor cadastrado.
-                                            </td>
-                                        </tr>
-                                    ) : (
-                                        fornecedores.map(f => (
-                                            <tr key={f.id} onClick={() => { setNovoFornecedor({...f, observacoes: f.observacoes || ''}); setModalFornecedorAberto(true); }} onContextMenu={(e) => abrirContextMenu(e, [
-                                                { label: 'Editar', icon: 'edit-3', onClick: () => { setNovoFornecedor({...f, observacoes: f.observacoes || ''}); setModalFornecedorAberto(true); } },
-                                                { label: 'Duplicar', icon: 'layers', onClick: () => duplicarFornecedor(f) },
-                                                { label: 'Copiar linha', icon: 'copy', onClick: () => {
-                                                    navigator.clipboard.writeText([`#${f.id}`, f.nome, f.tipo || '', f.contato || '', f.observacoes || ''].join('\t'));
-                                                    avisar('Linha copiada!', 'sucesso');
-                                                }},
-                                                { label: 'Excluir', icon: 'trash-2', tom: 'perigo', divisorAntes: true, onClick: async () => {
+                            {/* Ver components/ui/TabelaCartoes.jsx. */}
+                            <TabelaCartoes
+                                itens={fornecedores}
+                                chave={f => f.id}
+                                vazio={<span className="text-corpo text-tinta-fraca">Nenhum fornecedor cadastrado.</span>}
+                                aoClicar={f => { setNovoFornecedor({...f, observacoes: f.observacoes || ''}); setModalFornecedorAberto(true); }}
+                                aoContextMenu={(f, e) => abrirContextMenu(e, [
+                                    { label: 'Editar', icon: 'edit-3', onClick: () => { setNovoFornecedor({...f, observacoes: f.observacoes || ''}); setModalFornecedorAberto(true); } },
+                                    { label: 'Duplicar', icon: 'layers', onClick: () => duplicarFornecedor(f) },
+                                    { label: 'Copiar linha', icon: 'copy', onClick: () => {
+                                        navigator.clipboard.writeText([`#${f.id}`, f.nome, f.tipo || '', f.contato || '', f.observacoes || ''].join('\t'));
+                                        avisar('Linha copiada!', 'sucesso');
+                                    }},
+                                    { label: 'Excluir', icon: 'trash-2', tom: 'perigo', divisorAntes: true, onClick: async () => {
+                                        if (await confirmar(`Excluir o fornecedor ${f.nome}?`)) {
+                                            await supabase.from('fornecedores').delete().eq('id', f.id);
+                                            carregarDados();
+                                        }
+                                    }},
+                                ])}
+                                colunas={[
+                                    {
+                                        papel: 'titulo',
+                                        titulo: 'Nome do Fornecedor / Local',
+                                        rotuloCartao: 'Nome',
+                                        tdClassName: 'px-6 py-4 text-corpo font-medium text-tinta',
+                                        celula: f => f.nome,
+                                    },
+                                    {
+                                        papel: 'selo',
+                                        titulo: 'Tipo',
+                                        celula: f => (
+                                            <span className={`px-2 py-1 rounded text-mini font-bold ${f.tipo === 'Material' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' : f.tipo === 'Manutenção' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' : 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'}`}>
+                                                {f.tipo || 'Terceirização'}
+                                            </span>
+                                        ),
+                                    },
+                                    {
+                                        titulo: 'ID',
+                                        thClassName: 'px-6 py-4 w-24',
+                                        tdClassName: 'px-6 py-4 text-corpo font-semibold text-gray-900 dark:text-gray-300',
+                                        celula: f => `#${f.id}`,
+                                    },
+                                    {
+                                        titulo: 'Contato',
+                                        tdClassName: 'px-6 py-4 text-corpo text-tinta-suave',
+                                        celula: f => f.contato || '-',
+                                    },
+                                    {
+                                        titulo: 'Observações',
+                                        tdClassName: 'px-6 py-4 text-corpo text-tinta-suave',
+                                        celula: f => f.observacoes || '-',
+                                    },
+                                    {
+                                        papel: 'acoes',
+                                        titulo: 'Ações',
+                                        thClassName: 'px-6 py-4 w-24 text-center',
+                                        tdClassName: 'px-6 py-4 text-center',
+                                        celula: f => (
+                                            <Tooltip label="Excluir Fornecedor">
+                                                <button onClick={async (e) => {
+                                                    e.stopPropagation();
                                                     if (await confirmar(`Excluir o fornecedor ${f.nome}?`)) {
                                                         await supabase.from('fornecedores').delete().eq('id', f.id);
                                                         carregarDados();
                                                     }
-                                                }},
-                                            ])} className="border-b border-gray-100 dark:border-darkBorder/50 hover:bg-gray-50/50 dark:hover:bg-darkHover/50 transition cursor-pointer">
-                                                <td className="px-6 py-4 text-corpo font-semibold text-gray-900 dark:text-gray-300">#{f.id}</td>
-                                                <td className="px-6 py-4 text-corpo font-medium text-tinta">{f.nome}</td>
-                                                <td className="px-6 py-4">
-                                                    <span className={`px-2 py-1 rounded text-mini font-bold ${f.tipo === 'Material' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' : f.tipo === 'Manutenção' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' : 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'}`}>
-                                                        {f.tipo || 'Terceirização'}
-                                                    </span>
-                                                </td>
-                                                <td className="px-6 py-4 text-corpo text-tinta-suave">{f.contato || '-'}</td>
-                                                <td className="px-6 py-4 text-corpo text-tinta-suave">{f.observacoes || '-'}</td>
-                                                <td className="px-6 py-4 text-center">
-                                                    <Tooltip label="Excluir Fornecedor">
-                                                        <button onClick={async (e) => {
-                                                            e.stopPropagation();
-                                                            if(await confirmar(`Excluir o fornecedor ${f.nome}?`)) {
-                                                                await supabase.from('fornecedores').delete().eq('id', f.id);
-                                                                carregarDados();
-                                                            }
-                                                        }} aria-label="Excluir Fornecedor" className="p-2 text-red-500 hover:text-red-600 transition rounded hover:bg-red-50 dark:hover:bg-red-950/30">
-                                                            <Icon name="trash-2" className="w-4 h-4" />
-                                                        </button>
-                                                    </Tooltip>
-                                                </td>
-                                            </tr>
-                                        ))
-                                    )}
-                                </tbody>
-                            </table>
+                                                }} aria-label="Excluir Fornecedor" className="p-2 text-red-500 hover:text-red-600 transition rounded hover:bg-red-50 dark:hover:bg-red-950/30">
+                                                    <Icon name="trash-2" className="w-4 h-4" />
+                                                </button>
+                                            </Tooltip>
+                                        ),
+                                    },
+                                ]}
+                            />
                         </div>
                     </main>
                 )}

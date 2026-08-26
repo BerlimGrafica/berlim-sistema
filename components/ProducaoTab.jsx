@@ -175,6 +175,20 @@ export default function ProducaoTab() {
                                         celula: p => <button type="button" onClick={() => abrirEdicao(p)} className="hover:text-brand transition">#{p.id}</button>,
                                     },
                                     {
+                                        papel: 'bloco',
+                                        titulo: 'Prazo',
+                                        thClassName: 'px-6 py-4 w-32 text-center',
+                                        tdClassName: 'px-4 py-3',
+                                        celula: p => <CustomDatePicker value={p.prazo || ''} onChange={val => handleAtualizarCampo(p.id, 'prazo', val)} placeholder="Definir prazo..." className={`w-full bg-gray-50 dark:bg-darkElevated border-2 ${obterCorContornoPrazo(p.prazo)} rounded px-2.5 py-1.5 text-mini outline-none hover:border-brand transition text-gray-700 dark:text-[#EDEDED]`} />,
+                                    },
+                                    {
+                                        papel: 'bloco',
+                                        titulo: 'Resp.',
+                                        thClassName: 'px-6 py-4 w-32 text-center',
+                                        tdClassName: 'px-4 py-3',
+                                        celula: p => <MultiSelectDropdown value={p.responsavel} options={nomesResponsaveis} onChange={(val) => handleAtualizarCampo(p.id, 'responsavel', val)} className="w-full bg-sutil border border-borda rounded px-2.5 py-1.5 text-mini outline-none hover:border-brand" />,
+                                    },
+                                    {
                                         papel: 'subtitulo',
                                         titulo: 'Cliente',
                                         thClassName: 'px-6 py-4 text-center',
@@ -194,18 +208,24 @@ export default function ProducaoTab() {
                                         celula: p => <ItensChecklist pedido={p} />,
                                     },
                                     {
-                                        papel: 'bloco',
-                                        titulo: 'Prazo',
+                                        papel: 'acoes',
+                                        titulo: 'Ações',
                                         thClassName: 'px-6 py-4 w-32 text-center',
                                         tdClassName: 'px-4 py-3',
-                                        celula: p => <CustomDatePicker value={p.prazo || ''} onChange={val => handleAtualizarCampo(p.id, 'prazo', val)} placeholder="Definir prazo..." className={`w-full bg-gray-50 dark:bg-darkElevated border-2 ${obterCorContornoPrazo(p.prazo)} rounded px-2.5 py-1.5 text-mini outline-none hover:border-brand transition text-gray-700 dark:text-[#EDEDED]`} />,
-                                    },
-                                    {
-                                        papel: 'bloco',
-                                        titulo: 'Resp.',
-                                        thClassName: 'px-6 py-4 w-32 text-center',
-                                        tdClassName: 'px-4 py-3',
-                                        celula: p => <MultiSelectDropdown value={p.responsavel} options={nomesResponsaveis} onChange={(val) => handleAtualizarCampo(p.id, 'responsavel', val)} className="w-full bg-sutil border border-borda rounded px-2.5 py-1.5 text-mini outline-none hover:border-brand" />,
+                                        celula: p => (
+                                            <div className="flex items-center justify-center gap-1">
+                                                <Tooltip label="Arte Aprovada">
+                                                    <button type="button" onClick={() => handleAtualizarCampo(p.id, 'aprovado', !p.aprovado)} aria-label="Arte Aprovada" className={`p-2 rounded transition ${p.aprovado ? 'text-white bg-blue-500 dark:bg-blue-600 hover:bg-blue-600 dark:hover:bg-blue-700' : 'text-gray-300 dark:text-gray-600 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30'}`}>
+                                                        <Icon name="thumbs-up" className="w-4 h-4" />
+                                                    </button>
+                                                </Tooltip>
+                                                <Tooltip label="Pronto para Entrega">
+                                                    <button type="button" onClick={() => handleAtualizarCampo(p.id, 'entrega', !p.entrega)} aria-label="Pronto para Entrega" className={`p-2 rounded transition ${p.entrega ? 'text-white bg-orange-500 dark:bg-orange-600 hover:bg-orange-600 dark:hover:bg-orange-700' : 'text-gray-300 dark:text-gray-600 hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/30'}`}>
+                                                        <Icon name="package" className="w-4 h-4" />
+                                                    </button>
+                                                </Tooltip>
+                                            </div>
+                                        ),
                                     },
                                     {
                                         papel: 'bloco',
@@ -223,26 +243,6 @@ export default function ProducaoTab() {
                                                 {(p.local_producao || 'Berlim').split(',').map(s => s.trim()).filter(Boolean).map(local => (
                                                     <ChipNome key={local} nome={local} />
                                                 ))}
-                                            </div>
-                                        ),
-                                    },
-                                    {
-                                        papel: 'acoes',
-                                        titulo: 'Ações',
-                                        thClassName: 'px-6 py-4 w-32 text-center',
-                                        tdClassName: 'px-4 py-3',
-                                        celula: p => (
-                                            <div className="flex items-center justify-center gap-1">
-                                                <Tooltip label="Arte Aprovada">
-                                                    <button type="button" onClick={() => handleAtualizarCampo(p.id, 'aprovado', !p.aprovado)} aria-label="Arte Aprovada" className={`p-2 rounded transition ${p.aprovado ? 'text-white bg-blue-500 dark:bg-blue-600 hover:bg-blue-600 dark:hover:bg-blue-700' : 'text-gray-300 dark:text-gray-600 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30'}`}>
-                                                        <Icon name="thumbs-up" className="w-4 h-4" />
-                                                    </button>
-                                                </Tooltip>
-                                                <Tooltip label="Pronto para Entrega">
-                                                    <button type="button" onClick={() => handleAtualizarCampo(p.id, 'entrega', !p.entrega)} aria-label="Pronto para Entrega" className={`p-2 rounded transition ${p.entrega ? 'text-white bg-orange-500 dark:bg-orange-600 hover:bg-orange-600 dark:hover:bg-orange-700' : 'text-gray-300 dark:text-gray-600 hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/30'}`}>
-                                                        <Icon name="package" className="w-4 h-4" />
-                                                    </button>
-                                                </Tooltip>
                                             </div>
                                         ),
                                     },

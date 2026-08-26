@@ -105,6 +105,17 @@ export default function ContasAPagarPanel({ mostrarContasPagas, dataInicio, data
                     aoContextMenu={(conta, e) => abrirContextMenu(e, montarItensContexto(conta))}
                     colunas={[
                         {
+                            papel: 'selo',
+                            titulo: <span className="inline-flex items-center">Vencimento<SetaOrdenacao campo="vencimento" /></span>,
+                            rotuloCartao: 'Vencimento',
+                            tdClassName: 'px-6 py-4 text-corpo text-tinta-suave',
+                            celula: conta => (
+                                <span className={`inline-block px-2 py-1 rounded border-2 text-mini ${obterCorBordaVencimento(conta)}`}>
+                                    {formatarDataExibicao(conta.vencimento)}
+                                </span>
+                            ),
+                        },
+                        {
                             papel: 'titulo',
                             titulo: <span className="inline-flex items-center">Descrição<SetaOrdenacao campo="descricao" /></span>,
                             rotuloCartao: 'Descrição',
@@ -131,23 +142,6 @@ export default function ContasAPagarPanel({ mostrarContasPagas, dataInicio, data
                             ),
                         },
                         {
-                            papel: 'selo',
-                            titulo: <span className="inline-flex items-center">Vencimento<SetaOrdenacao campo="vencimento" /></span>,
-                            rotuloCartao: 'Vencimento',
-                            tdClassName: 'px-6 py-4 text-corpo text-tinta-suave',
-                            celula: conta => (
-                                <span className={`inline-block px-2 py-1 rounded border-2 text-mini ${obterCorBordaVencimento(conta)}`}>
-                                    {formatarDataExibicao(conta.vencimento)}
-                                </span>
-                            ),
-                        },
-                        {
-                            papel: 'destaque',
-                            titulo: 'Valor',
-                            tdClassName: 'px-6 py-4 text-corpo font-medium text-sucesso',
-                            celula: conta => <span className="text-sucesso">R$ {formatarValorFinanceiro(centavosParaReais(conta.valor))}</span>,
-                        },
-                        {
                             titulo: <span className="inline-flex items-center">Categoria<SetaOrdenacao campo="categoria" /></span>,
                             rotuloCartao: 'Categoria',
                             tdClassName: 'px-6 py-4 text-corpo',
@@ -162,6 +156,12 @@ export default function ContasAPagarPanel({ mostrarContasPagas, dataInicio, data
                                     {conta.categoria || 'Despesa'}
                                 </span>
                             ),
+                        },
+                        {
+                            papel: 'destaque',
+                            titulo: 'Valor',
+                            tdClassName: 'px-6 py-4 text-corpo font-medium text-sucesso',
+                            celula: conta => <span className="text-sucesso">R$ {formatarValorFinanceiro(centavosParaReais(conta.valor))}</span>,
                         },
                         {
                             titulo: 'Status Pagamento',

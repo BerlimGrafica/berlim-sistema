@@ -149,13 +149,12 @@ export default function DashboardTab() {
                                 </div>
 
                                 <div className="flex-1 min-h-0 overflow-auto custom-scrollbar">
-                                    <table className="w-full text-left border-collapse whitespace-nowrap">
+                                    <table className="w-full text-left border-collapse">
                                         <thead className="sticky top-0 z-10 bg-gray-50/50 dark:bg-darkHover/50 border-t-2 border-brand">
                                             <tr className="border-b border-borda-fraca text-micro font-bold text-tinta-suave tracking-wide uppercase">
                                                 <th className="px-4 py-3">O.S. / Cliente</th>
                                                 <th className="px-4 py-3">Serviço</th>
                                                 <th className="px-4 py-3">Prazo</th>
-                                                <th className="px-4 py-3 text-right">Ação</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -165,7 +164,7 @@ export default function DashboardTab() {
                                                 if (minhasTarefas.length === 0) {
                                                     return (
                                                         <tr>
-                                                            <td colSpan="4" className="px-4 py-10 text-center">
+                                                            <td colSpan="3" className="px-4 py-10 text-center">
                                                                 <div className="flex flex-col items-center justify-center opacity-70">
                                                                     <Icon name="package" className="w-8 h-8 mb-2 text-gray-400" />
                                                                     <p className="text-tinta-suave text-corpo font-semibold">Oba! Você não tem tarefas pendentes.</p>
@@ -186,8 +185,6 @@ export default function DashboardTab() {
                                                             <span className="text-micro font-bold px-2 py-1 bg-realce text-tinta-corpo rounded border border-borda shadow-sm">
                                                                 {t.prazo ? t.prazo.split('-').reverse().join('/') : '-'}
                                                             </span>
-                                                        </td>
-                                                        <td className="px-4 py-3 text-right">
                                                         </td>
                                                     </tr>
                                                 ));
@@ -212,12 +209,11 @@ export default function DashboardTab() {
                                 </div>
 
                                 <div className="flex-1 min-h-0 overflow-auto custom-scrollbar">
-                                    <table className="w-full text-left border-collapse whitespace-nowrap">
+                                    <table className="w-full text-left border-collapse">
                                         <thead className="sticky top-0 z-10 bg-gray-50/50 dark:bg-darkHover/50 border-t-2 border-brand">
                                             <tr className="border-b border-borda-fraca text-micro font-bold text-tinta-suave tracking-wide uppercase">
                                                 <th className="px-4 py-3">Tarefa</th>
                                                 <th className="px-4 py-3">Prazo / Status</th>
-                                                <th className="px-4 py-3 text-right">Ação</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -227,7 +223,7 @@ export default function DashboardTab() {
                                                 if (minhasTarefasInt.length === 0) {
                                                     return (
                                                         <tr>
-                                                            <td colSpan="3" className="px-4 py-10 text-center">
+                                                            <td colSpan="2" className="px-4 py-10 text-center">
                                                                 <div className="flex flex-col items-center justify-center opacity-70">
                                                                     <Icon name="check-circle" className="w-8 h-8 mb-2 text-gray-400" />
                                                                     <p className="text-tinta-suave text-corpo font-semibold">Tudo limpo! Nenhuma tarefa interna pendente.</p>
@@ -252,8 +248,6 @@ export default function DashboardTab() {
                                                                     {t.status}
                                                                 </span>
                                                             </div>
-                                                        </td>
-                                                        <td className="px-4 py-3 text-right align-middle">
                                                         </td>
                                                     </tr>
                                                 ));
