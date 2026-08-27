@@ -150,9 +150,10 @@ export default function ContasAPagarPanel({ mostrarContasPagas, dataInicio, data
                                     conta.categoria === 'Manutenção' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' :
                                     conta.categoria === 'Terceirização' ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400' :
                                     conta.categoria === 'Material' ? 'bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400' :
+                                    conta.categoria === 'Impostos' ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400' :
                                     'bg-realce text-tinta-suave'
                                 }`}>
-                                    <Icon name={conta.categoria === 'Manutenção' ? 'wrench' : conta.categoria === 'Terceirização' ? 'package' : conta.categoria === 'Material' ? 'shopping-bag' : 'dollar-sign'} className="w-3 h-3" />
+                                    <Icon name={conta.categoria === 'Manutenção' ? 'wrench' : conta.categoria === 'Terceirização' ? 'package' : conta.categoria === 'Material' ? 'shopping-bag' : conta.categoria === 'Impostos' ? 'file-text' : 'dollar-sign'} className="w-3 h-3" />
                                     {conta.categoria || 'Despesa'}
                                 </span>
                             ),

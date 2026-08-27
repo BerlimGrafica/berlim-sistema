@@ -13,6 +13,9 @@ const CATEGORIAS_CONTA = [
     { value: 'Material', label: 'Material', icon: 'shopping-bag', corBorda: 'border-blue-500', corFundo: 'bg-blue-50 dark:bg-blue-900/20', corIcone: 'bg-blue-500', corTexto: 'text-blue-700 dark:text-blue-300' },
     { value: 'Manutenção', label: 'Manutenção', icon: 'wrench', corBorda: 'border-amber-500', corFundo: 'bg-amber-50 dark:bg-amber-900/20', corIcone: 'bg-amber-500', corTexto: 'text-amber-700 dark:text-amber-300' },
     { value: 'Terceirização', label: 'Terceirização', icon: 'package', corBorda: 'border-purple-500', corFundo: 'bg-purple-50 dark:bg-purple-900/20', corIcone: 'bg-purple-500', corTexto: 'text-purple-700 dark:text-purple-300' },
+    // Imposto não tem fornecedor: a conta é descrita à mão, como a Despesa.
+    // Quem decide isso é tipoFornecedorContaNecessario, logo abaixo.
+    { value: 'Impostos', label: 'Impostos', icon: 'file-text', corBorda: 'border-rose-500', corFundo: 'bg-rose-50 dark:bg-rose-900/20', corIcone: 'bg-rose-500', corTexto: 'text-rose-700 dark:text-rose-300' },
 ];
 
 export default function ContaModal() {
@@ -35,7 +38,10 @@ export default function ContaModal() {
                 <form onSubmit={salvarConta} className="p-6 flex flex-col gap-4">
                     <div className="flex flex-col gap-2">
                         <label className="text-corpo font-medium text-tinta-corpo">Categoria</label>
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                        {/* Três por linha com cinco categorias fecha em 3+2. Em quatro
+                            colunas a quinta ficaria sozinha, e em cinco cada botão teria
+                            ~85px — "Terceirização" não caberia numa linha. */}
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
                             {CATEGORIAS_CONTA.map(opt => {
                                 const selecionado = (novaConta.categoria || 'Despesa') === opt.value;
                                 return (
@@ -59,7 +65,11 @@ export default function ContaModal() {
                             })}
                         </div>
                     </div>
-                    {(!novaConta.categoria || novaConta.categoria === 'Despesa') ? (
+                    {/* O que decide entre descrever à mão e escolher um fornecedor é
+                        a categoria PRECISAR de fornecedor — não ela ser "Despesa".
+                        Escrito do outro jeito, qualquer categoria nova sem fornecedor
+                        (Impostos é a primeira) caía no seletor com a lista vazia. */}
+                    {!tipoFornecedorContaNecessario ? (
                         <div className="flex flex-col gap-1">
                             <label className="text-corpo font-medium text-tinta-corpo">Descrição</label>
                             <input required value={novaConta.descricao} onChange={e => setNovaConta({...novaConta, descricao: e.target.value})} className="w-full bg-elevado border border-borda-forte rounded px-3 py-2 text-corpo outline-none focus:border-brand dark:text-white transition" placeholder="Ex: Conta de Energia" />
