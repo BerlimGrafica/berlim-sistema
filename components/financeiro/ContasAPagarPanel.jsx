@@ -6,6 +6,7 @@ import { TabelaCartoes } from '@/components/ui/TabelaCartoes';
 import Icon from '@/components/Icon';
 import Tooltip from '@/components/Tooltip';
 import { formatarMoeda, formatarValorFinanceiro, formatarDataExibicao, centavosParaReais, obterDataAtual } from '@/lib/utils/formatters';
+import { categoriaConta } from '@/lib/utils/constants';
 
 export default function ContasAPagarPanel({ mostrarContasPagas, dataInicio, dataFim }) {
     const { abrirContextMenu, avisar } = useUi();
@@ -146,15 +147,9 @@ export default function ContasAPagarPanel({ mostrarContasPagas, dataInicio, data
                             rotuloCartao: 'Categoria',
                             tdClassName: 'px-6 py-4 text-corpo',
                             celula: conta => (
-                                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-mini font-semibold rounded-full whitespace-nowrap ${
-                                    conta.categoria === 'Manutenção' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' :
-                                    conta.categoria === 'Terceirização' ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400' :
-                                    conta.categoria === 'Material' ? 'bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400' :
-                                    conta.categoria === 'Impostos' ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400' :
-                                    'bg-realce text-tinta-suave'
-                                }`}>
-                                    <Icon name={conta.categoria === 'Manutenção' ? 'wrench' : conta.categoria === 'Terceirização' ? 'package' : conta.categoria === 'Material' ? 'shopping-bag' : conta.categoria === 'Impostos' ? 'file-text' : 'dollar-sign'} className="w-3 h-3" />
-                                    {conta.categoria || 'Despesa'}
+                                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-mini font-semibold rounded-full whitespace-nowrap ${categoriaConta(conta.categoria).chip}`}>
+                                    <Icon name={categoriaConta(conta.categoria).icone} className="w-3 h-3" />
+                                    {categoriaConta(conta.categoria).label}
                                 </span>
                             ),
                         },

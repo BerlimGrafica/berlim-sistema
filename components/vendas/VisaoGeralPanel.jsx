@@ -6,6 +6,7 @@ import Icon from '@/components/Icon';
 import Tooltip from '@/components/Tooltip';
 import { formatarValorFinanceiro, formatarDataExibicao, formatarMesAno, centavosParaReais, obterDataAtual, mascararCliente } from '@/lib/utils/formatters';
 import { BarRow } from '@/components/vendas/BarRow';
+import { CATEGORIAS_CONTA } from '@/lib/utils/constants';
 
 const SLIDES = ['Faturamento no tempo', 'Distribuição no período', 'Despesas e cobranças'];
 
@@ -71,7 +72,8 @@ function Barras({ itens, cores, vazio, rotuloDe = (i) => i.rotulo, corFixa }) {
 const CORES_LOCAL = ['bg-teal-500', 'bg-emerald-500', 'bg-cyan-500', 'bg-sky-500', 'bg-blue-500'];
 const CORES_FORMA = ['bg-amber-500', 'bg-yellow-500', 'bg-orange-500', 'bg-lime-500'];
 const CORES_INST = ['bg-emerald-500', 'bg-teal-500', 'bg-cyan-500', 'bg-sky-500'];
-const CORES_CATEGORIA = { 'Despesa': 'bg-gray-500', 'Manutenção': 'bg-purple-500', 'Terceirização': 'bg-indigo-500', 'Material': 'bg-blue-500' };
+// Mesma paleta do modal, da listagem e do cadastro — ver CATEGORIAS_CONTA.
+const CORES_CATEGORIA = Object.fromEntries(CATEGORIAS_CONTA.map(c => [c.value, c.ponto]));
 
 export default function VisaoGeralPanel({ metricas, rotulo }) {
     const [slide, setSlide] = useState(0);

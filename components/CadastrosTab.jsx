@@ -12,6 +12,7 @@ import { formatarValorFinanceiro, centavosParaReais } from '@/lib/utils/formatte
 import { SubAbas } from '@/components/ui/SubAbas';
 import { BarraAcoes } from '@/components/ui/BarraAcoes';
 import { TabelaCartoes } from '@/components/ui/TabelaCartoes';
+import { categoriaConta } from '@/lib/utils/constants';
 
 
 export default function CadastrosTab() {
@@ -312,7 +313,7 @@ export default function CadastrosTab() {
                                         papel: 'selo',
                                         titulo: 'Tipo',
                                         celula: f => (
-                                            <span className={`px-2 py-1 rounded text-mini font-bold ${f.tipo === 'Material' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' : f.tipo === 'Manutenção' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' : 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'}`}>
+                                            <span className={`px-2 py-1 rounded text-mini font-bold ${categoriaConta(f.tipo || 'Terceirização').chip}`}>
                                                 {f.tipo || 'Terceirização'}
                                             </span>
                                         ),

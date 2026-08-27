@@ -7,16 +7,8 @@ import { CustomDatePicker } from '@/components/ui/DatePicker';
 import { CustomSelect } from '@/components/ui/Dropdown';
 import { ToggleCard } from '@/components/ui/ToggleCard';
 import { useModal } from '@/components/modals/useModal';
+import { CATEGORIAS_CONTA } from '@/lib/utils/constants';
 
-const CATEGORIAS_CONTA = [
-    { value: 'Despesa', label: 'Despesa', icon: 'dollar-sign', corBorda: 'border-emerald-500', corFundo: 'bg-emerald-50 dark:bg-emerald-900/20', corIcone: 'bg-emerald-500', corTexto: 'text-emerald-700 dark:text-emerald-300' },
-    { value: 'Material', label: 'Material', icon: 'shopping-bag', corBorda: 'border-blue-500', corFundo: 'bg-blue-50 dark:bg-blue-900/20', corIcone: 'bg-blue-500', corTexto: 'text-blue-700 dark:text-blue-300' },
-    { value: 'Manutenção', label: 'Manutenção', icon: 'wrench', corBorda: 'border-amber-500', corFundo: 'bg-amber-50 dark:bg-amber-900/20', corIcone: 'bg-amber-500', corTexto: 'text-amber-700 dark:text-amber-300' },
-    { value: 'Terceirização', label: 'Terceirização', icon: 'package', corBorda: 'border-purple-500', corFundo: 'bg-purple-50 dark:bg-purple-900/20', corIcone: 'bg-purple-500', corTexto: 'text-purple-700 dark:text-purple-300' },
-    // Imposto não tem fornecedor: a conta é descrita à mão, como a Despesa.
-    // Quem decide isso é tipoFornecedorContaNecessario, logo abaixo.
-    { value: 'Impostos', label: 'Impostos', icon: 'file-text', corBorda: 'border-rose-500', corFundo: 'bg-rose-50 dark:bg-rose-900/20', corIcone: 'bg-rose-500', corTexto: 'text-rose-700 dark:text-rose-300' },
-];
 
 export default function ContaModal() {
     const { fornecedores } = useCadastros();
@@ -49,17 +41,17 @@ export default function ContaModal() {
                                         key={opt.value}
                                         type="button"
                                         onClick={() => setNovaConta({...novaConta, categoria: opt.value, fornecedor_id: null, descricao: ''})}
-                                        className={`group relative flex flex-col items-center justify-center gap-2 px-3 py-4 rounded-xl border-2 transition-all cursor-pointer ${selecionado ? `${opt.corBorda} ${opt.corFundo} shadow-sm` : 'border-borda bg-elevado hover:border-gray-300 dark:hover:border-darkHover hover:bg-gray-50 dark:hover:bg-darkHover/50'}`}
+                                        className={`group relative flex flex-col items-center justify-center gap-2 px-3 py-4 rounded-xl border-2 transition-all cursor-pointer ${selecionado ? `${opt.cartao.borda} ${opt.cartao.fundo} shadow-sm` : 'border-borda bg-elevado hover:border-gray-300 dark:hover:border-darkHover hover:bg-gray-50 dark:hover:bg-darkHover/50'}`}
                                     >
                                         {selecionado && (
-                                            <span className={`absolute top-1.5 right-1.5 flex items-center justify-center w-4 h-4 rounded-full text-white ${opt.corIcone}`}>
+                                            <span className={`absolute top-1.5 right-1.5 flex items-center justify-center w-4 h-4 rounded-full text-white ${opt.cartao.icone}`}>
                                                 <Icon name="check" className="w-2.5 h-2.5" />
                                             </span>
                                         )}
-                                        <div className={`flex items-center justify-center w-9 h-9 rounded-full transition-colors ${selecionado ? `${opt.corIcone} text-white` : 'bg-realce text-tinta-fraca group-hover:text-tinta-suave'}`}>
-                                            <Icon name={opt.icon} className="w-4 h-4" />
+                                        <div className={`flex items-center justify-center w-9 h-9 rounded-full transition-colors ${selecionado ? `${opt.cartao.icone} text-white` : 'bg-realce text-tinta-fraca group-hover:text-tinta-suave'}`}>
+                                            <Icon name={opt.icone} className="w-4 h-4" />
                                         </div>
-                                        <span className={`text-compacto font-semibold text-center leading-tight ${selecionado ? opt.corTexto : 'text-tinta-suave'}`}>{opt.label}</span>
+                                        <span className={`text-compacto font-semibold text-center leading-tight ${selecionado ? opt.cartao.texto : 'text-tinta-suave'}`}>{opt.label}</span>
                                     </button>
                                 );
                             })}
