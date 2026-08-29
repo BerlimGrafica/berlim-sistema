@@ -249,14 +249,14 @@ export default function OSModal() {
                                         </ul>
                                     )}
                                 </div>
-                                {/* Acompanha a altura do campo em vez de fixá-la: o input é
-                                    padding em cima de --fonte-corpo, que vai de 13px a 15px
-                                    no mobile — qualquer número cravado aqui erra num dos
-                                    dois. self-stretch toma a altura da linha flex (a do
-                                    input) e aspect-square deriva a largura dela; o px-2.5
-                                    fica de piso, caso o aspect-ratio não se aplique. */}
+                                {/* self-stretch iguala a altura à do input, que é padding em
+                                    cima de --fonte-corpo (13px, 15px no mobile) — por isso
+                                    não dá pra cravar um número aqui. A largura fica fixa de
+                                    propósito: com aspect-square o item ganha altura definida
+                                    pela razão e o stretch deixa de valer, que era exatamente
+                                    o descompasso a corrigir. */}
                                 <Tooltip label="Novo Cliente">
-                                    <button type="button" onClick={() => { setNovoCliente({ id: null, nome: '', telefone: '', email: '', observacoes: '', cliente_problema: false }); setModalClienteAberto(true); }} disabled={isModalTrancado} aria-label="Novo Cliente" className="shrink-0 self-stretch aspect-square px-2.5 flex items-center justify-center bg-elevado border border-borda-forte rounded hover:bg-darkHover transition disabled:opacity-50">
+                                    <button type="button" onClick={() => { setNovoCliente({ id: null, nome: '', telefone: '', email: '', observacoes: '', cliente_problema: false }); setModalClienteAberto(true); }} disabled={isModalTrancado} aria-label="Novo Cliente" className="shrink-0 self-stretch w-[38px] flex items-center justify-center bg-elevado border border-borda-forte rounded hover:bg-darkHover transition disabled:opacity-50">
                                         <Icon name="plus" className="w-4 h-4 text-brand" />
                                     </button>
                                 </Tooltip>
@@ -350,7 +350,7 @@ export default function OSModal() {
                                         </div>
                                         {isAdmin && (
                                             <Tooltip label="Novo Produto">
-                                                <button type="button" onClick={() => { setNovoProduto({ id: null, nome: '', texto_padrao: '', preco_base: '' }); setModalProdutoAberto(true); }} disabled={isModalTrancado} aria-label="Novo Produto" className="shrink-0 self-stretch aspect-square px-2.5 flex items-center justify-center bg-elevado border border-borda-forte rounded hover:bg-darkHover transition disabled:opacity-50">
+                                                <button type="button" onClick={() => { setNovoProduto({ id: null, nome: '', texto_padrao: '', preco_base: '' }); setModalProdutoAberto(true); }} disabled={isModalTrancado} aria-label="Novo Produto" className="shrink-0 self-stretch w-[38px] flex items-center justify-center bg-elevado border border-borda-forte rounded hover:bg-darkHover transition disabled:opacity-50">
                                                     <Icon name="plus" className="w-4 h-4 text-brand" />
                                                 </button>
                                             </Tooltip>
