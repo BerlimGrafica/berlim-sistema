@@ -58,7 +58,7 @@ export default function OrcamentoFormalizadoModal() {
                                     )}
                                 </div>
                                 <Tooltip label="Novo Cliente">
-                                    <button type="button" onClick={() => { setNovoCliente({ id: null, nome: '', telefone: '', email: '', observacoes: '', cliente_problema: false }); setModalClienteAberto(true); }} aria-label="Novo Cliente" className="shrink-0 w-[38px] h-[38px] flex items-center justify-center bg-elevado border border-borda-forte rounded hover:bg-darkHover transition">
+                                    <button type="button" onClick={() => { setNovoCliente({ id: null, nome: '', telefone: '', email: '', observacoes: '', cliente_problema: false }); setModalClienteAberto(true); }} aria-label="Novo Cliente" className="shrink-0 self-stretch aspect-square px-2.5 flex items-center justify-center bg-elevado border border-borda-forte rounded hover:bg-darkHover transition">
                                         <Icon name="plus" className="w-4 h-4 text-brand" />
                                     </button>
                                 </Tooltip>
@@ -147,7 +147,7 @@ export default function OrcamentoFormalizadoModal() {
                                         </div>
                                         {isAdmin && (
                                             <Tooltip label="Novo Produto">
-                                                <button type="button" onClick={() => { setNovoProduto({ id: null, nome: '', texto_padrao: '', preco_base: '' }); setModalProdutoAberto(true); }} aria-label="Novo Produto" className="shrink-0 w-[38px] h-[38px] flex items-center justify-center bg-elevado border border-borda-forte rounded hover:bg-darkHover transition">
+                                                <button type="button" onClick={() => { setNovoProduto({ id: null, nome: '', texto_padrao: '', preco_base: '' }); setModalProdutoAberto(true); }} aria-label="Novo Produto" className="shrink-0 self-stretch aspect-square px-2.5 flex items-center justify-center bg-elevado border border-borda-forte rounded hover:bg-darkHover transition">
                                                     <Icon name="plus" className="w-4 h-4 text-brand" />
                                                 </button>
                                             </Tooltip>

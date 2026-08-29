@@ -174,69 +174,72 @@ export default function OSModal() {
                 <form onSubmit={(e) => salvarComAviso(e, false)} className="p-6 sm:p-8 overflow-y-auto custom-scrollbar flex flex-col gap-7">
                     {isModalTrancado && <div className="p-3 bg-red-950/20 border border-red-900/50 rounded text-mini text-red-400">Nota liquidada. Peça para um Admin ou Financeiro destravar para edições.</div>}
 
-                    <div className="flex flex-col gap-4 pb-6 border-b border-borda">
-                        <div className="flex items-center gap-2">
-                            <span className="w-1 h-3.5 bg-brand rounded-full"></span>
-                            <h4 className="text-micro font-bold uppercase tracking-wider text-tinta-suave">Dados da O.S.</h4>
+                    <div className="flex flex-col gap-3 pb-5 border-b border-borda">
+                        <div className="flex items-center justify-between gap-3">
+                            <span className="flex items-center gap-2">
+                                <span className="w-1 h-3.5 bg-brand rounded-full"></span>
+                                <h4 className="text-micro font-bold uppercase tracking-wider text-tinta-suave">Dados da O.S.</h4>
+                            </span>
+                            {/* Entrega saiu do formulário e virou etiqueta aqui. Era um
+                                sinalizador de sim ou não ocupando uma célula inteira da
+                                grade, com rótulo próprio ("Tags Especiais") só para
+                                apresentar um botão. Como etiqueta ela continua sempre
+                                visível e legível pelo estado — preenchida quando ligada —
+                                sem disputar espaço com os campos que se preenchem. */}
+                            <button
+                                type="button"
+                                onClick={() => setNovoPedido({...novoPedido, entrega: !novoPedido.entrega})}
+                                disabled={isModalTrancado}
+                                aria-pressed={!!novoPedido.entrega}
+                                className={`shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-micro font-semibold uppercase tracking-wider transition disabled:opacity-50 ${novoPedido.entrega ? 'bg-orange-500 border-orange-500 text-white hover:bg-orange-600' : 'bg-transparent border-borda-forte text-tinta-suave hover:border-orange-400 hover:text-orange-500'}`}
+                            >
+                                <Icon name="package" className="w-3 h-3" /> Entrega
+                            </button>
                         </div>
                         {/* Três campos numa linha só pedem largura de verdade. Entre 640 e
                             1023px cada coluna fica com ~200px, e basta o texto crescer um
                             pouco — a fonte maior do celular, ou o ajuste de tamanho de fonte
                             do Android — para o rótulo quebrar em duas linhas e desalinhar os
                             campos vizinhos. Duas colunas nessa faixa, três só no desktop. */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-3">
                             <div className="min-w-0">
-                                <label className="block text-corpo font-medium mb-1.5 text-tinta-corpo truncate">Data da Venda</label>
-                                <CustomDatePicker value={novoPedido.data_pedido} onChange={val => setNovoPedido({...novoPedido, data_pedido: val})} disabled={isModalTrancado} className="w-full bg-elevado border border-borda-forte rounded px-3 py-2 text-corpo outline-none transition" />
+                                <label className="block text-micro font-semibold uppercase tracking-wider mb-1 text-tinta-suave truncate">Data da Venda</label>
+                                <CustomDatePicker value={novoPedido.data_pedido} onChange={val => setNovoPedido({...novoPedido, data_pedido: val})} disabled={isModalTrancado} className="w-full bg-elevado border border-borda-forte rounded px-3 py-1.5 text-corpo outline-none transition" />
                             </div>
                             <div className="min-w-0">
-                                <label className="block text-corpo font-medium mb-1.5 text-tinta-corpo truncate">Prazo</label>
-                                <CustomDatePicker value={novoPedido.prazo} onChange={val => setNovoPedido({...novoPedido, prazo: val})} disabled={isModalTrancado} placeholder="Data final..." className="w-full bg-elevado border border-borda-forte rounded px-3 py-2 text-corpo outline-none transition" />
+                                <label className="block text-micro font-semibold uppercase tracking-wider mb-1 text-tinta-suave truncate">Prazo</label>
+                                <CustomDatePicker value={novoPedido.prazo} onChange={val => setNovoPedido({...novoPedido, prazo: val})} disabled={isModalTrancado} placeholder="Data final..." className="w-full bg-elevado border border-borda-forte rounded px-3 py-1.5 text-corpo outline-none transition" />
                             </div>
                             <div className="min-w-0">
-                                <label className="block text-corpo font-medium mb-1.5 text-tinta-corpo truncate">Status Inicial</label>
-                                <CustomSelect
-                                    value={novoPedido.status}
-                                    onChange={(val) => setNovoPedido({...novoPedido, status: val})}
-                                    disabled={isModalTrancado}
-                                    className="w-full bg-elevado border border-borda-forte rounded px-3 py-2 text-corpo outline-none focus:border-brand transition dark:text-white font-semibold cursor-pointer"
-                                    options={opcoesStatusPermitidas.map(s => ({ value: s, label: s }))}
-                                />
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-corpo font-medium mb-1.5 text-tinta-corpo">Resp.</label>
+                                <label className="block text-micro font-semibold uppercase tracking-wider mb-1 text-tinta-suave">Resp.</label>
                                 <MultiSelectDropdown
                                     value={novoPedido.responsavel}
                                     options={nomesResponsaveis}
                                     onChange={val => setNovoPedido({...novoPedido, responsavel: val})}
                                     disabled={isModalTrancado}
-                                    className="w-full bg-elevado border border-borda-forte rounded px-3 py-2 text-corpo outline-none focus:border-brand transition dark:text-[#EDEDED]"
+                                    className="w-full bg-elevado border border-borda-forte rounded px-3 py-1.5 text-corpo outline-none focus:border-brand transition dark:text-[#EDEDED]"
                                 />
                             </div>
-                            <div>
-                                <label className="block text-corpo font-medium mb-1.5 text-tinta-corpo">Tags Especiais</label>
-                                {/* Sem o mt-1: o rótulo já reserva o espaço com mb-1.5, e a
-                                    margem extra descia o botão em relação ao campo
-                                    "Resp." ao lado. Altura e tamanho de texto seguem o
-                                    padrão dos campos do modal (py-2 / text-corpo) para os
-                                    dois lados da linha fecharem na mesma base. */}
-                                <div className="flex items-center gap-2">
-                                    <button type="button" onClick={() => setNovoPedido({...novoPedido, entrega: !novoPedido.entrega})} disabled={isModalTrancado} className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded text-corpo font-semibold transition disabled:opacity-50 ${novoPedido.entrega ? 'text-white bg-orange-500 dark:bg-orange-600 hover:bg-orange-600 dark:hover:bg-orange-700' : 'bg-realce text-tinta-suave hover:bg-gray-200 dark:hover:bg-darkHover'}`}><Icon name="package" className="w-4 h-4"/> Entrega</button>
-                                </div>
+                            <div className="min-w-0">
+                                <label className="block text-micro font-semibold uppercase tracking-wider mb-1 text-tinta-suave truncate">Status Inicial</label>
+                                <CustomSelect
+                                    value={novoPedido.status}
+                                    onChange={(val) => setNovoPedido({...novoPedido, status: val})}
+                                    disabled={isModalTrancado}
+                                    className="w-full bg-elevado border border-borda-forte rounded px-3 py-1.5 text-corpo outline-none focus:border-brand transition dark:text-white font-semibold cursor-pointer"
+                                    options={opcoesStatusPermitidas.map(s => ({ value: s, label: s }))}
+                                />
                             </div>
                         </div>
 
                         <div>
-                            <label className="block text-corpo font-medium mb-1.5 text-tinta-corpo">Cliente / Empresa</label>
+                            <label className="block text-micro font-semibold uppercase tracking-wider mb-1 text-tinta-suave">Cliente / Empresa</label>
                             <div className="flex gap-2">
                                 <div className="relative flex-1">
                                     <input required type="text" autoFocus={!pedidoEmEdicao} value={mascararCliente(buscaCliente, isDemo)} disabled={isModalTrancado}
                                         onChange={e => { setBuscaCliente(e.target.value); setClienteSelecionadoInfo(null); setNovoPedido({...novoPedido, cliente: e.target.value, cliente_id: null}); setClienteDropdownAberto(true); }}
                                         onFocus={() => { if(!isModalTrancado) setClienteDropdownAberto(true); }} onBlur={() => setTimeout(() => setClienteDropdownAberto(false), 200)}
-                                        className="w-full bg-elevado border border-borda-forte rounded px-3 py-2 text-corpo outline-none focus:border-brand transition dark:text-[#EDEDED] disabled:opacity-50" placeholder="Buscar cliente..." autoComplete="off" />
+                                        className="w-full bg-elevado border border-borda-forte rounded px-3 py-1.5 text-corpo outline-none focus:border-brand transition dark:text-[#EDEDED] disabled:opacity-50" placeholder="Buscar cliente..." autoComplete="off" />
                                     <Icon name="chevron-down" className="absolute right-3 top-2.5 w-4 h-4 text-gray-400 pointer-events-none" />
                                     {clienteDropdownAberto && clientesFiltrados.length > 0 && (
                                         <ul className="absolute z-[60] w-full mt-1 max-h-48 overflow-y-auto bg-superficie border border-borda rounded shadow-xl custom-scrollbar">
@@ -246,8 +249,14 @@ export default function OSModal() {
                                         </ul>
                                     )}
                                 </div>
+                                {/* Acompanha a altura do campo em vez de fixá-la: o input é
+                                    padding em cima de --fonte-corpo, que vai de 13px a 15px
+                                    no mobile — qualquer número cravado aqui erra num dos
+                                    dois. self-stretch toma a altura da linha flex (a do
+                                    input) e aspect-square deriva a largura dela; o px-2.5
+                                    fica de piso, caso o aspect-ratio não se aplique. */}
                                 <Tooltip label="Novo Cliente">
-                                    <button type="button" onClick={() => { setNovoCliente({ id: null, nome: '', telefone: '', email: '', observacoes: '', cliente_problema: false }); setModalClienteAberto(true); }} disabled={isModalTrancado} aria-label="Novo Cliente" className="shrink-0 w-[38px] h-[38px] flex items-center justify-center bg-elevado border border-borda-forte rounded hover:bg-darkHover transition disabled:opacity-50">
+                                    <button type="button" onClick={() => { setNovoCliente({ id: null, nome: '', telefone: '', email: '', observacoes: '', cliente_problema: false }); setModalClienteAberto(true); }} disabled={isModalTrancado} aria-label="Novo Cliente" className="shrink-0 self-stretch aspect-square px-2.5 flex items-center justify-center bg-elevado border border-borda-forte rounded hover:bg-darkHover transition disabled:opacity-50">
                                         <Icon name="plus" className="w-4 h-4 text-brand" />
                                     </button>
                                 </Tooltip>
@@ -341,7 +350,7 @@ export default function OSModal() {
                                         </div>
                                         {isAdmin && (
                                             <Tooltip label="Novo Produto">
-                                                <button type="button" onClick={() => { setNovoProduto({ id: null, nome: '', texto_padrao: '', preco_base: '' }); setModalProdutoAberto(true); }} disabled={isModalTrancado} aria-label="Novo Produto" className="shrink-0 w-[38px] h-[38px] flex items-center justify-center bg-elevado border border-borda-forte rounded hover:bg-darkHover transition disabled:opacity-50">
+                                                <button type="button" onClick={() => { setNovoProduto({ id: null, nome: '', texto_padrao: '', preco_base: '' }); setModalProdutoAberto(true); }} disabled={isModalTrancado} aria-label="Novo Produto" className="shrink-0 self-stretch aspect-square px-2.5 flex items-center justify-center bg-elevado border border-borda-forte rounded hover:bg-darkHover transition disabled:opacity-50">
                                                     <Icon name="plus" className="w-4 h-4 text-brand" />
                                                 </button>
                                             </Tooltip>

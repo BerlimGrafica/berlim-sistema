@@ -184,7 +184,7 @@ export const AppProvider = ({ children }) => {
         pendingConfirm, confirmar, resolverConfirm,
         modalAlertasAberto, setModalAlertasAberto,
         ehUsuario,
-        notificarSeFaturamentoEmAnalise, notificarSeTarefaMinha, notificarSeAtribuidoAMim, notificarSeNotaFiscalPreenchida,
+        notificarSeFaturamentoEmAnalise, notificarSeTarefaMinha, notificarSeNotaFiscalPreenchida,
         notificarSeLinkPagamentoNovo, notificarSeContaPagarUrgente,
         alertasFuturaDisparados, alertasBoletoDisparados, alertasRetiradaDisparados,
     } = useAlertas(usuario);
@@ -320,18 +320,6 @@ export const AppProvider = ({ children }) => {
         const tratadores = {
             pedidos: (payload) => {
                 if (payload.eventType === 'UPDATE') {
-                    const oldResponsavel = payload.old?.responsavel || '';
-                    const newResponsavel = payload.new?.responsavel || '';
-                    const oldList = oldResponsavel.split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
-                    const newList = newResponsavel.split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
-                    const nomeUsuario = (usuario.nome || '').trim().toLowerCase();
-
-                    if (!oldList.includes(nomeUsuario) && newList.includes(nomeUsuario)) {
-                        setAlertasNaoLidos(prev => {
-                            if (prev.some(a => a.os_id === payload.new.id && a.tipo === 'atribuicao')) return prev;
-                            return [...prev, { id: Date.now(), msg: `Você foi designado para a O.S. #${payload.new.id}`, os_id: payload.new.id, tipo: 'atribuicao' }];
-                        });
-                    }
                     // Alerta: Avisar Cliente (apenas Atendimento)
                     if (payload.new.status === 'Avisar Cliente' && payload.old?.status !== 'Avisar Cliente' && usuario?.nivel === 'Atendimento') {
                         setAlertasNaoLidos(prev => [...prev, { id: Date.now() + 5, msg: `Avisar cliente: ${payload.new.cliente} (O.S. #${payload.new.id})`, os_id: payload.new.id, tipo: 'avisar_cliente' }]);
@@ -345,11 +333,6 @@ export const AppProvider = ({ children }) => {
                         alertasFuturaDisparados.current.delete(payload.new.id);
                         const ehDaFutura = (a) => a.os_id === payload.new.id && a.tipo === 'alerta_futura';
                         setAlertasNaoLidos(prev => (prev.some(ehDaFutura) ? prev.filter(a => !ehDaFutura(a)) : prev));
-                    }
-                } else if (payload.eventType === 'INSERT') {
-                    const newList = (payload.new?.responsavel || '').split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
-                    if (newList.includes((usuario.nome || '').trim().toLowerCase())) {
-                        setAlertasNaoLidos(prev => [...prev, { id: Date.now(), msg: `Nova O.S. #${payload.new.id} atribuída a você`, os_id: payload.new.id, tipo: 'atribuicao' }]);
                     }
                 }
 
@@ -574,7 +557,6 @@ export const AppProvider = ({ children }) => {
             }
 
             setPedidos(todosPedidos);
-            todosPedidos.forEach(notificarSeAtribuidoAMim);
 
             if (usuario?.nivel === 'Administrador') {
                 // Fora as encerradas, ficam de fora também as que já voltaram da

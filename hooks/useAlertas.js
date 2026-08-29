@@ -1,6 +1,5 @@
 "use client";
 import { useState, useEffect, useRef } from 'react';
-import { STATUSES_FINALIZADOS } from '@/lib/utils/constants';
 
 // Alertas/notificações in-app: estado + dedup por tipo + funções "notificarSeX"
 // chamadas tanto por carregarDados() quanto pelos efeitos de realtime em
@@ -35,7 +34,6 @@ export function useAlertas(usuario) {
     const alertasRetiradaDisparados = useRef(new Set());
     const alertasFaturamentoAnaliseDisparados = useRef(new Set());
     const alertasTarefaDisparadas = useRef(new Set());
-    const alertasAtribuicaoDisparadas = useRef(new Set());
     const alertasNotaFiscalDisparadas = useRef(new Set());
     const alertasLinkPagamentoDisparados = useRef(new Set());
     const [modalAlertasAberto, setModalAlertasAberto] = useState(false);
@@ -46,7 +44,11 @@ export function useAlertas(usuario) {
         try {
             const salvas = localStorage.getItem('notificacoes_' + usuario.id);
             if (salvas) {
-                const lista = JSON.parse(salvas);
+                // A designação de O.S. deixou de ser notificada (a tabela de
+                // produção já mostra o responsável). Descarta as que ficaram
+                // gravadas antes disso, senão elas sobrevivem indefinidamente
+                // no sino de quem já as tinha.
+                const lista = JSON.parse(salvas).filter(a => a.tipo !== 'atribuicao');
                 // Marca como "já vistos" antes de popular o estado — são notificações
                 // antigas (de antes deste F5), não devem virar toast de novo.
                 lista.forEach(a => idsConhecidosRef.current.add(a.id));
@@ -96,30 +98,6 @@ export function useAlertas(usuario) {
             }
         } else {
             alertasTarefaDisparadas.current.delete(tarefa.id);
-        }
-    }
-
-    // Reconciliação da atribuição de O.S.: o alerta "Você foi designado" (disparado
-    // no instante exato do evento Realtime, em AppContext.jsx) só existe pra quem
-    // estava com o app aberto naquele momento — se a sessão perdeu esse instante
-    // (aba fechada, F5, login depois), o alerta nunca mais aparece. Essa checagem,
-    // rodada a cada carregarDados(), cobre esse buraco.
-    function notificarSeAtribuidoAMim(pedido) {
-        if (!pedido || !usuario) return;
-        const nomeUsuario = (usuario.nome || '').trim().toLowerCase();
-        const responsaveis = (pedido.responsavel || '').split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
-        const souResponsavel = responsaveis.includes(nomeUsuario);
-
-        if (souResponsavel && !STATUSES_FINALIZADOS.includes(pedido.status)) {
-            if (!alertasAtribuicaoDisparadas.current.has(pedido.id)) {
-                alertasAtribuicaoDisparadas.current.add(pedido.id);
-                setAlertasNaoLidos(prev => {
-                    if (prev.some(a => a.os_id === pedido.id && a.tipo === 'atribuicao')) return prev;
-                    return [...prev, { id: Date.now() + Math.random(), msg: `Você está designado para a O.S. #${pedido.id}`, os_id: pedido.id, tipo: 'atribuicao' }];
-                });
-            }
-        } else {
-            alertasAtribuicaoDisparadas.current.delete(pedido.id);
         }
     }
 
@@ -187,7 +165,6 @@ export function useAlertas(usuario) {
         ehUsuario,
         notificarSeFaturamentoEmAnalise,
         notificarSeTarefaMinha,
-        notificarSeAtribuidoAMim,
         notificarSeNotaFiscalPreenchida,
         notificarSeLinkPagamentoNovo,
         notificarSeContaPagarUrgente,
