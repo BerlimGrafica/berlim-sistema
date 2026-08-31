@@ -15,6 +15,7 @@ import { CustomSelect, MultiSelectDropdown } from '@/components/ui/Dropdown';
 import { ChipNome } from '@/components/ui/ChipNome';
 import { BandeiraIcon } from '@/components/ui/BandeiraIcon';
 import { useModal } from '@/components/modals/useModal';
+import { obterCorFundoStatus } from '@/lib/utils/constants';
 
 const OPCOES_BANDEIRA = ['Visa', 'MasterCard', 'Elo', 'American Express', 'HiperCard', 'Maestro', 'RedeShop'].map(b => ({ value: b, label: b, icon: <BandeiraIcon nome={b} /> }));
 
@@ -222,12 +223,20 @@ export default function OSModal() {
                             </div>
                             <div className="min-w-0">
                                 <label className="block text-micro font-semibold uppercase tracking-wider mb-1 text-tinta-suave truncate">Status Inicial</label>
+                                {/* Mesma leitura do select de Responsável: um ponto da cor
+                                    do status antes do nome, na lista e no campo fechado. A
+                                    paleta é a que a aba Produção já usa nos cabeçalhos de
+                                    grupo, então a cor vista aqui é a mesma vista lá. */}
                                 <CustomSelect
                                     value={novoPedido.status}
                                     onChange={(val) => setNovoPedido({...novoPedido, status: val})}
                                     disabled={isModalTrancado}
                                     className="w-full bg-elevado border border-borda-forte rounded px-3 py-1.5 text-corpo outline-none focus:border-brand transition dark:text-white font-semibold cursor-pointer"
-                                    options={opcoesStatusPermitidas.map(s => ({ value: s, label: s }))}
+                                    options={opcoesStatusPermitidas.map(s => ({
+                                        value: s,
+                                        label: s,
+                                        icon: <span className={`w-2 h-2 rounded-full shrink-0 ${obterCorFundoStatus(s)}`}></span>,
+                                    }))}
                                 />
                             </div>
                         </div>

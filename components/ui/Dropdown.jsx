@@ -9,7 +9,7 @@ import { ChipNome } from '@/components/ui/ChipNome';
 // ==== COMPONENTE DE DROPDOWN CUSTOMIZADO ====
 export function InlineDropdown({ value, options, onChange, className, hasIndefinido = false }) {
     const [isOpen, setIsOpen] = useState(false);
-    const [openUpwards, setOpenUpwards] = useState(false);
+    const [popoverStyle, setPopoverStyle] = useState({});
     const containerRef = useRef(null);
     const getTextColor = (val) => obterCorStatus(val);
 
@@ -17,7 +17,20 @@ export function InlineDropdown({ value, options, onChange, className, hasIndefin
         if (!isOpen && containerRef.current) {
             const rect = containerRef.current.getBoundingClientRect();
             // Calcula se há espaço para baixo. Se não, abre para cima
-            setOpenUpwards(window.innerHeight - rect.bottom < 250);
+            const abrirParaCima = window.innerHeight - rect.bottom < 250;
+            // Posição fixa medida a partir do campo e renderizada via portal: a
+            // lista vive dentro de célula de tabela, e o invólucro da tabela é
+            // overflow-x-auto — que recorta o eixo vertical junto. Com várias
+            // linhas o recorte não aparecia, porque a lista cabia na altura que
+            // já existia; com uma linha só, o menu abria escondido.
+            setPopoverStyle({
+                position: 'fixed',
+                left: rect.left,
+                width: Math.max(rect.width, 160),
+                ...(abrirParaCima
+                    ? { bottom: window.innerHeight - rect.top + 4 }
+                    : { top: rect.bottom + 4 }),
+            });
         }
         setIsOpen(!isOpen);
     };
@@ -33,10 +46,10 @@ export function InlineDropdown({ value, options, onChange, className, hasIndefin
                 </div>
                 <Icon name="chevron-down" className={`w-3 h-3 text-gray-400 shrink-0 ml-1 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
             </div>
-            {isOpen && (
+            {isOpen && typeof document !== 'undefined' && createPortal(
                 <>
-                    <div className="fixed inset-0 z-[55]" onClick={(e) => { e.stopPropagation(); setIsOpen(false); }}></div>
-                    <ul className={`absolute left-0 z-[60] w-full min-w-[160px] max-h-48 overflow-y-auto bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded shadow-xl custom-scrollbar text-mini ${openUpwards ? 'bottom-full mb-1' : 'top-full mt-1'}`}>
+                    <div className="fixed inset-0 z-[90]" onClick={(e) => { e.stopPropagation(); setIsOpen(false); }}></div>
+                    <ul style={popoverStyle} className="z-[95] max-h-48 overflow-y-auto bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded shadow-xl custom-scrollbar text-mini">
                         {hasIndefinido && (
                             <li
                                 onClick={(e) => { e.stopPropagation(); onChange(''); setIsOpen(false); }}
@@ -56,7 +69,8 @@ export function InlineDropdown({ value, options, onChange, className, hasIndefin
                             </li>
                         ))}
                     </ul>
-                </>
+                </>,
+                document.body
             )}
         </div>
     );
@@ -137,7 +151,7 @@ export function CustomSelect({ value, options, onChange, className, placeholder 
 // ==== COMPONENTE DE DROPDOWN MULTI-SELECT ====
 export function MultiSelectDropdown({ value, options, onChange, className, disabled, placeholder = "Indefinido" }) {
     const [isOpen, setIsOpen] = useState(false);
-    const [openUpwards, setOpenUpwards] = useState(false);
+    const [popoverStyle, setPopoverStyle] = useState({});
     const containerRef = useRef(null);
     const selectedArr = value ? value.split(',').map(s => s.trim()).filter(Boolean) : [];
 
@@ -157,7 +171,17 @@ export function MultiSelectDropdown({ value, options, onChange, className, disab
         if (!isOpen && containerRef.current) {
             const rect = containerRef.current.getBoundingClientRect();
             // Calcula o espaço. Se faltar espaço em baixo, abre o pop-up para cima.
-            setOpenUpwards(window.innerHeight - rect.bottom < 250);
+            const abrirParaCima = window.innerHeight - rect.bottom < 250;
+            // Mesma razão do InlineDropdown acima: em célula de tabela a lista
+            // era recortada pelo overflow do invólucro. Portal + posição fixa.
+            setPopoverStyle({
+                position: 'fixed',
+                left: rect.left,
+                width: Math.max(rect.width, 160),
+                ...(abrirParaCima
+                    ? { bottom: window.innerHeight - rect.top + 4 }
+                    : { top: rect.bottom + 4 }),
+            });
         }
         setIsOpen(!isOpen);
     };
@@ -177,10 +201,10 @@ export function MultiSelectDropdown({ value, options, onChange, className, disab
                 </div>
                 <Icon name="chevron-down" className={`w-3 h-3 text-gray-400 shrink-0 ml-1 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
             </div>
-            {isOpen && (
+            {isOpen && typeof document !== 'undefined' && createPortal(
                 <>
-                    <div className="fixed inset-0 z-[55]" onClick={(e) => { e.stopPropagation(); setIsOpen(false); }}></div>
-                    <ul className={`absolute left-0 z-[60] w-full min-w-[160px] max-h-48 overflow-y-auto bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded shadow-xl custom-scrollbar text-mini ${openUpwards ? 'bottom-full mb-1' : 'top-full mt-1'}`}>
+                    <div className="fixed inset-0 z-[90]" onClick={(e) => { e.stopPropagation(); setIsOpen(false); }}></div>
+                    <ul style={popoverStyle} className="z-[95] max-h-48 overflow-y-auto bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded shadow-xl custom-scrollbar text-mini">
                         {options.map(opt => {
                             const isSelected = selectedArr.includes(opt);
                             return (
@@ -195,7 +219,8 @@ export function MultiSelectDropdown({ value, options, onChange, className, disab
                             );
                         })}
                     </ul>
-                </>
+                </>,
+                document.body
             )}
         </div>
     );
