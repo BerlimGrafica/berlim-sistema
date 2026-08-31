@@ -10,15 +10,13 @@ import ContasAReceberPanel from '@/components/financeiro/ContasAReceberPanel';
 import BoletosPanel from '@/components/financeiro/BoletosPanel';
 import EmpresasAprovadasPanel from '@/components/financeiro/EmpresasAprovadasPanel';
 import NotasFiscaisPanel from '@/components/financeiro/NotasFiscaisPanel';
-import { useState } from 'react';
 import { SubAbas } from '@/components/ui/SubAbas';
 import { BarraAcoes } from '@/components/ui/BarraAcoes';
 
 export default function FinanceiroTab() {
     const { usuario } = useSessao();
     const { notasFiscais, filtroNotas, buscaNotaFiscal, setBuscaNotaFiscal, setPaginaNotasFiscais, setFiltroNotas } = useNotasFiscais();
-    const { setAbaFinanceiro, abaFinanceiro, dataFiltroContasPagarInicio, setDataFiltroContasPagarInicio, dataFiltroContasPagarFim, setDataFiltroContasPagarFim, dataFiltroContasReceberInicio, setDataFiltroContasReceberInicio, dataFiltroContasReceberFim, setDataFiltroContasReceberFim, dataFiltroBoletosInicio, setDataFiltroBoletosInicio, dataFiltroBoletosFim, setDataFiltroBoletosFim, setNovaConta, setModalContaAberto, setModalEmpresaFaturamentoAberto } = useFinanceiro();
-    const [mostrarContasPagas, setMostrarContasPagas] = useState(false);
+    const { setAbaFinanceiro, abaFinanceiro, mesContasPagar, setMesContasPagar, dataFiltroContasReceberInicio, setDataFiltroContasReceberInicio, dataFiltroContasReceberFim, setDataFiltroContasReceberFim, dataFiltroBoletosInicio, setDataFiltroBoletosInicio, dataFiltroBoletosFim, setDataFiltroBoletosFim, setNovaConta, setModalContaAberto, setModalEmpresaFaturamentoAberto } = useFinanceiro();
 
     return (
         <>
@@ -61,13 +59,8 @@ export default function FinanceiroTab() {
                             <div className="hidden lg:flex flex-wrap items-end gap-3 w-full lg:w-auto">
                                 {abaFinanceiro === 'contas_pagar' && (
                                     <>
-                                        <div className="flex flex-col w-60">
-                                            <span className="text-micro font-semibold text-tinta-suave uppercase mb-1">Período:</span>
-                                            <CustomDateRangePicker startValue={dataFiltroContasPagarInicio} endValue={dataFiltroContasPagarFim} onChangeStart={setDataFiltroContasPagarInicio} onChangeEnd={setDataFiltroContasPagarFim} placeholder="Todo o período" className="bg-superficie border border-borda rounded-md px-3 py-2 text-corpo outline-none hover:border-brand transition" />
-                                        </div>
-                                        <button onClick={() => setMostrarContasPagas(!mostrarContasPagas)} className={`h-[38px] px-4 text-corpo rounded-md font-semibold border transition flex items-center justify-center ${mostrarContasPagas ? 'bg-realce border-borda text-tinta-corpo' : 'bg-superficie border-borda text-tinta-suave hover:bg-gray-50'}`}>
-                                            {mostrarContasPagas ? 'Ocultar Pagas' : 'Mostrar Histórico'}
-                                        </button>
+                                        {/* O período saiu daqui: virou o navegador de mês no topo
+                                            do painel, junto do resumo que ele governa. */}
                                         <button onClick={() => { setNovaConta({ id: null, descricao: '', valor: '', vencimento: '', status: 'Pendente', recorrente: false, recorrente_total_parcelas: null, recorrente_parcela_atual: 1, categoria: 'Despesa', fornecedor_id: null }); setModalContaAberto(true); }} className="bg-brand hover:bg-brandHover text-white h-[38px] px-4 text-corpo rounded-md font-semibold shadow-sm transition flex items-center gap-2">
                                             <Icon name="plus" className="w-4 h-4" /> Nova Conta
                                         </button>
@@ -134,7 +127,7 @@ export default function FinanceiroTab() {
                         </div>
 
                         <div key={abaFinanceiro} className="animate-fade-screen">
-                            {abaFinanceiro === 'contas_pagar' && <ContasAPagarPanel mostrarContasPagas={mostrarContasPagas} dataInicio={dataFiltroContasPagarInicio} dataFim={dataFiltroContasPagarFim} />}
+                            {abaFinanceiro === 'contas_pagar' && <ContasAPagarPanel mes={mesContasPagar} aoMudarMes={setMesContasPagar} />}
                             {abaFinanceiro === 'contas_receber' && <ContasAReceberPanel dataInicio={dataFiltroContasReceberInicio} dataFim={dataFiltroContasReceberFim} />}
                             {abaFinanceiro === 'boletos' && <BoletosPanel dataInicio={dataFiltroBoletosInicio} dataFim={dataFiltroBoletosFim} />}
                             {abaFinanceiro === 'empresas_aprovadas' && <EmpresasAprovadasPanel />}
@@ -148,23 +141,6 @@ export default function FinanceiroTab() {
                 aba ativa, então o rodapé nunca mostra um filtro que não se aplica. */}
             <BarraAcoes
                 acoes={[
-                    abaFinanceiro === 'contas_pagar' && {
-                        id: 'periodo', icone: 'calendar', rotulo: 'Período',
-                        ativo: !!(dataFiltroContasPagarInicio || dataFiltroContasPagarFim),
-                        conteudo: (
-                            <CustomDateRangePicker
-                                startValue={dataFiltroContasPagarInicio} endValue={dataFiltroContasPagarFim}
-                                onChangeStart={setDataFiltroContasPagarInicio} onChangeEnd={setDataFiltroContasPagarFim}
-                                placeholder="Todo o período"
-                                className="w-full bg-elevado border border-borda rounded-md px-3 py-2 text-corpo outline-none hover:border-brand transition"
-                            />
-                        ),
-                    },
-                    abaFinanceiro === 'contas_pagar' && {
-                        id: 'pagas', icone: 'list', rotulo: 'Pagas',
-                        ativo: mostrarContasPagas,
-                        aoClicar: () => setMostrarContasPagas(v => !v),
-                    },
                     abaFinanceiro === 'contas_pagar' && {
                         id: 'nova', icone: 'plus', rotulo: 'Nova Conta', destaque: true,
                         aoClicar: () => { setNovaConta({ id: null, descricao: '', valor: '', vencimento: '', status: 'Pendente', recorrente: false, recorrente_total_parcelas: null, recorrente_parcela_atual: 1, categoria: 'Despesa', fornecedor_id: null }); setModalContaAberto(true); },

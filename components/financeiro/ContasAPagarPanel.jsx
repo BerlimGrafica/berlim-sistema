@@ -7,23 +7,27 @@ import Icon from '@/components/Icon';
 import Tooltip from '@/components/Tooltip';
 import { formatarMoeda, formatarValorFinanceiro, formatarDataExibicao, centavosParaReais, obterDataAtual } from '@/lib/utils/formatters';
 import { categoriaConta } from '@/lib/utils/constants';
+import { NavegadorMes, mesDe, rotuloMes } from '@/components/financeiro/NavegadorMes';
 
-export default function ContasAPagarPanel({ mostrarContasPagas, dataInicio, dataFim }) {
+export default function ContasAPagarPanel({ mes, aoMudarMes }) {
     const { abrirContextMenu, avisar } = useUi();
     const { contasPagar, dadosCarregados, setNovaConta, setModalContaAberto, concluirConta, excluirConta, duplicarConta } = useFinanceiro();
-    // Ordenação simples por clique no header: null = ordem original (mais recente cadastrada primeiro).
-    const [ordenacao, setOrdenacao] = useState({ campo: null, direcao: 'asc' });
+    // Dentro de um mês o que orienta é a data de pagar, não a de cadastrar —
+    // por isso a lista já nasce em ordem de vencimento.
+    const [ordenacao, setOrdenacao] = useState({ campo: 'vencimento', direcao: 'asc' });
 
     const alternarOrdenacao = (campo) => {
         setOrdenacao(prev => prev.campo === campo && prev.direcao === 'asc' ? { campo, direcao: 'desc' } : { campo, direcao: 'asc' });
     };
 
-    const contasFiltradas = contasPagar.filter(c => {
-        if (!mostrarContasPagas && c.status === 'Pago') return false;
-        if (dataInicio && (!c.vencimento || c.vencimento < dataInicio)) return false;
-        if (dataFim && (!c.vencimento || c.vencimento > dataFim)) return false;
-        return true;
-    });
+    // O mês é uma string 'AAAA-MM' e o vencimento começa por ela, então o
+    // recorte é um prefixo — sem primeiro/último dia, sem Date, sem fuso.
+    // As pagas entram junto: o mês é um período fechado, e quem separa os
+    // valores é o resumo acima da tabela. Conta sem vencimento (não há
+    // nenhuma hoje) só apareceria em "Todo o período".
+    const contasFiltradas = mes ? contasPagar.filter(c => (c.vencimento || '').startsWith(mes)) : contasPagar;
+
+    const mesesComConta = [...new Set(contasPagar.map(c => mesDe(c.vencimento)).filter(Boolean))];
 
     const contasOrdenadas = !ordenacao.campo ? contasFiltradas : [...contasFiltradas].sort((a, b) => {
         let va = a[ordenacao.campo] || '';
@@ -55,6 +59,17 @@ export default function ContasAPagarPanel({ mostrarContasPagas, dataInicio, data
     const [anoHoje, mesHoje, diaHoje] = hojeStr.split('-').map(Number);
     const amanhaDate = new Date(anoHoje, mesHoje - 1, diaHoje + 1);
     const amanhaStr = amanhaDate.getFullYear() + '-' + String(amanhaDate.getMonth() + 1).padStart(2, '0') + '-' + String(amanhaDate.getDate()).padStart(2, '0');
+
+    // Resumo do período. "Em aberto" e "Vencido" são as duas fatias do que
+    // ainda não foi pago; somadas, dão o que falta sair do caixa no mês.
+    const somar = (lista) => lista.reduce((t, c) => t + (c.valor || 0), 0);
+    const naoPagas = contasFiltradas.filter(c => c.status !== 'Pago');
+    const resumo = [
+        { rotulo: 'Em aberto', total: somar(naoPagas.filter(c => !c.vencimento || c.vencimento >= hojeStr)), cor: 'text-tinta' },
+        { rotulo: 'Vencido', total: somar(naoPagas.filter(c => c.vencimento && c.vencimento < hojeStr)), cor: 'text-perigo' },
+        { rotulo: 'Pago', total: somar(contasFiltradas.filter(c => c.status === 'Pago')), cor: 'text-sucesso' },
+        { rotulo: 'Total', total: somar(contasFiltradas), cor: 'text-tinta' },
+    ];
 
     const obterStatusPagamento = (conta) => {
         if (conta.status === 'Pago') {
@@ -92,7 +107,24 @@ export default function ContasAPagarPanel({ mostrarContasPagas, dataInicio, data
     ];
 
     return (
-        <div>
+        <div className="flex flex-col gap-4">
+            {/* Cabeçalho do período: navegar e conferir o total do mês são a
+                mesma tarefa, então os dois moram no mesmo bloco, acima da
+                tabela — e não numa barra de filtros à parte. */}
+            <div className="bg-superficie border border-borda rounded p-4 flex flex-col gap-4">
+                <NavegadorMes valor={mes} aoMudar={aoMudarMes} meses={mesesComConta} />
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                    {resumo.map(r => (
+                        <div key={r.rotulo} className="rounded-lg border border-borda bg-sutil px-3 py-2.5 min-w-0">
+                            <span className="block text-micro font-semibold uppercase tracking-wider text-tinta-suave">{r.rotulo}</span>
+                            <span className={`block mt-0.5 text-lg font-bold tabular-nums truncate ${r.cor}`}>
+                                R$ {formatarValorFinanceiro(centavosParaReais(r.total))}
+                            </span>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
             <div className="bg-superficie border border-borda rounded overflow-hidden">
                 {/* Ver components/ui/TabelaCartoes.jsx. No cartão o valor vira o
                     destaque e o vencimento sobe para o selo: numa conta a pagar são
@@ -101,7 +133,7 @@ export default function ContasAPagarPanel({ mostrarContasPagas, dataInicio, data
                     itens={contasOrdenadas}
                     chave={conta => conta.id}
                     carregando={!dadosCarregados}
-                    vazio={<span className="text-corpo text-gray-400">Nenhuma conta a pagar registrada.</span>}
+                    vazio={<span className="text-corpo text-gray-400">Nenhuma conta a pagar em {rotuloMes(mes).toLowerCase()}.</span>}
                     aoClicar={conta => { setNovaConta({...conta, valor: conta.valor ? formatarMoeda(Math.round(conta.valor).toString()) : ''}); setModalContaAberto(true); }}
                     aoContextMenu={(conta, e) => abrirContextMenu(e, montarItensContexto(conta))}
                     colunas={[

@@ -157,8 +157,10 @@ export const AppProvider = ({ children }) => {
 
     const [buscaProducaoText, setBuscaProducaoText] = useState('');
 
-    const [dataFiltroContasPagarInicio, setDataFiltroContasPagarInicio] = useState('');
-    const [dataFiltroContasPagarFim, setDataFiltroContasPagarFim] = useState('');
+    // Contas a Pagar navega mês a mês, não por intervalo: 'AAAA-MM', ou ''
+    // para ver o período inteiro. Abre no mês corrente, que é onde o trabalho
+    // acontece — antes abria em "todo o período" e exigia filtrar toda vez.
+    const [mesContasPagar, setMesContasPagar] = useState(() => obterDataAtual().slice(0, 7));
     const [dataFiltroContasReceberInicio, setDataFiltroContasReceberInicio] = useState('');
     const [dataFiltroContasReceberFim, setDataFiltroContasReceberFim] = useState('');
     const [dataFiltroBoletosInicio, setDataFiltroBoletosInicio] = useState('');
@@ -2451,7 +2453,7 @@ export const AppProvider = ({ children }) => {
         empresasFaturamento, setEmpresasFaturamento,
         modalEmpresaFaturamentoAberto, setModalEmpresaFaturamentoAberto,
         novaEmpresaFaturamento, setNovaEmpresaFaturamento, salvandoEmpresa, setSalvandoEmpresa,
-        dataFiltroContasPagarInicio, setDataFiltroContasPagarInicio, dataFiltroContasPagarFim, setDataFiltroContasPagarFim,
+        mesContasPagar, setMesContasPagar,
         dataFiltroContasReceberInicio, setDataFiltroContasReceberInicio, dataFiltroContasReceberFim, setDataFiltroContasReceberFim,
         dataFiltroBoletosInicio, setDataFiltroBoletosInicio, dataFiltroBoletosFim, setDataFiltroBoletosFim,
         pedidosSaldoDevedor, pedidosBoleto,
@@ -2463,7 +2465,7 @@ export const AppProvider = ({ children }) => {
         concluirBoletoContasReceber: acoes.concluirBoletoContasReceber,
     }), [acoes, abaFinanceiro, contasPagar, modalContaAberto, novaConta, salvandoConta,
         empresasFaturamento, modalEmpresaFaturamentoAberto, novaEmpresaFaturamento, salvandoEmpresa,
-        dataFiltroContasPagarInicio, dataFiltroContasPagarFim, dataFiltroContasReceberInicio, dataFiltroContasReceberFim,
+        mesContasPagar, dataFiltroContasReceberInicio, dataFiltroContasReceberFim,
         dataFiltroBoletosInicio, dataFiltroBoletosFim, pedidosSaldoDevedor, pedidosBoleto,
         dadosCarregados, carregandoContasReceber, carregandoBoletos]);
 
