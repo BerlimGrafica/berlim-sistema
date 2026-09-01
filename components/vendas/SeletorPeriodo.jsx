@@ -38,7 +38,13 @@ export function rotuloPeriodo(inicio, fim) {
     return `${formatarDataExibicao(inicio)} a ${formatarDataExibicao(fim)}`;
 }
 
-export default function SeletorPeriodo({ inicio, fim, onChange, carregando }) {
+// `aoMudarPeriodo` é o próprio setState do VendasTab, e não um callback
+// (inicio, fim). O CustomDateRangePicker chama onChangeStart e onChangeEnd no
+// MESMO evento ao começar um período novo, e as duas chamadas enxergam as props
+// da renderização atual: montar o par a partir delas fazia a segunda desfazer a
+// primeira, devolvendo o início ao valor antigo — a data de início não mudava
+// nunca. Com atualização funcional, cada uma altera só o seu campo.
+export default function SeletorPeriodo({ inicio, fim, aoMudarPeriodo, carregando }) {
     const lista = atalhos();
 
     return (
@@ -50,7 +56,7 @@ export default function SeletorPeriodo({ inicio, fim, onChange, carregando }) {
                         <button
                             key={a.rotulo}
                             type="button"
-                            onClick={() => onChange(a.inicio, a.fim)}
+                            onClick={() => aoMudarPeriodo({ inicio: a.inicio, fim: a.fim })}
                             className={`px-3 py-1.5 text-compacto font-semibold rounded transition ${ativo
                                 ? 'bg-brand text-white shadow-sm'
                                 : 'text-tinta-suave hover:bg-realce'}`}
@@ -64,8 +70,8 @@ export default function SeletorPeriodo({ inicio, fim, onChange, carregando }) {
             <CustomDateRangePicker
                 startValue={inicio}
                 endValue={fim}
-                onChangeStart={(v) => onChange(v, fim)}
-                onChangeEnd={(v) => onChange(inicio, v)}
+                onChangeStart={(v) => aoMudarPeriodo(p => ({ ...p, inicio: v }))}
+                onChangeEnd={(v) => aoMudarPeriodo(p => ({ ...p, fim: v }))}
                 placeholder="Período personalizado"
                 className="bg-superficie border border-borda rounded-md px-3 py-2 text-compacto outline-none hover:border-brand transition dark:text-[#EDEDED] min-w-[210px]"
             />

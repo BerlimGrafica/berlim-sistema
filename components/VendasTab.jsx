@@ -50,7 +50,7 @@ export default function VendasTab() {
                             inicio={periodo.inicio}
                             fim={periodo.fim}
                             carregando={carregando}
-                            onChange={(inicio, fim) => setPeriodo({ inicio, fim })}
+                            aoMudarPeriodo={setPeriodo}
                         />
                     </div>
 
