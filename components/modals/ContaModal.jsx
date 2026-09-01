@@ -16,7 +16,15 @@ export default function ContaModal() {
     const modal = useModal(modalContaAberto, () => setModalContaAberto(false));
 
     const tipoFornecedorContaNecessario = novaConta.categoria === 'Manutenção' ? 'Manutenção' : novaConta.categoria === 'Terceirização' ? 'Terceirização' : novaConta.categoria === 'Material' ? 'Material' : null;
-    const fornecedoresParaConta = tipoFornecedorContaNecessario ? fornecedores.filter(f => f.tipo === tipoFornecedorContaNecessario) : [];
+    // Em ordem alfabética, não na de cadastro (a consulta traz por id): quem
+    // preenche a conta procura o fornecedor pelo nome. localeCompare em pt-BR
+    // para que acento e cedilha caiam junto da letra base — 'Ação' antes de
+    // 'Adesivo', e não depois de tudo, como faria a comparação por código.
+    const fornecedoresParaConta = tipoFornecedorContaNecessario
+        ? fornecedores
+            .filter(f => f.tipo === tipoFornecedorContaNecessario)
+            .sort((a, b) => (a.nome || '').localeCompare(b.nome || '', 'pt-BR'))
+        : [];
 
     if (!modalContaAberto) return null;
 
