@@ -281,3 +281,20 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover { opacity: 1; }
         --fonte-micro: 12px;
     }
 }
+
+/* ---- A impressão usa a escala de tela grande ---- */
+/* Consulta de mídia em impressão é avaliada contra a PÁGINA, não a janela: um
+   A4 retrato com 5mm de margem dá ~756px, que cai dentro do `max-width:
+   1023.98px` acima. Sem isto, todo papel sai com a tipografia ampliada do
+   celular (corpo 15px em vez de 13px), e o layout da O.S. — que tem metades de
+   altura fixa, 143mm cada — perde itens no overflow.
+   Precisa vir DEPOIS do bloco do celular: as duas regras casam ao imprimir e
+   têm a mesma especificidade, então quem vence é a última do arquivo. */
+@media print {
+    :root {
+        --fonte-corpo: 13px;
+        --fonte-compacto: 12px;
+        --fonte-mini: 11px;
+        --fonte-micro: 10px;
+    }
+}

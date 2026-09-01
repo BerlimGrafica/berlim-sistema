@@ -26,6 +26,17 @@ export default function PrintLayout() {
                     observacoes: observacoesDoPedido(osParaImprimir),
                 };
 
+                // A metade da folha tem altura fixa (143mm) e o que passa disso
+                // é cortado pelo overflow-hidden — some um item inteiro, sem
+                // aviso. Quando o serviço é longo, a tabela aperta a tipografia
+                // para caber. ~64 caracteres é o que a coluna comporta numa
+                // linha no tamanho normal; o resto quebra.
+                const linhasDeItens = desc.itens.reduce(
+                    (total, item) => total + Math.max(1, Math.ceil(String(item.descricao || item.nome || '').length / 64)),
+                    0,
+                );
+                const denso = desc.itens.length > 4 || linhasDeItens > 9;
+
                 return (
                     <div key={via} className={`h-[143mm] flex flex-col p-6 overflow-hidden relative justify-between ${index === 0 ? 'border-b-[2px] border-dashed border-gray-400' : ''}`}>
                         
@@ -83,12 +94,15 @@ export default function PrintLayout() {
                                 <tbody>
                                     {desc.itens.length > 0 ? desc.itens.map((item, idx) => (
                                         <tr key={idx} className="border-b border-gray-100 last:border-0">
-                                            <td className="py-0.5 text-gray-900 whitespace-pre-wrap pr-4 align-middle text-mini font-medium leading-tight">
+                                            <td className={`text-gray-900 whitespace-pre-wrap pr-4 align-middle font-medium ${denso ? 'py-0 text-[9px] leading-[1.15]' : 'py-0.5 text-mini leading-tight'}`}>
                                                 {item.descricao || item.nome}
                                             </td>
-                                            <td className="py-0.5 text-right whitespace-nowrap align-middle font-semibold text-corpo">
+                                            <td className={`text-right whitespace-nowrap align-middle font-semibold ${denso ? 'py-0 text-mini' : 'py-0.5 text-corpo'}`}>
                                                 R$ {item.valor}
-                                                {item.desconto && <span className="block text-[9px] text-gray-400 font-normal mt-0.5">(-{item.desconto}%)</span>}
+                                                {/* O desconto ao lado do valor, e não embaixo: como linha
+                                                    própria ele custava uma linha por item com desconto —
+                                                    foi o que estourou a metade numa O.S. de 5 itens. */}
+                                                {item.desconto && <span className="ml-1 text-[9px] text-gray-400 font-normal">(-{item.desconto}%)</span>}
                                             </td>
                                         </tr>
                                     )) : (
