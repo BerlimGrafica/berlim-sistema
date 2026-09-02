@@ -436,12 +436,28 @@ export const AppProvider = ({ children }) => {
         // tabela a tabela estourava o limite de assinaturas por canal do Supabase
         // — e, quando isso acontece, o canal inteiro é recusado e o sistema fica
         // sem tempo real nenhum, silenciosamente.
+        // Vira true na primeira inscrição; a partir daí, todo SUBSCRIBED é uma
+        // reinscrição depois de o canal ter caído.
+        let jaHouveConexao = false;
         const canalRealTime = supabase
             .channel('mudancas-banco') .on('postgres_changes', { event: '*', schema: 'public' }, (payload) => {
                 const tratar = tratadores[payload.table];
                 if (tratar) tratar(payload);
             })
             .subscribe((status) => {
+                if (status === 'SUBSCRIBED') {
+                    // Reconexão não recupera o passado: o Postgres não reenvia o
+                    // que aconteceu enquanto o socket esteve fora, e a biblioteca
+                    // só refaz a inscrição. Uma tela que fica aberta e visível o
+                    // dia inteiro — a de Produção, no balcão — voltava a receber
+                    // eventos novos mas seguia exibindo o estado de antes da
+                    // queda, sem nada na tela indicando isso. A recarga na volta
+                    // fecha essa lacuna. O visibilitychange abaixo cobre só quem
+                    // troca de aba; para essa tela ele nunca dispara.
+                    if (jaHouveConexao) { carregarDados(); carregarChat(); }
+                    jaHouveConexao = true;
+                    return;
+                }
                 // Sem isto, uma falha de assinatura passa despercebida: a tela
                 // simplesmente para de atualizar sozinha, sem nenhum sinal.
                 if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
