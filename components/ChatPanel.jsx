@@ -4,6 +4,7 @@ import { useSessao } from '@/context/SessaoContext';
 import { useChatEquipe } from '@/context/ChatContext';
 import Icon from '@/components/Icon';
 import { corPorNome } from '@/lib/utils/formatters';
+import { entrarNaPilha, souOTopo, voltarDoHistorico, voltaVeioDoCodigo } from '@/lib/ui/pilhaModais';
 
 function iniciais(nome) {
     if (!nome) return '?';
@@ -20,12 +21,25 @@ function formatarHora(iso) {
 // da mesma pessoa, pra dar aquele efeito de "grupo colado" do WhatsApp/Telegram:
 // o canto do lado do avatar vai ficando reto entre uma mensagem e outra do mesmo grupo,
 // e só fica "pontudo" (a pontinha do balão) na última mensagem da sequência.
+//
+// Os nomes de classe são escritos por extenso de propósito. O Tailwind v4 varre
+// o código-fonte procurando classes inteiras e gera o CSS só do que encontra:
+// montar o nome por interpolação (`rounded-b${lado}-md`) não produz regra
+// nenhuma. Era o que acontecia aqui — `rounded-br-md`, `rounded-bl-md`,
+// `rounded-tr-md` e `rounded-tl-md` não existiam em lugar nenhum do projeto como
+// texto literal, então o CSS não era emitido e todo balão do meio de um grupo
+// saía com os quatro cantos iguais, sem o efeito de sequência.
 function bordaBolha(minha, primeiraDoGrupo, ultimaDoGrupo) {
-    const lado = minha ? 'r' : 'l';
-    if (primeiraDoGrupo && ultimaDoGrupo) return `rounded-2xl rounded-b${lado}-sm`;
-    if (primeiraDoGrupo) return `rounded-2xl rounded-b${lado}-md`;
-    if (ultimaDoGrupo) return `rounded-2xl rounded-t${lado}-md rounded-b${lado}-sm`;
-    return `rounded-2xl rounded-t${lado}-md rounded-b${lado}-md`;
+    if (minha) {
+        if (primeiraDoGrupo && ultimaDoGrupo) return 'rounded-2xl rounded-br-sm';
+        if (primeiraDoGrupo) return 'rounded-2xl rounded-br-md';
+        if (ultimaDoGrupo) return 'rounded-2xl rounded-tr-md rounded-br-sm';
+        return 'rounded-2xl rounded-tr-md rounded-br-md';
+    }
+    if (primeiraDoGrupo && ultimaDoGrupo) return 'rounded-2xl rounded-bl-sm';
+    if (primeiraDoGrupo) return 'rounded-2xl rounded-bl-md';
+    if (ultimaDoGrupo) return 'rounded-2xl rounded-tl-md rounded-bl-sm';
+    return 'rounded-2xl rounded-tl-md rounded-bl-md';
 }
 
 function Avatar({ nome, avatarUrl, className = 'w-7 h-7 text-micro' }) {
@@ -46,18 +60,61 @@ export default function ChatPanel() {
 
     const [texto, setTexto] = useState('');
     const listRef = useRef(null);
+    // Rolagem automática só vale para quem já está acompanhando o fim da conversa.
+    // Antes ela era incondicional: quem subisse para reler algo era jogado de
+    // volta para baixo a cada mensagem nova — e também a cada recarga do tempo
+    // real, que reescreve a lista inteira.
+    const grudadoNoFimRef = useRef(true);
+
+    function aoRolar() {
+        const el = listRef.current;
+        if (!el) return;
+        grudadoNoFimRef.current = el.scrollHeight - el.scrollTop - el.clientHeight < 60;
+    }
+
+    // Abrir o painel sempre leva ao fim, independente de onde a rolagem parou.
+    // Precisa vir ANTES do efeito de rolagem: efeitos rodam na ordem de
+    // declaração, e este é quem arma a flag que o outro lê.
+    useEffect(() => {
+        if (chatAberto) grudadoNoFimRef.current = true;
+    }, [chatAberto]);
 
     useEffect(() => {
-        if (chatAberto && listRef.current) {
-            listRef.current.scrollTop = listRef.current.scrollHeight;
-        }
+        if (!chatAberto || !listRef.current || !grudadoNoFimRef.current) return;
+        listRef.current.scrollTop = listRef.current.scrollHeight;
     }, [chatAberto, chatMensagens]);
 
+    // O painel é uma gaveta com backdrop, ou seja, um modal — e por isso entra na
+    // mesma pilha dos outros (lib/ui/pilhaModais.js). Fora dela, faltavam três
+    // coisas: a página de trás continuava rolando sob o backdrop, o botão voltar
+    // do navegador trocava de tela deixando a gaveta pendurada por cima da nova,
+    // e o Esc daqui atropelava o modal que estivesse aberto por cima.
     useEffect(() => {
         if (!chatAberto) return;
-        const handleEsc = (e) => { if (e.key === 'Escape') setChatAberto(false); };
-        document.addEventListener('keydown', handleEsc);
-        return () => document.removeEventListener('keydown', handleEsc);
+
+        const marca = {};
+        const sair = entrarNaPilha(marca);
+        window.history.pushState({ modalBerlimAberto: true }, '');
+
+        function aoVoltar() {
+            if (!souOTopo(marca) || voltaVeioDoCodigo()) return;
+            window.history.pushState({ modalBerlimAberto: true }, '');
+            setChatAberto(false);
+        }
+        function aoTeclar(e) {
+            if (e.key !== 'Escape' || !souOTopo(marca) || e.defaultPrevented) return;
+            e.preventDefault();
+            setChatAberto(false);
+        }
+
+        document.addEventListener('keydown', aoTeclar);
+        window.addEventListener('popstate', aoVoltar);
+        return () => {
+            document.removeEventListener('keydown', aoTeclar);
+            window.removeEventListener('popstate', aoVoltar);
+            sair();
+            if (window.history.state?.modalBerlimAberto) voltarDoHistorico();
+        };
     }, [chatAberto, setChatAberto]);
 
     function avatarPara(usuarioId) {
@@ -68,6 +125,8 @@ export default function ChatPanel() {
     function handleEnviar(e) {
         e.preventDefault();
         if (!texto.trim() || enviandoChat) return;
+        // Enviar é intenção explícita de estar no fim da conversa.
+        grudadoNoFimRef.current = true;
         enviarMensagemChat(texto);
         setTexto('');
     }
@@ -81,7 +140,7 @@ export default function ChatPanel() {
                 className={`fixed inset-0 bg-black/40 z-40 transition-opacity ${chatAberto ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
                 onClick={() => setChatAberto(false)}
             />
-            <div className={`fixed top-0 right-0 h-full w-full sm:w-[400px] bg-white dark:bg-darkCard border-l border-gray-200 dark:border-darkBorder shadow-2xl z-50 flex flex-col transition-transform duration-300 ${chatAberto ? 'translate-x-0' : 'translate-x-full'}`}>
+            <div className={`fixed top-0 right-0 h-full w-full sm:w-[400px] bg-superficie border-l border-borda shadow-2xl z-50 flex flex-col transition-transform duration-300 ${chatAberto ? 'translate-x-0' : 'translate-x-full'}`}>
                 {/* Cabeçalho */}
                 <div className="flex items-center justify-between px-4 h-14 border-b border-borda-fraca shrink-0">
                     <h2 className="font-bold text-tinta">Chat</h2>
@@ -98,10 +157,10 @@ export default function ChatPanel() {
                     </div>
                     <div className="flex items-center -space-x-2">
                         {participantes.map(p => (
-                            <Avatar key={p.id} nome={p.nome} avatarUrl={p.avatar_url} className="w-7 h-7 text-micro border-2 border-white dark:border-darkCard" />
+                            <Avatar key={p.id} nome={p.nome} avatarUrl={p.avatar_url} className="w-7 h-7 text-micro border-2 border-superficie" />
                         ))}
                         {extras > 0 && (
-                            <div className="w-7 h-7 rounded-full bg-gray-500 border-2 border-white dark:border-darkCard flex items-center justify-center text-micro font-bold text-white">
+                            <div className="w-7 h-7 rounded-full bg-gray-500 border-2 border-superficie flex items-center justify-center text-micro font-bold text-white">
                                 +{extras}
                             </div>
                         )}
@@ -109,7 +168,7 @@ export default function ChatPanel() {
                 </div>
 
                 {/* Mensagens */}
-                <div ref={listRef} className="flex-1 overflow-y-auto custom-scrollbar px-4 py-4 bg-sutil">
+                <div ref={listRef} onScroll={aoRolar} className="flex-1 overflow-y-auto custom-scrollbar px-4 py-4 bg-sutil">
                     {chatMensagens.length === 0 ? (
                         <p className="text-center text-compacto text-gray-400 mt-6">Nenhuma mensagem ainda. Diga oi!</p>
                     ) : (

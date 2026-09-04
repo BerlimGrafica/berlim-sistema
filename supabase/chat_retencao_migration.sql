@@ -3,7 +3,7 @@
 -- Rode este arquivo no SQL Editor do Supabase (Dashboard > SQL Editor).
 --
 -- Hoje o chat (public.chat_mensagens) não tem nenhuma expurgo automático: o
--- app só busca as últimas 200 mensagens pra exibir (context/AppContext.jsx),
+-- app só busca as últimas 200 mensagens pra exibir (hooks/useChat.js),
 -- mas a tabela cresce pra sempre até alguém apagar na mão. Esta migration
 -- cria um job diário que apaga mensagens com mais de RETENCAO_DIAS dias.
 --

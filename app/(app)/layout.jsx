@@ -3,6 +3,7 @@ import { useSyncExternalStore } from 'react';
 import { AppProvider } from '@/context/AppContext';
 import Navbar from '@/components/Navbar';
 import Modals from '@/components/Modals';
+import ChatPanel from '@/components/ChatPanel';
 import PrintLayout from '@/components/PrintLayout';
 import PageTransition from '@/components/PageTransition';
 import ToastContainer from '@/components/ToastContainer';
@@ -33,6 +34,11 @@ export default function AppLayout({ children }) {
                     </div>
                 </div>
                 <Modals />
+                {/* Fora do wrapper inerte junto com os modais, e não mais dentro
+                    da Navbar: a gaveta do chat entra na mesma pilha de modais, e
+                    de dentro dali ela se tornava inerte ao abrir — o campo de
+                    texto parava de aceitar digitação e nem o X fechava. */}
+                <ChatPanel />
                 <ToastContainer />
                 <ConfirmDialog />
                 <ContextMenu />

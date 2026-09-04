@@ -7,7 +7,6 @@ import { useUi } from "@/context/UiContext";
 import { useChatEquipe } from "@/context/ChatContext";
 import Icon from "@/components/Icon";
 import Tooltip from "@/components/Tooltip";
-import ChatPanel from "@/components/ChatPanel";
 import { CustomSelect } from "@/components/ui/Dropdown";
 import { useNavegarAlerta } from "@/hooks/useNavegarAlerta";
 
@@ -289,7 +288,6 @@ export default function Navbar() {
                         })}
                     </div>
                 </nav>
-            <ChatPanel />
         </>
     );
 }
