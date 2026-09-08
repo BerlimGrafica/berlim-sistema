@@ -87,12 +87,16 @@ export default function ContasAPagarPanel({ mes, aoMudarMes }) {
         return { label: 'Aberto', cor: 'bg-realce border-borda-forte text-tinta-suave' };
     };
 
+    // Semáforo no contorno da data, como o prazo da O.S. já faz: verde quitada,
+    // vermelha vencida, amarela em aberto. Antes, "em aberto" era contorno
+    // transparente — a data ficava sem sinal nenhum, e uma conta a vencer se
+    // parecia com uma linha inerte. Vence hoje/amanhã divide o mesmo amarelo:
+    // quem separa a urgência é a coluna Status Pagamento, ao lado.
     const obterCorBordaVencimento = (conta) => {
         const { label } = obterStatusPagamento(conta);
-        if (label === 'Vencido') return 'border-red-500 dark:border-red-500';
-        if (label === 'Vence hoje' || label === 'Vence amanhã') return 'border-amber-500 dark:border-amber-400';
         if (label === 'Pago') return 'border-emerald-500 dark:border-emerald-500';
-        return 'border-transparent';
+        if (label === 'Vencido') return 'border-red-500 dark:border-red-500';
+        return 'border-amber-500 dark:border-amber-400';
     };
 
     const montarItensContexto = (conta) => [
