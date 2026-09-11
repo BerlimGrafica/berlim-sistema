@@ -209,7 +209,17 @@ export default function Navbar() {
                                 </button>
                             </Tooltip>
                             <Tooltip label="Sair do Sistema">
-                                <button type="button" onClick={() => logout()} aria-label="Sair do Sistema" className="text-gray-400 hover:text-red-500 transition p-2 rounded-md hover:bg-red-50 dark:hover:bg-red-950/30 shrink-0">
+                                {/* Confirma antes de sair: o botão fica encostado no de
+                                    vincular Google, e um clique errado derrubava a sessão
+                                    na hora, sem volta a não ser refazendo o login. */}
+                                <button
+                                    type="button"
+                                    onClick={async () => {
+                                        if (await confirmar('Sair do sistema? Você vai precisar entrar de novo para continuar.')) logout();
+                                    }}
+                                    aria-label="Sair do Sistema"
+                                    className="text-gray-400 hover:text-red-500 transition p-2 rounded-md hover:bg-red-50 dark:hover:bg-red-950/30 shrink-0"
+                                >
                                     <Icon name="log-out" className="w-5 h-5" />
                                 </button>
                             </Tooltip>
