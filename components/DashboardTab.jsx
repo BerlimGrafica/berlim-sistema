@@ -3,10 +3,11 @@ import React from 'react';
 import { useRouter } from 'next/navigation';
 import { useSessao } from '@/context/SessaoContext';
 import { useUi } from '@/context/UiContext';
+import { gravidadeDe } from '@/lib/alertas/pendencias';
+import { useIrParaPendencia } from '@/hooks/useIrParaPendencia';
 import { usePedidos } from '@/context/PedidosContext';
 import { useComunicacao } from '@/context/ComunicacaoContext';
 import Icon from '@/components/Icon';
-import Tooltip from '@/components/Tooltip';
 import { STATUSES_FINALIZADOS } from '@/lib/utils/constants';
 import { formatarDataExibicao, mascararCliente } from '@/lib/utils/formatters';
 import { resumoDoPedido } from '@/lib/utils/servico';
@@ -14,8 +15,9 @@ import { resumoDoPedido } from '@/lib/utils/servico';
 
 export default function DashboardTab() {
     const { usuario, isDemo } = useSessao();
-    const { alertasNaoLidos, setAlertasNaoLidos } = useUi();
-    const { pedidos, setBuscaProducaoText, abrirEdicao } = usePedidos();
+    const { pendencias, pendenciaGravidade } = useUi();
+    const irParaPendencia = useIrParaPendencia();
+    const { pedidos, abrirEdicao } = usePedidos();
     const { tarefasInternas, setModalTarefaAberto, setNovaTarefa } = useComunicacao();
     const router = useRouter();
 
@@ -96,43 +98,40 @@ export default function DashboardTab() {
                             <div className="bg-superficie border border-borda-fraca rounded-md p-0 shadow-[0_4px_20px_rgb(0,0,0,0.03)] dark:shadow-none flex flex-col overflow-hidden hover:shadow-lg transition lg:row-span-2 min-h-0">
                                 <div className="px-6 py-5 border-b border-borda-fraca bg-gray-50/50 dark:bg-darkHover/30 flex justify-between items-center shrink-0">
                                     <h3 className="font-bold text-corpo uppercase tracking-wider text-tinta-corpo flex items-center gap-2">
-                                        <Icon name="bell" className="w-4 h-4 text-brand" /> Mural de Avisos
+                                        <Icon name="bell" className="w-4 h-4 text-brand" /> O que falta fazer
                                     </h3>
-                                    {alertasNaoLidos.length > 0 && (
-                                        <span className="bg-rose-500 text-white text-mini font-bold px-2 py-0.5 rounded-full shadow-sm">{alertasNaoLidos.length}</span>
+                                    {pendencias.length > 0 && (
+                                        <span className={`text-white text-mini font-bold px-2 py-0.5 rounded-full shadow-sm ${gravidadeDe(pendenciaGravidade).contador}`}>{pendencias.length}</span>
                                     )}
                                 </div>
                                 <div className="flex-1 min-h-0 p-4 overflow-y-auto custom-scrollbar flex flex-col gap-3">
-                                    {alertasNaoLidos.length === 0 ? (
+                                    {pendencias.length === 0 ? (
                                         <div className="flex-1 flex flex-col items-center justify-center text-center opacity-60">
                                             <Icon name="check-circle" className="w-10 h-10 mb-2 text-emerald-500" />
-                                            <p className="text-corpo font-semibold text-tinta-suave">Nenhum aviso pendente.</p>
+                                            <p className="text-corpo font-semibold text-tinta-suave">Nada pendente. Tudo em dia.</p>
                                         </div>
                                     ) : (
-                                        alertasNaoLidos.map((alerta, idx) => (
-                                            <div key={idx} className="group bg-rose-50/80 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/30 rounded-xl p-4 flex gap-3 items-start shadow-sm hover:shadow-md hover:bg-rose-50 dark:hover:bg-rose-500/20 transition cursor-pointer backdrop-blur-sm" onClick={() => {
-                                                if (alerta.os_id) {
-                                                    setBuscaProducaoText(alerta.os_id.toString());
-                                                }
-                                                router.push('/producao');
-                                            }}>
-                                                <div className="bg-rose-500/20 p-2 rounded-lg shrink-0 mt-0.5">
-                                                    <Icon name="alert-triangle" className="w-4 h-4 text-rose-600 dark:text-rose-400" />
-                                                </div>
-                                                <div className="flex-1">
-                                                    <p className="text-corpo font-bold text-gray-800 dark:text-gray-200 leading-snug">{alerta.msg}</p>
-                                                    <span className="text-micro font-bold text-rose-500 mt-1.5 inline-block uppercase tracking-wider hover:underline">Ver Detalhes &rarr;</span>
-                                                </div>
-                                                <Tooltip label="Remover aviso" className="opacity-0 group-hover:opacity-100 transition shrink-0">
-                                                    <button type="button" onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        setAlertasNaoLidos(prev => prev.filter(a => a.id !== alerta.id));
-                                                    }} aria-label="Remover aviso" className="text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 p-1">
-                                                        <Icon name="x" className="w-3.5 h-3.5" />
-                                                    </button>
-                                                </Tooltip>
-                                            </div>
-                                        ))
+                                        /* Sem botão de remover: o cartão sai daqui quando o
+                                           trabalho é feito. O mural antigo tinha um X que
+                                           apagava o aviso sem resolver nada — e como tudo
+                                           era vermelho, a cor não ajudava a priorizar. */
+                                        pendencias.map(pendencia => {
+                                            const g = gravidadeDe(pendencia.gravidade);
+                                            return (
+                                                <button
+                                                    key={pendencia.id}
+                                                    type="button"
+                                                    onClick={() => irParaPendencia(pendencia)}
+                                                    className={`w-full text-left border rounded-xl p-4 flex gap-3 items-start shadow-sm hover:shadow-md transition ${g.faixa}`}
+                                                >
+                                                    <span className={`w-2.5 h-2.5 rounded-full shrink-0 mt-1.5 ${g.ponto}`} />
+                                                    <span className="flex-1 min-w-0">
+                                                        <span className={`block text-corpo font-bold leading-snug ${g.texto}`}>{pendencia.titulo}</span>
+                                                        <span className="block text-corpo text-tinta-suave leading-snug">{pendencia.detalhe}</span>
+                                                    </span>
+                                                </button>
+                                            );
+                                        })
                                     )}
                                 </div>
                             </div>

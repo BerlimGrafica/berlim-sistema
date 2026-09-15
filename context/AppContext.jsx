@@ -9,6 +9,7 @@ import { itensDoPedido, pagamentosDoPedido, observacoesDoPedido, itensDoOrcament
 import { gravarItensPagamentos, clonarItensParaPedido, gravarItensOrcamento } from '@/lib/pedidos/gravacao';
 import { useAuth } from '@/hooks/useAuth';
 import { useAlertas } from '@/hooks/useAlertas';
+import { usePendencias } from '@/hooks/usePendencias';
 import { useChat } from '@/hooks/useChat';
 import { SessaoContext } from '@/context/SessaoContext';
 import { UiContext } from '@/context/UiContext';
@@ -181,14 +182,10 @@ export const AppProvider = ({ children }) => {
     const [modalEmpresaFaturamentoAberto, setModalEmpresaFaturamentoAberto] = useState(false);
     const [novaEmpresaFaturamento, setNovaEmpresaFaturamento] = useState({ id: null, nome: '', cnpj: '', status: 'Aprovado' });
     const {
-        alertasNaoLidos, setAlertasNaoLidos,
         toasts, removerToast, avisar,
         pendingConfirm, confirmar, resolverConfirm,
         modalAlertasAberto, setModalAlertasAberto,
         ehUsuario,
-        notificarSeFaturamentoEmAnalise, notificarSeTarefaMinha, notificarSeNotaFiscalPreenchida,
-        notificarSeLinkPagamentoNovo, notificarSeContaPagarUrgente,
-        alertasFuturaDisparados, alertasBoletoDisparados, alertasRetiradaDisparados,
     } = useAlertas(usuario);
     // Envolve os retornos de useAuth() com avisar() — useAuth() roda antes de
     // useAlertas() no corpo do componente, então não tem acesso a avisar ainda.
@@ -225,6 +222,13 @@ export const AppProvider = ({ children }) => {
     const [tarefasInternas, setTarefasInternas] = useState([]);
     const [linksPagamento, setLinksPagamento] = useState([]);
     
+    // Pendências: o que esta pessoa precisa resolver AGORA, derivado das listas
+    // acima em vez de gravado quando algo aconteceu. Ver lib/alertas/pendencias.js.
+    const pendencias = usePendencias(
+        { usuario, pedidos, contasPagar, notasFiscais, tarefasInternas, requisicoesMaterial, linksPagamento, empresasFaturamento },
+        avisar,
+    );
+
     const [modalRequisicaoAberto, setModalRequisicaoAberto] = useState(false);
     const [novaRequisicao, setNovaRequisicao] = useState({ id: null, itens: '', observacoes: '', status: 'Pendente' });
     
@@ -322,20 +326,10 @@ export const AppProvider = ({ children }) => {
         const tratadores = {
             pedidos: (payload) => {
                 if (payload.eventType === 'UPDATE') {
-                    // Alerta: Avisar Cliente (apenas Atendimento)
-                    if (payload.new.status === 'Avisar Cliente' && payload.old?.status !== 'Avisar Cliente' && usuario?.nivel === 'Atendimento') {
-                        setAlertasNaoLidos(prev => [...prev, { id: Date.now() + 5, msg: `Avisar cliente: ${payload.new.cliente} (O.S. #${payload.new.id})`, os_id: payload.new.id, tipo: 'avisar_cliente' }]);
-                    }
-                    // O alerta de prazo da Futura sai do mural assim que a O.S.
-                    // avança para uma etapa em que o material já voltou — senão
-                    // ficaria o dia inteiro pedindo para retirar algo que já está
-                    // na loja. Tira também do registro de "já disparado", para
-                    // que volte a valer se a O.S. retroceder para produção.
-                    if (STATUSES_JA_RETIRADO_DA_FUTURA.includes(payload.new.status) && !STATUSES_JA_RETIRADO_DA_FUTURA.includes(payload.old?.status)) {
-                        alertasFuturaDisparados.current.delete(payload.new.id);
-                        const ehDaFutura = (a) => a.os_id === payload.new.id && a.tipo === 'alerta_futura';
-                        setAlertasNaoLidos(prev => (prev.some(ehDaFutura) ? prev.filter(a => !ehDaFutura(a)) : prev));
-                    }
+                    // "Avisar Cliente" e o prazo da Futura viraram pendências
+                    // derivadas (lib/alertas/pendencias.js): entram e saem da
+                    // lista conforme o status da O.S., sem nada a disparar nem a
+                    // remover à mão aqui.
                 }
 
                 if (payload.eventType === 'DELETE') {
@@ -365,24 +359,9 @@ export const AppProvider = ({ children }) => {
             pedido_pagamentos: (payload) => {
                 agendarSincronia(payload.new?.pedido_id ?? payload.old?.pedido_id);
                 marcarParaRebuscar();
-                // Alerta de boleto novo (Financeiro e Giovana).
-                if (payload.eventType !== 'INSERT' || payload.new?.forma !== 'Boleto') return;
-                if (usuario?.nivel !== 'Financeiro' && !ehUsuario('Giovana')) return;
-                const pedidoId = payload.new.pedido_id;
-                setAlertasNaoLidos(prev => {
-                    if (prev.some(a => a.os_id === pedidoId && a.tipo === 'boleto_novo')) return prev;
-                    return [...prev, { id: Date.now() + 6, msg: `Novo boleto registrado na O.S. #${pedidoId}`, os_id: pedidoId, tipo: 'boleto_novo' }];
-                });
             },
 
-            notas_fiscais: (payload) => {
-                if (payload.eventType === 'INSERT' && usuario?.nivel === 'Atendimento') {
-                    setAlertasNaoLidos(prev => [...prev, { id: Date.now() + 3, msg: `Nova Nota Fiscal solicitada (${payload.new.cliente || payload.new.cnpj})`, os_id: null, tipo: 'nf_nova' }]);
-                } else if (payload.eventType === 'UPDATE') {
-                    notificarSeNotaFiscalPreenchida(payload.new);
-                }
-                aplicarEventoNaLista(setNotasFiscais, payload, porCriacaoDesc);
-            },
+            notas_fiscais: (payload) => aplicarEventoNaLista(setNotasFiscais, payload, porCriacaoDesc),
 
             chat_mensagens: (payload) => {
                 if (payload.eventType === 'INSERT') {
@@ -405,31 +384,11 @@ export const AppProvider = ({ children }) => {
             // basta pedir que elas rebusquem.
             clientes: () => marcarParaRebuscar(),
 
-            tarefas_internas: (payload) => {
-                aplicarEventoNaLista(setTarefasInternas, payload, porCriacaoDesc);
-                if (payload.new) notificarSeTarefaMinha(payload.new);
-            },
-            requisicoes_material: (payload) => {
-                aplicarEventoNaLista(setRequisicoesMaterial, payload, porCriacaoDesc);
-                if (payload.eventType === 'INSERT' && ehUsuario('Vinicius')) {
-                    setAlertasNaoLidos(prev => [...prev, { id: Date.now() + Math.random(), msg: `Nova requisição de material!\nItem(s): ${payload.new.itens}`, tipo: 'nova_requisicao' }]);
-                }
-            },
-            links_pagamento: (payload) => {
-                aplicarEventoNaLista(setLinksPagamento, payload, porCriacaoDesc);
-                if (payload.new) notificarSeLinkPagamentoNovo(payload.new);
-            },
-            contas_pagar: (payload) => {
-                aplicarEventoNaLista(setContasPagar, payload, porVencimento);
-                if (payload.eventType === 'INSERT' && (usuario?.nivel === 'Financeiro' || ehUsuario('Giovana'))) {
-                    setAlertasNaoLidos(prev => [...prev, { id: Date.now() + Math.random(), msg: `Nova conta a pagar: ${payload.new.descricao}`, tipo: 'nova_conta_pagar' }]);
-                }
-                if (payload.new) notificarSeContaPagarUrgente(payload.new);
-            },
-            empresas_faturamento: (payload) => {
-                aplicarEventoNaLista(setEmpresasFaturamento, payload, porNome);
-                if (payload.new) notificarSeFaturamentoEmAnalise(payload.new);
-            },
+            tarefas_internas: (payload) => aplicarEventoNaLista(setTarefasInternas, payload, porCriacaoDesc),
+            requisicoes_material: (payload) => aplicarEventoNaLista(setRequisicoesMaterial, payload, porCriacaoDesc),
+            links_pagamento: (payload) => aplicarEventoNaLista(setLinksPagamento, payload, porCriacaoDesc),
+            contas_pagar: (payload) => aplicarEventoNaLista(setContasPagar, payload, porVencimento),
+            empresas_faturamento: (payload) => aplicarEventoNaLista(setEmpresasFaturamento, payload, porNome),
         };
 
         // UMA assinatura para todo o schema, com despacho por tabela. Assinar
@@ -501,9 +460,9 @@ export const AppProvider = ({ children }) => {
     }, [clientesProblema]);
 
 
-    // === CHAT DA EQUIPE e ALERTAS/NOTIFICAÇÕES ===
-    // Toda essa lógica (chat + notificarSeX) foi extraída para hooks/useChat.js e
-    // hooks/useAlertas.js — ver desestruturação no topo do componente.
+    // === CHAT DA EQUIPE e AVISOS ===
+    // Chat e avisos efêmeros vivem em hooks/useChat.js e hooks/useAlertas.js; o que
+    // a pessoa precisa fazer é derivado em lib/alertas/pendencias.js.
 
     async function carregarDados() {
         let todosPedidos = [];
@@ -576,105 +535,12 @@ export const AppProvider = ({ children }) => {
 
             setPedidos(todosPedidos);
 
-            if (usuario?.nivel === 'Administrador') {
-                // Fora as encerradas, ficam de fora também as que já voltaram da
-                // Futura (Avisar Cliente / Retirada / Entrega): o alerta é para
-                // lembrar de buscar o material lá, e nesse ponto já foi buscado.
-                const statusSemAlertaFutura = [...statusIgnorados, ...STATUSES_JA_RETIRADO_DA_FUTURA];
-                const pedidosFuturaAlertar = todosPedidos.filter(p => p.local_producao && p.local_producao.toLowerCase().includes('futura') && !statusSemAlertaFutura.includes(p.status) && p.prazo && p.prazo <= amanhaStr);
+            // Os alertas de prazo da Futura, boleto a vencer e O.S. parada na
+            // retirada saíram daqui: viraram pendências derivadas (ver
+            // lib/alertas/pendencias.js), reavaliadas a cada mudança de dado em
+            // vez de disparadas uma vez por carregamento.
 
-                // A montagem dos avisos e a marcação de "já disparado" ficam FORA
-                // do setState. O atualizador precisa ser puro: em desenvolvimento
-                // o React o executa duas vezes (Strict Mode, ligado por padrão no
-                // App Router), e mutar o Set lá dentro fazia a segunda passada
-                // concluir que o aviso já existia — devolvendo a lista sem ele.
-                // Mesmo formato que os alertas de boleto e de retirada já usam.
-                const novosAlertasFutura = [];
-                pedidosFuturaAlertar.forEach(p => {
-                    if (alertasFuturaDisparados.current.has(p.id)) return;
 
-                    let msg = `Prazo da Futura termina amanhã (O.S. #${p.id}). Retirar!`;
-                    if (p.prazo === hojeStr) msg = `Prazo da Futura é HOJE (O.S. #${p.id}). Retirar o quanto antes!`;
-                    else if (p.prazo < hojeStr) msg = `Prazo da Futura VENCIDO (O.S. #${p.id}). Verifique imediatamente!`;
-
-                    novosAlertasFutura.push({ id: Date.now() + Math.random(), msg, os_id: p.id, tipo: 'alerta_futura' });
-                    alertasFuturaDisparados.current.add(p.id);
-                });
-
-                if (novosAlertasFutura.length > 0) {
-                    setAlertasNaoLidos(prev => {
-                        const faltando = novosAlertasFutura.filter(n => !prev.some(a => a.os_id === n.os_id && a.tipo === 'alerta_futura'));
-                        return faltando.length > 0 ? [...prev, ...faltando] : prev;
-                    });
-                }
-            }
-
-            if (usuario?.nivel === 'Financeiro' || ehUsuario('Giovana')) {
-                const pedidosComBoletoAberto = todosPedidos
-                    .map(p => ({ ...p, pagamentos: p.pedido_pagamentos || [] }))
-                    .filter(p => !statusIgnoradosBoleto.includes(p.status) && p.prazo_pagamento && p.pagamentos.some(pag => pag.forma === 'Boleto' && !pag.boleto_concluido));
-
-                if (pedidosComBoletoAberto.length > 0) {
-                    let novosAlertasBoleto = [];
-                    pedidosComBoletoAberto.forEach(p => {
-                        if (p.prazo_pagamento === hojeStr || p.prazo_pagamento === amanhaStr) {
-                            const alertId = `${p.id}_${p.prazo_pagamento}`;
-                            if (!alertasBoletoDisparados.current.has(alertId)) {
-                                let msg = `O boleto da O.S. #${p.id} vence amanhã!`;
-                                if (p.prazo_pagamento === hojeStr) msg = `O boleto da O.S. #${p.id} vence HOJE!`;
-
-                                novosAlertasBoleto.push({ id: Date.now() + Math.random(), msg, os_id: p.id, tipo: 'alerta_boleto' });
-                                alertasBoletoDisparados.current.add(alertId);
-                            }
-                        }
-                    });
-
-                    if (novosAlertasBoleto.length > 0) {
-                        setAlertasNaoLidos(prev => {
-                            let mergeAlertas = [...prev];
-                            novosAlertasBoleto.forEach(n => {
-                                if (!mergeAlertas.some(a => a.msg === n.msg && a.os_id === n.os_id)) {
-                                    mergeAlertas.push(n);
-                                }
-                            });
-                            return mergeAlertas;
-                        });
-                    }
-                }
-            }
-
-            if (usuario?.nivel === 'Atendimento') {
-                const pedidosEmRetirada = todosPedidos.filter(p => p.status === 'Retirada' && p.data_retirada);
-                let novosAlertasRetirada = [];
-                pedidosEmRetirada.forEach(p => {
-                    const partes = p.data_retirada.split('-');
-                    if (partes.length !== 3) return;
-                    const dataRetirada = new Date(partes[0], partes[1] - 1, partes[2]);
-                    const diasEmRetirada = Math.floor((hoje - dataRetirada) / (1000 * 60 * 60 * 24));
-                    let faixa = null;
-                    if (diasEmRetirada >= 30) faixa = 30;
-                    else if (diasEmRetirada >= 15) faixa = 15;
-                    if (faixa) {
-                        const alertId = `${p.id}_retirada_${faixa}`;
-                        if (!alertasRetiradaDisparados.current.has(alertId)) {
-                            novosAlertasRetirada.push({ id: Date.now() + Math.random(), msg: `O.S. #${p.id} está há ${diasEmRetirada} dias aguardando retirada!`, os_id: p.id, tipo: 'alerta_retirada' });
-                            alertasRetiradaDisparados.current.add(alertId);
-                        }
-                    }
-                });
-
-                if (novosAlertasRetirada.length > 0) {
-                    setAlertasNaoLidos(prev => {
-                        let mergeAlertas = [...prev];
-                        novosAlertasRetirada.forEach(n => {
-                            if (!mergeAlertas.some(a => a.msg === n.msg && a.os_id === n.os_id)) {
-                                mergeAlertas.push(n);
-                            }
-                        });
-                        return mergeAlertas;
-                    });
-                }
-            }
         }
         
         const { data: listaProdutos } = await supabase.from('produtos').select('*').order('ordem', { ascending: true });
@@ -688,19 +554,16 @@ export const AppProvider = ({ children }) => {
         const { data: listaNotas } = await supabase.from('notas_fiscais').select('*').order('created_at', { ascending: false });
         if (listaNotas) {
             setNotasFiscais(listaNotas);
-            listaNotas.forEach(notificarSeNotaFiscalPreenchida);
         }
         
         const { data: listaEmpresasFaturamento } = await supabase.from('empresas_faturamento').select('*').order('nome', { ascending: true });
         if (listaEmpresasFaturamento) {
             setEmpresasFaturamento(listaEmpresasFaturamento);
-            listaEmpresasFaturamento.forEach(notificarSeFaturamentoEmAnalise);
         }
 
         const { data: listaContas, error: erroContas } = await supabase.from('contas_pagar').select('*').order('vencimento', { ascending: true });
         if (!erroContas && listaContas) {
             setContasPagar(listaContas);
-            listaContas.forEach(notificarSeContaPagarUrgente);
         }
 
         const { data: listaFornecedores } = await supabase.from('fornecedores').select('*').order('id', { ascending: true });
@@ -722,13 +585,11 @@ export const AppProvider = ({ children }) => {
         if (listaTar) {
             const listaTarAtualizada = await resetarTarefasFixasDoDia(listaTar);
             setTarefasInternas(listaTarAtualizada);
-            listaTarAtualizada.forEach(notificarSeTarefaMinha);
         }
 
         const { data: listaLnk } = await supabase.from('links_pagamento').select('*').order('created_at', { ascending: false }).limit(150);
         if (listaLnk) {
             setLinksPagamento(listaLnk);
-            listaLnk.forEach(notificarSeLinkPagamentoNovo);
         }
 
         setDadosCarregados(true);
@@ -1741,7 +1602,6 @@ export const AppProvider = ({ children }) => {
         }
         if (novaCopia) {
             setContasPagar(prev => [...prev, novaCopia[0]]);
-            notificarSeContaPagarUrgente(novaCopia[0]);
         }
     }
 
@@ -1784,7 +1644,6 @@ export const AppProvider = ({ children }) => {
             const { data, error } = await supabase.from('contas_pagar').update(contaFormatada).eq('id', novaConta.id).select();
             if (!error && data) {
                 setContasPagar(prev => prev.map(c => c.id === novaConta.id ? data[0] : c));
-                notificarSeContaPagarUrgente(data[0]);
                 if (tornouPaga && contaFormatada.recorrente) {
                     await criarCopiaRecorrente(data[0]);
                 }
@@ -1796,10 +1655,6 @@ export const AppProvider = ({ children }) => {
             const { data, error } = await supabase.from('contas_pagar').insert([contaFormatada]).select();
             if (!error && data) {
                 setContasPagar([...contasPagar, data[0]]);
-                if (usuario?.nivel === 'Financeiro' || ehUsuario('Giovana')) {
-                    setAlertasNaoLidos(prev => [...prev, { id: Date.now() + Math.random(), msg: `Nova conta a pagar: ${data[0].descricao}`, tipo: 'nova_conta_pagar' }]);
-                }
-                notificarSeContaPagarUrgente(data[0]);
                 setModalContaAberto(false);
             } else {
                 avisar('Falha ao salvar (Tabela contas_pagar existe no Supabase?): ' + (error?.message || 'Erro desconhecido'), 'erro');
@@ -1817,14 +1672,12 @@ export const AppProvider = ({ children }) => {
             const { data, error } = await supabase.from('empresas_faturamento').update(payload).eq('id', novaEmpresaFaturamento.id).select();
             if (!error && data) {
                 setEmpresasFaturamento(empresasFaturamento.map(x => x.id === data[0].id ? data[0] : x));
-                notificarSeFaturamentoEmAnalise(data[0]);
             }
             else if (error) avisar('Falha ao atualizar (A tabela empresas_faturamento foi criada?): ' + error.message, 'erro');
         } else {
             const { data, error } = await supabase.from('empresas_faturamento').insert([payload]).select();
             if (!error && data) {
                 setEmpresasFaturamento([...empresasFaturamento, data[0]]);
-                notificarSeFaturamentoEmAnalise(data[0]);
             }
             else if (error) avisar('Falha ao salvar (A tabela empresas_faturamento foi criada?): ' + error.message, 'erro');
         }
@@ -1986,7 +1839,6 @@ export const AppProvider = ({ children }) => {
         const { data, error } = await supabase.from('notas_fiscais').update(payload).eq('id', notaFiscalEmEdicao.id).select();
         if (!error && data) {
             setNotasFiscais(notasFiscais.map(n => n.id === notaFiscalEmEdicao.id ? data[0] : n));
-            notificarSeNotaFiscalPreenchida(data[0]);
             setModalNotaFiscalAberto(false);
         } else {
             avisar('Falha ao atualizar nota: ' + error.message, 'erro');
@@ -2056,9 +1908,6 @@ export const AppProvider = ({ children }) => {
         const { data, error } = await supabase.from('notas_fiscais').insert([payload]).select();
         if (!error && data) {
             setNotasFiscais(prev => [data[0], ...prev]);
-            if (usuario?.nivel === 'Administrador' || usuario?.nivel === 'Atendimento' || usuario?.nivel === 'Produção') {
-                setAlertasNaoLidos(prev => [...prev, { id: Date.now() + Math.random(), msg: `Nova Nota Fiscal solicitada (${data[0].cliente || data[0].cnpj})`, os_id: null, tipo: 'nf_nova' }]);
-            }
         } else {
             avisar('Falha ao gerar nova nota: ' + (error?.message || 'Erro desconhecido'), 'erro');
         }
@@ -2095,7 +1944,6 @@ export const AppProvider = ({ children }) => {
         const { data, error } = await supabase.from('links_pagamento').update({ status: 'Pago' }).eq('id', id).select();
         if (!error && data) {
             setLinksPagamento(linksPagamento.map(x => x.id === id ? data[0] : x));
-            notificarSeLinkPagamentoNovo(data[0]);
         }
     }
 
@@ -2228,7 +2076,6 @@ export const AppProvider = ({ children }) => {
             if (error) console.error("Erro ao salvar tarefa:", error);
             if (!error && data && data.length > 0) {
                 setTarefasInternas(prev => [data[0], ...prev]);
-                notificarSeTarefaMinha(data[0]);
             }
         } else {
             const { id, ...rest } = payload;
@@ -2236,7 +2083,6 @@ export const AppProvider = ({ children }) => {
             if (error) console.error("Erro ao atualizar tarefa:", error);
             if (!error && data && data.length > 0) {
                 setTarefasInternas(prev => prev.map(t => t.id === id ? data[0] : t));
-                notificarSeTarefaMinha(data[0]);
             }
         }
         setModalTarefaAberto(false);
@@ -2259,14 +2105,12 @@ export const AppProvider = ({ children }) => {
             if (error) console.error("Erro ao salvar link:", error);
             if (!error && data) {
                 setLinksPagamento([data[0], ...linksPagamento]);
-                notificarSeLinkPagamentoNovo(data[0]);
             }
         } else {
             const { id, ...rest } = payload;
             const { data, error } = await supabase.from('links_pagamento').update(rest).eq('id', id).select();
             if (!error && data) {
                 setLinksPagamento(linksPagamento.map(l => l.id === id ? data[0] : l));
-                notificarSeLinkPagamentoNovo(data[0]);
             }
         }
         setModalLinkAberto(false);
@@ -2355,13 +2199,19 @@ export const AppProvider = ({ children }) => {
     }), [acoes, isAdmin, isOperador, isDemo, usuario, usuariosSistema, googleVinculado, loginInput, senhaInput, erroLogin, darkMode]);
 
     const uiValue = useMemo(() => ({
-        alertasNaoLidos, setAlertasNaoLidos, toasts, pendingConfirm,
+        toasts, pendingConfirm,
         contextMenu, modalAlertasAberto, setModalAlertasAberto,
         calculadoraAtiva, setCalculadoraAtiva,
+        pendencias: pendencias.pendencias,
+        pendenciasUrgentes: pendencias.urgentes,
+        pendenciasPorDestino: pendencias.porDestino,
+        pendenciaGravidade: pendencias.gravidadeGeral,
+        resumoDeEntrada: pendencias.resumoDeEntrada,
+        fecharResumoDeEntrada: pendencias.fecharResumoDeEntrada,
         removerToast: acoes.removerToast, avisar: acoes.avisar, confirmar: acoes.confirmar,
         resolverConfirm: acoes.resolverConfirm, abrirContextMenu: acoes.abrirContextMenu,
         fecharContextMenu: acoes.fecharContextMenu, carregarDados: acoes.carregarDados,
-    }), [acoes, alertasNaoLidos, toasts, pendingConfirm, contextMenu, modalAlertasAberto, calculadoraAtiva]);
+    }), [acoes, toasts, pendingConfirm, contextMenu, modalAlertasAberto, calculadoraAtiva, pendencias]);
 
     const chatValue = useMemo(() => ({
         chatAberto, setChatAberto, chatMensagens, chatNaoLidas, enviandoChat,

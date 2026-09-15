@@ -2,6 +2,7 @@
 import { useSyncExternalStore } from 'react';
 import { AppProvider } from '@/context/AppContext';
 import Navbar from '@/components/Navbar';
+import FaixaPendencias from '@/components/FaixaPendencias';
 import Modals from '@/components/Modals';
 import ChatPanel from '@/components/ChatPanel';
 import PrintLayout from '@/components/PrintLayout';
@@ -29,6 +30,7 @@ export default function AppLayout({ children }) {
                     propósito — precisam continuar operantes. */}
                 <div className="contents" inert={modalAberto}>
                     <Navbar />
+                    <FaixaPendencias />
                     <div className="flex-1 bg-fundo relative">
                         <PageTransition>{children}</PageTransition>
                     </div>

@@ -8,7 +8,8 @@ import { useChatEquipe } from "@/context/ChatContext";
 import Icon from "@/components/Icon";
 import Tooltip from "@/components/Tooltip";
 import { CustomSelect } from "@/components/ui/Dropdown";
-import { useNavegarAlerta } from "@/hooks/useNavegarAlerta";
+import { useIrParaPendencia } from "@/hooks/useIrParaPendencia";
+import { gravidadeDe } from "@/lib/alertas/pendencias";
 
 // Um destino por linha, com quem enxerga cada um.
 //
@@ -54,12 +55,12 @@ function AtalhosExternos({ className = '' }) {
 
 export default function Navbar() {
     const { toggleDarkMode, darkMode, usuario, logout, googleVinculado, vincularGoogle, desvincularGoogle } = useSessao();
-    const { setModalAlertasAberto, modalAlertasAberto, alertasNaoLidos, setAlertasNaoLidos, confirmar } = useUi();
+    const { setModalAlertasAberto, modalAlertasAberto, pendencias, pendenciasPorDestino, pendenciaGravidade, confirmar } = useUi();
     const { abrirChat, chatNaoLidas } = useChatEquipe();
     const notificacoesRef = useRef(null);
     const atalhosRef = useRef(null);
     const [atalhosAbertos, setAtalhosAbertos] = useState(false);
-    const navegarParaAlerta = useNavegarAlerta();
+    const irParaPendencia = useIrParaPendencia();
     const pathname = usePathname();
     const router = useRouter();
 
@@ -117,9 +118,12 @@ export default function Navbar() {
                         <div className="relative shrink-0" ref={notificacoesRef}>
                             <button onClick={() => setModalAlertasAberto(!modalAlertasAberto)} aria-label="Notificações" className="p-2 rounded-md hover:bg-realce transition text-gray-600 dark:text-[#888888] relative">
                                 <Icon name="bell" className="w-5 h-5" />
-                                {alertasNaoLidos.length > 0 && (
-                                    <span className="absolute top-0.5 right-0.5 min-w-[14px] h-[14px] px-1 flex items-center justify-center bg-red-500 text-white text-[9px] font-bold rounded-full shadow-sm">
-                                        {alertasNaoLidos.length}
+                                {/* O número conta pendências abertas, não avisos não lidos:
+                                    ele só cai quando o trabalho é feito. E a cor já diz o
+                                    que fazer primeiro — vermelho tem coisa atrasada. */}
+                                {pendencias.length > 0 && (
+                                    <span className={`absolute top-0.5 right-0.5 min-w-[14px] h-[14px] px-1 flex items-center justify-center text-white text-[9px] font-bold rounded-full shadow-sm ${gravidadeDe(pendenciaGravidade).contador}`}>
+                                        {pendencias.length}
                                     </span>
                                 )}
                             </button>
@@ -131,33 +135,34 @@ export default function Navbar() {
                                 onde há espaço de sobra. */}
                             {modalAlertasAberto && (
                                 <div className="fixed left-2 right-2 top-[calc(var(--altura-barra)+0.25rem)] w-auto sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-2 sm:w-64 bg-elevado border border-borda rounded-lg shadow-lg py-2 z-50">
-                                    <div className="px-4 py-2 border-b border-borda-fraca flex justify-between items-center">
-                                        <h3 className="font-semibold text-corpo dark:text-white">Notificações</h3>
-                                        {alertasNaoLidos.length > 0 && (
-                                            <button onClick={() => setAlertasNaoLidos([])} className="text-mini text-brand hover:underline">Limpar</button>
-                                        )}
+                                    <div className="px-4 py-2 border-b border-borda-fraca">
+                                        <h3 className="font-semibold text-corpo dark:text-white">Pendências</h3>
                                     </div>
+                                    {/* Não há botão de limpar nem X por item, de propósito:
+                                        uma pendência sai daqui quando é resolvida. É o que
+                                        torna o número confiável — antes dava para zerar o
+                                        sino sem ter feito nada. */}
                                     <div className="max-h-60 overflow-y-auto custom-scrollbar">
-                                        {alertasNaoLidos.length === 0 ? (
-                                            <p className="px-4 py-4 text-mini text-gray-500 text-center">Nenhuma nova notificação.</p>
+                                        {pendencias.length === 0 ? (
+                                            <p className="px-4 py-5 text-mini text-gray-500 text-center">Nada pendente. Tudo em dia.</p>
                                         ) : (
-                                            alertasNaoLidos.slice().reverse().map(alerta => (
-                                                <div key={alerta.id} className="px-4 py-3 hover:bg-sutil border-b border-gray-50 dark:border-darkBorder/50 last:border-0 cursor-pointer flex justify-between items-start group" onClick={() => {
-                                                    setModalAlertasAberto(false);
-                                                    navegarParaAlerta(alerta);
-                                                }}>
-                                                    <div className="flex-1 pr-2">
-                                                        <p className="text-mini text-tinta">{alerta.msg}</p>
-                                                        <span className="text-micro text-gray-400 mt-1 block">Agora</span>
-                                                    </div>
-                                                    <button type="button" onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        setAlertasNaoLidos(prev => prev.filter(a => a.id !== alerta.id));
-                                                    }} className="text-gray-400 hover:text-gray-600 dark:hover:text-white opacity-0 group-hover:opacity-100 transition p-1">
-                                                        <Icon name="x" className="w-3 h-3" />
+                                            pendencias.map(pendencia => {
+                                                const g = gravidadeDe(pendencia.gravidade);
+                                                return (
+                                                    <button
+                                                        key={pendencia.id}
+                                                        type="button"
+                                                        onClick={() => { setModalAlertasAberto(false); irParaPendencia(pendencia); }}
+                                                        className="w-full text-left px-4 py-3 hover:bg-sutil border-b border-gray-50 dark:border-darkBorder/50 last:border-0 flex items-start gap-2.5"
+                                                    >
+                                                        <span className={`shrink-0 w-1.5 h-1.5 rounded-full mt-1.5 ${g.ponto}`} />
+                                                        <span className="min-w-0 flex-1">
+                                                            <span className={`block text-mini font-semibold ${g.texto}`}>{pendencia.titulo}</span>
+                                                            <span className="block text-mini text-tinta-suave truncate">{pendencia.detalhe}</span>
+                                                        </span>
                                                     </button>
-                                                </div>
-                                            ))
+                                                );
+                                            })
                                         )}
                                     </div>
                                 </div>
@@ -250,7 +255,10 @@ export default function Navbar() {
                             placeholder="Ir para..."
                             options={destinos.map(d => ({
                                 value: d.href,
-                                label: d.rotulo,
+                                // O número entra no próprio rótulo: o seletor fechado só
+                                // mostra o texto da opção, e um selo ao lado sumiria
+                                // justamente quando a tela não está selecionada.
+                                label: pendenciasPorDestino[d.href] ? `${d.rotulo} (${pendenciasPorDestino[d.href]})` : d.rotulo,
                                 icon: <Icon name={d.icone} className={`w-4 h-4 shrink-0 ${d.href === pathname ? 'text-brand' : 'text-tinta-suave'}`} />,
                             }))}
                         />
@@ -286,6 +294,7 @@ export default function Navbar() {
                     <div className="hidden lg:flex gap-1.5 overflow-x-auto custom-scrollbar no-scrollbar-style items-end pt-2.5 h-full">
                         {destinos.map(({ href, rotulo, icone }) => {
                             const ativo = pathname === href;
+                            const quantas = pendenciasPorDestino[href] || 0;
                             return (
                                 <Link
                                     key={href}
@@ -293,6 +302,13 @@ export default function Navbar() {
                                     className={`px-4 py-2.5 text-corpo font-semibold cursor-pointer transition-all duration-200 whitespace-nowrap shrink-0 rounded-t-lg flex items-center gap-2 tracking-wide uppercase border-t-2 ${ativo ? 'bg-fundo text-tinta border-brand shadow-[0_-2px_6px_rgba(0,0,0,0.08)]' : 'border-transparent text-tinta-suave hover:bg-sutil hover:text-tinta'}`}
                                 >
                                     <Icon name={icone} className={`w-4 h-4 shrink-0 ${ativo ? 'text-brand' : ''}`} /> {rotulo}
+                                    {/* Diz ONDE está o trabalho: o sino dá o total, a aba
+                                        aponta a tela. */}
+                                    {quantas > 0 && (
+                                        <span className="min-w-[18px] h-[18px] px-1 flex items-center justify-center bg-brand text-white text-[10px] font-bold rounded-full">
+                                            {quantas}
+                                        </span>
+                                    )}
                                 </Link>
                             );
                         })}

@@ -2,7 +2,7 @@
 import { useEffect } from 'react';
 import { useSessao } from '@/context/SessaoContext';
 import { useUi } from '@/context/UiContext';
-import { useNavegarAlerta } from '@/hooks/useNavegarAlerta';
+import { useIrParaPendencia } from '@/hooks/useIrParaPendencia';
 import Icon from '@/components/Icon';
 
 const DURACAO_MS = 6000;
@@ -50,7 +50,7 @@ function Toast({ alerta, onFechar, onClicar }) {
 export default function ToastContainer() {
     const { usuario } = useSessao();
     const { toasts, removerToast } = useUi();
-    const navegarParaAlerta = useNavegarAlerta();
+    const irParaPendencia = useIrParaPendencia();
 
     if (!usuario || toasts.length === 0) return null;
 
@@ -64,7 +64,7 @@ export default function ToastContainer() {
                     key={alerta.id}
                     alerta={alerta}
                     onFechar={() => removerToast(alerta.id)}
-                    onClicar={() => { if (!alerta.avisoManual) navegarParaAlerta(alerta); removerToast(alerta.id); }}
+                    onClicar={() => { if (alerta.pendencia) irParaPendencia(alerta.pendencia); removerToast(alerta.id); }}
                 />
             ))}
         </div>
