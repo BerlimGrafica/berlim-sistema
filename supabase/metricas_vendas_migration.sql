@@ -175,13 +175,20 @@ ranking_cliente as (
     group by chave, eh_balcao
 ),
 
+-- As três séries de "Faturamento no tempo" leem base_historico, e não base:
+-- elas mostram a evolução do faturamento, que é uma leitura de tendência e não
+-- do recorte selecionado. Com o filtro aplicado, "por dia" dentro de um período
+-- de um mês repetia o que o próprio filtro já dizia, e comparar dois meses
+-- exigia trocar o período — justamente o que a série deveria evitar.
+-- O `limit 15` é o que segura o tamanho: são sempre os 15 dias, meses e anos
+-- mais recentes COM faturamento, independente do intervalo escolhido em cima.
 serie_dia as (
     select to_char(data_pedido, 'YYYY-MM-DD') as rotulo, sum(valor_total)::bigint as centavos
-    from base group by 1 order by 1 desc limit 15
+    from base_historico group by 1 order by 1 desc limit 15
 ),
 serie_mes as (
     select to_char(data_pedido, 'YYYY-MM') as rotulo, sum(valor_total)::bigint as centavos
-    from base group by 1 order by 1 desc limit 15
+    from base_historico group by 1 order by 1 desc limit 15
 ),
 serie_ano as (
     select to_char(data_pedido, 'YYYY') as rotulo, sum(valor_total)::bigint as centavos

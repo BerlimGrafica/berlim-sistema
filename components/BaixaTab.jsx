@@ -43,6 +43,19 @@ export default function BaixaTab() {
                                 <h1 className="text-2xl lg:text-3xl font-black text-tinta tracking-tight">Histórico de Notas</h1>
                                 <p className="text-corpo text-tinta-suave mt-1">Busque ordens e filtre por período.</p>
                             </div>
+                            {/* Quantas O.S. a aba tem, e não o recorte da página: o
+                                intervalo "1–50" diz mais sobre a paginação do que
+                                sobre o resultado, e a paginação já tem o seu próprio
+                                rodapé. Some enquanto a consulta não voltou, em vez de
+                                piscar zero. O mesmo cabeçalho serve as cinco sub-abas. */}
+                            {historicoCarregado && totalPedidosHistorico > 0 && (
+                                <span className="shrink-0 inline-flex items-baseline gap-1.5 rounded-full border border-brand/25 bg-brand/[0.07] px-4 py-1.5 whitespace-nowrap">
+                                    <span className="text-lg font-black tabular-nums text-brand leading-none">
+                                        {totalPedidosHistorico.toLocaleString('pt-BR')}
+                                    </span>
+                                    <span className="text-micro font-bold uppercase tracking-widest text-tinta-suave">O.S.</span>
+                                </span>
+                            )}
                             <div className="hidden lg:flex flex-wrap items-end gap-3 w-full lg:w-auto">
                                 <div className="relative flex-1 min-w-[200px]">
                                     <Icon name="search" className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />

@@ -175,14 +175,14 @@ export default function VisaoGeralPanel({ metricas, rotulo }) {
                     {/* SLIDE 1: FATURAMENTO NO TEMPO */}
                     <div className="w-full shrink-0 snap-start pr-1">
                         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                            <CardPainel titulo="Por ano" descricao="Todo o histórico, fora do período" icone="calendar" fundoIcone="bg-blue-50 dark:bg-blue-500/10" corIcone="text-info">
+                            <CardPainel titulo="Por ano" descricao="Últimos 15 anos com faturamento" icone="calendar" fundoIcone="bg-blue-50 dark:bg-blue-500/10" corIcone="text-info">
                                 <Barras itens={metricas.serie_ano} corFixa="bg-blue-500" vazio="Sem faturamento registrado." />
                             </CardPainel>
-                            <CardPainel titulo="Por mês" descricao="Meses dentro do período" icone="layout-dashboard" fundoIcone="bg-emerald-50 dark:bg-emerald-500/10" corIcone="text-sucesso">
-                                <Barras itens={metricas.serie_mes} corFixa="bg-emerald-500" rotuloDe={(i) => formatarMesAno(i.rotulo)} vazio="Nenhum mês com faturamento no período." />
+                            <CardPainel titulo="Por mês" descricao="Últimos 15 meses com faturamento" icone="layout-dashboard" fundoIcone="bg-emerald-50 dark:bg-emerald-500/10" corIcone="text-sucesso">
+                                <Barras itens={metricas.serie_mes} corFixa="bg-emerald-500" rotuloDe={(i) => formatarMesAno(i.rotulo)} vazio="Sem faturamento registrado." />
                             </CardPainel>
-                            <CardPainel titulo="Por dia" descricao="Dias dentro do período" icone="list" fundoIcone="bg-purple-50 dark:bg-purple-500/10" corIcone="text-purple-600 dark:text-purple-400">
-                                <Barras itens={metricas.serie_dia} corFixa="bg-purple-500" rotuloDe={(i) => formatarDataExibicao(i.rotulo).substring(0, 5)} vazio="Nenhum dia com faturamento no período." />
+                            <CardPainel titulo="Por dia" descricao="Últimos 15 dias com faturamento" icone="list" fundoIcone="bg-purple-50 dark:bg-purple-500/10" corIcone="text-purple-600 dark:text-purple-400">
+                                <Barras itens={metricas.serie_dia} corFixa="bg-purple-500" rotuloDe={(i) => formatarDataExibicao(i.rotulo).substring(0, 5)} vazio="Sem faturamento registrado." />
                             </CardPainel>
                         </div>
                     </div>
