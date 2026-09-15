@@ -84,7 +84,10 @@ export default function ContasAPagarPanel({ mes, aoMudarMes }) {
         if (conta.vencimento === amanhaStr) {
             return { label: 'Vence amanhã', cor: 'bg-amber-50 border-amber-200 text-aviso dark:bg-amber-900/20 dark:border-amber-800/50' };
         }
-        return { label: 'Aberto', cor: 'bg-realce border-borda-forte text-tinta-suave' };
+        // Em aberto é dívida, não estado neutro: em cinza ela se misturava à
+        // linha e só a conta já vencida chamava atenção — quando o objetivo é
+        // pagar ANTES de vencer.
+        return { label: 'Aberto', cor: 'bg-red-50 border-red-200 text-perigo dark:bg-red-900/20 dark:border-red-800/50' };
     };
 
     // Semáforo no contorno da data, como o prazo da O.S. já faz: verde quitada,
