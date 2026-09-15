@@ -211,8 +211,8 @@ export const AppProvider = ({ children }) => {
     const {
         chatAberto, setChatAberto,
         chatMensagens, setChatMensagens,
-        chatNaoLidas, setChatNaoLidas,
-        enviandoChat, chatAbertoRef,
+        chatNaoLidas,
+        enviandoChat,
         carregarChat, nomeDoUsuarioChat, abrirChat, enviarMensagemChat, excluirMensagemChat,
     } = useChat(usuario, usuariosSistema, avisar);
 
@@ -365,8 +365,10 @@ export const AppProvider = ({ children }) => {
 
             chat_mensagens: (payload) => {
                 if (payload.eventType === 'INSERT') {
+                    // Só entrega a mensagem. A contagem de não lidas é derivada
+                    // dela em hooks/useChat.js, então ela fica certa mesmo quando
+                    // este evento não chega e a mensagem só aparece na recarga.
                     setChatMensagens(prev => prev.some(m => m.id === payload.new.id) ? prev : [...prev, payload.new]);
-                    if (!chatAbertoRef.current && payload.new.usuario_id !== usuario?.id) setChatNaoLidas(prev => prev + 1);
                 } else if (payload.eventType === 'DELETE') {
                     setChatMensagens(prev => prev.filter(m => m.id !== payload.old.id));
                 }
@@ -443,6 +445,25 @@ export const AppProvider = ({ children }) => {
         }
         document.addEventListener('visibilitychange', aoVoltarVisivel);
         return () => document.removeEventListener('visibilitychange', aoVoltarVisivel);
+    }, [usuario]);
+
+    // Rede de segurança só do chat.
+    //
+    // As duas redundâncias acima dependem de um SINAL: o canal reportar que caiu
+    // e voltou, ou a aba sair e voltar. Nenhuma das duas cobre o caso em que o
+    // canal continua se dizendo conectado e simplesmente para de entregar, numa
+    // tela que fica aberta o dia inteiro — que é justamente quando alguém manda
+    // mensagem e ela não chega em máquina nenhuma.
+    //
+    // Releitura periódica resolve sem depender de sinal. É só o chat porque a
+    // consulta é uma só e limitada a 200 linhas; carregarDados() pagina a base
+    // inteira e seria caro demais para rodar em laço.
+    useEffect(() => {
+        if (!usuario) return;
+        const relogio = setInterval(() => {
+            if (document.visibilityState === 'visible') carregarChat();
+        }, 60000);
+        return () => clearInterval(relogio);
     }, [usuario]);
 
 
