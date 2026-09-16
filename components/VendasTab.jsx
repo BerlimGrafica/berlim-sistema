@@ -9,6 +9,7 @@ import VendasPorClientePanel from '@/components/vendas/VendasPorClientePanel';
 import SeletorPeriodo, { periodoPadrao, rotuloPeriodo } from '@/components/vendas/SeletorPeriodo';
 import { useMetricasVendas } from '@/hooks/useMetricasVendas';
 import { SubAbas } from '@/components/ui/SubAbas';
+import { podeVerTela, subtelasVisiveis } from '@/lib/acesso/telas';
 
 const ABAS = {
     geral: { titulo: 'Dashboard de Vendas', descricao: 'Análise de receitas, centros de custo e desempenho.' },
@@ -24,7 +25,7 @@ export default function VendasTab() {
     // Uma única chamada alimenta os três painéis: eles só exibem.
     const { metricas, carregando, erro } = useMetricasVendas(periodo.inicio, periodo.fim, triggerRealtime);
 
-    const podeVer = usuario?.nivel === 'Administrador' || usuario?.nivel === 'Financeiro';
+    const podeVer = podeVerTela(usuario, '/vendas');
     const aba = ABAS[abaVendas] || ABAS.geral;
 
     return (
@@ -32,11 +33,7 @@ export default function VendasTab() {
             <SubAbas
                 valor={abaVendas}
                 aoMudar={setAbaVendas}
-                abas={[
-                    { id: 'geral',          rotulo: 'Visão Geral',        icone: 'pie-chart' },
-                    { id: 'vendas_produto', rotulo: 'Vendas por Produto', icone: 'tag' },
-                    { id: 'vendas_cliente', rotulo: 'Vendas por Cliente', icone: 'users' },
-                ]}
+                abas={subtelasVisiveis(usuario, 'vendas')}
             />
 
             {podeVer && (

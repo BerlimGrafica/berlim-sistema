@@ -4,6 +4,7 @@ import { AppProvider } from '@/context/AppContext';
 import Navbar from '@/components/Navbar';
 import FaixaPendencias from '@/components/FaixaPendencias';
 import FaviconPendencias from '@/components/FaviconPendencias';
+import GuardaDeAcesso from '@/components/GuardaDeAcesso';
 import Modals from '@/components/Modals';
 import ChatPanel from '@/components/ChatPanel';
 import PrintLayout from '@/components/PrintLayout';
@@ -33,7 +34,7 @@ export default function AppLayout({ children }) {
                     <Navbar />
                     <FaixaPendencias />
                     <div className="flex-1 bg-fundo relative">
-                        <PageTransition>{children}</PageTransition>
+                        <PageTransition><GuardaDeAcesso>{children}</GuardaDeAcesso></PageTransition>
                     </div>
                 </div>
                 <Modals />

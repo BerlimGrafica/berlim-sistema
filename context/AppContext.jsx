@@ -279,12 +279,19 @@ export const AppProvider = ({ children }) => {
     const [novoCliente, setNovoCliente] = useState({ id: null, nome: '', telefone: '', email: '', observacoes: '', cliente_problema: false });
 
     const [modalUsuarioAberto, setModalUsuarioAberto] = useState(false);
-    const [novoUsuario, setNovoUsuario] = useState({ id: null, nome: '', email: '', senha: '', nivel: 'Atendimento' });
+    // `telas: null` = segue o padrão do cargo (ver lib/acesso/telas.js). Uma
+    // conta nova nasce assim; a lista própria só existe se o administrador
+    // ligar "Personalizar" no modal.
+    const [novoUsuario, setNovoUsuario] = useState({ id: null, nome: '', email: '', senha: '', nivel: 'Atendimento', telas: null });
 
     // Espelho de `pedidos` para consulta dentro dos tratadores de tempo real,
     // que capturam o estado da renderização em que foram registrados.
     const pedidosRef = useRef([]);
     pedidosRef.current = pedidos;
+    // Mesmo motivo, para o perfil da sessão: o tratador de `profiles` precisa
+    // saber de quem é a linha que acabou de mudar.
+    const usuarioRef = useRef(null);
+    usuarioRef.current = usuario;
 
     // Coalescedor de rajadas: salvar uma O.S. regrava todos os itens e
     // pagamentos (delete + insert), o que produz uma dezena de eventos em
@@ -376,7 +383,16 @@ export const AppProvider = ({ children }) => {
 
             // Cadastros e listas simples: o payload basta, sem consulta nenhuma.
             produtos: (payload) => aplicarEventoNaLista(setProdutos, payload, porOrdem),
-            profiles: (payload) => aplicarEventoNaLista(setUsuariosSistema, payload, porNome),
+            profiles: (payload) => {
+                aplicarEventoNaLista(setUsuariosSistema, payload, porNome);
+                // O perfil da sessão foi lido uma vez, no login. Sem isto, tirar
+                // ou dar uma tela a alguém só valeria no próximo login dela — e
+                // o administrador não teria como saber disso. Aqui a mudança
+                // chega à pessoa conectada na hora: o menu se refaz sozinho.
+                if (payload.eventType === 'UPDATE' && payload.new?.id === usuarioRef.current?.id) {
+                    setUsuario(prev => (prev ? { ...prev, ...payload.new } : prev));
+                }
+            },
             fornecedores: (payload) => aplicarEventoNaLista(setFornecedores, payload, porId),
             fornecedores_terceirizacao_nomes: (payload) => aplicarEventoNaLista(setFornecedoresTerceirizacaoNomes, payload, porId),
             orcamentos_formalizados: (payload) => aplicarEventoNaLista(setOrcamentosFormalizados, payload, porCriacaoDesc),
@@ -1100,7 +1116,7 @@ export const AppProvider = ({ children }) => {
     }
 
     function abrirEdicaoUsuario(usr) {
-        setNovoUsuario({ id: usr.id, nome: usr.nome, email: '', senha: '', nivel: usr.nivel });
+        setNovoUsuario({ id: usr.id, nome: usr.nome, email: '', senha: '', nivel: usr.nivel, telas: usr.telas ?? null });
         setModalUsuarioAberto(true);
     }
 
@@ -1111,8 +1127,8 @@ export const AppProvider = ({ children }) => {
 
         const metodo = novoUsuario.id ? 'PUT' : 'POST';
         const payload = novoUsuario.id
-            ? { id: novoUsuario.id, nome: novoUsuario.nome, nivel: novoUsuario.nivel, novaSenha: novoUsuario.senha || undefined }
-            : { email: novoUsuario.email, senha: novoUsuario.senha, nome: novoUsuario.nome, nivel: novoUsuario.nivel };
+            ? { id: novoUsuario.id, nome: novoUsuario.nome, nivel: novoUsuario.nivel, telas: novoUsuario.telas, novaSenha: novoUsuario.senha || undefined }
+            : { email: novoUsuario.email, senha: novoUsuario.senha, nome: novoUsuario.nome, nivel: novoUsuario.nivel, telas: novoUsuario.telas };
 
         const resposta = await fetch('/api/usuarios', {
             method: metodo,
@@ -1128,9 +1144,16 @@ export const AppProvider = ({ children }) => {
 
         if (novoUsuario.id) {
             setUsuariosSistema(usuariosSistema.map(u => u.id === resultado.perfil.id ? resultado.perfil : u));
+            // Editar o próprio perfil (o caso comum: o administrador mexendo nas
+            // próprias telas) precisa refletir na sessão sem esperar o evento de
+            // tempo real, que não chega para quem fez a mudança em algumas rotas.
+            if (resultado.perfil.id === usuario?.id) setUsuario(prev => ({ ...prev, ...resultado.perfil }));
         } else {
             setUsuariosSistema([...usuariosSistema, resultado.perfil]);
         }
+        // A rota grava o que dá e devolve o que faltou — hoje, a migração das
+        // telas ainda não rodada no Supabase.
+        if (resultado.aviso) avisar(resultado.aviso, 'erro');
         setModalUsuarioAberto(false);
     }
 

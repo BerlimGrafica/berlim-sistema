@@ -10,26 +10,16 @@ import Tooltip from "@/components/Tooltip";
 import { CustomSelect } from "@/components/ui/Dropdown";
 import { useIrParaPendencia } from "@/hooks/useIrParaPendencia";
 import { gravidadeDe } from "@/lib/alertas/pendencias";
+import { telasVisiveis } from "@/lib/acesso/telas";
 
-// Um destino por linha, com quem enxerga cada um.
+// A lista de destinos do menu vem de lib/acesso/telas.js, e não mais de uma
+// tabela escrita aqui dentro. Ela deixou de ser regra de menu: a mesma lista
+// responde pelo que abre por URL (o guarda de rota) e pelo que o administrador
+// marca no cadastro do usuário. Escrita em três lugares, divergiria na primeira
+// permissão nova — alguém veria a aba e tomaria um "acesso negado" ao clicar.
 //
-// Antes a permissão vivia no JSX, escrita à mão em torno de cada <Link>. Com o
-// seletor do celular seriam duas cópias da mesma regra por destino, e a primeira
-// mudança de permissão acertaria uma e esqueceria a outra — alguém veria a aba
-// numa largura de tela e não na outra. Aqui a regra existe uma vez e as duas
-// formas de navegação leem dela.
-const DESTINOS = [
-    { href: '/',              rotulo: 'Início',        icone: 'layout-dashboard', ve: () => true },
-    { href: '/producao',      rotulo: 'Produção',      icone: 'grid',             ve: n => n === 'Administrador' || n === 'Atendimento' || n === 'Produção' },
-    { href: '/baixa',         rotulo: 'O.S.',          icone: 'check-circle',     ve: () => true },
-    { href: '/calculadoras',  rotulo: 'Calculadoras',  icone: 'calculator',       ve: n => n !== 'Financeiro' },
-    { href: '/financeiro',    rotulo: 'Financeiro',    icone: 'dollar-sign',      ve: n => n === 'Administrador' || n === 'Financeiro' },
-    { href: '/vendas',        rotulo: 'Vendas',        icone: 'trending-up',      ve: n => n === 'Administrador' || n === 'Financeiro' },
-    { href: '/notas-fiscais', rotulo: 'Notas Fiscais', icone: 'file-text',        ve: n => n === 'Atendimento' },
-    { href: '/orcamentos',    rotulo: 'Orçamentos',    icone: 'edit-3',           ve: n => n !== 'Financeiro' },
-    { href: '/cadastros',     rotulo: 'Cadastros',     icone: 'users',            ve: n => n !== 'Financeiro' },
-    { href: '/comunicacao',   rotulo: 'Comunicação',   icone: 'mail',             ve: () => true },
-];
+// As duas formas de navegação (fita no desktop, seletor no celular) continuam
+// lendo da mesma variável, pelo mesmo motivo de antes.
 
 // Atalhos para os sites das terceirizadas. Os ícones vêm do serviço de favicon
 // do Google — se ele falhar, sobra o alt e o link continua clicável.
@@ -64,7 +54,7 @@ export default function Navbar() {
     const pathname = usePathname();
     const router = useRouter();
 
-    const destinos = DESTINOS.filter(d => d.ve(usuario?.nivel));
+    const destinos = telasVisiveis(usuario);
     const destinoAtual = destinos.find(d => d.href === pathname);
 
     useEffect(() => {

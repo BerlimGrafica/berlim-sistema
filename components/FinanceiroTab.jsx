@@ -12,11 +12,17 @@ import EmpresasAprovadasPanel from '@/components/financeiro/EmpresasAprovadasPan
 import NotasFiscaisPanel from '@/components/financeiro/NotasFiscaisPanel';
 import { SubAbas } from '@/components/ui/SubAbas';
 import { BarraAcoes } from '@/components/ui/BarraAcoes';
+import { podeVerTela, subtelasVisiveis } from '@/lib/acesso/telas';
 
 export default function FinanceiroTab() {
     const { usuario } = useSessao();
     const { notasFiscais, filtroNotas, buscaNotaFiscal, setBuscaNotaFiscal, setPaginaNotasFiscais, setFiltroNotas } = useNotasFiscais();
     const { setAbaFinanceiro, abaFinanceiro, mesContasPagar, setMesContasPagar, dataFiltroContasReceberInicio, setDataFiltroContasReceberInicio, dataFiltroContasReceberFim, setDataFiltroContasReceberFim, dataFiltroBoletosInicio, setDataFiltroBoletosInicio, dataFiltroBoletosFim, setDataFiltroBoletosFim, setNovaConta, setModalContaAberto, setModalEmpresaFaturamentoAberto } = useFinanceiro();
+
+    // As sub-abas vêm do catálogo de permissões; o ponto de pendência em Notas
+    // Fiscais é a única parte que depende de dado do momento e não caberia lá.
+    const abasFinanceiro = subtelasVisiveis(usuario, 'financeiro').map(a =>
+        a.id === 'notas_fiscais' ? { ...a, sinal: notasFiscais.some(n => !n.concluido) } : a);
 
     return (
         <>
@@ -24,19 +30,13 @@ export default function FinanceiroTab() {
                     <SubAbas
                         valor={abaFinanceiro}
                         aoMudar={setAbaFinanceiro}
-                        abas={[
-                            { id: 'contas_pagar',       rotulo: 'Contas a Pagar',   icone: 'file-text' },
-                            { id: 'contas_receber',     rotulo: 'Contas a Receber', icone: 'dollar-sign' },
-                            { id: 'boletos',            rotulo: 'Boletos',          icone: 'calendar' },
-                            { id: 'empresas_aprovadas', rotulo: 'Faturamento',      icone: 'check-circle' },
-                            { id: 'notas_fiscais',      rotulo: 'Notas Fiscais',    icone: 'file-text', sinal: notasFiscais.some(n => !n.concluido) },
-                        ]}
+                        abas={abasFinanceiro}
                     />
                 )}
 { /* <main> sem max-w, igual à Produção: as 5 sub-abas são tabelas largas (Boletos
      tem 11 colunas, Notas Fiscais 8) e o teto de 1400px deixava menos espaço que a
      soma das larguras mínimas — a última coluna saía pra fora pelo overflow-x-auto. */
-  (usuario?.nivel === 'Administrador' || usuario?.nivel === 'Financeiro') && (
+  podeVerTela(usuario, '/financeiro') && (
                     <main className="flex-1 p-6 lg:p-10 mx-auto w-full flex flex-col gap-6">
                         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 border-b border-borda-fraca pb-6 shrink-0">
                             <div>

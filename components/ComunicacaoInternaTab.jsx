@@ -6,6 +6,7 @@ import Icon from '@/components/Icon';
 import Tooltip from '@/components/Tooltip';
 import { formatarDataExibicao, mascararCliente, formatarMoeda, centavosParaReais } from '@/lib/utils/formatters';
 import { SubAbas } from '@/components/ui/SubAbas';
+import { subtelasVisiveis } from '@/lib/acesso/telas';
 import { BarraAcoes } from '@/components/ui/BarraAcoes';
 
 export default function ComunicacaoInternaTab() {
@@ -25,11 +26,7 @@ export default function ComunicacaoInternaTab() {
             <SubAbas
                 valor={abaComunicacao}
                 aoMudar={setAbaComunicacao}
-                abas={[
-                    { id: 'requisicoes', rotulo: 'Requisição de Material', icone: 'shopping-bag' },
-                    { id: 'tarefas',     rotulo: 'Tarefas',                icone: 'check-square' },
-                    { id: 'links',       rotulo: 'Link de Pagamento',      icone: 'link' },
-                ]}
+                abas={subtelasVisiveis(usuario, 'comunicacao')}
             />
 
             <div key={abaComunicacao} className="animate-fade-screen">

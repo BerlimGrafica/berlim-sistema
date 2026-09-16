@@ -11,12 +11,13 @@ import { formatarValorFinanceiro, formatarDataExibicao, mascararCliente, centavo
 import { CustomDateRangePicker } from '@/components/ui/DateRangePicker';
 import { TabelaCartoes } from '@/components/ui/TabelaCartoes';
 import { SubAbas } from '@/components/ui/SubAbas';
+import { subtelasVisiveis } from '@/lib/acesso/telas';
 import { BarraAcoes } from '@/components/ui/BarraAcoes';
 import { resumoDoPedido } from '@/lib/utils/servico';
 
 
 export default function BaixaTab() {
-    const { isAdmin, isOperador, isDemo } = useSessao();
+    const { usuario, isAdmin, isOperador, isDemo } = useSessao();
     const { abrirContextMenu, avisar } = useUi();
     const { setAbaOS, abaOS, buscaHistoricoText, setBuscaHistoricoText, dataFiltroInicio, setDataFiltroInicio, dataFiltroFim, setDataFiltroFim, pedidosHistorico, historicoCarregado, totalPedidosHistorico, itensPorPagina, paginaHistorico, setPaginaHistorico, ordenacaoHistoricoOS, setOrdenacaoHistoricoOS, abrirEdicao, imprimirOS, duplicarOS } = usePedidos();
     const { isClienteProblema } = useClientes();
@@ -27,13 +28,7 @@ export default function BaixaTab() {
                     <SubAbas
                         valor={abaOS}
                         aoMudar={setAbaOS}
-                        abas={[
-                            { id: 'abertas',     rotulo: 'Abertas',     icone: 'list' },
-                            { id: 'concluidas',  rotulo: 'À dar Baixa', icone: 'check-circle' },
-                            { id: 'finalizadas', rotulo: 'Baixadas',    icone: 'check-square' },
-                            { id: 'canceladas',  rotulo: 'Canceladas',  icone: 'x-circle' },
-                            { id: 'abandonadas', rotulo: 'Abandonadas', icone: 'alert-triangle' },
-                        ]}
+                        abas={subtelasVisiveis(usuario, 'baixa')}
                     />
                 )}
 { (

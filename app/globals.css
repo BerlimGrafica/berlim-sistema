@@ -298,3 +298,45 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover { opacity: 1; }
         --fonte-micro: 10px;
     }
 }
+
+/* ---- Entrada em cascata: cartões de permissão, chips da prévia ---- */
+/* Cada item recebe o mesmo movimento com um atraso proporcional ao índice
+   (style={{ animationDelay }} no JSX). `both` é obrigatório: sem ele o item
+   aparece inteiro, some no instante do atraso e volta. */
+@keyframes surgir-item {
+    from { opacity: 0; transform: translateY(8px) scale(0.97); }
+    to   { opacity: 1; transform: none; }
+}
+.animate-surgir { animation: surgir-item 0.3s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+/* Selo de "marcado": estoura um pouco antes de assentar, para o clique ter
+   resposta visível mesmo quando só muda uma cor de fundo. */
+@keyframes selo-pop {
+    0%   { opacity: 0; transform: scale(0.4); }
+    60%  { opacity: 1; transform: scale(1.15); }
+    100% { opacity: 1; transform: scale(1); }
+}
+.animate-selo { animation: selo-pop 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+
+@media (prefers-reduced-motion: reduce) {
+    .animate-surgir, .animate-selo { animation: none; }
+}
+
+/* ---- Gaveta: abre para baixo até a altura natural do conteúdo ---- */
+/* `height: auto` não é animável, e medir a altura em JS para escrever um pixel
+   fixo quebra quando o conteúdo muda de tamanho. A linha de grade interpola:
+   0fr -> 1fr percorre a altura real do filho, que só precisa esconder o que
+   ainda não coube. O `min-height: 0` é o que permite ele encolher abaixo do
+   próprio conteúdo — sem isso a grade trava na altura natural e nada se move. */
+.gaveta {
+    display: grid;
+    grid-template-rows: 0fr;
+    opacity: 0;
+    transition: grid-template-rows 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
+}
+.gaveta > * { overflow: hidden; min-height: 0; }
+.gaveta[data-aberta="true"] { grid-template-rows: 1fr; opacity: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+    .gaveta { transition: none; }
+}

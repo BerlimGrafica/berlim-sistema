@@ -1,4 +1,5 @@
 "use client";
+import { useEffect } from 'react';
 import Icon from '@/components/Icon';
 import { CustomSelect } from '@/components/ui/Dropdown';
 
@@ -16,6 +17,19 @@ import { CustomSelect } from '@/components/ui/Dropdown';
 // rótulo "Ver" na frente. Dois seletores idênticos, um debaixo do outro, não
 // diriam qual manda em qual.
 export function SubAbas({ valor, aoMudar, abas, className = '' }) {
+    // A aba escolhida pode não estar mais na lista: cada tela guarda a última
+    // sub-aba visitada num estado que sobrevive à navegação, e a permissão
+    // daquela sub-aba pode ter sido tirada desde então (ou o padrão do cargo
+    // simplesmente nunca a incluiu). Sem isto a faixa mostra as abas certas e o
+    // conteúdo abaixo fica vazio, porque cada tela compara `aba === 'x'` para
+    // decidir o que desenhar. Cai na primeira liberada, que sempre existe
+    // quando há abas.
+    useEffect(() => {
+        if (!abas.length) return;
+        if (abas.some(a => a.id === valor)) return;
+        aoMudar(abas[0].id);
+    }, [abas, valor, aoMudar]);
+
     return (
         <div className={`bg-fundo border-b border-borda z-20 sticky top-[var(--altura-cabecalho)] ${className}`}>
             {/* Celular. O seletor vem primeiro e o rótulo vai para o fim: assim ele

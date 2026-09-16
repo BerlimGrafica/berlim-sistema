@@ -1,12 +1,15 @@
 "use client";
 import React from 'react';
+import { useSessao } from '@/context/SessaoContext';
 import { useUi } from '@/context/UiContext';
 import { useCadastros } from '@/context/CadastrosContext';
 import { CalculadorasAba } from '@/components/calculadoras/CalculadorasAba';
 import { SubAbas } from '@/components/ui/SubAbas';
+import { subtelasVisiveis } from '@/lib/acesso/telas';
 
 
 export default function CalculadorasTab() {
+    const { usuario } = useSessao();
     const { setCalculadoraAtiva, calculadoraAtiva } = useUi();
     const { produtos } = useCadastros();
 
@@ -16,11 +19,7 @@ export default function CalculadorasTab() {
                     <SubAbas
                         valor={calculadoraAtiva}
                         aoMudar={setCalculadoraAtiva}
-                        abas={[
-                            { id: 'banner',    rotulo: 'Banner / Lona',        icone: 'image' },
-                            { id: 'adesivo',   rotulo: 'Adesivos (Vinil)',     icone: 'grid' },
-                            { id: 'casamento', rotulo: 'Papelaria Casamento',  icone: 'heart' },
-                        ]}
+                        abas={subtelasVisiveis(usuario, 'calculadoras')}
                     />
                 )}
 <CalculadorasAba calculadoraAtiva={calculadoraAtiva} produtos={produtos} />

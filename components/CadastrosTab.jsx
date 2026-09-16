@@ -13,6 +13,7 @@ import { SubAbas } from '@/components/ui/SubAbas';
 import { BarraAcoes } from '@/components/ui/BarraAcoes';
 import { TabelaCartoes } from '@/components/ui/TabelaCartoes';
 import { categoriaConta } from '@/lib/utils/constants';
+import { TELAS, cargoDe, telasVisiveis, usaPadraoDoCargo, subtelasVisiveis, podeVerSubtela } from '@/lib/acesso/telas';
 
 
 export default function CadastrosTab() {
@@ -27,16 +28,11 @@ export default function CadastrosTab() {
                     <SubAbas
                         valor={abaCadastros}
                         aoMudar={setAbaCadastros}
-                        abas={[
-                            { id: 'clientes',     rotulo: 'Clientes',              icone: 'users',   ve: usuario?.nivel === 'Administrador' || usuario?.nivel === 'Atendimento' || usuario?.nivel === 'Produção' },
-                            { id: 'produtos',     rotulo: 'Catálogo',              icone: 'package', ve: isAdmin },
-                            { id: 'fornecedores', rotulo: 'Fornecedores / Locais', icone: 'truck',   ve: isAdmin },
-                            { id: 'usuarios',     rotulo: 'Usuários',              icone: 'user',    ve: isAdmin },
-                        ].filter(a => a.ve !== false)}
+                        abas={subtelasVisiveis(usuario, 'cadastros')}
                     />
                 )}
                 <div key={abaCadastros} className="animate-fade-screen">
-                {abaCadastros === 'produtos' && isAdmin && (
+                {abaCadastros === 'produtos' && podeVerSubtela(usuario, 'cadastros', 'produtos') && (
                     <main className="flex-1 p-6 lg:p-10 max-w-[1200px] mx-auto w-full">
                         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 mb-6 border-b border-borda-fraca pb-6 shrink-0">
                             <div>
@@ -223,15 +219,15 @@ export default function CadastrosTab() {
                     </main>
                 )}
 {abaCadastros === 'clientes'}
-                {abaCadastros === 'usuarios' && isAdmin && (
+                {abaCadastros === 'usuarios' && podeVerSubtela(usuario, 'cadastros', 'usuarios') && (
                     <main className="flex-1 p-6 lg:p-10 max-w-[1200px] mx-auto w-full">
                         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 mb-6 border-b border-borda-fraca pb-6 shrink-0">
                             <div>
                                 <h1 className="text-2xl lg:text-3xl font-black text-tinta tracking-tight">Usuários do Sistema</h1>
-                                <p className="text-corpo text-tinta-suave mt-1">Gerencie os acessos da equipe (Administrador, Atendimento, Produção, Financeiro).</p>
+                                <p className="text-corpo text-tinta-suave mt-1">Defina o cargo de cada pessoa e quais telas ela abre. Clique em alguém para editar.</p>
                             </div>
                             <div className="hidden lg:flex flex-wrap items-center gap-3 w-full lg:w-auto">
-                                <button onClick={() => { setNovoUsuario({ id: null, nome: '', email: '', senha: '', nivel: 'Atendimento' }); setModalUsuarioAberto(true); }} className="bg-brand hover:bg-brandHover text-white h-[38px] px-4 text-corpo rounded-md font-semibold shadow-sm transition flex items-center gap-2">
+                                <button onClick={() => { setNovoUsuario({ id: null, nome: '', email: '', senha: '', nivel: 'Atendimento', telas: null }); setModalUsuarioAberto(true); }} className="bg-brand hover:bg-brandHover text-white h-[38px] px-4 text-corpo rounded-md font-semibold shadow-sm transition flex items-center gap-2">
                                     <Icon name="plus" className="w-4 h-4" /> Novo Usuário
                                 </button>
                             </div>
@@ -250,14 +246,36 @@ export default function CadastrosTab() {
                                         celula: u => u.nome,
                                     },
                                     {
+                                        // Quem foi personalizado precisa se distinguir na lista:
+                                        // sem isso, dois usuários de mesmo cargo parecem ter o
+                                        // mesmo acesso, e só abrindo cada um se descobre que não.
+                                        titulo: 'Telas liberadas',
+                                        rotuloCartao: 'Telas',
+                                        thClassName: 'px-6 py-4',
+                                        tdClassName: 'px-6 py-4 text-corpo text-tinta-suave',
+                                        celula: u => {
+                                            const quantas = telasVisiveis(u).length;
+                                            const padrao = usaPadraoDoCargo(u);
+                                            return (
+                                                <span className="inline-flex items-center gap-2">
+                                                    <Icon name={padrao ? 'lock' : 'check-square'} className={`w-3.5 h-3.5 shrink-0 ${padrao ? 'text-tinta-fraca' : 'text-brand'}`} />
+                                                    <span className={padrao ? '' : 'font-semibold text-tinta'}>
+                                                        {padrao ? 'Padrão do cargo' : 'Personalizado'}
+                                                    </span>
+                                                    <span className="text-micro text-tinta-fraca tabular-nums">{quantas} de {TELAS.length}</span>
+                                                </span>
+                                            );
+                                        },
+                                    },
+                                    {
                                         papel: 'selo',
                                         titulo: 'Nível de Acesso',
                                         rotuloCartao: 'Nível',
                                         thClassName: 'px-6 py-4 w-48 text-right',
                                         tdClassName: 'px-6 py-4 text-right',
                                         celula: u => (
-                                            <span className={`px-2 py-1 rounded text-micro uppercase tracking-wider border ${u.nivel === 'Administrador' ? 'bg-red-50 text-red-600 border-red-200' : u.nivel === 'Financeiro' ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-blue-50 text-blue-600 border-blue-200'}`}>
-                                                {u.nivel}
+                                            <span className={`px-2 py-1 rounded text-micro uppercase tracking-wider border ${cargoDe(u.nivel).selo}`}>
+                                                {cargoDe(u.nivel).rotulo}
                                             </span>
                                         ),
                                     },
@@ -267,7 +285,7 @@ export default function CadastrosTab() {
                     </main>
                 )}
 
-                {abaCadastros === 'fornecedores' && isAdmin && (
+                {abaCadastros === 'fornecedores' && podeVerSubtela(usuario, 'cadastros', 'fornecedores') && (
                     <main className="flex-1 p-6 lg:p-10 max-w-[1200px] mx-auto w-full">
                         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 mb-6 border-b border-borda-fraca pb-6 shrink-0">
                             <div>
@@ -423,7 +441,7 @@ export default function CadastrosTab() {
                                 setNovoCliente({ id: null, nome: '', telefone: '', email: '', observacoes: '', cliente_problema: false });
                                 setModalClienteAberto(true);
                             } else if (abaCadastros === 'usuarios') {
-                                setNovoUsuario({ id: null, nome: '', email: '', senha: '', nivel: 'Atendimento' });
+                                setNovoUsuario({ id: null, nome: '', email: '', senha: '', nivel: 'Atendimento', telas: null });
                                 setModalUsuarioAberto(true);
                             } else {
                                 setNovoFornecedor({ id: null, nome: '', contato: '', observacoes: '' });

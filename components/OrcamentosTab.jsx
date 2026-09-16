@@ -7,12 +7,13 @@ import Icon from '@/components/Icon';
 import Tooltip from '@/components/Tooltip';
 import { formatarMoeda, obterDataAtual, mascararCliente } from '@/lib/utils/formatters';
 import { SubAbas } from '@/components/ui/SubAbas';
+import { subtelasVisiveis } from '@/lib/acesso/telas';
 import { BarraAcoes } from '@/components/ui/BarraAcoes';
 import { TabelaCartoes } from '@/components/ui/TabelaCartoes';
 
 
 export default function OrcamentosTab() {
-    const { isAdmin, isDemo } = useSessao();
+    const { usuario, isAdmin, isDemo } = useSessao();
     const { setBuscaCliente, setItensPedido, setNovoPedido } = useOsModal();
     const { setAbaOrcamentos, abaOrcamentos, setOrcamentoFormalizadoEmEdicao, setModalOrcamentoFormalizadoAberto, orcamentosFormalizados, setNovoOrcamentoPre, setModalOrcamentoPreAberto, orcamentosPreProntos, abrirEdicaoOrcamento, transformarEmOS, baixarPDFOrcamento, excluirOrcamentoFormalizado, excluirOrcamentoPre } = useOrcamentos();
     const [buscaPreProntos, setBuscaPreProntos] = useState('');
@@ -32,10 +33,7 @@ export default function OrcamentosTab() {
                     <SubAbas
                         valor={abaOrcamentos}
                         aoMudar={setAbaOrcamentos}
-                        abas={[
-                            { id: 'formalizados', rotulo: 'Formalizados', icone: 'file-text' },
-                            { id: 'pre_prontos',  rotulo: 'Pré Prontos',  icone: 'file-text' },
-                        ]}
+                        abas={subtelasVisiveis(usuario, 'orcamentos')}
                     />
                 )}
                 <div key={abaOrcamentos} className="animate-fade-screen">
