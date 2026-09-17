@@ -2,10 +2,18 @@
 import { CalculadoraBanner } from '@/components/calculadoras/CalculadoraBanner';
 import { CalculadoraAdesivo } from '@/components/calculadoras/CalculadoraAdesivo';
 import { CalculadoraCasamento } from '@/components/calculadoras/CalculadoraCasamento';
+import { CalculadoraBloquinho } from '@/components/calculadoras/CalculadoraBloquinho';
+
+// A de bloquinhos é mais larga que as outras: ela tem duas colunas de resultado
+// (custo interno e faixas de quantidade) que, em 3xl, empilhavam e jogavam o
+// texto do WhatsApp para fora da primeira tela.
+const LARGURAS = { bloquinho: 'max-w-5xl' };
 
 export function CalculadorasAba({ calculadoraAtiva, produtos }) {
+    const largura = LARGURAS[calculadoraAtiva] || 'max-w-3xl';
+
     return (
-        <div className="flex-1 p-6 lg:p-10 mx-auto w-full max-w-3xl flex flex-col">
+        <div className={`flex-1 p-6 lg:p-10 mx-auto w-full ${largura} flex flex-col`}>
             <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 mb-6 border-b border-borda-fraca pb-6 shrink-0">
                 <div>
                     <h1 className="text-2xl lg:text-3xl font-black text-tinta tracking-tight">Calculadoras</h1>
@@ -17,6 +25,7 @@ export function CalculadorasAba({ calculadoraAtiva, produtos }) {
                 {calculadoraAtiva === 'banner' && <CalculadoraBanner />}
                 {calculadoraAtiva === 'adesivo' && <CalculadoraAdesivo produtos={produtos} />}
                 {calculadoraAtiva === 'casamento' && <CalculadoraCasamento />}
+                {calculadoraAtiva === 'bloquinho' && <CalculadoraBloquinho />}
             </div>
         </div>
     );
