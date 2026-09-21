@@ -8,8 +8,11 @@ export function BandeiraIcon({ nome, className = "w-6 h-4" }) {
             {children}
         </svg>
     );
-    const texto = (label, fill) => (
-        <text x="12" y="11.3" textAnchor="middle" fontSize="7.5" fontWeight="700" fontFamily="Arial, Helvetica, sans-serif" fill={fill} textLength="19" lengthAdjust="spacingAndGlyphs">{label}</text>
+    // `largura` existe para os rótulos curtos: esticar duas letras nos mesmos
+    // 19 pontos de "AMEX" deixaria o "nu" do Nubank deformado de um lado ao
+    // outro do selo.
+    const texto = (label, fill, largura = 19) => (
+        <text x="12" y="11.3" textAnchor="middle" fontSize="7.5" fontWeight="700" fontFamily="Arial, Helvetica, sans-serif" fill={fill} textLength={largura} lengthAdjust="spacingAndGlyphs">{label}</text>
     );
 
     switch (nome) {
@@ -21,6 +24,22 @@ export function BandeiraIcon({ nome, className = "w-6 h-4" }) {
         case 'HiperCard': return moldura('#C8102E', texto('HIPER', 'white'));
         case 'Maestro': return moldura('white', <><circle cx="9.5" cy="8" r="5" fill="#0099DF" /><circle cx="14.5" cy="8" r="5" fill="#ED0006" fillOpacity="0.85" /></>);
         case 'RedeShop': return moldura('#E4003A', texto('REDE', 'white'));
+
+        // Roxo com "nu" em vez do símbolo do Nubank, pela mesma razão das
+        // outras: o arquivo inteiro evita reproduzir marca registrada. O roxo
+        // sozinho já identifica — é o que a pessoa reconhece de relance.
+        case 'Nubank': return moldura('#820AD1', texto('nu', 'white', 9));
+
+        // "CREDIT" é o que a maquininha imprime quando não identifica a
+        // bandeira do cartão. Por isso o selo é um cartão genérico, com chip e
+        // tarja, e não uma sigla: ele diz "cartão, bandeira desconhecida", que
+        // é exatamente a informação que existe.
+        case 'CREDIT': return moldura('#475569', <>
+            <rect x="3" y="4.8" width="4.6" height="3.6" rx="0.8" fill="#EAB308" />
+            <rect x="3" y="10.4" width="9.5" height="1.5" rx="0.75" fill="white" fillOpacity="0.8" />
+            <rect x="14" y="10.4" width="7" height="1.5" rx="0.75" fill="white" fillOpacity="0.45" />
+        </>);
+
         default:
             return null;
     }
