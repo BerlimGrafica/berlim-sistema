@@ -17,7 +17,13 @@ import { BandeiraIcon } from '@/components/ui/BandeiraIcon';
 import { useModal } from '@/components/modals/useModal';
 import { obterCorFundoStatus } from '@/lib/utils/constants';
 
-const OPCOES_BANDEIRA = ['Visa', 'MasterCard', 'Elo', 'American Express', 'HiperCard', 'Maestro', 'RedeShop'].map(b => ({ value: b, label: b, icon: <BandeiraIcon nome={b} /> }));
+// Ordem de uso, não alfabética — e as duas últimas entraram no fim de
+// propósito, para não deslocar o que a equipe já clica no piloto automático.
+// "CREDIT" é o rótulo que a maquininha imprime quando não identifica a
+// bandeira; fica escrito assim mesmo, em caixa alta, para bater com o extrato
+// na hora de conferir.
+const OPCOES_BANDEIRA = ['Visa', 'MasterCard', 'Elo', 'American Express', 'HiperCard', 'Maestro', 'RedeShop', 'Nubank', 'CREDIT']
+    .map(b => ({ value: b, label: b, icon: <BandeiraIcon nome={b} /> }));
 
 export default function OSModal() {
     const { isDemo, isAdmin, usuario, usuariosSistema } = useSessao();

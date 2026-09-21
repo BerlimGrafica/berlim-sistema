@@ -3,11 +3,12 @@ import { CalculadoraBanner } from '@/components/calculadoras/CalculadoraBanner';
 import { CalculadoraAdesivo } from '@/components/calculadoras/CalculadoraAdesivo';
 import { CalculadoraCasamento } from '@/components/calculadoras/CalculadoraCasamento';
 import { CalculadoraBloquinho } from '@/components/calculadoras/CalculadoraBloquinho';
+import { CalculadoraHotmelt } from '@/components/calculadoras/CalculadoraHotmelt';
 
-// A de bloquinhos é mais larga que as outras: ela tem duas colunas de resultado
-// (custo interno e faixas de quantidade) que, em 3xl, empilhavam e jogavam o
-// texto do WhatsApp para fora da primeira tela.
-const LARGURAS = { bloquinho: 'max-w-5xl' };
+// As duas novas são mais largas que as antigas: têm duas colunas de resultado
+// (composição do preço e faixas de quantidade) que, em 3xl, empilhavam e
+// jogavam o texto do WhatsApp para fora da primeira tela.
+const LARGURAS = { bloquinho: 'max-w-5xl', hotmelt: 'max-w-5xl' };
 
 export function CalculadorasAba({ calculadoraAtiva, produtos }) {
     const largura = LARGURAS[calculadoraAtiva] || 'max-w-3xl';
@@ -26,6 +27,7 @@ export function CalculadorasAba({ calculadoraAtiva, produtos }) {
                 {calculadoraAtiva === 'adesivo' && <CalculadoraAdesivo produtos={produtos} />}
                 {calculadoraAtiva === 'casamento' && <CalculadoraCasamento />}
                 {calculadoraAtiva === 'bloquinho' && <CalculadoraBloquinho />}
+                {calculadoraAtiva === 'hotmelt' && <CalculadoraHotmelt />}
             </div>
         </div>
     );
