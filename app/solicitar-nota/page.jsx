@@ -139,8 +139,12 @@ export default function SolicitarNota() {
                                 </div>
 
                                 <div>
-                                    <label className="block text-mini font-semibold text-gray-500 uppercase mb-1.5">{tipoPessoa === 'F' ? 'Como quer ser chamado (Apelido)? *' : 'Seu Nome / Nome Fantasia *'}</label>
-                                    <input type="text" name="cliente" required value={form.cliente} onChange={handleChange} className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 text-corpo text-gray-800 focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand transition" placeholder={tipoPessoa === 'F' ? "Apelido" : "Como devemos identificar você?"} />
+                                    {/* "Apelido" fazia a pessoa escrever o primeiro nome ou um
+                                        diminutivo, e do lado de cá ninguém ligava a solicitação à
+                                        conversa do WhatsApp. O rótulo agora pede exatamente o que
+                                        serve para achar o pedido. */}
+                                    <label className="block text-mini font-semibold text-gray-500 uppercase mb-1.5">{tipoPessoa === 'F' ? 'Nome do contato que conversamos no whatsapp *' : 'Seu Nome / Nome Fantasia *'}</label>
+                                    <input type="text" name="cliente" required value={form.cliente} onChange={handleChange} className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 text-corpo text-gray-800 focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand transition" placeholder={tipoPessoa === 'F' ? 'Identifique aqui o seu nome, ou nome do contato que fechou o pedido pelos nossos canais' : 'Como devemos identificar você?'} />
                                 </div>
 
                                 <div>
