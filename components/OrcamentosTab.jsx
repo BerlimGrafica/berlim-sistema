@@ -7,6 +7,7 @@ import Icon from '@/components/Icon';
 import Tooltip from '@/components/Tooltip';
 import { formatarMoeda, obterDataAtual, mascararCliente } from '@/lib/utils/formatters';
 import { SubAbas } from '@/components/ui/SubAbas';
+import { semAcento, contem } from '@/lib/utils/busca';
 import { subtelasVisiveis } from '@/lib/acesso/telas';
 import { BarraAcoes } from '@/components/ui/BarraAcoes';
 import { TabelaCartoes } from '@/components/ui/TabelaCartoes';
@@ -21,8 +22,8 @@ export default function OrcamentosTab() {
     const orcsFiltrados = useMemo(() => {
         let filtrados = orcamentosPreProntos;
         if (buscaPreProntos) {
-            const term = buscaPreProntos.toLowerCase();
-            filtrados = orcamentosPreProntos.filter(o => o.titulo.toLowerCase().includes(term) || o.texto.toLowerCase().includes(term));
+            const termo = semAcento(buscaPreProntos);
+            filtrados = orcamentosPreProntos.filter(o => contem(o.titulo, termo) || contem(o.texto, termo));
         }
         return filtrados.sort((a, b) => a.titulo.localeCompare(b.titulo));
     }, [orcamentosPreProntos, buscaPreProntos]);

@@ -5,10 +5,11 @@ import { CalculadoraCasamento } from '@/components/calculadoras/CalculadoraCasam
 import { CalculadoraBloquinho } from '@/components/calculadoras/CalculadoraBloquinho';
 import { CalculadoraHotmelt } from '@/components/calculadoras/CalculadoraHotmelt';
 
-// As duas novas são mais largas que as antigas: têm duas colunas de resultado
-// (composição do preço e faixas de quantidade) que, em 3xl, empilhavam e
-// jogavam o texto do WhatsApp para fora da primeira tela.
-const LARGURAS = { bloquinho: 'max-w-5xl', hotmelt: 'max-w-5xl' };
+// As duas novas ocupam a tela toda: elas têm uma coluna de ajustes ao lado dos
+// números, e com 5xl sobrava margem vazia dos dois lados enquanto o conteúdo se
+// empilhava no meio. O teto existe só para a linha de texto não ficar longa
+// demais num monitor ultrawide.
+const LARGURAS = { bloquinho: 'max-w-[1500px]', hotmelt: 'max-w-[1500px]' };
 
 export function CalculadorasAba({ calculadoraAtiva, produtos }) {
     const largura = LARGURAS[calculadoraAtiva] || 'max-w-3xl';

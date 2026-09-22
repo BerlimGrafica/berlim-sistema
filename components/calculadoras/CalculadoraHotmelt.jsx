@@ -7,7 +7,7 @@ import { formatarValorFinanceiro } from '@/lib/utils/formatters';
 import { CampoNumerico } from '@/components/calculadoras/CampoNumerico';
 import { PremissasHotmelt } from '@/components/calculadoras/PremissasHotmelt';
 import {
-    MODALIDADES, LAMINACOES, PAPEIS_MIOLO, PRAZOS, FORMATOS,
+    MODALIDADES, LAMINACOES, PAPEIS_MIOLO, papelPorNome, PRAZOS, FORMATOS,
     CONFIG_PADRAO, PREMISSAS_PADRAO,
     calcularHotmelt, calcularFaixas, textoWhatsapp, mesclarPremissas,
 } from '@/lib/calculadoras/hotmelt';
@@ -91,6 +91,15 @@ export function CalculadoraHotmelt() {
 
     const mexer = (campos) => setConfig(c => ({ ...c, ...campos }));
 
+    // Trocar para um papel sem preço de P&B junta as páginas num campo só.
+    // Elas passam a ser cobradas como coloridas de qualquer jeito — melhor que
+    // isso aconteça à vista, e não num campo que some levando o número consigo.
+    const trocarPapel = (nome) => {
+        if (papelPorNome(nome).temPB) return mexer({ papelMiolo: nome });
+        const total = Math.floor(Number(config.paginasPB) || 0) + Math.floor(Number(config.paginasColoridas) || 0);
+        mexer({ papelMiolo: nome, paginasPB: 0, paginasColoridas: total });
+    };
+
     const guardarAjustes = (novos) => {
         setAjustes(novos);
         try { localStorage.setItem(CHAVE_PREMISSAS, JSON.stringify(novos)); } catch {}
@@ -121,76 +130,88 @@ export function CalculadoraHotmelt() {
     const maiorParte = Math.max(...linhasDoPreco.map(([, v]) => v), 1);
 
     return (
-        <div className="space-y-4">
+        <div className="grid xl:grid-cols-[minmax(0,1fr)_minmax(320px,370px)] gap-4 items-start">
+            <div className="space-y-4 min-w-0">
 
-            {/* ---------- Perguntas ---------- */}
-            <div className="bg-superficie p-5 sm:p-6 rounded-lg border border-borda border-t-[3px] border-t-brand space-y-6">
+                {/* ---------- Perguntas ---------- */}
+                <div className="bg-superficie p-5 sm:p-6 rounded-lg border border-borda border-t-[3px] border-t-brand space-y-6">
 
-                <Bloco numero={1} titulo="O pedido" colunas="sm:grid-cols-2">
-                    <Campo rotulo="Modalidade" dica={MODALIDADES.find(m => m.valor === config.modalidade)?.resumo}>
-                        <Selecao
-                            valor={config.modalidade}
-                            aoMudar={v => mexer({ modalidade: v })}
-                            opcoes={MODALIDADES.map(m => m.valor)}
-                        />
-                    </Campo>
-                    <Campo rotulo="Quantidade de livros">
-                        <CampoNumerico valor={config.quantidade} aoMudar={v => mexer({ quantidade: v })} className={classeCampo} />
-                    </Campo>
-                </Bloco>
-
-                {/* O miolo só existe quando a Berlim imprime o livro. Na
-                    modalidade "Somente Hot Melt" esses campos não entram em
-                    conta nenhuma, e mostrá-los sugeriria que entram. */}
-                {completo && (
-                    <Bloco numero={2} titulo="O livro" colunas="sm:grid-cols-4">
-                        <Campo rotulo="Formato fechado">
-                            <Selecao valor={config.formato} aoMudar={v => mexer({ formato: v, paginasPorFaceA4: '' })} opcoes={FORMATOS} />
-                        </Campo>
-                        <Campo rotulo="Páginas P&B">
-                            <CampoNumerico valor={config.paginasPB} aoMudar={v => mexer({ paginasPB: v })} className={classeCampo} />
-                        </Campo>
-                        <Campo rotulo="Páginas coloridas">
-                            <CampoNumerico valor={config.paginasColoridas} aoMudar={v => mexer({ paginasColoridas: v })} className={classeCampo} />
-                        </Campo>
-                        <Campo rotulo="Papel do miolo">
-                            <Selecao valor={config.papelMiolo} aoMudar={v => mexer({ papelMiolo: v })} opcoes={PAPEIS_MIOLO} />
-                        </Campo>
-                    </Bloco>
-                )}
-
-                <Bloco numero={completo ? 3 : 2} titulo="Acabamento e prazo" colunas="sm:grid-cols-4">
-                    {completo && (
-                        <Campo rotulo="Laminação da capa">
-                            <Selecao valor={config.laminacao} aoMudar={v => mexer({ laminacao: v })} opcoes={LAMINACOES} />
-                        </Campo>
-                    )}
-                    <Campo rotulo="Prazo">
-                        <Selecao
-                            valor={config.prazo}
-                            aoMudar={v => mexer({ prazo: v })}
-                            opcoes={PRAZOS.map(p => {
-                                const acrescimo = (premissas.prazos[p] - 1) * 100;
-                                return { value: p, label: acrescimo > 0 ? `${p} (+${acrescimo.toFixed(1).replace('.', ',')}%)` : p };
-                            })}
-                        />
-                    </Campo>
-                    {completo && (
-                        <Campo rotulo="Prova física" dica={`R$ ${formatarValorFinanceiro(premissas.parametros.provaFisica)}`}>
+                    <Bloco numero={1} titulo="O pedido" colunas="sm:grid-cols-2">
+                        <Campo rotulo="Modalidade" dica={MODALIDADES.find(m => m.valor === config.modalidade)?.resumo}>
                             <Selecao
-                                valor={config.provaFisica ? 'Sim' : 'Não'}
-                                aoMudar={v => mexer({ provaFisica: v === 'Sim' })}
-                                opcoes={['Não', 'Sim']}
+                                valor={config.modalidade}
+                                aoMudar={v => mexer({ modalidade: v })}
+                                opcoes={MODALIDADES.map(m => m.valor)}
                             />
                         </Campo>
+                        <Campo rotulo="Quantidade de livros">
+                            <CampoNumerico valor={config.quantidade} aoMudar={v => mexer({ quantidade: v })} className={classeCampo} />
+                        </Campo>
+                    </Bloco>
+
+                    {/* O miolo só existe quando a Berlim imprime o livro. Na
+                        modalidade "Somente Hot Melt" esses campos não entram em
+                        conta nenhuma, e mostrá-los sugeriria que entram. */}
+                    {completo && (
+                        <Bloco numero={2} titulo="O livro" colunas="sm:grid-cols-4">
+                            {/* O papel vem primeiro porque ele decide o resto: é ele que
+                                define o preço da face e se ainda existe divisão entre
+                                preto e branco e colorido. */}
+                            <Campo rotulo="Papel do miolo" dica={r.papel.temPB ? undefined : 'só colorido'}>
+                                <Selecao valor={config.papelMiolo} aoMudar={trocarPapel} opcoes={PAPEIS_MIOLO.map(p => p.nome)} />
+                            </Campo>
+                            <Campo rotulo="Formato fechado">
+                                <Selecao valor={config.formato} aoMudar={v => mexer({ formato: v, paginasPorFaceA4: '' })} opcoes={FORMATOS} />
+                            </Campo>
+                            {r.papel.temPB ? (
+                                <>
+                                    <Campo rotulo="Páginas P&B">
+                                        <CampoNumerico valor={config.paginasPB} aoMudar={v => mexer({ paginasPB: v })} className={classeCampo} />
+                                    </Campo>
+                                    <Campo rotulo="Páginas coloridas">
+                                        <CampoNumerico valor={config.paginasColoridas} aoMudar={v => mexer({ paginasColoridas: v })} className={classeCampo} />
+                                    </Campo>
+                                </>
+                            ) : (
+                                <Campo rotulo="Páginas do livro" dica={`${dinheiro(r.precoFaceColor || premissas.outrosPapeis[config.papelMiolo] || 0)} por face`}>
+                                    <CampoNumerico valor={config.paginasColoridas} aoMudar={v => mexer({ paginasColoridas: v })} className={classeCampo} />
+                                </Campo>
+                            )}
+                        </Bloco>
                     )}
-                    <Campo rotulo="Perda de produção">
-                        <div className="relative">
-                            <CampoNumerico pct valor={config.perda} aoMudar={v => mexer({ perda: v })} className={`${classeCampo} pr-7`} />
-                            <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-mini text-tinta-suave pointer-events-none">%</span>
-                        </div>
-                    </Campo>
-                </Bloco>
+
+                    <Bloco numero={completo ? 3 : 2} titulo="Acabamento e prazo" colunas="sm:grid-cols-4">
+                        {completo && (
+                            <Campo rotulo="Laminação da capa">
+                                <Selecao valor={config.laminacao} aoMudar={v => mexer({ laminacao: v })} opcoes={LAMINACOES} />
+                            </Campo>
+                        )}
+                        <Campo rotulo="Prazo">
+                            <Selecao
+                                valor={config.prazo}
+                                aoMudar={v => mexer({ prazo: v })}
+                                opcoes={PRAZOS.map(p => {
+                                    const acrescimo = (premissas.prazos[p] - 1) * 100;
+                                    return { value: p, label: acrescimo > 0 ? `${p} (+${acrescimo.toFixed(1).replace('.', ',')}%)` : p };
+                                })}
+                            />
+                        </Campo>
+                        {completo && (
+                            <Campo rotulo="Prova física" dica={`R$ ${formatarValorFinanceiro(premissas.parametros.provaFisica)}`}>
+                                <Selecao
+                                    valor={config.provaFisica ? 'Sim' : 'Não'}
+                                    aoMudar={v => mexer({ provaFisica: v === 'Sim' })}
+                                    opcoes={['Não', 'Sim']}
+                                />
+                            </Campo>
+                        )}
+                        <Campo rotulo="Perda de produção">
+                            <div className="relative">
+                                <CampoNumerico pct valor={config.perda} aoMudar={v => mexer({ perda: v })} className={`${classeCampo} pr-7`} />
+                                <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-mini text-tinta-suave pointer-events-none">%</span>
+                            </div>
+                        </Campo>
+                    </Bloco>
             </div>
 
             {/* ---------- Impedimentos ---------- */}
@@ -300,9 +321,13 @@ export function CalculadoraHotmelt() {
                                     <>
                                         <p>{r.paginas} páginas · {r.paginasPorFace} por face A4
                                             {r.aproveitamentoForcado && ` (o formato ${config.formato} daria ${r.formatoPadrao})`}</p>
-                                        <p>{r.facesPB} faces P&B a {dinheiro(r.precoFacePB)}
-                                            {r.facesColoridas > 0 && ` · ${r.facesColoridas} coloridas a ${dinheiro(r.precoFaceColor)}`}
-                                            {' '}(perda já incluída)</p>
+                                        <p>
+                                            {r.papel.temPB
+                                                ? <>{r.facesPB} faces P&B a {dinheiro(r.precoFacePB)}
+                                                    {r.facesColoridas > 0 && ` · ${r.facesColoridas} coloridas a ${dinheiro(r.precoFaceColor)}`}</>
+                                                : <>{r.facesTotais} faces a {dinheiro(r.precoFaceColor)} ({config.papelMiolo}, preço único)</>}
+                                            {' '}(perda já incluída)
+                                        </p>
                                     </>
                                 ) : (
                                     <p>Miolo e capa fornecidos pelo cliente — só a encadernação é cobrada.</p>
@@ -375,13 +400,20 @@ export function CalculadoraHotmelt() {
                 <pre className="text-mini text-tinta-corpo whitespace-pre-wrap font-sans leading-relaxed">{texto}</pre>
             </div>
 
-            {/* ---------- Tabela editável ---------- */}
-            <PremissasHotmelt
-                ajustes={ajustes}
-                aoMudar={guardarAjustes}
-                aoRestaurar={restaurarAjustes}
-                quantosMudados={quantosMudados}
-            />
+            </div>
+
+            {/* A coluna de ajustes acompanha a rolagem: mexer numa premissa e
+                olhar o preço mudar são o mesmo gesto, e antes exigiam rolar a
+                página inteira de um lado ao outro. Abaixo de xl ela volta a
+                empilhar no fim, que é o único lugar onde cabe. */}
+            <aside className="min-w-0 xl:sticky xl:top-[calc(var(--altura-cabecalho)+1rem)]">
+                <PremissasHotmelt
+                    ajustes={ajustes}
+                    aoMudar={guardarAjustes}
+                    aoRestaurar={restaurarAjustes}
+                    quantosMudados={quantosMudados}
+                />
+            </aside>
         </div>
     );
 }

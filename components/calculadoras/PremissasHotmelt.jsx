@@ -5,8 +5,8 @@ import { CampoNumerico } from '@/components/calculadoras/CampoNumerico';
 import { PREMISSAS_PADRAO, mesclarPremissas } from '@/lib/calculadoras/hotmelt';
 
 // As células amarelas da aba "Tabela Hot Melt", editáveis dentro do sistema.
-// Mesma estrutura do painel de bloquinhos: fechado por padrão, um grupo aberto
-// por vez, e cada campo mostrando o valor da planilha embaixo.
+// Mesma estrutura do painel de bloquinhos: mora na coluna lateral, com um grupo
+// aberto por vez e cada campo mostrando o valor da planilha embaixo.
 
 const classeCampo = 'w-full bg-elevado border border-borda-forte rounded px-2.5 py-1.5 text-corpo text-tinta outline-none focus:border-brand transition tabular-nums';
 
@@ -40,10 +40,22 @@ const GRUPOS = [
             + 'folhas impressas.',
     },
     {
+        id: 'outrosPapeis',
+        titulo: 'Preço por face — por papel',
+        icone: 'file-text',
+        campos: [
+            { campo: 'Offset 90g',  rotulo: 'Offset 90g', prefixo: 'R$' },
+            { campo: 'Offset 120g', rotulo: 'Offset 120g', prefixo: 'R$' },
+            { campo: 'Couchê 115g', rotulo: 'Couchê 115g', prefixo: 'R$' },
+        ],
+        nota: 'Preço único: nestes papéis a impressão custa o mesmo em P&B e em cores, e não '
+            + 'tem desconto por volume. O offset 75g é a exceção — tem os dois preços e as '
+            + 'quatro faixas, nos dois grupos abaixo.',
+    },
+    {
         id: 'impressaoPB',
-        titulo: 'Preço por face — P&B',
+        titulo: 'Offset 75g — P&B por faixa',
         icone: 'printer',
-        faixa: true,
         campos: [
             { campo: '1',    rotulo: 'a partir de 1 face', prefixo: 'R$' },
             { campo: '501',  rotulo: 'a partir de 501', prefixo: 'R$' },
@@ -53,9 +65,8 @@ const GRUPOS = [
     },
     {
         id: 'impressaoColor',
-        titulo: 'Preço por face — colorido',
+        titulo: 'Offset 75g — colorido por faixa',
         icone: 'image',
-        faixa: true,
         campos: [
             { campo: '1',    rotulo: 'a partir de 1 face', prefixo: 'R$' },
             { campo: '501',  rotulo: 'a partir de 501', prefixo: 'R$' },
@@ -130,7 +141,6 @@ function CampoPremissa({ rotulo, valor, padrao, prefixo, tipo, aoMudar }) {
 }
 
 export function PremissasHotmelt({ ajustes, aoMudar, aoRestaurar, quantosMudados }) {
-    const [aberto, setAberto] = useState(false);
     const [grupoAberto, setGrupoAberto] = useState('parametros');
 
     const mexer = (grupo, campo, valor) => aoMudar({
@@ -140,83 +150,76 @@ export function PremissasHotmelt({ ajustes, aoMudar, aoRestaurar, quantosMudados
 
     return (
         <div className="rounded-lg border border-borda bg-sutil overflow-hidden">
-            <button
-                type="button"
-                onClick={() => setAberto(a => !a)}
-                className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-realce transition"
-            >
+            {/* Sem botão-mestre: este painel agora mora na coluna lateral, ao
+                lado dos números que ele mexe. Escondê-lo atrás de um clique
+                fazia sentido quando ele ficava no fim de uma página longa e
+                interrompia a leitura; ao lado, ele é a bancada de trabalho. */}
+            <div className="flex items-center gap-3 px-4 py-3 border-b border-borda">
                 <Icon name="wrench" className="w-4 h-4 shrink-0 text-tinta-suave" />
                 <span className="flex-1 min-w-0">
-                    <span className="block text-corpo font-bold text-tinta">Ajustar a tabela de preços</span>
-                    <span className="block text-mini text-tinta-suave mt-0.5">
-                        Faixas de impressão, hot melt por livro, prazos — as células amarelas da planilha.
-                    </span>
+                    <span className="block text-corpo font-bold text-tinta">Tabela de preços</span>
+                    <span className="block text-mini text-tinta-suave mt-0.5">Impressão, papéis, hot melt e prazos.</span>
                 </span>
                 {quantosMudados > 0 && (
                     <span className="shrink-0 rounded-full bg-brand/20 text-brand px-2 py-0.5 text-mini font-bold tabular-nums">
-                        {quantosMudados} alterado{quantosMudados > 1 ? 's' : ''}
+                        {quantosMudados}
                     </span>
                 )}
-                <Icon name="chevron-down" className={`w-4 h-4 shrink-0 text-tinta-suave transition-transform duration-300 ${aberto ? 'rotate-180' : ''}`} />
-            </button>
+            </div>
 
-            <div className="gaveta" data-aberta={aberto}>
-                <div>
-                    <div inert={!aberto} className="border-t border-borda px-4 pb-4 pt-3 space-y-2">
-                        {GRUPOS.map(g => {
-                            const escancarado = grupoAberto === g.id;
-                            return (
-                                <div key={g.id} className="rounded-md border border-borda bg-superficie overflow-hidden">
-                                    <button
-                                        type="button"
-                                        onClick={() => setGrupoAberto(escancarado ? null : g.id)}
-                                        className="w-full flex items-center gap-2.5 px-3 py-2 text-left hover:bg-realce transition"
-                                    >
-                                        <Icon name={g.icone} className={`w-4 h-4 shrink-0 ${escancarado ? 'text-brand' : 'text-tinta-suave'}`} />
-                                        <span className="flex-1 text-corpo font-semibold text-tinta">{g.titulo}</span>
-                                        <Icon name="chevron-down" className={`w-4 h-4 shrink-0 text-tinta-suave transition-transform duration-300 ${escancarado ? 'rotate-180' : ''}`} />
-                                    </button>
-                                    <div className="gaveta" data-aberta={escancarado}>
-                                        <div>
-                                            <div inert={!escancarado} className="border-t border-borda-fraca p-3">
-                                                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                                                    {g.campos.map(c => (
-                                                        <CampoPremissa
-                                                            key={c.campo}
-                                                            rotulo={c.rotulo}
-                                                            prefixo={c.prefixo}
-                                                            tipo={c.tipo}
-                                                            padrao={PREMISSAS_PADRAO[g.id][c.campo]}
-                                                            valor={ajustes?.[g.id]?.[c.campo] ?? ''}
-                                                            aoMudar={(v) => mexer(g.id, c.campo, v)}
-                                                        />
-                                                    ))}
-                                                </div>
-                                                {g.nota && (
-                                                    <p className="mt-3 pt-2.5 border-t border-borda-fraca text-mini text-tinta-suave leading-snug">{g.nota}</p>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            );
-                        })}
-
-                        <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
-                            <p className="text-mini text-tinta-suave">
-                                Os ajustes ficam salvos <strong className="font-semibold text-tinta-corpo">neste navegador</strong> — não valem para os outros computadores da gráfica.
-                            </p>
+            <div className="p-3 space-y-2">
+                {GRUPOS.map(g => {
+                    const escancarado = grupoAberto === g.id;
+                    return (
+                        <div key={g.id} className="rounded-md border border-borda bg-superficie overflow-hidden">
                             <button
                                 type="button"
-                                onClick={aoRestaurar}
-                                disabled={quantosMudados === 0}
-                                className="shrink-0 inline-flex items-center gap-1.5 rounded-md border border-borda-forte bg-elevado px-3 py-1.5 text-mini font-semibold text-tinta-corpo hover:border-brand hover:text-brand transition disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:border-borda-forte disabled:hover:text-tinta-corpo"
+                                onClick={() => setGrupoAberto(escancarado ? null : g.id)}
+                                className="w-full flex items-center gap-2.5 px-3 py-2 text-left hover:bg-realce transition"
                             >
-                                <Icon name="rotate-ccw" className="w-3.5 h-3.5" />
-                                Voltar aos valores da planilha
+                                <Icon name={g.icone} className={`w-4 h-4 shrink-0 ${escancarado ? 'text-brand' : 'text-tinta-suave'}`} />
+                                <span className="flex-1 text-corpo font-semibold text-tinta">{g.titulo}</span>
+                                <Icon name="chevron-down" className={`w-4 h-4 shrink-0 text-tinta-suave transition-transform duration-300 ${escancarado ? 'rotate-180' : ''}`} />
                             </button>
+                            <div className="gaveta" data-aberta={escancarado}>
+                                <div>
+                                    <div inert={!escancarado} className="border-t border-borda-fraca p-3">
+                                        <div className="grid grid-cols-2 gap-2.5">
+                                            {g.campos.map(c => (
+                                                <CampoPremissa
+                                                    key={c.campo}
+                                                    rotulo={c.rotulo}
+                                                    prefixo={c.prefixo}
+                                                    tipo={c.tipo}
+                                                    padrao={PREMISSAS_PADRAO[g.id][c.campo]}
+                                                    valor={ajustes?.[g.id]?.[c.campo] ?? ''}
+                                                    aoMudar={(v) => mexer(g.id, c.campo, v)}
+                                                />
+                                            ))}
+                                        </div>
+                                        {g.nota && (
+                                            <p className="mt-3 pt-2.5 border-t border-borda-fraca text-mini text-tinta-suave leading-snug">{g.nota}</p>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                    </div>
+                    );
+                })}
+
+                <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
+                    <p className="text-mini text-tinta-suave">
+                        Os ajustes ficam salvos <strong className="font-semibold text-tinta-corpo">neste navegador</strong> — não valem para os outros computadores da gráfica.
+                    </p>
+                    <button
+                        type="button"
+                        onClick={aoRestaurar}
+                        disabled={quantosMudados === 0}
+                        className="shrink-0 inline-flex items-center gap-1.5 rounded-md border border-borda-forte bg-elevado px-3 py-1.5 text-mini font-semibold text-tinta-corpo hover:border-brand hover:text-brand transition disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:border-borda-forte disabled:hover:text-tinta-corpo"
+                    >
+                        <Icon name="rotate-ccw" className="w-3.5 h-3.5" />
+                        Voltar aos valores da planilha
+                    </button>
                 </div>
             </div>
         </div>

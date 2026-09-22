@@ -138,55 +138,56 @@ export function CalculadoraBloquinho() {
     const maiorCusto = Math.max(...linhasDeCusto.map(([, v]) => v), 1);
 
     return (
-        <div className="space-y-4">
+        <div className="grid xl:grid-cols-[minmax(0,1fr)_minmax(320px,370px)] gap-4 items-start">
+            <div className="space-y-4 min-w-0">
 
-            {/* ---------- Perguntas ---------- */}
-            <div className="bg-superficie p-5 sm:p-6 rounded-lg border border-borda border-t-[3px] border-t-brand space-y-6">
+                {/* ---------- Perguntas ---------- */}
+                <div className="bg-superficie p-5 sm:p-6 rounded-lg border border-borda border-t-[3px] border-t-brand space-y-6">
 
-                <Bloco numero={1} titulo="O pedido" colunas="sm:grid-cols-4">
-                    <Campo rotulo="Quantidade" dica="mín. 10">
-                        <CampoNumerico valor={config.quantidade} aoMudar={v => mexer({ quantidade: v })} className={classeCampo} />
-                    </Campo>
-                    <Campo rotulo="Largura (cm)">
-                        <CampoNumerico valor={config.larguraCm} aoMudar={v => mexer({ larguraCm: v })} className={classeCampo} />
-                    </Campo>
-                    <Campo rotulo="Altura (cm)">
-                        <CampoNumerico valor={config.alturaCm} aoMudar={v => mexer({ alturaCm: v })} className={classeCampo} />
-                    </Campo>
-                    <Campo rotulo="Folhas por bloquinho">
-                        <CampoNumerico valor={config.folhas} aoMudar={v => mexer({ folhas: v })} className={classeCampo} />
-                    </Campo>
-                </Bloco>
+                    <Bloco numero={1} titulo="O pedido" colunas="sm:grid-cols-4">
+                        <Campo rotulo="Quantidade" dica="mín. 10">
+                            <CampoNumerico valor={config.quantidade} aoMudar={v => mexer({ quantidade: v })} className={classeCampo} />
+                        </Campo>
+                        <Campo rotulo="Largura (cm)">
+                            <CampoNumerico valor={config.larguraCm} aoMudar={v => mexer({ larguraCm: v })} className={classeCampo} />
+                        </Campo>
+                        <Campo rotulo="Altura (cm)">
+                            <CampoNumerico valor={config.alturaCm} aoMudar={v => mexer({ alturaCm: v })} className={classeCampo} />
+                        </Campo>
+                        <Campo rotulo="Folhas por bloquinho">
+                            <CampoNumerico valor={config.folhas} aoMudar={v => mexer({ folhas: v })} className={classeCampo} />
+                        </Campo>
+                    </Bloco>
 
-                <Bloco numero={2} titulo="Miolo e capa" colunas="sm:grid-cols-2">
-                    <Campo rotulo="Papel do miolo">
-                        <Selecao valor={config.papelMiolo} aoMudar={v => mexer({ papelMiolo: v })} opcoes={PAPEIS_MIOLO.map(p => p.nome)} />
-                    </Campo>
-                    <Campo rotulo="Impressão do miolo">
-                        <Selecao valor={config.impressaoMiolo} aoMudar={v => mexer({ impressaoMiolo: v })} opcoes={IMPRESSOES_MIOLO.map(i => i.nome)} />
-                    </Campo>
-                    <Campo rotulo="Capa e contracapa">
-                        <Selecao valor={config.capa} aoMudar={v => mexer({ capa: v })} opcoes={CAPAS.map(c => c.nome)} />
-                    </Campo>
-                    <Campo rotulo="Encadernação" dica={r.ok ? r.encadernacaoSugerida : undefined}>
-                        <Selecao valor={config.encadernacao} aoMudar={v => mexer({ encadernacao: v })} opcoes={ENCADERNACOES} />
-                    </Campo>
-                </Bloco>
+                    <Bloco numero={2} titulo="Miolo e capa" colunas="sm:grid-cols-2">
+                        <Campo rotulo="Papel do miolo">
+                            <Selecao valor={config.papelMiolo} aoMudar={v => mexer({ papelMiolo: v })} opcoes={PAPEIS_MIOLO.map(p => p.nome)} />
+                        </Campo>
+                        <Campo rotulo="Impressão do miolo">
+                            <Selecao valor={config.impressaoMiolo} aoMudar={v => mexer({ impressaoMiolo: v })} opcoes={IMPRESSOES_MIOLO.map(i => i.nome)} />
+                        </Campo>
+                        <Campo rotulo="Capa e contracapa">
+                            <Selecao valor={config.capa} aoMudar={v => mexer({ capa: v })} opcoes={CAPAS.map(c => c.nome)} />
+                        </Campo>
+                        <Campo rotulo="Encadernação" dica={r.ok ? r.encadernacaoSugerida : undefined}>
+                            <Selecao valor={config.encadernacao} aoMudar={v => mexer({ encadernacao: v })} opcoes={ENCADERNACOES} />
+                        </Campo>
+                    </Bloco>
 
-                <Bloco numero={3} titulo="Acabamento e produção">
-                    <Campo rotulo="Embalagem">
-                        <Selecao valor={config.embalagem} aoMudar={v => mexer({ embalagem: v })} opcoes={EMBALAGENS} />
-                    </Campo>
-                    <Campo rotulo="Arte">
-                        <Selecao valor={config.arte} aoMudar={v => mexer({ arte: v })} opcoes={ARTES} />
-                    </Campo>
-                    <Campo rotulo="Perda de produção">
-                        <div className="relative">
-                            <CampoNumerico pct valor={config.perda} aoMudar={v => mexer({ perda: v })} className={`${classeCampo} pr-7`} />
-                            <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-mini text-tinta-suave pointer-events-none">%</span>
-                        </div>
-                    </Campo>
-                </Bloco>
+                    <Bloco numero={3} titulo="Acabamento e produção">
+                        <Campo rotulo="Embalagem">
+                            <Selecao valor={config.embalagem} aoMudar={v => mexer({ embalagem: v })} opcoes={EMBALAGENS} />
+                        </Campo>
+                        <Campo rotulo="Arte">
+                            <Selecao valor={config.arte} aoMudar={v => mexer({ arte: v })} opcoes={ARTES} />
+                        </Campo>
+                        <Campo rotulo="Perda de produção">
+                            <div className="relative">
+                                <CampoNumerico pct valor={config.perda} aoMudar={v => mexer({ perda: v })} className={`${classeCampo} pr-7`} />
+                                <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-mini text-tinta-suave pointer-events-none">%</span>
+                            </div>
+                        </Campo>
+                    </Bloco>
             </div>
 
             {/* ---------- Impedimentos ---------- */}
@@ -345,13 +346,20 @@ export function CalculadoraBloquinho() {
                 <pre className="text-mini text-tinta-corpo whitespace-pre-wrap font-sans leading-relaxed">{texto}</pre>
             </div>
 
-            {/* ---------- Premissas editáveis ---------- */}
-            <PremissasBloquinho
-                ajustes={ajustes}
-                aoMudar={guardarAjustes}
-                aoRestaurar={restaurarAjustes}
-                quantosMudados={quantosMudados}
-            />
+            </div>
+
+            {/* A coluna de ajustes acompanha a rolagem: mexer numa premissa e
+                olhar o preço mudar são o mesmo gesto, e antes exigiam rolar a
+                página inteira de um lado ao outro. Abaixo de xl ela volta a
+                empilhar no fim, que é o único lugar onde cabe. */}
+            <aside className="min-w-0 xl:sticky xl:top-[calc(var(--altura-cabecalho)+1rem)]">
+                <PremissasBloquinho
+                    ajustes={ajustes}
+                    aoMudar={guardarAjustes}
+                    aoRestaurar={restaurarAjustes}
+                    quantosMudados={quantosMudados}
+                />
+            </aside>
         </div>
     );
 }

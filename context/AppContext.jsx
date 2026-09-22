@@ -2,6 +2,7 @@
 import React, { useContext, useState, useEffect, useMemo, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 import { flushSync } from 'react-dom';
+import { semAcento, contem, campoDeBusca } from '@/lib/utils/busca';
 import { supabase } from '@/lib/supabaseClient';
 import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS, STATUSES_JA_RETIRADO_DA_FUTURA } from '@/lib/utils/constants';
 import { formatarMoeda, parseValorMoeda, valorPagamentoComSinal, valorPagamentoComSinalCentavos, paraCentavos, centavosParaReais, obterDataAtual, adicionarMesData, apenasDigitos } from '@/lib/utils/formatters';
@@ -674,10 +675,13 @@ export const AppProvider = ({ children }) => {
 
             if (buscaHistoricoText) {
                 const isNum = !isNaN(buscaHistoricoText);
+                const { coluna, termo } = await campoDeBusca(supabase, 'cliente', buscaHistoricoText);
                 if (isNum) {
-                    query = query.or(`cliente.ilike.%${buscaHistoricoText}%,id.eq.${buscaHistoricoText}`);
+                    // O id continua saindo do texto original: normalizar um
+                    // número não muda nada, mas deixa claro de onde ele vem.
+                    query = query.or(`${coluna}.ilike.%${termo}%,id.eq.${buscaHistoricoText}`);
                 } else {
-                    query = query.ilike('cliente', `%${buscaHistoricoText}%`);
+                    query = query.ilike(coluna, `%${termo}%`);
                 }
             }
 
@@ -735,7 +739,8 @@ export const AppProvider = ({ children }) => {
                 // comparar com a coluna formatada falha por causa do hífen.
                 query = query.ilike('telefone_digits', `%${digitos}%`);
             } else {
-                query = query.ilike('nome', `%${buscaCliente}%`);
+                const { coluna, termo } = await campoDeBusca(supabase, 'nome', buscaCliente);
+                query = query.ilike(coluna, `%${termo}%`);
             }
             const { data } = await query;
             if (data) setClientes(data);
@@ -780,7 +785,11 @@ export const AppProvider = ({ children }) => {
             let query = supabase.from('clientes').select('*', { count: 'exact' });
             
             if (letraFiltroCliente) {
-                query = query.ilike('nome', `${letraFiltroCliente}%`);
+                // A letra também passa pela coluna normalizada: sem isso,
+                // "Ângela" e "Érica" não apareciam em A nem em E — ficavam
+                // fora de todas as letras do índice.
+                const { coluna, termo } = await campoDeBusca(supabase, 'nome', letraFiltroCliente);
+                query = query.ilike(coluna, `${termo}%`);
             }
             if (buscaCadClientes) {
                 // Mesmo critério da busca do modal: dígitos e pontuação de
@@ -790,7 +799,9 @@ export const AppProvider = ({ children }) => {
                 if (pareceTelefoneCad) {
                     query = query.ilike('telefone_digits', `%${digitosCad}%`);
                 } else {
-                    query = query.or(`nome.ilike.%${buscaCadClientes}%,email.ilike.%${buscaCadClientes}%`);
+                    const nome = await campoDeBusca(supabase, 'nome', buscaCadClientes);
+                    const email = await campoDeBusca(supabase, 'email', buscaCadClientes);
+                    query = query.or(`${nome.coluna}.ilike.%${nome.termo}%,${email.coluna}.ilike.%${email.termo}%`);
                 }
             }
             
@@ -2052,7 +2063,7 @@ export const AppProvider = ({ children }) => {
     // Derivados memoizados: cada um entra numa fatia de contexto, então precisa
     // manter a identidade enquanto as fontes não mudarem — sem isso a fatia
     // invalidaria a cada renderização e a divisão por domínio não filtraria nada.
-    const produtosFiltrados = useMemo(() => produtos.filter(p => p.nome.toLowerCase().includes(buscaProduto.toLowerCase()) || p.id.toString().includes(buscaProduto)).sort((a, b) => {
+    const produtosFiltrados = useMemo(() => produtos.filter(p => contem(p.nome, semAcento(buscaProduto)) || p.id.toString().includes(buscaProduto)).sort((a, b) => {
         // Prioriza os top 5 vendidos se não houver busca ativa (ou mesmo se houver, os que sobrarem da busca ainda terão prioridade)
         const indexA = top5Produtos.indexOf(a.nome);
         const indexB = top5Produtos.indexOf(b.nome);
@@ -2069,8 +2080,8 @@ export const AppProvider = ({ children }) => {
 
     const produtosCatalogoFiltrados = useMemo(() => produtos.filter(p => {
         if (!buscaCadProdutos) return true;
-        const termo = buscaCadProdutos.toLowerCase();
-        return (p.nome && p.nome.toLowerCase().includes(termo));
+        const termo = semAcento(buscaCadProdutos);
+        return contem(p.nome, termo);
     }), [produtos, buscaCadProdutos]);
     const clientesPaginados = clientesCadastrados;
     const totalPaginasClientes = Math.ceil(totalClientesCad / itensPorPagina) || 1;
@@ -2080,10 +2091,8 @@ export const AppProvider = ({ children }) => {
         const checkStatus = filtroNotas === 'pendentes' ? !n.concluido : n.concluido;
         if (!checkStatus) return false;
         if (!buscaNotaFiscal) return true;
-        const termo = buscaNotaFiscal.toLowerCase();
-        return (n.cliente && n.cliente.toLowerCase().includes(termo)) ||
-               (n.razao_social && n.razao_social.toLowerCase().includes(termo)) ||
-               (n.cnpj && n.cnpj.toLowerCase().includes(termo));
+        const termo = semAcento(buscaNotaFiscal);
+        return contem(n.cliente, termo) || contem(n.razao_social, termo) || contem(n.cnpj, termo);
     }), [notasFiscais, filtroNotas, buscaNotaFiscal]);
     const notasFiscaisPaginadas = useMemo(() => notasFiscaisAbaFiltro.slice((paginaNotasFiscais - 1) * itensPorPagina, paginaNotasFiscais * itensPorPagina), [notasFiscaisAbaFiltro, paginaNotasFiscais]);
     const totalPaginasNotasFiscais = Math.ceil(notasFiscaisAbaFiltro.length / itensPorPagina) || 1;
@@ -2171,11 +2180,11 @@ export const AppProvider = ({ children }) => {
         const statusPermitido = STATUSES_PRODUCAO.includes(p.status);
         if (!statusPermitido) return false;
 
-        const termo = buscaProducaoText.toLowerCase();
+        const termo = semAcento(buscaProducaoText);
         const matchTermo = !termo ||
-            (p.cliente && p.cliente.toLowerCase().includes(termo)) ||
+            contem(p.cliente, termo) ||
             (p.id && p.id.toString().includes(termo)) ||
-            (p.responsavel && p.responsavel.toLowerCase().includes(termo));
+            contem(p.responsavel, termo);
 
         return matchTermo;
     }), [pedidos, buscaProducaoText]);
