@@ -1,13 +1,14 @@
 "use client";
-import { useRef, useLayoutEffect } from 'react';
+import { useRef, useState, useLayoutEffect } from 'react';
 import { useSessao } from '@/context/SessaoContext';
 import { useUi } from '@/context/UiContext';
 import { usePedidos } from '@/context/PedidosContext';
 import { useClientes } from '@/context/ClientesContext';
 import Icon from '@/components/Icon';
 import Tooltip from '@/components/Tooltip';
-import { STATUSES_PRODUCAO, obterCorFundoStatus, obterCorContornoPrazo } from '@/lib/utils/constants';
+import { STATUSES_PRODUCAO, obterCorFundoStatus, obterCorContornoPrazo, obterCorSeloPrazo } from '@/lib/utils/constants';
 import { mascararCliente, formatarDataExibicao } from '@/lib/utils/formatters';
+import { usePreferencia, gravarPreferencia } from '@/lib/utils/preferenciaLocal';
 import { CustomDatePicker } from '@/components/ui/DatePicker';
 import { InlineDropdown, MultiSelectDropdown } from '@/components/ui/Dropdown';
 import { ItensChecklist } from '@/components/ItensChecklist';
@@ -73,6 +74,10 @@ function useAnimacaoLinhas(ordem) {
     return registrarLinha;
 }
 
+// Por pessoa e por aparelho: o celular de quem anda pela produção e o
+// computador do balcão podem querer coisas diferentes.
+const CHAVE_VISAO = 'producao_visao_celular';
+
 export default function ProducaoTab() {
     const { isDemo, usuariosSistema } = useSessao();
     const { confirmar, abrirContextMenu, avisar } = useUi();
@@ -95,6 +100,29 @@ export default function ProducaoTab() {
 
     const ordemLinhas = gruposStatus.flatMap(g => g.pedidos.map(p => p.id)).join(',');
     const registrarLinha = useAnimacaoLinhas(ordemLinhas);
+
+    // A visão compacta do celular: linha de duas alturas no lugar do cartão.
+    // O padrão é compacto porque foi para isso que ela existe — o pedido da loja
+    // era justamente que o cartão inteiro ocupava a tela e obrigava a rolar muito.
+    const compacto = usePreferencia(CHAVE_VISAO, 'compacto') !== 'cartao';
+    const alternarVisao = () => gravarPreferencia(CHAVE_VISAO, compacto ? 'cartao' : 'compacto');
+
+    const [recolhidos, setRecolhidos] = useState(() => new Set());
+
+    // As etapas recolhidas NÃO são guardadas, de propósito: abrir a tela de manhã
+    // e achar "Produzir" fechado, sem lembrar que foi você que fechou ontem,
+    // parece O.S. sumida. Toda abertura começa com tudo aberto.
+    const alternarGrupo = (status) => {
+        setRecolhidos(atual => {
+            const novo = new Set(atual);
+            if (novo.has(status)) novo.delete(status);
+            else novo.add(status);
+            return novo;
+        });
+    };
+
+    const tudoRecolhido = gruposStatus.length > 0 && gruposStatus.every(g => recolhidos.has(g.status));
+    const alternarTodos = () => setRecolhidos(tudoRecolhido ? new Set() : new Set(gruposStatus.map(g => g.status)));
 
     const handleAtualizarCampo = async (id, campo, valor) => {
         if (campo === 'status' && valor === 'Concluído') {
@@ -122,9 +150,30 @@ export default function ProducaoTab() {
             { (
                     <main className="flex-1 p-6 lg:p-10 mx-auto w-full flex flex-col min-h-[calc(100vh-60px)]">
                         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 mb-6 border-b border-borda-fraca pb-6 shrink-0">
-                            <div>
-                                <h1 className="text-2xl lg:text-3xl font-black text-tinta tracking-tight">Produção</h1>
-                                <p className="text-corpo text-tinta-suave mt-1">Gerencie a esteira de pedidos ativos.</p>
+                            <div className="flex items-start justify-between gap-3 w-full lg:w-auto">
+                                <div>
+                                    <h1 className="text-2xl lg:text-3xl font-black text-tinta tracking-tight">Produção</h1>
+                                    <p className="text-corpo text-tinta-suave mt-1">Gerencie a esteira de pedidos ativos.</p>
+                                </div>
+                                {/* Fecha todas as etapas de uma vez. Fica aqui, e não na barra
+                                    de baixo, porque lá ficaria encostado no botão de visão — um
+                                    muda o tamanho do cartão, o outro esconde etapa, e dois
+                                    botões parecidos lado a lado trocam de dedo. */}
+                                {gruposStatus.length > 0 && (
+                                    <button
+                                        type="button"
+                                        onClick={alternarTodos}
+                                        aria-pressed={tudoRecolhido}
+                                        className={`lg:hidden shrink-0 flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border text-micro font-semibold uppercase tracking-wide transition ${
+                                            tudoRecolhido
+                                                ? 'border-brand text-brand bg-brand/5'
+                                                : 'border-borda text-tinta-suave bg-sutil active:bg-realce'
+                                        }`}
+                                    >
+                                        <Icon name={tudoRecolhido ? 'unfold-vertical' : 'fold-vertical'} className="w-3.5 h-3.5" />
+                                        {tudoRecolhido ? 'Abrir' : 'Minimizar'}
+                                    </button>
+                                )}
                             </div>
                             <div className="hidden lg:flex flex-wrap items-center gap-3 w-full lg:w-auto">
                                 <div className="relative flex-1 min-w-[300px]">
@@ -163,6 +212,9 @@ export default function ProducaoTab() {
                                 chave={p => p.id}
                                 faixa={p => obterCorFundoStatus(p.status)}
                                 refDaLinha={p => registrarLinha(p.id)}
+                                compacto={compacto}
+                                recolhidos={recolhidos}
+                                aoAlternarGrupo={alternarGrupo}
                                 carregando={!dadosCarregados}
                                 vazio={<span className="text-gray-500 italic">Nenhuma OS encontrada.</span>}
                                 aoContextMenu={(p, e) => abrirContextMenu(e, montarItensContexto(p))}
@@ -180,6 +232,15 @@ export default function ProducaoTab() {
                                         thClassName: 'px-6 py-4 w-32 text-center',
                                         tdClassName: 'px-4 py-3',
                                         celula: p => <CustomDatePicker value={p.prazo || ''} onChange={val => handleAtualizarCampo(p.id, 'prazo', val)} placeholder="Definir prazo..." className={`w-full bg-gray-50 dark:bg-darkElevated border-2 ${obterCorContornoPrazo(p.prazo)} rounded px-2.5 py-1.5 text-mini outline-none hover:border-brand transition text-gray-700 dark:text-[#EDEDED]`} />,
+                                        // Na linha compacta o prazo é selo, não seletor: dia e mês
+                                        // bastam para decidir se aquela O.S. é a de agora, e o ano
+                                        // só ocuparia espaço. Para trocar a data, abre a O.S.
+                                        compacto: 'direita',
+                                        celulaCompacta: p => (
+                                            <span className={`inline-block px-1.5 py-0.5 rounded text-micro font-bold tabular-nums ${obterCorSeloPrazo(p.prazo)}`}>
+                                                {p.prazo ? formatarDataExibicao(p.prazo).slice(0, 5) : '—'}
+                                            </span>
+                                        ),
                                     },
                                     {
                                         papel: 'bloco',
@@ -194,8 +255,8 @@ export default function ProducaoTab() {
                                         thClassName: 'px-6 py-4 text-center',
                                         tdClassName: `px-4 py-3 font-semibold truncate max-w-[12rem]`,
                                         celula: p => (
-                                            <div className={`flex items-center gap-1.5 ${isClienteProblema(p.cliente, p.cliente_id) ? 'text-perigo' : 'text-tinta'}`}>
-                                                {mascararCliente(p.cliente, isDemo)}
+                                            <div className={`flex items-center gap-1.5 min-w-0 ${isClienteProblema(p.cliente, p.cliente_id) ? 'text-perigo' : 'text-tinta'}`}>
+                                                <span className="truncate">{mascararCliente(p.cliente, isDemo)}</span>
                                                 {isClienteProblema(p.cliente, p.cliente_id) && <Icon name="alert-triangle" className="w-3.5 h-3.5 text-red-500 shrink-0" title="Cliente Problema" />}
                                             </div>
                                         ),
@@ -206,6 +267,8 @@ export default function ProducaoTab() {
                                         thClassName: 'px-6 py-4 w-full min-w-[300px] text-left',
                                         tdClassName: 'px-4 py-3 text-tinta font-medium',
                                         celula: p => <ItensChecklist pedido={p} />,
+                                        compacto: 'corpo',
+                                        celulaCompacta: p => <ItensChecklist pedido={p} compacto />,
                                     },
                                     {
                                         papel: 'acoes',
@@ -287,6 +350,11 @@ export default function ProducaoTab() {
                                             )}
                                         </div>
                                     ),
+                                },
+                                {
+                                    id: 'visao', icone: 'grid', rotulo: compacto ? 'Expandir' : 'Compactar',
+                                    ativo: !compacto,
+                                    aoClicar: alternarVisao,
                                 },
                                 {
                                     id: 'nova', icone: 'plus', rotulo: 'Nova O.S.', destaque: true,

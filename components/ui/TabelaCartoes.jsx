@@ -1,8 +1,10 @@
 "use client";
 import React from 'react';
+import Icon from '@/components/Icon';
 import { SkeletonLinhas } from '@/components/ui/SkeletonLinhas';
 
-// Uma listagem, dois desenhos: tabela no desktop, cartão no celular.
+// Uma listagem, três desenhos: tabela no desktop, cartão no celular e, quando a
+// tela pede, LINHA COMPACTA no celular.
 //
 // O ponto todo é que as colunas são DADOS, não marcação. Se cada tela escrevesse
 // um <table> e uma lista de cartões, seriam duas marcações a manter em sincronia
@@ -35,6 +37,32 @@ import { SkeletonLinhas } from '@/components/ui/SkeletonLinhas';
 //   thClassName   classes do <th>
 //   tdClassName   classes do <td>
 //   papel         ver acima; ausente = 'corpo'
+//   compacto      'corpo' aparece na linha compacta, abaixo do nome
+//                 'direita' encosta na margem direita da linha
+//                 ausente  não aparece no compacto
+//   celulaCompacta  (item) => nó, só para a linha compacta. Existe porque a
+//                 célula da tabela costuma ser um CONTROLE — um seletor de data,
+//                 um dropdown — e numa linha de 44px o que cabe é o valor lido,
+//                 não o controle. Sem ela, usa `celula`.
+//
+// O MODO COMPACTO
+// `compacto` troca o cartão pela linha: id, cliente e as colunas marcadas. É
+// opção da tela, não do componente — hoje só a Produção liga. O cartão continua
+// sendo o padrão de todo mundo.
+//
+// Nasceu de um pedido da loja: no celular cada cartão ocupava a tela inteira, e
+// achar uma O.S. que não dava para buscar pela lupa era rolar o dedo até topar
+// com ela.
+//
+// RECOLHER GRUPOS
+// `recolhidos` (um Set de chaves) e `aoAlternarGrupo(chave)` transformam o
+// título do grupo num botão. Vale só para o celular: quem tem a tabela inteira
+// na tela não precisa esconder seção.
+//
+// Recolher encurta mais a rolagem do que compactar — pular as quatro etapas que
+// não interessam economiza mais tela do que diminuir cada linha. A gaveta usa a
+// classe `.gaveta` de globals.css (grid-template-rows 0fr→1fr), a mesma do
+// cadastro de usuários, e `inert` para o Tab não entrar no que está fechado.
 //
 // LISTA SIMPLES OU AGRUPADA
 // `itens` para uma lista corrida; `grupos` quando a tela separa por seção (a
@@ -72,6 +100,9 @@ export function TabelaCartoes({
     vazio = null,
     faixa,
     className = '',
+    compacto = false,
+    recolhidos,
+    aoAlternarGrupo,
 }) {
     // Uma lista solta é um grupo sem cabeçalho: o resto do componente só conhece
     // grupos, e não precisa de dois caminhos.
@@ -87,11 +118,113 @@ export function TabelaCartoes({
     const [destaque] = porPapel('destaque');
     const acoes = porPapel('acoes');
 
+    const noCorpoCompacto = colunas.filter(c => c.compacto === 'corpo');
+    const [aDireita] = colunas.filter(c => c.compacto === 'direita');
+    const conteudoCompacto = (c, item) => (c.celulaCompacta ?? c.celula)(item);
+
+    const podeRecolher = typeof aoAlternarGrupo === 'function';
+    const estaFechado = (ch) => podeRecolher && !!recolhidos?.has(ch);
+
     const clicavel = typeof aoClicar === 'function';
     const aoAtivar = (item) => (clicavel ? () => aoClicar(item) : undefined);
     const aoMenu = (item) => (typeof aoContextMenu === 'function' ? (e) => aoContextMenu(item, e) : undefined);
 
     const semItens = !carregando && totalItens === 0;
+
+    // O cartão e a linha compacta são o mesmo registro em dois tamanhos. Ficam
+    // em funções para o laço dos grupos não precisar saber qual dos dois está em
+    // jogo — ele pergunta `desenhoDoItem` e segue.
+    const cartao = (item) => (
+        <div
+            key={chave(item)}
+            onClick={aoAtivar(item)}
+            onContextMenu={aoMenu(item)}
+            className={`relative overflow-hidden border border-borda rounded-lg bg-superficie shadow-sm p-4 flex flex-col gap-3 transition ${faixa ? 'pl-5' : ''} ${clicavel ? 'active:bg-sutil' : ''} ${classeDaLinha ? classeDaLinha(item) : ''}`}
+        >
+            {/* Filete de cor à esquerda. Numa lista rolando no dedo a cor
+                chega antes da palavra, então o cartão diz o estado antes
+                de ser lido. Decorativo de propósito (aria-hidden): a
+                informação já está escrita no selo, e repetir para o leitor
+                de tela seria ruído. */}
+            {faixa && <span aria-hidden="true" className={`absolute left-0 top-0 bottom-0 w-1.5 ${faixa(item)}`} />}
+
+            {(titulo || selo) && (
+                <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                        {titulo && <div className="font-bold text-tinta text-base">{titulo.celula(item)}</div>}
+                        {subtitulo && <div className="text-corpo text-tinta-suave mt-0.5">{subtitulo.celula(item)}</div>}
+                    </div>
+                    {selo && <div className="shrink-0">{selo.celula(item)}</div>}
+                </div>
+            )}
+
+            {destaque && (
+                <div className="text-xl font-black text-tinta tracking-tight tabular-nums">
+                    {destaque.celula(item)}
+                </div>
+            )}
+
+            {emBloco.map((c, i) => (
+                <div key={i} className="flex flex-col gap-1.5 border-t border-borda-fraca pt-3">
+                    <span className="text-micro uppercase tracking-wider text-tinta-suave">
+                        {c.rotuloCartao ?? c.titulo}
+                    </span>
+                    <div className="min-w-0">{c.celula(item)}</div>
+                </div>
+            ))}
+
+            {doCorpo.length > 0 && (
+                <dl className="flex flex-col gap-1.5 border-t border-borda-fraca pt-3">
+                    {doCorpo.map((c, i) => (
+                        <div key={i} className="flex items-baseline justify-between gap-3">
+                            <dt className="text-micro uppercase tracking-wider text-tinta-suave shrink-0">
+                                {c.rotuloCartao ?? c.titulo}
+                            </dt>
+                            <dd className="text-corpo text-tinta text-right min-w-0 break-words">
+                                {c.celula(item)}
+                            </dd>
+                        </div>
+                    ))}
+                </dl>
+            )}
+
+            {acoes.length > 0 && (
+                // stopPropagation no rodapé inteiro: no cartão o alvo do
+                // clique é a linha toda, e um botão de imprimir que também
+                // abrisse a O.S. seria um erro difícil de perceber no dedo.
+                <div className="flex items-center justify-end gap-1 border-t border-borda-fraca pt-2" onClick={(e) => e.stopPropagation()}>
+                    {acoes.map((c, i) => <div key={i}>{c.celula(item)}</div>)}
+                </div>
+            )}
+        </div>
+    );
+
+    // Duas linhas de texto e um filete. O que sai daqui — rótulos, seletores,
+    // botões de ação — continua a um toque de distância, no cartão que abre.
+    const linhaCompacta = (item) => (
+        <div
+            key={chave(item)}
+            onClick={aoAtivar(item)}
+            onContextMenu={aoMenu(item)}
+            className={`relative flex items-start gap-2 bg-superficie border-b border-borda-fraca py-2.5 pr-3 transition ${faixa ? 'pl-4' : 'pl-3'} ${clicavel ? 'cursor-pointer active:bg-sutil' : ''} ${classeDaLinha ? classeDaLinha(item) : ''}`}
+        >
+            {faixa && <span aria-hidden="true" className={`absolute left-0 top-0 bottom-0 w-1 ${faixa(item)}`} />}
+
+            <div className="flex-1 min-w-0">
+                <div className="flex items-baseline gap-1.5 min-w-0">
+                    {titulo && <span className="text-micro font-semibold text-tinta-fraca shrink-0">{titulo.celula(item)}</span>}
+                    {subtitulo && <div className="font-bold text-tinta text-corpo min-w-0">{subtitulo.celula(item)}</div>}
+                </div>
+                {noCorpoCompacto.map((c, i) => (
+                    <div key={i} className="mt-1 min-w-0">{conteudoCompacto(c, item)}</div>
+                ))}
+            </div>
+
+            {aDireita && <div className="shrink-0">{conteudoCompacto(aDireita, item)}</div>}
+        </div>
+    );
+
+    const desenhoDoItem = compacto ? linhaCompacta : cartao;
 
     return (
         <div className={className}>
@@ -139,95 +272,63 @@ export function TabelaCartoes({
                 </table>
             </div>
 
-            {/* ---------- CARTÕES (celular) ---------- */}
-            <div className={`${PONTO_DE_CORTE}:hidden flex flex-col gap-2.5 p-3`}>
-                {carregando && Array.from({ length: 5 }).map((_, i) => (
-                    <div key={i} className="border border-borda rounded-lg p-4 bg-superficie flex flex-col gap-2.5">
-                        <div className="h-4 w-1/3 rounded bg-realce animate-pulse" />
-                        <div className="h-3 w-2/3 rounded bg-realce animate-pulse" />
-                        <div className="h-3 w-1/2 rounded bg-realce animate-pulse" />
+            {/* ---------- CARTÕES / LINHAS (celular) ---------- */}
+            <div className={`${PONTO_DE_CORTE}:hidden`}>
+                {carregando && (
+                    <div className="flex flex-col gap-2.5 p-3">
+                        {Array.from({ length: 5 }).map((_, i) => (
+                            <div key={i} className="border border-borda rounded-lg p-4 bg-superficie flex flex-col gap-2.5">
+                                <div className="h-4 w-1/3 rounded bg-realce animate-pulse" />
+                                <div className="h-3 w-2/3 rounded bg-realce animate-pulse" />
+                                <div className="h-3 w-1/2 rounded bg-realce animate-pulse" />
+                            </div>
+                        ))}
                     </div>
-                ))}
+                )}
 
                 {semItens && vazio && <div className="py-10 text-center">{vazio}</div>}
 
-                {secoes.map(secao => (
-                    <React.Fragment key={secao.chave}>
-                        {/* Sem sticky de propósito: a página já tem duas barras fixas
-                            (menu e sub-abas), e um terceiro elemento grudento teria de
-                            conhecer a altura somada das outras duas para não cobri-las.
-                            O título rola junto com os cartões do seu grupo. */}
-                        {secao.cabecalho && (
-                            <div className={`-mx-3 px-4 py-1.5 mt-1 first:mt-0 font-semibold tracking-wide uppercase text-micro text-white ${secao.classeCabecalho || ''}`}>
-                                {secao.cabecalho}
-                            </div>
-                        )}
-                        {secao.itens.map(item => (
+                {secoes.map(secao => {
+                    const fechado = estaFechado(secao.chave);
+                    return (
+                        <React.Fragment key={secao.chave}>
+                            {/* Sem sticky de propósito: a página já tem duas barras fixas
+                                (menu e sub-abas), e um terceiro elemento grudento teria de
+                                conhecer a altura somada das outras duas para não cobri-las.
+                                O título rola junto com os cartões do seu grupo. */}
+                            {secao.cabecalho && (podeRecolher ? (
+                                <button
+                                    type="button"
+                                    onClick={() => aoAlternarGrupo(secao.chave)}
+                                    aria-expanded={!fechado}
+                                    className={`w-full flex items-center gap-2 px-4 py-2 text-left font-semibold tracking-wide uppercase text-micro text-white ${secao.classeCabecalho || ''}`}
+                                >
+                                    <Icon name="chevron-down" className={`w-3.5 h-3.5 shrink-0 opacity-80 transition-transform duration-200 ${fechado ? '-rotate-90' : ''}`} />
+                                    <span className="min-w-0 truncate">{secao.cabecalho}</span>
+                                </button>
+                            ) : (
+                                <div className={`px-4 py-1.5 font-semibold tracking-wide uppercase text-micro text-white ${secao.classeCabecalho || ''}`}>
+                                    {secao.cabecalho}
+                                </div>
+                            ))}
+
+                            {/* A gaveta só existe quando a tela permite recolher: sem isso,
+                                as outras onze listagens que usam este componente ganhariam
+                                um grid no meio do caminho sem motivo. */}
                             <div
-                                key={chave(item)}
-                                onClick={aoAtivar(item)}
-                                onContextMenu={aoMenu(item)}
-                                className={`relative overflow-hidden border border-borda rounded-lg bg-superficie shadow-sm p-4 flex flex-col gap-3 transition ${faixa ? 'pl-5' : ''} ${clicavel ? 'active:bg-sutil' : ''} ${classeDaLinha ? classeDaLinha(item) : ''}`}
+                                className={podeRecolher ? 'gaveta' : undefined}
+                                data-aberta={podeRecolher ? String(!fechado) : undefined}
+                                inert={fechado || undefined}
                             >
-                                {/* Filete de cor à esquerda. Numa lista rolando no dedo a cor
-                                    chega antes da palavra, então o cartão diz o estado antes
-                                    de ser lido. Decorativo de propósito (aria-hidden): a
-                                    informação já está escrita no selo, e repetir para o leitor
-                                    de tela seria ruído. */}
-                                {faixa && <span aria-hidden="true" className={`absolute left-0 top-0 bottom-0 w-1.5 ${faixa(item)}`} />}
-
-                                {(titulo || selo) && (
-                                    <div className="flex items-start justify-between gap-3">
-                                        <div className="min-w-0">
-                                            {titulo && <div className="font-bold text-tinta text-base">{titulo.celula(item)}</div>}
-                                            {subtitulo && <div className="text-corpo text-tinta-suave mt-0.5">{subtitulo.celula(item)}</div>}
-                                        </div>
-                                        {selo && <div className="shrink-0">{selo.celula(item)}</div>}
+                                <div>
+                                    <div className={compacto ? '' : 'flex flex-col gap-2.5 p-3'}>
+                                        {secao.itens.map(desenhoDoItem)}
                                     </div>
-                                )}
-
-                                {destaque && (
-                                    <div className="text-xl font-black text-tinta tracking-tight tabular-nums">
-                                        {destaque.celula(item)}
-                                    </div>
-                                )}
-
-                                {emBloco.map((c, i) => (
-                                    <div key={i} className="flex flex-col gap-1.5 border-t border-borda-fraca pt-3">
-                                        <span className="text-micro uppercase tracking-wider text-tinta-suave">
-                                            {c.rotuloCartao ?? c.titulo}
-                                        </span>
-                                        <div className="min-w-0">{c.celula(item)}</div>
-                                    </div>
-                                ))}
-
-                                {doCorpo.length > 0 && (
-                                    <dl className="flex flex-col gap-1.5 border-t border-borda-fraca pt-3">
-                                        {doCorpo.map((c, i) => (
-                                            <div key={i} className="flex items-baseline justify-between gap-3">
-                                                <dt className="text-micro uppercase tracking-wider text-tinta-suave shrink-0">
-                                                    {c.rotuloCartao ?? c.titulo}
-                                                </dt>
-                                                <dd className="text-corpo text-tinta text-right min-w-0 break-words">
-                                                    {c.celula(item)}
-                                                </dd>
-                                            </div>
-                                        ))}
-                                    </dl>
-                                )}
-
-                                {acoes.length > 0 && (
-                                    // stopPropagation no rodapé inteiro: no cartão o alvo do
-                                    // clique é a linha toda, e um botão de imprimir que também
-                                    // abrisse a O.S. seria um erro difícil de perceber no dedo.
-                                    <div className="flex items-center justify-end gap-1 border-t border-borda-fraca pt-2" onClick={(e) => e.stopPropagation()}>
-                                        {acoes.map((c, i) => <div key={i}>{c.celula(item)}</div>)}
-                                    </div>
-                                )}
+                                </div>
                             </div>
-                        ))}
-                    </React.Fragment>
-                ))}
+                        </React.Fragment>
+                    );
+                })}
             </div>
         </div>
     );
