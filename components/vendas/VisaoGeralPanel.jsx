@@ -6,6 +6,7 @@ import Icon from '@/components/Icon';
 import Tooltip from '@/components/Tooltip';
 import { formatarValorFinanceiro, formatarDataExibicao, formatarMesAno, centavosParaReais, obterDataAtual, mascararCliente } from '@/lib/utils/formatters';
 import { BarRow } from '@/components/vendas/BarRow';
+import RelatorioDoDiaModal from '@/components/vendas/RelatorioDoDiaModal';
 import { CATEGORIAS_CONTA } from '@/lib/utils/constants';
 
 const SLIDES = ['Faturamento no tempo', 'Distribuição no período', 'Despesas e cobranças'];
@@ -46,7 +47,7 @@ function CardPainel({ titulo, descricao, icone, fundoIcone, corIcone, children }
     );
 }
 
-function Barras({ itens, cores, vazio, rotuloDe = (i) => i.rotulo, corFixa }) {
+function Barras({ itens, cores, vazio, rotuloDe = (i) => i.rotulo, corFixa, aoClicarItem, tituloDe }) {
     if (!itens || itens.length === 0) return <p className="text-mini text-gray-500 italic">{vazio}</p>;
     const valores = itens.map(i => centavosParaReais(i.centavos));
     // Módulo na escala: com estorno na lista há valores negativos, e a maior
@@ -65,6 +66,8 @@ function Barras({ itens, cores, vazio, rotuloDe = (i) => i.rotulo, corFixa }) {
             color={corFixa || (typeof cores === 'function' ? cores(item, i) : cores[i % cores.length])}
             rank={i + 1}
             pctTotal={temNegativo || total <= 0 ? null : (valores[i] / total) * 100}
+            aoClicar={aoClicarItem ? () => aoClicarItem(item) : undefined}
+            titulo={tituloDe ? tituloDe(item) : undefined}
         />
     ));
 }
@@ -77,6 +80,10 @@ const CORES_CATEGORIA = Object.fromEntries(CATEGORIAS_CONTA.map(c => [c.value, c
 
 export default function VisaoGeralPanel({ metricas, rotulo }) {
     const [slide, setSlide] = useState(0);
+    // Qual dia da série "Por dia" está aberto no relatório. Fica aqui, e não num
+    // contexto como os treze modais de <Modals />, porque este só abre daqui: um
+    // estado global para um modal de uma tela só seria acoplamento sem troco.
+    const [diaAberto, setDiaAberto] = useState(null);
     const scrollRef = useRef(null);
     const { isDemo } = useSessao();
     // Só para abrir a O.S. direto da lista de cobrança pendente.
@@ -101,6 +108,17 @@ export default function VisaoGeralPanel({ metricas, rotulo }) {
 
     return (
         <div className="flex flex-col gap-8">
+
+            {/* Montado sempre, como os treze de <Modals />, e não atrás de um
+                `diaAberto &&`. O useModal foi escrito para esse arranjo: ele
+                empilha uma entrada de histórico ao abrir e a desfaz com
+                history.back() ao fechar. Montado condicionalmente, a dupla
+                montagem do StrictMode em desenvolvimento gera um back() cujo
+                popstate chega depois de o modal já ter remontado — e o ouvinte
+                novo, inscrito tarde demais para enxergar a marca de "voltar veio
+                do código", entende aquilo como pedido do usuário e fecha o modal
+                sozinho. Era o modal abrindo e sumindo na mesma hora. */}
+            <RelatorioDoDiaModal dia={diaAberto} aoFechar={() => setDiaAberto(null)} />
 
             {/* RESUMO DO PERÍODO */}
             <div>
@@ -181,8 +199,15 @@ export default function VisaoGeralPanel({ metricas, rotulo }) {
                             <CardPainel titulo="Por mês" descricao="Últimos 15 meses com faturamento" icone="layout-dashboard" fundoIcone="bg-emerald-50 dark:bg-emerald-500/10" corIcone="text-sucesso">
                                 <Barras itens={metricas.serie_mes} corFixa="bg-emerald-500" rotuloDe={(i) => formatarMesAno(i.rotulo)} vazio="Sem faturamento registrado." />
                             </CardPainel>
-                            <CardPainel titulo="Por dia" descricao="Últimos 15 dias com faturamento" icone="list" fundoIcone="bg-purple-50 dark:bg-purple-500/10" corIcone="text-purple-600 dark:text-purple-400">
-                                <Barras itens={metricas.serie_dia} corFixa="bg-purple-500" rotuloDe={(i) => formatarDataExibicao(i.rotulo).substring(0, 5)} vazio="Sem faturamento registrado." />
+                            <CardPainel titulo="Por dia" descricao="Clique num dia para ver o que foi vendido" icone="list" fundoIcone="bg-purple-50 dark:bg-purple-500/10" corIcone="text-purple-600 dark:text-purple-400">
+                                <Barras
+                                    itens={metricas.serie_dia}
+                                    corFixa="bg-purple-500"
+                                    rotuloDe={(i) => formatarDataExibicao(i.rotulo).substring(0, 5)}
+                                    vazio="Sem faturamento registrado."
+                                    aoClicarItem={(i) => setDiaAberto(i.rotulo)}
+                                    tituloDe={(i) => `Ver o que foi vendido em ${formatarDataExibicao(i.rotulo)}`}
+                                />
                             </CardPainel>
                         </div>
                     </div>

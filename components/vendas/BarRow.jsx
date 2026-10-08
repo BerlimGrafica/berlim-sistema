@@ -1,7 +1,12 @@
 "use client";
 import { formatarValorFinanceiro } from '@/lib/utils/formatters';
 
-export function BarRow({ label, valor, maxVal, color, rank, pctTotal }) {
+// `aoClicar` é opcional e só a série "Por dia" usa: ali a linha abre o
+// relatório daquele dia. As outras seis séries que passam por aqui (ano, mês,
+// local, forma, instituição, categoria) continuam sendo leitura, e sem a
+// propriedade a linha nem vira botão — nada de cursor de mão prometendo algo
+// que não acontece.
+export function BarRow({ label, valor, maxVal, color, rank, pctTotal, aoClicar, titulo }) {
     // Estorno entra negativo nos rankings (mesmo sinal do total recebido). A
     // barra usa o módulo para ter largura, e a linha inteira fica vermelha —
     // senão um valor negativo apareceria como uma barra mínima, indistinguível
@@ -9,8 +14,18 @@ export function BarRow({ label, valor, maxVal, color, rank, pctTotal }) {
     const negativo = valor < 0;
     const pct = maxVal > 0 ? (Math.abs(valor) / maxVal) * 100 : 0;
 
+    const Elemento = aoClicar ? 'button' : 'div';
+    const extras = aoClicar
+        ? {
+            type: 'button',
+            onClick: aoClicar,
+            title: titulo,
+            className: 'flex items-center gap-3 group w-full text-left rounded-md -mx-2 px-2 py-1 transition hover:bg-realce focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-1 cursor-pointer',
+        }
+        : { className: 'flex items-center gap-3 group' };
+
     return (
-        <div className="flex items-center gap-3 group">
+        <Elemento {...extras}>
             {rank != null && (
                 <span className="w-5 h-5 shrink-0 rounded-full bg-realce text-micro font-bold text-tinta-suave flex items-center justify-center">{rank}</span>
             )}
@@ -28,6 +43,6 @@ export function BarRow({ label, valor, maxVal, color, rank, pctTotal }) {
             {pctTotal != null && (
                 <span className="text-micro font-semibold text-gray-400 w-9 text-right tabular-nums shrink-0">{pctTotal.toFixed(0)}%</span>
             )}
-        </div>
+        </Elemento>
     );
 }
