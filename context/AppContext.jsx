@@ -1628,6 +1628,12 @@ export const AppProvider = ({ children }) => {
 
         const copiaPendente = {
             descricao: contaOriginal.descricao,
+            // Zero de propósito, decisão do financeiro — não é esquecimento.
+            // Nem toda recorrente tem valor fixo: a energia e a água mudam todo
+            // mês, e copiar o valor anterior colocaria um número com cara de
+            // certo numa conta que ainda não chegou. Zerada, ela obriga a
+            // conferir a fatura antes de pagar. O custo aceito é redigitar o
+            // valor das fixas (contador, plano, assinaturas) a cada mês.
             valor: 0,
             vencimento: adicionarMesData(contaOriginal.vencimento),
             status: 'Pendente',
@@ -1695,11 +1701,25 @@ export const AppProvider = ({ children }) => {
         if (novaConta.id) {
             const contaAnterior = contasPagar.find(c => c.id === novaConta.id);
             const tornouPaga = contaAnterior && contaAnterior.status !== 'Pago' && contaFormatada.status === 'Pago';
+            // A outra porta de entrada: a conta JÁ estava paga e só agora foi
+            // marcada como recorrente. Esperando apenas "tornou paga", esse caso
+            // nunca disparava — ela não vai ficar paga de novo — e a recorrência
+            // ficava marcada sem gerar mês nenhum, para sempre. Era o que tinha
+            // acontecido com o plano odontológico e com Assinaturas.
+            //
+            // Só a TRANSIÇÃO conta, de propósito. Chamar a cópia em todo
+            // salvamento de conta paga e recorrente seria idempotente para as
+            // contas novas (o índice único em recorrente_origem_id barra a
+            // segunda sucessora), mas as anteriores à migração não têm esse
+            // vínculo preenchido — editar a descrição de uma delas criaria uma
+            // sucessora duplicada para um mês que já existe.
+            const tornouRecorrente = contaAnterior && !contaAnterior.recorrente && contaFormatada.recorrente;
+            const jaPaga = contaFormatada.status === 'Pago';
 
             const { data, error } = await supabase.from('contas_pagar').update(contaFormatada).eq('id', novaConta.id).select();
             if (!error && data) {
                 setContasPagar(prev => prev.map(c => c.id === novaConta.id ? data[0] : c));
-                if (tornouPaga && contaFormatada.recorrente) {
+                if (contaFormatada.recorrente && (tornouPaga || (tornouRecorrente && jaPaga))) {
                     await criarCopiaRecorrente(data[0]);
                 }
                 setModalContaAberto(false);
@@ -1709,7 +1729,14 @@ export const AppProvider = ({ children }) => {
         } else {
             const { data, error } = await supabase.from('contas_pagar').insert([contaFormatada]).select();
             if (!error && data) {
-                setContasPagar([...contasPagar, data[0]]);
+                setContasPagar(prev => [...prev, data[0]]);
+                // Lançar uma conta que já nasce paga e recorrente — a de agosto
+                // registrada em setembro, por exemplo — é pagar uma recorrente.
+                // Sem isto, o cadastro novo nunca passava por criarCopiaRecorrente
+                // e o mês seguinte não aparecia.
+                if (contaFormatada.recorrente && contaFormatada.status === 'Pago') {
+                    await criarCopiaRecorrente(data[0]);
+                }
                 setModalContaAberto(false);
             } else {
                 avisar('Falha ao salvar (Tabela contas_pagar existe no Supabase?): ' + (error?.message || 'Erro desconhecido'), 'erro');
