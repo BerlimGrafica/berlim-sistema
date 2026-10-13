@@ -33,7 +33,14 @@
        erro visível, só o conteúdo passando por baixo do cabeçalho. */
     --altura-barra: 64px;
     --altura-abas: 48px;
-    --altura-cabecalho: calc(var(--altura-barra) + var(--altura-abas));
+    /* A faixa de pendências também gruda no topo, logo abaixo das abas, mas a
+       altura dela muda: some quando não há nada urgente, tem uma linha
+       recolhida e uma lista aberta. Ela mesma escreve a altura aqui
+       (components/FaixaPendencias.jsx), e zero quando não aparece. Sem entrar
+       nesta conta, ela grudava no mesmo lugar das abas e cobria só parte do
+       menu, deixando uma tira dele aparecendo por baixo. */
+    --altura-faixa: 0px;
+    --altura-cabecalho: calc(var(--altura-barra) + var(--altura-abas) + var(--altura-faixa));
 
     /* Escala tipográfica. Os quatro tamanhos densos da interface (13/12/11/10)
        foram desenhados para monitor, a meio metro de distância. No celular, a

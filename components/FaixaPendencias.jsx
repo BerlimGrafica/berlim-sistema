@@ -1,5 +1,5 @@
 "use client";
-import { useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useUi } from '@/context/UiContext';
 import Icon from '@/components/Icon';
 import { gravidadeDe, piorGravidade, resumirPendencias } from '@/lib/alertas/pendencias';
@@ -21,6 +21,29 @@ export default function FaixaPendencias() {
     const irPara = useIrParaPendencia();
     const [abertaPorClique, setAbertaPorClique] = useState(false);
 
+    // A faixa publica a própria altura em --altura-faixa, que entra em
+    // --altura-cabecalho (app/globals.css). É assim que as sub-abas, que grudam
+    // logo abaixo do cabeçalho, descem quando a faixa aparece e sobem quando
+    // ela some — sem precisar saber que a faixa existe.
+    //
+    // Ref de callback, e não useEffect: o React a chama com o elemento quando a
+    // faixa entra e com null quando ela sai (o `return null` abaixo, quando não
+    // há nada urgente). É exatamente o momento de zerar a variável.
+    const observador = useRef(null);
+    const medir = useCallback((el) => {
+        observador.current?.disconnect();
+        observador.current = null;
+        const raiz = document.documentElement;
+        if (!el) {
+            raiz.style.setProperty('--altura-faixa', '0px');
+            return;
+        }
+        const publicar = () => raiz.style.setProperty('--altura-faixa', `${Math.ceil(el.getBoundingClientRect().height)}px`);
+        publicar();
+        observador.current = new ResizeObserver(publicar);
+        observador.current.observe(el);
+    }, []);
+
     const ehResumo = !!resumoDeEntrada?.length;
     const aberta = ehResumo || abertaPorClique;
     const lista = ehResumo ? resumoDeEntrada : pendencias;
@@ -36,7 +59,10 @@ export default function FaixaPendencias() {
     };
 
     return (
-        <div className={`sticky top-[var(--altura-barra)] z-30 border-b ${gravidade.faixa} no-print`}>
+        // Gruda abaixo da barra E das abas. Antes grudava em --altura-barra, o
+        // mesmo ponto das abas, e por vir depois no código era desenhada por
+        // cima delas — cobrindo o menu pela metade ao rolar a página.
+        <div ref={medir} className={`sticky top-[calc(var(--altura-barra)+var(--altura-abas))] z-30 border-b ${gravidade.faixa} no-print`}>
             <div className="px-4 lg:px-6 py-2 flex items-center gap-3">
                 <span className={`shrink-0 w-2 h-2 rounded-full ${gravidade.ponto}`} />
                 <button
