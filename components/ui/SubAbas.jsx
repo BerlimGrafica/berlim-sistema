@@ -2,6 +2,7 @@
 import { useEffect } from 'react';
 import Icon from '@/components/Icon';
 import { CustomSelect } from '@/components/ui/Dropdown';
+import { useMenuLateral } from '@/hooks/useMenuLateral';
 
 // A faixa de sub-abas de uma tela (Abertas / À dar Baixa / Baixadas...), nos
 // dois desenhos: abas no desktop, seletor no celular.
@@ -30,8 +31,15 @@ export function SubAbas({ valor, aoMudar, abas, className = '' }) {
         aoMudar(abas[0].id);
     }, [abas, valor, aoMudar]);
 
+    // No computador, com o menu lateral aberto, as sub-abas já estão nele,
+    // embaixo do item da tela — esta faixa repetiria as mesmas opções. Ela só
+    // some por CSS, e não deixa de ser montada: o efeito acima, que corrige uma
+    // sub-aba sem permissão, precisa continuar valendo. Com o menu escondido ela
+    // volta, porque aí é o único caminho para trocar de sub-aba no computador.
+    const { aberto: menuAberto } = useMenuLateral();
+
     return (
-        <div className={`bg-fundo border-b border-borda z-20 sticky top-[var(--altura-cabecalho)] ${className}`}>
+        <div className={`bg-fundo border-b border-borda z-20 sticky top-[var(--altura-cabecalho)] ${menuAberto ? 'lg:hidden' : ''} ${className}`}>
             {/* Celular. O seletor vem primeiro e o rótulo vai para o fim: assim ele
                 começa na mesma margem do seletor de seções logo acima, e os dois
                 terminam juntos — o "Ver" cai na mesma coluna da seta dos sites

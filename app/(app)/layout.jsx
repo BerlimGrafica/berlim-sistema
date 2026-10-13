@@ -2,6 +2,7 @@
 import { useSyncExternalStore } from 'react';
 import { AppProvider } from '@/context/AppContext';
 import Navbar from '@/components/Navbar';
+import MenuLateral from '@/components/MenuLateral';
 import FaixaPendencias from '@/components/FaixaPendencias';
 import FaviconPendencias from '@/components/FaviconPendencias';
 import GuardaDeAcesso from '@/components/GuardaDeAcesso';
@@ -32,9 +33,19 @@ export default function AppLayout({ children }) {
                     propósito — precisam continuar operantes. */}
                 <div className="contents" inert={modalAberto}>
                     <Navbar />
-                    <FaixaPendencias />
-                    <div className="flex-1 bg-fundo relative">
-                        <PageTransition><GuardaDeAcesso>{children}</GuardaDeAcesso></PageTransition>
+                    {/* Abaixo da barra, duas colunas no computador: o menu lateral e a
+                        página. A faixa de pendências fica na coluna da página, e não
+                        atravessando a tela toda: assim o menu começa colado na barra e
+                        a faixa fala de trabalho, junto do trabalho. No celular o menu
+                        lateral não existe e a coluna da página ocupa tudo. */}
+                    <div className="flex flex-1">
+                        <MenuLateral />
+                        <div className="flex-1 min-w-0 flex flex-col">
+                            <FaixaPendencias />
+                            <div className="flex-1 bg-fundo relative">
+                                <PageTransition><GuardaDeAcesso>{children}</GuardaDeAcesso></PageTransition>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <Modals />

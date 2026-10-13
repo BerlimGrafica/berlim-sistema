@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useRef, useState } from "react";
-import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useSessao } from "@/context/SessaoContext";
 import { useUi } from "@/context/UiContext";
@@ -11,6 +11,7 @@ import { CustomSelect } from "@/components/ui/Dropdown";
 import { useIrParaPendencia } from "@/hooks/useIrParaPendencia";
 import { gravidadeDe } from "@/lib/alertas/pendencias";
 import { telasVisiveis } from "@/lib/acesso/telas";
+import { useMenuLateral } from "@/hooks/useMenuLateral";
 
 // A lista de destinos do menu vem de lib/acesso/telas.js, e não mais de uma
 // tabela escrita aqui dentro. Ela deixou de ser regra de menu: a mesma lista
@@ -55,7 +56,7 @@ export default function Navbar() {
     const router = useRouter();
 
     const destinos = telasVisiveis(usuario);
-    const destinoAtual = destinos.find(d => d.href === pathname);
+    const { aberto: menuAberto, alternar: alternarMenu } = useMenuLateral();
 
     useEffect(() => {
         if (!modalAlertasAberto) return;
@@ -83,15 +84,60 @@ export default function Navbar() {
 
     return (
         <>
-            <header className="sticky top-0 z-40 bg-campo px-4 lg:px-6 h-[var(--altura-barra)] flex justify-between items-center gap-3">
+            {/* A linha embaixo da barra só no computador. Lá, sem a faixa de abas
+                (que tinha sombra e fazia essa divisa), a barra e o menu lateral têm
+                o mesmo fundo e se emendavam sem separação; a borda é a mesma da
+                lateral do menu, então as duas se encontram no canto. No celular a
+                barra continua colada ao seletor de seções, que é parte dela. A
+                altura não muda: a borda entra nos 64px, não soma a eles. */}
+            <header className="sticky top-0 z-40 bg-campo px-4 lg:px-6 h-[var(--altura-barra)] lg:border-b lg:border-borda flex justify-between items-center gap-3">
                     {/* A marca não pode encolher: sem o shrink-0 ela era a primeira coisa
                         que o flex espremia quando o lado direito não cabia, e sumia da
                         tela sem deixar rastro. Em tela estreita entra o ícone do próprio
-                        sistema, servido daqui — a assinatura completa vem de um host
-                        externo e não cabe na largura de um celular. */}
-                    <div className="flex items-center shrink-0">
+                        sistema, servido daqui; no computador, o nome escrito. */}
+                    <div className="flex items-center gap-2 shrink-0">
+                        {/* Mostra e esconde o menu lateral — só no computador; no
+                            celular a navegação é o seletor logo abaixo da barra.
+
+                            O ícone é o próprio favicon da Berlim, e a posição dele é o
+                            estado do menu: de pé com o menu aberto, ecoando a coluna da
+                            lateral; deitado com o menu fechado, quando as quatro barras
+                            viram o "☰" que todo mundo lê como "abrir menu". O giro tem
+                            um leve tranco no fim (cubic-bezier com overshoot) para soar
+                            como um clique, e some para quem pede menos movimento. */}
+                        <button
+                            type="button"
+                            onClick={alternarMenu}
+                            aria-label={menuAberto ? 'Esconder o menu' : 'Mostrar o menu'}
+                            aria-controls="menu-lateral"
+                            aria-expanded={menuAberto}
+                            className="hidden lg:grid w-10 h-10 -ml-2 place-items-center rounded-md hover:bg-realce transition-colors focus-visible:outline-2 focus-visible:outline-brand"
+                        >
+                            {/* O giro vai em `transform` com os dois ângulos escritos, e não
+                                nas classes rotate-0/rotate-90. Aberto, a classe rotate-0
+                                resolvia para `rotate: none` — que não é um ângulo — e a
+                                transição de `none` para 90deg não era interpolada: ao
+                                fechar, o ícone ficava parado um segundo e pulava. Com
+                                rotate(0deg) ↔ rotate(90deg) os dois sentidos animam. */}
+                            <Image
+                                src="/icon.png"
+                                alt=""
+                                width={22}
+                                height={22}
+                                unoptimized
+                                style={{ transform: `rotate(${menuAberto ? 0 : 90}deg)` }}
+                                className="transition-transform duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] motion-reduce:transition-none"
+                            />
+                        </button>
                         <img src="/icon.png" alt="Berlim Gráfica" className="h-7 w-7 object-contain lg:hidden" />
-                        <img src="https://www.berlimgraficarapida.com.br/wp-content/uploads/elementor/thumbs/logosite-rm0erpiqj90gcf7ff4jp8ujys78opflob1b9vn5jjs.png" alt="Berlim Gráfica" className="h-8 object-contain hidden lg:block" />
+                        {/* O nome escrito, como na prévia aprovada do menu lateral, no lugar da
+                            imagem que vinha do site da gráfica: texto é nítido em qualquer tela,
+                            não depende de outro servidor e acompanha o tema escuro. O laranja do
+                            BERLIM e o azul do "Gráfica" são as cores do logo; por ser logotipo,
+                            fica de fora da exigência de contraste que vale para o texto corrido. */}
+                        <span className="hidden lg:block text-xl font-black tracking-tight leading-none whitespace-nowrap select-none">
+                            <span className="text-brand">BERLIM</span> <span className="text-brand-azul">Gráfica</span>
+                        </span>
                     </div>
                     <div className="flex items-center gap-2 lg:gap-5 min-w-0">
                         <Tooltip label="Chat da Equipe">
@@ -227,7 +273,7 @@ export default function Navbar() {
                 local padrão, presente em quase toda O.S. — dividia o mesmo
                 laranja com a navegação inteira, o que gastava o destaque na
                 informação mais banal da tela. */}
-            <nav className="bg-superficie px-4 lg:px-6 shadow-sm z-30 sticky top-[var(--altura-barra)] h-[var(--altura-abas)]">
+            <nav className="lg:hidden bg-superficie px-4 shadow-sm z-30 sticky top-[var(--altura-barra)] h-[var(--altura-abas)]">
                     {/* Celular: um seletor com a seção atual. Dez destinos numa fita
                         que rola de lado obrigam a arrastar às cegas — não dá para ver
                         o que existe, e a aba ativa pode estar fora da tela. O seletor
@@ -276,32 +322,6 @@ export default function Navbar() {
                                 </div>
                             )}
                         </div>
-                    </div>
-
-                    {/* Desktop: as abas de sempre. O shrink-0 é o que faz a fita rolar
-                        em vez de espremer — sem ele, o flex encolhe as abas e o texto,
-                        que é whitespace-nowrap, transborda por cima da vizinha. */}
-                    <div className="hidden lg:flex gap-1.5 overflow-x-auto custom-scrollbar no-scrollbar-style items-end pt-2.5 h-full">
-                        {destinos.map(({ href, rotulo, icone }) => {
-                            const ativo = pathname === href;
-                            const quantas = pendenciasPorDestino[href] || 0;
-                            return (
-                                <Link
-                                    key={href}
-                                    href={href}
-                                    className={`px-4 py-2.5 text-corpo font-semibold cursor-pointer transition-all duration-200 whitespace-nowrap shrink-0 rounded-t-lg flex items-center gap-2 tracking-wide uppercase border-t-2 ${ativo ? 'bg-fundo text-tinta border-brand shadow-[0_-2px_6px_rgba(0,0,0,0.08)]' : 'border-transparent text-tinta-suave hover:bg-sutil hover:text-tinta'}`}
-                                >
-                                    <Icon name={icone} className={`w-4 h-4 shrink-0 ${ativo ? 'text-brand' : ''}`} /> {rotulo}
-                                    {/* Diz ONDE está o trabalho: o sino dá o total, a aba
-                                        aponta a tela. */}
-                                    {quantas > 0 && (
-                                        <span className="min-w-[18px] h-[18px] px-1 flex items-center justify-center bg-brand text-white text-[10px] font-bold rounded-full">
-                                            {quantas}
-                                        </span>
-                                    )}
-                                </Link>
-                            );
-                        })}
                     </div>
                 </nav>
         </>

@@ -56,6 +56,10 @@
     --fonte-mini: 11px;
     --fonte-micro: 10px;
 
+    /* O azul do logotipo, medido no arquivo original do logo. Só para o nome
+       escrito na barra — não é cor de interface. */
+    --brand-azul: #006FB5;
+
     /* Superfícies, do fundo da página para cima */
     --fundo: #EDEFF0;
     --superficie: #ffffff;
@@ -92,7 +96,20 @@
     --aviso: var(--color-amber-600);
 }
 
+/* No computador a faixa de abas não existe mais: a navegação mudou para o menu
+   lateral (components/MenuLateral.jsx). Zerar a altura dela aqui é o que faz a
+   faixa de pendências e as sub-abas subirem para logo abaixo da barra, sem que
+   nenhuma delas precise saber do menu. 64rem é o `lg` do Tailwind. */
+@media (min-width: 64rem) {
+    :root {
+        --altura-abas: 0px;
+    }
+}
+
 .dark {
+    /* O mesmo azul, clareado: o original fica apagado sobre o fundo escuro. */
+    --brand-azul: #4A9FDB;
+
     --fundo: #0d1117;
     --superficie: #161b22;
     --elevado: #21262d;
@@ -125,6 +142,7 @@
 @theme inline {
   --color-brand: #F69F00;
   --color-brandHover: #d98b00;
+  --color-brand-azul: var(--brand-azul);
   --color-darkBg: #0d1117;
   --color-darkCard: #161b22;
   --color-darkElevated: #21262d;

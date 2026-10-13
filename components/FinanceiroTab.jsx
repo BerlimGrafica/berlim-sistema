@@ -13,16 +13,18 @@ import NotasFiscaisPanel from '@/components/financeiro/NotasFiscaisPanel';
 import { SubAbas } from '@/components/ui/SubAbas';
 import { BarraAcoes } from '@/components/ui/BarraAcoes';
 import { podeVerTela, subtelasVisiveis } from '@/lib/acesso/telas';
+import { sinaisDasSubAbas } from '@/lib/acesso/sinais';
 
 export default function FinanceiroTab() {
     const { usuario } = useSessao();
     const { notasFiscais, filtroNotas, buscaNotaFiscal, setBuscaNotaFiscal, setPaginaNotasFiscais, setFiltroNotas } = useNotasFiscais();
     const { setAbaFinanceiro, abaFinanceiro, mesContasPagar, setMesContasPagar, dataFiltroContasReceberInicio, setDataFiltroContasReceberInicio, dataFiltroContasReceberFim, setDataFiltroContasReceberFim, dataFiltroBoletosInicio, setDataFiltroBoletosInicio, dataFiltroBoletosFim, setDataFiltroBoletosFim, setNovaConta, setModalContaAberto, setModalEmpresaFaturamentoAberto } = useFinanceiro();
 
-    // As sub-abas vêm do catálogo de permissões; o ponto de pendência em Notas
-    // Fiscais é a única parte que depende de dado do momento e não caberia lá.
+    // As sub-abas vêm do catálogo de permissões; o ponto de pendência vem de
+    // lib/acesso/sinais.js, a mesma regra que o menu lateral usa.
+    const sinais = sinaisDasSubAbas({ notasFiscais });
     const abasFinanceiro = subtelasVisiveis(usuario, 'financeiro').map(a =>
-        a.id === 'notas_fiscais' ? { ...a, sinal: notasFiscais.some(n => !n.concluido) } : a);
+        ({ ...a, sinal: !!sinais[`financeiro:${a.id}`] }));
 
     return (
         <>
