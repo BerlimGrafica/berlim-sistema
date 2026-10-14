@@ -1,6 +1,7 @@
 "use client";
 import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useSessao } from "@/context/SessaoContext";
 import { useUi } from "@/context/UiContext";
@@ -129,15 +130,23 @@ export default function Navbar() {
                                 className="transition-transform duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] motion-reduce:transition-none"
                             />
                         </button>
-                        <img src="/icon.png" alt="Berlim Gráfica" className="h-7 w-7 object-contain lg:hidden" />
+                        {/* A marca leva ao Início, como em quase todo sistema — no celular,
+                            onde só o ícone aparece, o ícone faz o mesmo. */}
+                        <Link href="/" aria-label="Berlim Gráfica — ir para o Início" className="lg:hidden rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+                            <img src="/icon.png" alt="" className="h-7 w-7 object-contain" />
+                        </Link>
                         {/* O nome escrito, como na prévia aprovada do menu lateral, no lugar da
                             imagem que vinha do site da gráfica: texto é nítido em qualquer tela,
                             não depende de outro servidor e acompanha o tema escuro. O laranja do
                             BERLIM e o azul do "Gráfica" são as cores do logo; por ser logotipo,
                             fica de fora da exigência de contraste que vale para o texto corrido. */}
-                        <span className="hidden lg:block text-xl font-black tracking-tight leading-none whitespace-nowrap select-none">
+                        <Link
+                            href="/"
+                            aria-label="Berlim Gráfica — ir para o Início"
+                            className="hidden lg:block text-xl font-black tracking-tight leading-none whitespace-nowrap select-none rounded-md transition-opacity duration-150 hover:opacity-80 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand"
+                        >
                             <span className="text-brand">BERLIM</span> <span className="text-brand-azul">Gráfica</span>
-                        </span>
+                        </Link>
                     </div>
                     <div className="flex items-center gap-2 lg:gap-5 min-w-0">
                         <Tooltip label="Chat da Equipe">
