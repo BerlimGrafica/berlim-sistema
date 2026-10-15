@@ -45,3 +45,6 @@ nul
 
 # Capturas e logs gerados pelo Playwright MCP durante a verificação de telas
 .playwright-mcp/
+
+# Capturas de revisão de design (impeccable): mostram dados reais da gráfica
+.impeccable/review/
