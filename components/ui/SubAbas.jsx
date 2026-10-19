@@ -34,8 +34,9 @@ export function SubAbas({ valor, aoMudar, abas, className = '' }) {
     // No computador, com o menu lateral aberto, as sub-abas já estão nele,
     // embaixo do item da tela — esta faixa repetiria as mesmas opções. Ela só
     // some por CSS, e não deixa de ser montada: o efeito acima, que corrige uma
-    // sub-aba sem permissão, precisa continuar valendo. Com o menu escondido ela
-    // volta, porque aí é o único caminho para trocar de sub-aba no computador.
+    // sub-aba sem permissão, precisa continuar valendo. Com o menu recolhido
+    // (só ícones, sem as sub-abas) ela volta, porque aí é o único caminho para
+    // trocar de sub-aba no computador.
     const { aberto: menuAberto } = useMenuLateral();
 
     return (

@@ -109,7 +109,7 @@ export default function Navbar() {
                         <button
                             type="button"
                             onClick={alternarMenu}
-                            aria-label={menuAberto ? 'Esconder o menu' : 'Mostrar o menu'}
+                            aria-label={menuAberto ? 'Recolher o menu' : 'Expandir o menu'}
                             aria-controls="menu-lateral"
                             aria-expanded={menuAberto}
                             className="hidden lg:grid w-10 h-10 -ml-2 place-items-center rounded-md hover:bg-realce transition-colors focus-visible:outline-2 focus-visible:outline-brand"
