@@ -133,6 +133,19 @@ export default function ProducaoTab() {
         atualizarCampoInline(id, campo, valor);
     };
 
+    // O seletor de responsável — na coluna Resp. ou, na tabela muito estreita,
+    // embaixo do prazo.
+    const seletorResponsavel = (p) => (
+        <MultiSelectDropdown value={p.responsavel} options={nomesResponsaveis} onChange={(val) => handleAtualizarCampo(p.id, 'responsavel', val)} className="w-full bg-sutil border border-borda rounded px-2.5 py-1.5 text-mini outline-none hover:border-brand" />
+    );
+
+    // Os locais de produção de uma O.S. em chips — na tabela embaixo do nome do
+    // cliente, no cartão do celular na linha "Local". Sem local gravado, é a
+    // própria Berlim.
+    const chipsDoLocal = (p) => (p.local_producao || 'Berlim').split(',').map(s => s.trim()).filter(Boolean).map(local => (
+        <ChipNome key={local} nome={local} />
+    ));
+
     const montarItensContexto = (p) => [
         { label: 'Editar O.S.', icon: 'edit-3', onClick: () => abrirEdicao(p) },
         { label: 'Duplicar O.S.', icon: 'layers', onClick: () => duplicarOS(p) },
@@ -218,20 +231,52 @@ export default function ProducaoTab() {
                                 carregando={!dadosCarregados}
                                 vazio={<span className="text-gray-500 italic">Nenhuma OS encontrada.</span>}
                                 aoContextMenu={(p, e) => abrirContextMenu(e, montarItensContexto(p))}
+                                // CABER NA TELA DE UM NOTEBOOK
+                                // A tabela pedia 1.384px e, num notebook de 1366px com o
+                                // menu lateral aberto, sobram uns 1.030 — a direita (status,
+                                // local, concluir) só aparecia com zoom de 80% ou rolando até
+                                // o fim da página para achar a barra de rolagem. Três
+                                // escolhas fazem caber sem esconder dado:
+                                //
+                                // - Título e célula com o mesmo respiro (px-3). O título tinha
+                                //   px-6 e, nas colunas estreitas, era ele que ditava a
+                                //   largura: "CONCLUIR" alargava a coluna de um botão só.
+                                //   As colunas de conteúdo fixo usam w-px: ficam do tamanho
+                                //   do que mostram, e o resto vai para o Serviço (w-full).
+                                // - Concluir entra em Ações: uma coluna a menos, e o botão
+                                //   continua protegido pela confirmação.
+                                // - Local embaixo do nome do cliente, e não em coluna própria
+                                //   — a equipe preferiu assim depois de ver as duas formas.
+                                // - O resto se adapta à largura da TABELA (container query, ver
+                                //   TabelaCartoes), que é o que importa, e não a da janela: ela
+                                //   muda com o menu aberto ou recolhido e com o zoom. Abaixo de
+                                //   64rem (notebook de 1280px com o menu aberto, zoom alto) o
+                                //   Resp. desce para baixo do prazo.
                                 colunas={[
                                     {
                                         papel: 'titulo',
                                         titulo: 'ID',
-                                        thClassName: 'px-6 py-4 w-24 text-center',
-                                        tdClassName: 'px-4 py-3 font-medium text-tinta-fraca text-center',
+                                        thClassName: 'px-3 py-4 w-px text-center',
+                                        tdClassName: 'px-3 py-3 font-medium text-tinta-fraca text-center whitespace-nowrap',
                                         celula: p => <button type="button" onClick={() => abrirEdicao(p)} className="hover:text-brand transition">#{p.id}</button>,
                                     },
                                     {
                                         papel: 'bloco',
-                                        titulo: 'Prazo',
-                                        thClassName: 'px-6 py-4 w-32 text-center',
-                                        tdClassName: 'px-4 py-3',
-                                        celula: p => <CustomDatePicker value={p.prazo || ''} onChange={val => handleAtualizarCampo(p.id, 'prazo', val)} placeholder="Definir prazo..." className={`w-full bg-gray-50 dark:bg-darkElevated border-2 ${obterCorContornoPrazo(p.prazo)} rounded px-2.5 py-1.5 text-mini outline-none hover:border-brand transition text-gray-700 dark:text-[#EDEDED]`} />,
+                                        titulo: <>Prazo<span className="hidden @max-[64rem]:inline"> / Resp.</span></>,
+                                        rotuloCartao: 'Prazo',
+                                        thClassName: 'px-3 py-4 w-px text-center whitespace-nowrap',
+                                        tdClassName: 'px-3 py-3',
+                                        celula: p => (
+                                            <>
+                                                <CustomDatePicker value={p.prazo || ''} onChange={val => handleAtualizarCampo(p.id, 'prazo', val)} placeholder="Definir prazo..." className={`w-full bg-gray-50 dark:bg-darkElevated border-2 ${obterCorContornoPrazo(p.prazo)} rounded px-2.5 py-1.5 text-mini outline-none hover:border-brand transition text-gray-700 dark:text-[#EDEDED]`} />
+                                                {/* Tabela muito estreita (notebook pequeno com o menu
+                                                    aberto, ou zoom alto): o responsável desce para baixo
+                                                    do prazo e a coluna dele some. A linha cresce um
+                                                    pouco, mas nada sai da tela. Só na tabela — no cartão
+                                                    não há container e o responsável segue no bloco dele. */}
+                                                <div className="hidden @max-[64rem]:block mt-1.5">{seletorResponsavel(p)}</div>
+                                            </>
+                                        ),
                                         // Na linha compacta o prazo é selo, não seletor: dia e mês
                                         // bastam para decidir se aquela O.S. é a de agora, e o ano
                                         // só ocuparia espaço. Para trocar a data, abre a O.S.
@@ -245,27 +290,34 @@ export default function ProducaoTab() {
                                     {
                                         papel: 'bloco',
                                         titulo: 'Resp.',
-                                        thClassName: 'px-6 py-4 w-32 text-center',
-                                        tdClassName: 'px-4 py-3',
-                                        celula: p => <MultiSelectDropdown value={p.responsavel} options={nomesResponsaveis} onChange={(val) => handleAtualizarCampo(p.id, 'responsavel', val)} className="w-full bg-sutil border border-borda rounded px-2.5 py-1.5 text-mini outline-none hover:border-brand" />,
+                                        thClassName: 'px-3 py-4 w-px text-center @max-[64rem]:hidden',
+                                        tdClassName: 'px-3 py-3 @max-[64rem]:hidden',
+                                        celula: p => seletorResponsavel(p),
                                     },
                                     {
                                         papel: 'subtitulo',
                                         titulo: 'Cliente',
-                                        thClassName: 'px-6 py-4 text-center',
-                                        tdClassName: `px-4 py-3 font-semibold truncate max-w-[12rem]`,
+                                        thClassName: 'px-3 py-4 text-left',
+                                        tdClassName: 'px-3 py-3 font-semibold max-w-[10rem] @min-[76rem]:max-w-[13rem]',
                                         celula: p => (
-                                            <div className={`flex items-center gap-1.5 min-w-0 ${isClienteProblema(p.cliente, p.cliente_id) ? 'text-perigo' : 'text-tinta'}`}>
-                                                <span className="truncate">{mascararCliente(p.cliente, isDemo)}</span>
-                                                {isClienteProblema(p.cliente, p.cliente_id) && <Icon name="alert-triangle" className="w-3.5 h-3.5 text-red-500 shrink-0" title="Cliente Problema" />}
+                                            <div className="min-w-0">
+                                                <div className={`flex items-center gap-1.5 min-w-0 ${isClienteProblema(p.cliente, p.cliente_id) ? 'text-perigo' : 'text-tinta'}`}>
+                                                    <span className="truncate">{mascararCliente(p.cliente, isDemo)}</span>
+                                                    {isClienteProblema(p.cliente, p.cliente_id) && <Icon name="alert-triangle" className="w-3.5 h-3.5 text-red-500 shrink-0" title="Cliente Problema" />}
+                                                </div>
+                                                {/* O local da O.S., embaixo do cliente. Só na tabela
+                                                    (lg:flex): no celular a mesma célula é o título do
+                                                    cartão e da linha compacta, e lá o local tem lugar
+                                                    próprio — a linha "Local" do cartão. */}
+                                                <div className="hidden lg:flex flex-wrap gap-1 mt-1 font-normal">{chipsDoLocal(p)}</div>
                                             </div>
                                         ),
                                     },
                                     {
                                         papel: 'bloco',
                                         titulo: 'Serviço',
-                                        thClassName: 'px-6 py-4 w-full min-w-[300px] text-left',
-                                        tdClassName: 'px-4 py-3 text-tinta font-medium',
+                                        thClassName: 'px-3 py-4 w-full text-left',
+                                        tdClassName: 'px-3 py-3 text-tinta font-medium',
                                         celula: p => <ItensChecklist pedido={p} />,
                                         compacto: 'corpo',
                                         celulaCompacta: p => <ItensChecklist pedido={p} compacto />,
@@ -273,8 +325,8 @@ export default function ProducaoTab() {
                                     {
                                         papel: 'acoes',
                                         titulo: 'Ações',
-                                        thClassName: 'px-6 py-4 w-32 text-center',
-                                        tdClassName: 'px-4 py-3',
+                                        thClassName: 'px-3 py-4 w-px text-center',
+                                        tdClassName: 'px-3 py-3',
                                         celula: p => (
                                             <div className="flex items-center justify-center gap-1">
                                                 <Tooltip label="Arte Aprovada">
@@ -287,39 +339,40 @@ export default function ProducaoTab() {
                                                         <Icon name="package" className="w-4 h-4" />
                                                     </button>
                                                 </Tooltip>
+                                                {/* Um fio separa o concluir dos dois marcadores: eles
+                                                    ligam e desligam, ele encerra a O.S. */}
+                                                <span aria-hidden="true" className="w-px h-5 bg-borda mx-0.5" />
+                                                <Tooltip label="Marcar como Concluído">
+                                                    <button type="button" onClick={() => handleAtualizarCampo(p.id, 'status', 'Concluído')} aria-label="Marcar como Concluído" className="p-1.5 text-sucesso hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition rounded">
+                                                        <Icon name="check-circle" className="w-5 h-5" />
+                                                    </button>
+                                                </Tooltip>
                                             </div>
                                         ),
                                     },
                                     {
                                         papel: 'bloco',
                                         titulo: 'Status',
-                                        thClassName: 'px-6 py-4 w-40 text-center',
-                                        tdClassName: 'px-4 py-3',
-                                        celula: p => <InlineDropdown value={p.status} options={opcoesStatusPermitidas} onChange={(val) => handleAtualizarCampo(p.id, 'status', val)} className="w-full bg-sutil border border-borda rounded px-2.5 py-1.5 text-mini outline-none hover:border-brand" />,
+                                        thClassName: 'px-3 py-4 w-px text-center',
+                                        tdClassName: 'px-3 py-3',
+                                        // Largura fixa: sem ela a coluna teria a largura do status
+                                        // mais longo ("Desenvolvimento de Arte"). Os três status
+                                        // longos cortam com reticências na tabela estreita — o nome
+                                        // inteiro está no título do grupo, logo acima, e ao passar o
+                                        // mouse. Com espaço, o seletor alarga e mostra tudo. As
+                                        // duas larguras são regras de container, que só valem na
+                                        // tabela: no cartão do celular fica o w-full.
+                                        celula: p => <InlineDropdown value={p.status} options={opcoesStatusPermitidas} onChange={(val) => handleAtualizarCampo(p.id, 'status', val)} className="w-full @max-[76rem]:w-[8.75rem] @min-[76rem]:w-[11.5rem] bg-sutil border border-borda rounded px-2.5 py-1.5 text-mini outline-none hover:border-brand" />,
                                     },
                                     {
+                                        // Só no cartão do celular: na tabela o local já está
+                                        // embaixo do nome do cliente.
                                         titulo: 'Local',
-                                        thClassName: 'px-6 py-4 w-32 text-center',
-                                        tdClassName: 'px-4 py-3 align-middle',
+                                        soCartao: true,
                                         celula: p => (
-                                            <div className="flex items-center justify-end lg:justify-center flex-wrap gap-1 min-h-[32px]">
-                                                {(p.local_producao || 'Berlim').split(',').map(s => s.trim()).filter(Boolean).map(local => (
-                                                    <ChipNome key={local} nome={local} />
-                                                ))}
+                                            <div className="flex items-center justify-end flex-wrap gap-1">
+                                                {chipsDoLocal(p)}
                                             </div>
-                                        ),
-                                    },
-                                    {
-                                        papel: 'acoes',
-                                        titulo: 'Concluir',
-                                        thClassName: 'px-6 py-4 w-24 text-right',
-                                        tdClassName: 'px-4 py-3 text-right',
-                                        celula: p => (
-                                            <Tooltip label="Marcar como Concluído">
-                                                <button type="button" onClick={() => handleAtualizarCampo(p.id, 'status', 'Concluído')} aria-label="Marcar como Concluído" className="p-2 text-sucesso hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition rounded inline-block">
-                                                    <Icon name="check-circle" className="w-5 h-5 inline-block" />
-                                                </button>
-                                            </Tooltip>
                                         ),
                                     },
                                 ]}

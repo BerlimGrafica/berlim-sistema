@@ -44,6 +44,10 @@ import { SkeletonLinhas } from '@/components/ui/SkeletonLinhas';
 //                 célula da tabela costuma ser um CONTROLE — um seletor de data,
 //                 um dropdown — e numa linha de 44px o que cabe é o valor lido,
 //                 não o controle. Sem ela, usa `celula`.
+//   soCartao      true: a coluna não existe na tabela, só no cartão. O inverso
+//                 de `papel: 'oculto'`. Para quando a tabela já mostra o dado
+//                 dentro de outra célula (ex.: o local, embaixo do nome do
+//                 cliente na Produção) e o cartão precisa dele à parte.
 //
 // O MODO COMPACTO
 // `compacto` troca o cartão pela linha: id, cliente e as colunas marcadas. É
@@ -109,6 +113,8 @@ export function TabelaCartoes({
     const secoes = grupos ?? [{ chave: '_', cabecalho: null, itens: itens ?? [] }];
     const totalItens = secoes.reduce((n, s) => n + s.itens.length, 0);
 
+    // A tabela não desenha as colunas `soCartao`; o cartão desenha todas.
+    const colunasTabela = colunas.filter(c => !c.soCartao);
     const porPapel = (p) => colunas.filter(c => (c.papel ?? 'corpo') === p);
     const doCorpo = porPapel('corpo');
     const emBloco = porPapel('bloco');
@@ -229,25 +235,30 @@ export function TabelaCartoes({
     return (
         <div className={className}>
             {/* ---------- TABELA (desktop) ---------- */}
-            <div className={`hidden ${PONTO_DE_CORTE}:block overflow-x-auto custom-scrollbar`}>
+            {/* `@container`: as colunas podem se adaptar à largura que a TABELA
+                tem, e não à da janela — que no computador muda com o menu
+                lateral aberto ou recolhido e com o zoom do navegador, sem a
+                janela mudar de tamanho. Uma coluna usa isso pelas próprias
+                classes (ex.: `@max-[76rem]:hidden`); quem não usa não muda. */}
+            <div className={`hidden ${PONTO_DE_CORTE}:block overflow-x-auto custom-scrollbar @container`}>
                 <table className="w-full text-left border-collapse">
                     <thead className="bg-gray-50/50 dark:bg-darkHover/50 border-t-2 border-brand">
                         <tr className="border-b border-borda text-corpo font-semibold text-tinta-suave tracking-wide uppercase">
-                            {colunas.map((c, i) => (
+                            {colunasTabela.map((c, i) => (
                                 <th key={i} className={c.thClassName || 'px-6 py-4'}>{c.titulo}</th>
                             ))}
                         </tr>
                     </thead>
                     <tbody className="animate-fade-screen">
-                        {carregando && <SkeletonLinhas colunas={colunas.length} />}
+                        {carregando && <SkeletonLinhas colunas={colunasTabela.length} />}
                         {semItens && vazio && (
-                            <tr><td colSpan={colunas.length} className="px-6 py-10 text-center">{vazio}</td></tr>
+                            <tr><td colSpan={colunasTabela.length} className="px-6 py-10 text-center">{vazio}</td></tr>
                         )}
                         {secoes.map(secao => (
                             <React.Fragment key={secao.chave}>
                                 {secao.cabecalho && (
                                     <tr className="select-none">
-                                        <td colSpan={colunas.length} className={`px-4 py-2 border-y border-gray-200 dark:border-darkBorder font-semibold tracking-wide uppercase text-micro text-white ${secao.classeCabecalho || ''}`}>
+                                        <td colSpan={colunasTabela.length} className={`px-4 py-2 border-y border-gray-200 dark:border-darkBorder font-semibold tracking-wide uppercase text-micro text-white ${secao.classeCabecalho || ''}`}>
                                             {secao.cabecalho}
                                         </td>
                                     </tr>
@@ -261,7 +272,7 @@ export function TabelaCartoes({
                                         onContextMenu={aoMenu(item)}
                                         className={`border-b border-borda-fraca transition group ${clicavel ? 'cursor-pointer hover:bg-sutil' : 'hover:bg-sutil'} ${classeDaLinha ? classeDaLinha(item) : ''}`}
                                     >
-                                        {colunas.map((c, i) => (
+                                        {colunasTabela.map((c, i) => (
                                             <td key={i} className={c.tdClassName || 'px-6 py-4'}>{c.celula(item)}</td>
                                         ))}
                                     </tr>

@@ -3,21 +3,31 @@ import Icon from '@/components/Icon';
 import { usePedidos } from '@/context/PedidosContext';
 import { resumoDoPedido } from '@/lib/utils/servico';
 
-// `compacto` é a versão para a linha do celular. A diferença não é só de gosto:
-// o `min-w-[300px]` abaixo existe para a coluna da tabela não espremer os chips,
-// e numa linha de 340px ele empurraria o prazo para fora da tela. No compacto o
-// mínimo sai e os chips encolhem.
+// `compacto` é a versão para a linha do celular: chips menores, sem largura
+// mínima.
+//
+// Na tabela o mínimo é de 12rem — o bastante para um chip inteiro (o nome corta
+// em 100px) sem espremer. Era 300px, e era ele, mais que a coluna, que travava
+// a tabela da Produção mais larga que a tela de um notebook com o menu aberto:
+// o Serviço é a coluna que deve ceder espaço, porque os chips quebram linha.
 export function ItensChecklist({ pedido, compacto = false }) {
     const { atualizarItemConcluido } = usePedidos();
     const itens = [...(pedido.pedido_itens || [])].sort((a, b) => a.ordem - b.ordem);
 
     // Sem itens não há o que marcar — mostra o resumo (OS antiga ou só observação).
+    // Na tabela ele quebra em até duas linhas em vez de cortar numa só: uma linha
+    // de 18rem sem quebra era uma largura mínima escondida, que alargava a coluna
+    // de novo sempre que uma O.S. antiga aparecesse na lista.
     if (itens.length === 0) {
-        return <span className={`block truncate ${compacto ? 'text-micro text-tinta-suave' : 'max-w-[18rem]'}`}>{resumoDoPedido(pedido)}</span>;
+        return (
+            <span className={compacto ? 'block truncate text-micro text-tinta-suave' : 'line-clamp-2 break-words'} title={resumoDoPedido(pedido)}>
+                {resumoDoPedido(pedido)}
+            </span>
+        );
     }
 
     return (
-        <div className={`flex flex-wrap items-center ${compacto ? 'gap-1' : 'gap-1.5 w-full min-w-[300px]'}`}>
+        <div className={`flex flex-wrap items-center ${compacto ? 'gap-1' : 'gap-1.5 w-full min-w-[12rem]'}`}>
             {itens.map((item) => (
                 <button
                     key={item.id}
