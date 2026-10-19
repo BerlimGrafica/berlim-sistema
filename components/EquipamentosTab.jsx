@@ -9,7 +9,8 @@ import MaquinaModal from '@/components/equipamentos/MaquinaModal';
 import { BarraAcoes } from '@/components/ui/BarraAcoes';
 import { useEquipamentos } from '@/hooks/useEquipamentos';
 import { useRegistrosEquipamentos } from '@/hooks/useRegistrosEquipamentos';
-import { obterDataAtual } from '@/lib/utils/formatters';
+import { useTecnicosManutencao } from '@/hooks/useTecnicosManutencao';
+import { obterDataAtual, formatarValorFinanceiro, centavosParaReais } from '@/lib/utils/formatters';
 import { TIPOS_EQUIPAMENTO, tipoPorId, tintasDe, tintaPorId, fundoDaTinta } from '@/lib/equipamentos/catalogo';
 import {
     ultimaCargaPorTinta, ultimoRegistroComContador, rendimentoDaCargaAnterior,
@@ -25,8 +26,9 @@ import {
 // desde a última carga — o que a folha nunca dizia de relance. Tocar no card
 // abre o registro daquela máquina.
 //
-// O administrador cadastra, edita, arquiva e reordena as máquinas — arrastando
-// o próprio card, a qualquer momento, sem modo à parte (ver GrupoMaquinas).
+// Só o administrador cadastra máquina nova; a equipe edita, arquiva e reordena
+// as que existem — arrastando o próprio card, a qualquer momento, sem modo à
+// parte (ver GrupoMaquinas).
 //
 // O histórico fica abaixo, como uma lista comum — e não como uma folha pautada
 // imitando o papel. A folha era o suporte, não o valor.
@@ -98,7 +100,7 @@ function ConteudoCartao({ equipamento, registros, hoje, comLapis }) {
 
 const CAIXA_CARTAO = 'flex flex-col gap-4 text-left rounded-xl border bg-superficie p-4';
 
-// O card inteiro é o botão de registrar. Para o administrador ele também se
+// O card inteiro é o botão de registrar. Para quem organiza a tela ele também se
 // arrasta (ver GrupoMaquinas) e ganha o lápis de editar no canto — um botão
 // irmão, posicionado por cima, e não aninhado no botão do card, o que o HTML
 // não permite.
@@ -122,7 +124,7 @@ function CartaoMaquina({ equipamento, registros, hoje, aoEscolher, gestao, refNo
         >
             <button
                 type="button"
-                onClick={() => { if (!gestao?.cliqueBloqueado()) aoEscolher(equipamento); }}
+                onClick={() => { if (!gestao?.cliqueBloqueado?.()) aoEscolher(equipamento); }}
                 onKeyDown={gestao ? (e) => gestao.aoTeclar(e, equipamento.id) : undefined}
                 aria-describedby={gestao ? 'dica-reordenar' : undefined}
                 className={`${CAIXA_CARTAO} w-full h-full border-borda transition-colors duration-150 hover:border-brand active:border-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand`}
@@ -157,7 +159,7 @@ const SUAVE = 'cubic-bezier(0.16, 1, 0.3, 1)';
 
 const semMovimento = () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-// Um grupo de máquinas do mesmo tipo. Para o administrador os cards se
+// Um grupo de máquinas do mesmo tipo. Para quem organiza a tela os cards se
 // reordenam arrastando, sempre — sem modo à parte:
 //
 // - Mouse: clicar abre o registro; apertar e mover mais que alguns pixels
@@ -377,12 +379,16 @@ function GrupoMaquinas({ maquinas, gerenciavel, registros, hoje, aoEscolher, aoE
                             registros={registros}
                             hoje={hoje}
                             aoEscolher={aoEscolher}
-                            gestao={gerenciavel && {
+                            // null, e não `false`, para quem não administra: o card
+                            // usa `gestao?.` e o `?.` só protege contra null e
+                            // undefined — com `false`, o toque no card dava erro e o
+                            // registro não abria para os usuários da Produção.
+                            gestao={gerenciavel ? {
                                 aoPressionar,
                                 aoTeclar,
                                 aoEditar,
                                 cliqueBloqueado: () => bloquearClique.current,
-                            }}
+                            } : null}
                         />
                     );
                 })}
@@ -446,7 +452,21 @@ function LinhaRegistro({ registro, registros, nomeMaquina, autor, podeApagar, ao
                         })}
                     </ul>
                 ) : (
-                    <p className="text-mini text-tinta-corpo whitespace-pre-line break-words">{registro.descricao}</p>
+                    <>
+                        <p className="text-mini text-tinta-corpo whitespace-pre-line break-words">{registro.descricao}</p>
+                        {/* Quem fez e quanto custou. Sem técnico, a manutenção foi da
+                            equipe — mas só se diz isso quando há um valor ao lado;
+                            os registros de antes do campo existir não têm nem um
+                            nem outro, e afirmar "Equipe" neles seria inventar. */}
+                        {(registro.tecnico_nome || registro.valor_centavos != null) && (
+                            <p className="text-mini text-tinta-corpo flex flex-wrap items-center gap-x-1.5">
+                                <span className="font-semibold">{registro.tecnico_nome || 'Equipe'}</span>
+                                {registro.valor_centavos != null && (
+                                    <span className="tabular-nums text-tinta-suave">· R$ {formatarValorFinanceiro(centavosParaReais(registro.valor_centavos))}</span>
+                                )}
+                            </p>
+                        )}
+                    </>
                 )}
 
                 <p className="text-micro text-tinta-suave tabular-nums">
@@ -476,11 +496,12 @@ function LinhaRegistro({ registro, registros, nomeMaquina, autor, podeApagar, ao
 }
 
 export default function EquipamentosTab() {
-    const { usuario, isAdmin, usuariosSistema } = useSessao();
+    const { usuario, isAdmin, isDemo, usuariosSistema } = useSessao();
     const { confirmar, avisar } = useUi();
     const maquinasApi = useEquipamentos();
     const { equipamentos } = maquinasApi;
     const { registros, carregando, erro, indisponivel, registrar, apagar } = useRegistrosEquipamentos();
+    const tecnicos = useTecnicosManutencao();
     const [escolhido, setEscolhido] = useState(null);
     const [alvoCadastro, setAlvoCadastro] = useState(null);
     const [filtro, setFiltro] = useState('todas');
@@ -582,7 +603,14 @@ export default function EquipamentosTab() {
     }
 
     const maquinasComRegistro = equipamentos.filter(e => registros.some(r => r.equipamento === e.id));
-    const podeGerenciar = isAdmin && !maquinasApi.indisponivel && !maquinasApi.carregando;
+    // Dois direitos diferentes. Cadastrar uma máquina nova é só do
+    // administrador; organizar as que existem — arrastar, editar, arquivar,
+    // restaurar — é de toda a equipe que vê a tela, menos a conta de
+    // demonstração, que é só leitura. O banco aplica a mesma regra (ver
+    // supabase/equipamentos_edicao_equipe_migration.sql).
+    const tabelaPronta = !maquinasApi.indisponivel && !maquinasApi.carregando;
+    const podeCadastrar = isAdmin && tabelaPronta;
+    const podeOrganizar = !isDemo && tabelaPronta;
 
     return (
         <main className="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-10 py-6 lg:py-10 flex flex-col gap-8">
@@ -592,7 +620,7 @@ export default function EquipamentosTab() {
                     <p className="text-corpo text-tinta-suave">Escolha a máquina para registrar uma carga de tinta ou uma manutenção.</p>
                     {/* O arrasto não tem botão que o anuncie, então a dica fica
                         escrita — e é ela que o leitor de tela lê em cada card. */}
-                    {podeGerenciar && emUso.length > 1 && (
+                    {podeOrganizar && emUso.length > 1 && (
                         <p id="dica-reordenar" className="text-mini text-tinta-suave">
                             Para mudar a ordem, arraste o card dentro do grupo. No celular, segure o card um instante antes de arrastar.
                             <span className="sr-only"> Pelo teclado, Alt e as setas.</span>
@@ -601,7 +629,7 @@ export default function EquipamentosTab() {
                 </div>
                 {/* Igual ao "Nova O.S." de Produção: no computador, no topo; no
                     celular, na barra fixa do rodapé (BarraAcoes, no fim da tela). */}
-                {podeGerenciar && (
+                {podeCadastrar && (
                     <button
                         type="button"
                         onClick={() => setAlvoCadastro({ equipamento: null })}
@@ -653,7 +681,7 @@ export default function EquipamentosTab() {
                         </h2>
                         <GrupoMaquinas
                             maquinas={g.maquinas}
-                            gerenciavel={podeGerenciar}
+                            gerenciavel={podeOrganizar}
                             registros={registros}
                             hoje={hoje}
                             aoEscolher={setEscolhido}
@@ -665,7 +693,7 @@ export default function EquipamentosTab() {
                 ))
             )}
 
-            {isAdmin && arquivadas.length > 0 && (
+            {podeOrganizar && arquivadas.length > 0 && (
                 <details className="group rounded-xl border border-borda bg-superficie">
                     <summary className="list-none [&::-webkit-details-marker]:hidden cursor-pointer select-none px-4 h-12 flex items-center justify-between gap-3 rounded-xl text-corpo font-semibold text-tinta-suave hover:text-tinta focus-visible:outline-2 focus-visible:outline-brand">
                         <span>Arquivadas <span className="tabular-nums">({arquivadas.length})</span></span>
@@ -762,6 +790,7 @@ export default function EquipamentosTab() {
                 equipamento={escolhido}
                 nome={escolhido?.nome}
                 registros={registros}
+                tecnicos={tecnicos}
                 aoSalvar={salvarEntrada}
                 aoFechar={() => setEscolhido(null)}
             />
@@ -773,7 +802,7 @@ export default function EquipamentosTab() {
                 aoFechar={() => setAlvoCadastro(null)}
             />
 
-            {podeGerenciar && (
+            {podeCadastrar && (
                 <BarraAcoes
                     acoes={[{
                         id: 'nova', icone: 'plus', rotulo: 'Nova máquina', destaque: true,

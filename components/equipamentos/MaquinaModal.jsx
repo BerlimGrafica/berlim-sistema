@@ -7,7 +7,8 @@ import {
     TINTAS, IDS_TINTAS, TINTAS_MONO, FAMILIAS_EQUIPAMENTO, TIPOS_EQUIPAMENTO, tipoPorId, fundoDaTinta,
 } from '@/lib/equipamentos/catalogo';
 
-// Cadastro e edição de uma máquina — só para o administrador.
+// Cadastro e edição de uma máquina. Cadastrar é só do administrador; editar
+// (e arquivar) é de toda a equipe que vê a tela.
 //
 // Duas colunas no computador: à esquerda o que identifica a máquina (nome,
 // modelo, tipo, impressão), à direita o que ela consome (as tintas) e a prévia

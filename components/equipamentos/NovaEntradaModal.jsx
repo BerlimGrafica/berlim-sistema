@@ -4,7 +4,7 @@ import { createPortal } from 'react-dom';
 import Icon from '@/components/Icon';
 import { useModal } from '@/components/modals/useModal';
 import { CustomDatePicker } from '@/components/ui/DatePicker';
-import { obterDataAtual, formatarDataExibicao } from '@/lib/utils/formatters';
+import { obterDataAtual, formatarDataExibicao, formatarMoeda, paraCentavos } from '@/lib/utils/formatters';
 import { tintasDe, tintaPorId, fundoDaTinta } from '@/lib/equipamentos/catalogo';
 import {
     ultimaCargaPorTinta, ultimoRegistroComContador, tintasMaisAntigas, diasDesde, idadeCurta, formatarContador,
@@ -43,12 +43,19 @@ function checkContrasta(hex) {
 
 const soDigitos = (s) => String(s || '').replace(/\D/g, '').slice(0, 9);
 
-function Formulario({ equipamento, nome, registros, aoSalvar, aoFechar, fecharComGuarda }) {
+// "Feita pela equipe" é a escolha padrão do técnico: a manutenção interna
+// (limpeza, troca de peça pela própria Produção) é a mais comum, e não tem
+// técnico nem, quase sempre, custo.
+const EQUIPE = 'equipe';
+
+function Formulario({ equipamento, nome, registros, tecnicos, aoSalvar, aoFechar, fecharComGuarda }) {
     const hoje = obterDataAtual();
     const [tipo, setTipo] = useState('Reabastecimento');
     const [cores, setCores] = useState(() => new Set());
     const [contador, setContador] = useState('');
     const [descricao, setDescricao] = useState('');
+    const [tecnico, setTecnico] = useState(EQUIPE);
+    const [valor, setValor] = useState('');
     const [data, setData] = useState(hoje);
     const [salvando, setSalvando] = useState(false);
     const [erro, setErro] = useState(null);
@@ -83,6 +90,7 @@ function Formulario({ equipamento, nome, registros, aoSalvar, aoFechar, fecharCo
         if (falta || salvando) return;
         setSalvando(true);
         setErro(null);
+        const escolhido = tecnicos.find(t => t.id === tecnico);
         const resultado = await aoSalvar({
             equipamento: equipamento.id,
             tipo,
@@ -92,6 +100,15 @@ function Formulario({ equipamento, nome, registros, aoSalvar, aoFechar, fecharCo
             // histórico lista, e duas cargas iguais ficam iguais no banco.
             cores: ehCarga ? tintas.filter(t => cores.has(t)) : null,
             descricao: ehCarga ? null : descricao.trim(),
+            // Técnico e valor só existem na manutenção — e só vão no registro
+            // nela, para o reabastecimento não depender das colunas novas. O
+            // nome vai junto do id: se o fornecedor for renomeado ou apagado,
+            // o histórico continua dizendo quem fez.
+            ...(ehCarga ? {} : {
+                tecnico_id: escolhido?.id ?? null,
+                tecnico_nome: escolhido?.nome ?? null,
+                valor_centavos: valor ? paraCentavos(valor) : null,
+            }),
         });
         setSalvando(false);
         if (resultado?.erro) {
@@ -221,6 +238,61 @@ function Formulario({ equipamento, nome, registros, aoSalvar, aoFechar, fecharCo
                     </div>
                 )}
 
+                {!ehCarga && (
+                    <div className="flex flex-col gap-2">
+                        <p id="equip-tecnico-rotulo" className="text-corpo font-semibold text-tinta">Quem fez</p>
+                        {/* Pílulas e não uma lista suspensa: são poucos técnicos, e
+                            de pé ao lado da máquina um toque vale mais que abrir e
+                            rolar um menu. aria-pressed pelo mesmo motivo do
+                            seletor de tipo acima. */}
+                        <div role="group" aria-labelledby="equip-tecnico-rotulo" className="flex flex-wrap gap-2">
+                            {[{ id: EQUIPE, nome: 'Equipe' }, ...tecnicos].map(t => {
+                                const ativo = tecnico === t.id;
+                                return (
+                                    <button
+                                        key={t.id}
+                                        type="button"
+                                        aria-pressed={ativo}
+                                        onClick={() => setTecnico(t.id)}
+                                        className={`min-h-11 px-4 rounded-full border text-corpo font-semibold transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand ${
+                                            ativo ? 'bg-tinta text-fundo border-tinta' : 'bg-superficie text-tinta-suave border-borda hover:text-tinta hover:border-borda-forte'
+                                        }`}
+                                    >
+                                        {t.nome}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                        {tecnicos.length === 0 && (
+                            <p className="text-mini text-tinta-suave">
+                                Nenhum técnico cadastrado. Eles vêm de Cadastros › Fornecedores, com o tipo Manutenção.
+                            </p>
+                        )}
+                    </div>
+                )}
+
+                {!ehCarga && (
+                    <div className="flex flex-col gap-2">
+                        <label htmlFor="equip-valor" className="text-corpo font-semibold text-tinta">
+                            Valor <span className="font-normal text-tinta-suave">(opcional)</span>
+                        </label>
+                        <div className="relative">
+                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-corpo font-semibold text-tinta-suave pointer-events-none" aria-hidden="true">R$</span>
+                            <input
+                                id="equip-valor"
+                                type="text"
+                                inputMode="numeric"
+                                autoComplete="off"
+                                placeholder="0,00"
+                                value={valor}
+                                onChange={e => setValor(formatarMoeda(e.target.value))}
+                                className="h-12 w-full rounded-xl border border-borda-forte bg-elevado pl-11 pr-4 text-lg font-semibold tabular-nums text-tinta outline-none transition-colors focus:border-brand placeholder:text-base placeholder:font-normal placeholder:text-tinta-suave"
+                            />
+                        </div>
+                        <p className="text-mini text-tinta-suave">Fica no histórico da máquina. Não lança conta a pagar.</p>
+                    </div>
+                )}
+
                 {/* O seletor de data compartilhado não aceita id nem rótulo, então
                     o nome chega pelo grupo. O próprio seletor ainda não é alcançável
                     pelo teclado — defeito do componente comum, não desta tela. */}
@@ -261,7 +333,7 @@ function Formulario({ equipamento, nome, registros, aoSalvar, aoFechar, fecharCo
     );
 }
 
-export default function NovaEntradaModal({ equipamento, nome, registros, aoSalvar, aoFechar }) {
+export default function NovaEntradaModal({ equipamento, nome, registros, tecnicos = [], aoSalvar, aoFechar }) {
     const modal = useModal(!!equipamento, aoFechar);
 
     if (!equipamento || typeof document === 'undefined') return null;
@@ -282,6 +354,7 @@ export default function NovaEntradaModal({ equipamento, nome, registros, aoSalva
                     equipamento={equipamento}
                     nome={nome}
                     registros={registros}
+                    tecnicos={tecnicos}
                     aoSalvar={aoSalvar}
                     aoFechar={aoFechar}
                     fecharComGuarda={modal.fechar}

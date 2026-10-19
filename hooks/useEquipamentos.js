@@ -5,12 +5,14 @@ import { supabase } from '@/lib/supabaseClient';
 // As máquinas cadastradas — em uso e arquivadas. As arquivadas vêm junto
 // porque o histórico continua mostrando os registros delas, com o nome certo.
 //
-// Só o administrador grava (a RLS garante); as funções abaixo conferem o que
+// Só o administrador cadastra; a equipe altera (a RLS garante as duas regras —
+// ver equipamentos_edicao_equipe_migration.sql). As funções abaixo conferem o que
 // voltou do banco porque, sob RLS, uma gravação sem permissão não dá erro —
 // simplesmente não grava nada.
 
 const TABELA_AUSENTE = new Set(['42P01', 'PGRST205']);
-const SEM_PERMISSAO = 'Só um administrador pode alterar as máquinas.';
+const SEM_PERMISSAO_CADASTRO = 'Só um administrador pode cadastrar máquinas.';
+const SEM_PERMISSAO = 'Seu usuário não tem permissão para alterar as máquinas.';
 
 const porOrdem = (a, b) => (a.ordem - b.ordem) || (a.id - b.id);
 
@@ -52,7 +54,7 @@ export function useEquipamentos() {
         const doGrupo = (estado.equipamentos || []).filter(e => e.tipo === dados.tipo);
         const ordem = doGrupo.reduce((m, e) => Math.max(m, e.ordem), 0) + 1;
         const { data, error } = await supabase.from('equipamentos').insert([{ ...dados, ordem }]).select().single();
-        if (error) return { erro: error.code === '42501' ? SEM_PERMISSAO : mensagemDeErro(error) };
+        if (error) return { erro: error.code === '42501' ? SEM_PERMISSAO_CADASTRO : mensagemDeErro(error) };
         setEstado(e => ({ ...e, equipamentos: [...(e.equipamentos || []), data].sort(porOrdem) }));
         return { equipamento: data };
     }, [estado.equipamentos]);
