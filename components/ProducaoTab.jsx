@@ -143,7 +143,7 @@ export default function ProducaoTab() {
     // cliente, no cartão do celular na linha "Local". Sem local gravado, é a
     // própria Berlim.
     const chipsDoLocal = (p) => (p.local_producao || 'Berlim').split(',').map(s => s.trim()).filter(Boolean).map(local => (
-        <ChipNome key={local} nome={local} />
+        <ChipNome key={local} nome={local} variante="contorno" />
     ));
 
     const montarItensContexto = (p) => [
