@@ -48,3 +48,7 @@ nul
 
 # Capturas de revisão de design (impeccable): mostram dados reais da gráfica
 .impeccable/review/
+
+# Protótipo local do modal de O.S.: o catálogo embutido tem preços reais.
+# A versão publicada fica em public/prototipos/novaos.html, sem dados.
+prototipo-modal-os/
