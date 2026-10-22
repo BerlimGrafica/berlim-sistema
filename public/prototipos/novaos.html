@@ -103,6 +103,16 @@ kbd { font: 600 10.5px/1 Montserrat, sans-serif; color: var(--tinta-suave); bord
 .pop .cod { color: var(--tinta-fraca); font-size: 11.5px; width: 30px; flex-shrink: 0; }
 .pop .rot { font-size: 11px; font-weight: 600; color: var(--tinta-suave); padding: 6px 10px 2px; }
 .pop .criar { color: var(--brand-tinta); font-weight: 600; }
+/* horário limite: só aparece quando existe */
+.hora-chip { display: inline-flex; align-items: center; gap: 4px; margin-left: 6px; padding: 1px 7px; border-radius: 5px; background: var(--obs-fundo); border: 1px solid var(--obs-borda); color: var(--obs-tinta); font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.hora-chip .ico { width: 12px; height: 12px; }
+.pop.pop-prazo { max-height: min(500px, calc(100vh - 16px)); }
+.pop .horas { display: flex; flex-wrap: wrap; gap: 4px; padding: 2px 6px 4px; }
+.pop .horas button { width: auto; padding: 5px 9px; border: 1px solid var(--borda); font-variant-numeric: tabular-nums; font-weight: 600; }
+.pop .horas button.ativo { background: var(--obs-fundo); border-color: var(--obs-borda); color: var(--obs-tinta); }
+.pop .hora-livre { display: flex; align-items: center; gap: 9px; padding: 5px 10px 7px; color: var(--tinta-suave); font-size: 12.5px; }
+.pop .hora-livre input { border: 0; background: transparent; outline: none; color: var(--tinta); font-weight: 600; box-shadow: inset 0 -1px 0 var(--borda-forte); padding: 3px 0; font-variant-numeric: tabular-nums; }
+.pop .hora-livre input:focus { box-shadow: inset 0 -2px 0 var(--obs); }
 .pop .vazio { padding: 8px 10px; color: var(--tinta-suave); font-size: 12.5px; }
 .pop-catalogo { width: 420px; }
 .pop-catalogo .nome-prod { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
@@ -481,7 +491,7 @@ const prod = id => CATALOGO.find(p => p[0] === id);
 const os = {
   modo: 'nova',
   cliente: CLIENTES[0],
-  venda: 'hoje, 19 out', prazo: 'sex, 23 out', prazoDias: 4,
+  venda: 'hoje, 19 out', prazo: 'sex, 23 out', prazoDias: 4, prazoHora: '',
   status: 'Produzir', resp: ['Ana', 'Rafael'], entrega: true,
   itens: [
     { prodId: 29, nome: prod(29)?.[1] || 'CARTAO DE VISITA', esp: '1.000 un. | 9x5cm | Couchê 300g | 4x4 cores | Laminação fosca', local: 'Berlim', bruto: 180, desc: 0 },
@@ -582,7 +592,9 @@ function rascunhoItemSujo() {
 function renderDados() {
   const q = s => document.querySelector(s);
   q('[data-campo="venda"] .lbl').textContent = os.venda;
-  q('[data-campo="prazo"] .lbl').innerHTML = os.prazo ? esc(os.prazo) : '<span class="vazio">Sem prazo</span>';
+  q('[data-campo="prazo"] .lbl').innerHTML = os.prazo
+    ? esc(os.prazo) + (os.prazoHora ? `<span class="hora-chip"><i data-lucide="clock" class="ico"></i>até ${esc(os.prazoHora)}</span>` : '')
+    : '<span class="vazio">Sem prazo</span>';
   q('[data-pop="status"] .lbl').textContent = os.status;
   q('[data-pop="status"] .dot').style.background = COR_STATUS[os.status];
   q('[data-pop="resp"] .avatares').innerHTML = os.resp.map(n => `<i style="background:${EQUIPE[n]}">${n[0]}</i>`).join('');
@@ -689,11 +701,13 @@ function montarPop(ancora, html, cls = '') {
   document.body.appendChild(pop);
   const r = ancora.getBoundingClientRect(), larg = pop.offsetWidth;
   pop.style.left = Math.max(8, Math.min(r.left, innerWidth - larg - 8)) + 'px';
-  pop.style.top = (r.bottom + pop.offsetHeight + 6 > innerHeight && r.top > pop.offsetHeight + 6 ? r.top - pop.offsetHeight - 6 : r.bottom + 6) + 'px';
+  const topo = r.bottom + pop.offsetHeight + 6 > innerHeight && r.top > pop.offsetHeight + 6 ? r.top - pop.offsetHeight - 6 : r.bottom + 6;
+  // sem espaço inteiro nem embaixo nem em cima: encosta na borda da tela em vez de sair dela
+  pop.style.top = Math.max(8, Math.min(topo, innerHeight - pop.offsetHeight - 8)) + 'px';
   ancora.setAttribute('aria-expanded', 'true');
   popAberto = { el: pop, ancora, desde: performance.now() };
   lucide.createIcons();
-  pop.addEventListener('mousedown', e => e.preventDefault());
+  pop.addEventListener('mousedown', e => { if (!e.target.closest('input')) e.preventDefault(); });
   return pop;
 }
 const marca = sel => sel ? '<i data-lucide="check" class="ico ico-s ok"></i>' : '';
@@ -735,15 +749,28 @@ function abrirPop(ancora, tipo) {
     const campo = ancora.dataset.campo, atual = campo === 'pf-data' ? pf.data : os[campo];
     html = (campo === 'prazo' ? `<button data-v="">Sem prazo${marca(!os.prazo)}</button><hr>` : '')
       + DATAS.map(([d, n]) => `<button data-v="${d}" data-dias="${n}">${d.replace(/^./, c => c.toUpperCase())}${marca(d === atual)}</button>`).join('')
-      + '<hr><button data-v="__cal"><i data-lucide="calendar" class="ico ico-s"></i>Escolher no calendário…</button>';
+      + '<hr><button data-v="__cal"><i data-lucide="calendar" class="ico ico-s"></i>Escolher no calendário…</button>'
+      // Horário limite (opcional): só faz sentido com data. Atalhos para as
+      // horas mais comuns e um campo livre para o resto.
+      + (campo === 'prazo' && os.prazo ? '<hr><div class="rot">Horário limite</div><div class="horas">'
+          + ['', '09:00', '12:00', '14:00', '17:00'].map(h => `<button data-v="__h:${h}" class="${h === os.prazoHora ? 'ativo' : ''}">${h || 'Sem horário'}</button>`).join('')
+          + `</div><label class="hora-livre"><i data-lucide="clock" class="ico ico-s"></i>Outro: <input type="time" data-hora-livre value="${esc(os.prazoHora)}"></label>` : '');
     escolher = (v, b) => {
       if (v === '__cal') return;
+      if (v.startsWith('__h:')) { os.prazoHora = v.slice(4); return; }
       if (campo === 'pf-data') pf.data = v;
-      else { os[campo] = v; if (campo === 'prazo') os.prazoDias = +b.dataset.dias; }
+      else { os[campo] = v; if (campo === 'prazo') { os.prazoDias = +b.dataset.dias; if (!v) os.prazoHora = ''; } }
     };
   }
-  const pop = montarPop(ancora, html);
+  const pop = montarPop(ancora, html, tipo === 'data' && ancora.dataset.campo === 'prazo' ? 'pop-prazo' : '');
   pop.querySelector('button')?.focus();
+  // A hora digitada vale com Enter (no keydown geral) ou ao sair do campo — não
+  // no "change", que dispara no meio da digitação ("16:3" vira 16:03).
+  const livre = pop.querySelector('[data-hora-livre]');
+  livre?.addEventListener('blur', () => {
+    if (!livre.isConnected || !livre.value || livre.value === os.prazoHora) return;
+    os.prazoHora = livre.value; fecharPop(); render();
+  });
   pop.addEventListener('click', e => {
     const b = e.target.closest('button[data-v]'); if (!b) return;
     if (escolher(b.dataset.v, b) === 'manter') return;
@@ -938,6 +965,11 @@ document.addEventListener('keydown', e => {
     if (popAberto) { const a = popAberto.ancora; fecharPop(); a.focus(); return; }
     if (e.target.closest('.edita')) { document.querySelector('[data-cancela-item]').click(); return; }
     if (e.target.closest('.pf')) { pf = null; render(); return; }
+    return;
+  }
+  // campo de hora dentro do popover: as setas mudam a hora, Enter confirma
+  if (e.target.matches('[data-hora-livre]')) {
+    if (e.key === 'Enter' && e.target.value) { e.preventDefault(); const a = popAberto?.ancora; os.prazoHora = e.target.value; fecharPop(); render(); a?.isConnected && a.focus(); }
     return;
   }
   if (popAberto && ['ArrowDown', 'ArrowUp', 'Enter'].includes(e.key) && (e.target === popAberto.ancora || popAberto.el.contains(e.target))) {

@@ -266,7 +266,7 @@ export const AppProvider = ({ children }) => {
     const [novoPedido, setNovoPedido] = useState({
         cliente: '', cliente_id: null, servico: '', valor_total: '',
         status: 'Produzir', data_pedido: obterDataAtual(),
-        prazo: '', responsavel: '', local_producao: 'Berlim', aprovado: false,
+        prazo: '', prazo_hora: '', responsavel: '', local_producao: 'Berlim', aprovado: false,
         entrega: false
     });
     const [outrasOSAbertas, setOutrasOSAbertas] = useState([]);
@@ -1041,7 +1041,7 @@ export const AppProvider = ({ children }) => {
         setNovoPedido({
             cliente: '', cliente_id: null, servico: '', valor_total: '',
             status: 'Produzir', data_pedido: obterDataAtual(),
-            prazo: '', responsavel: '', local_producao: 'Berlim', aprovado: false,
+            prazo: '', prazo_hora: '', responsavel: '', local_producao: 'Berlim', aprovado: false,
             entrega: false
         });
         setOutrasOSAbertas([]);
@@ -1108,6 +1108,8 @@ export const AppProvider = ({ children }) => {
             valor_total: formatarMoeda(Math.round(pedido.valor_total).toString()),
             data_pedido: pedido.data_pedido || null,
             prazo: pedido.prazo || null,
+            // O Postgres devolve "14:00:00"; o campo trabalha com "14:00".
+            prazo_hora: pedido.prazo_hora ? pedido.prazo_hora.slice(0, 5) : '',
             responsavel: pedido.responsavel || '',
             local_producao: pedido.local_producao || 'Berlim',
             aprovado: pedido.aprovado || false,
@@ -1287,6 +1289,11 @@ export const AppProvider = ({ children }) => {
             payload.cancelado_em = new Date().toISOString();
         }
         Object.assign(payload, marcaDeQuemFinalizou(statusFinal, pedidoEmEdicao?.status));
+        // Horário limite: sem data não há hora. Só entra no payload quando há
+        // hora ou quando a O.S. já tem a coluna (para poder apagá-la) — assim
+        // uma O.S. comum continua gravando mesmo antes da migração rodar.
+        const prazoHora = payload.prazo && novoPedido.prazo_hora ? novoPedido.prazo_hora : null;
+        if (prazoHora || (pedidoEmEdicao && 'prazo_hora' in pedidoEmEdicao)) payload.prazo_hora = prazoHora;
 
         if (pedidoEmEdicao) {
             const { data, error } = await supabase.from('pedidos').update(payload).eq('id', pedidoEmEdicao.id).select();

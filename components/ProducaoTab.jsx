@@ -6,7 +6,7 @@ import { usePedidos } from '@/context/PedidosContext';
 import { useClientes } from '@/context/ClientesContext';
 import Icon from '@/components/Icon';
 import Tooltip from '@/components/Tooltip';
-import { STATUSES_PRODUCAO, obterCorFundoStatus, obterCorContornoPrazo, obterCorSeloPrazo } from '@/lib/utils/constants';
+import { STATUSES_PRODUCAO, obterCorFundoStatus, obterCorContornoPrazo, obterCorSeloPrazo, obterCorSeloHora, formatarHoraPrazo } from '@/lib/utils/constants';
 import { mascararCliente, formatarDataExibicao } from '@/lib/utils/formatters';
 import { usePreferencia, gravarPreferencia } from '@/lib/utils/preferenciaLocal';
 import { CustomDatePicker } from '@/components/ui/DatePicker';
@@ -93,7 +93,8 @@ export default function ProducaoTab() {
                 .sort((a, b) => {
                     if (!a.prazo) return 1;
                     if (!b.prazo) return -1;
-                    return a.prazo.localeCompare(b.prazo);
+                    // No mesmo dia, quem tem horário limite vem antes, pela hora.
+                    return a.prazo.localeCompare(b.prazo) || (a.prazo_hora || '99').localeCompare(b.prazo_hora || '99');
                 }),
         }))
         .filter(g => g.pedidos.length > 0);
@@ -132,6 +133,14 @@ export default function ProducaoTab() {
         }
         atualizarCampoInline(id, campo, valor);
     };
+
+    // Selo do horário limite: só existe quando a O.S. tem hora. A cor avisa no
+    // dia do prazo (âmbar faltando 2h, vermelho quando passou).
+    const seloHora = (p, className = '') => p.prazo && p.prazo_hora ? (
+        <span title="Horário limite" className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded border text-micro font-bold tabular-nums whitespace-nowrap ${obterCorSeloHora(p.prazo, p.prazo_hora)} ${className}`}>
+            <Icon name="clock" className="w-3 h-3" />até {formatarHoraPrazo(p.prazo_hora)}
+        </span>
+    ) : null;
 
     // O seletor de responsável — na coluna Resp. ou, na tabela muito estreita,
     // embaixo do prazo.
@@ -269,6 +278,7 @@ export default function ProducaoTab() {
                                         celula: p => (
                                             <>
                                                 <CustomDatePicker value={p.prazo || ''} onChange={val => handleAtualizarCampo(p.id, 'prazo', val)} placeholder="Definir prazo..." className={`w-full bg-gray-50 dark:bg-darkElevated border-2 ${obterCorContornoPrazo(p.prazo)} rounded px-2.5 py-1.5 text-mini outline-none hover:border-brand transition text-gray-700 dark:text-[#EDEDED]`} />
+                                                {seloHora(p) && <div className="mt-1.5">{seloHora(p)}</div>}
                                                 {/* Tabela muito estreita (notebook pequeno com o menu
                                                     aberto, ou zoom alto): o responsável desce para baixo
                                                     do prazo e a coluna dele some. A linha cresce um
@@ -282,8 +292,11 @@ export default function ProducaoTab() {
                                         // só ocuparia espaço. Para trocar a data, abre a O.S.
                                         compacto: 'direita',
                                         celulaCompacta: p => (
-                                            <span className={`inline-block px-1.5 py-0.5 rounded text-micro font-bold tabular-nums ${obterCorSeloPrazo(p.prazo)}`}>
-                                                {p.prazo ? formatarDataExibicao(p.prazo).slice(0, 5) : '—'}
+                                            <span className="inline-flex flex-col items-end gap-1">
+                                                <span className={`inline-block px-1.5 py-0.5 rounded text-micro font-bold tabular-nums ${obterCorSeloPrazo(p.prazo)}`}>
+                                                    {p.prazo ? formatarDataExibicao(p.prazo).slice(0, 5) : '—'}
+                                                </span>
+                                                {seloHora(p)}
                                             </span>
                                         ),
                                     },

@@ -42,6 +42,10 @@ export default function OSModal() {
     // O valor do novo pagamento já nasce preenchido com o saldo da O.S., então
     // "tem valor" não quer dizer "foi digitado". Este sinal separa os dois.
     const [pagamentoTocado, setPagamentoTocado] = useState(false);
+    // O campo de horário limite só aparece quando a O.S. tem hora ou quando
+    // alguém pede ("+ Horário"): a maioria das O.S. não tem limite de hora.
+    const [horaAberta, setHoraAberta] = useState(false);
+    const mostrarHora = !!novoPedido.prazo_hora || horaAberta;
 
     // Limpa a edição de pagamento/item ao fechar o modal, ajustado durante a
     // renderização (em vez de num useEffect) para não disparar um commit extra.
@@ -55,6 +59,7 @@ export default function OSModal() {
             setOsLoteSelecionadas({});
             setAlocacoesLote({});
             setPagamentoTocado(false);
+            setHoraAberta(false);
         }
     }
 
@@ -214,8 +219,40 @@ export default function OSModal() {
                                 <CustomDatePicker value={novoPedido.data_pedido} onChange={val => setNovoPedido({...novoPedido, data_pedido: val})} disabled={isModalTrancado} className="w-full bg-elevado border border-borda-forte rounded px-3 py-1.5 text-corpo outline-none transition" />
                             </div>
                             <div className="min-w-0">
-                                <label className="block text-micro font-semibold uppercase tracking-wider mb-1 text-tinta-suave truncate">Prazo</label>
-                                <CustomDatePicker value={novoPedido.prazo} onChange={val => setNovoPedido({...novoPedido, prazo: val})} disabled={isModalTrancado} placeholder="Data final..." className="w-full bg-elevado border border-borda-forte rounded px-3 py-1.5 text-corpo outline-none transition" />
+                                <div className="flex items-center justify-between gap-2 mb-1">
+                                    <label className="block text-micro font-semibold uppercase tracking-wider text-tinta-suave truncate">Prazo</label>
+                                    {!mostrarHora && novoPedido.prazo && !isModalTrancado && (
+                                        <button type="button" onClick={() => setHoraAberta(true)} className="shrink-0 flex items-center gap-1 text-micro font-semibold text-brand hover:underline underline-offset-2">
+                                            <Icon name="clock" className="w-3 h-3" /> Horário
+                                        </button>
+                                    )}
+                                </div>
+                                <div className="flex gap-1.5">
+                                    <div className="flex-1 min-w-0">
+                                        <CustomDatePicker value={novoPedido.prazo} onChange={val => setNovoPedido({...novoPedido, prazo: val, ...(val ? {} : { prazo_hora: '' })})} disabled={isModalTrancado} placeholder="Data final..." className="w-full bg-elevado border border-borda-forte rounded px-3 py-1.5 text-corpo outline-none transition" />
+                                    </div>
+                                    {/* Horário limite: "até as 14h". Sem data não há hora —
+                                        limpar a data limpa a hora junto. */}
+                                    {mostrarHora && novoPedido.prazo && (
+                                        <div className="relative shrink-0">
+                                            <input
+                                                type="time"
+                                                value={novoPedido.prazo_hora || ''}
+                                                onChange={e => setNovoPedido({...novoPedido, prazo_hora: e.target.value})}
+                                                disabled={isModalTrancado}
+                                                autoFocus={horaAberta && !novoPedido.prazo_hora}
+                                                aria-label="Horário limite"
+                                                title="Horário limite (opcional)"
+                                                className="w-[6.25rem] bg-elevado border border-borda-forte rounded pl-2 pr-6 py-1.5 text-corpo tabular-nums outline-none focus:border-brand transition dark:text-[#EDEDED] disabled:opacity-50 [&::-webkit-calendar-picker-indicator]:hidden"
+                                            />
+                                            {!isModalTrancado && (
+                                                <button type="button" onClick={() => { setNovoPedido({...novoPedido, prazo_hora: ''}); setHoraAberta(false); }} aria-label="Tirar horário limite" className="absolute right-1.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 transition">
+                                                    <Icon name="x" className="w-3.5 h-3.5" />
+                                                </button>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                             <div className="min-w-0">
                                 <label className="block text-micro font-semibold uppercase tracking-wider mb-1 text-tinta-suave">Resp.</label>
