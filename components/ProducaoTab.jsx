@@ -137,7 +137,7 @@ export default function ProducaoTab() {
     // Selo do horário limite: só existe quando a O.S. tem hora. A cor avisa no
     // dia do prazo (âmbar faltando 2h, vermelho quando passou).
     const seloHora = (p, className = '') => p.prazo && p.prazo_hora ? (
-        <span title="Horário limite" className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded border text-micro font-bold tabular-nums whitespace-nowrap ${obterCorSeloHora(p.prazo, p.prazo_hora)} ${className}`}>
+        <span title="Horário limite" className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded border text-micro font-bold tabular-nums whitespace-nowrap ${obterCorSeloHora(p.prazo, p.prazo_hora, p.status)} ${className}`}>
             <Icon name="clock" className="w-3 h-3" />até {formatarHoraPrazo(p.prazo_hora)}
         </span>
     ) : null;
@@ -277,7 +277,7 @@ export default function ProducaoTab() {
                                         tdClassName: 'px-3 py-3',
                                         celula: p => (
                                             <>
-                                                <CustomDatePicker value={p.prazo || ''} onChange={val => handleAtualizarCampo(p.id, 'prazo', val)} placeholder="Definir prazo..." className={`w-full bg-gray-50 dark:bg-darkElevated border-2 ${obterCorContornoPrazo(p.prazo)} rounded px-2.5 py-1.5 text-mini outline-none hover:border-brand transition text-gray-700 dark:text-[#EDEDED]`} />
+                                                <CustomDatePicker value={p.prazo || ''} onChange={val => handleAtualizarCampo(p.id, 'prazo', val)} placeholder="Definir prazo..." className={`w-full bg-gray-50 dark:bg-darkElevated border-2 ${obterCorContornoPrazo(p.prazo, p.status)} rounded px-2.5 py-1.5 text-mini outline-none hover:border-brand transition text-gray-700 dark:text-[#EDEDED]`} />
                                                 {seloHora(p) && <div className="mt-1.5">{seloHora(p)}</div>}
                                                 {/* Tabela muito estreita (notebook pequeno com o menu
                                                     aberto, ou zoom alto): o responsável desce para baixo
@@ -293,7 +293,7 @@ export default function ProducaoTab() {
                                         compacto: 'direita',
                                         celulaCompacta: p => (
                                             <span className="inline-flex flex-col items-end gap-1">
-                                                <span className={`inline-block px-1.5 py-0.5 rounded text-micro font-bold tabular-nums ${obterCorSeloPrazo(p.prazo)}`}>
+                                                <span className={`inline-block px-1.5 py-0.5 rounded text-micro font-bold tabular-nums ${obterCorSeloPrazo(p.prazo, p.status)}`}>
                                                     {p.prazo ? formatarDataExibicao(p.prazo).slice(0, 5) : '—'}
                                                 </span>
                                                 {seloHora(p)}

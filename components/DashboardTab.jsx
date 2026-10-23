@@ -8,7 +8,7 @@ import { useIrParaPendencia } from '@/hooks/useIrParaPendencia';
 import { usePedidos } from '@/context/PedidosContext';
 import { useComunicacao } from '@/context/ComunicacaoContext';
 import Icon from '@/components/Icon';
-import { STATUSES_FINALIZADOS } from '@/lib/utils/constants';
+import { STATUSES_FINALIZADOS, contaComoAtraso } from '@/lib/utils/constants';
 import { formatarDataExibicao, mascararCliente } from '@/lib/utils/formatters';
 import { resumoDoPedido } from '@/lib/utils/servico';
 
@@ -54,7 +54,7 @@ export default function DashboardTab() {
                             {(() => {
                                 const minhasTarefas = pedidos.filter(p => p.responsavel && p.responsavel.split(',').map(s => s.trim().toLowerCase()).includes((usuario?.nome || '').trim().toLowerCase()) && !STATUSES_FINALIZADOS.includes(p.status));
                                 const tarefasAtrasadas = minhasTarefas.filter(p => {
-                                    if(!p.prazo) return false;
+                                    if(!p.prazo || !contaComoAtraso(p.status)) return false;
                                     const prazo = new Date(p.prazo + 'T23:59:59');
                                     return prazo < new Date();
                                 });
