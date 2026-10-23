@@ -104,7 +104,8 @@ kbd { font: 600 10.5px/1 Montserrat, sans-serif; color: var(--tinta-suave); bord
 .pop .rot { font-size: 11px; font-weight: 600; color: var(--tinta-suave); padding: 6px 10px 2px; }
 .pop .criar { color: var(--brand-tinta); font-weight: 600; }
 /* horário limite: só aparece quando existe */
-.hora-chip { display: inline-flex; align-items: center; gap: 4px; margin-left: 6px; padding: 1px 7px; border-radius: 5px; background: var(--obs-fundo); border: 1px solid var(--obs-borda); color: var(--obs-tinta); font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.hora-slot:empty { display: none; }
+.hora-chip { display: inline-flex; align-items: center; gap: 4px; padding: 0 6px; height: 20px; line-height: 1; border-radius: 5px; background: var(--obs-fundo); border: 1px solid var(--obs-borda); color: var(--obs-tinta); font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .hora-chip .ico { width: 12px; height: 12px; }
 .pop.pop-prazo { max-height: min(500px, calc(100vh - 16px)); }
 .pop .horas { display: flex; flex-wrap: wrap; gap: 4px; padding: 2px 6px 4px; }
@@ -211,7 +212,9 @@ kbd { font: 600 10.5px/1 Montserrat, sans-serif; color: var(--tinta-suave); bord
 /* dados da O.S. */
 .props { display: grid; grid-template-columns: 78px minmax(0,1fr); align-items: center; row-gap: 1px; padding: 6px 12px 10px; }
 .props dt { font-size: 12.5px; color: var(--tinta-suave); display: flex; gap: 7px; align-items: center; }
-.prop { display: inline-flex; align-items: center; gap: 8px; max-width: 100%; padding: 6px 8px; margin-left: -8px; border-radius: 6px; font-weight: 600; color: var(--tinta); text-align: left; transition: background .12s; }
+/* Altura fixa: o que entra na linha (selo do horário, avatares) não pode
+   crescer a linha e empurrar as propriedades de baixo. */
+.prop { display: inline-flex; align-items: center; gap: 8px; max-width: 100%; height: 32px; white-space: nowrap; padding: 0 8px; margin-left: -8px; border-radius: 6px; font-weight: 600; color: var(--tinta); text-align: left; transition: background .12s; }
 .prop:hover, .prop[aria-expanded="true"] { background: var(--realce); }
 .prop .vazio { color: var(--tinta-suave); font-weight: 500; }
 .avatares { display: inline-flex; }
@@ -403,7 +406,7 @@ kbd { font: 600 10.5px/1 Montserrat, sans-serif; color: var(--tinta-suave); bord
             <dt><i data-lucide="calendar" class="ico ico-s"></i>Venda</dt>
             <dd><button class="prop" data-pop="data" data-campo="venda"><span class="lbl"></span></button></dd>
             <dt><i data-lucide="flag" class="ico ico-s"></i>Prazo</dt>
-            <dd><button class="prop" data-pop="data" data-campo="prazo"><span class="lbl"></span></button></dd>
+            <dd><button class="prop" data-pop="data" data-campo="prazo"><span class="lbl"></span><span class="hora-slot"></span></button></dd>
             <dt><i data-lucide="circle-dot" class="ico ico-s"></i>Status</dt>
             <dd><button class="prop" data-pop="status"><span class="dot"></span><span class="lbl"></span></button></dd>
             <dt><i data-lucide="users" class="ico ico-s"></i>Resp.</dt>
@@ -592,9 +595,10 @@ function rascunhoItemSujo() {
 function renderDados() {
   const q = s => document.querySelector(s);
   q('[data-campo="venda"] .lbl').textContent = os.venda;
-  q('[data-campo="prazo"] .lbl').innerHTML = os.prazo
-    ? esc(os.prazo) + (os.prazoHora ? `<span class="hora-chip"><i data-lucide="clock" class="ico"></i>até ${esc(os.prazoHora)}</span>` : '')
-    : '<span class="vazio">Sem prazo</span>';
+  // O selo do horário fica ao lado do rótulo, não dentro dele: dentro da mesma
+  // linha de texto ele empurrava a data 1px para baixo ao aparecer.
+  q('[data-campo="prazo"] .lbl').innerHTML = os.prazo ? esc(os.prazo) : '<span class="vazio">Sem prazo</span>';
+  q('[data-campo="prazo"] .hora-slot').innerHTML = os.prazo && os.prazoHora ? `<span class="hora-chip"><i data-lucide="clock" class="ico"></i>até ${esc(os.prazoHora)}</span>` : '';
   q('[data-pop="status"] .lbl').textContent = os.status;
   q('[data-pop="status"] .dot').style.background = COR_STATUS[os.status];
   q('[data-pop="resp"] .avatares').innerHTML = os.resp.map(n => `<i style="background:${EQUIPE[n]}">${n[0]}</i>`).join('');
