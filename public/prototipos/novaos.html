@@ -209,7 +209,7 @@ kbd { font: 600 10.5px/1 Montserrat, sans-serif; color: var(--tinta-suave); bord
 .edita-pe .final b { color: var(--tinta); }
 .mais { display: inline-flex; align-items: center; gap: 7px; margin-top: 8px; padding: 7px 10px 7px 8px; border-radius: 7px; font-weight: 600; color: var(--itens-tinta); }
 .mais:hover { background: var(--itens-fundo); }
-.mais kbd { margin-left: 6px; }
+.mais kbd, .receber kbd { margin-left: 6px; }
 
 /* dados da O.S. */
 .props { display: grid; grid-template-columns: 78px minmax(0,1fr); align-items: center; row-gap: 1px; padding: 6px 12px 10px; }
@@ -219,8 +219,15 @@ kbd { font: 600 10.5px/1 Montserrat, sans-serif; color: var(--tinta-suave); bord
 .prop { display: inline-flex; align-items: center; gap: 8px; max-width: 100%; height: 32px; white-space: nowrap; padding: 0 8px; margin-left: -8px; border-radius: 6px; font-weight: 600; color: var(--tinta); text-align: left; transition: background .12s; }
 .prop:hover, .prop[aria-expanded="true"] { background: var(--realce); }
 .prop .vazio { color: var(--tinta-suave); font-weight: 500; }
-.avatares { display: inline-flex; }
-.avatares i { width: 20px; height: 20px; border-radius: 99px; display: grid; place-items: center; font: 700 9.5px/1 Montserrat; color: #fff; font-style: normal; border: 2px solid var(--superficie); margin-left: -5px; }
+/* Nada da propriedade passa da coluna: o texto corta com reticências e o nome
+   inteiro fica no title. Sem o min-width:0 o texto sem quebra empurrava o
+   botão (e o modal) para fora com três responsáveis. */
+.props dd { min-width: 0; }
+.prop .lbl { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.avatares { display: inline-flex; flex-shrink: 0; }
+.avatares i.mais-av { background: var(--realce) !important; color: var(--tinta-corpo) !important; }
+.avatares i { width: 24px; height: 24px; border-radius: 99px; display: grid; place-items: center; font: 700 10px/1 Montserrat; letter-spacing: -.02em; color: #fff; font-style: normal; border: 2px solid var(--superficie); margin-left: -3px; }
+.pop .avatares i { width: 22px; height: 22px; border: 0; }
 .avatares i:first-child { margin-left: 0; }
 .chave { position: relative; width: 30px; height: 18px; border-radius: 99px; background: var(--borda-forte); transition: background .18s; flex-shrink: 0; }
 .chave::after { content: ""; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 99px; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.25); transition: transform .2s cubic-bezier(.16,1,.3,1); }
@@ -232,15 +239,18 @@ kbd { font: 600 10.5px/1 Montserrat, sans-serif; color: var(--tinta-suave); bord
 .total-rot { font-size: 12px; color: var(--tinta-suave); margin-top: 8px; }
 .total { font-size: 30px; font-weight: 700; color: var(--tinta); letter-spacing: -.022em; line-height: 1.15; display: flex; align-items: baseline; gap: 4px; }
 .total small { font-size: 15px; color: var(--tinta-suave); font-weight: 600; letter-spacing: 0; }
-.total-nota { font-size: 11.5px; color: var(--tinta-suave); margin-top: 1px; }
-.saldos { margin-top: 10px; border-top: 1px solid var(--borda-fraca); }
-.saldos div { display: flex; justify-content: space-between; align-items: baseline; padding: 7px 0; border-bottom: 1px solid var(--borda-fraca); }
-.saldos dt { color: var(--tinta-suave); }
-.saldos dd { font-weight: 600; color: var(--tinta); }
-.saldos .deve dt { color: var(--tinta); font-weight: 600; }
-.saldos .deve dd { color: var(--perigo); font-size: 16px; font-weight: 700; }
-.saldos .quitado dd { color: var(--sucesso); }
-.pags-tit { font-size: 12px; font-weight: 700; color: var(--tinta); margin-top: 14px; }
+.fin-barra { height: 6px; border-radius: 99px; background: var(--realce); overflow: hidden; margin-top: 12px; }
+.fin-barra i { display: block; height: 100%; border-radius: 99px; background: var(--fin); transition: width .45s cubic-bezier(.16,1,.3,1); }
+.fin-resumo { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-top: 8px; font-size: 12.5px; color: var(--tinta-suave); }
+.fin-resumo b { font-weight: 700; }
+.fin-resumo .recebido b { color: var(--fin-tinta); }
+.fin-resumo .falta { color: var(--perigo); font-weight: 600; }
+.fin-resumo .falta b { font-size: 15px; }
+.fin-resumo .sobra { color: var(--obs-tinta); font-weight: 600; }
+.fin-resumo .ok { display: inline-flex; gap: 5px; align-items: center; color: var(--sucesso); font-weight: 700; }
+.pags-tit { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: var(--tinta); margin-top: 16px; padding-bottom: 2px; border-bottom: 1px solid var(--borda-fraca); }
+.pags-tit span { font-size: 11px; font-weight: 700; color: var(--fin-tinta); background: var(--fin-fundo); border-radius: 99px; padding: 0 6px; }
+.pags li:last-child { border-bottom: 0; }
 .pags { list-style: none; padding: 0; margin-top: 2px; }
 .pags li { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--borda-fraca); }
 .pags .forma-ico { width: 26px; height: 26px; border-radius: 99px; background: var(--fin-fundo); color: var(--fin); display: grid; place-items: center; flex-shrink: 0; }
@@ -329,7 +339,7 @@ kbd { font: 600 10.5px/1 Montserrat, sans-serif; color: var(--tinta-suave); bord
   .tabela .local-mob { display: inline-flex !important; margin-top: 5px; }
   .edita-grade { grid-template-columns: 1fr 1fr; }
   .edita-grade .cat-campo, .edita-grade .local-campo { grid-column: 1 / -1; }
-  .edita-pe .dicas, .mais kbd { display: none; }
+  .edita-pe .dicas, .mais kbd, .receber kbd { display: none; }
   .pop-catalogo { width: calc(100vw - 24px); }
   .rodape { padding: 10px 12px calc(10px + env(safe-area-inset-bottom)); }
   .rodape > .dicas, .rodape .txt { display: none; }
@@ -430,7 +440,7 @@ kbd { font: 600 10.5px/1 Montserrat, sans-serif; color: var(--tinta-suave); bord
     </div>
 
     <div class="rodape">
-      <span class="dicas"><span><kbd>Esc</kbd> fecha</span><span><kbd>Ctrl</kbd><kbd>S</kbd> salva</span></span>
+      <span class="dicas"><span><kbd>N</kbd> item</span><span><kbd>P</kbd> pagamento</span><span><kbd>Ctrl</kbd><kbd>S</kbd> salva</span><span><kbd>Esc</kbd> fecha</span></span>
       <div class="acoes">
         <button class="btn btn-txt btn-fim" id="finalizar" title="Finalizar O.S."><i data-lucide="circle-check" class="ico"></i><span class="txt">Finalizar</span></button>
         <button class="btn btn-sec btn-imp" data-salvar="imprimir" title="Salvar e imprimir"><i data-lucide="printer" class="ico"></i><span class="txt">Salvar e imprimir</span></button>
@@ -487,7 +497,14 @@ const CLIENTES = [
   { id: 7, nome: 'Pet Shop Patas & Cia', tel: '(11) 99456-3210' },
   { id: 8, nome: 'Ana Beatriz Moreira', tel: '(11) 98111-7744' },
 ];
-const EQUIPE = { 'Ana': '#db2777', 'Rafael': '#2563eb', 'Júlia': '#059669', 'Marcos': '#ea580c' };
+// Equipe real com as cores do sistema (injetada pela página /novaos). Sem ela —
+// o arquivo local aberto direto — cai numa equipe de exemplo.
+const EQUIPE = typeof EQUIPE_BANCO !== 'undefined' && EQUIPE_BANCO.length
+  ? Object.fromEntries(EQUIPE_BANCO.map(([n, bg, tx]) => [n, { bg, tx }]))
+  : { 'Ana': { bg: '#db2777', tx: '#fff' }, 'Rafael': { bg: '#2563eb', tx: '#fff' }, 'Júlia': { bg: '#059669', tx: '#fff' }, 'Marcos': { bg: '#ea580c', tx: '#fff' } };
+// Duas letras na bolinha, como na Produção: Murilo → Mu; Ana Lima → AL.
+const duasLetras = n => { const p = n.trim().split(/\s+/); return p.length > 1 ? (p[0][0] + p.at(-1)[0]).toUpperCase() : p[0].slice(0, 1).toUpperCase() + p[0].slice(1, 2).toLowerCase(); };
+const bolinha = n => `<i style="background:${EQUIPE[n]?.bg || '#64748b'};color:${EQUIPE[n]?.tx || '#fff'}">${esc(duasLetras(n))}</i>`;
 const OUTRAS_OS = [{ id: 18311, data: '02/10', saldo: 80 }];
 const DATAS = [['hoje, 19 out', 0], ['amanhã, 20 out', 1], ['qua, 21 out', 2], ['sex, 23 out', 4], ['seg, 26 out', 7]];
 
@@ -497,7 +514,7 @@ const os = {
   modo: 'nova',
   cliente: CLIENTES[0],
   venda: 'hoje, 19 out', prazo: 'sex, 23 out', prazoDias: 4, prazoHora: '',
-  status: 'Produzir', resp: ['Ana', 'Rafael'], entrega: true,
+  status: 'Produzir', resp: Object.keys(EQUIPE).slice(0, 2), entrega: true,
   itens: [
     { prodId: 29, nome: prod(29)?.[1] || 'CARTAO DE VISITA', esp: '1.000 un. | 9x5cm | Couchê 300g | 4x4 cores | Laminação fosca', local: 'Berlim', bruto: 180, desc: 0 },
     { prodId: 42, nome: prod(42)?.[1] || 'BANNER - ILHÓS', esp: '1 Banner | 90x120cm | Lona 440g | Ilhós nos cantos', local: 'Futura', bruto: 150, desc: 10 },
@@ -505,7 +522,7 @@ const os = {
   ],
   pags: [{ forma: 'PIX', valor: 200, data: '19 out', inst: 'Itaú', band: '', parc: 1 }],
 };
-let edicao = { aberta: true, idx: null };            // linha de item aberta (idx null = item novo)
+let edicao = { aberta: os.itens.length === 0, idx: null }; // linha de item aberta (idx null = item novo); abre sozinha só com a O.S. vazia
 let rasc = novoRascunho();
 let pf = null;                                      // formulário de pagamento aberto
 
@@ -559,7 +576,6 @@ function linhaEdicao() {
     <div class="edita-pe">
       <button class="btn btn-itens btn-p" data-salva-item ${podeSalvar ? '' : 'disabled'}><i data-lucide="${edicao.idx === null ? 'plus' : 'check'}" class="ico ico-s"></i>${edicao.idx === null ? 'Inserir item no orçamento' : 'Salvar alterações'}</button>
       <button class="btn btn-txt btn-p" data-cancela-item>Cancelar</button>
-      <span class="dicas"><span><kbd>Ctrl</kbd><kbd>Enter</kbd> insere</span></span>
       <span class="final num" id="valor-final">${parseFloat(r.desc) > 0 && lerValor(r.bruto) > 0 ? `Valor final <b>R$ ${brl(final)}</b>` : ''}</span>
     </div>
   </td></tr>`;
@@ -583,7 +599,8 @@ function salvarItem() {
   if (!r.esp.trim() || !(lerValor(r.bruto) > 0)) return false;
   const item = { prodId: r.prodId, nome: r.nome.trim(), esp: r.esp.trim(), local: r.local, bruto: lerValor(r.bruto), desc: Math.min(100, parseInt(r.desc) || 0) };
   if (edicao.idx === null) os.itens.push(item); else os.itens[edicao.idx] = item;
-  edicao = { aberta: true, idx: null }; rasc = novoRascunho();
+  // Inseriu, fecha: o próximo item só abre se alguém pedir ("Adicionar item" ou N).
+  edicao = { aberta: false, idx: null }; rasc = novoRascunho();
   return true;
 }
 function rascunhoItemSujo() {
@@ -603,8 +620,14 @@ function renderDados() {
   q('[data-campo="prazo"] .hora-slot').innerHTML = os.prazo && os.prazoHora ? `<span class="hora-chip"><i data-lucide="clock" class="ico"></i>até ${esc(os.prazoHora)}</span>` : '';
   q('[data-pop="status"] .lbl').textContent = os.status;
   q('[data-pop="status"] .dot').style.background = COR_STATUS[os.status];
-  q('[data-pop="resp"] .avatares').innerHTML = os.resp.map(n => `<i style="background:${EQUIPE[n]}">${n[0]}</i>`).join('');
-  q('[data-pop="resp"] .lbl').innerHTML = os.resp.length ? esc(os.resp.length > 1 ? os.resp.slice(0, -1).join(', ') + ' e ' + os.resp.at(-1) : os.resp[0]) : '<span class="vazio">Ninguém</span>';
+  // Até três bolinhas; da quarta em diante, uma "+N". A partir de três pessoas
+  // as bolinhas já dizem quem é, e o texto vira só a contagem; a lista inteira
+  // fica no title do botão.
+  const r = os.resp;
+  q('[data-pop="resp"] .avatares').innerHTML = r.slice(0, 3).map(bolinha).join('') + (r.length > 3 ? `<i class="mais-av">+${r.length - 3}</i>` : '');
+  q('[data-pop="resp"] .lbl').innerHTML = !r.length ? '<span class="vazio">Ninguém</span>'
+    : esc(r.length === 1 ? r[0] : r.length === 2 ? `${r[0]} e ${r[1]}` : `${r.length} pessoas`);
+  q('[data-pop="resp"]').title = r.join(', ');
   const e = q('[data-chave="entrega"]'); e.setAttribute('aria-checked', os.entrega); e.querySelector('.lbl').textContent = os.entrega ? 'Sim' : 'Não';
   q('#meta-prazo').innerHTML = os.prazo ? `<i data-lucide="flag" class="ico ico-s"></i>${os.prazoDias === 0 ? 'vence hoje' : os.prazoDias === 1 ? 'amanhã' : 'em ' + os.prazoDias + ' dias'}` : '';
 }
@@ -663,18 +686,20 @@ function renderFin() {
     </div>`;
   }
 
+  // Um resumo só — total, barra do que entrou, "recebido · falta" — e embaixo a
+  // lista dos recebimentos, sem repetir os mesmos valores em três lugares.
+  const pct = t > 0 ? Math.max(0, Math.min(100, Math.round(p / t * 100))) : 0;
+  const direita = t <= 0 ? '' : s > 0
+    ? `<span class="falta">Falta <b>R$ ${brl(s)}</b></span>`
+    : s < 0 ? `<span class="sobra">Pago a mais <b>R$ ${brl(-s)}</b></span>` : `<span class="ok"><i data-lucide="circle-check" class="ico ico-s"></i>Quitado</span>`;
   document.getElementById('fin').innerHTML = `
     <div class="total-rot">Total da O.S.</div>
     <div class="total num"><small>R$</small>${brl(t)}</div>
-    <div class="total-nota">Soma dos itens do orçamento</div>
-    <dl class="saldos num">
-      <div><dt>Pago</dt><dd>${brl(p)}</dd></div>
-      <div class="${s > 0 ? 'deve' : 'deve quitado'}"><dt>${s > 0 ? 'Falta receber' : 'Saldo'}</dt><dd>${s > 0 ? brl(s) : brl(Math.abs(s))}</dd></div>
-    </dl>
-    <div class="pags-tit">Recebido</div>
-    <ul class="pags num">${lista}</ul>
-    ${pf ? form : (s > 0 || p > 0 ? `<button class="btn btn-sec receber" data-abre-pag><i data-lucide="plus" class="ico ico-s"></i>Registrar pagamento</button>` : '')}`;
-  document.getElementById('meta-fin').innerHTML = t <= 0 ? '' : s > 0 ? `<span style="color:var(--perigo)">Falta R$ ${brl(s)}</span>` : `<i data-lucide="circle-check" class="ico ico-s"></i>Quitado`;
+    ${t > 0 ? `<div class="fin-barra" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100" aria-label="Quanto já foi recebido"><i style="width:${pct}%"></i></div>
+    <div class="fin-resumo num"><span class="recebido">${p > 0 ? `Recebido <b>R$ ${brl(p)}</b>` : 'Nada recebido ainda'}</span>${direita}</div>` : ''}
+    ${os.pags.length ? `<div class="pags-tit">Recebimentos <span>${os.pags.length}</span></div><ul class="pags num">${lista}</ul>` : ''}
+    ${pf ? form : (t > 0 ? `<button class="btn btn-sec receber" data-abre-pag><i data-lucide="plus" class="ico ico-s"></i>Registrar pagamento<kbd>P</kbd></button>` : '')}`;
+  document.getElementById('meta-fin').innerHTML = t > 0 && s <= 0 ? `<i data-lucide="circle-check" class="ico ico-s"></i>Quitado` : '';
 }
 function registrarPagamento() {
   const x = extrasDaForma(pf.forma), v = lerValor(pf.valor); if (!(v > 0)) return;
@@ -726,7 +751,7 @@ function abrirPop(ancora, tipo) {
     escolher = v => { os.status = v; };
   }
   if (tipo === 'resp') {
-    html = Object.keys(EQUIPE).map(n => `<button data-v="${n}"><i style="width:18px;height:18px;border-radius:99px;display:grid;place-items:center;background:${EQUIPE[n]};color:#fff;font:700 9px/1 Montserrat;font-style:normal">${n[0]}</i>${n}${marca(os.resp.includes(n))}</button>`).join('');
+    html = Object.keys(EQUIPE).map(n => `<button data-v="${esc(n)}"><span class="avatares">${bolinha(n)}</span>${esc(n)}${marca(os.resp.includes(n))}</button>`).join('');
     escolher = v => { os.resp = os.resp.includes(v) ? os.resp.filter(x => x !== v) : [...os.resp, v]; renderDados(); lucide.createIcons(); abrirPop(ancora, 'resp'); return 'manter'; };
   }
   if (tipo === 'local') {
@@ -908,10 +933,10 @@ document.addEventListener('click', e => {
 
   const ch = t.closest('[data-chave="entrega"]'); if (ch) { os.entrega = !os.entrega; render(); return; }
   const tira = t.closest('[data-tira]');
-  if (tira) { e.stopPropagation(); const k = +tira.dataset.tira; os.itens.splice(k, 1); if (edicao.idx === k) { edicao = { aberta: true, idx: null }; rasc = novoRascunho(); } else if (edicao.idx > k) edicao.idx--; render(); return; }
+  if (tira) { e.stopPropagation(); const k = +tira.dataset.tira; os.itens.splice(k, 1); if (edicao.idx === k) { edicao = { aberta: false, idx: null }; rasc = novoRascunho(); } else if (edicao.idx > k) edicao.idx--; render(); return; }
   const abre = t.closest('[data-abre-item]');
   if (abre) { const k = +abre.dataset.abreItem; edicao = { aberta: true, idx: k }; rasc = novoRascunho(os.itens[k]); render('#in-esp'); return; }
-  if (t.closest('[data-salva-item]')) { if (salvarItem()) render('#in-cat'); return; }
+  if (t.closest('[data-salva-item]')) { if (salvarItem()) render('#mais'); return; }
   if (t.closest('[data-cancela-item]')) { const eraNovo = edicao.idx === null; edicao = eraNovo ? { aberta: false, idx: null } : { aberta: true, idx: null }; rasc = novoRascunho(); render(eraNovo ? '#mais' : null); return; }
   if (t.closest('[data-limpa-cat]')) { rasc.prodId = null; rasc.nome = ''; render('#in-cat'); return; }
   if (t.closest('#mais')) { edicao = { aberta: true, idx: null }; rasc = novoRascunho(); render('#in-cat'); return; }
@@ -984,11 +1009,12 @@ document.addEventListener('keydown', e => {
     if (e.key === 'Enter') { if (e.target === popAberto.ancora && bs[0]) { e.preventDefault(); (bs.find(b => b.matches('[data-prod],[data-cli]')) || bs[0]).click(); } return; }
     e.preventDefault(); bs[(i + (e.key === 'ArrowDown' ? 1 : -1) + bs.length) % bs.length].focus(); return;
   }
-  if (e.key === 'Enter' && e.ctrlKey && e.target.closest('.edita')) { e.preventDefault(); if (salvarItem()) render('#in-cat'); return; }
-  if (e.key === 'Enter' && e.target.matches('.edita input')) { e.preventDefault(); if (salvarItem()) render('#in-cat'); else document.getElementById(rasc.esp.trim() ? 'in-bruto' : 'in-esp').focus(); return; }
+  if (e.key === 'Enter' && e.target.matches('.edita input')) { e.preventDefault(); if (salvarItem()) render('#mais'); else document.getElementById(rasc.esp.trim() ? 'in-bruto' : 'in-esp').focus(); return; }
   if (e.key === 'Enter' && e.target.id === 'pf-valor') { e.preventDefault(); document.querySelector('[data-registra]:not(:disabled)')?.click(); return; }
   if (e.key === 's' && e.ctrlKey) { e.preventDefault(); salvar(); return; }
-  if (e.key.toLowerCase() === 'n' && !e.target.closest('input, textarea, .janela') && !edicao.aberta) { e.preventDefault(); edicao = { aberta: true, idx: null }; rasc = novoRascunho(); render('#in-cat'); }
+  if (e.key.toLowerCase() === 'n' && !e.target.closest('input, textarea, .janela') && !edicao.aberta) { e.preventDefault(); edicao = { aberta: true, idx: null }; rasc = novoRascunho(); render('#in-cat'); return; }
+  // P abre o pagamento, como o N abre um item novo.
+  if (e.key.toLowerCase() === 'p' && !e.ctrlKey && !e.metaKey && !e.target.closest('input, textarea, .janela') && !pf && totalOS() > 0) { e.preventDefault(); abrirPagamento(); render('#pf-valor'); }
 });
 addEventListener('resize', fecharPop);
 document.getElementById('grade').addEventListener('scroll', () => { if (popAberto && performance.now() - popAberto.desde > 250) fecharPop(); });
