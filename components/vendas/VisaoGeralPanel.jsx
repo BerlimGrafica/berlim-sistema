@@ -87,7 +87,7 @@ export default function VisaoGeralPanel({ metricas, rotulo }) {
     const scrollRef = useRef(null);
     const { isDemo } = useSessao();
     // Só para abrir a O.S. direto da lista de cobrança pendente.
-    const { pedidos, abrirEdicao } = usePedidos();
+    const { abrirEdicao } = usePedidos();
 
     const irPara = (i) => {
         const el = scrollRef.current;
@@ -274,31 +274,20 @@ export default function VisaoGeralPanel({ metricas, rotulo }) {
                             <CardPainel titulo="Concluído sem baixa" descricao="O.S. encerradas sem pagamento lançado" icone="alert-triangle" fundoIcone="bg-rose-50 dark:bg-rose-500/10" corIcone="text-rose-600 dark:text-rose-400">
                                 {metricas.sem_baixa.pedidos.length === 0 ? (
                                     <p className="text-mini text-gray-500 italic">Toda O.S. encerrada no período tem pagamento lançado.</p>
-                                ) : metricas.sem_baixa.pedidos.map(p => {
-                                    // Só abre a O.S. se ela estiver na lista já carregada; fora
-                                    // da janela de carregamento vira linha simples, sem clique
-                                    // que não faria nada.
-                                    const naMemoria = pedidos.find(x => x.id === p.id);
-                                    const conteudo = (
-                                        <>
-                                            <span className="min-w-0 text-left">
-                                                <span className="block text-compacto font-bold text-tinta tabular-nums">#{p.id}</span>
-                                                <span className="block text-mini text-tinta-suave truncate">{mascararCliente(p.cliente, isDemo) || '---'}</span>
-                                            </span>
-                                            <span className="text-compacto font-bold text-rose-600 dark:text-rose-400 tabular-nums shrink-0">
-                                                R$ {formatarValorFinanceiro(centavosParaReais(p.centavos))}
-                                            </span>
-                                        </>
-                                    );
-                                    return naMemoria ? (
-                                        <button key={p.id} type="button" onClick={() => abrirEdicao(naMemoria)}
-                                            className="w-full flex items-center justify-between gap-3 py-1.5 rounded hover:bg-sutil transition px-1 -mx-1">
-                                            {conteudo}
-                                        </button>
-                                    ) : (
-                                        <div key={p.id} className="w-full flex items-center justify-between gap-3 py-1.5 px-1 -mx-1">{conteudo}</div>
-                                    );
-                                })}
+                                ) : metricas.sem_baixa.pedidos.map(p => (
+                                    // abrirEdicao() relê a O.S. pelo id, então toda linha abre —
+                                    // inclusive as baixadas, que não ficam na lista em memória.
+                                    <button key={p.id} type="button" onClick={() => abrirEdicao(p)}
+                                        className="w-full flex items-center justify-between gap-3 py-1.5 rounded hover:bg-sutil transition px-1 -mx-1">
+                                        <span className="min-w-0 text-left">
+                                            <span className="block text-compacto font-bold text-tinta tabular-nums">#{p.id}</span>
+                                            <span className="block text-mini text-tinta-suave truncate">{mascararCliente(p.cliente, isDemo) || '---'}</span>
+                                        </span>
+                                        <span className="text-compacto font-bold text-rose-600 dark:text-rose-400 tabular-nums shrink-0">
+                                            R$ {formatarValorFinanceiro(centavosParaReais(p.centavos))}
+                                        </span>
+                                    </button>
+                                ))}
                             </CardPainel>
                         </div>
                     </div>

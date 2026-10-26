@@ -36,6 +36,29 @@ export { supabase };
 const NUMERO_INICIAL_PEDIDO = 17930;
 
 // ---------------------------------------------------------------------------
+// O que fica em memória: só as O.S. que alguma tela lê de `pedidos`.
+//
+// Produção, Início, pendências e alertas só olham O.S. abertas. Baixadas,
+// canceladas e abandonadas ficam no banco: a tela O.S. e o Financeiro buscam as
+// suas sob demanda, e abrirEdicao() relê a O.S. pelo id. Antes vinham todas as
+// O.S. desde janeiro do ano anterior — 1.274 em out/2026, das quais 57 abertas
+// —, e essa lista, rebaixada a cada volta à aba, era o grosso do tráfego do
+// Supabase.
+// ---------------------------------------------------------------------------
+// Concluído não está aqui: a O.S. ainda espera a baixa, e o alerta de boleto
+// continua olhando para ela.
+const STATUSES_ENCERRADOS = STATUSES_FINALIZADOS.filter(s => s !== 'Concluído');
+// 1º de janeiro do ano anterior: até onde vão as O.S. concluídas em memória.
+const dataDeCorteDaMemoria = () => `${new Date().getFullYear() - 1}-01-01`;
+// A mesma regra do filtro de carregarDados(), para a O.S. que chega pelo tempo
+// real: em produção, de qualquer data; ou recente e ainda não encerrada.
+const ficaNaMemoria = (p) => STATUSES_PRODUCAO.includes(p.status)
+    || (!STATUSES_ENCERRADOS.includes(p.status) && (p.data_pedido || '') >= dataDeCorteDaMemoria());
+
+// Voltar à aba depois de quanto tempo fora recarrega tudo (ver aoMudarVisibilidade).
+const RECARGA_APOS_ESCONDIDA_MS = 10 * 60 * 1000;
+
+// ---------------------------------------------------------------------------
 // Tempo real: aplicar o evento, não recarregar o banco.
 //
 // O payload do Supabase já traz a linha inteira em `new` (e a chave em `old`),
@@ -139,8 +162,8 @@ export const AppProvider = ({ children }) => {
     const [triggerRealtime, setTriggerRealtime] = useState(0);
     const itensPorPagina = 50;
 
-    // pedidos e pedidosHistorico são duas visões da mesma tabela: a lista geral,
-    // carregada de uma vez, e a página filtrada que o Histórico/Baixa monta no
+    // pedidos e pedidosHistorico são duas visões da mesma tabela: as O.S. abertas,
+    // carregadas de uma vez, e a página filtrada que o Histórico/Baixa monta no
     // servidor. Toda gravação precisa alcançar as duas — mexer só na primeira
     // deixava a segunda entregando a versão anterior da O.S. a quem clicasse
     // nela. Só altera quem já está em cada lista: inserir uma O.S. nova por aqui
@@ -317,9 +340,10 @@ export const AppProvider = ({ children }) => {
                 .from('pedidos') .select('*, pedido_itens(*), pedido_pagamentos(*)') .eq('id', pedidoId)
                 .maybeSingle();
             if (!data) return;
+            // Um pagamento lançado numa O.S. já baixada não a traz para a memória.
             setPedidos(prev => prev.some(p => p.id === data.id)
                 ? prev.map(p => (p.id === data.id ? { ...p, ...data } : p))
-                : [data, ...prev]);
+                : (ficaNaMemoria(data) ? [data, ...prev] : prev));
             setPedidosHistorico(prev => prev.map(p => (p.id === data.id ? { ...p, ...data } : p)));
         };
         const agendarSincronia = (pedidoId) => {
@@ -353,6 +377,10 @@ export const AppProvider = ({ children }) => {
                     // buscar os filhos. Edição de status/prazo/responsável, que é o
                     // caso comum, não custa consulta nenhuma.
                     if (anterior && anterior.valor_total !== payload.new.valor_total) agendarSincronia(payload.new.id);
+                    // Fora da memória e reaberta (uma baixada que volta para a
+                    // Produção, por exemplo): entra inteira, com itens e
+                    // pagamentos, sem esperar a próxima recarga.
+                    else if (!anterior && ficaNaMemoria(payload.new)) agendarSincronia(payload.new.id);
                 }
                 marcarParaRebuscar();
             },
@@ -455,13 +483,25 @@ export const AppProvider = ({ children }) => {
     // navegador pode suspender a conexão e perder eventos nesse meio-tempo. Ao
     // voltar a ficar visível, recarrega tudo de novo pra garantir que não ficou
     // nada desatualizado (novo produto, pedido, etc.).
+    //
+    // Só depois de RECARGA_APOS_ESCONDIDA_MS fora. Recarregar em toda volta —
+    // ir ao WhatsApp e voltar, desbloquear o celular — repetia a carga inteira
+    // dezenas de vezes por dia por pessoa. Numa saída curta o canal continua de
+    // pé e os eventos chegam; se ele cair, a reinscrição acima já recarrega.
     useEffect(() => {
         if (!usuario) return;
-        function aoVoltarVisivel() {
-            if (document.visibilityState === 'visible') { carregarDados(); carregarChat(); }
+        let escondidaDesde = document.visibilityState === 'hidden' ? Date.now() : null;
+        function aoMudarVisibilidade() {
+            if (document.visibilityState === 'hidden') {
+                escondidaDesde = Date.now();
+                return;
+            }
+            const ficouMuitoTempoFora = escondidaDesde !== null && Date.now() - escondidaDesde >= RECARGA_APOS_ESCONDIDA_MS;
+            escondidaDesde = null;
+            if (ficouMuitoTempoFora) { carregarDados(); carregarChat(); }
         }
-        document.addEventListener('visibilitychange', aoVoltarVisivel);
-        return () => document.removeEventListener('visibilitychange', aoVoltarVisivel);
+        document.addEventListener('visibilitychange', aoMudarVisibilidade);
+        return () => document.removeEventListener('visibilitychange', aoMudarVisibilidade);
     }, [usuario]);
 
     // Rede de segurança só do chat.
@@ -508,8 +548,9 @@ export const AppProvider = ({ children }) => {
         let limit = 1000;
         let fetchMore = true;
 
-        const anoAnteriorStr = (new Date().getFullYear() - 1).toString();
-        const dataCorte = `${anoAnteriorStr}-01-01`;
+        // Só as O.S. abertas (ver ficaNaMemoria, no topo do arquivo).
+        const dataCorte = dataDeCorteDaMemoria();
+        const encerrados = STATUSES_ENCERRADOS.map(s => `"${s}"`).join(',');
 
         // Rede de segurança da janela de data: uma O.S. ainda em produção nunca
         // pode sumir da tela só por ser antiga. Derivada de STATUSES_PRODUCAO —
@@ -535,7 +576,7 @@ export const AppProvider = ({ children }) => {
         while (fetchMore) {
             const { data: batch, error } = await supabase
                 .from('pedidos') .select('*, pedido_itens(*), pedido_pagamentos(*)')
-                .or(`data_pedido.gte.${dataCorte},status.in.(${redeStatusAtivos})`)
+                .or(`status.in.(${redeStatusAtivos}),and(data_pedido.gte.${dataCorte},status.not.in.(${encerrados}))`)
                 .order('id', { ascending: false })
                 .range(from, from + limit - 1);
                 
@@ -645,8 +686,11 @@ export const AppProvider = ({ children }) => {
         if (paginaHistorico !== 1) setPaginaHistorico(1);
     }
 
+    // Só com a tela O.S. aberta. A busca reage ao tempo real (triggerRealtime) e
+    // rodava em todo computador conectado a cada O.S. salva por qualquer pessoa,
+    // mesmo em quem estava na Produção: 50 O.S. completas por vez.
     useEffect(() => {
-        if (!usuario) return;
+        if (!usuario || pathname !== '/baixa') return;
 
         async function fetchHistorico() {
             // Traz itens e pagamentos COMPLETOS. A tabela em si só precisaria do
@@ -703,9 +747,10 @@ export const AppProvider = ({ children }) => {
             setHistoricoCarregado(true);
         }
 
-        const timeout = setTimeout(fetchHistorico, 300);
+        // A espera é para a digitação na busca; ao entrar na tela, busca já.
+        const timeout = setTimeout(fetchHistorico, buscaHistoricoText ? 300 : 0);
         return () => clearTimeout(timeout);
-    }, [usuario, abaOS, paginaHistorico, buscaHistoricoText, dataFiltroInicio, dataFiltroFim, triggerRealtime, ordenacaoHistoricoOS]);
+    }, [usuario, pathname, abaOS, paginaHistorico, buscaHistoricoText, dataFiltroInicio, dataFiltroFim, triggerRealtime, ordenacaoHistoricoOS]);
 
     useEffect(() => {
         if (!usuario) return;
@@ -762,21 +807,23 @@ export const AppProvider = ({ children }) => {
     // Busca (e refaz ao voltar pra aba ou após qualquer gravação que mexa em
     // pagamentos/status, via triggerRealtime) só quando a aba Contas a Receber
     // está mesmo aberta — evita consulta desnecessária em toda troca de tela.
+    // A rota entra junto: a aba escolhida continua guardada depois que a
+    // pessoa sai do Financeiro, e a busca seguia refeita a cada O.S. salva.
     useEffect(() => {
-        const buscando = abaFinanceiro === 'contas_receber';
+        const buscando = pathname === '/financeiro' && abaFinanceiro === 'contas_receber';
         if (buscando) setCarregandoContasReceber(true);
         const promise = buscando ? buscarPedidosComSaldoDevedor() : Promise.resolve([]);
         promise.then((lista) => { setPedidosSaldoDevedor(lista); setCarregandoContasReceber(false); });
-    }, [abaFinanceiro, triggerRealtime]);
+    }, [pathname, abaFinanceiro, triggerRealtime]);
 
     // Mesmo raciocínio de buscarPedidosComSaldoDevedor: só dispara quando a
     // aba Boletos está aberta.
     useEffect(() => {
-        const buscando = abaFinanceiro === 'boletos';
+        const buscando = pathname === '/financeiro' && abaFinanceiro === 'boletos';
         if (buscando) setCarregandoBoletos(true);
         const promise = buscando ? buscarPedidosComBoleto() : Promise.resolve([]);
         promise.then((lista) => { setPedidosBoleto(lista); setCarregandoBoletos(false); });
-    }, [abaFinanceiro, triggerRealtime]);
+    }, [pathname, abaFinanceiro, triggerRealtime]);
 
     useEffect(() => {
         if (pathname !== '/cadastros' || abaCadastros !== 'clientes' || !usuario) return;
@@ -920,16 +967,27 @@ export const AppProvider = ({ children }) => {
         await atualizarPagamentoBoleto(pedido, { boleto_concluido: true, data: obterDataAtual() });
     }
 
-    // carregarDados() só traz OS's recentes ou em produção ativa; um boleto de
-    // uma OS antiga (ou já Finalizada — boleto pago costuma levar a
-    // Finalizado) não pode ficar de fora só porque já foi pago. Busca
-    // dedicada, sem filtro de data, incluindo Finalizado de propósito.
+    // carregarDados() só traz as O.S. abertas; um boleto de uma OS antiga (ou
+    // já Finalizada — boleto pago costuma levar a Finalizado) não pode ficar de
+    // fora só porque já foi pago. Busca dedicada, sem filtro de data, incluindo
+    // Finalizado de propósito.
+    //
+    // Só as O.S. que têm boleto: o apelido `tem_boleto` (pedido_pagamentos
+    // !inner) filtra no banco, e pedido_pagamentos continua vindo inteiro.
+    // Antes vinham todas as O.S. não canceladas para filtrar aqui — 1,5 MB a
+    // cada abertura —, e o limite de 1.000 linhas do Supabase cortava as mais
+    // novas: um boleto recente simplesmente não aparecia na tela.
     async function buscarPedidosComBoleto() {
-        const { data, error } = await supabase.from('pedidos').select('*, pedido_itens(*), pedido_pagamentos(*)') .not('status', 'in', '("Abandonado","Cancelado")') .order('id', { ascending: true });
+        const { data, error } = await supabase.from('pedidos')
+            .select('*, pedido_itens(*), pedido_pagamentos(*), tem_boleto:pedido_pagamentos!inner(id)')
+            .eq('tem_boleto.forma', 'Boleto')
+            .not('status', 'in', '("Abandonado","Cancelado")') .order('id', { ascending: true });
         if (error) { console.error('Erro ao buscar boletos:', error); return []; }
 
         return (data || [])
             .map(p => {
+                // O apelido só serviu de filtro; não segue com a linha.
+                delete p.tem_boleto;
                 const pg = (p.pedido_pagamentos || []).find(pag => pag.forma === 'Boleto');
                 // BoletoRow.jsx espera boleto.valor como string formatada (mesmo
                 // padrão do antigo pagamento parseado do texto).
@@ -940,9 +998,9 @@ export const AppProvider = ({ children }) => {
     }
 
     // Busca outras OS's do mesmo cliente com saldo devedor. Não usa o array
-    // `pedidos` em memória: carregarDados() só traz OS's com data_pedido no
-    // último ano OU em produção ativa — uma "Concluído" antiga e ainda não paga
-    // pode ficar de fora. Precisa de consulta própria, sem esse filtro de data.
+    // `pedidos` em memória: carregarDados() só traz as em produção e as
+    // concluídas desde janeiro do ano anterior — uma "Concluído" antiga e ainda
+    // não paga fica de fora. Precisa de consulta própria, sem esse filtro de data.
     // Só casa por cliente_id. Sem vínculo, a OS não se agrupa com ninguém — é venda
     // de balcão (legítimo) ou vínculo ainda não feito. Casar por nome somava o saldo
     // de homônimos e oferecia quitar a OS de um cliente com o pagamento de outro,
@@ -964,7 +1022,7 @@ export const AppProvider = ({ children }) => {
     // Busca TODAS as OS's com saldo devedor (qualquer forma de pagamento, ou
     // nenhuma ainda), pra a tela Financeiro > Contas a Receber. Mesmo motivo de
     // buscarOutrasOSAbertasDoCliente pra não usar o array `pedidos` em memória:
-    // carregarDados() só traz OS's recentes ou em produção ativa, e um
+    // carregarDados() só traz as em produção e as concluídas recentes, e um
     // "Concluído" antigo ainda não pago não pode sumir de um relatório de
     // contas a receber.
     async function buscarPedidosComSaldoDevedor() {
@@ -2064,28 +2122,52 @@ export const AppProvider = ({ children }) => {
     }
 
     const clientesFiltrados = clientes;
-    // Lógica para elencar os 5 produtos mais vendidos com base no histórico
+
+    // Os 5 produtos mais vendidos sobem na busca de produtos do modal. A soma
+    // vinha dos itens da lista `pedidos`, que hoje guarda só as O.S. abertas;
+    // aqui vêm só nome, produto e valor dos itens vendidos desde janeiro do ano
+    // anterior, uma vez por sessão — a ordem dos mais vendidos não muda de uma
+    // hora para outra.
+    const [itensVendidos, setItensVendidos] = useState([]);
+    useEffect(() => {
+        if (!usuario?.id) return;
+        let vivo = true;
+        (async () => {
+            // Os ids crescem com o tempo: a partir da primeira O.S. da janela,
+            // `pedido_id` recorta os itens sem precisar trazer a O.S. junto.
+            const { data: primeira } = await supabase.from('pedidos').select('id')
+                .gte('data_pedido', dataDeCorteDaMemoria()).order('id', { ascending: true }).limit(1);
+            if (!primeira?.length) return;
+            let itens = [];
+            for (let de = 0; ; de += 1000) {
+                const { data, error } = await supabase.from('pedido_itens').select('nome, produto_id, valor_centavos')
+                    .gte('pedido_id', primeira[0].id).order('id', { ascending: true }).range(de, de + 999);
+                if (error || !data) break;
+                itens = itens.concat(data);
+                if (data.length < 1000) break;
+            }
+            if (vivo) setItensVendidos(itens);
+        })();
+        return () => { vivo = false; };
+    }, [usuario?.id]);
+
     const vendasPorProduto = useMemo(() => {
         const mapa = {};
-        pedidos.forEach(p => {
-            const itens = p.pedido_itens || [];
+        itensVendidos.forEach(item => {
+            const nomeLimpo = (item.nome || '').trim();
+            const valorNum = centavosParaReais(item.valor_centavos);
 
-            itens.forEach(item => {
-                const nomeLimpo = (item.nome || '').trim();
-                const valorNum = centavosParaReais(item.valor_centavos);
+            const prod = item.produto_id
+                ? produtos.find(p => String(p.id) === String(item.produto_id))
+                : produtos.find(prod => prod.nome.toLowerCase() === nomeLimpo.toLowerCase());
 
-                const prod = item.produto_id
-                    ? produtos.find(p => String(p.id) === String(item.produto_id))
-                    : produtos.find(prod => prod.nome.toLowerCase() === nomeLimpo.toLowerCase());
+            const finalName = prod ? prod.nome : nomeLimpo;
 
-                const finalName = prod ? prod.nome : nomeLimpo;
-
-                if (mapa[finalName]) mapa[finalName] += valorNum;
-                else mapa[finalName] = valorNum;
-            });
+            if (mapa[finalName]) mapa[finalName] += valorNum;
+            else mapa[finalName] = valorNum;
         });
         return mapa;
-    }, [pedidos]);
+    }, [itensVendidos, produtos]);
 
     const top5Produtos = useMemo(() => {
         return Object.entries(vendasPorProduto)
