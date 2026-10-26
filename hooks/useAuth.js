@@ -1,7 +1,9 @@
 "use client";
 import { useState, useEffect } from 'react';
+import { flushSync } from 'react-dom';
 import { useRouter } from 'next/navigation';
 import { supabase, setSomenteLeitura } from '@/lib/supabaseClient';
+import { trocarTema } from '@/lib/utils/trocarTema';
 
 // Sessão, login (e-mail/senha, Google, demo) e dark mode. Um login bem-sucedido
 // sempre leva o usuário de volta para a rota inicial ("/").
@@ -188,10 +190,11 @@ export function useAuth() {
         };
     }, []);
 
-    const toggleDarkMode = () => {
-        if (darkMode) { document.documentElement.classList.remove('dark'); }
-        else { document.documentElement.classList.add('dark'); }
-        setDarkMode(!darkMode);
+    // O ícone do botão (sol/lua) precisa trocar junto com as cores, na mesma
+    // "foto" da transição — por isso o flushSync.
+    const toggleDarkMode = (evento) => {
+        const escuro = !darkMode;
+        trocarTema(escuro, evento?.currentTarget, () => flushSync(() => setDarkMode(escuro)));
     };
 
     return {

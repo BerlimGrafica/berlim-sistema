@@ -253,6 +253,17 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover { opacity: 1; }
     .animate-fade-screen { animation: none; }
 }
 
+/* ---- Troca de tema: o escuro se espalha em círculo a partir do botão ---- */
+/* lib/utils/trocarTema.js anima o recorte; aqui sai o esmaecer padrão das duas
+   fotos e a escura fica por cima (a nova ao escurecer, a antiga ao clarear).
+   As transições de cor ficam desligadas durante a troca: a foto nova é ao vivo
+   e mostraria os botões ainda mudando de cor dentro do círculo. */
+html[data-troca-tema]::view-transition-old(root),
+html[data-troca-tema]::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
+html[data-troca-tema].dark::view-transition-new(root),
+html[data-troca-tema]:not(.dark)::view-transition-old(root) { z-index: 1; }
+html[data-troca-tema] *, html[data-troca-tema] *::before, html[data-troca-tema] *::after { transition: none !important; }
+
 /* ---- Toasts de notificação (canto inferior direito) ---- */
 @keyframes toast-in {
     from { opacity: 0; transform: translateY(12px) scale(0.98); }
