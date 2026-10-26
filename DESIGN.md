@@ -65,6 +65,7 @@ rounded:
   selo: "5px"
   controle: "7px"
   botao: "8px"
+  popover: "9px"
   area: "10px"
   janela: "12px"
   pilula: "99px"
@@ -118,7 +119,9 @@ components:
 
 Uma gráfica funciona sobre bancadas: cada coisa tem lugar, as ferramentas ficam à mão e nada está ali para enfeitar. O sistema segue a mesma ideia. A tela é calma e neutra; a cor só aparece para dizer **onde** está cada coisa (a faixa tingida de cada área) e **o que precisa de atenção** (prazo, horário, cliente problema). O resto é texto bem hierarquizado, números alinhados e controles que só mostram a borda quando a mão chega perto.
 
-O padrão foi estabelecido no novo modal de O.S. (`public/prototipos/novaos.html`, opção B) e confirmado nos pré-prontos (`public/prototipos/preprontos.html`). É o padrão de qualidade para toda tela nova ou refeita. A referência de acabamento é a de ferramentas como Linear e Notion — propriedades editáveis no lugar, atalhos de teclado, popovers em vez de modais —, traduzida para o vocabulário da gráfica.
+O padrão foi estabelecido no novo modal de O.S. (`public/prototipos/novaos.html`, opção B, em `/novaos`), confirmado nos pré-prontos (`public/prototipos/preprontos.html`, `/preprontos`) e na nova Produção (`public/prototipos/producao.html`, `/novaproducao`). É o padrão de qualidade para toda tela nova ou refeita — o objetivo é redesenhar o sistema inteiro nele.
+
+A versão navegável deste documento, com cada componente em prévia ao vivo nos dois temas, é o design system **Berlim Gráfica ERP**: https://claude.ai/artifact/XSDkYFRAtdfGi6XBwcMdBi (privado; compartilhe pelo menu da página). Os dois dizem a mesma coisa: ao mudar um, mude o outro. A referência de acabamento é a de ferramentas como Linear e Notion — propriedades editáveis no lugar, atalhos de teclado, popovers em vez de modais —, traduzida para o vocabulário da gráfica.
 
 É uma interface de trabalho (modo Operate): o balcão tem tela larga e tempo, o chão da produção tem um celular e uma mão livre. Toda tela nasce pensando nos dois.
 
@@ -185,6 +188,7 @@ Cada área de uma tela tem uma cor que aparece **só** na faixa do cabeçalho (f
 - Agrupar por categoria/etapa com cabeçalho de grupo leve (ícone + nome + contagem), não faixa colorida pesada.
 - Linhas densas (9–11px de padding vertical); a coluna que cresce é a do conteúdo, as de dado fixo têm a largura do que mostram.
 - Abaixo de 760px: uma coluna; colunas laterais viram blocos na ordem de uso; filtros viram faixa rolável na horizontal; a ação principal desce para uma barra fixa no rodapé com alvos de 44px; o que era hover vira sempre visível.
+- **A ação principal nunca some com a rolagem.** No computador, a faixa de filtros gruda logo abaixo do cabeçalho do sistema (`top: var(--altura-cabecalho)`) e, quando gruda, recebe o botão primário compacto; o cabeçalho da tabela gruda logo abaixo dela. No celular, quem garante é a barra do rodapé, e a faixa rola junto para não somar mais uma camada às barras do sistema. Nada de botão flutuante redondo no computador: ele cobre a coluna de ações das linhas.
 - Ritmo: 4 / 8 / 12 / 16 / 24px. Mais espaço acima de um título do que abaixo.
 
 ## Elevation & Depth
@@ -236,7 +240,39 @@ Linha com título em 600 + uma linha de resumo em tinta-suave; meta (prazo, pre�
 Popover em superfície, raio 9px, sombra Popover, entra com 160ms deslizando 4px; itens com hover Realce e ✓ no selecionado. Toast escuro centrado no rodapé, 2,2s, com ícone de ✓ verde.
 
 ### Dicas de teclado
-`kbd` de 10.5px com borda inferior de 2px, ao lado da ação ("Copiar texto `Enter`") e numa linha de dicas no rodapé da tela.
+`kbd` de 10.5px com borda inferior de 2px, ao lado da ação ("Copiar texto `Enter`") e numa linha de dicas no rodapé da tela. Atalhos do sistema: `/` busca · `↑` `↓` navega · `Enter` age · `Esc` fecha ou limpa · `N` novo (item, O.S., texto) · `P` pagamento · `Ctrl S` salva. Letra só vale fora de campo de texto.
+
+### Abas de filtro
+O recorte principal de uma lista vira abas com contagem (Todas, Atrasadas, Hoje…) sobre a linha que separa o cabeçalho da lista; um traço `brand` de 2px desliza até a aba ativa (.34s). A contagem da aba ativa fica em `tinta`; a de alerta (Atrasadas) fica em `perigo` mesmo inativa. Ações da lista (recolher todas) entram na ponta direita como ícone com dica. No celular a faixa rola na horizontal, vai sozinha até a aba ativa e esmaece as bordas quando há mais abas. Busca e o botão primário ficam no cabeçalho, à direita do título — nunca na mesma linha das abas, com uma exceção: no computador a faixa gruda no topo ao rolar e, presa, recebe o botão primário compacto (32px, com `kbd`) na ponta direita, no mesmo lugar onde estava o botão grande. Ele entra deslizando 10px e o ícone de recolher escorrega para abrir espaço. Trocar de aba com a faixa presa leva ao começo da lista nova, logo abaixo da faixa. A lista nova entra do lado da aba escolhida (24px e esmaecendo, .3s), na mesma direção em que o traço anda; cabeçalho, faixa e títulos das colunas ficam parados. Se a aba precisa buscar no banco, quem entra primeiro são as linhas de espera (ver **Espera**).
+
+### Lista agrupada
+Cabeçalho de grupo leve (seta, bolinha da etapa, nome, contagem e alerta "x atrasadas"), lista densa em `superficie` com borda. Abrir/fechar o grupo troca só uma classe (grid `1fr → 0fr`, .36s) sem redesenhar a lista; "Recolher todas" faz o mesmo em todos. Grupos recolhidos não são guardados entre visitas. Linha que muda de grupo desliza até o lugar novo (FLIP). Ordem dentro do grupo: prazo, depois horário limite.
+
+### Gaveta de detalhe
+Clicar numa linha abre a gaveta: no computador desliza da borda direita (até 460px, fundo `fundo`, `sombra-janela`, véu atrás); no celular sobe de baixo como folha (88% da altura). Entra sem pressa, desacelerando (.46s), e fecha — X, `Esc` ou clique no véu — pelo mesmo caminho, um pouco mais rápida e acelerando para fora (.3s). Ela vive fora da lista: mexer em algo dentro dela troca só o conteúdo, sem repetir a entrada, e abrir ou fechar não redesenha a lista (o que atrasaria o primeiro quadro da animação).
+
+O cabeçalho gruda no topo da gaveta ao rolar e traz o nº, a ação principal — **Abrir O.S. completa**, primário compacto com `Enter` — e o X; ganha uma linha embaixo só quando há conteúdo passando por ele. Depois vêm o nome em título de destaque, o aviso de cliente com pendência, Propriedades (com a data da venda), as Áreas do assunto e, no fim, as demais ações (Imprimir, Duplicar e Concluir ou Dar baixa).
+
+### Pessoas
+Bolinha de 24px com **duas letras** (nome simples: as duas primeiras, "Mu"; composto: inicial do primeiro e do último, "AL") na cor fixa de `corPorNome` — a mesma do chat e das etiquetas. Sobreposição de 3px; até três bolinhas e uma "+N" cinza. Como texto: "Ana", "Ana e Rafael", e a partir de três só "3 pessoas" (lista inteira no `title`). Nos protótipos as cores chegam por `lib/prototipos/coresDoNome.js`.
+
+### Selos de prazo e horário
+Prazo: "Atrasada · 28/08" (`perigo`), "Hoje" (`obs`), "Amanhã", "sex 24/10" (até 7 dias), "24/10", "Sem prazo". Horário limite só quando existe: "até 14:00" neutro, âmbar faltando 2h, vermelho depois que passa. Nas etapas de `STATUSES_SEM_ATRASO` (hoje só **Retirada**) o prazo vencido é neutro e não conta como atraso; Entrega conta.
+
+### Resumo de pagamento
+Um resumo só: total em número grande, barra do que já entrou (`fin`), "Recebido R$ x · Falta R$ y" (falta em `perigo`; "Quitado" ✓; "Pago a mais" em `obs-tinta`) e a lista de recebimentos. Cada valor aparece uma vez; o cabeçalho da área só mostra "Quitado".
+
+### Prévia do WhatsApp
+Texto que vai para o cliente aparece no balão do WhatsApp (cores e fonte do próprio WhatsApp, só ali). Clicar no balão vira campo com os asteriscos; ao sair, volta formatado com "editada". O ajuste vale só para a próxima cópia, com "Desfazer" e "Salvar no texto".
+
+### Confirmação e desfazer
+Ação que encerra pede o segundo clique no próprio botão ("Concluir?", "Clique de novo para excluir"). Ação reversível não pergunta: faz e mostra toast com "Desfazer" por 5s.
+
+### Espera (carregamento)
+Quando uma lista precisa buscar no banco (na tela de O.S., a primeira vez que se abre Baixadas, Canceladas ou Abandonadas; Abertas e À dar baixa já estão na memória), o lugar dela mostra **linhas de espera**: as mesmas colunas e a mesma caixa da lista, com barras em `borda` (a do título do grupo em `borda-forte`) que pulsam em onda de cima para baixo (1,4s, 90ms entre linhas). Quando as O.S. chegam, entram no lugar delas subindo 6px uma atrás da outra (22ms, só as dez primeiras), e nada pula porque as colunas já estavam certas. Só aparece se a busca passar de ~150ms e, aparecendo, fica pelo menos ~300ms, para não piscar. Voltar a uma aba já vista é na hora. O leitor de tela ouve "Carregando Baixadas…". Nada de rodinha girando no meio da tela.
+
+### Troca de tema
+O botão de lua/sol acende o tema a partir dele: o escuro se espalha em círculo saindo do botão até cobrir a tela (.6s, suave nas duas pontas) e, ao voltar ao claro, se recolhe para dentro do botão pelo mesmo caminho, um pouco mais rápido (.45s). O ícone troca junto com as cores. Feito com View Transitions (`lib/utils/trocarTema.js`); navegador sem suporte troca seco, e com movimento reduzido vira um esmaecer de .2s.
 
 ## Do's and Don'ts
 
@@ -247,6 +283,9 @@ Popover em superfície, raio 9px, sombra Popover, entra com 160ms deslizando 4px
 - **Do** testar toda tela em 390px e no tema escuro antes de dar por pronta.
 - **Do** usar números tabulares em datas, horas e valores.
 - **Do** mostrar o estado com selo pequeno e palavra ("até 14:00", "editada"), não só com cor.
+- **Do** usar a cor de cada pessoa e de cada local de `corPorNome`, nunca uma cor nova.
+- **Do** abrir o registro numa gaveta ou no lugar, sem tirar a pessoa da lista.
+- **Do** protótipo antes de código: tela nova nasce em `public/prototipos/` com dados reais injetados pela página da rota (nada no arquivo público), e só vai para o sistema depois de aprovada.
 
 ### Don't:
 - **Don't** pintar faixas inteiras de cor saturada (cabeçalhos de grupo, barras de título) — cor de área é tinta clara.
@@ -255,3 +294,6 @@ Popover em superfície, raio 9px, sombra Popover, entra com 160ms deslizando 4px
 - **Don't** colocar borda lateral colorida grossa em cartão, linha ou aviso.
 - **Don't** usar caixa alta espaçada em rótulos e títulos.
 - **Don't** criar cartões iguais em grade como estrutura de página quando uma lista densa resolve.
+- **Don't** misturar busca, chips e botões numa mesma faixa de ferramentas: busca no cabeçalho, filtros em abas.
+- **Don't** repetir o mesmo valor em vários lugares do mesmo bloco (ex.: "falta pagar" no cabeçalho, no resumo e na lista).
+- **Don't** deixar texto de propriedade vazar da coluna: corte com "…" e ponha o valor inteiro no `title`.

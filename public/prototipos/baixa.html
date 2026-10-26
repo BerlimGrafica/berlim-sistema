@@ -1,0 +1,1050 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nova tela de O.S.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<style>
+/* Padrão do DESIGN.md: o mesmo mundo do modal de O.S., dos pré-prontos e da nova Produção. */
+:root {
+  --brand: #F69F00; --brand-hover: #d98b00; --brand-tinta: #8A5400; --sobre-brand: #241600;
+  --fundo: #EDEFF0; --superficie: #ffffff; --sutil: #f9fafb; --realce: #f3f4f6;
+  --borda-fraca: #f0f1f3; --borda: #e5e7eb; --borda-forte: #d1d5db;
+  --tinta: #111827; --tinta-corpo: #374151; --tinta-suave: #6b7280; --tinta-fraca: #9ca3af;
+  --perigo: #dc2626; --perigo-fundo: #fef2f2; --perigo-borda: #fecaca;
+  --sucesso: #059669;
+  --sombra: 0 24px 56px -16px rgba(15,23,42,.32), 0 2px 8px rgba(15,23,42,.08);
+  --sombra-pop: 0 12px 28px -8px rgba(15,23,42,.24), 0 1px 3px rgba(15,23,42,.08);
+  --sombra-leve: 0 1px 2px rgba(15,23,42,.06);
+  --itens: #2563eb; --itens-tinta: #1d4ed8; --itens-fundo: #eff6ff; --itens-borda: #dbeafe;
+  --fin: #059669; --fin-tinta: #047857; --fin-fundo: #ecfdf5; --fin-borda: #c9f2df;
+  --obs: #d97706; --obs-tinta: #b45309; --obs-fundo: #fffbeb; --obs-borda: #fdecc4;
+  --veu: rgba(15,23,42,.36);
+}
+.dark {
+  --brand-tinta: #FFB938;
+  --fundo: #0d1117; --superficie: #161b22; --sutil: #1b2129; --realce: #21262d;
+  --borda-fraca: #232a33; --borda: #30363d; --borda-forte: #3d444d;
+  --tinta: #EDEDED; --tinta-corpo: #D4D4D8; --tinta-suave: #A1A1AA; --tinta-fraca: #71717a;
+  --perigo: #f87171; --perigo-fundo: rgba(239,68,68,.1); --perigo-borda: rgba(239,68,68,.3);
+  --sucesso: #34d399;
+  --sombra: 0 24px 56px -16px rgba(0,0,0,.7); --sombra-pop: 0 12px 28px -8px rgba(0,0,0,.6); --sombra-leve: 0 1px 2px rgba(0,0,0,.4);
+  --itens: #60a5fa; --itens-tinta: #93c5fd; --itens-fundo: rgba(59,130,246,.12); --itens-borda: rgba(59,130,246,.3);
+  --fin: #34d399; --fin-tinta: #6ee7b7; --fin-fundo: rgba(16,185,129,.11); --fin-borda: rgba(16,185,129,.28);
+  --obs: #fbbf24; --obs-tinta: #fcd34d; --obs-fundo: rgba(245,158,11,.1); --obs-borda: rgba(245,158,11,.26);
+  --veu: rgba(0,0,0,.6);
+}
+* { box-sizing: border-box; margin: 0; }
+html { color-scheme: light; } html.dark { color-scheme: dark; }
+body { font-family: Montserrat, system-ui, sans-serif; font-size: 13px; line-height: 1.5; color: var(--tinta-corpo); background: var(--fundo); -webkit-font-smoothing: antialiased; }
+button, input { font: inherit; color: inherit; }
+button { cursor: pointer; background: none; border: 0; padding: 0; text-align: inherit; }
+input { caret-color: var(--brand); }
+::selection { background: rgba(246,159,0,.3); }
+::placeholder { color: var(--tinta-suave); opacity: 1; }
+:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; border-radius: 4px; }
+* { scrollbar-width: thin; scrollbar-color: var(--borda-forte) transparent; }
+.ico { width: 16px; height: 16px; stroke-width: 2; flex-shrink: 0; }
+.ico-s { width: 14px; height: 14px; }
+.ico-xs { width: 12px; height: 12px; stroke-width: 2.5; }
+kbd { font: 600 10.5px/1 Montserrat, sans-serif; color: var(--tinta-suave); border: 1px solid var(--borda); border-bottom-width: 2px; border-radius: 4px; padding: 2px 5px; background: var(--superficie); }
+.dot { width: 8px; height: 8px; border-radius: 99px; display: inline-block; flex-shrink: 0; }
+mark { background: rgba(246,159,0,.3); color: inherit; border-radius: 2px; }
+
+/* moldura: a barra de cima faz o papel do cabeçalho do sistema (--altura-cabecalho
+   no app), e tudo que gruda ao rolar gruda logo abaixo dela */
+html { --altura-cabecalho: 51px; --altura-filtros: 42px; }
+.proto { position: sticky; top: 0; z-index: 40; height: 51px; display: flex; align-items: center; gap: 14px; padding: 0 20px; background: var(--superficie); border-bottom: 1px solid var(--borda); }
+.proto-nome { font-weight: 700; color: var(--tinta); white-space: nowrap; }
+.proto-nota { color: var(--tinta-suave); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.proto-dir { margin-left: auto; display: flex; gap: 2px; align-items: center; flex-shrink: 0; }
+.proto-bt { display: inline-flex; align-items: center; gap: 6px; color: var(--tinta-corpo); font-weight: 600; font-size: 12.5px; padding: 6px 10px; border-radius: 6px; white-space: nowrap; }
+.proto-bt:hover { background: var(--realce); color: var(--tinta); }
+.proto-bt .chev { color: var(--tinta-fraca); }
+.proto-bt .rot { color: var(--tinta-suave); font-weight: 500; }
+
+/* botões */
+.btn { height: 38px; padding: 0 16px; border-radius: 8px; font-weight: 600; font-size: 13px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; white-space: nowrap; transition: background .15s, border-color .15s, color .15s; }
+.btn-pri { background: var(--brand); color: var(--sobre-brand); }
+.btn-pri:hover { background: var(--brand-hover); }
+.btn-pri kbd { background: rgba(255,255,255,.35); border-color: rgba(36,22,0,.18); color: var(--sobre-brand); }
+.btn-sec { border: 1px solid var(--borda-forte); color: var(--tinta); background: var(--superficie); }
+.btn-sec:hover { background: var(--sutil); border-color: var(--tinta-fraca); }
+.btn-txt { color: var(--tinta-suave); padding: 0 10px; }
+.btn-txt:hover { color: var(--tinta); background: var(--realce); }
+.btn-p { height: 32px; padding: 0 12px; font-size: 12.5px; border-radius: 7px; }
+.btn-ok { background: var(--fin); color: #fff; } .btn-ok:hover { filter: brightness(.95); } .dark .btn-ok { color: #04140d; }
+.btn-ok.conf { background: var(--perigo); color: #fff; }
+.ib { width: 30px; height: 30px; display: inline-grid; place-items: center; border-radius: 7px; color: var(--tinta-suave); transition: background .12s, color .12s, opacity .12s; flex-shrink: 0; }
+.ib:hover { background: var(--realce); color: var(--tinta); }
+
+/* topo da tela */
+.pg { max-width: 1360px; margin: 0 auto; padding: 22px 28px 80px; }
+.cab { display: flex; align-items: center; gap: 16px; margin-bottom: 10px; }
+.cab h1 { font-size: 22px; font-weight: 800; color: var(--tinta); letter-spacing: -.02em; line-height: 1.2; }
+.cab p { color: var(--tinta-suave); font-size: 12.5px; margin-top: 3px; }
+.cab .acoes { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+.cab .busca { width: 320px; height: 38px; flex: none; }
+.cab .busca input { height: 36px; }
+.busca { position: relative; display: flex; align-items: center; gap: 10px; background: var(--superficie); border: 1px solid var(--borda); border-radius: 8px; padding: 0 10px 0 12px; height: 42px; transition: border-color .15s, box-shadow .15s; }
+.busca:focus-within { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(246,159,0,.16); }
+.busca .ico { color: var(--tinta-suave); }
+.busca input { flex: 1; min-width: 0; border: 0; outline: none; background: transparent; height: 40px; color: var(--tinta); }
+.busca .limpar { width: 24px; height: 24px; display: grid; place-items: center; border-radius: 5px; color: var(--tinta-suave); }
+.busca .limpar:hover { background: var(--realce); color: var(--tinta); }
+
+/* faixa de filtros: as abas por situação, sobre a linha que separa o cabeçalho
+   da lista. Ao rolar ela gruda no topo e vira a barra da tela; presa, recebe o
+   "Nova O.S." compacto na ponta direita (regra do DESIGN.md). */
+.faixa { display: flex; align-items: flex-end; gap: 8px; border-bottom: 1px solid var(--borda); margin-bottom: 4px; height: var(--altura-filtros); background: var(--fundo); }
+@media (min-width: 761px) {
+  html { scroll-padding-top: calc(var(--altura-cabecalho) + var(--altura-filtros) + 48px); }
+  .faixa { position: sticky; top: var(--altura-cabecalho); z-index: 6; }
+  .pg:has(.faixa.preso) .tab-cab { box-shadow: 0 1px 0 var(--borda); }
+  .preso .nova-presa { display: inline-flex; }
+}
+.nova-presa { display: none; margin-left: 4px; }
+.abas { position: relative; display: flex; gap: 2px; flex: 1; min-width: 0; overflow-x: auto; scrollbar-width: none; margin-bottom: -1px; }
+.abas::-webkit-scrollbar { display: none; }
+/* quando há aba escondida para o lado, a borda esmaece em vez de cortar seco */
+.corta-esq { -webkit-mask-image: linear-gradient(to right, transparent, #000 28px); mask-image: linear-gradient(to right, transparent, #000 28px); }
+.corta-dir { -webkit-mask-image: linear-gradient(to left, transparent, #000 28px); mask-image: linear-gradient(to left, transparent, #000 28px); }
+.corta-esq.corta-dir { -webkit-mask-image: linear-gradient(to right, transparent, #000 28px, #000 calc(100% - 28px), transparent); mask-image: linear-gradient(to right, transparent, #000 28px, #000 calc(100% - 28px), transparent); }
+.aba { display: inline-flex; align-items: center; gap: 7px; height: var(--altura-filtros); padding: 0 8px 2px; font-weight: 600; font-size: 13px; color: var(--tinta-suave); white-space: nowrap; border-radius: 6px 6px 0 0; transition: color .15s; }
+.aba:hover { color: var(--tinta-corpo); }
+.aba[aria-selected="true"] { color: var(--tinta); }
+.aba .n { min-width: 20px; height: 18px; padding: 0 6px; border-radius: 99px; display: inline-grid; place-items: center; background: var(--realce); color: var(--tinta-suave); font-size: 11px; font-weight: 700; font-variant-numeric: tabular-nums; transition: background .15s, color .15s; }
+.aba[aria-selected="true"] .n { background: var(--tinta); color: var(--superficie); }
+.indicador { position: absolute; left: 0; bottom: 0; width: 0; height: 2px; border-radius: 2px 2px 0 0; background: var(--brand); transition: left .34s cubic-bezier(.16,1,.3,1), width .34s cubic-bezier(.16,1,.3,1); pointer-events: none; }
+.abas-fim { flex-shrink: 0; display: flex; align-items: center; gap: 2px; padding-bottom: 5px; }
+.ib.todos[aria-pressed="true"] { color: var(--brand-tinta); }
+/* período: um valor de propriedade, como o prazo da Produção — abre popover */
+.per { display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 9px; border-radius: 7px; font-weight: 600; font-size: 12.5px; color: var(--tinta-suave); white-space: nowrap; transition: background .12s, color .12s; }
+.per:hover { background: var(--realce); color: var(--tinta); }
+.per .chev { color: var(--tinta-fraca); }
+.per.ativo { color: var(--tinta); background: var(--superficie); box-shadow: inset 0 0 0 1px var(--borda-forte); }
+.per.ativo .ico:first-child { color: var(--brand-tinta); }
+
+/* ============ lista ============ */
+.pg { --cols: 64px minmax(220px,2fr) minmax(150px,1fr) 76px 150px 112px; }
+.pg.com-criado { --cols: 64px minmax(220px,2fr) minmax(150px,1fr) 76px 150px 140px 112px; }
+.tab-cab, .lin { display: grid; grid-template-columns: var(--cols); align-items: center; gap: 14px; }
+.tab-cab { padding: 8px 12px; font-size: 11.5px; font-weight: 600; color: var(--tinta-suave); position: sticky; top: calc(var(--altura-cabecalho) + var(--altura-filtros)); z-index: 5; background: var(--fundo); }
+.tab-cab .dir { text-align: right; }
+.ord { display: inline-flex; align-items: center; gap: 4px; font-weight: 600; border-radius: 4px; }
+.ord:hover { color: var(--tinta); }
+.ord .ico { width: 13px; height: 13px; transition: transform .2s cubic-bezier(.16,1,.3,1); }
+.ord.asc .ico { transform: rotate(180deg); }
+.grp { display: flex; align-items: center; gap: 9px; padding: 18px 4px 8px; }
+.grp-btn { display: inline-flex; align-items: center; gap: 9px; font-size: 13.5px; font-weight: 700; color: var(--tinta); border-radius: 6px; padding: 2px 4px 2px 2px; white-space: nowrap; flex-shrink: 0; }
+.grp-btn .chev { color: var(--tinta-fraca); transition: transform .2s cubic-bezier(.16,1,.3,1); }
+.grp.fechado .chev { transform: rotate(-90deg); }
+.grp .n { color: var(--tinta-fraca); font-weight: 500; font-variant-numeric: tabular-nums; }
+/* abrir/fechar o grupo: a lista encolhe até zero (grid 1fr → 0fr) e some junto */
+.grp-corpo { display: grid; grid-template-rows: 1fr; transition: grid-template-rows .36s cubic-bezier(.16,1,.3,1), opacity .26s ease, transform .36s cubic-bezier(.16,1,.3,1); }
+.grp-corpo.fechado { grid-template-rows: 0fr; opacity: 0; transform: translateY(-4px); }
+.grp-dentro { overflow: hidden; min-height: 0; }
+.grp-corpo.fechado .grp-dentro { visibility: hidden; transition: visibility 0s .36s; }
+.lista { background: var(--superficie); border: 1px solid var(--borda); border-radius: 10px; overflow: hidden; }
+.lin { padding: 9px 12px; border-top: 1px solid var(--borda-fraca); min-height: 56px; cursor: pointer; transition: background .1s; }
+.lista > .lin:first-child { border-top: 0; }
+.lin:hover { background: var(--sutil); }
+.lin.sel { background: var(--realce); }
+.lin.travada { cursor: not-allowed; }
+.lin.travada > div { opacity: .5; }
+.c-id { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.oid { color: var(--tinta-fraca); font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.trava { color: var(--perigo); width: 13px; height: 13px; }
+.c-cli { min-width: 0; }
+.cli-l { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.cli { display: flex; align-items: center; gap: 6px; min-width: 0; font-weight: 700; color: var(--tinta); }
+.cli .nome { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cli.prob { color: var(--perigo); }
+.cli .ico { color: var(--perigo); }
+.res { color: var(--tinta-suave); font-size: 12.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 1px; }
+.oid-in, .dt-in { display: none; }
+.c-sit { min-width: 0; }
+.sit { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; font-size: 12.5px; color: var(--tinta); white-space: nowrap; min-width: 0; max-width: 100%; }
+.sit > span:last-child { overflow: hidden; text-overflow: ellipsis; }
+.sit-sub { display: block; font-size: 11.5px; color: var(--tinta-suave); font-weight: 500; margin-top: 1px; padding-left: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dt { font-variant-numeric: tabular-nums; color: var(--tinta-corpo); font-size: 12.5px; font-weight: 600; white-space: nowrap; }
+.c-val { text-align: right; min-width: 0; }
+.c-val b { display: block; font-weight: 700; color: var(--tinta); font-variant-numeric: tabular-nums; font-size: 13px; white-space: nowrap; }
+.pg-est { display: inline-flex; align-items: center; gap: 4px; font-size: 11.5px; font-weight: 600; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.pg-est.ok { color: var(--sucesso); } .pg-est.falta { color: var(--perigo); } .pg-est.mais { color: var(--obs-tinta); } .pg-est.zero { color: var(--tinta-fraca); }
+.pessoa { display: inline-flex; align-items: center; gap: 7px; font-size: 12.5px; font-weight: 600; color: var(--tinta-corpo); min-width: 0; max-width: 100%; }
+.pessoa > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.av { width: 24px; height: 24px; border-radius: 99px; display: grid; place-items: center; font: 700 10px/1 Montserrat, sans-serif; letter-spacing: -.02em; font-style: normal; flex-shrink: 0; }
+.nada { color: var(--tinta-fraca); }
+/* ações da linha: aparecem no hover (sempre visíveis no toque) */
+.c-ac { display: flex; justify-content: flex-end; align-items: center; gap: 2px; }
+.c-ac .ib { opacity: 0; }
+.lin:hover .c-ac .ib, .lin.sel .c-ac .ib, .c-ac .ib:focus-visible, .c-ac .ib.conf { opacity: 1; }
+.c-ac:has(.conf) .ib:not(.conf) { display: none; }
+.ib.baixar { color: var(--fin); }
+.ib.baixar:hover { background: var(--fin-fundo); }
+.ib.baixar.bloq { color: var(--tinta-fraca); }
+.ib.baixar.conf { width: auto; padding: 0 10px; background: var(--fin); color: #fff; font-size: 12px; font-weight: 700; }
+.dark .ib.baixar.conf { color: #04140d; }
+.rodape { display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 14px; color: var(--tinta-suave); font-size: 12.5px; font-variant-numeric: tabular-nums; }
+.vazio { padding: 48px 16px; text-align: center; color: var(--tinta-suave); display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.vazio b { color: var(--tinta); font-size: 14px; }
+.vazio-outras { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.dicas { margin-top: 16px; color: var(--tinta-fraca); font-size: 12px; display: flex; gap: 14px; flex-wrap: wrap; }
+.dicas span { display: inline-flex; gap: 5px; align-items: center; }
+/* espera: na primeira vez que uma aba busca no banco, linhas no formato da
+   lista pulsam em onda, de cima para baixo, até as O.S. chegarem */
+.lin.esq-lin { cursor: default; }
+.lin.esq-lin:hover { background: none; }
+.esq { display: block; height: 10px; border-radius: 5px; background: var(--borda); animation: espera 1.4s ease-in-out infinite; animation-delay: calc(var(--i, 0) * 90ms); }
+.esq.forte { height: 12px; }
+.grp .esq { background: var(--borda-forte); }
+.esq + .esq { margin-top: 7px; }
+.c-val .esq { margin-left: auto; }
+@keyframes espera { 50% { opacity: .4; } }
+.so-leitor { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+/* ============ detalhe (gaveta no computador, folha no celular) ============ */
+/* cabeçalho: nº, a ação principal (abrir a O.S. inteira) e o fechar. Gruda no
+   topo da gaveta ao rolar, então o botão fica sempre à mão. */
+.det-cab { display: flex; align-items: center; gap: 8px; color: var(--tinta-suave); font-size: 12.5px; }
+.det-cab .oid { font-size: 13px; }
+.det-abrir { margin-left: auto; }
+.gaveta .det-cab { position: sticky; top: 0; z-index: 2; margin: -18px -22px 0; padding: 12px 22px; background: var(--fundo); transition: box-shadow .2s; }
+.gaveta.rolou .det-cab { box-shadow: 0 1px 0 var(--borda); }
+.det-cli { display: flex; align-items: center; gap: 8px; font-size: 22px; font-weight: 800; letter-spacing: -.02em; color: var(--tinta); line-height: 1.25; margin-top: 4px; }
+.det-cli.prob { color: var(--perigo); }
+.det-aviso { display: flex; gap: 8px; align-items: center; margin-top: 8px; padding: 8px 10px; border-radius: 8px; background: var(--perigo-fundo); border: 1px solid var(--perigo-borda); color: var(--perigo); font-size: 12.5px; font-weight: 600; }
+.props { display: grid; grid-template-columns: 104px minmax(0,1fr); align-items: center; row-gap: 8px; margin-top: 16px; }
+.props dt { font-size: 12.5px; color: var(--tinta-suave); display: flex; gap: 7px; align-items: center; }
+.props dd { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; min-width: 0; font-weight: 600; color: var(--tinta); min-height: 26px; }
+.props .sit-sub { display: inline; padding: 0; font-size: 12px; }
+.hr { display: inline-flex; align-items: center; gap: 4px; padding: 1px 7px; border-radius: 5px; font-size: 11.5px; font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; border: 1px solid var(--borda-forte); color: var(--tinta-corpo); background: var(--superficie); }
+.hr .ico { width: 12px; height: 12px; }
+.locs { display: flex; flex-wrap: wrap; gap: 4px 10px; }
+.loc { display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; font-weight: 600; color: var(--tinta-corpo); white-space: nowrap; }
+.loc::before { content: ""; width: 6px; height: 6px; border-radius: 99px; background: var(--c); }
+.area { border: 1px solid var(--a-borda); border-radius: 10px; background: var(--superficie); margin-top: 16px; overflow: hidden; }
+.area.itens { --a: var(--itens); --a-tinta: var(--itens-tinta); --a-fundo: var(--itens-fundo); --a-borda: var(--itens-borda); }
+.area.fin { --a: var(--fin); --a-tinta: var(--fin-tinta); --a-fundo: var(--fin-fundo); --a-borda: var(--fin-borda); }
+.area-cab { display: flex; align-items: center; gap: 10px; padding: 8px 12px 8px 10px; background: var(--a-fundo); border-bottom: 1px solid var(--a-borda); }
+.area-ico { width: 26px; height: 26px; border-radius: 7px; display: grid; place-items: center; background: var(--superficie); color: var(--a); box-shadow: 0 1px 2px rgba(15,23,42,.08); }
+.area-cab h3 { font-size: 13px; font-weight: 700; color: var(--tinta); }
+.area-meta { margin-left: auto; font-size: 12px; font-weight: 600; color: var(--a-tinta); display: inline-flex; gap: 4px; align-items: center; }
+.itl { display: flex; gap: 12px; padding: 9px 12px; border-top: 1px solid var(--borda-fraca); }
+.itl:first-of-type { border-top: 0; }
+.itl .nm { font-weight: 600; color: var(--tinta); }
+.itl .ds { display: block; font-size: 12px; color: var(--tinta-suave); white-space: pre-wrap; margin-top: 1px; }
+.itl .vl { margin-left: auto; font-weight: 600; color: var(--tinta-corpo); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.sem-itens { padding: 10px 12px; color: var(--tinta-suave); }
+.fin-tot { padding: 12px 12px 0; font-size: 22px; font-weight: 800; color: var(--tinta); letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.fin-barra { height: 6px; margin: 8px 12px 8px; border-radius: 99px; background: var(--realce); overflow: hidden; }
+.fin-barra i { display: block; height: 100%; background: var(--fin); border-radius: 99px; }
+.fin-resumo { display: flex; gap: 6px; padding: 0 12px 12px; font-size: 12.5px; color: var(--tinta-suave); flex-wrap: wrap; font-variant-numeric: tabular-nums; }
+.fin-resumo b { color: var(--tinta); font-weight: 700; }
+.fin-resumo .falta, .fin-resumo .falta b { color: var(--perigo); }
+.fin-resumo .mais, .fin-resumo .mais b { color: var(--obs-tinta); }
+.recs { border-top: 1px solid var(--borda-fraca); }
+.recs-rot { font-size: 11.5px; font-weight: 600; color: var(--tinta-suave); padding: 8px 12px 2px; }
+.rec { display: flex; justify-content: space-between; gap: 10px; padding: 6px 12px; font-size: 12.5px; }
+.rec:last-child { padding-bottom: 10px; }
+.rec .f { font-weight: 600; color: var(--tinta); }
+.rec .d { color: var(--tinta-suave); margin-left: 8px; font-variant-numeric: tabular-nums; }
+.rec .v { font-weight: 700; font-variant-numeric: tabular-nums; color: var(--tinta); }
+.rec .v.neg { color: var(--perigo); }
+.det-acoes { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 18px; align-items: center; }
+.det-acoes .esp { flex: 1; }
+.det-nota { display: flex; gap: 7px; align-items: center; margin-top: 10px; font-size: 12px; color: var(--tinta-suave); }
+
+/* A gaveta desliza da borda, sem pressa e desacelerando; ao fechar volta pelo
+   mesmo caminho, um pouco mais rápida e acelerando para fora. */
+.gaveta-veu { position: fixed; inset: var(--altura-cabecalho) 0 0 0; background: var(--veu); z-index: 60; animation: veuEntra .4s ease-out; }
+.gaveta { position: fixed; top: var(--altura-cabecalho); right: 0; bottom: 0; width: min(460px, 100%); background: var(--fundo); border-left: 1px solid var(--borda); box-shadow: var(--sombra); z-index: 61; overflow-y: auto; animation: gavetaEntra .46s cubic-bezier(.22,1,.36,1); }
+.gaveta-veu.sai { animation: veuSai .3s ease-in forwards; pointer-events: none; }
+.gaveta.sai { animation: gavetaSai .3s cubic-bezier(.55,0,1,.45) forwards; pointer-events: none; }
+.gaveta .det { padding: 18px 22px 40px; }
+@keyframes gavetaEntra { from { transform: translateX(100%); } }
+@keyframes gavetaSai { to { transform: translateX(100%); } }
+@keyframes veuEntra { from { opacity: 0; } }
+@keyframes veuSai { to { opacity: 0; } }
+
+/* popover, menu e toast */
+.pop { position: fixed; z-index: 90; min-width: 210px; max-width: calc(100vw - 16px); max-height: min(460px, calc(100vh - 16px)); overflow-y: auto; padding: 4px; background: var(--superficie); border: 1px solid var(--borda); border-radius: 9px; box-shadow: var(--sombra-pop); animation: pop .16s cubic-bezier(.16,1,.3,1); }
+@keyframes pop { from { opacity: 0; transform: translateY(-4px); } }
+.pop button { display: flex; align-items: center; gap: 9px; width: 100%; text-align: left; padding: 7px 10px; border-radius: 6px; font-size: 13px; color: var(--tinta-corpo); white-space: nowrap; }
+.pop button:hover, .pop button:focus-visible { background: var(--realce); color: var(--tinta); outline: none; }
+.pop .ok { margin-left: auto; color: var(--brand-tinta); }
+.pop .sub { margin-left: auto; color: var(--tinta-suave); font-size: 12px; font-variant-numeric: tabular-nums; }
+.pop .sub + .ok { margin-left: 0; }
+.pop hr { border: 0; border-top: 1px solid var(--borda-fraca); margin: 4px 0; }
+.pop .rot { font-size: 11px; font-weight: 600; color: var(--tinta-suave); padding: 6px 10px 2px; }
+/* período: atalhos à esquerda, calendário de intervalo à direita (o mesmo
+   "estilo booking" do CustomDateRangePicker de hoje: início, fim e a faixa entre
+   os dois; o título do mês abre meses, e o do ano abre anos) */
+.per-pop { display: flex; gap: 4px; --faixa: color-mix(in srgb, var(--brand) 15%, transparent); --faixa-previa: color-mix(in srgb, var(--brand) 8%, transparent); }
+.atalhos { display: flex; flex-direction: column; gap: 1px; min-width: 156px; padding-right: 4px; border-right: 1px solid var(--borda-fraca); }
+.cal { width: 268px; padding: 4px 6px 2px 8px; }
+.pop .cal button { width: auto; padding: 0; gap: 0; justify-content: center; border-radius: 6px; font-size: 12.5px; color: var(--tinta-corpo); }
+.pop .cal button:hover { background: var(--realce); color: var(--tinta); }
+.cal-cab { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px; }
+.pop .cal .cal-nav { width: 30px; height: 30px; display: grid; place-items: center; color: var(--tinta-suave); }
+.pop .cal .cal-tit { height: 30px; padding: 0 10px; font-weight: 700; font-size: 13px; color: var(--tinta); }
+.cal-sem, .cal-dias { display: grid; grid-template-columns: repeat(7, 1fr); }
+.cal-sem span { height: 26px; display: grid; place-items: center; font-size: 11px; font-weight: 600; color: var(--tinta-fraca); }
+.cal-dias { row-gap: 2px; }
+.pop .cal .d { position: relative; height: 34px; display: grid; place-items: center; border-radius: 0; }
+.pop .cal .d:hover { background: none; }
+.d b { position: relative; z-index: 1; width: 32px; height: 32px; display: grid; place-items: center; border-radius: 8px; font-weight: 500; font-variant-numeric: tabular-nums; transition: background .1s, color .1s; }
+.pop .cal .d:hover b { background: var(--realce); color: var(--tinta); }
+.d.hoje b { font-weight: 700; color: var(--brand-tinta); box-shadow: inset 0 0 0 1px var(--borda-forte); }
+/* a faixa corre por trás dos dias, de meio em meio dia nas pontas */
+.d::before { position: absolute; top: 1px; bottom: 1px; left: 0; right: 0; background: var(--faixa); }
+.d.meio::before, .d.com-fim::before, .d.fim::before { content: ""; }
+.d.com-fim::before { left: 50%; }
+.d.fim::before { right: 50%; }
+.d.ini.fim::before { content: none; }
+.cal-dias > :nth-child(7n+1).meio::before { left: 2px; border-radius: 8px 0 0 8px; }
+.cal-dias > :nth-child(7n).meio::before { right: 2px; border-radius: 0 8px 8px 0; }
+.cal-dias > :nth-child(7n).com-fim::before, .cal-dias > :nth-child(7n+1).fim::before { content: none; }
+.cal-dias.previa .d::before { background: var(--faixa-previa); }
+.d.meio b { color: var(--brand-tinta); }
+.pop .cal .d.meio:hover b { background: var(--faixa); }
+.d.ini b, .d.fim b, .pop .cal .d.ini:hover b, .pop .cal .d.fim:hover b { background: var(--brand); color: var(--sobre-brand); font-weight: 700; box-shadow: none; }
+.cal-grade { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; padding: 6px 0 4px; }
+.pop .cal .cal-op { height: 40px; font-weight: 600; text-transform: capitalize; }
+.pop .cal .cal-op.on, .pop .cal .cal-op.on:hover { background: var(--brand); color: var(--sobre-brand); }
+.cal-pe { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 36px; margin-top: 6px; padding: 6px 2px 0; border-top: 1px solid var(--borda-fraca); font-size: 12px; color: var(--tinta-suave); font-variant-numeric: tabular-nums; }
+.cal-pe b { color: var(--tinta); font-weight: 700; }
+.pop .cal .cal-limpar { padding: 4px 8px; font-weight: 600; color: var(--tinta-suave); }
+@media (max-width: 520px) {
+  .per-pop { flex-direction: column; }
+  .atalhos { flex-direction: row; flex-wrap: wrap; gap: 4px; min-width: 0; padding: 4px 4px 8px; border-right: 0; border-bottom: 1px solid var(--borda-fraca); }
+  .pop .atalhos button { width: auto; padding: 5px 10px; border: 1px solid var(--borda); border-radius: 99px; font-size: 12px; }
+  .pop .atalhos .ok { display: none; }
+  .pop .atalhos button.on { background: var(--tinta); border-color: var(--tinta); color: var(--superficie); }
+  .cal { width: 100%; padding: 6px 4px 2px; }
+}
+.toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); z-index: 95; background: var(--tinta); color: var(--superficie); padding: 8px 8px 8px 14px; border-radius: 9px; font-weight: 600; font-size: 12.5px; box-shadow: var(--sombra-pop); display: flex; gap: 10px; align-items: center; animation: sobe .22s cubic-bezier(.16,1,.3,1); max-width: calc(100vw - 32px); }
+.toast .ico { color: #34d399; }
+.toast button { color: var(--brand); font-weight: 700; padding: 4px 8px; border-radius: 6px; }
+.toast button:hover { background: rgba(127,127,127,.18); }
+.toast:not(:has(button)) { padding-right: 14px; }
+@keyframes sobe { from { opacity: 0; transform: translate(-50%, 8px); } }
+.barra-mob { display: none; }
+/* troca de tema: a camada escura fica por cima e só o recorte dela anima (trocarTema) */
+html[data-troca-tema]::view-transition-old(root), html[data-troca-tema]::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
+html[data-troca-tema].dark::view-transition-new(root), html[data-troca-tema]:not(.dark)::view-transition-old(root) { z-index: 1; }
+html[data-troca-tema] *, html[data-troca-tema] *::before, html[data-troca-tema] *::after { transition: none !important; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+
+/* ============ responsivo ============ */
+@media (max-width: 1180px) {
+  .pg.com-criado { --cols: 64px minmax(200px,2fr) minmax(140px,1fr) 76px 140px 112px; }
+  .pg.com-criado .c-criado { display: none; }
+}
+@media (max-width: 960px), (hover: none) {
+  .c-ac .ib { opacity: 1; }
+}
+@media (max-width: 960px) {
+  .tab-cab { display: none; }
+  .lin, .pg.com-criado .lin { grid-template-columns: minmax(0,1fr) auto; grid-template-areas: "cli val" "sit ac"; gap: 4px 12px; padding: 11px 12px; }
+  .lin .c-id, .lin .c-dt, .lin .c-criado { display: none; }
+  .lin .c-cli { grid-area: cli; } .lin .c-val { grid-area: val; } .lin .c-ac { grid-area: ac; }
+  .lin .c-sit { grid-area: sit; display: flex; align-items: center; gap: 8px; }
+  .lin .sit-sub { display: none; }
+  .oid-in { display: inline; color: var(--tinta-fraca); font-weight: 600; font-size: 12px; font-variant-numeric: tabular-nums; flex-shrink: 0; }
+  .dt-in { display: inline; color: var(--tinta-suave); font-size: 12px; font-weight: 500; font-variant-numeric: tabular-nums; white-space: nowrap; }
+}
+@media (max-width: 760px) {
+  .proto { padding: 0 10px; gap: 8px; }
+  .proto-nome, .proto-nota, .proto-bt .rot, .proto-bt .txt { display: none; }
+  .pg { padding: 14px 12px 96px; }
+  .cab { flex-direction: column; align-items: stretch; gap: 12px; }
+  .cab .acoes { margin-left: 0; }
+  .cab .acoes .btn-pri { display: none; }
+  .cab .acoes:not(:has(.busca)) { display: none; }
+  .cab .busca { width: auto; flex: 1; height: 42px; }
+  .faixa { margin: 0 -12px 4px; padding-left: 4px; }
+  .abas-fim { padding-right: 8px; }
+  .dicas { display: none; }
+  .barra-mob { display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; gap: 8px; padding: 10px 12px calc(10px + env(safe-area-inset-bottom)); background: var(--superficie); border-top: 1px solid var(--borda); }
+  .barra-mob .btn { height: 44px; }
+  .barra-mob .btn-pri { flex: 1; }
+  .abas-fim .per:not(.ativo) span { display: none; }
+  .toast { bottom: calc(76px + env(safe-area-inset-bottom)); }
+  .gaveta { top: auto; height: 88dvh; width: 100%; border-left: 0; border-radius: 14px 14px 0 0; animation-name: folhaEntra; }
+  .gaveta.sai { animation-name: folhaSai; }
+  .gaveta .det { padding: 14px 14px 40px; }
+  .gaveta .det-cab { margin: -14px -14px 0; padding: 10px 14px; }
+  .det-abrir kbd { display: none; }
+  .props { grid-template-columns: 92px minmax(0,1fr); }
+}
+@keyframes folhaEntra { from { transform: translateY(100%); } }
+@keyframes folhaSai { to { transform: translateY(100%); } }
+</style>
+</head>
+<body>
+<div class="proto">
+  <span class="proto-nome">Nova tela de O.S. · protótipo</span>
+  <span class="proto-nota">Dados reais, só leitura</span>
+  <div class="proto-dir">
+    <button class="proto-bt" id="cargo" title="Simular a tela de outro cargo"></button>
+    <button class="proto-bt" id="tema"></button>
+  </div>
+</div>
+<div id="tela"></div>
+<div id="gaveta-raiz"></div>
+
+<script>
+/* ===== O.S. reais (injetadas pela página /novabaixa) ===== */
+/*BAIXA*/
+
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const ico = (n, cls = 'ico') => `<i data-lucide="${n}" class="${cls}"></i>`;
+const semAcento = s => (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+const brl = c => 'R$ ' + (c / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const fmtN = n => Number(n || 0).toLocaleString('pt-BR');
+const guardar = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} };
+const ler = (k, d) => { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch { return d; } };
+
+const D = typeof DADOS !== 'undefined' ? DADOS : { abas: {}, cores: {}, nivel: '', eu: '' };
+// As cinco situações da tela atual, com a legenda que explica cada uma para quem
+// chega agora (o nome "À dar baixa" não diz sozinho o que falta acontecer).
+const ABAS = [
+  { id: 'abertas', nome: 'Abertas', leg: 'Em andamento, da arte à entrega', cor: '#64748b' },
+  { id: 'concluidas', nome: 'À dar baixa', leg: 'Serviço concluído, esperando a baixa do financeiro', cor: '#f97316' },
+  { id: 'finalizadas', nome: 'Baixadas', leg: 'Encerradas pelo financeiro', cor: '#6366f1' },
+  { id: 'canceladas', nome: 'Canceladas', leg: 'Canceladas nos últimos 15 dias', cor: '#ef4444' },
+  { id: 'abandonadas', nome: 'Abandonadas', leg: 'Mais de 31 dias esperando retirada', cor: '#ca8a04' },
+];
+const abaDoStatus = s => s === 'Concluído' ? 'concluidas' : s === 'Finalizado' ? 'finalizadas' : s === 'Cancelado' ? 'canceladas' : s === 'Abandonado' ? 'abandonadas' : 'abertas';
+let PED = ABAS.flatMap(a => (D.abas[a.id]?.pedidos || []).map(p => ({ ...p })));
+// Total de cada aba no banco; o protótipo traz só as primeiras de cada uma.
+const TOT = Object.fromEntries(ABAS.map(a => [a.id, D.abas[a.id]?.total ?? 0]));
+const COR = { 'Aguardando Pagamento': '#10b981', 'Aguardando Retorno': '#84cc16', 'Desenvolvimento de Arte': '#06b6d4', 'Etiqueta Escolar': '#2563eb', 'Produzir': '#a855f7', 'Produção': '#6b7280', 'Avisar Cliente': '#ec4899', 'Retirada': '#0ea5e9', 'Entrega': '#14b8a6', 'Concluído': '#f97316', 'Finalizado': '#6366f1', 'Cancelado': '#ef4444', 'Abandonado': '#ca8a04' };
+const PALETA = ['#db2777', '#2563eb', '#059669', '#ea580c', '#7c3aed', '#0891b2', '#ca8a04', '#dc2626'];
+const hash = s => { let h = 0; for (const c of s) h = (h * 31 + c.charCodeAt(0)) >>> 0; return h; };
+// Cores de pessoa e de local: as mesmas da tela atual (corPorNome), mandadas pela página.
+const corPessoa = n => D.cores?.[n]?.[0] || PALETA[hash(n) % PALETA.length];
+const tintaPessoa = n => D.cores?.[n]?.[1] || '#fff';
+const iniciais = n => { const p = n.trim().split(/\s+/); return p.length > 1 ? (p[0][0] + p.at(-1)[0]).toUpperCase() : p[0].slice(0, 1).toUpperCase() + p[0].slice(1, 2).toLowerCase(); };
+const porId = id => PED.find(p => p.id === +id);
+
+/* ===== cargo: quem dá baixa e quem vê o criador ===== */
+const CARGOS = [['admin', 'Administrador'], ['financeiro', 'Financeiro'], ['operador', 'Atendimento ou Produção']];
+const podeBaixar = () => est.cargo !== 'operador';
+const veCriador = () => est.cargo === 'admin';
+// Regra atual: O.S. baixada fica trancada para Atendimento e Produção.
+const travada = p => est.cargo === 'operador' && p.status === 'Finalizado';
+
+/* ===== datas ===== */
+const dataISO = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+const HOJE = dataISO(new Date());
+const somaDias = (iso, n) => { const d = new Date(iso + 'T12:00:00'); d.setDate(d.getDate() + n); return dataISO(d); };
+const dias = iso => Math.round((new Date(iso + 'T12:00:00') - new Date(HOJE + 'T12:00:00')) / 86400000);
+const MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+const ehData = iso => /^\d{4}-\d{2}-\d{2}/.test(iso || '');
+const ddmm = iso => ehData(iso) ? iso.slice(8, 10) + '/' + iso.slice(5, 7) : '';
+const dataCurta = iso => !ehData(iso) ? '—' : iso.slice(0, 4) === HOJE.slice(0, 4) ? ddmm(iso) : ddmm(iso) + '/' + iso.slice(2, 4);
+const dataLonga = iso => ehData(iso) ? `${iso.slice(8, 10)}/${iso.slice(5, 7)}/${iso.slice(0, 4)}` : '';
+const nomeMes = k => { if (!k) return 'Sem data de venda'; const [a, m] = k.split('-'); const n = MESES[+m - 1]; return n[0].toUpperCase() + n.slice(1) + (a === HOJE.slice(0, 4) ? '' : ` de ${a}`); };
+const haQuanto = iso => { if (!ehData(iso)) return ''; const d = -dias(iso); return d <= 0 ? 'hoje' : d === 1 ? 'ontem' : `há ${d} dias`; };
+
+/* ===== período (data da venda, como hoje) ===== */
+const PERIODOS = [
+  { id: '', nome: 'Todo o período' },
+  { id: 'mes', nome: 'Este mês', de: () => HOJE.slice(0, 8) + '01', ate: () => HOJE },
+  { id: 'mespassado', nome: 'Mês passado', de: () => { const d = new Date(HOJE + 'T12:00:00'); d.setDate(1); d.setMonth(d.getMonth() - 1); return dataISO(d); }, ate: () => { const d = new Date(HOJE + 'T12:00:00'); d.setDate(0); return dataISO(d); } },
+  { id: '30', nome: 'Últimos 30 dias', de: () => somaDias(HOJE, -29), ate: () => HOJE },
+  { id: 'ano', nome: 'Este ano', de: () => HOJE.slice(0, 4) + '-01-01', ate: () => HOJE },
+];
+const comPeriodo = () => !!(est.periodo.de || est.periodo.ate);
+const rotuloPeriodo = () => {
+  if (!comPeriodo()) return 'Todo o período';
+  const pre = PERIODOS.find(x => x.id && x.id === est.periodo.id);
+  return pre ? pre.nome : `${est.periodo.de ? dataCurta(est.periodo.de) : '…'} – ${est.periodo.ate ? dataCurta(est.periodo.ate) : '…'}`;
+};
+const noPeriodo = p => (!est.periodo.de || p.venda >= est.periodo.de) && (!est.periodo.ate || (p.venda && p.venda <= est.periodo.ate));
+
+/* ===== estado ===== */
+const est = {
+  cargo: D.nivel === 'Administrador' ? 'admin' : D.nivel === 'Financeiro' ? 'financeiro' : 'operador',
+  aba: 'abertas', busca: '', periodo: { id: '', de: '', ate: '' }, ordem: 'desc',
+  recolhidos: new Set(),
+  sel: null, gaveta: null, conf: null, pop: null, preso: false, ind: null, animar: false, carregando: null,
+};
+const termos = () => semAcento(est.busca.replace(/#/g, ' ')).split(/\s+/).filter(Boolean);
+const filtrando = () => !!(est.busca.trim() || comPeriodo());
+// Número procura o nº da O.S. (começo) e o nome; texto procura cliente, itens e criador.
+const casa = (p, ts) => ts.every(t => (/^\d+$/.test(t) && String(p.id).startsWith(t)) || semAcento(`${p.cliente} ${p.resumo} ${p.itens.map(i => i[0]).join(' ')} ${p.criado}`).includes(t));
+const filtrados = () => { const ts = termos(); return PED.filter(p => noPeriodo(p) && casa(p, ts)); };
+const daAba = (l, id) => l.filter(p => abaDoStatus(p.status) === id);
+// Sem busca nem período, a contagem é a do banco; filtrando, é a do que casou.
+const contagem = (l, id) => filtrando() ? daAba(l, id).length : TOT[id];
+const ordenar = l => l.slice().sort((a, b) => est.ordem === 'asc' ? a.id - b.id : b.id - a.id);
+function porMes(l) {
+  const g = new Map();
+  ordenar(l).forEach(p => { const k = ehData(p.venda) ? p.venda.slice(0, 7) : ''; if (!g.has(k)) g.set(k, []); g.get(k).push(p); });
+  return [...g].sort(([a], [b]) => (a === '') - (b === '') || (est.ordem === 'asc' ? a.localeCompare(b) : b.localeCompare(a))).map(([k, itens]) => ({ chave: 'mes:' + (k || 'sem'), nome: nomeMes(k), itens }));
+}
+
+/* ===== pagamento ===== */
+const falta = p => p.valor - p.pago;
+const quitada = p => falta(p) <= 0;
+function estadoPag(p) {
+  if (!p.valor && !p.pago) return { cls: 'zero', txt: 'Sem valor' };
+  const f = falta(p);
+  if (f > 0) return { cls: 'falta', txt: `Falta ${brl(f)}` };
+  if (f < 0) return { cls: 'mais', txt: `Pago a mais ${brl(-f)}` };
+  return { cls: 'ok', txt: 'Quitado', ico: 'check' };
+}
+
+/* ===== átomos ===== */
+// Realce da busca sem acento: "joao" acha "João" e marca as letras certas.
+function realce(txt) {
+  const ts = termos(); if (!ts.length || !txt) return esc(txt);
+  const chars = [...txt]; let S = ''; const pos = [];
+  chars.forEach((c, i) => { const n = semAcento(c); for (let j = 0; j < n.length; j++) pos.push(i); S += n; });
+  const marc = chars.map(() => false);
+  ts.forEach(t => { let k = S.indexOf(t); while (k !== -1) { for (let j = k; j < k + t.length; j++) marc[pos[j]] = true; k = S.indexOf(t, k + t.length); } });
+  let out = '', dentro = false;
+  chars.forEach((c, i) => { if (marc[i] !== dentro) { out += marc[i] ? '<mark>' : '</mark>'; dentro = marc[i]; } out += esc(c); });
+  return out + (dentro ? '</mark>' : '');
+}
+const pessoa = n => n ? `<span class="pessoa"><i class="av" style="background:${corPessoa(n)};color:${tintaPessoa(n)}">${esc(iniciais(n))}</i><span>${esc(n)}</span></span>` : '<span class="nada">—</span>';
+const locais = p => `<div class="locs">${p.locais.map(l => `<span class="loc" style="--c:${D.cores?.[l]?.[0] || '#64748b'}">${esc(l)}</span>`).join('')}</div>`;
+// O detalhe que importa em cada situação fica embaixo do nome dela.
+function subSituacao(p) {
+  if (p.status === 'Concluído' && ehData(p.prazo)) return `concluída ${haQuanto(p.prazo)}`;
+  if (p.status === 'Finalizado' && p.resp.length) return `baixa por ${p.resp[0]}`;
+  if (p.status === 'Cancelado' && p.cancelado) return `cancelada em ${ddmm(p.cancelado)}`;
+  if (p.status === 'Abandonado' && p.retirada) return `na retirada desde ${ddmm(p.retirada)}`;
+  return '';
+}
+const sitHTML = (p, comSub = true) => { const s = comSub && subSituacao(p);
+  return `<span class="sit"><span class="dot" style="background:${COR[p.status] || '#64748b'}"></span><span>${esc(p.status)}</span></span>${s ? `<span class="sit-sub">${esc(s)}</span>` : ''}`; };
+const cliHTML = p => `<span class="cli ${p.problema ? 'prob' : ''}" ${p.problema ? 'title="Cliente com pendência"' : ''}><span class="nome">${realce(p.cliente)}</span>${p.problema ? ico('alert-triangle', 'ico ico-s') : ''}</span>`;
+function acoesLinha(p) {
+  const baixa = p.status === 'Concluído' && podeBaixar(); const conf = est.conf === p.id; const q = quitada(p);
+  return `<button class="ib" data-acao="imprimir" data-id="${p.id}" title="Imprimir" aria-label="Imprimir a O.S. #${p.id}">${ico('printer')}</button>
+    <button class="ib" data-acao="duplicar" data-id="${p.id}" title="Duplicar" aria-label="Duplicar a O.S. #${p.id}">${ico('copy-plus')}</button>
+    ${baixa ? `<button class="ib baixar ${q ? '' : 'bloq'} ${conf ? 'conf' : ''}" data-acao="baixar" data-id="${p.id}" title="${q ? 'Dar baixa' : `Falta receber ${brl(falta(p))}`}" aria-label="Dar baixa na O.S. #${p.id}">${conf ? 'Dar baixa?' : ico('check-circle-2')}</button>` : ''}`;
+}
+function linha(p) {
+  const tr = travada(p); const e = estadoPag(p);
+  return `<div class="lin ${est.sel === p.id ? 'sel' : ''} ${tr ? 'travada' : ''}" data-pid="${p.id}" data-acao="abrir" data-id="${p.id}" ${tr ? 'title="Baixada: só Administrador ou Financeiro abre"' : ''}>
+    <div class="c-id">${tr ? ico('lock', 'ico trava') : ''}<span class="oid">#${p.id}</span></div>
+    <div class="c-cli"><div class="cli-l"><span class="oid-in">#${p.id}</span>${cliHTML(p)}</div><div class="res" title="${esc(p.resumo)}">${realce(p.resumo)}</div></div>
+    <div class="c-sit">${sitHTML(p)}<span class="dt-in">· ${dataCurta(p.venda)}</span></div>
+    <div class="c-dt"><span class="dt">${dataCurta(p.venda)}</span></div>
+    <div class="c-val"><b>${brl(p.valor)}</b><span class="pg-est ${e.cls}">${e.ico ? ico(e.ico, 'ico ico-xs') : ''}${e.txt}</span></div>
+    ${veCriador() ? `<div class="c-criado">${pessoa(p.criado)}</div>` : ''}
+    <div class="c-ac">${tr ? '' : acoesLinha(p)}</div>
+  </div>`;
+}
+function grupoHTML(chave, titulo, n, linhasHTML) {
+  const fechado = est.recolhidos.has(chave);
+  return `<div class="grp ${fechado ? 'fechado' : ''}"><button class="grp-btn" data-acao="grupo" data-g="${esc(chave)}" aria-expanded="${!fechado}">${ico('chevron-down', 'ico ico-s chev')}${titulo} <span class="n">${n}</span></button></div>
+    <div class="grp-corpo ${fechado ? 'fechado' : ''}"><div class="grp-dentro"><div class="lista">${linhasHTML}</div></div></div>`;
+}
+const cabTabela = () => `<div class="tab-cab"><span><button class="ord ${est.ordem}" data-acao="ordem" title="${est.ordem === 'desc' ? 'Mais novas primeiro — clique para inverter' : 'Mais antigas primeiro — clique para inverter'}">O.S.${ico('arrow-down', 'ico')}</button></span><span>Cliente e serviço</span><span>Situação</span><span>Venda</span><span class="dir">Valor</span>${veCriador() ? '<span class="c-criado">Criado por</span>' : ''}<span></span></div>`;
+
+/* ===== cabeçalho e faixa ===== */
+const buscaHTML = ph => `<label class="busca">${ico('search')}<input data-busca value="${esc(est.busca)}" placeholder="${ph}" aria-label="${ph}" autocomplete="off">${est.busca ? `<button class="limpar" data-acao="limpar" aria-label="Limpar busca">${ico('x', 'ico ico-s')}</button>` : '<kbd>/</kbd>'}</label>`;
+const botaoNova = compacto => compacto
+  ? `<button class="btn btn-pri btn-p nova-presa" data-acao="nova">${ico('plus', 'ico ico-s')}Nova O.S.<kbd>N</kbd></button>`
+  : `<button class="btn btn-pri" data-acao="nova">${ico('plus')}Nova O.S.<kbd>N</kbd></button>`;
+const botaoPeriodo = () => `<button class="per ${comPeriodo() ? 'ativo' : ''}" data-pop="periodo" title="Filtrar pela data da venda">${ico('calendar', 'ico ico-s')}<span>${esc(rotuloPeriodo())}</span>${ico('chevron-down', 'ico ico-s chev')}</button>`;
+const botaoTodos = chaves => { if (!chaves.length) return ''; const todas = chaves.every(c => est.recolhidos.has(c));
+  const rot = todas ? 'Abrir todos os grupos' : 'Recolher todos os grupos';
+  return `<button class="ib todos" data-acao="todos" data-chaves="${esc(JSON.stringify(chaves))}" aria-pressed="${todas}" aria-label="${rot}" title="${rot}">${ico(todas ? 'unfold-vertical' : 'fold-vertical', 'ico')}</button>`; };
+function faixaAbas(l, chaves) {
+  return `<div class="sentinela" aria-hidden="true"></div><div class="faixa ${est.preso ? 'preso' : ''}">
+    <div class="abas" role="tablist" aria-label="Situação">${ABAS.map(a => `<button class="aba" role="tab" data-acao="aba" data-aba="${a.id}" aria-selected="${est.aba === a.id}" title="${a.leg}">${a.nome}<span class="n">${fmtN(contagem(l, a.id))}</span></button>`).join('')}<span class="indicador" aria-hidden="true"></span></div>
+    <div class="abas-fim">${botaoPeriodo()}${botaoTodos(chaves)}${botaoNova(true)}</div></div>`;
+}
+const barraMob = () => `<div class="barra-mob"><button class="btn btn-sec" data-acao="focar-busca" aria-label="Buscar">${ico('search')}</button><button class="btn btn-pri" data-acao="nova">${ico('plus')}Nova O.S.</button></div>`;
+const dicas = () => `<div class="dicas"><span><kbd>/</kbd> buscar</span><span><kbd>↑</kbd><kbd>↓</kbd> navega</span><span><kbd>Enter</kbd> abre</span><span><kbd>N</kbd> nova O.S.</span><span>botão direito para mais ações</span></div>`;
+function vazio(l, onde) {
+  const outras = filtrando() && onde ? ABAS.filter(a => a.id !== onde.id).map(a => [a, daAba(l, a.id).length]).filter(([, n]) => n) : [];
+  const q = est.busca.trim();
+  return `<div class="vazio"><b>Nenhuma O.S.${q ? ` com “${esc(q)}”` : ''}${onde ? ` em ${onde.nome}` : ''}${comPeriodo() ? ' neste período' : ''}</b>
+    ${outras.length ? `<div class="vazio-outras">${outras.map(([a, n]) => `<button class="btn btn-sec btn-p" data-acao="aba" data-aba="${a.id}">${n} em ${a.nome}${ico('arrow-right', 'ico ico-s')}</button>`).join('')}</div>` : ''}
+    ${filtrando() ? '<button class="btn btn-txt btn-p" data-acao="limpar-tudo">Limpar busca e período</button>' : ''}</div>`;
+}
+// Linhas de espera com as mesmas colunas da lista: quando as O.S. chegam, nada pula.
+const LARG_ESQ = [46, 38, 54, 42, 50, 35, 48];
+function esqueleto(def) {
+  const lin = (w, i) => `<div class="lin esq-lin" style="--i:${i}">
+    <div class="c-id"><span class="esq" style="width:38px"></span></div>
+    <div class="c-cli"><span class="esq forte" style="width:${w}%"></span><span class="esq" style="width:${w + 22}%"></span></div>
+    <div class="c-sit"><span class="esq" style="width:96px"></span></div>
+    <div class="c-dt"><span class="esq" style="width:40px"></span></div>
+    <div class="c-val"><span class="esq forte" style="width:76px"></span><span class="esq" style="width:52px"></span></div>
+    ${veCriador() ? '<div class="c-criado"><span class="esq" style="width:88px"></span></div>' : ''}<div class="c-ac"></div></div>`;
+  return `<p class="so-leitor" role="status">Carregando ${def.nome}…</p>
+    <div aria-hidden="true"><div class="grp"><span class="esq forte" style="width:110px"></span></div><div class="lista">${LARG_ESQ.map(lin).join('')}</div></div>`;
+}
+function rodape(aba, n) {
+  const faltam = TOT[aba] - daAba(PED, aba).length;
+  if (filtrando() || faltam <= 0) return '';
+  return `<div class="rodape"><span>Mostrando ${fmtN(n)} de ${fmtN(TOT[aba])}</span><button class="btn btn-sec btn-p" data-acao="carregar">Carregar mais 50</button></div>`;
+}
+
+/* ===== a tela: abas por situação, lista agrupada por mês da venda ===== */
+function renderTela() {
+  const l = filtrados(); const def = ABAS.find(a => a.id === est.aba); const naAba = daAba(l, est.aba);
+  const carregando = est.carregando === est.aba;
+  let corpo, chaves = [];
+  if (carregando) corpo = esqueleto(def);
+  else if (!naAba.length) corpo = vazio(l, def);
+  else { const gs = porMes(naAba); chaves = gs.map(g => g.chave); corpo = gs.map(g => grupoHTML(g.chave, esc(g.nome), g.itens.length, g.itens.map(linha).join(''))).join(''); }
+  return `<div class="pg ${veCriador() ? 'com-criado' : ''}">
+    <div class="cab"><div class="cab-tit"><h1>O.S.</h1><p>${def.leg}</p></div><div class="acoes">${buscaHTML('Buscar cliente, nº ou item')}${botaoNova()}</div></div>
+    ${faixaAbas(l, chaves)}${carregando || naAba.length ? cabTabela() : ''}<div class="conteudo" ${carregando ? 'aria-busy="true"' : ''}>${corpo}${carregando ? '' : rodape(est.aba, naAba.length)}</div>${dicas()}</div>${barraMob()}`;
+}
+
+/* ===== detalhe (gaveta no computador, folha no celular) ===== */
+function detalhe(p) {
+  const f = falta(p); const conf = est.conf === p.id; const baixa = p.status === 'Concluído' && podeBaixar();
+  const pct = p.valor > 0 ? Math.max(0, Math.min(100, p.pago / p.valor * 100)) : (p.pago > 0 ? 100 : 0);
+  const total = p.itens.reduce((s, i) => s + i[2], 0);
+  return `<div class="det">
+    <div class="det-cab"><span class="oid">O.S. #${p.id}</span><button class="btn btn-pri btn-p det-abrir" data-acao="editar" data-id="${p.id}">${ico('square-pen', 'ico ico-s')}Abrir O.S. completa<kbd>Enter</kbd></button><button class="ib fechar" data-acao="fechar-gaveta" aria-label="Fechar" title="Fechar (Esc)">${ico('x')}</button></div>
+    <div class="det-cli ${p.problema ? 'prob' : ''}">${esc(p.cliente)}</div>
+    ${p.problema ? `<div class="det-aviso">${ico('alert-triangle', 'ico ico-s')}Cliente com pendência — confira antes de entregar.</div>` : ''}
+    <dl class="props">
+      <dt>${ico('circle-dot', 'ico ico-s')}Situação</dt><dd>${sitHTML(p, false)}</dd>
+      ${p.venda ? `<dt>${ico('calendar', 'ico ico-s')}Venda</dt><dd>${dataLonga(p.venda)}</dd>` : ''}
+      ${p.prazo ? `<dt>${ico('flag', 'ico ico-s')}${p.status === 'Concluído' ? 'Concluída' : 'Prazo'}</dt><dd>${dataLonga(p.prazo)}${p.status === 'Concluído' ? `<span class="sit-sub">${haQuanto(p.prazo)}</span>` : ''}${p.hora && abaDoStatus(p.status) === 'abertas' ? `<span class="hr">${ico('clock', 'ico')}até ${esc(p.hora)}</span>` : ''}</dd>` : ''}
+      ${veCriador() ? `<dt>${ico('user-plus', 'ico ico-s')}Criado por</dt><dd>${pessoa(p.criado)}</dd>` : ''}
+      ${p.resp.length ? `<dt>${ico('users', 'ico ico-s')}${p.status === 'Finalizado' ? 'Baixa por' : 'Resp.'}</dt><dd>${p.resp.map(pessoa).join('')}</dd>` : ''}
+      ${p.cancelado ? `<dt>${ico('x-circle', 'ico ico-s')}Cancelada</dt><dd>${dataLonga(p.cancelado)}</dd>` : ''}
+      ${p.retirada && ['Retirada', 'Abandonado'].includes(p.status) ? `<dt>${ico('package', 'ico ico-s')}Na retirada</dt><dd>desde ${dataLonga(p.retirada)}</dd>` : ''}
+      <dt>${ico('map-pin', 'ico ico-s')}Local</dt><dd>${locais(p)}</dd>
+    </dl>
+    <section class="area itens"><div class="area-cab"><span class="area-ico">${ico('shopping-bag', 'ico ico-s')}</span><h3>Itens</h3><span class="area-meta">${p.itens.length ? `${p.itens.length} ${p.itens.length === 1 ? 'item' : 'itens'} · ${brl(total)}` : ''}</span></div>
+      ${p.itens.length ? p.itens.map(([nome, desc, v]) => `<div class="itl"><span><span class="nm">${esc(nome)}</span>${desc ? `<span class="ds">${esc(desc)}</span>` : ''}</span><span class="vl">${brl(v)}</span></div>`).join('') : `<div class="sem-itens">${esc(p.resumo)}</div>`}
+    </section>
+    <section class="area fin"><div class="area-cab"><span class="area-ico">${ico('wallet', 'ico ico-s')}</span><h3>Pagamento</h3><span class="area-meta">${p.valor && f === 0 ? `${ico('check', 'ico ico-xs')}Quitado` : ''}</span></div>
+      <div class="fin-tot">${brl(p.valor)}</div>
+      <div class="fin-barra"><i style="width:${pct}%"></i></div>
+      <div class="fin-resumo"><span>Recebido <b>${brl(p.pago)}</b></span>${f > 0 ? `<span>·</span><span class="falta">Falta <b>${brl(f)}</b></span>` : f < 0 ? `<span>·</span><span class="mais">Pago a mais <b>${brl(-f)}</b></span>` : ''}</div>
+      ${p.pags.length ? `<div class="recs"><div class="recs-rot">Recebimentos ${p.pags.length}</div>${p.pags.map(([forma, v, d]) => `<div class="rec"><span><span class="f">${esc(forma)}</span>${ehData(d) ? `<span class="d">${ddmm(d)}</span>` : ''}</span><span class="v ${v < 0 ? 'neg' : ''}">${v < 0 ? '− ' : ''}${brl(Math.abs(v))}</span></div>`).join('')}</div>` : ''}
+    </section>
+    <div class="det-acoes">
+      <button class="btn btn-txt btn-p" data-acao="imprimir" data-id="${p.id}">${ico('printer', 'ico ico-s')}Imprimir</button>
+      <button class="btn btn-txt btn-p" data-acao="duplicar" data-id="${p.id}">${ico('copy-plus', 'ico ico-s')}Duplicar</button>
+      <span class="esp"></span>
+      ${baixa ? (quitada(p)
+        ? `<button class="btn btn-ok btn-p ${conf ? 'conf' : ''}" data-acao="baixar" data-id="${p.id}">${ico('check-circle-2', 'ico ico-s')}${conf ? 'Clique de novo para dar baixa' : 'Dar baixa'}</button>`
+        : `<button class="btn btn-sec btn-p" data-acao="receber" data-id="${p.id}">${ico('wallet', 'ico ico-s')}Receber ${brl(f)}</button>`) : ''}
+    </div>
+    ${baixa && !quitada(p) ? `<p class="det-nota">${ico('info', 'ico ico-s')}A baixa fica liberada quando o saldo for recebido.</p>` : ''}
+  </div>`;
+}
+
+/* ===== popovers ===== */
+function fecharPop() { document.querySelector('.pop')?.remove(); est.pop = null; }
+function abrirPop(ancora, html) {
+  fecharPop();
+  const pop = document.createElement('div'); pop.className = 'pop'; pop.innerHTML = html; document.body.appendChild(pop);
+  const r = ancora.getBoundingClientRect();
+  pop.style.left = Math.max(8, Math.min(r.left, innerWidth - pop.offsetWidth - 8)) + 'px';
+  const topo = r.bottom + pop.offsetHeight + 6 > innerHeight && r.top > pop.offsetHeight + 6 ? r.top - pop.offsetHeight - 6 : r.bottom + 6;
+  pop.style.top = Math.max(8, Math.min(topo, innerHeight - pop.offsetHeight - 8)) + 'px';
+  pop.addEventListener('mousedown', e => { if (!e.target.closest('input')) e.preventDefault(); });
+  est.pop = { ancora }; lucide.createIcons();
+  return pop;
+}
+const marca = sel => sel ? ico('check', 'ico ico-s ok') : '';
+// Setas desenhadas aqui mesmo: o calendário se redesenha a cada mês e a cada dia
+// sob o mouse, e chamar o lucide toda vez varreria a página inteira.
+const seta = d => `<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="${d}"/></svg>`;
+const SETA_E = seta('m15 18-6-6 6-6'), SETA_D = seta('m9 18 6-6-6-6');
+const SEM_CAL = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
+function calHTML(c) {
+  const p = est.periodo; const y = c.base.getFullYear(), m = c.base.getMonth();
+  const cab = (passo, titulo, vista) => `<div class="cal-cab"><button class="cal-nav" data-nav="${-passo}" aria-label="Anterior">${SETA_E}</button>${vista ? `<button class="cal-tit" data-vista="${vista}">${titulo}</button>` : `<span class="cal-tit">${titulo}</span>`}<button class="cal-nav" data-nav="${passo}" aria-label="Próximo">${SETA_D}</button></div>`;
+  if (c.vista === 'meses') return cab(12, y, 'anos') + `<div class="cal-grade">${MESES.map((n, i) => `<button class="cal-op ${i === m ? 'on' : ''}" data-mes="${i}">${n.slice(0, 3)}</button>`).join('')}</div>`;
+  if (c.vista === 'anos') { const anos = Array.from({ length: 12 }, (_, i) => y - 5 + i);
+    return cab(144, `${anos[0]} – ${anos[11]}`) + `<div class="cal-grade">${anos.map(a => `<button class="cal-op ${a === y ? 'on' : ''}" data-ano="${a}">${a}</button>`).join('')}</div>`; }
+  // Com o início escolhido e o fim ainda não, a faixa acompanha o mouse (prévia).
+  const fim = p.ate || (p.de && c.hover && c.hover > p.de ? c.hover : '');
+  let cel = '';
+  for (let i = new Date(y, m, 1).getDay(); i > 0; i--) cel += '<span></span>';
+  for (let d = 1, n = new Date(y, m + 1, 0).getDate(); d <= n; d++) {
+    const iso = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    const cls = [iso === HOJE && 'hoje', iso === p.de && 'ini', iso === p.de && fim && fim !== p.de && 'com-fim', fim && iso === fim && 'fim', p.de && fim && iso > p.de && iso < fim && 'meio'].filter(Boolean).join(' ');
+    cel += `<button class="d ${cls}" data-dia="${iso}" aria-label="${d} de ${MESES[m]}"><b>${d}</b></button>`;
+  }
+  const dica = !p.de ? 'Escolha a data inicial' : !p.ate ? `De <b>${dataCurta(p.de)}</b> até…` : `<b>${dataCurta(p.de)}</b> – <b>${dataCurta(p.ate)}</b>`;
+  return cab(1, `${MESES[m][0].toUpperCase() + MESES[m].slice(1)} de ${y}`, 'meses')
+    + `<div class="cal-sem">${SEM_CAL.map(s => `<span>${s}</span>`).join('')}</div>`
+    + `<div class="cal-dias ${p.de && !p.ate && fim ? 'previa' : ''}">${cel}</div>`
+    + `<div class="cal-pe"><span>${dica}</span>${p.de ? '<button class="cal-limpar" data-limpar>Limpar</button>' : ''}</div>`;
+}
+function popPeriodo(anc) {
+  const ref = est.periodo.ate || est.periodo.de || HOJE;
+  const c = { vista: 'dias', base: new Date(ref.slice(0, 7) + '-01T12:00:00'), hover: null };
+  const atalhos = () => PERIODOS.map(x => { const on = x.id ? est.periodo.id === x.id : !comPeriodo(); return `<button class="${on ? 'on' : ''}" data-p="${x.id}">${x.nome}${marca(on)}</button>`; }).join('');
+  const pop = abrirPop(anc, `<div class="per-pop"><div class="atalhos">${atalhos()}</div><div class="cal">${calHTML(c)}</div></div>`);
+  const desenhar = () => { pop.querySelector('.cal').innerHTML = calHTML(c); };
+  // A tela se redesenha por trás a cada escolha (a lista já filtra), e o botão do
+  // período nasce de novo: o popover passa a se ancorar no novo.
+  const aplicar = () => { render(); if (est.pop) est.pop.ancora = tela.querySelector('[data-pop="periodo"]'); pop.querySelector('.atalhos').innerHTML = atalhos(); lucide.createIcons(); desenhar(); };
+  pop.addEventListener('click', e => {
+    // O clique redesenha o calendário e o alvo sai do documento; sem parar aqui,
+    // o clique "de fora" fecharia o popover.
+    e.stopPropagation();
+    const at = e.target.closest('[data-p]');
+    if (at) { const x = PERIODOS.find(y => y.id === at.dataset.p); est.periodo = x.id ? { id: x.id, de: x.de(), ate: x.ate() } : { id: '', de: '', ate: '' }; fecharPop(); render(); return voltarAoInicioDaLista(); }
+    const nav = e.target.closest('[data-nav]'); if (nav) { c.base.setMonth(c.base.getMonth() + +nav.dataset.nav); return desenhar(); }
+    const vista = e.target.closest('[data-vista]'); if (vista) { c.vista = vista.dataset.vista; return desenhar(); }
+    const mes = e.target.closest('[data-mes]'); if (mes) { c.base.setMonth(+mes.dataset.mes); c.vista = 'dias'; return desenhar(); }
+    const ano = e.target.closest('[data-ano]'); if (ano) { c.base.setFullYear(+ano.dataset.ano); c.vista = 'meses'; return desenhar(); }
+    if (e.target.closest('[data-limpar]')) { est.periodo = { id: '', de: '', ate: '' }; return aplicar(); }
+    const dia = e.target.closest('[data-dia]'); if (!dia) return;
+    const iso = dia.dataset.dia; const p = est.periodo;
+    // Primeiro clique marca o início; o segundo, o fim (antes do início recomeça).
+    if (!p.de || p.ate || iso < p.de) { est.periodo = { id: 'livre', de: iso, ate: '' }; c.hover = null; return aplicar(); }
+    est.periodo = { id: 'livre', de: p.de, ate: iso }; fecharPop(); render(); voltarAoInicioDaLista();
+  });
+  pop.addEventListener('mouseover', e => {
+    const d = e.target.closest('[data-dia]')?.dataset.dia || null;
+    // No vão entre dois dias a prévia fica onde está, em vez de piscar.
+    if (d === c.hover || (!d && e.target.closest('.cal-dias'))) return; c.hover = d;
+    if (est.periodo.de && !est.periodo.ate) desenhar();
+  });
+}
+function popCargo(anc) {
+  const pop = abrirPop(anc, `<div class="rot">Ver a tela como</div>` + CARGOS.map(([v, n]) => `<button data-c="${v}">${n}${marca(est.cargo === v)}</button>`).join(''));
+  pop.addEventListener('click', e => {
+    const b = e.target.closest('button[data-c]'); if (!b) return;
+    est.cargo = b.dataset.c; est.conf = null; fecharPop(); render(); moldura();
+  });
+}
+function popMenu(x, y, p) {
+  fecharPop();
+  const baixa = p.status === 'Concluído' && podeBaixar() && quitada(p);
+  const pop = document.createElement('div'); pop.className = 'pop';
+  pop.innerHTML = `<button data-m="editar">${ico('square-pen', 'ico ico-s')}Abrir O.S. completa</button>
+    <button data-m="duplicar">${ico('copy-plus', 'ico ico-s')}Duplicar O.S.</button>
+    <button data-m="imprimir">${ico('printer', 'ico ico-s')}Imprimir</button>
+    <button data-m="copiar">${ico('copy', 'ico ico-s')}Copiar linha</button>
+    ${baixa ? `<hr><button data-m="baixar">${ico('check-circle-2', 'ico ico-s')}Dar baixa</button>` : ''}`;
+  document.body.appendChild(pop); lucide.createIcons();
+  pop.style.left = Math.min(x, innerWidth - pop.offsetWidth - 8) + 'px';
+  pop.style.top = Math.min(y, innerHeight - pop.offsetHeight - 8) + 'px';
+  pop.addEventListener('mousedown', e => e.preventDefault());
+  est.pop = { ancora: null };
+  pop.addEventListener('click', e => {
+    const b = e.target.closest('[data-m]'); if (!b) return; fecharPop();
+    const m = b.dataset.m;
+    if (m === 'baixar') return darBaixa([p.id]);
+    if (m === 'copiar') { navigator.clipboard?.writeText([`#${p.id}`, dataLonga(p.venda), p.cliente, p.status, brl(p.valor)].join('\t')).catch(() => {}); return toast('Linha copiada'); }
+    acaoSistema(m, p);
+  });
+}
+
+/* ===== ações ===== */
+let toastTimer;
+function toast(msg, desfazer) {
+  document.querySelector('.toast')?.remove(); clearTimeout(toastTimer);
+  const el = document.createElement('div'); el.className = 'toast'; el.setAttribute('role', 'status');
+  el.innerHTML = ico('check-circle-2') + `<span>${esc(msg)}</span>` + (desfazer ? '<button>Desfazer</button>' : '');
+  document.body.appendChild(el); lucide.createIcons();
+  if (desfazer) el.querySelector('button').addEventListener('click', () => { desfazer(); el.remove(); });
+  toastTimer = setTimeout(() => el.remove(), desfazer ? 5000 : 2400);
+}
+function acaoSistema(m, p) {
+  const txt = { editar: `No sistema, abre a O.S. #${p?.id} completa`, imprimir: `No sistema, imprime a O.S. #${p?.id}`, duplicar: `No sistema, cria uma cópia da O.S. #${p?.id}`, receber: `No sistema, abre a O.S. #${p?.id} direto no pagamento`, carregar: 'No sistema, traz as próximas 50 O.S.' }[m];
+  toast(txt + ' (protótipo)');
+}
+// Segundo clique confirma; sem ele, o botão volta ao normal sozinho.
+function armarConf(chave) {
+  est.conf = chave; render(); clearTimeout(armarConf.t);
+  armarConf.t = setTimeout(() => { if (est.conf === chave) { est.conf = null; render(); } }, 3500);
+}
+// Baixa = Finalizado, como o "Finalizar OS" de hoje: só com o total pago, e quem
+// dá a baixa vira o responsável (marcaDeQuemFinalizou no AppContext).
+function darBaixa(ids) {
+  const ps = ids.map(porId).filter(p => p && p.status === 'Concluído' && quitada(p));
+  if (!ps.length) return;
+  const antes = ps.map(p => [p, p.resp]);
+  ps.forEach(p => { p.status = 'Finalizado'; if (D.eu) p.resp = [D.eu]; });
+  TOT.concluidas -= ps.length; TOT.finalizadas += ps.length;
+  if (ps.some(p => p.id === est.gaveta)) est.gaveta = null;
+  est.conf = null; est.animar = true; render();
+  toast(ps.length === 1 ? `Baixa da O.S. #${ps[0].id} feita` : `${ps.length} O.S. baixadas`, () => {
+    antes.forEach(([p, r]) => { p.status = 'Concluído'; p.resp = r; });
+    TOT.concluidas += ps.length; TOT.finalizadas -= ps.length; est.animar = true; render();
+  });
+}
+function pedirBaixa(p) {
+  if (!quitada(p)) return toast(`Falta receber ${brl(falta(p))} na #${p.id}. A baixa sai depois do pagamento.`);
+  if (est.conf !== p.id) return armarConf(p.id);
+  darBaixa([p.id]);
+}
+
+/* ===== faixa presa ao rolar (mesma regra da nova Produção) ===== */
+const tela = document.getElementById('tela');
+const gavetaRaiz = document.getElementById('gaveta-raiz');
+const menosMovimento = matchMedia('(prefers-reduced-motion: reduce)');
+const alturaCabecalho = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--altura-cabecalho'));
+const vigiaFaixa = new IntersectionObserver(([e]) => marcarPreso(!e.isIntersecting && e.boundingClientRect.top < e.rootBounds.top),
+  { root: document, rootMargin: `-${alturaCabecalho}px 0px 0px 0px` });
+function marcarPreso(preso) {
+  if (preso === est.preso) return;
+  est.preso = preso;
+  const faixa = tela.querySelector('.faixa'); if (!faixa) return;
+  const fim = faixa.querySelector('.abas-fim'); const vizinhos = [...fim.children].filter(b => !b.classList.contains('nova-presa'));
+  const antes = vizinhos.map(b => b.getBoundingClientRect().left);
+  faixa.classList.toggle('preso', preso);
+  marcarCortes(faixa.querySelector('.abas'));
+  if (menosMovimento.matches) return;
+  const anima = { duration: 340, easing: 'cubic-bezier(.16,1,.3,1)' };
+  vizinhos.forEach((b, i) => { const dx = antes[i] - b.getBoundingClientRect().left; if (Math.abs(dx) > 1) b.animate([{ transform: `translateX(${dx}px)` }, { transform: 'none' }], anima); });
+  if (preso) faixa.querySelector('.nova-presa').animate([{ opacity: 0, transform: 'translateX(10px)' }, { opacity: 1, transform: 'none' }], anima);
+}
+// Trocar de filtro com a faixa presa leva ao começo da lista nova.
+function voltarAoInicioDaLista() {
+  const s = tela.querySelector('.sentinela'); if (!s || !est.preso) return;
+  scrollTo({ top: s.getBoundingClientRect().top + scrollY - alturaCabecalho + 1 });
+}
+const marcarCortes = el => {
+  if (!el) return;
+  el.classList.toggle('corta-esq', el.scrollLeft > 2);
+  el.classList.toggle('corta-dir', el.scrollLeft + el.clientWidth < el.scrollWidth - 2);
+};
+// O traço laranja desliza da aba anterior até a escolhida.
+function posicionarIndicador() {
+  const abas = tela.querySelector('.abas'); if (!abas) return;
+  const ind = abas.querySelector('.indicador'); const at = abas.querySelector('[aria-selected="true"]'); if (!at) return;
+  const novo = { left: at.offsetLeft + 8, width: at.offsetWidth - 16 };
+  const ant = est.ind;
+  if (ant && (ant.left !== novo.left || ant.width !== novo.width)) {
+    ind.style.transition = 'none'; ind.style.left = ant.left + 'px'; ind.style.width = ant.width + 'px';
+    void ind.offsetWidth; ind.style.transition = '';
+  }
+  ind.style.left = novo.left + 'px'; ind.style.width = novo.width + 'px';
+  est.ind = novo;
+  if (at.offsetLeft < abas.scrollLeft || at.offsetLeft + at.offsetWidth > abas.scrollLeft + abas.clientWidth) abas.scrollTo({ left: Math.max(0, at.offsetLeft - 24), behavior: 'smooth' });
+  marcarCortes(abas);
+}
+document.addEventListener('scroll', e => {
+  if (e.target.matches?.('.abas')) marcarCortes(e.target);
+  // O cabeçalho preso da gaveta ganha uma linha só quando há conteúdo passando por baixo.
+  if (e.target.matches?.('.gaveta')) e.target.classList.toggle('rolou', e.target.scrollTop > 2);
+}, true);
+
+/* ===== render ===== */
+function medir() { const m = {}; tela.querySelectorAll('[data-pid]').forEach(el => { m[el.dataset.pid] = el.getBoundingClientRect(); }); return m; }
+function render() {
+  const foco = document.activeElement; const naBusca = foco?.matches?.('[data-busca]'); const pos = naBusca ? foco.selectionStart : null;
+  const antes = est.animar ? medir() : null;
+  const scFaixa = tela.querySelector('.abas')?.scrollLeft;
+  tela.innerHTML = renderTela();
+  vigiaFaixa.disconnect(); const sentinela = tela.querySelector('.sentinela'); if (sentinela) vigiaFaixa.observe(sentinela);
+  renderGaveta();
+  lucide.createIcons();
+  const fx = tela.querySelector('.abas'); if (scFaixa != null && fx) fx.scrollLeft = scFaixa;
+  posicionarIndicador();
+  if (naBusca) { const i = tela.querySelector('[data-busca]'); i?.focus(); i?.setSelectionRange(pos, pos); }
+  // A linha que mudou de lugar desliza até a posição nova.
+  if (antes) {
+    est.animar = false;
+    if (!menosMovimento.matches) tela.querySelectorAll('[data-pid]').forEach(el => {
+      const a = antes[el.dataset.pid]; if (!a) return; const b = el.getBoundingClientRect();
+      const dy = a.top - b.top;
+      if (Math.abs(dy) > 1) el.animate([{ transform: `translateY(${dy}px)` }, { transform: 'none' }], { duration: 380, easing: 'cubic-bezier(.16,1,.3,1)' });
+    });
+  }
+}
+// A gaveta mora fora da tela redesenhada: entra uma vez, depois só troca o
+// conteúdo (armar o "Dar baixa?" não a faz entrar de novo) e, ao fechar — X,
+// Esc ou clique no véu —, sai pelo mesmo caminho por onde entrou.
+function renderGaveta() {
+  const p = est.gaveta ? porId(est.gaveta) : null;
+  const aberta = gavetaRaiz.querySelector('.gaveta:not(.sai)');
+  if (p && aberta) { aberta.setAttribute('aria-label', `O.S. #${p.id}`); aberta.innerHTML = detalhe(p); return; }
+  if (p) {
+    gavetaRaiz.innerHTML = `<div class="gaveta-veu" data-acao="fechar-gaveta"></div><aside class="gaveta" role="dialog" aria-label="O.S. #${p.id}">${detalhe(p)}</aside>`;
+    return;
+  }
+  if (!aberta) return;
+  const saindo = gavetaRaiz.querySelectorAll('.gaveta-veu, .gaveta');
+  if (menosMovimento.matches) { gavetaRaiz.innerHTML = ''; return; }
+  saindo.forEach(el => { el.classList.add('sai'); el.addEventListener('animationend', () => el.remove(), { once: true }); });
+}
+function abrirGaveta(p) {
+  est.gaveta = p.id; est.sel = p.id;
+  tela.querySelectorAll('.lin.sel').forEach(el => el.classList.remove('sel'));
+  tela.querySelector(`.lin[data-pid="${p.id}"]`)?.classList.add('sel');
+  renderGaveta(); lucide.createIcons();
+}
+
+// Trocar de aba: a lista nova entra do lado da aba escolhida, na direção em
+// que o traço laranja anda. Abertas e À dar baixa já estão na memória do
+// sistema; as outras três o sistema busca no banco na primeira vez da visita,
+// e nesse meio-tempo aparecem as linhas de espera. Aqui a espera é simulada com
+// o tempo típico dessa busca; voltar a uma aba já vista é na hora.
+const vistas = new Set(['abertas', 'concluidas']);
+const ESPERA_SIMULADA_MS = 450;
+const idxAba = id => ABAS.findIndex(a => a.id === id);
+function trocarAba(id) {
+  if (id === est.aba) return voltarAoInicioDaLista();
+  const lado = Math.sign(idxAba(id) - idxAba(est.aba));
+  est.aba = id; est.sel = null;
+  clearTimeout(trocarAba.t);
+  est.carregando = vistas.has(id) || filtrando() ? null : id;
+  render(); voltarAoInicioDaLista(); animarConteudo('entra', lado);
+  if (!est.carregando) return vistas.add(id);
+  trocarAba.t = setTimeout(() => { vistas.add(id); est.carregando = null; render(); animarConteudo('chega'); }, ESPERA_SIMULADA_MS);
+}
+const ANIMA_LISTA = { duration: 300, easing: 'cubic-bezier(.16,1,.3,1)' };
+function animarConteudo(como, lado) {
+  const c = tela.querySelector('.conteudo'); if (!c) return;
+  if (menosMovimento.matches) return c.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 150 });
+  if (como === 'entra') return c.animate([{ opacity: 0, transform: `translateX(${lado * 24}px)` }, { opacity: 1, transform: 'none' }], ANIMA_LISTA);
+  // As O.S. chegam no lugar das linhas de espera, uma logo atrás da outra.
+  c.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 180, easing: 'ease-out' });
+  [...c.querySelectorAll('.lin')].slice(0, 10).forEach((el, i) =>
+    el.animate([{ opacity: 0, transform: 'translateY(6px)' }, { opacity: 1, transform: 'none' }], { ...ANIMA_LISTA, delay: i * 22, fill: 'backwards' }));
+}
+
+// Trocar o tema "acende" a partir do botão: o escuro se espalha em círculo
+// saindo dele e, ao clarear, se recolhe para dentro dele (no sistema, o mesmo
+// está em lib/utils/trocarTema.js).
+let trocaAtual = null;
+function trocarTema(escuro, origem, aplicar) {
+  const raiz = document.documentElement;
+  const trocar = () => { raiz.classList.toggle('dark', escuro); aplicar?.(); };
+  if (!document.startViewTransition) return trocar();
+  const r = origem?.getBoundingClientRect();
+  const x = r ? r.left + r.width / 2 : innerWidth / 2, y = r ? r.top + r.height / 2 : innerHeight / 2;
+  const raio = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+  const reduzido = menosMovimento.matches;
+  raiz.dataset.trocaTema = '';
+  const troca = document.startViewTransition(trocar); trocaAtual = troca;
+  let anim;
+  troca.ready.then(() => {
+    const circulo = [`circle(0px at ${x}px ${y}px)`, `circle(${raio}px at ${x}px ${y}px)`];
+    anim = raiz.animate(reduzido ? { opacity: escuro ? [0, 1] : [1, 0] } : { clipPath: escuro ? circulo : circulo.reverse() }, {
+      duration: reduzido ? 200 : escuro ? 600 : 450,
+      easing: reduzido ? 'ease' : escuro ? 'cubic-bezier(.45,0,.2,1)' : 'cubic-bezier(.8,0,.55,1)',
+      fill: 'forwards', pseudoElement: escuro ? '::view-transition-new(root)' : '::view-transition-old(root)',
+    });
+  }).catch(() => {});
+  const fim = () => { anim?.cancel(); if (trocaAtual === troca) delete raiz.dataset.trocaTema; };
+  troca.finished.then(fim, fim);
+}
+
+// Troca só o rótulo do "Recolher todos / Abrir todos", sem redesenhar a lista.
+function atualizarTodos() {
+  const b = tela.querySelector('[data-acao="todos"]'); if (!b) return;
+  const tmp = document.createElement('div'); tmp.innerHTML = botaoTodos(JSON.parse(b.dataset.chaves));
+  b.replaceWith(tmp.firstElementChild); lucide.createIcons();
+}
+function alternarGrupo(grpBtn, fechar) {
+  const g = grpBtn.dataset.g; fechar ? est.recolhidos.add(g) : est.recolhidos.delete(g);
+  const grp = grpBtn.closest('.grp');
+  grp.classList.toggle('fechado', fechar); grpBtn.setAttribute('aria-expanded', String(!fechar));
+  grp.nextElementSibling?.classList.toggle('fechado', fechar);
+}
+// Linhas visíveis na ordem da tela, para as setas.
+const linhasVisiveis = () => [...tela.querySelectorAll('.lin[data-pid]')].filter(el => !el.closest('.grp-corpo.fechado'));
+function selecionar(id) {
+  est.sel = id;
+  tela.querySelectorAll('.lin.sel').forEach(el => el.classList.remove('sel'));
+  const el = tela.querySelector(`.lin[data-pid="${id}"]`); if (!el) return;
+  el.classList.add('sel'); el.scrollIntoView({ block: 'nearest' });
+}
+
+/* ===== eventos ===== */
+document.addEventListener('click', e => {
+  if (est.pop && !e.target.closest('.pop')) { const a = est.pop.ancora; fecharPop(); if (a && a.contains(e.target)) return; }
+  const pp = e.target.closest('[data-pop]');
+  if (pp && tela.contains(pp)) { e.stopPropagation(); return popPeriodo(pp); }
+  const el = e.target.closest('[data-acao]'); if (!el || !(tela.contains(el) || gavetaRaiz.contains(el))) return;
+  const a = el.dataset.acao; const p = el.dataset.id ? porId(el.dataset.id) : null;
+  const desarmou = a !== 'baixar' && est.conf != null;
+  if (desarmou) est.conf = null;
+  // Abrir e fechar mexem só na gaveta: redesenhar a lista inteira atrasava o
+  // primeiro quadro da animação. Só redesenha se havia um "Dar baixa?" armado.
+  if (a === 'abrir') {
+    if (travada(p)) return toast('Baixada: só Administrador ou Financeiro abre esta O.S.');
+    if (desarmou) { est.gaveta = p.id; est.sel = p.id; return render(); }
+    return abrirGaveta(p);
+  }
+  if (a === 'fechar-gaveta') { est.gaveta = null; return desarmou ? render() : renderGaveta(); }
+  if (a === 'baixar') return pedirBaixa(p);
+  if (['editar', 'imprimir', 'duplicar', 'receber', 'carregar'].includes(a)) return acaoSistema(a, p);
+  // Abrir/fechar o grupo mexe só nas classes, sem redesenhar a tela: assim a
+  // altura da lista tem de onde partir e a transição acontece.
+  if (a === 'grupo') { alternarGrupo(el, !est.recolhidos.has(el.dataset.g)); return atualizarTodos(); }
+  if (a === 'todos') {
+    const chaves = JSON.parse(el.dataset.chaves); const fechar = !chaves.every(c => est.recolhidos.has(c));
+    tela.querySelectorAll('[data-acao="grupo"]').forEach(b => { if (chaves.includes(b.dataset.g)) alternarGrupo(b, fechar); });
+    return atualizarTodos();
+  }
+  if (a === 'aba') return trocarAba(el.dataset.aba);
+  if (a === 'ordem') { est.ordem = est.ordem === 'desc' ? 'asc' : 'desc'; return render(); }
+  if (a === 'limpar') { est.busca = ''; render(); return tela.querySelector('[data-busca]')?.focus(); }
+  if (a === 'limpar-tudo') { est.busca = ''; est.periodo = { id: '', de: '', ate: '' }; return render(); }
+  if (a === 'focar-busca') { scrollTo({ top: 0, behavior: 'smooth' }); return tela.querySelector('[data-busca]')?.focus(); }
+  if (a === 'nova') { try { window.top.location.href = '/novaos'; } catch { toast('Abre a nova O.S.'); } }
+});
+document.addEventListener('contextmenu', e => {
+  const r = e.target.closest('[data-pid]'); if (!r || !tela.contains(r)) return;
+  const p = porId(r.dataset.pid); if (travada(p)) return;
+  e.preventDefault(); popMenu(e.clientX, e.clientY, p);
+});
+tela.addEventListener('input', e => { if (e.target.matches('[data-busca]')) { est.busca = e.target.value; render(); } });
+document.addEventListener('keydown', e => {
+  const digitando = e.target.matches?.('input, textarea');
+  if (e.key === 'Escape') {
+    if (est.pop) return fecharPop();
+    if (est.gaveta) { est.gaveta = null; return renderGaveta(); }
+    if (est.conf) { est.conf = null; return render(); }
+    if (est.busca) { est.busca = ''; return render(); }
+    return;
+  }
+  if (digitando || e.ctrlKey || e.metaKey || e.altKey) return;
+  if (e.key === '/') { e.preventDefault(); return tela.querySelector('[data-busca]')?.focus(); }
+  if (e.key.toLowerCase() === 'n') { e.preventDefault(); try { window.top.location.href = '/novaos'; } catch {} return; }
+  // Com a gaveta aberta, Enter abre a O.S. completa (o botão do topo dela).
+  if (est.gaveta) { if (e.key === 'Enter' && !e.target.closest?.('button')) acaoSistema('editar', porId(est.gaveta)); return; }
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+    const ls = linhasVisiveis(); if (!ls.length) return; e.preventDefault();
+    const i = ls.findIndex(el => +el.dataset.pid === est.sel);
+    const j = i < 0 ? 0 : Math.max(0, Math.min(ls.length - 1, i + (e.key === 'ArrowDown' ? 1 : -1)));
+    return selecionar(+ls[j].dataset.pid);
+  }
+  if (e.key === 'Enter' && est.sel) { const p = porId(est.sel); if (!p) return; if (travada(p)) return toast('Baixada: só Administrador ou Financeiro abre esta O.S.'); return abrirGaveta(p); }
+});
+addEventListener('resize', () => { fecharPop(); est.ind = null; posicionarIndicador(); });
+addEventListener('scroll', () => { if (est.pop) fecharPop(); }, true);
+
+/* ===== moldura do protótipo ===== */
+function moldura() {
+  document.getElementById('cargo').innerHTML = `${ico('eye', 'ico ico-s')}<span class="rot">Ver como</span><span class="txt">${CARGOS.find(c => c[0] === est.cargo)[1]}</span>${ico('chevron-down', 'ico ico-s chev')}`;
+  lucide.createIcons();
+}
+document.getElementById('cargo').addEventListener('click', e => { e.stopPropagation(); if (est.pop?.ancora === e.currentTarget) return fecharPop(); popCargo(e.currentTarget); });
+
+const temaBtn = document.getElementById('tema');
+function aplicarTema(escuro) { document.documentElement.classList.toggle('dark', escuro); temaBtn.innerHTML = ico(escuro ? 'sun' : 'moon', 'ico ico-s') + `<span class="txt">${escuro ? 'Claro' : 'Escuro'}</span>`; lucide.createIcons(); guardar('baixa-tema', escuro); }
+temaBtn.addEventListener('click', () => { const escuro = !document.documentElement.classList.contains('dark'); trocarTema(escuro, temaBtn, () => aplicarTema(escuro)); });
+aplicarTema(ler('baixa-tema', false));
+moldura();
+render();
+// A largura das abas só é certa depois que a Montserrat carrega.
+document.fonts?.ready.then(() => { est.ind = null; posicionarIndicador(); });
+</script>
+</body>
+</html>

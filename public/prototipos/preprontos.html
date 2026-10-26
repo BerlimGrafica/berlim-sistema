@@ -145,6 +145,10 @@ mark { background: var(--marca-busca); color: inherit; border-radius: 2px; paddi
 .toast .ico { color: #34d399; }
 @keyframes sobe { from { opacity: 0; transform: translate(-50%, 8px); } }
 @keyframes acende { from { background: var(--fin-fundo); } }
+/* troca de tema: a camada escura fica por cima e só o recorte dela anima (trocarTema) */
+html[data-troca-tema]::view-transition-old(root), html[data-troca-tema]::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
+html[data-troca-tema].dark::view-transition-new(root), html[data-troca-tema]:not(.dark)::view-transition-old(root) { z-index: 1; }
+html[data-troca-tema] *, html[data-troca-tema] *::before, html[data-troca-tema] *::after { transition: none !important; }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
 
 /* =================== A · Balcão =================== */
@@ -1003,7 +1007,33 @@ function aplicarTema(escuro) {
   temaBtn.innerHTML = ico(escuro ? 'sun' : 'moon', 'ico ico-s') + `<span>${escuro ? 'Claro' : 'Escuro'}</span>`;
   lucide.createIcons(); guardar('pp-tema', escuro);
 }
-temaBtn.addEventListener('click', () => aplicarTema(!document.documentElement.classList.contains('dark')));
+// Trocar o tema "acende" a partir do botão: o escuro se espalha em círculo
+// saindo dele e, ao clarear, se recolhe para dentro dele (no sistema, o mesmo
+// está em lib/utils/trocarTema.js).
+let trocaAtual = null;
+function trocarTema(escuro, origem, aplicar) {
+  const raiz = document.documentElement;
+  const trocar = () => { raiz.classList.toggle('dark', escuro); aplicar?.(); };
+  if (!document.startViewTransition) return trocar();
+  const r = origem?.getBoundingClientRect();
+  const x = r ? r.left + r.width / 2 : innerWidth / 2, y = r ? r.top + r.height / 2 : innerHeight / 2;
+  const raio = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+  const reduzido = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  raiz.dataset.trocaTema = '';
+  const troca = document.startViewTransition(trocar); trocaAtual = troca;
+  let anim;
+  troca.ready.then(() => {
+    const circulo = [`circle(0px at ${x}px ${y}px)`, `circle(${raio}px at ${x}px ${y}px)`];
+    anim = raiz.animate(reduzido ? { opacity: escuro ? [0, 1] : [1, 0] } : { clipPath: escuro ? circulo : circulo.reverse() }, {
+      duration: reduzido ? 200 : escuro ? 600 : 450,
+      easing: reduzido ? 'ease' : escuro ? 'cubic-bezier(.45,0,.2,1)' : 'cubic-bezier(.8,0,.55,1)',
+      fill: 'forwards', pseudoElement: escuro ? '::view-transition-new(root)' : '::view-transition-old(root)',
+    });
+  }).catch(() => {});
+  const fim = () => { anim?.cancel(); if (trocaAtual === troca) delete raiz.dataset.trocaTema; };
+  troca.finished.then(fim, fim);
+}
+temaBtn.addEventListener('click', () => { const escuro = !document.documentElement.classList.contains('dark'); trocarTema(escuro, temaBtn, () => aplicarTema(escuro)); });
 aplicarTema(ler('pp-tema', false));
 render();
 </script>

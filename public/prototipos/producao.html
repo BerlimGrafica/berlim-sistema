@@ -59,7 +59,9 @@ kbd { font: 600 10.5px/1 Montserrat, sans-serif; color: var(--tinta-suave); bord
 .dot { width: 8px; height: 8px; border-radius: 99px; display: inline-block; flex-shrink: 0; }
 mark { background: rgba(246,159,0,.3); color: inherit; border-radius: 2px; }
 
-/* moldura */
+/* moldura: a barra de cima faz o papel do cabeçalho do sistema (--altura-cabecalho
+   no app), e tudo que gruda ao rolar gruda logo abaixo dela */
+html { --altura-cabecalho: 51px; --altura-filtros: 42px; }
 .proto { position: sticky; top: 0; z-index: 40; height: 51px; display: flex; align-items: center; gap: 14px; padding: 0 20px; background: var(--superficie); border-bottom: 1px solid var(--borda); }
 .proto-nome { font-weight: 700; color: var(--tinta); white-space: nowrap; }
 .proto-nota { color: var(--tinta-suave); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
@@ -92,14 +94,26 @@ mark { background: rgba(246,159,0,.3); color: inherit; border-radius: 2px; }
 .busca { position: relative; display: flex; align-items: center; gap: 10px; background: var(--superficie); border: 1px solid var(--borda); border-radius: 8px; padding: 0 10px 0 12px; height: 42px; transition: border-color .15s, box-shadow .15s; }
 
 /* filtros como abas: linha que separa o cabeçalho da lista, traço laranja na aba ativa */
-.abas-wrap { display: flex; align-items: flex-end; gap: 8px; border-bottom: 1px solid var(--borda); margin-bottom: 4px; }
+.abas-wrap { display: flex; align-items: flex-end; gap: 8px; border-bottom: 1px solid var(--borda); margin-bottom: 4px; height: var(--altura-filtros); background: var(--fundo); }
+/* Ao rolar, a faixa de abas gruda no topo e vira a barra da tela: os filtros e a
+   ação principal ficam à mão em qualquer ponto da lista. O título com a busca vai
+   embora; quando a faixa gruda, "Nova O.S." entra compacto na ponta direita, no
+   mesmo lugar onde estava o botão grande. No celular a faixa rola junto e a ação
+   fica na barra do rodapé. */
+@media (min-width: 761px) {
+  html { scroll-padding-top: calc(var(--altura-cabecalho) + var(--altura-filtros) + 48px); }
+  .abas-wrap { position: sticky; top: var(--altura-cabecalho); z-index: 6; }
+  .pg:has(.abas-wrap.preso) .tab-cab { box-shadow: 0 1px 0 var(--borda); }
+  .preso .nova-presa { display: inline-flex; }
+}
+.nova-presa { display: none; margin-left: 4px; }
 .abas { position: relative; display: flex; gap: 2px; flex: 1; min-width: 0; overflow-x: auto; scrollbar-width: none; margin-bottom: -1px; }
 .abas::-webkit-scrollbar { display: none; }
 /* quando há aba escondida para o lado, a borda esmaece em vez de cortar seco */
 .abas.corta-esq { -webkit-mask-image: linear-gradient(to right, transparent, #000 28px); mask-image: linear-gradient(to right, transparent, #000 28px); }
 .abas.corta-dir { -webkit-mask-image: linear-gradient(to left, transparent, #000 28px); mask-image: linear-gradient(to left, transparent, #000 28px); }
 .abas.corta-esq.corta-dir { -webkit-mask-image: linear-gradient(to right, transparent, #000 28px, #000 calc(100% - 28px), transparent); mask-image: linear-gradient(to right, transparent, #000 28px, #000 calc(100% - 28px), transparent); }
-.aba { display: inline-flex; align-items: center; gap: 7px; padding: 10px 8px 12px; font-weight: 600; font-size: 13px; color: var(--tinta-suave); white-space: nowrap; border-radius: 6px 6px 0 0; transition: color .15s; }
+.aba { display: inline-flex; align-items: center; gap: 7px; height: var(--altura-filtros); padding: 0 8px 2px; font-weight: 600; font-size: 13px; color: var(--tinta-suave); white-space: nowrap; border-radius: 6px 6px 0 0; transition: color .15s; }
 .aba:hover { color: var(--tinta-corpo); }
 .aba[aria-selected="true"] { color: var(--tinta); }
 .aba .n { min-width: 20px; height: 18px; padding: 0 6px; border-radius: 99px; display: inline-grid; place-items: center; background: var(--realce); color: var(--tinta-suave); font-size: 11px; font-weight: 700; font-variant-numeric: tabular-nums; transition: background .15s, color .15s; }
@@ -181,7 +195,7 @@ mark { background: rgba(246,159,0,.3); color: inherit; border-radius: 2px; }
 
 /* ============ lista por etapa ============ */
 .tab-cab, .lin { display: grid; grid-template-columns: 58px minmax(170px,1.1fr) minmax(210px,1.7fr) 150px 112px 176px 118px; align-items: center; gap: 14px; }
-.tab-cab { padding: 8px 12px; font-size: 11.5px; font-weight: 600; color: var(--tinta-suave); position: sticky; top: 51px; z-index: 5; background: var(--fundo); }
+.tab-cab { padding: 8px 12px; font-size: 11.5px; font-weight: 600; color: var(--tinta-suave); position: sticky; top: calc(var(--altura-cabecalho) + var(--altura-filtros)); z-index: 5; background: var(--fundo); }
 .grp { display: flex; align-items: center; gap: 9px; padding: 18px 4px 8px; }
 .grp-btn { display: inline-flex; align-items: center; gap: 9px; font-size: 13.5px; font-weight: 700; color: var(--tinta); border-radius: 6px; padding: 2px 4px 2px 2px; }
 .grp-btn .chev { color: var(--tinta-fraca); transition: transform .2s cubic-bezier(.16,1,.3,1); }
@@ -203,9 +217,13 @@ mark { background: rgba(246,159,0,.3); color: inherit; border-radius: 2px; }
 .lin .resp-in { display: none; }
 
 /* ============ detalhe (gaveta no computador, folha no celular) ============ */
-.det-cab { display: flex; align-items: center; gap: 10px; color: var(--tinta-suave); font-size: 12.5px; }
+/* cabeçalho: nº, a ação principal (abrir a O.S. inteira) e o fechar. Gruda no
+   topo da gaveta ao rolar, então o botão fica sempre à mão. */
+.det-cab { display: flex; align-items: center; gap: 8px; color: var(--tinta-suave); font-size: 12.5px; }
 .det-cab .oid { font-size: 13px; }
-.det-cab .fechar { margin-left: auto; }
+.det-abrir { margin-left: auto; }
+.gaveta .det-cab { position: sticky; top: 0; z-index: 2; margin: -18px -22px 0; padding: 12px 22px; background: var(--fundo); transition: box-shadow .2s; }
+.gaveta.rolou .det-cab { box-shadow: 0 1px 0 var(--borda); }
 .det-cli { display: flex; align-items: center; gap: 8px; font-size: 22px; font-weight: 800; letter-spacing: -.02em; color: var(--tinta); line-height: 1.25; margin-top: 4px; }
 .det-cli.prob { color: var(--perigo); }
 .det-aviso { display: flex; gap: 8px; align-items: center; margin-top: 8px; padding: 8px 10px; border-radius: 8px; background: var(--perigo-fundo); border: 1px solid var(--perigo-borda); color: var(--perigo); font-size: 12.5px; font-weight: 600; }
@@ -250,11 +268,17 @@ mark { background: rgba(246,159,0,.3); color: inherit; border-radius: 2px; }
 .det-acoes { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 18px; align-items: center; }
 .det-acoes .esp { flex: 1; }
 
-.gaveta-veu { position: fixed; inset: 51px 0 0 0; background: var(--veu); z-index: 60; animation: aparece .2s ease-out; }
-.gaveta { position: fixed; top: 51px; right: 0; bottom: 0; width: min(460px, 100vw); background: var(--fundo); border-left: 1px solid var(--borda); box-shadow: var(--sombra); z-index: 61; overflow-y: auto; animation: entraDir .28s cubic-bezier(.16,1,.3,1); }
+/* A gaveta desliza da borda, sem pressa e desacelerando; ao fechar volta pelo
+   mesmo caminho, um pouco mais rápida e acelerando para fora. */
+.gaveta-veu { position: fixed; inset: var(--altura-cabecalho) 0 0 0; background: var(--veu); z-index: 60; animation: veuEntra .4s ease-out; }
+.gaveta { position: fixed; top: var(--altura-cabecalho); right: 0; bottom: 0; width: min(460px, 100%); background: var(--fundo); border-left: 1px solid var(--borda); box-shadow: var(--sombra); z-index: 61; overflow-y: auto; animation: gavetaEntra .46s cubic-bezier(.22,1,.36,1); }
+.gaveta-veu.sai { animation: veuSai .3s ease-in forwards; pointer-events: none; }
+.gaveta.sai { animation: gavetaSai .3s cubic-bezier(.55,0,1,.45) forwards; pointer-events: none; }
 .gaveta .det { padding: 18px 22px 40px; }
-@keyframes entraDir { from { transform: translateX(24px); opacity: 0; } }
-@keyframes aparece { from { opacity: 0; } }
+@keyframes gavetaEntra { from { transform: translateX(100%); } }
+@keyframes gavetaSai { to { transform: translateX(100%); } }
+@keyframes veuEntra { from { opacity: 0; } }
+@keyframes veuSai { to { opacity: 0; } }
 
 /* popover, menu e toast */
 .pop { position: fixed; z-index: 90; min-width: 210px; max-height: min(460px, calc(100vh - 16px)); overflow-y: auto; padding: 4px; background: var(--superficie); border: 1px solid var(--borda); border-radius: 9px; box-shadow: var(--sombra-pop); animation: pop .16s cubic-bezier(.16,1,.3,1); }
@@ -282,6 +306,10 @@ mark { background: rgba(246,159,0,.3); color: inherit; border-radius: 2px; }
 .dicas { margin-top: 16px; color: var(--tinta-fraca); font-size: 12px; display: flex; gap: 14px; flex-wrap: wrap; }
 .dicas span { display: inline-flex; gap: 5px; align-items: center; }
 .barra-mob { display: none; }
+/* troca de tema: a camada escura fica por cima e só o recorte dela anima (trocarTema) */
+html[data-troca-tema]::view-transition-old(root), html[data-troca-tema]::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
+html[data-troca-tema].dark::view-transition-new(root), html[data-troca-tema]:not(.dark)::view-transition-old(root) { z-index: 1; }
+html[data-troca-tema] *, html[data-troca-tema] *::before, html[data-troca-tema] *::after { transition: none !important; }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
 
 /* ============ responsivo ============ */
@@ -316,12 +344,16 @@ mark { background: rgba(246,159,0,.3); color: inherit; border-radius: 2px; }
   .barra-mob { display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; gap: 8px; padding: 10px 12px calc(10px + env(safe-area-inset-bottom)); background: var(--superficie); border-top: 1px solid var(--borda); }
   .barra-mob .btn { height: 44px; }
   .barra-mob .btn-pri { flex: 1; }
-  .gaveta { top: auto; height: 88dvh; width: 100vw; border-left: 0; border-radius: 14px 14px 0 0; animation: entraBaixo .3s cubic-bezier(.16,1,.3,1); }
+  .gaveta { top: auto; height: 88dvh; width: 100%; border-left: 0; border-radius: 14px 14px 0 0; animation-name: folhaEntra; }
+  .gaveta.sai { animation-name: folhaSai; }
   .gaveta .det { padding: 14px 14px 40px; }
+  .gaveta .det-cab { margin: -14px -14px 0; padding: 10px 14px; }
+  .det-abrir kbd { display: none; }
   .marcas { grid-template-columns: 1fr; }
   .props { grid-template-columns: 84px minmax(0,1fr); }
 }
-@keyframes entraBaixo { from { transform: translateY(40px); opacity: 0; } }
+@keyframes folhaEntra { from { transform: translateY(100%); } }
+@keyframes folhaSai { to { transform: translateY(100%); } }
 .fls-mob { display: none !important; }
 </style>
 </head>
@@ -332,6 +364,7 @@ mark { background: rgba(246,159,0,.3); color: inherit; border-radius: 2px; }
   <button class="proto-tema" id="tema"></button>
 </div>
 <div id="tela"></div>
+<div id="gaveta-raiz"></div>
 
 <script>
 /* ===== O.S. reais (injetadas pela página /novaproducao) ===== */
@@ -400,7 +433,7 @@ const FILTROS = [
 const est = {
   busca: '', filtro: null,
   recolhidos: new Set(), sel: null, gaveta: null, conf: null, pop: null,
-  animar: false,
+  animar: false, preso: false,
 };
 const termos = () => semAcento(est.busca).split(/\s+/).filter(Boolean);
 function visiveis() {
@@ -456,10 +489,42 @@ function topo(titulo, sub, extra = '') {
 }
 function abasHTML(base, extra = '') {
   const abas = [{ id: '', nome: 'Todas', n: base.length }, ...FILTROS.map(f => ({ id: f.id, nome: f.nome, n: base.filter(f.f).length, alerta: f.alerta }))];
-  return `<div class="abas-wrap">
+  return `<div class="sentinela" aria-hidden="true"></div><div class="abas-wrap ${est.preso ? 'preso' : ''}">
     <div class="abas" role="tablist" aria-label="Filtros">${abas.map(a => `<button class="aba ${a.alerta && a.n ? 'alerta' : ''}" role="tab" data-acao="filtro" data-f="${a.id}" aria-selected="${(est.filtro || '') === a.id}">${a.nome}<span class="n">${a.n}</span></button>`).join('')}<span class="indicador" aria-hidden="true"></span></div>
-    ${extra ? `<div class="abas-fim">${extra}</div>` : ''}
+    <div class="abas-fim">${extra}<button class="btn btn-pri btn-p nova-presa" data-acao="nova">${ico('plus', 'ico ico-s')}Nova O.S.<kbd>N</kbd></button></div>
   </div>`;
+}
+// A faixa "presa": a sentinela fica logo acima dela e, quando passa por baixo do
+// cabeçalho, a faixa já está grudada. O botão compacto entra deslizando e o ícone
+// de recolher escorrega para abrir espaço, em vez de pular.
+const menosMovimento = matchMedia('(prefers-reduced-motion: reduce)');
+const alturaCabecalho = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--altura-cabecalho'));
+const vigiaFaixa = new IntersectionObserver(([e]) => marcarPreso(!e.isIntersecting && e.boundingClientRect.top < e.rootBounds.top),
+  { root: document, rootMargin: `-${alturaCabecalho}px 0px 0px 0px` });
+function marcarPreso(preso) {
+  if (preso === !!est.preso) return;
+  est.preso = preso;
+  const faixa = tela.querySelector('.abas-wrap'); if (!faixa) return;
+  const todos = faixa.querySelector('.todos'); const antes = todos?.getBoundingClientRect().left;
+  faixa.classList.toggle('preso', preso);
+  marcarCortes(faixa.querySelector('.abas'));
+  if (menosMovimento.matches) return;
+  const anima = { duration: 340, easing: 'cubic-bezier(.16,1,.3,1)' };
+  if (todos) { const dx = antes - todos.getBoundingClientRect().left; if (Math.abs(dx) > 1) todos.animate([{ transform: `translateX(${dx}px)` }, { transform: 'none' }], anima); }
+  if (preso) faixa.querySelector('.nova-presa').animate([{ opacity: 0, transform: 'translateX(10px)' }, { opacity: 1, transform: 'none' }], anima);
+}
+// Trocar de filtro com a faixa presa leva ao começo da lista nova, logo abaixo da
+// faixa, em vez de deixar a tela no meio de uma lista que já não é a mesma.
+function voltarAoInicioDaLista() {
+  const s = tela.querySelector('.sentinela'); if (!s || !est.preso) return;
+  scrollTo({ top: s.getBoundingClientRect().top + scrollY - alturaCabecalho + 1 });
+}
+// A lista nova entra do lado da aba escolhida, na direção em que o traço laranja anda.
+const idxFiltro = id => ['', ...FILTROS.map(f => f.id)].indexOf(id || '');
+function entrarLista(lado) {
+  const c = tela.querySelector('.conteudo'); if (!c || !lado) return;
+  c.animate(menosMovimento.matches ? [{ opacity: 0 }, { opacity: 1 }] : [{ opacity: 0, transform: `translateX(${lado * 24}px)` }, { opacity: 1, transform: 'none' }],
+    { duration: menosMovimento.matches ? 150 : 300, easing: 'cubic-bezier(.16,1,.3,1)' });
 }
 // O traço laranja desliza da aba anterior até a escolhida.
 function posicionarIndicador() {
@@ -504,19 +569,20 @@ function renderA() {
     return `<div class="grp ${fechado ? 'fechado' : ''}"><button class="grp-btn" data-acao="grupo" data-g="${esc(x.chave)}" aria-expanded="${!fechado}">${ico('chevron-down', 'ico ico-s chev')}<span class="dot" style="background:${x.cor}"></span>${esc(x.nome)} <span class="n">${x.itens.length}</span></button>${atr ? `<span class="alerta"><span class="dot"></span>${atr} ${atr === 1 ? 'atrasada' : 'atrasadas'}</span>` : ''}</div>
       <div class="grp-corpo ${fechado ? 'fechado' : ''}"><div class="grp-dentro"><div class="lista">${x.itens.map(linha).join('')}</div></div></div>`;
   }).join('') : vazioHTML();
-  return `<div class="pg">${topo('Produção', `${PED.length} O.S. em andamento · ${PED.filter(atrasada).length} atrasadas`, g.length ? botaoTodos(g.map(x => x.chave)) : '')}${g.length ? cabTabela() : ''}${body}
+  return `<div class="pg">${topo('Produção', `${PED.length} O.S. em andamento · ${PED.filter(atrasada).length} atrasadas`, g.length ? botaoTodos(g.map(x => x.chave)) : '')}${g.length ? cabTabela() : ''}<div class="conteudo">${body}</div>
     <div class="dicas"><span><kbd>/</kbd> buscar</span><span><kbd>N</kbd> nova O.S.</span><span>clique na linha para ver tudo</span><span>botão direito para mais ações</span></div></div>${barraMob()}`;
 }
 /* ===== detalhe (gaveta no computador, folha no celular) ===== */
 function detalhe(p, naGaveta) {
   const feitos = p.itens.filter(i => i[2]).length; const falta = p.valor - p.pago; const conf = est.conf === p.id;
   return `<div class="det">
-    <div class="det-cab"><span class="oid">O.S. #${p.id}</span>${p.venda ? `<span>· venda ${ddmm(p.venda)}</span>` : ''}${naGaveta ? `<button class="ib fechar" data-acao="fechar-gaveta" aria-label="Fechar">${ico('x')}</button>` : ''}</div>
+    <div class="det-cab"><span class="oid">O.S. #${p.id}</span><button class="btn btn-pri btn-p det-abrir" data-acao="editar" data-id="${p.id}">${ico('square-pen', 'ico ico-s')}Abrir O.S. completa<kbd>Enter</kbd></button>${naGaveta ? `<button class="ib fechar" data-acao="fechar-gaveta" aria-label="Fechar" title="Fechar (Esc)">${ico('x')}</button>` : ''}</div>
     <div class="det-cli ${p.problema ? 'prob' : ''}">${esc(p.cliente)}</div>
     ${p.problema ? `<div class="det-aviso">${ico('alert-triangle', 'ico ico-s')}Cliente com pendência — confira antes de entregar.</div>` : ''}
     <dl class="props">
       <dt>${ico('circle-dot', 'ico ico-s')}Etapa</dt><dd>${statusBtn(p)}</dd>
       <dt>${ico('flag', 'ico ico-s')}Prazo</dt><dd>${prazoBtn(p)}${seloHora(p)}</dd>
+      ${p.venda ? `<dt>${ico('calendar', 'ico ico-s')}Venda</dt><dd>${ddmm(p.venda)}</dd>` : ''}
       <dt>${ico('users', 'ico ico-s')}Resp.</dt><dd>${avs(p, true)}</dd>
       <dt>${ico('map-pin', 'ico ico-s')}Local</dt><dd>${locais(p)}</dd>
     </dl>
@@ -531,7 +597,6 @@ function detalhe(p, naGaveta) {
       <dl class="fin-linhas"><div><dt>Total</dt><dd>${brl(p.valor)}</dd></div><div><dt>Pago</dt><dd>${brl(p.pago)}</dd></div><div class="${falta > 0 ? 'falta' : 'quitado'}"><dt>${falta > 0 ? 'Falta' : 'Saldo'}</dt><dd>${brl(Math.max(0, falta))}</dd></div></dl>
     </section>
     <div class="det-acoes">
-      <button class="btn btn-sec btn-p" data-acao="editar" data-id="${p.id}">${ico('square-pen', 'ico ico-s')}Abrir O.S. completa</button>
       <button class="btn btn-txt btn-p" data-acao="imprimir" data-id="${p.id}">${ico('printer', 'ico ico-s')}Imprimir</button>
       <button class="btn btn-txt btn-p" data-acao="duplicar" data-id="${p.id}">${ico('copy-plus', 'ico ico-s')}Duplicar</button>
       <span class="esp"></span>
@@ -638,16 +703,15 @@ function concluir(p, direto) {
 
 /* ===== render ===== */
 const tela = document.getElementById('tela');
+const gavetaRaiz = document.getElementById('gaveta-raiz');
 function medir() { const m = {}; tela.querySelectorAll('[data-pid]').forEach(el => { const r = el.getBoundingClientRect(); m[el.dataset.pid] = r; }); return m; }
 function render() {
   const foco = document.activeElement; const naBusca = foco?.matches?.('[data-busca]'); const pos = naBusca ? foco.selectionStart : null;
   const antes = est.animar ? medir() : null;
   const scAbas = document.querySelector('.abas')?.scrollLeft;
   tela.innerHTML = renderA();
-  if (est.gaveta) {
-    const p = porId(est.gaveta);
-    if (p) tela.insertAdjacentHTML('beforeend', `<div class="gaveta-veu" data-acao="fechar-gaveta"></div><aside class="gaveta" role="dialog" aria-label="O.S. #${p.id}">${detalhe(p, true)}</aside>`);
-  }
+  vigiaFaixa.disconnect(); const sentinela = tela.querySelector('.sentinela'); if (sentinela) vigiaFaixa.observe(sentinela);
+  renderGaveta();
   document.getElementById('nota').textContent = `${PED.length} O.S. reais em produção · nada aqui grava no sistema`;
   lucide.createIcons();
   if (scAbas != null && document.querySelector('.abas')) document.querySelector('.abas').scrollLeft = scAbas;
@@ -664,6 +728,29 @@ function render() {
   }
 }
 
+// A gaveta mora fora da tela redesenhada: entra uma vez, depois só troca o
+// conteúdo (marcar um item ou a arte não a faz entrar de novo) e, ao fechar —
+// X, Esc ou clique no véu —, sai pelo mesmo caminho por onde entrou.
+function renderGaveta() {
+  const p = est.gaveta ? porId(est.gaveta) : null;
+  const aberta = gavetaRaiz.querySelector('.gaveta:not(.sai)');
+  if (p && aberta) { aberta.setAttribute('aria-label', `O.S. #${p.id}`); aberta.innerHTML = detalhe(p, true); return; }
+  if (p) {
+    gavetaRaiz.innerHTML = `<div class="gaveta-veu" data-acao="fechar-gaveta"></div><aside class="gaveta" role="dialog" aria-label="O.S. #${p.id}">${detalhe(p, true)}</aside>`;
+    return;
+  }
+  if (!aberta) return;
+  const saindo = gavetaRaiz.querySelectorAll('.gaveta-veu, .gaveta');
+  if (menosMovimento.matches) { gavetaRaiz.innerHTML = ''; return; }
+  saindo.forEach(el => { el.classList.add('sai'); el.addEventListener('animationend', () => el.remove(), { once: true }); });
+}
+function abrirGaveta(p) {
+  est.gaveta = p.id; est.sel = p.id;
+  tela.querySelectorAll('.lin.sel').forEach(el => el.classList.remove('sel'));
+  tela.querySelector(`.lin[data-pid="${p.id}"]`)?.classList.add('sel');
+  renderGaveta(); lucide.createIcons();
+}
+
 // Troca só o rótulo do "Recolher todas / Abrir todas", sem redesenhar a lista.
 function atualizarTodos() {
   const b = tela.querySelector('[data-acao="todos"]'); if (!b) return;
@@ -675,15 +762,21 @@ function atualizarTodos() {
 document.addEventListener('click', e => {
   if (est.pop && !e.target.closest('.pop')) { const a = est.pop.ancora; fecharPop(); if (a && a.contains(e.target)) return; }
   const pp = e.target.closest('[data-pop]');
-  if (pp && tela.contains(pp)) {
+  if (pp && (tela.contains(pp) || gavetaRaiz.contains(pp))) {
     e.stopPropagation(); const p = porId(pp.dataset.id); if (!p) return;
     ({ status: popStatus, resp: popResp, prazo: popPrazo })[pp.dataset.pop](pp, p); return;
   }
-  const el = e.target.closest('[data-acao]'); if (!el || !tela.contains(el)) return;
+  const el = e.target.closest('[data-acao]'); if (!el || !(tela.contains(el) || gavetaRaiz.contains(el))) return;
   const a = el.dataset.acao; const p = el.dataset.id ? porId(el.dataset.id) : null;
-  if (a !== 'concluir' && est.conf) est.conf = null;
-  if (a === 'abrir') { est.gaveta = p.id; est.sel = p.id; return render(); }
-  if (a === 'fechar-gaveta') { est.gaveta = null; return render(); }
+  const desarmou = a !== 'concluir' && est.conf != null;
+  if (desarmou) est.conf = null;
+  // Abrir e fechar mexem só na gaveta: redesenhar a lista inteira atrasava o
+  // primeiro quadro da animação. Só redesenha se havia um "Concluir?" armado.
+  if (a === 'abrir') {
+    if (desarmou) { est.gaveta = p.id; est.sel = p.id; return render(); }
+    return abrirGaveta(p);
+  }
+  if (a === 'fechar-gaveta') { est.gaveta = null; return desarmou ? render() : renderGaveta(); }
   if (a === 'item') { const it = p.itens.find(i => String(i[0]) === el.dataset.item); it[2] = !it[2]; render(); const todos = p.itens.every(i => i[2]); if (todos && it[2]) toast(`Todos os itens da #${p.id} feitos`); return; }
   if (a === 'arte') { p.arte = !p.arte; render(); return toast(p.arte ? `Arte da #${p.id} aprovada` : `Arte da #${p.id} voltou para pendente`); }
   if (a === 'entrega') { p.entrega = !p.entrega; render(); return toast(p.entrega ? `#${p.id} pronta para entrega` : `#${p.id} ainda não está pronta`); }
@@ -708,7 +801,10 @@ document.addEventListener('click', e => {
     });
     atualizarTodos(); return;
   }
-  if (a === 'filtro') { est.filtro = el.dataset.f || null; return render(); }
+  if (a === 'filtro') {
+    const lado = Math.sign(idxFiltro(el.dataset.f) - idxFiltro(est.filtro));
+    est.filtro = el.dataset.f || null; render(); voltarAoInicioDaLista(); return entrarLista(lado);
+  }
   if (a === 'limpar') { est.busca = ''; render(); return tela.querySelector('[data-busca]')?.focus(); }
   if (a === 'limpar-tudo') { est.busca = ''; est.filtro = null; return render(); }
   if (a === 'focar-busca') { window.scrollTo({ top: 0, behavior: 'smooth' }); return tela.querySelector('[data-busca]')?.focus(); }
@@ -721,18 +817,50 @@ document.addEventListener('contextmenu', e => {
 tela.addEventListener('input', e => { if (e.target.matches('[data-busca]')) { est.busca = e.target.value; render(); } });
 document.addEventListener('keydown', e => {
   const digitando = e.target.matches?.('input, textarea');
-  if (e.key === 'Escape') { if (est.pop) return fecharPop(); if (est.gaveta) { est.gaveta = null; return render(); } if (est.busca) { est.busca = ''; return render(); } return; }
+  if (e.key === 'Escape') { if (est.pop) return fecharPop(); if (est.gaveta) { est.gaveta = null; return renderGaveta(); } if (est.busca) { est.busca = ''; return render(); } return; }
   if (digitando) return;
+  // Com a gaveta aberta, Enter abre a O.S. completa (o botão do topo dela).
+  if (est.gaveta && e.key === 'Enter' && !e.target.closest?.('button')) return acaoSistema('editar', porId(est.gaveta));
   if (e.key === '/') { e.preventDefault(); return tela.querySelector('[data-busca]')?.focus(); }
   if (e.key.toLowerCase() === 'n' && !e.ctrlKey && !e.metaKey) { e.preventDefault(); try { window.top.location.href = '/novaos'; } catch {} return; }
 });
 addEventListener('resize', fecharPop);
-addEventListener('scroll', () => { if (est.pop) fecharPop(); }, true);
+addEventListener('scroll', e => {
+  if (est.pop) fecharPop();
+  // O cabeçalho preso da gaveta ganha uma linha só quando há conteúdo passando por baixo.
+  if (e.target.matches?.('.gaveta')) e.target.classList.toggle('rolou', e.target.scrollTop > 2);
+}, true);
 
 
 const temaBtn = document.getElementById('tema');
 function aplicarTema(escuro) { document.documentElement.classList.toggle('dark', escuro); temaBtn.innerHTML = ico(escuro ? 'sun' : 'moon', 'ico ico-s') + `<span>${escuro ? 'Claro' : 'Escuro'}</span>`; lucide.createIcons(); guardar('prod-tema', escuro); }
-temaBtn.addEventListener('click', () => aplicarTema(!document.documentElement.classList.contains('dark')));
+// Trocar o tema "acende" a partir do botão: o escuro se espalha em círculo
+// saindo dele e, ao clarear, se recolhe para dentro dele (no sistema, o mesmo
+// está em lib/utils/trocarTema.js).
+let trocaAtual = null;
+function trocarTema(escuro, origem, aplicar) {
+  const raiz = document.documentElement;
+  const trocar = () => { raiz.classList.toggle('dark', escuro); aplicar?.(); };
+  if (!document.startViewTransition) return trocar();
+  const r = origem?.getBoundingClientRect();
+  const x = r ? r.left + r.width / 2 : innerWidth / 2, y = r ? r.top + r.height / 2 : innerHeight / 2;
+  const raio = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+  const reduzido = menosMovimento.matches;
+  raiz.dataset.trocaTema = '';
+  const troca = document.startViewTransition(trocar); trocaAtual = troca;
+  let anim;
+  troca.ready.then(() => {
+    const circulo = [`circle(0px at ${x}px ${y}px)`, `circle(${raio}px at ${x}px ${y}px)`];
+    anim = raiz.animate(reduzido ? { opacity: escuro ? [0, 1] : [1, 0] } : { clipPath: escuro ? circulo : circulo.reverse() }, {
+      duration: reduzido ? 200 : escuro ? 600 : 450,
+      easing: reduzido ? 'ease' : escuro ? 'cubic-bezier(.45,0,.2,1)' : 'cubic-bezier(.8,0,.55,1)',
+      fill: 'forwards', pseudoElement: escuro ? '::view-transition-new(root)' : '::view-transition-old(root)',
+    });
+  }).catch(() => {});
+  const fim = () => { anim?.cancel(); if (trocaAtual === troca) delete raiz.dataset.trocaTema; };
+  troca.finished.then(fim, fim);
+}
+temaBtn.addEventListener('click', () => { const escuro = !document.documentElement.classList.contains('dark'); trocarTema(escuro, temaBtn, () => aplicarTema(escuro)); });
 aplicarTema(ler('prod-tema', false));
 render();
 // A largura das abas só é certa depois que a Montserrat carrega.

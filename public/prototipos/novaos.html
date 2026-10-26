@@ -75,6 +75,10 @@ kbd { font: 600 10.5px/1 Montserrat, sans-serif; color: var(--tinta-suave); bord
 .modal { position: relative; width: 100%; max-width: 1120px; background: var(--superficie); border: 1px solid var(--borda); border-radius: 12px; box-shadow: var(--sombra); display: flex; flex-direction: column; max-height: calc(100vh - 110px); overflow: hidden; animation: entra .32s cubic-bezier(.16,1,.3,1); }
 @keyframes entra { from { opacity: 0; transform: translateY(10px) scale(.985); } }
 @media (prefers-reduced-motion: reduce) { .modal, .pop, .sub-card { animation: none !important; } }
+/* troca de tema: a camada escura fica por cima e só o recorte dela anima (trocarTema) */
+html[data-troca-tema]::view-transition-old(root), html[data-troca-tema]::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
+html[data-troca-tema].dark::view-transition-new(root), html[data-troca-tema]:not(.dark)::view-transition-old(root) { z-index: 1; }
+html[data-troca-tema] *, html[data-troca-tema] *::before, html[data-troca-tema] *::after { transition: none !important; }
 .fechar { width: 32px; height: 32px; display: grid; place-items: center; border-radius: 7px; color: var(--tinta-suave); }
 .fechar:hover { background: var(--realce); color: var(--tinta); }
 .btn { height: 38px; padding: 0 16px; border-radius: 8px; font-weight: 600; font-size: 13px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; white-space: nowrap; transition: background .15s, border-color .15s, color .15s, filter .15s; }
@@ -912,13 +916,40 @@ function toast(msg) {
   document.body.appendChild(t); lucide.createIcons(); toastT = setTimeout(() => t.remove(), 2600);
 }
 
+// Trocar o tema "acende" a partir do botão: o escuro se espalha em círculo
+// saindo dele e, ao clarear, se recolhe para dentro dele (no sistema, o mesmo
+// está em lib/utils/trocarTema.js).
+let trocaAtual = null;
+function trocarTema(escuro, origem, aplicar) {
+  const raiz = document.documentElement;
+  const trocar = () => { raiz.classList.toggle('dark', escuro); aplicar?.(); };
+  if (!document.startViewTransition) return trocar();
+  const r = origem?.getBoundingClientRect();
+  const x = r ? r.left + r.width / 2 : innerWidth / 2, y = r ? r.top + r.height / 2 : innerHeight / 2;
+  const raio = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+  const reduzido = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  raiz.dataset.trocaTema = '';
+  const troca = document.startViewTransition(trocar); trocaAtual = troca;
+  let anim;
+  troca.ready.then(() => {
+    const circulo = [`circle(0px at ${x}px ${y}px)`, `circle(${raio}px at ${x}px ${y}px)`];
+    anim = raiz.animate(reduzido ? { opacity: escuro ? [0, 1] : [1, 0] } : { clipPath: escuro ? circulo : circulo.reverse() }, {
+      duration: reduzido ? 200 : escuro ? 600 : 450,
+      easing: reduzido ? 'ease' : escuro ? 'cubic-bezier(.45,0,.2,1)' : 'cubic-bezier(.8,0,.55,1)',
+      fill: 'forwards', pseudoElement: escuro ? '::view-transition-new(root)' : '::view-transition-old(root)',
+    });
+  }).catch(() => {});
+  const fim = () => { anim?.cancel(); if (trocaAtual === troca) delete raiz.dataset.trocaTema; };
+  troca.finished.then(fim, fim);
+}
+
 /* ===== eventos ===== */
 document.addEventListener('click', e => {
   const t = e.target;
   if (t.closest('#tema')) {
-    const esc_ = document.documentElement.classList.toggle('dark');
-    t.closest('#tema').innerHTML = `<i data-lucide="${esc_ ? 'sun' : 'moon'}" class="ico ico-s"></i><span>${esc_ ? 'Claro' : 'Escuro'}</span>`;
-    lucide.createIcons(); return;
+    const bt = t.closest('#tema'); const esc_ = !document.documentElement.classList.contains('dark');
+    trocarTema(esc_, bt, () => { bt.innerHTML = `<i data-lucide="${esc_ ? 'sun' : 'moon'}" class="ico ico-s"></i><span>${esc_ ? 'Claro' : 'Escuro'}</span>`; lucide.createIcons(); });
+    return;
   }
   const modo = t.closest('[data-modo]');
   if (modo) { os.modo = modo.dataset.modo; document.querySelectorAll('[data-modo]').forEach(b => b.setAttribute('aria-pressed', b === modo)); pf = null; render(); return; }
