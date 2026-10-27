@@ -1,0 +1,984 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Novo Início</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<style>
+/* Padrão do DESIGN.md: o mesmo mundo do modal de O.S., da nova Produção e da nova O.S. */
+:root {
+  --brand: #F69F00; --brand-hover: #d98b00; --brand-tinta: #8A5400; --sobre-brand: #241600;
+  --fundo: #EDEFF0; --superficie: #ffffff; --sutil: #f9fafb; --realce: #f3f4f6;
+  --borda-fraca: #f0f1f3; --borda: #e5e7eb; --borda-forte: #d1d5db;
+  --tinta: #111827; --tinta-corpo: #374151; --tinta-suave: #6b7280; --tinta-fraca: #9ca3af;
+  --perigo: #dc2626; --perigo-fundo: #fef2f2; --perigo-borda: #fecaca;
+  --sucesso: #059669;
+  --sombra-pop: 0 12px 28px -8px rgba(15,23,42,.24), 0 1px 3px rgba(15,23,42,.08);
+  --sombra-leve: 0 1px 2px rgba(15,23,42,.06);
+  /* cores de área: só no cabeçalho de cada bloco, no ícone e na meta dele */
+  --dados: #475569; --dados-tinta: #334155; --dados-fundo: #f8fafc; --dados-borda: #e2e8f0;
+  --itens: #2563eb; --itens-tinta: #1d4ed8; --itens-fundo: #eff6ff; --itens-borda: #dbeafe;
+  --fin: #059669; --fin-tinta: #047857; --fin-fundo: #ecfdf5; --fin-borda: #c9f2df;
+  --obs: #d97706; --obs-tinta: #b45309; --obs-fundo: #fffbeb; --obs-borda: #fdecc4;
+  /* gravidade das pendências: as mesmas do sino */
+  --g-critico: #dc2626; --g-atencao: #f59e0b; --g-tarefa: #3b82f6;
+  --saida: cubic-bezier(.16, 1, .3, 1);
+}
+.dark {
+  --brand-tinta: #FFB938;
+  --fundo: #0d1117; --superficie: #161b22; --sutil: #1b2129; --realce: #21262d;
+  --borda-fraca: #232a33; --borda: #30363d; --borda-forte: #3d444d;
+  --tinta: #EDEDED; --tinta-corpo: #D4D4D8; --tinta-suave: #A1A1AA; --tinta-fraca: #71717a;
+  --perigo: #f87171; --perigo-fundo: rgba(239,68,68,.1); --perigo-borda: rgba(239,68,68,.3);
+  --sucesso: #34d399;
+  --sombra-pop: 0 12px 28px -8px rgba(0,0,0,.6); --sombra-leve: 0 1px 2px rgba(0,0,0,.4);
+  --dados: #94a3b8; --dados-tinta: #cbd5e1; --dados-fundo: rgba(148,163,184,.08); --dados-borda: rgba(148,163,184,.22);
+  --itens: #60a5fa; --itens-tinta: #93c5fd; --itens-fundo: rgba(59,130,246,.12); --itens-borda: rgba(59,130,246,.3);
+  --fin: #34d399; --fin-tinta: #6ee7b7; --fin-fundo: rgba(16,185,129,.11); --fin-borda: rgba(16,185,129,.28);
+  --obs: #fbbf24; --obs-tinta: #fcd34d; --obs-fundo: rgba(245,158,11,.1); --obs-borda: rgba(245,158,11,.26);
+  --g-critico: #f87171; --g-atencao: #fbbf24; --g-tarefa: #60a5fa;
+}
+* { box-sizing: border-box; margin: 0; }
+html { color-scheme: light; } html.dark { color-scheme: dark; }
+body { font-family: Montserrat, system-ui, sans-serif; font-size: 13px; line-height: 1.5; color: var(--tinta-corpo); background: var(--fundo); -webkit-font-smoothing: antialiased; }
+button { font: inherit; color: inherit; cursor: pointer; background: none; border: 0; padding: 0; text-align: inherit; }
+a { color: inherit; text-decoration: none; }
+::selection { background: rgba(246,159,0,.3); }
+:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; border-radius: 4px; }
+* { scrollbar-width: thin; scrollbar-color: var(--borda-forte) transparent; }
+[hidden] { display: none !important; }
+.ico { width: 16px; height: 16px; stroke-width: 2; flex-shrink: 0; }
+.ico-s { width: 14px; height: 14px; }
+.dot { width: 8px; height: 8px; border-radius: 99px; display: inline-block; flex-shrink: 0; }
+.num { font-variant-numeric: tabular-nums; }
+.so-leitor { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+/* cada área responde pela cor dela: faixa, ícone e meta (DESIGN.md › Áreas) */
+.a-dados { --c: var(--dados); --c-tinta: var(--dados-tinta); --c-fundo: var(--dados-fundo); --c-borda: var(--dados-borda); }
+.a-itens { --c: var(--itens); --c-tinta: var(--itens-tinta); --c-fundo: var(--itens-fundo); --c-borda: var(--itens-borda); }
+.a-fin { --c: var(--fin); --c-tinta: var(--fin-tinta); --c-fundo: var(--fin-fundo); --c-borda: var(--fin-borda); }
+.a-obs { --c: var(--obs); --c-tinta: var(--obs-tinta); --c-fundo: var(--obs-fundo); --c-borda: var(--obs-borda); }
+.a-perigo { --c: var(--perigo); --c-tinta: var(--perigo); --c-fundo: var(--perigo-fundo); --c-borda: var(--perigo-borda); }
+
+/* o único movimento da tela: ao abrir, as marcas crescem da linha de base */
+@keyframes crescerY { from { transform: scaleY(0); } }
+@keyframes crescerX { from { transform: scaleX(0); } }
+@keyframes revelar { from { clip-path: inset(0 100% 0 0); } }
+@keyframes surgir { from { opacity: 0; transform: scale(.3); } }
+/* A tela entra: cada quadro sobe 14px e acende, um depois do outro, na ordem
+   de leitura (--d, posto pelo render). Na troca de visão eles vêm do lado da
+   opção escolhida (--dx). As marcas de dentro crescem depois que o quadro chegou. */
+@keyframes entrarY { from { opacity: 0; transform: translateY(14px); } }
+@keyframes entrarX { from { opacity: 0; transform: translateX(var(--dx, 16px)); } }
+.entra { animation: entrarY .56s var(--saida) both; animation-delay: var(--d, 0ms); }
+.lateral .entra { animation-name: entrarX; animation-duration: .44s; }
+.cy { transform-origin: bottom; animation: crescerY .75s var(--saida) both; animation-delay: calc(var(--d, 0ms) + 200ms + var(--i, 0) * 28ms); }
+.cx { transform-origin: left; animation: crescerX .8s var(--saida) both; animation-delay: calc(var(--d, 0ms) + 220ms + var(--i, 0) * 45ms); }
+.rv { animation: revelar .9s var(--saida) both; animation-delay: calc(var(--d, 0ms) + 220ms + var(--i, 0) * 45ms); }
+
+/* moldura do protótipo */
+.proto { position: sticky; top: 0; z-index: 40; height: 51px; display: flex; align-items: center; gap: 14px; padding: 8px 20px; background: var(--superficie); border-bottom: 1px solid var(--borda); }
+.proto-nome { font-weight: 700; color: var(--tinta); white-space: nowrap; }
+.proto-nota { color: var(--tinta-suave); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.proto-dir { margin-left: auto; display: flex; gap: 2px; align-items: center; flex-shrink: 0; }
+.proto-bt { display: inline-flex; align-items: center; gap: 6px; color: var(--tinta-corpo); font-weight: 600; font-size: 12.5px; padding: 6px 10px; border-radius: 6px; white-space: nowrap; }
+.proto-bt:hover, .proto-bt[aria-expanded="true"] { background: var(--realce); color: var(--tinta); }
+.proto-bt .rot { color: var(--tinta-suave); font-weight: 500; }
+.proto-bt .chev { color: var(--tinta-fraca); }
+
+/* popover (Ver como) */
+.pop { position: fixed; z-index: 90; min-width: 230px; max-height: min(460px, calc(100vh - 70px)); overflow-y: auto; padding: 4px; background: var(--superficie); border: 1px solid var(--borda); border-radius: 9px; box-shadow: var(--sombra-pop); animation: pop .16s var(--saida); }
+@keyframes pop { from { opacity: 0; transform: translateY(-4px); } }
+.pop .rot { font-size: 11px; font-weight: 600; color: var(--tinta-suave); padding: 8px 10px 3px; }
+.pop button { display: flex; align-items: center; gap: 9px; width: 100%; padding: 7px 10px; border-radius: 6px; font-size: 13px; color: var(--tinta-corpo); }
+.pop button:hover, .pop button:focus-visible { background: var(--realce); color: var(--tinta); outline: none; }
+.pop .ok { margin-left: auto; color: var(--brand-tinta); }
+.av { width: 22px; height: 22px; border-radius: 99px; display: inline-grid; place-items: center; font: 700 9.5px/1 Montserrat, sans-serif; flex-shrink: 0; }
+.av.g { width: 30px; height: 30px; font-size: 11px; }
+
+/* página */
+.pg { max-width: 1280px; margin: 0 auto; padding: 26px 28px 64px; }
+.cab { display: flex; align-items: flex-end; gap: 16px; flex-wrap: wrap; }
+.cab h1 { font-size: 22px; font-weight: 800; color: var(--tinta); letter-spacing: -.02em; line-height: 1.2; }
+.cab .sub { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 8px; margin-top: 7px; color: var(--tinta-suave); font-size: 12.5px; }
+/* visão: quem é Administrador troca entre as quatro; os outros ficam na do cargo */
+.seg { position: relative; margin-left: auto; display: inline-flex; background: var(--realce); border-radius: 8px; padding: 3px; gap: 2px; max-width: 100%; overflow-x: auto; scrollbar-width: none; }
+.seg button { position: relative; z-index: 1; padding: 5px 12px; border-radius: 6px; font-weight: 600; font-size: 12.5px; color: var(--tinta-suave); white-space: nowrap; transition: color .2s; }
+.seg button:hover, .seg button[aria-pressed="true"] { color: var(--tinta); }
+.seg-trilho { position: absolute; top: 3px; bottom: 3px; left: 0; border-radius: 6px; background: var(--superficie); box-shadow: var(--sombra-leve); transition: transform .34s var(--saida), width .34s var(--saida); }
+.seg.peq { margin-left: auto; background: var(--superficie); box-shadow: inset 0 0 0 1px var(--c-borda); }
+.seg.peq button { padding: 3px 10px; font-size: 12px; }
+.seg.peq .seg-trilho { background: var(--c-fundo); box-shadow: inset 0 0 0 1px var(--c-borda); }
+
+.selo { display: inline-flex; align-items: center; gap: 4px; font-size: 11.5px; font-weight: 600; border-radius: 5px; padding: 1px 7px; white-space: nowrap; background: var(--realce); color: var(--tinta-corpo); }
+.selo .ico { width: 12px; height: 12px; }
+.selo.atraso { background: var(--perigo-fundo); color: var(--perigo); }
+.selo.hoje { background: var(--obs-fundo); color: var(--obs-tinta); }
+.selo.fin { background: var(--fin-fundo); color: var(--fin-tinta); }
+.selo.itens { background: var(--itens-fundo); color: var(--itens-tinta); }
+
+/* números do topo: uma peça só, dividida por fios. Cada número traz o
+   contexto que o explica — a comparação, a parte, as O.S. uma a uma. */
+.numeros { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); background: var(--superficie); border: 1px solid var(--borda); border-radius: 10px; margin: 20px 0 22px; overflow: hidden; }
+.n-cel { padding: 16px 18px 15px; border-left: 1px solid var(--borda-fraca); display: flex; flex-direction: column; gap: 10px; min-width: 0; transition: background .12s; }
+.n-cel:first-child { border-left: 0; }
+a.n-cel:hover { background: var(--sutil); }
+.n-topo { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.n-ico { width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; background: var(--c-fundo); color: var(--c); box-shadow: inset 0 0 0 1px var(--c-borda); flex-shrink: 0; }
+.n-rot { font-size: 12px; font-weight: 600; color: var(--tinta-suave); line-height: 1.3; min-width: 0; }
+.n-linha { display: flex; align-items: center; gap: 8px; min-width: 0; min-height: 36px; }
+.n-val { font-size: 30px; font-weight: 700; color: var(--tinta); letter-spacing: -.022em; line-height: 1.15; white-space: nowrap; }
+.n-val small { font-size: 13.5px; font-weight: 600; color: var(--tinta-suave); margin-right: 3px; letter-spacing: 0; }
+.n-val.alerta { color: var(--perigo); }
+.n-pe { margin-top: auto; display: flex; flex-direction: column; gap: 7px; min-width: 0; }
+.n-ctx { font-size: 12px; color: var(--tinta-suave); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.n-ctx b { color: var(--tinta-corpo); font-weight: 600; }
+.leg-i { display: inline-flex; align-items: center; gap: 5px; }
+.leg-i i { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+/* subiu/desceu: palavra e ícone, não só a cor */
+.tend { display: inline-flex; align-items: center; gap: 3px; font-size: 11.5px; font-weight: 700; padding: 2px 6px; border-radius: 5px; white-space: nowrap; background: var(--realce); color: var(--tinta-corpo); }
+.tend .ico { width: 13px; height: 13px; }
+.tend.sobe { background: var(--fin-fundo); color: var(--fin-tinta); }
+.tend.desce { background: var(--perigo-fundo); color: var(--perigo); }
+.sobe { color: var(--sucesso); font-weight: 600; }
+.desce { color: var(--perigo); font-weight: 600; }
+/* medidores: colunas da série recente, barra de proporção, uma marca por O.S. */
+.n-mini { margin-left: auto; display: flex; align-items: flex-end; gap: 3px; height: 34px; flex-shrink: 0; }
+.n-mini i { width: 7px; min-height: 2px; background: var(--c); opacity: .3; border-radius: 2px 2px 0 0; }
+.n-mini i.aceso { opacity: 1; }
+.medidor { display: flex; gap: 2px; height: 6px; border-radius: 3px; background: var(--realce); overflow: hidden; }
+.medidor i { height: 100%; background: var(--c); border-radius: 3px; }
+.medidor i.claro { opacity: .35; }
+.medidor i.atr { background: var(--perigo); }
+.medidor i.vazio { background: transparent; }
+.unid { display: flex; flex-wrap: wrap; gap: 3px; }
+.unid i { width: 9px; height: 9px; border-radius: 2px; background: var(--c); animation: surgir .4s var(--saida) both; animation-delay: calc(var(--d, 0ms) + 240ms + var(--i, 0) * 14ms); }
+.unid span { font-size: 11px; font-weight: 700; color: var(--tinta-suave); line-height: 9px; margin-left: 2px; }
+
+/* grade: o trabalho à esquerda, "o que é seu agora" à direita */
+.grade { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 20px; align-items: start; }
+.col { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+.lado.fixo { position: sticky; top: 71px; }
+.par { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; }
+
+/* área: borda e faixa do cabeçalho na cor da área, corpo neutro */
+.area { background: var(--superficie); border: 1px solid var(--c-borda); border-radius: 10px; overflow: hidden; min-width: 0; }
+.area-cab { display: flex; align-items: center; gap: 10px; min-height: 47px; padding: 9px 14px; background: var(--c-fundo); border-bottom: 1px solid var(--c-borda); }
+.area-ico { width: 26px; height: 26px; border-radius: 7px; background: var(--superficie); display: grid; place-items: center; color: var(--c); box-shadow: var(--sombra-leve); flex-shrink: 0; }
+.area-cab h2 { font-size: 13.5px; font-weight: 700; color: var(--tinta); line-height: 1.3; }
+.area-cab h2 small { display: block; font-size: 12px; font-weight: 500; color: var(--tinta-suave); }
+/* Quadros que saem da mesa: o principal de cada visão e as pendências quando
+   há atraso. Sombra no lugar da borda (nunca as duas), canto de janela,
+   cabeçalho mais alto com uma linha de contexto e o ícone cheio. */
+.area.elevado { border: 0; border-radius: 12px; box-shadow: 0 1px 2px rgba(15,23,42,.06), 0 16px 36px -18px rgba(15,23,42,.34); }
+.area.elevado .area-cab { min-height: 60px; padding: 11px 16px; }
+.area.elevado .area-cab h2 { font-size: 15px; }
+.area.elevado .area-ico { width: 34px; height: 34px; border-radius: 9px; background: var(--c); color: var(--superficie); box-shadow: none; }
+.area.elevado .area-ico .ico { width: 18px; height: 18px; }
+/* no escuro a sombra some no fundo: quem marca a borda é um fio da cor da área */
+.dark .area.elevado { box-shadow: 0 0 0 1px var(--c-borda), 0 18px 40px -16px rgba(0,0,0,.8); }
+/* O número laranja: o primeiro da faixa, o que a pessoa olha antes de tudo.
+   Degradê leve da marca e texto Sobre-marca (branco sobre esse laranja não
+   passa contraste). Por dentro os tokens são trocados para valer sobre o
+   laranja — tintas e trilhos em marrom translúcido, vermelho mais escuro, e
+   nas marcas o verde vira marrom e o âmbar vira creme —, e o resto acompanha. */
+.n-cel.laranja {
+  --tinta: #241600; --tinta-corpo: #3a2400; --tinta-suave: rgba(36,22,0,.78); --tinta-fraca: rgba(36,22,0,.66);
+  --borda-fraca: rgba(36,22,0,.12); --realce: rgba(255,255,255,.34); --sutil: rgba(255,255,255,.2);
+  --perigo: #8f1d10; --fin: #241600; --obs: #FFF6E3;
+  --c: #241600; --c-tinta: #241600; --c-fundo: #241600; --c-borda: transparent;
+  color: var(--tinta-corpo);
+  background: linear-gradient(155deg, #FFB429 0%, #F69F00 55%, #F29400 100%);
+  border-left: 0;
+}
+.dark .n-cel.laranja { background: linear-gradient(155deg, #F7A81B 0%, #E89600 55%, #DB8A00 100%); }
+a.n-cel.laranja:hover { background: linear-gradient(155deg, #FFBA3B 0%, #F7A510 55%, #F39A0C 100%); }
+.n-cel.laranja + .n-cel { border-left: 0; }
+.n-cel.laranja .n-ico { color: #FFF6E3; }
+.n-cel.laranja .tend, .n-cel.laranja .tend.sobe, .n-cel.laranja .tend.desce { background: rgba(255,255,255,.5); color: #241600; }
+.n-cel.laranja .tend.desce { color: var(--perigo); }
+.n-cel.laranja .unid i, .n-cel.laranja .leg-i i { box-shadow: 0 0 0 1px rgba(36,22,0,.2); }
+.n-cel.laranja ::selection { background: rgba(255,255,255,.55); }
+.n-cel.laranja:focus-visible { outline-color: #241600; outline-offset: -3px; }
+.area-meta { margin-left: auto; font-size: 12px; font-weight: 600; color: var(--c-tinta); white-space: nowrap; }
+.area-corpo { padding: 14px 16px; }
+.area-pe { display: flex; padding: 4px 8px 8px; }
+.ver { display: inline-flex; align-items: center; gap: 4px; padding: 6px 8px; border-radius: 6px; font-size: 12.5px; font-weight: 600; color: var(--tinta-suave); }
+.ver:hover { background: var(--realce); color: var(--tinta); }
+
+/* linhas de lista */
+.lista { list-style: none; padding: 0; }
+.lin { display: flex; align-items: center; gap: 11px; padding: 9px 16px; border-top: 1px solid var(--borda-fraca); min-width: 0; }
+.lista > li:first-child .lin { border-top: 0; }
+a.lin:hover { background: var(--sutil); }
+.lin-txt { min-width: 0; flex: 1; }
+.lin-tit, .lin-sub { display: block; }
+.lin-tit { font-weight: 600; color: var(--tinta); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lin-tit .oid { color: var(--tinta-fraca); font-weight: 600; font-size: 12px; margin-right: 6px; }
+.lin-sub { font-size: 12px; color: var(--tinta-suave); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lin-dir { margin-left: auto; text-align: right; flex-shrink: 0; font-weight: 600; color: var(--tinta); }
+.lin-dir small { display: block; font-size: 11.5px; font-weight: 500; color: var(--tinta-suave); }
+.vazio { display: flex; align-items: center; gap: 8px; padding: 14px 16px; color: var(--tinta-suave); font-size: 12.5px; }
+.vazio .ico { color: var(--sucesso); }
+.nota { display: flex; align-items: center; gap: 8px; padding-top: 12px; font-size: 12px; color: var(--tinta-suave); }
+.nota b { color: var(--tinta); font-weight: 600; }
+/* data em bloco: o dia grande, a semana embaixo; vencida em vermelho, hoje em âmbar */
+.diaf { width: 40px; height: 40px; border-radius: 8px; box-shadow: inset 0 0 0 1px var(--borda); display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.1; flex-shrink: 0; }
+.diaf b { font-size: 13.5px; font-weight: 700; color: var(--tinta); }
+.diaf span { font-size: 10.5px; font-weight: 600; color: var(--tinta-suave); }
+.diaf.atraso { background: var(--perigo-fundo); box-shadow: inset 0 0 0 1px var(--perigo-borda); }
+.diaf.atraso b, .diaf.atraso span { color: var(--perigo); }
+.diaf.hoje { background: var(--obs-fundo); box-shadow: inset 0 0 0 1px var(--obs-borda); }
+.diaf.hoje b, .diaf.hoje span { color: var(--obs-tinta); }
+
+/* pendências: ícone e cor dizem a gravidade, a palavra repete no title */
+.g-ico { width: 28px; height: 28px; border-radius: 7px; display: grid; place-items: center; flex-shrink: 0; align-self: flex-start; }
+.g-ico .ico { width: 15px; height: 15px; }
+.g-ico.critico { background: var(--perigo-fundo); color: var(--g-critico); }
+.g-ico.atencao { background: var(--obs-fundo); color: var(--obs); }
+.g-ico.tarefa { background: var(--itens-fundo); color: var(--g-tarefa); }
+.tudo-ok { display: flex; align-items: center; gap: 12px; padding: 16px; }
+.tudo-ok .ok-ico { width: 38px; height: 38px; border-radius: 99px; display: grid; place-items: center; background: var(--fin-fundo); color: var(--fin); flex-shrink: 0; }
+.tudo-ok b { display: block; color: var(--tinta); font-size: 13.5px; }
+.tudo-ok span { font-size: 12px; color: var(--tinta-suave); }
+
+/* vendas: o resumo do mês em cima, o gráfico embaixo */
+.stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-bottom: 1px solid var(--borda-fraca); }
+.stats > div { padding: 13px 16px 12px; border-left: 1px solid var(--borda-fraca); min-width: 0; }
+.stats > div:first-child { border-left: 0; }
+.stats span { display: block; font-size: 12px; color: var(--tinta-suave); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.stats b { display: block; font-size: 22px; font-weight: 700; color: var(--tinta); letter-spacing: -.02em; line-height: 1.25; white-space: nowrap; }
+/* colunas finas de uma cor só, a mais recente acesa, fios de grade e a média;
+   em HTML, para os rótulos não esticarem */
+.graf-area { position: relative; height: 190px; margin-top: 22px; border-bottom: 1px solid var(--borda); }
+.graf-grade { position: absolute; left: 0; right: 0; border-top: 1px solid var(--borda-fraca); }
+.graf-grade span { position: absolute; left: 0; top: -17px; font-size: 10.5px; color: var(--tinta-suave); font-variant-numeric: tabular-nums; }
+.graf-media { position: absolute; left: 0; right: 0; border-top: 1px dashed var(--tinta-fraca); z-index: 1; pointer-events: none; }
+.graf-cols { position: absolute; inset: 0; display: flex; align-items: flex-end; }
+.graf-col { position: relative; flex: 1; height: 100%; display: flex; align-items: flex-end; justify-content: center; border-radius: 4px 4px 0 0; }
+.graf-col:hover, .graf-col:focus-visible { outline: none; background: var(--sutil); }
+.graf-col i { position: relative; width: min(24px, 58%); min-height: 2px; background: var(--fin); border-radius: 4px 4px 0 0; }
+.graf-col i.passado { opacity: .42; transition: opacity .12s; }
+.graf-col:hover i.passado, .graf-col:focus-visible i.passado { opacity: .8; }
+/* projeção do mês corrente: o que falta, em contorno tracejado em cima do vendido */
+.graf-col .proj { position: absolute; width: min(24px, 58%); border: 1.5px dashed var(--fin); border-bottom: 0; border-radius: 4px 4px 0 0; opacity: .7; }
+.graf-val { position: absolute; left: 50%; transform: translateX(-50%); font-size: 11px; font-weight: 700; color: var(--tinta); white-space: nowrap; font-variant-numeric: tabular-nums; z-index: 2; }
+.graf-val.suave { color: var(--tinta-suave); font-weight: 600; }
+.graf-val.fim { left: auto; right: 0; transform: none; }   /* o último não passa da borda */
+.graf-x { display: flex; margin-top: 6px; }
+.graf-x span { flex: 1; text-align: center; font-size: 10.5px; color: var(--tinta-suave); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.graf-x span.hoje { color: var(--tinta); font-weight: 700; }
+.graf-leg { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 16px; margin-top: 12px; font-size: 12px; color: var(--tinta-suave); }
+.graf-leg > span { display: inline-flex; align-items: center; gap: 7px; }
+.graf-leg b { color: var(--tinta); font-weight: 600; }
+.graf-leg .m-col { width: 9px; height: 12px; border-radius: 2px 2px 0 0; background: var(--fin); }
+.graf-leg .m-proj { width: 9px; height: 12px; border: 1.5px dashed var(--fin); border-bottom: 0; border-radius: 2px 2px 0 0; }
+.graf-leg .m-media { width: 16px; border-top: 1px dashed var(--tinta-fraca); }
+.tip { position: fixed; z-index: 95; pointer-events: none; background: var(--tinta); color: var(--superficie); border-radius: 7px; padding: 6px 9px; font-size: 12px; box-shadow: var(--sombra-pop); white-space: nowrap; }
+.tip b { font-size: 13px; display: block; }
+
+/* a esteira: as etapas na ordem em que a O.S. anda, agrupadas pela fase */
+.est { display: grid; grid-template-columns: 2fr 4fr 3fr; gap: 22px; padding: 16px 16px 14px; }
+.est-fase { display: flex; flex-direction: column; min-width: 0; }
+.est-cols { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); }
+.est-et { display: flex; flex-direction: column; min-width: 0; border-radius: 6px; }
+.est-et:hover, .est-et:focus-visible { background: var(--sutil); outline: none; }
+.est-plot { height: 118px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 5px; border-bottom: 1px solid var(--borda); }
+.est-q { font-size: 22px; font-weight: 700; color: var(--tinta); letter-spacing: -.02em; line-height: 1; }
+.est-barra { width: min(24px, 56%); height: calc(var(--p) * 80px); min-height: 3px; background: var(--cor); border-radius: 4px 4px 0 0; }
+.est-et.zero .est-q { color: var(--tinta-fraca); }
+.est-et.zero .est-barra { background: var(--borda); min-height: 2px; height: 2px; }
+.est-txt { display: flex; flex-direction: column; align-items: center; gap: 1px; min-height: 46px; padding: 7px 2px 6px; text-align: center; min-width: 0; }
+.est-nome { font-size: 12px; font-weight: 600; color: var(--tinta-corpo); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.est-atr { font-size: 11px; font-weight: 600; color: var(--perigo); white-space: nowrap; }
+.est-fase-rot { display: flex; align-items: center; gap: 8px; margin-top: 4px; padding: 7px 2px 0; border-top: 2px solid var(--borda); font-size: 12px; font-weight: 600; color: var(--tinta-suave); }
+.est-fase-rot b { margin-left: auto; color: var(--tinta); }
+
+/* carga da equipe: uma ficha por pessoa, sem caixa em volta de cada uma */
+.equipe { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 18px 24px; padding: 16px 16px 12px; }
+.pessoa { display: flex; flex-direction: column; gap: 9px; min-width: 0; }
+.pessoa-cab { display: flex; align-items: center; gap: 9px; min-width: 0; }
+.pessoa-nome { font-weight: 600; color: var(--tinta); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.pessoa-cab b { margin-left: auto; font-size: 22px; font-weight: 700; color: var(--tinta); letter-spacing: -.02em; line-height: 1; }
+.pessoa-sub { font-size: 12px; color: var(--tinta-suave); }
+.av-sem { width: 30px; height: 30px; border-radius: 99px; display: grid; place-items: center; background: var(--realce); color: var(--tinta-suave); flex-shrink: 0; }
+
+/* rankings: posição, nome, valor e a parte do total; uma cor só, o comprimento é o dado */
+.rank { list-style: none; padding: 6px 0; }
+.rank li { display: grid; grid-template-columns: 16px minmax(0, 1fr) auto; align-items: baseline; gap: 4px 10px; padding: 7px 16px; }
+.rank .pos { font-size: 11.5px; font-weight: 700; color: var(--tinta-fraca); }
+.rank li:first-child .pos { color: var(--c-tinta); }
+.rank .nome { min-width: 0; font-weight: 600; color: var(--tinta); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rank .v { font-weight: 600; color: var(--tinta); text-align: right; white-space: nowrap; }
+.rank .v small { color: var(--tinta-suave); font-weight: 500; margin-left: 6px; }
+.rank .trilho { grid-column: 2 / -1; height: 6px; border-radius: 3px; background: var(--realce); overflow: hidden; }
+.rank .trilho i { display: block; height: 100%; border-radius: 3px; background: var(--c); }
+.rank li:not(:first-child) .trilho i { opacity: .55; }
+.saldo-grande { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; padding-bottom: 12px; margin-bottom: 4px; border-bottom: 1px solid var(--borda-fraca); }
+.saldo-grande b { font-size: 30px; font-weight: 700; color: var(--tinta); letter-spacing: -.022em; line-height: 1.15; }
+.saldo-grande span { color: var(--tinta-suave); font-size: 12px; }
+
+@media (max-width: 1100px) {
+  .grade { grid-template-columns: minmax(0, 1fr) 300px; }
+  .numeros { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .n-cel:nth-child(3) { border-left: 0; }
+  .n-cel:nth-child(n+3) { border-top: 1px solid var(--borda-fraca); }
+}
+@media (max-width: 960px) {
+  .grade { grid-template-columns: 1fr; }
+  .grade > .lado { order: -1; }   /* no celular, primeiro o que é seu agora */
+  .est { grid-template-columns: 1fr; gap: 14px; }
+}
+/* No celular a esteira deita: uma linha por etapa, a barra cresce para a direita. */
+@media (max-width: 960px) {
+  .est-fase { flex-direction: column-reverse; }
+  .est-fase-rot { margin: 0 0 4px; padding: 0 0 6px; border-top: 0; border-bottom: 2px solid var(--borda); }
+  .est-cols { grid-auto-flow: row; grid-auto-columns: auto; }
+  .est-et { flex-direction: row; align-items: center; gap: 10px; padding: 6px 4px; }
+  .est-txt { order: -1; min-height: 0; width: 92px; flex-direction: row; justify-content: space-between; align-items: center; flex-shrink: 0; padding: 0; text-align: left; }
+  .est-plot { height: auto; flex: 1; flex-direction: row-reverse; justify-content: flex-end; gap: 10px; border-bottom: 0; }
+  .est-q { font-size: 13.5px; }
+  .est-barra { height: 10px; min-height: 0; width: calc(var(--p) * (100% - 40px)); min-width: 3px; border-radius: 0 4px 4px 0; }
+  .est-barra.cy { transform-origin: left; animation-name: crescerX; }
+  .est-et.zero .est-barra { height: 2px; width: 3px; }
+  .est-txt .est-atr { display: none; }
+}
+@media (max-width: 760px) {
+  .proto { padding: 8px 12px; gap: 8px; }
+  .proto-nome, .proto-nota, .proto-bt .txt-tema, .proto-bt .rot { display: none; }
+  .pg { padding: 18px 12px 48px; }
+  .seg:not(.peq) { margin-left: 0; width: 100%; }
+  .seg:not(.peq) button { flex: 1; padding: 6px 8px; }
+  .n-cel { padding: 13px 13px 12px; gap: 8px; }
+  .n-topo { gap: 8px; }
+  .n-ico { width: 26px; height: 26px; border-radius: 7px; }
+  .n-ico .ico { width: 14px; height: 14px; }
+  .n-val { font-size: 24px; }
+  .n-linha { flex-wrap: wrap; gap: 4px 8px; }
+  .n-mini { display: none; }
+  .n-ctx { white-space: normal; }
+  .par { grid-template-columns: 1fr; }
+  .lin { padding: 11px 14px; }
+  /* no celular o resumo vira linhas: rótulo à esquerda, valor à direita */
+  .stats { grid-template-columns: 1fr; }
+  .stats > div { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 9px 14px; border-left: 0; border-top: 1px solid var(--borda-fraca); }
+  .stats > div:first-child { border-top: 0; }
+  .stats b { font-size: 13.5px; }
+  .graf-area { height: 160px; }
+  .graf-x span:nth-child(even):not(.hoje) { visibility: hidden; }
+  .equipe { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+}
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+html[data-troca-tema]::view-transition-old(root), html[data-troca-tema]::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
+html[data-troca-tema].dark::view-transition-new(root), html[data-troca-tema]:not(.dark)::view-transition-old(root) { z-index: 1; }
+html[data-troca-tema] *, html[data-troca-tema] *::before, html[data-troca-tema] *::after { transition: none !important; }
+</style>
+</head>
+<body>
+<div class="proto">
+  <span class="proto-nome">Novo Início · protótipo</span>
+  <span class="proto-nota">Dados reais, só leitura · cada pessoa vê o Início do próprio cargo</span>
+  <div class="proto-dir">
+    <button class="proto-bt" id="vercomo" aria-haspopup="menu" aria-expanded="false"></button>
+    <button class="proto-bt" id="tema"><i data-lucide="moon" class="ico ico-s"></i><span class="txt-tema">Escuro</span></button>
+  </div>
+</div>
+<main class="pg" id="tela"></main>
+
+<script>
+/*INICIO*/
+
+/* ===== base ===== */
+const ico = (n, c = 'ico') => `<i data-lucide="${n}" class="${c}"></i>`;
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const HOJE = DADOS.hoje;
+const dataLocal = iso => { const [a, m, d] = iso.slice(0, 10).split('-').map(Number); return new Date(a, m - 1, d); };
+const isoDe = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+const somarDias = (iso, n) => { const d = dataLocal(iso); d.setDate(d.getDate() + n); return isoDe(d); };
+const diasEntre = (de, ate) => Math.round((dataLocal(ate) - dataLocal(de)) / 864e5);
+const MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+const SEMANA = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
+const maiuscula = s => s[0].toUpperCase() + s.slice(1);
+const ddmm = iso => iso ? `${iso.slice(8, 10)}/${iso.slice(5, 7)}` : '';
+// Dinheiro em centavos. Acima de mil reais o centavo só atrapalha a leitura; o
+// valor exato fica no title/tooltip.
+const brl = (c, cheio) => { const r = c / 100; return (cheio || Math.abs(r) < 1000 ? r.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : Math.round(r).toLocaleString('pt-BR')); };
+const reais = (c, cheio) => `R$ ${brl(c, cheio)}`;
+const compacto = c => { const r = c / 100; return r >= 1000 ? `R$ ${(r / 1000).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} mil` : `R$ ${Math.round(r)}`; };
+const plural = (n, um, varios) => `${n} ${n === 1 ? um : varios}`;
+const pctDe = (parte, todo) => todo ? Math.round(parte / todo * 100) : 0;
+const limitar = x => Math.max(0, Math.min(1, x));
+const irPara = href => { try { window.top.location.href = href; } catch {} };
+
+const COR = { 'Aguardando Pagamento': '#10b981', 'Aguardando Retorno': '#84cc16', 'Desenvolvimento de Arte': '#06b6d4', 'Etiqueta Escolar': '#2563eb', 'Produzir': '#a855f7', 'Produção': '#6b7280', 'Avisar Cliente': '#ec4899', 'Retirada': '#0ea5e9', 'Entrega': '#14b8a6', 'Concluído': '#f97316' };
+const ETAPAS = ['Aguardando Pagamento', 'Aguardando Retorno', 'Desenvolvimento de Arte', 'Etiqueta Escolar', 'Produzir', 'Produção', 'Avisar Cliente', 'Entrega', 'Retirada'];
+const FILA = ['Desenvolvimento de Arte', 'Etiqueta Escolar', 'Produzir', 'Produção'];
+const PRONTAS = ['Avisar Cliente', 'Entrega', 'Retirada'];
+// A esteira: por onde a O.S. anda, em três fases.
+const FASES = [['Esperando o cliente', ['Aguardando Pagamento', 'Aguardando Retorno']], ['Na produção', FILA], ['Prontas', PRONTAS]];
+const CURTO = { 'Aguardando Pagamento': 'Pagamento', 'Aguardando Retorno': 'Retorno', 'Desenvolvimento de Arte': 'Arte', 'Etiqueta Escolar': 'Etiqueta', 'Avisar Cliente': 'Avisar' };
+
+/* ===== O.S. ===== */
+const PEDIDOS = DADOS.pedidos;
+const abertas = PEDIDOS.filter(p => ETAPAS.includes(p.status));
+const saldo = p => p.valor - p.pago;
+// Retirada não conta atraso: o serviço já está pronto esperando o cliente.
+const atrasada = p => p.prazo && p.prazo < HOJE && p.status !== 'Retirada';
+const ehHoje = p => p.prazo === HOJE;
+const porPrazo = (a, b) => (a.prazo || '9999').localeCompare(b.prazo || '9999') || (a.hora || '99').localeCompare(b.hora || '99') || a.id - b.id;
+const doLado = (p, nome) => p.resp.includes(nome);
+const corLocal = l => DADOS.coresLocais?.[l] || '#64748b';
+const foraDeCasa = p => p.locais.filter(l => l.toLowerCase() !== 'berlim');
+
+function seloPrazo(p) {
+  if (!p.prazo) return '<span class="selo">Sem prazo</span>';
+  if (atrasada(p)) return `<span class="selo atraso">${ico('alert-triangle')}Atrasada · ${ddmm(p.prazo)}</span>`;
+  if (ehHoje(p)) return `<span class="selo hoje">${ico('clock')}${p.hora ? 'até ' + esc(p.hora) : 'Hoje'}</span>`;
+  const d = diasEntre(HOJE, p.prazo);
+  return `<span class="selo">${d === 1 ? 'Amanhã' : d < 7 ? SEMANA[dataLocal(p.prazo).getDay()].slice(0, 3) + ' ' + ddmm(p.prazo) : ddmm(p.prazo)}</span>`;
+}
+const linhaOS = (p, dir) => `<li><a class="lin" href="#" data-ir="/producao" title="${esc(p.cliente)} — ${esc(p.resumo)}">
+  <span class="dot" style="background:${COR[p.status] || '#6b7280'}" title="${esc(p.status)}"></span>
+  <span class="lin-txt"><span class="lin-tit"><span class="oid">#${p.id}</span>${esc(p.cliente)}</span><span class="lin-sub">${esc(p.resumo)}</span></span>
+  <span class="lin-dir">${dir}</span></a></li>`;
+
+/* ===== pessoas ===== */
+const EQUIPE = Object.fromEntries(DADOS.equipe.map(p => [p.nome, p]));
+const duasLetras = n => { const p = n.trim().split(/\s+/); return p.length > 1 ? (p[0][0] + p.at(-1)[0]).toUpperCase() : p[0].slice(0, 1).toUpperCase() + p[0].slice(1, 2).toLowerCase(); };
+const bolinha = (n, cls = '') => `<i class="av ${cls}" style="background:${EQUIPE[n]?.cor[0] || '#64748b'};color:${EQUIPE[n]?.cor[1] || '#fff'}">${esc(duasLetras(n))}</i>`;
+// `visao` nula = a do cargo da pessoa. Só a equipe Administrador troca: hoje
+// são quatro pessoas com papéis diferentes (e nenhuma com o cargo Financeiro),
+// então quem cuida do caixa abre a visão Financeiro, quem cuida da fila a de
+// Produção. As pendências continuam sendo as da pessoa.
+const est = { eu: EQUIPE[DADOS.eu] ? DADOS.eu : DADOS.equipe[0]?.nome, visao: null, serie: 'dia' };
+const VISOES = [['Administrador', 'Geral'], ['Atendimento', 'Atendimento'], ['Produção', 'Produção'], ['Financeiro', 'Financeiro']];
+
+/* ===== peças ===== */
+function area(cls, icone, titulo, meta, corpo, pe, acao) {
+  return `<section class="area ${cls}"><div class="area-cab"><span class="area-ico">${ico(icone)}</span><h2>${titulo}</h2>${meta ? `<span class="area-meta">${meta}</span>` : ''}${acao || ''}</div>${corpo}${pe ? `<div class="area-pe">${pe}</div>` : ''}</section>`;
+}
+const ver = (rot, href) => `<a class="ver" href="#" data-ir="${href}">${rot}${ico('arrow-right', 'ico ico-s')}</a>`;
+const vazio = txt => `<div class="vazio">${ico('check-circle-2')}${txt}</div>`;
+const seg = (rotulo, opcoes, atual, attr, cls = '') => `<div class="seg ${cls}" role="group" aria-label="${rotulo}"><span class="seg-trilho"></span>${opcoes.map(([id, rot]) => `<button ${attr}="${id}" aria-pressed="${id === atual}">${rot}</button>`).join('')}</div>`;
+
+// Os números do topo. Cada um traz, embaixo, o que o explica: a comparação
+// (tend), a série recente (mini), a proporção (med) ou as O.S. uma a uma.
+function numeros(cels) {
+  return `<div class="numeros">${cels.map(c => {
+    const tag = c.href ? `a href="#" data-ir="${c.href}"` : 'div';
+    return `<${tag} class="n-cel a-${c.area || 'dados'} ${c.laranja ? 'laranja' : ''}" ${c.title ? `title="${esc(c.title)}"` : ''}>
+      <span class="n-topo"><span class="n-ico">${ico(c.icone)}</span><span class="n-rot">${c.rot}</span></span>
+      <span class="n-linha"><span class="n-val num ${c.alerta ? 'alerta' : ''}">${c.val}</span>${c.tend || ''}${c.mini || ''}</span>
+      <span class="n-pe">${c.med || ''}<span class="n-ctx">${c.ctx || '&nbsp;'}</span></span>
+    </${c.href ? 'a' : 'div'}>`; }).join('')}</div>`;
+}
+const dinheiro = c => `<small>R$</small>${brl(c)}`;
+function tendencia(atual, antes, base) {
+  if (!antes) return '';
+  const pct = Math.round((atual - antes) / antes * 100);
+  const txt = pct ? `${pct > 0 ? 'a mais' : 'a menos'} que ${base}` : `igual a ${base}`;
+  return `<span class="tend ${pct > 0 ? 'sobe' : pct < 0 ? 'desce' : ''}" title="${esc(Math.abs(pct) + '% ' + txt)}">${pct ? ico(pct > 0 ? 'trending-up' : 'trending-down') : ''}${pct ? Math.abs(pct) + '%' : 'igual'}<span class="so-leitor"> ${txt}</span></span>`;
+}
+const MED = {
+  // a série recente em colunas pequenas; `aceso` é o índice em destaque
+  mini: (vals, aceso = vals.length - 1) => { const m = Math.max(1, ...vals); return `<span class="n-mini" aria-hidden="true">${vals.map((v, i) => `<i class="cy ${i === aceso ? 'aceso' : ''}" style="height:${v ? Math.max(8, v / m * 100) : 0}%;--i:${i}"></i>`).join('')}</span>`; },
+  // partes de um todo: [{ v, cls }] — o resto do trilho fica vazio
+  partes: (ps, todo) => `<span class="medidor rv" aria-hidden="true">${ps.filter(p => p.v > 0).map(p => `<i class="${p.cls || ''}" style="flex:${p.v}"></i>`).join('')}${todo > ps.reduce((s, p) => s + p.v, 0) ? `<i class="vazio" style="flex:${todo - ps.reduce((s, p) => s + p.v, 0)}"></i>` : ''}</span>`,
+  // uma marca por O.S. (ou conta), na cor que importa para aquele número
+  unidades: (lista, cor, titulo) => { const max = 36, mostrar = lista.slice(0, lista.length > max ? max - 1 : max);
+    return `<span class="unid" aria-hidden="true">${mostrar.map((x, i) => `<i style="--i:${i};${cor ? `background:${cor(x)}` : ''}" title="${esc(titulo ? titulo(x) : '')}"></i>`).join('')}${lista.length > mostrar.length ? `<span>+${lista.length - mostrar.length}</span>` : ''}</span>`; },
+};
+const tituloOS = p => `#${p.id} · ${p.cliente} · ${p.status}`;
+// Legenda dos quadradinhos: a cor e o que ela conta. Partes vazias saem.
+const legenda = itens => itens.filter(([, , n]) => n).map(([cor, txt]) => `<span class="leg-i"><i style="background:${cor}"></i>${txt}</span>`).join(' · ');
+
+/* ===== blocos ===== */
+const GRAV = { critico: ['alert-triangle', 'Atrasado'], atencao: ['clock', 'Para hoje'], tarefa: ['list-todo', 'A fazer'] };
+function blocoPendencias(nome) {
+  const lista = DADOS.pendencias[nome] || [];
+  const mostrar = lista.slice(0, 7);
+  const corpo = lista.length
+    ? `<ul class="lista">${mostrar.map(p => `<li><a class="lin" href="#" data-ir="${esc(p.destino || '/')}"><span class="g-ico ${p.gravidade}" title="${GRAV[p.gravidade]?.[1] || ''}">${ico(GRAV[p.gravidade]?.[0] || 'circle')}</span><span class="lin-txt"><span class="lin-tit">${esc(p.titulo)}</span><span class="lin-sub" title="${esc(p.detalhe)}">${esc(p.detalhe)}</span></span></a></li>`).join('')}</ul>`
+    : `<div class="tudo-ok"><span class="ok-ico">${ico('check')}</span><div><b>Tudo em dia</b><span>Nenhuma pendência sua agora.</span></div></div>`;
+  const criticos = lista.filter(p => p.gravidade === 'critico').length;
+  return area(`a-obs${criticos ? ' elevado' : ''}`, 'bell', criticos ? 'Precisa de você<small>comece pelos atrasados</small>' : 'Precisa de você', lista.length ? (criticos ? `${criticos} atrasad${criticos === 1 ? 'a' : 'as'} · ${lista.length}` : String(lista.length)) : '', corpo,
+    lista.length > mostrar.length ? `<span class="ver" style="cursor:default">e mais ${lista.length - mostrar.length} no sino da barra</span>` : '');
+}
+
+function blocoHoje(filtro, titulo = 'Prazos de hoje') {
+  const hoje = abertas.filter(p => ehHoje(p) && p.status !== 'Retirada' && (!filtro || filtro(p))).sort(porPrazo);
+  const corpo = hoje.length ? `<ul class="lista">${hoje.slice(0, 8).map(p => linhaOS(p, seloPrazo(p))).join('')}</ul>` : vazio('Nenhuma O.S. vence hoje.');
+  return area('a-itens', 'calendar-clock', titulo, hoje.length ? String(hoje.length) : '', corpo, hoje.length > 8 ? ver(`Ver as ${hoje.length}`, '/producao') : '');
+}
+
+// A esteira da produção: quantas O.S. em cada etapa, na ordem em que andam.
+// As cores são as das etapas no sistema; o número vai escrito em cima.
+function blocoEsteira() {
+  const n = e => abertas.filter(p => p.status === e).length;
+  const atrDe = e => abertas.filter(p => p.status === e && atrasada(p)).length;
+  const max = Math.max(1, ...ETAPAS.map(n));
+  const atr = abertas.filter(atrasada).length;
+  let i = 0;
+  const corpo = `<div class="est" role="img" aria-label="${ETAPAS.map(e => `${e}: ${n(e)}`).join(', ')}">${FASES.map(([fase, etapas]) => `
+    <div class="est-fase"><div class="est-cols">${etapas.map(e => { const q = n(e), a = atrDe(e);
+      return `<a href="#" data-ir="/producao" class="est-et ${q ? '' : 'zero'}" data-tip="${esc(e)}|${plural(q, 'O.S.', 'O.S.')}${a ? ` · ${a} atrasada${a === 1 ? '' : 's'}` : ''}" aria-label="${esc(e)}: ${q}">
+        <span class="est-plot"><b class="est-q num">${q}</b><i class="est-barra cy" style="--cor:${COR[e]};--p:${q / max};--i:${i++}"></i></span>
+        <span class="est-txt"><span class="est-nome">${esc(CURTO[e] || e)}</span>${a ? `<span class="est-atr">${plural(a, 'atrasada', 'atrasadas')}</span>` : ''}</span></a>`; }).join('')}</div>
+      <div class="est-fase-rot"><span>${fase}</span><b class="num">${etapas.reduce((s, e) => s + n(e), 0)}</b></div></div>`).join('')}</div>`;
+  return area('a-itens', 'layers', 'Produção agora', `${plural(abertas.length, 'O.S.', 'O.S.')}${atr ? ` · ${atr} atrasada${atr === 1 ? '' : 's'}` : ''}`, corpo, ver('Abrir a Produção', '/producao'));
+}
+
+// Vendas: o resumo do mês e o gráfico, por dia (os 15 últimos dias com venda)
+// ou por mês (os 15 últimos meses, o corrente com a projeção tracejada).
+function grafVendas(modo) {
+  const V = DADOS.vendas.mes;
+  const [a, m, dia] = HOJE.split('-').map(Number);
+  const mesAtual = HOJE.slice(0, 7);
+  let pontos, media, rotMedia, proj = 0;
+  if (modo === 'mes') {
+    pontos = [...V.serieMes].reverse().map(s => { const [ano, mm] = s.rotulo.split('-').map(Number), atual = s.rotulo === mesAtual;
+      return { v: s.centavos, atual, x: mm === 1 ? `jan/${String(ano).slice(2)}` : MESES[mm - 1].slice(0, 3), tip: `${MESES[mm - 1]} de ${ano}${atual ? ' (até hoje)' : ''}` }; });
+    const fechados = pontos.filter(p => !p.atual);
+    media = fechados.length ? fechados.reduce((s, p) => s + p.v, 0) / fechados.length : 0;
+    rotMedia = 'média dos meses fechados';
+    if (pontos.at(-1)?.atual) proj = Math.round(V.bruto / dia * new Date(a, m, 0).getDate());
+  } else {
+    pontos = [...V.serieDia].reverse().map(s => { const d = dataLocal(s.rotulo);
+      return { v: s.centavos, atual: s.rotulo === HOJE, x: s.rotulo === HOJE ? 'hoje' : String(d.getDate()), tip: `${SEMANA[d.getDay()]}, ${d.getDate()} de ${MESES[d.getMonth()]}` }; });
+    media = pontos.length ? pontos.reduce((s, p) => s + p.v, 0) / pontos.length : 0;
+    rotMedia = 'média por dia com venda';
+  }
+  if (!pontos.length) return vazio('Ainda sem vendas registradas.');
+  // Eixo em dois degraus redondos (0, passo, 2×passo) que cobrem o maior valor.
+  const maior = Math.max(...pontos.map(p => p.v), proj);
+  const bruto = maior / 100 / 2 || 1, mag = 10 ** Math.floor(Math.log10(bruto));
+  const passo = [1, 2, 2.5, 5, 10].map(x => x * mag).find(x => x >= bruto) * 100;
+  const pct = c => Math.min(100, c / (passo * 2) * 100);
+  // Rótulo direto só no mais recente e no maior; o resto fica na dica.
+  const ultimo = pontos.length - 1;
+  const iMaior = pontos.reduce((k, p, j) => p.v > pontos[k].v ? j : k, 0);
+  const cols = pontos.map((p, j) => {
+    const temProj = j === ultimo && proj > p.v;
+    const rot = temProj ? `<b class="graf-val suave ${j === ultimo && pontos.length > 4 ? 'fim' : ''}" style="bottom:calc(${pct(proj)}% + 4px)">~ ${compacto(proj)}</b>`
+      : (j === ultimo || (j === iMaior && iMaior < ultimo - 1)) ? `<b class="graf-val ${j === ultimo ? (pontos.length > 4 ? 'fim' : '') : 'suave'}" style="bottom:calc(${pct(p.v)}% + 4px)">${compacto(p.v)}</b>` : '';
+    return `<div class="graf-col" tabindex="0" data-tip="${esc(p.tip)}|${reais(p.v, true)}${temProj ? ` · projeção ~ ${reais(proj)}` : ''}">
+      ${temProj ? `<span class="proj" style="bottom:${pct(p.v)}%;height:${pct(proj) - pct(p.v)}%"></span>` : ''}
+      <i class="cy ${j === ultimo ? '' : 'passado'}" style="height:${pct(p.v)}%;--i:${j}"></i>${rot}</div>`;
+  }).join('');
+  return `<div class="graf" role="img" aria-label="Vendas ${modo === 'mes' ? 'por mês' : 'por dia'}; ${rotMedia}: ${reais(media)}">
+    <div class="graf-area" aria-hidden="true">
+      ${[1, 2].map(k => `<div class="graf-grade" style="bottom:${k * 50}%"><span>${compacto(passo * k)}</span></div>`).join('')}
+      ${media ? `<div class="graf-media" style="bottom:${pct(media)}%"></div>` : ''}
+      <div class="graf-cols">${cols}</div>
+    </div>
+    <div class="graf-x" aria-hidden="true">${pontos.map(p => `<span class="${p.atual ? 'hoje' : ''}">${p.x}</span>`).join('')}</div>
+    <div class="graf-leg" aria-hidden="true">
+      <span><i class="m-col"></i>${modo === 'mes' ? 'vendido no mês' : 'vendido no dia'}</span>
+      ${proj ? '<span><i class="m-proj"></i>projeção até o fim do mês</span>' : ''}
+      ${media ? `<span><i class="m-media"></i>${rotMedia} <b class="num">${reais(media)}</b></span>` : ''}
+    </div>
+    <table class="so-leitor"><caption>Vendas ${modo === 'mes' ? 'por mês' : 'por dia'}</caption><tbody>${pontos.map(p => `<tr><th>${esc(p.tip)}</th><td>${reais(p.v, true)}</td></tr>`).join('')}</tbody></table>
+  </div>`;
+}
+function blocoVendas() {
+  const V = DADOS.vendas.mes;
+  const [a, m, dia] = HOJE.split('-').map(Number);
+  // No ritmo atual: o vendido até hoje dividido pelos dias corridos, vezes os
+  // dias do mês. Rotulado como estimativa — não é meta.
+  const proj = Math.round(V.bruto / dia * new Date(a, m, 0).getDate());
+  const stats = `<div class="stats">
+    <div><span>Pedidos em ${MESES[m - 1]}</span><b class="num">${V.qtd.toLocaleString('pt-BR')}</b></div>
+    <div><span>Ticket médio</span><b class="num">${reais(V.ticket)}</b></div>
+    <div title="Estimativa: o vendido até hoje dividido pelos dias corridos, vezes os dias do mês"><span>No ritmo atual, fecha em</span><b class="num">~ ${reais(proj)}</b></div>
+  </div>`;
+  return area('a-fin elevado', 'bar-chart-3', `Vendas<small>${maiuscula(MESES[m - 1])} até hoje</small>`, '', `${stats}<div class="area-corpo" id="graf-vendas">${grafVendas(est.serie)}</div>`, ver('Abrir Vendas', '/vendas'),
+    seg('Período do gráfico', [['dia', 'Por dia'], ['mes', 'Por mês']], est.serie, 'data-serie', 'peq'));
+}
+
+function blocoRanking(cls, icone, titulo, itens, rotulo, valor, sub, href, total) {
+  if (!itens.length) return area(cls, icone, titulo, '', vazio('Nada no período.'));
+  const max = Math.max(...itens.map(valor));
+  const corpo = `<ul class="rank">${itens.map((x, k) => `<li><span class="pos num">${k + 1}</span><span class="nome" title="${esc(rotulo(x))}">${esc(rotulo(x))}</span><span class="v num">${reais(valor(x))}<small>${[sub?.(x), total ? `${pctDe(valor(x), total)}%` : ''].filter(Boolean).join(' · ')}</small></span><span class="trilho"><i class="cx" style="width:${Math.max(2, valor(x) / max * 100)}%;--i:${k}"></i></span></li>`).join('')}</ul>`;
+  return area(cls, icone, titulo, '', corpo, href ? ver('Ver tudo', href) : '');
+}
+
+function blocoCobrar(lista, titulo, icone = 'hand-coins') {
+  const total = lista.reduce((s, p) => s + saldo(p), 0);
+  const corpo = lista.length
+    ? `<ul class="lista">${lista.slice(0, 6).map(p => linhaOS(p, `<span class="num">${reais(saldo(p))}</span><small>${esc(p.status)}</small>`)).join('')}</ul>`
+    : vazio('Nada a cobrar agora.');
+  return area('a-fin', icone, titulo, lista.length ? reais(total) : '', corpo, lista.length > 6 ? ver(`Ver as ${lista.length}`, '/baixa') : '');
+}
+
+// A data em bloco: o dia e, embaixo, a semana (até 6 dias) ou o mês.
+function dataEmBloco(iso, neutro) {
+  const d = dataLocal(iso), longe = Math.abs(diasEntre(HOJE, iso)) > 6;
+  return `<span class="diaf ${neutro ? '' : iso < HOJE ? 'atraso' : iso === HOJE ? 'hoje' : ''}" title="${SEMANA[d.getDay()]}, ${d.getDate()} de ${MESES[d.getMonth()]}"><b class="num">${String(d.getDate()).padStart(2, '0')}</b><span>${iso === HOJE ? 'hoje' : longe ? MESES[d.getMonth()].slice(0, 3) : SEMANA[d.getDay()].slice(0, 3)}</span></span>`;
+}
+function blocoContas(destaque) {
+  const limite = somarDias(HOJE, 7);
+  const contas = DADOS.contas.filter(c => c.status !== 'Pago' && c.vencimento && c.vencimento <= limite).sort((a, b) => a.vencimento.localeCompare(b.vencimento));
+  const vencidas = contas.filter(c => c.vencimento < HOJE);
+  const total = contas.reduce((s, c) => s + c.valor, 0);
+  const corpo = contas.length
+    ? `<ul class="lista">${contas.slice(0, 7).map(c => `<li><a class="lin" href="#" data-ir="/financeiro">${dataEmBloco(c.vencimento)}<span class="lin-txt"><span class="lin-tit">${esc(c.descricao)}</span><span class="lin-sub">${c.vencimento < HOJE ? `<span class="desce">vencida</span> · ` : ''}${esc(c.categoria || 'Sem categoria')}</span></span><span class="lin-dir num">${c.valor ? reais(c.valor) : '<small>valor a definir</small>'}</span></a></li>`).join('')}</ul>`
+    : vazio('Nenhuma conta vence nos próximos 7 dias.');
+  return area(`a-fin${destaque && contas.length ? ' elevado' : ''}`, 'receipt', destaque && contas.length ? 'Contas a pagar · 7 dias<small>as vencidas e as da semana</small>' : 'Contas a pagar · 7 dias', contas.length ? `${vencidas.length ? `${vencidas.length} vencida${vencidas.length === 1 ? '' : 's'} · ` : ''}${reais(total)}` : '', corpo, contas.length > 7 ? ver(`Ver as ${contas.length}`, '/financeiro') : '');
+}
+
+function blocoEquipe() {
+  const carga = DADOS.equipe.map(p => p.nome).map(n => ({ n, q: abertas.filter(p => doLado(p, n)).length, a: abertas.filter(p => doLado(p, n) && atrasada(p)).length })).filter(x => x.q).sort((x, y) => y.q - x.q);
+  const semResp = abertas.filter(p => !p.resp.length);
+  const sem = { q: semResp.length, a: semResp.filter(atrasada).length };
+  if (!carga.length && !sem.q) return '';
+  const max = Math.max(1, sem.q, ...carga.map(x => x.q));
+  const ficha = (av, nome, x, k) => `<div class="pessoa"><div class="pessoa-cab">${av}<span class="pessoa-nome">${esc(nome)}</span><b class="num">${x.q}</b></div>
+    <span class="medidor rv" style="--i:${k}">${x.q - x.a ? `<i style="flex:${x.q - x.a}"></i>` : ''}${x.a ? `<i class="atr" style="flex:${x.a}"></i>` : ''}${max > x.q ? `<i class="vazio" style="flex:${max - x.q}"></i>` : ''}</span>
+    <span class="pessoa-sub">${x.a ? `<span class="desce">${plural(x.a, 'atrasada', 'atrasadas')}</span> de ${plural(x.q, 'O.S.', 'O.S.')}` : plural(x.q, 'O.S. em dia', 'O.S. em dia')}</span></div>`;
+  const corpo = `<div class="equipe">${carga.map((x, k) => ficha(bolinha(x.n, 'g'), x.n, x, k)).join('')}${sem.q ? ficha(`<span class="av-sem">${ico('user-x', 'ico ico-s')}</span>`, 'Sem responsável', sem, carga.length) : ''}</div>`;
+  return area('a-dados', 'users', 'Carga da equipe', 'O.S. abertas por pessoa', corpo, ver('Distribuir na Produção', '/producao'));
+}
+
+/* ===== uma tela por cargo ===== */
+const TELAS = {
+  // O dono: como está a gráfica hoje — dinheiro entrando, o que está na fila,
+  // o que falta cobrar e pagar, e quem está com o quê.
+  Administrador(eu) {
+    const V = DADOS.vendas.mes, A = DADOS.vendas.anterior;
+    const [a, m, dia] = HOJE.split('-').map(Number);
+    const aReceber = abertas.filter(p => saldo(p) > 0);
+    const totalReceber = aReceber.reduce((s, p) => s + saldo(p), 0);
+    const prontoCobrar = aReceber.filter(p => PRONTAS.includes(p.status)).reduce((s, p) => s + saldo(p), 0);
+    const prontasNaoPagas = PEDIDOS.filter(p => [...PRONTAS, 'Concluído'].includes(p.status) && saldo(p) > 0).sort((x, y) => saldo(y) - saldo(x));
+    const atr = abertas.filter(atrasada).length;
+    const hoje = abertas.filter(p => ehHoje(p) && p.status !== 'Retirada').length;
+    const mesNome = MESES[m - 1], mesAnt = MESES[(m + 10) % 12];
+    const serie = [...V.serieDia].reverse();
+    const mediaDia = serie.length ? serie.reduce((s, x) => s + x.centavos, 0) / serie.length : 0;
+    const ult7 = serie.slice(-7);
+    const fechouAnt = V.serieMes.find(s => s.rotulo === isoDe(new Date(a, m - 2, 1)).slice(0, 7))?.centavos || 0;
+    return {
+      resumo: [atr && ['atraso', 'alert-triangle', plural(atr, 'O.S. atrasada', 'O.S. atrasadas')], hoje && ['hoje', 'calendar-clock', plural(hoje, 'prazo hoje', 'prazos hoje')], ['fin', 'shopping-bag', `${reais(V.hoje)} vendidos hoje`]],
+      numeros: numeros([
+        { rot: 'Vendas hoje', icone: 'shopping-bag', area: 'fin', laranja: true, val: dinheiro(V.hoje), tend: V.hoje ? tendencia(V.hoje, mediaDia, 'a média por dia com venda') : '',
+          mini: ult7.length > 1 ? MED.mini(ult7.map(s => s.centavos), ult7.at(-1).rotulo === HOJE ? ult7.length - 1 : -1) : '',
+          ctx: `média de <b>${reais(mediaDia)}</b> por dia com venda`, href: '/vendas', title: reais(V.hoje, true) },
+        { rot: `Vendas em ${mesNome}`, icone: 'trending-up', area: 'fin', val: dinheiro(V.bruto), tend: tendencia(V.bruto, A.bruto, `1 a ${Math.min(dia, new Date(a, m - 1, 0).getDate())} de ${mesAnt}`),
+          med: fechouAnt ? MED.partes([{ v: Math.min(V.bruto, fechouAnt) }], fechouAnt) : '',
+          ctx: fechouAnt ? `<b>${pctDe(V.bruto, fechouAnt)}%</b> do que ${mesAnt} fechou (${reais(fechouAnt)})` : 'vs. mesmo período do mês passado', href: '/vendas', title: reais(V.bruto, true) },
+        { rot: 'Recebido das vendas do mês', icone: 'wallet', area: 'fin', val: dinheiro(V.recebido),
+          med: V.bruto ? MED.partes([{ v: Math.min(V.recebido, V.bruto) }], V.bruto) : '',
+          ctx: V.bruto ? `<b>${pctDe(V.recebido, V.bruto)}%</b> do vendido no mês` : '', href: '/vendas', title: reais(V.recebido, true) },
+        { rot: 'A receber nas O.S. abertas', icone: 'hand-coins', area: 'fin', val: dinheiro(totalReceber),
+          med: totalReceber ? MED.partes([{ v: prontoCobrar }, { v: totalReceber - prontoCobrar, cls: 'claro' }], totalReceber) : '',
+          ctx: prontoCobrar ? `<b>${reais(prontoCobrar)}</b> já prontos para cobrar · ${plural(aReceber.length, 'O.S.', 'O.S.')}` : plural(aReceber.length, 'O.S. com saldo', 'O.S. com saldo'), href: '/baixa' },
+      ]),
+      principal: [
+        blocoVendas(),
+        blocoEsteira(),
+        `<div class="par">${blocoCobrar(prontasNaoPagas, 'Prontas e não pagas')}${blocoContas()}</div>`,
+        `<div class="par">${blocoRanking('a-dados', 'star', `Melhores clientes de ${mesNome}`, V.clientes.slice(0, 5), c => c.nome, c => c.centavos, c => plural(c.qtd, 'O.S.', 'O.S.'), '/vendas', V.bruto)}
+          ${blocoRanking('a-itens', 'package', `Mais vendidos de ${mesNome}`, V.produtos.slice(0, 5), p => p.rotulo, p => p.centavos, null, '/vendas', V.bruto)}</div>`,
+        blocoEquipe(),
+      ],
+      lado: [blocoPendencias(eu), blocoHoje()],
+    };
+  },
+
+  // Atendimento: quem está do outro lado do balcão — avisar, cobrar, entregar.
+  Atendimento(eu) {
+    const avisar = abertas.filter(p => p.status === 'Avisar Cliente').sort(porPrazo);
+    const pagar = abertas.filter(p => p.status === 'Aguardando Pagamento').sort(porPrazo);
+    const retorno = abertas.filter(p => p.status === 'Aguardando Retorno').sort(porPrazo);
+    const parada = abertas.filter(p => p.status === 'Retirada' && p.retirada && diasEntre(p.retirada, HOJE) > 7).sort((x, y) => x.retirada.localeCompare(y.retirada));
+    const atr = abertas.filter(atrasada);
+    const hoje = abertas.filter(p => ehHoje(p) && p.status !== 'Retirada');
+    const hojeNaFila = hoje.filter(p => !PRONTAS.includes(p.status));
+    const prontasNaoPagas = abertas.filter(p => PRONTAS.includes(p.status) && saldo(p) > 0).sort((x, y) => saldo(y) - saldo(x));
+    const avisarComSaldo = avisar.filter(p => saldo(p) > 0).length;
+    const listaAvisar = avisar.length ? `<ul class="lista">${avisar.slice(0, 8).map(p => linhaOS(p, saldo(p) > 0 ? `<span class="num">${reais(saldo(p))}</span><small>falta pagar</small>` : '<small>Quitada</small>')).join('')}</ul>` : vazio('Ninguém para avisar agora.');
+    const listaRetorno = [...pagar, ...retorno];
+    return {
+      resumo: [avisar.length && ['itens', 'megaphone', plural(avisar.length, 'cliente para avisar', 'clientes para avisar')], atr.length && ['atraso', 'alert-triangle', plural(atr.length, 'O.S. atrasada', 'O.S. atrasadas')], hoje.length && ['hoje', 'calendar-clock', plural(hoje.length, 'prazo hoje', 'prazos hoje')]],
+      numeros: numeros([
+        { rot: 'Avisar cliente', icone: 'megaphone', area: 'itens', laranja: true, val: avisar.length, href: '/producao',
+          med: avisar.length ? MED.unidades(avisar, p => saldo(p) > 0 ? 'var(--obs)' : 'var(--fin)', p => `${tituloOS(p)} · ${saldo(p) > 0 ? 'falta pagar' : 'quitada'}`) : '',
+          ctx: avisar.length ? legenda([['var(--fin)', plural(avisar.length - avisarComSaldo, 'quitada', 'quitadas'), avisar.length - avisarComSaldo], ['var(--obs)', `${avisarComSaldo} com saldo`, avisarComSaldo]]) : 'nada pronto agora' },
+        { rot: 'Aguardando pagamento', icone: 'hand-coins', area: 'fin', val: pagar.length, href: '/producao',
+          med: pagar.length ? MED.unidades(pagar, null, tituloOS) : '',
+          ctx: pagar.length ? `<b>${reais(pagar.reduce((s, p) => s + saldo(p), 0))}</b> em aberto` : 'ninguém devendo' },
+        { rot: 'Prazos de hoje', icone: 'calendar-clock', area: 'obs', val: hoje.length, href: '/producao',
+          med: hoje.length ? MED.unidades(hoje, p => PRONTAS.includes(p.status) ? 'var(--fin)' : 'var(--obs)', p => `${tituloOS(p)}${p.hora ? ' · até ' + p.hora : ''}`) : '',
+          ctx: hoje.length ? legenda([['var(--obs)', `${hojeNaFila.length} ainda na produção`, hojeNaFila.length], ['var(--fin)', plural(hoje.length - hojeNaFila.length, 'pronta', 'prontas'), hoje.length - hojeNaFila.length]]) : 'nenhum' },
+        { rot: 'Atrasadas', icone: 'alert-triangle', area: atr.length ? 'perigo' : 'dados', val: atr.length, alerta: atr.length > 0, href: '/producao',
+          med: atr.length ? MED.unidades(atr, () => 'var(--perigo)', tituloOS) : '',
+          ctx: atr.length ? 'avise o cliente do novo prazo' : 'nenhuma' },
+      ]),
+      // Sem ninguém para avisar, o bloco vazio desce para o fim em vez de abrir a tela.
+      principal: (blocos => avisar.length ? blocos : [...blocos.slice(1), blocos[0]])([
+        area(`a-itens${avisar.length ? ' elevado' : ''}`, 'megaphone', avisar.length ? 'Avisar cliente<small>serviço pronto, o cliente ainda não sabe</small>' : 'Avisar cliente', avisar.length ? String(avisar.length) : '', listaAvisar, avisar.length > 8 ? ver(`Ver as ${avisar.length}`, '/producao') : ''),
+        `<div class="par">${blocoCobrar(prontasNaoPagas, 'Prontas e não pagas')}
+          ${area('a-dados', 'hourglass', 'Esperando o cliente', listaRetorno.length ? String(listaRetorno.length) : '', listaRetorno.length ? `<ul class="lista">${listaRetorno.slice(0, 6).map(p => linhaOS(p, `<small>${p.status === 'Aguardando Pagamento' ? 'pagamento' : 'retorno'}</small>${p.venda ? `<small>desde ${ddmm(p.venda)}</small>` : ''}`)).join('')}</ul>` : vazio('Ninguém devendo resposta.'), listaRetorno.length > 6 ? ver(`Ver as ${listaRetorno.length}`, '/producao') : '')}</div>`,
+        area('a-obs', 'package-open', 'Na retirada há mais de 7 dias', parada.length ? String(parada.length) : '', parada.length ? `<ul class="lista">${parada.slice(0, 6).map(p => linhaOS(p, `<span>${diasEntre(p.retirada, HOJE)} dias</span><small>desde ${ddmm(p.retirada)}</small>`)).join('')}</ul>` : vazio('Nada parado na retirada.')),
+      ]),
+      lado: [blocoPendencias(eu), blocoHoje()],
+    };
+  },
+
+  // Produção: a fila — o que fazer agora, na ordem do prazo e do horário.
+  Produção(eu) {
+    const fila = abertas.filter(p => FILA.includes(p.status)).sort(porPrazo);
+    const atr = abertas.filter(atrasada).sort(porPrazo);
+    const hoje = abertas.filter(p => ehHoje(p) && p.status !== 'Retirada').sort(porPrazo);
+    const hojeNaFila = hoje.filter(p => FILA.includes(p.status));
+    const fora = abertas.filter(p => FILA.includes(p.status) && foraDeCasa(p).length).sort(porPrazo);
+    const minhas = fila.filter(p => doLado(p, eu));
+    const linhasFila = l => l.length ? `<ul class="lista">${l.slice(0, 10).map(p => linhaOS(p, `${seloPrazo(p)}<small>${esc(p.status)}${foraDeCasa(p).length ? ' · ' + esc(p.locais.join(', ')) : ''}</small>`)).join('')}</ul>` : vazio('Fila vazia.');
+    const porLocal = {};
+    fora.forEach(p => foraDeCasa(p).forEach(l => { (porLocal[l] ||= []).push(p); }));
+    const comHora = hoje.filter(p => p.hora).length;
+    return {
+      resumo: [['itens', 'layers', plural(fila.length, 'O.S. na fila', 'O.S. na fila')], atr.length && ['atraso', 'alert-triangle', plural(atr.length, 'atrasada', 'atrasadas')], minhas.length && ['hoje', 'user-check', `${minhas.length} com você`]],
+      numeros: numeros([
+        { rot: 'Para hoje', icone: 'calendar-clock', area: 'obs', laranja: true, val: hoje.length, href: '/producao',
+          med: hoje.length ? MED.unidades(hoje, p => FILA.includes(p.status) ? 'var(--obs)' : 'var(--fin)', p => `${tituloOS(p)}${p.hora ? ' · até ' + p.hora : ''}`) : '',
+          ctx: hoje.length ? legenda([['var(--obs)', `${hojeNaFila.length} na fila`, hojeNaFila.length], ['var(--fin)', plural(hoje.length - hojeNaFila.length, 'pronta', 'prontas'), hoje.length - hojeNaFila.length]]) + (comHora ? ` · ${comHora} com horário` : '') : 'nenhuma' },
+        { rot: 'Atrasadas', icone: 'alert-triangle', area: atr.length ? 'perigo' : 'dados', val: atr.length, alerta: atr.length > 0, href: '/producao',
+          med: atr.length ? MED.unidades(atr, () => 'var(--perigo)', tituloOS) : '',
+          ctx: atr.length ? 'resolver primeiro' : 'nenhuma' },
+        { rot: 'Na fila', icone: 'layers', area: 'itens', val: fila.length, href: '/producao',
+          med: fila.length ? MED.unidades(fila, p => COR[p.status], tituloOS) : '',
+          ctx: legenda(FILA.map(e => [COR[e], `${CURTO[e] || e} ${fila.filter(p => p.status === e).length}`, fila.filter(p => p.status === e).length])) || 'vazia' },
+        { rot: 'Em terceirizadas', icone: 'truck', area: 'dados', val: fora.length, href: '/producao',
+          med: fora.length ? MED.unidades(fora, p => corLocal(foraDeCasa(p)[0]), p => `${tituloOS(p)} · ${foraDeCasa(p).join(', ')}`) : '',
+          ctx: legenda(Object.entries(porLocal).map(([l, ps]) => [corLocal(l), `${esc(l)} ${ps.length}`, ps.length])) || 'nenhuma' },
+      ]),
+      principal: [
+        area('a-itens elevado', 'list-ordered', 'Próximas da fila<small>na ordem do prazo e do horário</small>', fila.length ? plural(fila.length, 'O.S.', 'O.S.') : '', linhasFila(fila), fila.length > 10 ? ver(`Ver as ${fila.length}`, '/producao') : ''),
+        blocoEsteira(),
+        `<div class="par">${area('a-dados', 'truck', 'Terceirizadas', fora.length ? String(fora.length) : '', fora.length ? `<ul class="lista">${fora.slice(0, 6).map(p => linhaOS(p, `${seloPrazo(p)}<small>${esc(foraDeCasa(p).join(', '))}</small>`)).join('')}</ul>` : vazio('Nada fora da casa.'))}
+          ${area('a-obs', 'shopping-cart', 'Material pedido', DADOS.requisicoes.length ? String(DADOS.requisicoes.length) : '', DADOS.requisicoes.length ? `<ul class="lista">${DADOS.requisicoes.slice(0, 6).map(r => `<li><a class="lin" href="#" data-ir="/comunicacao">${r.quando ? dataEmBloco(r.quando, true) : ''}<span class="lin-txt"><span class="lin-tit">${esc(r.itens)}</span><span class="lin-sub">${!r.quando ? 'pedido' : diasEntre(r.quando, HOJE) ? `pedido há ${plural(diasEntre(r.quando, HOJE), 'dia', 'dias')}` : 'pedido hoje'}</span></span></a></li>`).join('')}</ul>` : vazio('Nenhum material pendente.'))}</div>`,
+      ],
+      // "Com você" e não "prazos de hoje": os de hoje já abrem a fila ao lado.
+      lado: [blocoPendencias(eu),
+        area('a-itens', 'user-check', 'Com você', minhas.length ? String(minhas.length) : '', minhas.length ? `<ul class="lista">${minhas.slice(0, 8).map(p => linhaOS(p, seloPrazo(p))).join('')}</ul>` : vazio('Nenhuma O.S. da fila com você.'), minhas.length > 8 ? ver(`Ver as ${minhas.length}`, '/producao') : '')],
+    };
+  },
+
+  // Financeiro: o caixa — o que vence, o que falta receber, o que falta baixar.
+  Financeiro(eu) {
+    const V = DADOS.vendas.mes;
+    const limite = somarDias(HOJE, 7);
+    const naoPagas = DADOS.contas.filter(c => c.status !== 'Pago');
+    const vencidas = naoPagas.filter(c => c.vencimento && c.vencimento < HOJE);
+    const semana = naoPagas.filter(c => c.vencimento && c.vencimento >= HOJE && c.vencimento <= limite);
+    const darBaixa = PEDIDOS.filter(p => p.status === 'Concluído' && saldo(p) <= 0);
+    const prontasNaoPagas = PEDIDOS.filter(p => [...PRONTAS, 'Concluído'].includes(p.status) && saldo(p) > 0).sort((x, y) => saldo(y) - saldo(x));
+    const resultado = V.recebido - V.despesas.pago;
+    const mesNome = MESES[Number(HOJE.slice(5, 7)) - 1];
+    // A semana dia a dia: quanto vence em cada um dos próximos oito dias.
+    const dias = Array.from({ length: 8 }, (_, k) => somarDias(HOJE, k));
+    const porDia = dias.map(d => semana.filter(c => c.vencimento === d).reduce((s, c) => s + c.valor, 0));
+    const totalFormas = V.formas.reduce((s, f) => s + f.centavos, 0);
+    return {
+      resumo: [vencidas.length && ['atraso', 'alert-triangle', plural(vencidas.length, 'conta vencida', 'contas vencidas')], darBaixa.length && ['fin', 'check-check', plural(darBaixa.length, 'O.S. para dar baixa', 'O.S. para dar baixa')], semana.length && ['hoje', 'receipt', `${reais(semana.reduce((s, c) => s + c.valor, 0))} vencem em 7 dias`]],
+      numeros: numeros([
+        { rot: 'A pagar em 7 dias', icone: 'receipt', area: 'fin', laranja: true, val: dinheiro(semana.reduce((s, c) => s + c.valor, 0)), href: '/financeiro',
+          mini: semana.length ? MED.mini(porDia, 0) : '',
+          ctx: semana.length ? `${plural(semana.length, 'conta', 'contas')} · hoje ${porDia[0] ? reais(porDia[0]) : 'nada'}` : 'nenhuma conta' },
+        { rot: 'Contas vencidas', icone: 'alert-triangle', area: vencidas.length ? 'perigo' : 'dados', val: vencidas.length, alerta: vencidas.length > 0, href: '/financeiro',
+          med: vencidas.length ? MED.unidades(vencidas, () => 'var(--perigo)', c => `${c.descricao} · venceu ${ddmm(c.vencimento)}`) : '',
+          ctx: vencidas.length ? `<b>${reais(vencidas.reduce((s, c) => s + c.valor, 0))}</b> em atraso` : 'nenhuma' },
+        { rot: 'Prontas e não pagas', icone: 'hand-coins', area: 'fin', val: dinheiro(prontasNaoPagas.reduce((s, p) => s + saldo(p), 0)), href: '/baixa',
+          med: prontasNaoPagas.length ? MED.unidades(prontasNaoPagas, null, p => `${tituloOS(p)} · falta ${reais(saldo(p))}`) : '',
+          ctx: plural(prontasNaoPagas.length, 'O.S. pronta esperando pagamento', 'O.S. prontas esperando pagamento') },
+        { rot: 'Para dar baixa', icone: 'check-check', area: 'dados', val: darBaixa.length, href: '/baixa',
+          med: darBaixa.length ? MED.unidades(darBaixa, () => 'var(--fin)', tituloOS) : '',
+          ctx: darBaixa.length ? 'concluídas e quitadas' : 'nenhuma' },
+      ]),
+      principal: [
+        `<div class="par">${blocoContas(true)}
+          ${area('a-fin', 'scale', `Resultado de ${mesNome}`, '', `<div class="area-corpo">
+            <div class="saldo-grande"><b class="num ${resultado < 0 ? 'desce' : ''}">${reais(resultado)}</b><span>recebido − despesas pagas</span></div>
+            <ul class="rank" style="padding:4px 0 0">
+            ${[['Recebido das vendas', V.recebido], ['Despesas pagas', V.despesas.pago], ['Despesas vencidas em aberto', V.despesas.pendente]].map(([r, v], k, arr) => `<li style="padding:7px 0;grid-template-columns:minmax(0,1fr) auto"><span class="nome">${r}</span><span class="v num">${reais(v)}</span><span class="trilho" style="grid-column:1/-1"><i class="cx" style="width:${Math.max(2, v / Math.max(1, ...arr.map(x => x[1])) * 100)}%;--i:${k};${k ? `opacity:1;background:${k === 2 ? 'var(--perigo)' : 'var(--tinta-fraca)'}` : ''}"></i></span></li>`).join('')}
+          </ul>${V.semBaixa.qtd ? `<p class="nota">${ico('info')}<span>${plural(V.semBaixa.qtd, 'O.S. concluída', 'O.S. concluídas')} sem pagamento lançado · <b>${reais(V.semBaixa.centavos)}</b></span></p>` : ''}</div>`, ver('Abrir Vendas', '/vendas'))}</div>`,
+        `<div class="par">${blocoCobrar(prontasNaoPagas, 'Prontas e não pagas')}
+          ${area('a-dados', 'check-check', 'Para dar baixa', darBaixa.length ? String(darBaixa.length) : '', darBaixa.length ? `<ul class="lista">${darBaixa.slice(0, 6).map(p => linhaOS(p, `<span class="num">${reais(p.valor)}</span><small>quitada</small>`)).join('')}</ul>` : vazio('Nada esperando baixa.'), darBaixa.length > 6 ? ver(`Ver as ${darBaixa.length}`, '/baixa') : ver('Abrir O.S.', '/baixa'))}</div>`,
+      ],
+      lado: [blocoPendencias(eu),
+        blocoRanking('a-fin', 'wallet', `Como pagaram em ${mesNome}`, V.formas, f => f.rotulo, f => f.centavos, null, '/vendas', totalFormas)],
+    };
+  },
+};
+
+/* ===== render ===== */
+const tela = document.getElementById('tela');
+function saudacao() { const h = new Date().getHours(); return h < 12 ? 'Bom dia' : h < 18 ? 'Boa tarde' : 'Boa noite'; }
+// O fundo do controle de segmentos desliza até o botão escolhido; `de` é o
+// botão de onde ele sai (sem `de`, já aparece no lugar).
+function moverTrilho(segEl, de) {
+  const tr = segEl?.querySelector('.seg-trilho'), alvo = segEl?.querySelector('[aria-pressed="true"]');
+  if (!tr || !alvo) return;
+  const por = el => { tr.style.width = `${el.offsetWidth}px`; tr.style.transform = `translateX(${el.offsetLeft}px)`; };
+  if (de) { tr.style.transition = 'none'; por(de); tr.offsetWidth; tr.style.transition = ''; }
+  else { tr.style.transition = 'none'; por(alvo); tr.offsetWidth; tr.style.transition = ''; return; }
+  por(alvo);
+}
+function ajustarLado() {
+  const lado = tela.querySelector('.lado');
+  if (lado) lado.classList.toggle('fixo', innerWidth > 960 && lado.offsetHeight < innerHeight - 90);
+}
+function render(anterior) {
+  const p = EQUIPE[est.eu] || { nome: est.eu, nivel: 'Administrador' };
+  const doCargo = TELAS[p.nivel] ? p.nivel : 'Administrador';
+  const podeTrocar = p.nivel === 'Administrador';
+  const visao = podeTrocar && est.visao ? est.visao : doCargo;
+  const t = TELAS[visao](p.nome);
+  const d = dataLocal(HOJE);
+  const ordem = VISOES.findIndex(([id]) => id === visao);
+  tela.innerHTML = `
+    <div class="cab"><div><h1>${saudacao()}, ${esc(p.nome.split(' ')[0])}</h1>
+      <p class="sub"><span>${maiuscula(SEMANA[d.getDay()])}, ${d.getDate()} de ${MESES[d.getMonth()]}</span>${t.resumo.filter(Boolean).map(([tom, ic, txt]) => `<span class="selo ${tom}">${ico(ic)}${txt}</span>`).join('')}</p></div>
+      ${podeTrocar ? seg('Visão do Início', VISOES, visao, 'data-visao') : ''}</div>
+    ${t.numeros}
+    <div class="grade"><div class="col">${t.principal.join('')}</div><div class="col lado">${t.lado.join('')}</div></div>`;
+  document.getElementById('vercomo').innerHTML = `${ico('eye', 'ico ico-s')}<span class="rot">Ver como</span>${bolinha(p.nome)}<span>${esc(p.nome)}</span>${ico('chevron-down', 'ico ico-s chev')}`;
+  lucide.createIcons();
+  const segVisao = tela.querySelector('.cab .seg');
+  moverTrilho(segVisao, anterior != null ? segVisao?.querySelectorAll('button')[anterior] : null);
+  moverTrilho(tela.querySelector('.seg.peq'));
+  ajustarLado();
+  animarEntrada(anterior == null ? 0 : Math.sign(ordem - anterior));
+}
+
+// A entrada da tela. `lado` 0 = abrindo (os quadros sobem); 1 ou -1 = troca
+// de visão (vêm da direita ou da esquerda, como nas abas). A ordem é a de
+// leitura — de cima para baixo, da esquerda para a direita — e a espera para
+// no décimo quadro, para nada ficar esperando por quem está lá embaixo.
+function animarEntrada(lado) {
+  tela.classList.toggle('lateral', lado !== 0);
+  tela.style.setProperty('--dx', `${lado < 0 ? -16 : 16}px`);
+  const marcar = (el, d) => { el.style.setProperty('--d', `${d}ms`); el.classList.add('entra'); };
+  let t = 0;
+  if (lado === 0) { marcar(tela.querySelector('.cab'), 0); t = 70; }
+  const faixa = tela.querySelector('.numeros');
+  if (faixa) { marcar(faixa, t); faixa.querySelectorAll('.n-cel').forEach((c, k) => marcar(c, t + 60 + k * 55)); t += 200; }
+  const linha = el => Math.round(el.getBoundingClientRect().top / 12);
+  [...tela.querySelectorAll('.grade .area')]
+    .sort((a, b) => linha(a) - linha(b) || a.getBoundingClientRect().left - b.getBoundingClientRect().left)
+    .forEach((el, k) => marcar(el, t + Math.min(k, 9) * 60));
+}
+
+/* ===== Ver como ===== */
+let popAberto = null;
+function fecharPop() { if (!popAberto) return; popAberto.el.remove(); popAberto.ancora.setAttribute('aria-expanded', 'false'); popAberto = null; }
+function abrirVerComo(ancora) {
+  if (popAberto) return fecharPop();
+  const ordem = ['Administrador', 'Atendimento', 'Produção', 'Financeiro'];
+  const grupos = ordem.map(c => [c, DADOS.equipe.filter(p => p.nivel === c)]).filter(([, l]) => l.length);
+  const el = document.createElement('div');
+  el.className = 'pop'; el.setAttribute('role', 'menu');
+  el.innerHTML = grupos.map(([c, l]) => `<div class="rot">${c}</div>${l.map(p => `<button role="menuitem" data-pessoa="${esc(p.nome)}">${bolinha(p.nome)}${esc(p.nome)}${p.nome === est.eu ? ico('check', 'ico ico-s ok') : ''}</button>`).join('')}`).join('');
+  document.body.appendChild(el);
+  const r = ancora.getBoundingClientRect();
+  el.style.top = `${r.bottom + 6}px`;
+  el.style.left = `${Math.max(8, Math.min(r.right - el.offsetWidth, innerWidth - el.offsetWidth - 8))}px`;
+  ancora.setAttribute('aria-expanded', 'true');
+  popAberto = { el, ancora };
+  lucide.createIcons();
+  el.querySelector('button')?.focus();
+}
+
+/* ===== dica dos gráficos ===== */
+const tip = document.createElement('div'); tip.className = 'tip'; tip.hidden = true; document.body.appendChild(tip);
+function mostrarDica(alvo) {
+  const [tit, val] = alvo.dataset.tip.split('|');
+  tip.innerHTML = ''; const b = document.createElement('b'); b.textContent = val; tip.append(b, document.createTextNode(tit));
+  tip.hidden = false;
+  const r = alvo.getBoundingClientRect();
+  tip.style.left = `${Math.min(innerWidth - tip.offsetWidth - 8, Math.max(8, r.left + r.width / 2 - tip.offsetWidth / 2))}px`;
+  tip.style.top = `${Math.max(56, r.top - tip.offsetHeight - 6)}px`;
+}
+document.addEventListener('pointerover', e => { const a = e.target.closest?.('[data-tip]'); if (a) mostrarDica(a); });
+document.addEventListener('pointerout', e => { if (e.target.closest?.('[data-tip]')) tip.hidden = true; });
+document.addEventListener('focusin', e => { const a = e.target.closest?.('[data-tip]'); if (a) mostrarDica(a); else tip.hidden = true; });
+addEventListener('scroll', () => { tip.hidden = true; }, { passive: true });
+
+/* ===== troca de tema (a mesma do sistema) ===== */
+let trocaAtual = null;
+function trocarTema(escuro, origem, aplicar) {
+  const raiz = document.documentElement;
+  const trocar = () => { raiz.classList.toggle('dark', escuro); aplicar?.(); };
+  if (!document.startViewTransition) return trocar();
+  const r = origem?.getBoundingClientRect();
+  const x = r ? r.left + r.width / 2 : innerWidth / 2, y = r ? r.top + r.height / 2 : innerHeight / 2;
+  const raio = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+  const reduzido = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  raiz.dataset.trocaTema = '';
+  const troca = document.startViewTransition(trocar); trocaAtual = troca;
+  let anim;
+  troca.ready.then(() => {
+    const circulo = [`circle(0px at ${x}px ${y}px)`, `circle(${raio}px at ${x}px ${y}px)`];
+    anim = raiz.animate(reduzido ? { opacity: escuro ? [0, 1] : [1, 0] } : { clipPath: escuro ? circulo : circulo.reverse() }, {
+      duration: reduzido ? 200 : escuro ? 600 : 450, easing: reduzido ? 'ease' : escuro ? 'cubic-bezier(.45,0,.2,1)' : 'cubic-bezier(.8,0,.55,1)',
+      fill: 'forwards', pseudoElement: escuro ? '::view-transition-new(root)' : '::view-transition-old(root)',
+    });
+  }).catch(() => {});
+  const fim = () => { anim?.cancel(); if (trocaAtual === troca) delete raiz.dataset.trocaTema; };
+  troca.finished.then(fim, fim);
+}
+
+/* ===== eventos ===== */
+document.addEventListener('click', e => {
+  const t = e.target;
+  if (t.closest('#vercomo')) return abrirVerComo(t.closest('#vercomo'));
+  const pessoa = t.closest('[data-pessoa]');
+  if (pessoa) { est.eu = pessoa.dataset.pessoa; est.visao = null; fecharPop(); render(); scrollTo(0, 0); return; }
+  const vis = t.closest('[data-visao]');
+  if (vis) {
+    if (vis.getAttribute('aria-pressed') === 'true') return;
+    const antes = [...vis.parentElement.querySelectorAll('button')].findIndex(b => b.getAttribute('aria-pressed') === 'true');
+    est.visao = vis.dataset.visao; render(antes); return;
+  }
+  // Por dia / por mês: troca só o gráfico, sem redesenhar a tela.
+  const serie = t.closest('[data-serie]');
+  if (serie) {
+    if (serie.getAttribute('aria-pressed') === 'true') return;
+    const s = serie.parentElement, de = s.querySelector('[aria-pressed="true"]');
+    est.serie = serie.dataset.serie;
+    s.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b === serie)));
+    moverTrilho(s, de);
+    const graf = document.getElementById('graf-vendas');
+    graf.style.setProperty('--d', '-150ms');
+    graf.innerHTML = grafVendas(est.serie);
+    lucide.createIcons();
+    return;
+  }
+  if (popAberto && !t.closest('.pop')) fecharPop();
+  if (t.closest('#tema')) {
+    const bt = t.closest('#tema'), escuro = !document.documentElement.classList.contains('dark');
+    trocarTema(escuro, bt, () => { bt.innerHTML = `<i data-lucide="${escuro ? 'sun' : 'moon'}" class="ico ico-s"></i><span class="txt-tema">${escuro ? 'Claro' : 'Escuro'}</span>`; lucide.createIcons(); });
+    return;
+  }
+  const ir = t.closest('[data-ir]');
+  if (ir) { e.preventDefault(); irPara(ir.dataset.ir); }
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && popAberto) { const a = popAberto.ancora; fecharPop(); a.focus(); return; }
+  if (popAberto && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
+    e.preventDefault();
+    const bs = [...popAberto.el.querySelectorAll('button')], i = bs.indexOf(document.activeElement);
+    bs[(i + (e.key === 'ArrowDown' ? 1 : -1) + bs.length) % bs.length].focus();
+  }
+});
+addEventListener('resize', () => { fecharPop(); ajustarLado(); moverTrilho(tela.querySelector('.cab .seg')); moverTrilho(tela.querySelector('.seg.peq')); });
+render();
+document.fonts?.ready.then(() => { moverTrilho(tela.querySelector('.cab .seg')); moverTrilho(tela.querySelector('.seg.peq')); });
+</script>
+</body>
+</html>
