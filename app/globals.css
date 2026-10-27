@@ -31,7 +31,7 @@
        repetida em sete telas como `sticky top-[112px]`. Qualquer mudança de
        altura — e o celular vai pedir uma — descolava as sete de uma vez, sem
        erro visível, só o conteúdo passando por baixo do cabeçalho. */
-    --altura-barra: 64px;
+    --altura-barra: 56px;
     --altura-abas: 48px;
     /* A faixa de pendências também gruda no topo, logo abaixo das abas, mas a
        altura dela muda: some quando não há nada urgente, tem uma linha
@@ -59,6 +59,13 @@
     /* O azul do logotipo, medido no arquivo original do logo. Só para o nome
        escrito na barra — não é cor de interface. */
     --brand-azul: #006FB5;
+
+    /* O laranja quando vira texto (link de ação, ✓ do item escolhido): o
+       #F69F00 puro sobre branco não passa contraste de leitura. */
+    --brand-tinta: #8A5400;
+
+    /* Sombra do que flutua sobre a página: menus e painéis da barra. */
+    --sombra-pop: 0 12px 28px -8px rgba(15,23,42,.24), 0 1px 3px rgba(15,23,42,.08);
 
     /* Superfícies, do fundo da página para cima */
     --fundo: #EDEFF0;
@@ -109,6 +116,8 @@
 .dark {
     /* O mesmo azul, clareado: o original fica apagado sobre o fundo escuro. */
     --brand-azul: #4A9FDB;
+    --brand-tinta: #FFB938;
+    --sombra-pop: 0 12px 28px -8px rgba(0,0,0,.6);
 
     --fundo: #0d1117;
     --superficie: #161b22;
@@ -143,6 +152,10 @@
   --color-brand: #F69F00;
   --color-brandHover: #d98b00;
   --color-brand-azul: var(--brand-azul);
+  --color-brand-tinta: var(--brand-tinta);
+  /* O texto sobre o laranja da marca: branco não passa contraste nele. */
+  --color-sobre-brand: #241600;
+  --shadow-pop: var(--sombra-pop);
   --color-darkBg: #0d1117;
   --color-darkCard: #161b22;
   --color-darkElevated: #21262d;
@@ -263,6 +276,16 @@ html[data-troca-tema]::view-transition-new(root) { animation: none; mix-blend-mo
 html[data-troca-tema].dark::view-transition-new(root),
 html[data-troca-tema]:not(.dark)::view-transition-old(root) { z-index: 1; }
 html[data-troca-tema] *, html[data-troca-tema] *::before, html[data-troca-tema] *::after { transition: none !important; }
+
+/* ---- Menus e painéis da barra: descem 4px enquanto aparecem ---- */
+@keyframes pop-in {
+    from { opacity: 0; transform: translateY(-4px); }
+}
+.animate-pop { animation: pop-in 0.16s cubic-bezier(0.16, 1, 0.3, 1); }
+
+@media (prefers-reduced-motion: reduce) {
+    .animate-pop { animation: none; }
+}
 
 /* ---- Toasts de notificação (canto inferior direito) ---- */
 @keyframes toast-in {

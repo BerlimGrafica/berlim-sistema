@@ -3,15 +3,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useSessao } from '@/context/SessaoContext';
 import { useChatEquipe } from '@/context/ChatContext';
 import Icon from '@/components/Icon';
-import { corPorNome } from '@/lib/utils/formatters';
+import Avatar from '@/components/ui/Avatar';
 import { entrarNaPilha, souOTopo, voltarDoHistorico, voltaVeioDoCodigo } from '@/lib/ui/pilhaModais';
-
-function iniciais(nome) {
-    if (!nome) return '?';
-    const partes = nome.trim().split(/\s+/);
-    if (partes.length === 1) return partes[0].slice(0, 2).toUpperCase();
-    return (partes[0][0] + partes[partes.length - 1][0]).toUpperCase();
-}
 
 function formatarHora(iso) {
     return new Date(iso).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
@@ -40,18 +33,6 @@ function bordaBolha(minha, primeiraDoGrupo, ultimaDoGrupo) {
     if (primeiraDoGrupo) return 'rounded-2xl rounded-bl-md';
     if (ultimaDoGrupo) return 'rounded-2xl rounded-tl-md rounded-bl-sm';
     return 'rounded-2xl rounded-tl-md rounded-bl-md';
-}
-
-function Avatar({ nome, avatarUrl, className = 'w-7 h-7 text-micro' }) {
-    if (avatarUrl) {
-        return <img src={avatarUrl} alt={nome} referrerPolicy="no-referrer" className={`${className} rounded-full object-cover shrink-0`} />;
-    }
-    const { bg, text } = corPorNome(nome);
-    return (
-        <div title={nome} className={`${className} rounded-full ${bg} flex items-center justify-center font-bold ${text} shrink-0`}>
-            {iniciais(nome)}
-        </div>
-    );
 }
 
 export default function ChatPanel() {

@@ -48,7 +48,7 @@ function ContadorPendencias({ n, rotulo, recolhido }) {
     if (!n) return null;
     return (
         <span
-            className={`px-1 rounded-full bg-brand text-white font-bold grid place-items-center tabular-nums ${
+            className={`px-1 rounded-full bg-brand text-sobre-brand font-bold grid place-items-center tabular-nums ${
                 // Recolhido, o número vai para o canto do ícone, como nos
                 // ícones de app: é o único lugar que sobra na faixa. Menor e
                 // deslocado para fora, para não tapar o ícone que identifica a

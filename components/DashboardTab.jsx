@@ -101,7 +101,7 @@ export default function DashboardTab() {
                                         <Icon name="bell" className="w-4 h-4 text-brand" /> O que falta fazer
                                     </h3>
                                     {pendencias.length > 0 && (
-                                        <span className={`text-white text-mini font-bold px-2 py-0.5 rounded-full shadow-sm ${gravidadeDe(pendenciaGravidade).contador}`}>{pendencias.length}</span>
+                                        <span className={`text-mini font-bold px-2 py-0.5 rounded-full shadow-sm ${gravidadeDe(pendenciaGravidade).contador}`}>{pendencias.length}</span>
                                     )}
                                 </div>
                                 <div className="flex-1 min-h-0 p-4 overflow-y-auto custom-scrollbar flex flex-col gap-3">

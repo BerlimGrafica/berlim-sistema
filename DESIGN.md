@@ -274,6 +274,20 @@ Quando uma lista precisa buscar no banco (na tela de O.S., a primeira vez que se
 ### Troca de tema
 O botão de lua/sol acende o tema a partir dele: o escuro se espalha em círculo saindo do botão até cobrir a tela (.6s, suave nas duas pontas) e, ao voltar ao claro, se recolhe para dentro do botão pelo mesmo caminho, um pouco mais rápido (.45s). O ícone troca junto com as cores. Feito com View Transitions (`lib/utils/trocarTema.js`); navegador sem suporte troca seco, e com movimento reduzido vira um esmaecer de .2s.
 
+### Barra do sistema
+Faixa de 56px em `superficie` (`--altura-barra`), com linha `borda` embaixo no computador, que encontra a borda do menu lateral no canto. À esquerda, o botão do menu, com o centro no mesmo eixo dos ícones do menu recolhido, e o nome **BERLIM Gráfica** nas cores do logo, que leva ao Início. À direita, três grupos separados por um fio de 1×20px em `borda`:
+- os sites das terceirizadas numa moldura só, com um clique cada;
+- as ferramentas do dia (chat, pendências, tema), em ícones de 36px, `tinta-suave`, com `realce` no hover;
+- a conta.
+
+A cor da barra fica só nos contadores, no canto do ícone, vazados por um anel da cor da barra. O do chat é laranja com texto `sobre-brand`. O das pendências tem a cor da mais grave: vermelho, âmbar ou azul.
+
+A conta é a bolinha da pessoa (foto do Google ou iniciais na cor do nome), com nome e cargo em caixa normal e ⌄. Ela abre um menu com o vínculo do Google e **Sair do sistema**. Os dois encerram algo, então pedem o segundo clique no próprio item ("Clique de novo para sair", que volta ao normal em 4s).
+
+Pendências e conta abrem como popover: raio 9px, borda e `sombra-pop`, descendo 4px em .16s. Fecham com clique fora ou com `Esc`, que devolve o foco ao botão. A conta aberta pelo teclado já leva o foco ao primeiro item, e as setas andam pelos itens.
+
+No celular ficam o ícone da marca, chat, pendências, tema e só a bolinha da conta. Os sites descem para a faixa do seletor de seções, num botão com os três ícones sobrepostos.
+
 ## Do's and Don'ts
 
 ### Do:
@@ -295,5 +309,6 @@ O botão de lua/sol acende o tema a partir dele: o escuro se espalha em círculo
 - **Don't** usar caixa alta espaçada em rótulos e títulos.
 - **Don't** criar cartões iguais em grade como estrutura de página quando uma lista densa resolve.
 - **Don't** misturar busca, chips e botões numa mesma faixa de ferramentas: busca no cabeçalho, filtros em abas.
+- **Don't** deixar ação rara e que encerra algo (sair, desvincular) solta na barra do sistema, ao lado de um ícone de uso diário: ela vai no menu da conta.
 - **Don't** repetir o mesmo valor em vários lugares do mesmo bloco (ex.: "falta pagar" no cabeçalho, no resumo e na lista).
 - **Don't** deixar texto de propriedade vazar da coluna: corte com "…" e ponha o valor inteiro no `title`.
