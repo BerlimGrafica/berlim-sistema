@@ -217,11 +217,13 @@ html { --altura-cabecalho: 51px; --altura-filtros: 42px; }
 .lin .resp-in { display: none; }
 
 /* ============ detalhe (gaveta no computador, folha no celular) ============ */
-/* cabeçalho: nº, a ação principal (abrir a O.S. inteira) e o fechar. Gruda no
-   topo da gaveta ao rolar, então o botão fica sempre à mão. */
+/* cabeçalho: o nº e, à direita, só ícones do mesmo peso (abrir a O.S. inteira e
+   fechar). Gruda no topo da gaveta ao rolar, então os dois ficam sempre à mão. */
 .det-cab { display: flex; align-items: center; gap: 8px; color: var(--tinta-suave); font-size: 12.5px; }
 .det-cab .oid { font-size: 13px; }
-.det-abrir { margin-left: auto; }
+.det-ferr { margin-left: auto; display: flex; gap: 2px; }
+/* a ação principal com espaço próprio, logo abaixo do nome do cliente */
+.det-principal { margin-top: 14px; }
 .gaveta .det-cab { position: sticky; top: 0; z-index: 2; margin: -18px -22px 0; padding: 12px 22px; background: var(--fundo); transition: box-shadow .2s; }
 .gaveta.rolou .det-cab { box-shadow: 0 1px 0 var(--borda); }
 .det-cli { display: flex; align-items: center; gap: 8px; font-size: 22px; font-weight: 800; letter-spacing: -.02em; color: var(--tinta); line-height: 1.25; margin-top: 4px; }
@@ -348,6 +350,7 @@ html[data-troca-tema] *, html[data-troca-tema] *::before, html[data-troca-tema] 
   .gaveta.sai { animation-name: folhaSai; }
   .gaveta .det { padding: 14px 14px 40px; }
   .gaveta .det-cab { margin: -14px -14px 0; padding: 10px 14px; }
+  .det-abrir { width: 100%; height: 44px; }
   .det-abrir kbd { display: none; }
   .marcas { grid-template-columns: 1fr; }
   .props { grid-template-columns: 84px minmax(0,1fr); }
@@ -576,9 +579,10 @@ function renderA() {
 function detalhe(p, naGaveta) {
   const feitos = p.itens.filter(i => i[2]).length; const falta = p.valor - p.pago; const conf = est.conf === p.id;
   return `<div class="det">
-    <div class="det-cab"><span class="oid">O.S. #${p.id}</span><button class="btn btn-pri btn-p det-abrir" data-acao="editar" data-id="${p.id}">${ico('square-pen', 'ico ico-s')}Abrir O.S. completa<kbd>Enter</kbd></button>${naGaveta ? `<button class="ib fechar" data-acao="fechar-gaveta" aria-label="Fechar" title="Fechar (Esc)">${ico('x')}</button>` : ''}</div>
+    <div class="det-cab"><span class="oid">O.S. #${p.id}</span><span class="det-ferr"><button class="ib" data-acao="editar" data-id="${p.id}" aria-label="Abrir O.S. completa" title="Abrir O.S. completa (Enter)">${ico('maximize-2')}</button>${naGaveta ? `<button class="ib fechar" data-acao="fechar-gaveta" aria-label="Fechar" title="Fechar (Esc)">${ico('x')}</button>` : ''}</span></div>
     <div class="det-cli ${p.problema ? 'prob' : ''}">${esc(p.cliente)}</div>
     ${p.problema ? `<div class="det-aviso">${ico('alert-triangle', 'ico ico-s')}Cliente com pendência — confira antes de entregar.</div>` : ''}
+    <div class="det-principal"><button class="btn btn-pri det-abrir" data-acao="editar" data-id="${p.id}">${ico('maximize-2', 'ico ico-s')}Abrir O.S. completa<kbd>Enter</kbd></button></div>
     <dl class="props">
       <dt>${ico('circle-dot', 'ico ico-s')}Etapa</dt><dd>${statusBtn(p)}</dd>
       <dt>${ico('flag', 'ico ico-s')}Prazo</dt><dd>${prazoBtn(p)}${seloHora(p)}</dd>
