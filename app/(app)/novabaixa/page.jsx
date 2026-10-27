@@ -6,6 +6,7 @@ import { useClientes } from '@/context/ClientesContext';
 import { mascararCliente, valorPagamentoComSinalCentavos } from '@/lib/utils/formatters';
 import { corDoNome } from '@/lib/prototipos/coresDoNome';
 import { resumoDoPedido } from '@/lib/utils/servico';
+import { useAbrirOSDoPrototipo } from '@/hooks/useAbrirOSDoPrototipo';
 
 // Protótipo da nova tela de O.S. (o Histórico/Baixa do menu): abas por situação
 // e lista agrupada por mês da venda, a opção escolhida pela equipe.
@@ -33,6 +34,7 @@ export default function Page() {
     const { isClienteProblema } = useClientes();
     const [modelo, setModelo] = useState(null);
     const [abas, setAbas] = useState(null);
+    const { iframeRef, modalOS } = useAbrirOSDoPrototipo(id => abas && Object.values(abas).flatMap(a => a.pedidos).find(p => p.id === id)?.status);
 
     useEffect(() => {
         let vivo = true;
@@ -90,10 +92,14 @@ export default function Page() {
     // absolute inset-0 preenche a área da página abaixo da barra e da faixa de
     // pendências; a rolagem fica toda dentro do protótipo.
     return (
-        <iframe
-            title="Protótipo da nova tela de O.S."
-            srcDoc={html}
-            className="absolute inset-0 w-full h-full border-0"
-        />
+        <>
+            <iframe
+                ref={iframeRef}
+                title="Protótipo da nova tela de O.S."
+                srcDoc={html}
+                className="absolute inset-0 w-full h-full border-0"
+            />
+            {modalOS}
+        </>
     );
 }

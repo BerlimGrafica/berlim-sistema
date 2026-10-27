@@ -210,12 +210,12 @@ html { --altura-cabecalho: 51px; --altura-filtros: 42px; }
 
 /* ============ detalhe (gaveta no computador, folha no celular) ============ */
 /* cabeçalho: o nº e, à direita, só ícones do mesmo peso (abrir a O.S. inteira e
-   fechar). Gruda no topo da gaveta ao rolar, então os dois ficam sempre à mão. */
+   fechar). Gruda no topo da gaveta ao rolar, então os dois ficam sempre à mão.
+   Abrir a O.S. inteira é só o ⤢ daqui, e o Enter: um botão laranja a mais
+   repetia a mesma ação e disputava atenção com o nome do cliente. */
 .det-cab { display: flex; align-items: center; gap: 8px; color: var(--tinta-suave); font-size: 12.5px; }
 .det-cab .oid { font-size: 13px; }
 .det-ferr { margin-left: auto; display: flex; gap: 2px; }
-/* a ação principal com espaço próprio, logo abaixo do nome do cliente */
-.det-principal { margin-top: 14px; }
 .gaveta .det-cab { position: sticky; top: 0; z-index: 2; margin: -18px -22px 0; padding: 12px 22px; background: var(--fundo); transition: box-shadow .2s; }
 .gaveta.rolou .det-cab { box-shadow: 0 1px 0 var(--borda); }
 .det-cli { display: flex; align-items: center; gap: 8px; font-size: 22px; font-weight: 800; letter-spacing: -.02em; color: var(--tinta); line-height: 1.25; margin-top: 4px; }
@@ -381,9 +381,10 @@ html[data-troca-tema] *, html[data-troca-tema] *::before, html[data-troca-tema] 
   .gaveta { top: auto; height: 88dvh; width: 100%; border-left: 0; border-radius: 14px 14px 0 0; animation-name: folhaEntra; }
   .gaveta.sai { animation-name: folhaSai; }
   .gaveta .det { padding: 14px 14px 40px; }
-  .gaveta .det-cab { margin: -14px -14px 0; padding: 10px 14px; }
-  .det-abrir { width: 100%; height: 44px; }
-  .det-abrir kbd { display: none; }
+  .gaveta .det-cab { margin: -14px -14px 0; padding: 4px 6px 4px 14px; }
+  /* no celular não há Enter nem dica no ⤢, que vira o único caminho para a
+     O.S. inteira: os dois ícones ganham alvo de dedo */
+  .det-ferr .ib { width: 44px; height: 44px; }
   .props { grid-template-columns: 92px minmax(0,1fr); }
 }
 @keyframes folhaEntra { from { transform: translateY(100%); } }
@@ -621,7 +622,6 @@ function detalhe(p) {
     <div class="det-cab"><span class="oid">O.S. #${p.id}</span><span class="det-ferr"><button class="ib" data-acao="editar" data-id="${p.id}" aria-label="Abrir O.S. completa" title="Abrir O.S. completa (Enter)">${ico('maximize-2')}</button><button class="ib fechar" data-acao="fechar-gaveta" aria-label="Fechar" title="Fechar (Esc)">${ico('x')}</button></span></div>
     <div class="det-cli ${p.problema ? 'prob' : ''}">${esc(p.cliente)}</div>
     ${p.problema ? `<div class="det-aviso">${ico('alert-triangle', 'ico ico-s')}Cliente com pendência — confira antes de entregar.</div>` : ''}
-    <div class="det-principal"><button class="btn btn-pri det-abrir" data-acao="editar" data-id="${p.id}">${ico('maximize-2', 'ico ico-s')}Abrir O.S. completa<kbd>Enter</kbd></button></div>
     <dl class="props">
       <dt>${ico('circle-dot', 'ico ico-s')}Situação</dt><dd>${sitHTML(p, false)}</dd>
       ${p.venda ? `<dt>${ico('calendar', 'ico ico-s')}Venda</dt><dd>${dataLonga(p.venda)}</dd>` : ''}
@@ -767,6 +767,10 @@ function toast(msg, desfazer) {
   toastTimer = setTimeout(() => el.remove(), desfazer ? 5000 : 2400);
 }
 function acaoSistema(m, p) {
+  // Abrir a O.S. completa é de verdade: a página do sistema abre por cima o
+  // novo modal de O.S. com a O.S. real (hooks/useAbrirOSDoPrototipo.js). O
+  // resto ainda só avisa.
+  if (m === 'editar' && p && window.parent !== window) return window.parent.postMessage({ tipo: 'abrir-os', id: p.id }, '/');
   const txt = { editar: `No sistema, abre a O.S. #${p?.id} completa`, imprimir: `No sistema, imprime a O.S. #${p?.id}`, duplicar: `No sistema, cria uma cópia da O.S. #${p?.id}`, receber: `No sistema, abre a O.S. #${p?.id} direto no pagamento`, carregar: 'No sistema, traz as próximas 50 O.S.' }[m];
   toast(txt + ' (protótipo)');
 }
@@ -1022,7 +1026,7 @@ document.addEventListener('keydown', e => {
   if (digitando || e.ctrlKey || e.metaKey || e.altKey) return;
   if (e.key === '/') { e.preventDefault(); return tela.querySelector('[data-busca]')?.focus(); }
   if (e.key.toLowerCase() === 'n') { e.preventDefault(); try { window.top.location.href = '/novaos'; } catch {} return; }
-  // Com a gaveta aberta, Enter abre a O.S. completa (o botão do topo dela).
+  // Com a gaveta aberta, Enter abre a O.S. completa, o mesmo que o ⤢ do topo dela.
   if (est.gaveta) { if (e.key === 'Enter' && !e.target.closest?.('button')) acaoSistema('editar', porId(est.gaveta)); return; }
   if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
     const ls = linhasVisiveis(); if (!ls.length) return; e.preventDefault();

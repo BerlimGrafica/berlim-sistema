@@ -52,6 +52,8 @@ button:disabled { cursor: not-allowed; opacity: .45; }
 input, textarea { caret-color: var(--brand); }
 ::selection { background: rgba(246,159,0,.3); }
 ::placeholder { color: var(--tinta-suave); opacity: 1; }
+/* sem isto, o display dos botões (.btn, .mais) vencia o atributo hidden */
+[hidden] { display: none !important; }
 :focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; border-radius: 4px; }
 * { scrollbar-width: thin; scrollbar-color: var(--borda-forte) transparent; }
 .num { font-variant-numeric: tabular-nums; }
@@ -71,6 +73,13 @@ kbd { font: 600 10.5px/1 Montserrat, sans-serif; color: var(--tinta-suave); bord
 .proto-tema { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; color: var(--tinta-corpo); font-weight: 600; font-size: 12.5px; padding: 6px 10px; border-radius: 6px; }
 .proto-tema:hover { background: var(--realce); color: var(--tinta); }
 .palco { min-height: calc(100vh - 51px); background: var(--veu); display: flex; justify-content: center; align-items: flex-start; padding: 28px 16px 48px; }
+/* por cima de uma tela do sistema (OS_REAL): sem a moldura do protótipo; o
+   palco vira o véu sobre a tela de trás, que aparece pelo iframe transparente */
+html.por-cima, html.por-cima body { background: transparent; }
+.por-cima .proto { display: none; }
+.por-cima .palco { min-height: 100vh; padding: 40px 16px; }
+.por-cima .modal { max-height: calc(100vh - 80px); }
+.aviso-proto { display: inline-flex; align-items: center; gap: 6px; }
 
 .modal { position: relative; width: 100%; max-width: 1120px; background: var(--superficie); border: 1px solid var(--borda); border-radius: 12px; box-shadow: var(--sombra); display: flex; flex-direction: column; max-height: calc(100vh - 110px); overflow: hidden; animation: entra .32s cubic-bezier(.16,1,.3,1); }
 @keyframes entra { from { opacity: 0; transform: translateY(10px) scale(.985); } }
@@ -164,7 +173,7 @@ html[data-troca-tema] *, html[data-troca-tema] *::before, html[data-troca-tema] 
 .cliente-txt { flex: 1; min-width: 0; }
 .cliente-busca { position: relative; }
 .cliente-busca input { width: 100%; font-size: 24px; font-weight: 700; color: var(--tinta); letter-spacing: -.018em; line-height: 1.25; border: 0; background: transparent; outline: none; padding: 1px 28px 1px 0; border-bottom: 2px solid transparent; transition: border-color .15s; }
-.cliente-busca input::placeholder { color: var(--tinta-fraca); font-weight: 600; }
+.cliente-busca input::placeholder { color: var(--tinta-suave); font-weight: 600; }
 .cliente-busca input:hover { border-bottom-color: var(--borda); }
 .cliente-busca input:focus { border-bottom-color: var(--brand); }
 .cliente-busca .ico { position: absolute; right: 2px; top: 10px; color: var(--tinta-fraca); pointer-events: none; }
@@ -351,6 +360,9 @@ html[data-troca-tema] *, html[data-troca-tema] *::before, html[data-troca-tema] 
   .rodape .acoes .btn { height: 44px; }
   .rodape .acoes .btn-pri { flex: 1; }
   .rodape .acoes .btn-fim, .rodape .acoes .btn-imp { width: 44px; padding: 0; }
+  .por-cima .palco { padding: 0; }
+  .por-cima .modal { height: 100dvh; max-height: none; }
+  .por-cima .rodape .acoes .btn { flex: 1; }
 }
 .local-mob { display: none !important; }
 </style>
@@ -491,7 +503,22 @@ function bandeiraSvg(nome) {
 }
 
 /* ===== dados fictícios: pessoas não vão para o protótipo ===== */
-const CLIENTES = [
+// Aberto por cima de uma tela do sistema, com a O.S. real (NovaOSPorCima). Só
+// mostra: o Atualizar fica desligado e "Editar no modal atual" leva ao modal de
+// hoje. Sem OS_REAL é o protótipo de sempre, com a O.S. de exemplo.
+const POR_CIMA = typeof OS_REAL !== 'undefined';
+
+// Datas do jeito do protótipo, a partir das datas reais: "hoje, 27 out",
+// "qua, 29 out" e, nos pagamentos, "27 out". Ano só quando não é o corrente.
+const MESES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+const SEMANA = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
+const dataLocal = iso => { const [a, m, d] = iso.slice(0, 10).split('-').map(Number); return new Date(a, m - 1, d); };
+const isoDe = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+const diasAte = iso => { const h = new Date(); h.setHours(0, 0, 0, 0); return Math.round((dataLocal(iso) - h) / 864e5); };
+const rotuloCurto = iso => { const d = dataLocal(iso); return `${d.getDate()} ${MESES[d.getMonth()]}${d.getFullYear() !== new Date().getFullYear() ? ' ' + d.getFullYear() : ''}`; };
+const rotuloData = iso => { const n = diasAte(iso); return `${n === 0 ? 'hoje' : n === 1 ? 'amanhã' : SEMANA[dataLocal(iso).getDay()]}, ${rotuloCurto(iso)}`; };
+
+const CLIENTES = POR_CIMA ? [{ id: 0, nome: OS_REAL.cliente.nome, tel: OS_REAL.cliente.tel, problema: OS_REAL.cliente.problema }] : [
   { id: 1, nome: 'Padaria Estrela do Bairro', tel: '(11) 98765-4321' },
   { id: 2, nome: 'Colégio Monte Azul', tel: '(11) 3344-5566' },
   { id: 3, nome: 'Studio Lume Fotografia', tel: '(11) 99812-0045' },
@@ -509,12 +536,22 @@ const EQUIPE = typeof EQUIPE_BANCO !== 'undefined' && EQUIPE_BANCO.length
 // Duas letras na bolinha, como na Produção: Murilo → Mu; Ana Lima → AL.
 const duasLetras = n => { const p = n.trim().split(/\s+/); return p.length > 1 ? (p[0][0] + p.at(-1)[0]).toUpperCase() : p[0].slice(0, 1).toUpperCase() + p[0].slice(1, 2).toLowerCase(); };
 const bolinha = n => `<i style="background:${EQUIPE[n]?.bg || '#64748b'};color:${EQUIPE[n]?.tx || '#fff'}">${esc(duasLetras(n))}</i>`;
-const OUTRAS_OS = [{ id: 18311, data: '02/10', saldo: 80 }];
-const DATAS = [['hoje, 19 out', 0], ['amanhã, 20 out', 1], ['qua, 21 out', 2], ['sex, 23 out', 4], ['seg, 26 out', 7]];
+const OUTRAS_OS = POR_CIMA ? [] : [{ id: 18311, data: '02/10', saldo: 80 }];
+const DATAS = POR_CIMA
+  ? [0, 1, 2, 4, 7].map(n => { const d = new Date(); d.setDate(d.getDate() + n); return [rotuloData(isoDe(d)), n]; })
+  : [['hoje, 19 out', 0], ['amanhã, 20 out', 1], ['qua, 21 out', 2], ['sex, 23 out', 4], ['seg, 26 out', 7]];
 
 /* ===== estado ===== */
 const prod = id => CATALOGO.find(p => p[0] === id);
-const os = {
+const os = POR_CIMA ? {
+  modo: 'edita', id: OS_REAL.id,
+  cliente: CLIENTES[0],
+  venda: OS_REAL.venda ? rotuloData(OS_REAL.venda) : '—',
+  prazo: OS_REAL.prazo ? rotuloData(OS_REAL.prazo) : '', prazoDias: OS_REAL.prazo ? diasAte(OS_REAL.prazo) : null, prazoHora: OS_REAL.hora,
+  status: OS_REAL.status, resp: OS_REAL.resp, entrega: OS_REAL.entrega,
+  itens: OS_REAL.itens.map(i => ({ prodId: null, ...i })),
+  pags: OS_REAL.pags.map(g => ({ ...g, data: g.data ? rotuloCurto(g.data) : '' })),
+} : {
   modo: 'nova',
   cliente: CLIENTES[0],
   venda: 'hoje, 19 out', prazo: 'sex, 23 out', prazoDias: 4, prazoHora: '',
@@ -540,7 +577,9 @@ const lerValor = s => parseFloat(String(s).replace(/\./g, '').replace(',', '.'))
 const mascaraMoeda = s => { const d = String(s).replace(/\D/g, ''); return d ? brl(parseInt(d, 10) / 100) : ''; };
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const semAcento = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
-const valorItem = i => Math.round(i.bruto * (100 - (i.desc || 0))) / 100;
+// Item vindo do sistema traz o valor final gravado: refazer a conta do desconto
+// podia errar um centavo e o total deixaria de bater com o da O.S.
+const valorItem = i => i.final ?? Math.round(i.bruto * (100 - (i.desc || 0))) / 100;
 const somaItens = () => os.itens.reduce((a, i) => a + valorItem(i), 0);
 const totalOS = () => somaItens();
 const comSinal = p => p.forma === 'Estorno' ? -p.valor : p.valor;
@@ -633,13 +672,15 @@ function renderDados() {
     : esc(r.length === 1 ? r[0] : r.length === 2 ? `${r[0]} e ${r[1]}` : `${r.length} pessoas`);
   q('[data-pop="resp"]').title = r.join(', ');
   const e = q('[data-chave="entrega"]'); e.setAttribute('aria-checked', os.entrega); e.querySelector('.lbl').textContent = os.entrega ? 'Sim' : 'Não';
-  q('#meta-prazo').innerHTML = os.prazo ? `<i data-lucide="flag" class="ico ico-s"></i>${os.prazoDias === 0 ? 'vence hoje' : os.prazoDias === 1 ? 'amanhã' : 'em ' + os.prazoDias + ' dias'}` : '';
+  // O.S. real pode estar com o prazo vencido, e uma encerrada não tem mais prazo a cumprir.
+  const d = os.prazoDias;
+  q('#meta-prazo').innerHTML = os.prazo && !STATUS_FINAL.includes(os.status) ? `<i data-lucide="flag" class="ico ico-s"></i>${d < 0 ? `venceu há ${-d} ${d === -1 ? 'dia' : 'dias'}` : d === 0 ? 'vence hoje' : d === 1 ? 'amanhã' : 'em ' + d + ' dias'}` : '';
 }
 
 /* ===== pagamentos ===== */
 function abrirPagamento() {
   const s = saldo();
-  pf = { forma: 'PIX', valor: s > 0 ? brl(s) : '', tocado: false, data: 'hoje, 19 out', inst: 'Itaú', band: 'Visa', parc: 1, lote: {}, aloc: {} };
+  pf = { forma: 'PIX', valor: s > 0 ? brl(s) : '', tocado: false, data: DATAS[0][0], inst: 'Itaú', band: 'Visa', parc: 1, lote: {}, aloc: {} };
 }
 function renderFin() {
   const t = totalOS(), p = pago(), s = saldo();
@@ -719,10 +760,10 @@ function registrarPagamento() {
 /* ===== render geral ===== */
 function render(foco) {
   renderCliente(); renderItens(); renderDados(); renderFin();
-  document.getElementById('tit').textContent = os.modo === 'edita' ? 'O.S. #18342' : 'Nova O.S.';
-  document.getElementById('selo').textContent = os.modo === 'edita' ? 'Editando' : 'Rascunho';
+  document.getElementById('tit').textContent = os.modo === 'edita' ? `O.S. #${os.id || 18342}` : 'Nova O.S.';
+  document.getElementById('selo').textContent = POR_CIMA ? 'Só visualização' : os.modo === 'edita' ? 'Editando' : 'Rascunho';
   document.getElementById('txt-salvar').textContent = os.modo === 'edita' ? 'Atualizar' : 'Salvar O.S.';
-  document.getElementById('finalizar').hidden = os.status === 'Finalizado';
+  document.getElementById('finalizar').hidden = POR_CIMA || os.status === 'Finalizado';
   lucide.createIcons();
   if (foco) document.querySelector(foco)?.focus();
 }
@@ -902,6 +943,7 @@ function cadastrarProduto() {
 
 /* aviso ao salvar com algo digitado que não entrou na O.S. (salvarComAviso) */
 function salvar() {
+  if (POR_CIMA) { toast('O protótipo ainda não grava. Use "Editar no modal atual".'); return; }
   const pend = [];
   if (rascunhoItemSujo()) pend.push(`• Item do orçamento: falta clicar em "${edicao.idx === null ? 'Inserir item no orçamento' : 'Salvar alterações'}"`);
   if (pf && pf.tocado && lerValor(pf.valor) > 0) pend.push('• Novo pagamento: falta clicar em "Registrar pagamento"');
@@ -950,6 +992,12 @@ document.addEventListener('click', e => {
     const bt = t.closest('#tema'); const esc_ = !document.documentElement.classList.contains('dark');
     trocarTema(esc_, bt, () => { bt.innerHTML = `<i data-lucide="${esc_ ? 'sun' : 'moon'}" class="ico ico-s"></i><span>${esc_ ? 'Claro' : 'Escuro'}</span>`; lucide.createIcons(); });
     return;
+  }
+  if (POR_CIMA) {
+    // Clique no véu fecha a janela — ou só o popover, se houver um aberto.
+    if (t.classList.contains('palco')) { if (popAberto) fecharPop(); else fecharPorCima(); return; }
+    if (t.closest('.topo .fechar')) { fecharPorCima(); return; }
+    if (t.closest('[data-editar-atual]')) { parent.postMessage({ tipo: 'editar-no-atual' }, '/'); return; }
   }
   const modo = t.closest('[data-modo]');
   if (modo) { os.modo = modo.dataset.modo; document.querySelectorAll('[data-modo]').forEach(b => b.setAttribute('aria-pressed', b === modo)); pf = null; render(); return; }
@@ -1027,6 +1075,9 @@ document.addEventListener('keydown', e => {
     if (popAberto) { const a = popAberto.ancora; fecharPop(); a.focus(); return; }
     if (e.target.closest('.edita')) { document.querySelector('[data-cancela-item]').click(); return; }
     if (e.target.closest('.pf')) { pf = null; render(); return; }
+    // Por cima de uma tela, o Esc que sobra fecha a janela (as janelinhas de
+    // cadastro tratam o próprio Esc antes de chegar aqui).
+    if (POR_CIMA && !document.querySelector('.janela')) fecharPorCima();
     return;
   }
   // campo de hora dentro do popover: as setas mudam a hora, Enter confirma
@@ -1051,6 +1102,21 @@ addEventListener('resize', fecharPop);
 document.getElementById('grade').addEventListener('scroll', () => { if (popAberto && performance.now() - popAberto.desde > 250) fecharPop(); });
 if (location.hash.includes('escuro')) document.getElementById('tema').click();
 if (location.hash.includes('edita')) document.querySelector('[data-modo="edita"]').click();
+// Por cima de uma tela: o tema dela, as observações da O.S., e no rodapé o aviso
+// de que nada é gravado, com o caminho para quem precisa mudar algo de verdade.
+function fecharPorCima() { parent.postMessage({ tipo: 'fechar-os' }, '/'); }
+if (POR_CIMA) {
+  const raiz = document.documentElement;
+  raiz.classList.add('por-cima');
+  raiz.classList.toggle('dark', TEMA_ESCURO);
+  document.getElementById('obs').value = OS_REAL.obs || '';
+  document.querySelector('.rodape > .dicas').innerHTML = '<span class="aviso-proto"><i data-lucide="info" class="ico ico-s"></i>Protótipo: o que mudar aqui não é gravado</span><span><kbd>Esc</kbd> fecha</span>';
+  document.querySelector('[data-salvar="imprimir"]').hidden = true;
+  const atualizar = document.querySelector('[data-salvar="salvar"]');
+  atualizar.disabled = true;
+  atualizar.title = 'O protótipo ainda não grava';
+  atualizar.insertAdjacentHTML('beforebegin', '<button class="btn btn-sec" data-editar-atual><i data-lucide="square-pen" class="ico"></i>Editar no modal atual</button>');
+}
 render();
 </script>
 </body>

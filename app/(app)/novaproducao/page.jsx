@@ -7,6 +7,7 @@ import { STATUSES_PRODUCAO } from '@/lib/utils/constants';
 import { mascararCliente, valorPagamentoComSinalCentavos } from '@/lib/utils/formatters';
 import { corDoNome } from '@/lib/prototipos/coresDoNome';
 import { resumoDoPedido } from '@/lib/utils/servico';
+import { useAbrirOSDoPrototipo } from '@/hooks/useAbrirOSDoPrototipo';
 
 // Protótipo da nova tela de Produção (opções A a D), aberto para a equipe
 // comparar.
@@ -21,6 +22,8 @@ export default function Page() {
     const { usuario, usuariosSistema, isDemo } = useSessao();
     const { isClienteProblema } = useClientes();
     const [modelo, setModelo] = useState(null);
+    // Só O.S. em produção chegam aqui; nenhuma está baixada.
+    const { iframeRef, modalOS } = useAbrirOSDoPrototipo();
 
     useEffect(() => {
         let vivo = true;
@@ -66,10 +69,14 @@ export default function Page() {
     // absolute inset-0 preenche a área da página abaixo da barra e da faixa de
     // pendências; a rolagem fica toda dentro do protótipo.
     return (
-        <iframe
-            title="Protótipo da nova tela de Produção"
-            srcDoc={html}
-            className="absolute inset-0 w-full h-full border-0"
-        />
+        <>
+            <iframe
+                ref={iframeRef}
+                title="Protótipo da nova tela de Produção"
+                srcDoc={html}
+                className="absolute inset-0 w-full h-full border-0"
+            />
+            {modalOS}
+        </>
     );
 }
