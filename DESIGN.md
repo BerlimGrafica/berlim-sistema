@@ -26,6 +26,26 @@ colors:
   area-observacoes: "#D97706"
   local-berlim: "#F97316"
   local-futura: "#3B82F6"
+  serie-1: "#2A78D6"
+  serie-2: "#EB6834"
+  serie-3: "#1BAF7A"
+  serie-4: "#EDA100"
+  serie-5: "#E87BA4"
+  serie-6: "#008300"
+  serie-7: "#6250D6"
+  serie-8: "#E34948"
+  forma-pix: "#10B981"
+  forma-credito: "#6366F1"
+  forma-debito: "#0EA5E9"
+  forma-link: "#8B5CF6"
+  forma-dinheiro: "#F59E0B"
+  forma-boleto: "#64748B"
+  forma-estorno: "#EF4444"
+  categoria-despesa: "#10B981"
+  categoria-material: "#3B82F6"
+  categoria-manutencao: "#F59E0B"
+  categoria-terceirizacao: "#A855F7"
+  categoria-impostos: "#F43F5E"
 typography:
   titulo-tela:
     fontFamily: "Montserrat, system-ui, sans-serif"
@@ -151,6 +171,13 @@ Cada área de uma tela tem uma cor que aparece **só** na faixa do cabeçalho (f
 - **Âmbar — Observações e atenção** (#D97706): observações, horário limite, avisos que não são erro.
 - **Local**: Berlim (#F97316) e Futura (#3B82F6) têm cor fixa; os demais locais tiram a cor do nome (`corPorNome`).
 
+### Séries — fatias e linhas de gráfico
+Quem já tem cor no sistema usa a dela: etapa, local, pessoa, **forma de pagamento** (PIX #10B981, crédito #6366F1, débito #0EA5E9, link #8B5CF6, dinheiro #F59E0B, boleto #64748B, estorno #EF4444) e **categoria de conta** (despesa #10B981, material #3B82F6, manutenção #F59E0B, terceirização #A855F7, impostos #F43F5E). Para o que não tem cor (cliente, produto, instituição), oito cores em ordem fixa, validadas para quem não distingue cores (tokens `serie-1` a `serie-8`, com tom próprio no escuro): azul #2A78D6, laranja #EB6834, verde-água #1BAF7A, amarelo #EDA100, rosa #E87BA4, verde #008300, violeta #6250D6, vermelho #E34948.
+- Num ranking dos maiores (5 clientes, 5 produtos), as cores vão nessa ordem.
+- Num gráfico em que se tira e põe item (as linhas de produtos de Vendas), a cor fica com o item enquanto ele estiver lá: tirar um não repinta os outros.
+- No máximo oito de uma vez, sem repetir cor. Passou disso, o resto vira "os demais", em `borda-forte`.
+- A cor marca a fatia e a bolinha; o texto (nome, valor, %) fica sempre nas tintas.
+
 ### Neutral
 - **Fundo** (#EDEFF0): a mesa, atrás de tudo.
 - **Superfície** (#FFFFFF): áreas, listas, popovers.
@@ -262,6 +289,16 @@ Prazo: "Atrasada · 28/08" (`perigo`), "Hoje" (`obs`), "Amanhã", "sex 24/10" (a
 ### Resumo de pagamento
 Um resumo só: total em número grande, barra do que já entrou (`fin`), "Recebido R$ x · Falta R$ y" (falta em `perigo`; "Quitado" ✓; "Pago a mais" em `obs-tinta`) e a lista de recebimentos. Cada valor aparece uma vez; o cabeçalho da área só mostra "Quitado".
 
+### Quadro de composição
+Mostra como um total se divide: de onde veio, como foi pago, em que conta caiu, para onde foi o gasto. É uma Área, com o total na meta do cabeçalho, e três partes:
+- **O destaque:** o maior pedaço em número de 22px com "%" pequeno e uma frase curta, como "**84%** feito em Berlim", "**75%** pago em PIX" ou "**99%** já pago". Um selo de estado pode ir na ponta direita ("2 vencidas").
+- **A barra fatiada:** 10px de altura, uma fatia por pedaço na cor dele (ver **Séries**), 2px de folga entre as fatias e canto de 3px.
+- **A lista:** uma linha por pedaço, com quadradinho da cor, nome em 600, valor e a parte em %. O texto fica nas tintas, nunca na cor da fatia. Um dado de apoio curto pode ir ao lado do nome, em `tinta-suave` ("3 O.S.").
+
+Quando a lista mostra só os primeiros (os 5 maiores clientes do mês), o que falta para o total vira a última linha, "os demais", em `borda-forte` e `tinta-suave`, e a barra soma 100%. Valor negativo (estorno) entra na lista em `perigo` e fica fora da barra. Linha que abre algo (as contas de uma categoria) ganha a seta › na ponta, `sutil` no hover e `Enter`. Quadros de composição lado a lado têm a mesma altura.
+
+Substitui o ranking com uma barra por linha: a barra única mostra a proporção de uma vez, e a lista dá os números exatos. Em uso: Vendas (por local, formas de pagamento, instituições, por categoria e situação das contas) e Início (melhores clientes, mais vendidos e como pagaram).
+
 ### Prévia do WhatsApp
 Texto que vai para o cliente aparece no balão do WhatsApp (cores e fonte do próprio WhatsApp, só ali). Clicar no balão vira campo com os asteriscos; ao sair, volta formatado com "editada". O ajuste vale só para a próxima cópia, com "Desfazer" e "Salvar no texto".
 
@@ -298,6 +335,7 @@ No celular ficam o ícone da marca, chat, pendências, tema e só a bolinha da c
 - **Do** usar números tabulares em datas, horas e valores.
 - **Do** mostrar o estado com selo pequeno e palavra ("até 14:00", "editada"), não só com cor.
 - **Do** usar a cor de cada pessoa e de cada local de `corPorNome`, nunca uma cor nova.
+- **Do** mostrar como um total se divide com o quadro de composição (destaque, barra fatiada e lista), não com uma barra por linha.
 - **Do** abrir o registro numa gaveta ou no lugar, sem tirar a pessoa da lista.
 - **Do** protótipo antes de código: tela nova nasce em `public/prototipos/` com dados reais injetados pela página da rota (nada no arquivo público), e só vai para o sistema depois de aprovada.
 

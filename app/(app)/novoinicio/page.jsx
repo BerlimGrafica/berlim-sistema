@@ -118,6 +118,9 @@ export default function Page() {
         serieMes: m.serie_mes || [],
         clientes: (m.ranking_cliente || []).slice(0, 6).map(c => ({ nome: c.eh_balcao ? 'Balcão' : mascararCliente(c.rotulo, isDemo), centavos: c.centavos, qtd: c.qtd })),
         produtos: (m.ranking_produto || []).slice(0, 6),
+        // O todo do quadro de mais vendidos: o vendido em itens no mês inteiro,
+        // e não só nos seis primeiros (a barra mostra "os demais" em cinza).
+        totalProdutos: (m.ranking_produto || []).reduce((s, p) => s + (p.centavos || 0), 0),
         formas: (m.ranking_forma || []).slice(0, 6),
         semBaixa: { centavos: m.sem_baixa?.total_centavos || 0, qtd: m.sem_baixa?.qtd || 0 },
         despesas: { pago: m.despesas?.pago_centavos || 0, pendente: m.despesas?.pendente_centavos || 0, vencidas: m.despesas?.qtd_vencidas || 0 },
