@@ -7,6 +7,10 @@ import { useClientes } from '@/context/ClientesContext';
 import { useFinanceiro } from '@/context/FinanceiroContext';
 import { useComunicacao } from '@/context/ComunicacaoContext';
 import { useNotasFiscais } from '@/context/NotasFiscaisContext';
+import { useCadastros } from '@/context/CadastrosContext';
+import { useAbrirOSDoPrototipo } from '@/hooks/useAbrirOSDoPrototipo';
+import { useContaDoPrototipo } from '@/hooks/useContaDoPrototipo';
+import { CATEGORIAS_CONTA } from '@/lib/utils/constants';
 import { mascararCliente, obterDataAtual, valorPagamentoComSinalCentavos } from '@/lib/utils/formatters';
 import { resumoDoPedido } from '@/lib/utils/servico';
 import { calcularPendencias } from '@/lib/alertas/pendencias';
@@ -43,6 +47,13 @@ export default function Page() {
     const { notasFiscais } = useNotasFiscais();
     const [modelo, setModelo] = useState(null);
     const [metricas, setMetricas] = useState(null);
+    const [criacao, setCriacao] = useState(null);
+    const { fornecedores } = useCadastros();
+    // A gaveta do protótipo pede por mensagem: o ⤢ abre a O.S. completa por cima
+    // (como na nova Produção) e o "Editar" de uma conta abre o modal de conta de
+    // hoje, que é quem grava. O Início só mostra O.S. abertas, nenhuma baixada.
+    const { iframeRef, modalOS } = useAbrirOSDoPrototipo();
+    useContaDoPrototipo(iframeRef);
 
     useEffect(() => {
         let vivo = true;
@@ -61,7 +72,35 @@ export default function Page() {
         return () => { vivo = false; };
     }, [usuario]);
 
-    if (!modelo || !dadosCarregados || !metricas) {
+    // Quem abriu as O.S.: a memória só tem as abertas, e a contagem precisa das
+    // finalizadas também. Vêm do banco só duas colunas, só do período que o
+    // card mostra (este mês, ou os últimos 7 dias se começarem antes dele) e do
+    // mesmo período do mês anterior, para a comparação. Sem data de criação na
+    // tabela, conta pela data da venda. Em páginas de 1.000, o teto do Supabase.
+    useEffect(() => {
+        if (!usuario) return;
+        let vivo = true;
+        const hoje = obterDataAtual();
+        const [iniAnt, fimAnt] = mesmoPeriodoDoMesAnterior(hoje);
+        const d = new Date(`${hoje}T12:00:00`); d.setDate(d.getDate() - 6);
+        const seteDias = d.toISOString().slice(0, 10), iniMes = `${hoje.slice(0, 8)}01`;
+        const linhas = async (de, ate) => {
+            const todas = [];
+            for (let p = 0; ; p += 1000) {
+                const { data, error } = await supabase.from('pedidos').select('criado_por, data_pedido')
+                    .gte('data_pedido', de).lte('data_pedido', ate).order('id').range(p, p + 999);
+                if (error || !data) break;
+                todas.push(...data.map(r => [r.criado_por || '', String(r.data_pedido || '').slice(0, 10)]));
+                if (data.length < 1000) break;
+            }
+            return todas;
+        };
+        Promise.all([linhas(seteDias < iniMes ? seteDias : iniMes, hoje), linhas(iniAnt, fimAnt)])
+            .then(([atual, anterior]) => { if (vivo) setCriacao({ atual, anterior }); });
+        return () => { vivo = false; };
+    }, [usuario]);
+
+    if (!modelo || !dadosCarregados || !metricas || !criacao) {
         return <div className="p-6 text-corpo text-tinta-suave">Carregando protótipo…</div>;
     }
 
@@ -105,13 +144,23 @@ export default function Page() {
             pago: Math.round((p.pedido_pagamentos || []).reduce((s, pg) => s + valorPagamentoComSinalCentavos(pg), 0) * 100),
             locais: (p.local_producao || 'Berlim').split(',').map(s => s.trim()).filter(Boolean),
             resumo: resumoDoPedido(p),
+            // para a gaveta: itens, arte aprovada e entrega
+            itens: [...(p.pedido_itens || [])].sort((a, b) => a.ordem - b.ordem).map(i => [i.id, i.nome || 'Item', !!i.concluido, i.descricao || '']),
+            arte: !!p.aprovado,
+            entrega: !!p.entrega,
         })),
-        contas: contasPagar.map(c => ({ id: c.id, descricao: c.descricao || 'Conta', valor: c.valor || 0, vencimento: c.vencimento || '', status: c.status, categoria: c.categoria || '' })),
+        contas: contasPagar.map(c => ({
+            id: c.id, descricao: c.descricao || 'Conta', valor: c.valor || 0, vencimento: c.vencimento || '', status: c.status, categoria: c.categoria || '',
+            fornecedor: fornecedores.find(f => f.id === c.fornecedor_id)?.nome || '',
+            recorrente: !!c.recorrente, parcelas: c.recorrente_total_parcelas || null, parcela: c.recorrente_parcela_atual || null,
+        })),
+        categorias: Object.fromEntries(CATEGORIAS_CONTA.map(c => [c.value, { label: c.label, icone: c.icone }])),
         requisicoes: requisicoesMaterial.filter(r => r.status === 'Pendente').map(r => ({ id: r.id, itens: r.itens || '', quando: (r.created_at || '').slice(0, 10) })),
         // As pendências de cada pessoa, pela mesma regra do sino: o "Ver como"
         // mostra exatamente o que aquela pessoa vê hoje.
         pendencias: Object.fromEntries(equipe.map(u => [u.nome, calcularPendencias({ ...listas, usuario: u }).map(p => ({ gravidade: p.gravidade, titulo: p.titulo, detalhe: p.detalhe, destino: p.destino || '' }))])),
         vendas: { mes: resumirMetricas(metricas.mes), anterior: resumirMetricas(metricas.anterior) },
+        criacao,
     };
     // "<" escapado para um nome nunca fechar o <script> do protótipo.
     const json = JSON.stringify(dados).replace(/</g, '\\u003c');
@@ -120,10 +169,14 @@ export default function Page() {
     // absolute inset-0 preenche a área da página abaixo da barra e da faixa de
     // pendências; a rolagem fica toda dentro do protótipo.
     return (
-        <iframe
-            title="Protótipo do novo Início"
-            srcDoc={html}
-            className="absolute inset-0 w-full h-full border-0"
-        />
+        <>
+            <iframe
+                ref={iframeRef}
+                title="Protótipo do novo Início"
+                srcDoc={html}
+                className="absolute inset-0 w-full h-full border-0"
+            />
+            {modalOS}
+        </>
     );
 }
