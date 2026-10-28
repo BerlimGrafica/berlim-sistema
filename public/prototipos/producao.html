@@ -194,7 +194,8 @@ html { --altura-cabecalho: 51px; --altura-filtros: 42px; }
 .oid:hover { color: var(--brand-tinta); }
 
 /* ============ lista por etapa ============ */
-.tab-cab, .lin { display: grid; grid-template-columns: 58px minmax(170px,1.1fr) minmax(210px,1.7fr) 150px 112px 176px 118px; align-items: center; gap: 14px; }
+/* O.S. · Cliente · Resp. · Itens · Prazo · Etapa · Marcar — quem é o dono vem logo depois do cliente */
+.tab-cab, .lin { display: grid; grid-template-columns: 58px minmax(170px,1.1fr) 112px minmax(210px,1.7fr) 150px 176px 118px; align-items: center; gap: 14px; }
 .tab-cab { padding: 8px 12px; font-size: 11.5px; font-weight: 600; color: var(--tinta-suave); position: sticky; top: calc(var(--altura-cabecalho) + var(--altura-filtros)); z-index: 5; background: var(--fundo); }
 .grp { display: flex; align-items: center; gap: 9px; padding: 18px 4px 8px; }
 .grp-btn { display: inline-flex; align-items: center; gap: 9px; font-size: 13.5px; font-weight: 700; color: var(--tinta); border-radius: 6px; padding: 2px 4px 2px 2px; }
@@ -315,8 +316,14 @@ html[data-troca-tema] *, html[data-troca-tema] *::before, html[data-troca-tema] 
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
 
 /* ============ responsivo ============ */
+/* Num notebook de 1366 (menos o menu lateral) a tela fica nesta faixa: a
+   coluna Resp. continua, só mais estreita, e as outras apertam um pouco. */
 @media (max-width: 1240px) {
-  .tab-cab, .lin { grid-template-columns: 58px minmax(170px,1.1fr) minmax(180px,1.5fr) 146px 168px 118px; }
+  .tab-cab, .lin { grid-template-columns: 58px minmax(150px,1fr) 96px minmax(170px,1.4fr) 132px 156px 118px; gap: 12px; }
+}
+/* Daqui para baixo não cabe: o responsável volta para dentro da célula do cliente. */
+@media (max-width: 1060px) {
+  .tab-cab, .lin { grid-template-columns: 58px minmax(150px,1fr) minmax(170px,1.4fr) 132px 156px 118px; }
   .c-resp { display: none; }
   .lin .resp-in { display: flex; margin-top: 2px; }
 }
@@ -558,14 +565,14 @@ function linha(p) {
   return `<div class="lin ${est.sel === p.id ? 'sel' : ''}" data-pid="${p.id}" data-acao="abrir" data-id="${p.id}">
     <div class="c-id"><button class="oid" data-acao="abrir" data-id="${p.id}">#${p.id}</button></div>
     <div class="c-cli">${cliBtn(p)}${locais(p)}<div class="resp-in">${avs(p, false)}</div></div>
+    <div class="c-resp">${avs(p, false)}</div>
     <div class="c-its">${itensChips(p)}</div>
     <div class="c-pz">${prazoCel(p)}</div>
-    <div class="c-resp">${avs(p, false)}</div>
     <div class="c-st">${statusBtn(p)}${flags(p, 'fls-mob')}</div>
     <div class="c-ac">${flags(p)}</div>
   </div>`;
 }
-const cabTabela = () => `<div class="tab-cab"><span>O.S.</span><span>Cliente</span><span>Itens</span><span>Prazo</span><span class="c-resp">Resp.</span><span>Etapa</span><span style="text-align:right;padding-right:6px">Marcar</span></div>`;
+const cabTabela = () => `<div class="tab-cab"><span>O.S.</span><span>Cliente</span><span class="c-resp">Resp.</span><span>Itens</span><span>Prazo</span><span>Etapa</span><span style="text-align:right;padding-right:6px">Marcar</span></div>`;
 function renderA() {
   const l = visiveis(); const g = porStatus(l);
   const body = g.length ? g.map(x => {
