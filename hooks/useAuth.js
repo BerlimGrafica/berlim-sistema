@@ -1,12 +1,41 @@
 "use client";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { flushSync } from 'react-dom';
 import { useRouter } from 'next/navigation';
 import { supabase, setSomenteLeitura } from '@/lib/supabaseClient';
 import { trocarTema } from '@/lib/utils/trocarTema';
 
-// Sessão, login (e-mail/senha, Google, demo) e dark mode. Um login bem-sucedido
-// sempre leva o usuário de volta para a rota inicial ("/").
+// Tela bloqueada. O bloqueio fica no navegador, e não só na memória da página:
+// sem isso um F5 destrancava a tela. O registro guarda de quem é e o último
+// login daquela pessoa no momento em que bloqueou — se a sessão volta com
+// outro login (ela entrou de novo, pelo Google por exemplo), a tela abre.
+// Comparar com o último login, e não com o relógio, deixa a regra imune a um
+// computador com a hora errada.
+const CHAVE_BLOQUEIO = 'berlim:tela-bloqueada';
+// O último uso é dividido entre as abas: quem trabalha numa aba mantém as
+// outras abertas, em vez de cada uma contar o seu próprio tempo parado.
+const CHAVE_USO = 'berlim:ultimo-uso';
+const LIMITE_SEM_USO = 60 * 60 * 1000;
+
+function lerBloqueio() {
+    try { return JSON.parse(localStorage.getItem(CHAVE_BLOQUEIO) || 'null'); } catch { return null; }
+}
+function gravarBloqueio(registro) {
+    try {
+        if (registro) localStorage.setItem(CHAVE_BLOQUEIO, JSON.stringify(registro));
+        else localStorage.removeItem(CHAVE_BLOQUEIO);
+    } catch { /* navegador sem armazenamento: o bloqueio vale só nesta página */ }
+}
+// O bloqueio guardado ainda vale para esta sessão? Senão, some com ele.
+function bloqueioDaSessao(user) {
+    const registro = lerBloqueio();
+    if (registro && registro.id === user.id && registro.login === (user.last_sign_in_at || null)) return { em: registro.em };
+    if (registro) gravarBloqueio(null);
+    return null;
+}
+
+// Sessão, login (e-mail/senha, Google, demo), tela bloqueada e dark mode. Um
+// login bem-sucedido sempre leva o usuário de volta para a rota inicial ("/").
 export function useAuth() {
     const router = useRouter();
     const [usuariosSistema, setUsuariosSistema] = useState([]);
@@ -15,6 +44,9 @@ export function useAuth() {
     const [loginInput, setLoginInput] = useState('');
     const [senhaInput, setSenhaInput] = useState('');
     const [erroLogin, setErroLogin] = useState('');
+    const [entrando, setEntrando] = useState(false);
+    // { em: timestamp } enquanto a tela está bloqueada; null quando não.
+    const [telaBloqueada, setTelaBloqueada] = useState(null);
     // true enquanto o getSession() do carregamento inicial não resolveu — o
     // AppProvider mostra uma splash neutra nesse meio-tempo, em vez de piscar
     // a tela de login para quem já está logado (F5, volta do redirect Google).
@@ -58,7 +90,8 @@ export function useAuth() {
 
     const efetuarLogin = async (e) => {
         e.preventDefault();
-        setErroLogin('Entrando...');
+        setErroLogin('');
+        setEntrando(true);
 
         const { data, error } = await supabase.auth.signInWithPassword({
             email: loginInput.trim(),
@@ -66,11 +99,13 @@ export function useAuth() {
         });
 
         if (error) {
-            setErroLogin('E-mail ou senha incorretos.');
+            setEntrando(false);
+            setErroLogin('E-mail ou senha incorretos. Confira os dois e tente de novo.');
             return;
         }
 
         const perfil = await carregarPerfil(data.user.id);
+        setEntrando(false);
         if (!perfil) {
             setErroLogin('Login válido, mas sem perfil cadastrado (tabela profiles). Fale com um administrador.');
             await supabase.auth.signOut();
@@ -78,6 +113,8 @@ export function useAuth() {
         }
 
         atualizarGoogleVinculado(data.user);
+        gravarBloqueio(null);
+        setTelaBloqueada(null);
         setUsuario(perfil);
         setErroLogin('');
         setLoginInput('');
@@ -110,6 +147,8 @@ export function useAuth() {
             return;
         }
 
+        gravarBloqueio(null);
+        setTelaBloqueada(null);
         setUsuario(perfil);
         router.push('/');
     };
@@ -155,8 +194,99 @@ export function useAuth() {
 
     const logout = async () => {
         await supabase.auth.signOut();
+        gravarBloqueio(null);
+        setTelaBloqueada(null);
         setUsuario(null);
     };
+
+    // === TELA BLOQUEADA ===
+    // Bloquear não encerra nada: a sessão, os dados em memória e o que estava
+    // aberto continuam por trás. Só a tela fica coberta até a senha.
+    const bloquearTela = useCallback(async () => {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) return;
+        const registro = { id: session.user.id, em: Date.now(), login: session.user.last_sign_in_at || null };
+        gravarBloqueio(registro);
+        setTelaBloqueada({ em: registro.em });
+    }, []);
+
+    // Confere a senha entrando de novo com ela; devolve a mensagem de erro, ou
+    // nada quando deu certo. Não libera a tela: quem chama (TelaBloqueada)
+    // anima a saída e só então chama liberarTela().
+    const desbloquearTela = async (senha) => {
+        const { data: { session } } = await supabase.auth.getSession();
+        const email = session?.user?.email;
+        if (!email) return 'A sua sessão terminou. Entre de novo.';
+        const { error } = await supabase.auth.signInWithPassword({ email, password: senha });
+        if (!error) return;
+        return error.status === 400 || /invalid/i.test(error.message || '')
+            ? 'Senha incorreta. Tente de novo.'
+            : 'Não foi possível conferir a senha agora. Tente de novo.';
+    };
+
+    // Pelo Google a página vai e volta: na volta, o login novo destranca a tela
+    // (ver bloqueioDaSessao). Volta para a mesma tela quando o Supabase aceita
+    // o endereço; se não, para o Início.
+    const desbloquearComGoogle = async () => {
+        const { error } = await supabase.auth.signInWithOAuth({
+            provider: 'google',
+            options: { redirectTo: window.location.origin + window.location.pathname },
+        });
+        if (error) return 'Não foi possível abrir o Google agora.';
+    };
+
+    const liberarTela = () => {
+        gravarBloqueio(null);
+        setTelaBloqueada(null);
+    };
+
+    // Bloqueio ou desbloqueio feito em outra aba vale para esta também.
+    useEffect(() => {
+        const aoMudar = (e) => {
+            if (e.key !== CHAVE_BLOQUEIO) return;
+            const registro = lerBloqueio();
+            setTelaBloqueada(registro ? { em: registro.em } : null);
+        };
+        window.addEventListener('storage', aoMudar);
+        return () => window.removeEventListener('storage', aoMudar);
+    }, []);
+
+    // Uma hora sem uso no computador bloqueia a tela sozinha. No celular, não:
+    // quem tranca é o próprio aparelho. A conta de demonstração nunca bloqueia
+    // (o visitante não sabe a senha dela).
+    const usuarioId = usuario?.id;
+    const bloqueada = !!telaBloqueada;
+    useEffect(() => {
+        if (!usuarioId || isDemo || bloqueada) return;
+        if (window.matchMedia('(hover: none) and (pointer: coarse)').matches) return;
+        let ultimo = Date.now(), gravado = 0;
+        const gravar = (quando) => {
+            gravado = quando;
+            try { localStorage.setItem(CHAVE_USO, String(quando)); } catch { /* sem armazenamento: conta só esta aba */ }
+        };
+        // Grava no máximo a cada 30s: mexer o mouse não pode virar escrita a cada pixel.
+        const usou = () => {
+            ultimo = Date.now();
+            if (ultimo - gravado > 30000) gravar(ultimo);
+        };
+        const conferir = () => {
+            let outraAba = 0;
+            try { outraAba = Number(localStorage.getItem(CHAVE_USO)) || 0; } catch { /* idem */ }
+            if (Date.now() - Math.max(ultimo, outraAba) >= LIMITE_SEM_USO) bloquearTela();
+        };
+        // Computador que dormiu: o intervalo para junto, então confere também na volta.
+        const aoVoltar = () => { if (document.visibilityState === 'visible') conferir(); };
+        gravar(ultimo);
+        const eventos = ['pointerdown', 'pointermove', 'keydown', 'wheel', 'touchstart'];
+        eventos.forEach(ev => window.addEventListener(ev, usou, { passive: true, capture: true }));
+        document.addEventListener('visibilitychange', aoVoltar);
+        const relogio = setInterval(conferir, 60000);
+        return () => {
+            eventos.forEach(ev => window.removeEventListener(ev, usou, { capture: true }));
+            document.removeEventListener('visibilitychange', aoVoltar);
+            clearInterval(relogio);
+        };
+    }, [usuarioId, isDemo, bloqueada, bloquearTela]);
 
     // Restaura a sessão ao recarregar a página e reage a logout/expiração feitos em outra aba
     // (e também ao voltar do redirect do Google, seja de login ou de vinculação de conta)
@@ -169,6 +299,9 @@ export function useAuth() {
             if (!ativo) return;
             if (perfil) {
                 atualizarGoogleVinculado(session.user);
+                // No mesmo lote do setUsuario: a página nunca aparece destrancada
+                // nem por um quadro antes da tela bloqueada.
+                setTelaBloqueada(bloqueioDaSessao(session.user));
                 setUsuario(perfil);
             } else {
                 setErroLogin('Login válido, mas sem perfil cadastrado (tabela profiles). Fale com um administrador.');
@@ -180,7 +313,7 @@ export function useAuth() {
         }).catch(() => { if (ativo) setRestaurandoSessao(false); });
 
         const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
-            if (event === 'SIGNED_OUT') { setUsuario(null); setGoogleVinculado(false); }
+            if (event === 'SIGNED_OUT') { setUsuario(null); setGoogleVinculado(false); setTelaBloqueada(null); gravarBloqueio(null); }
             if (event === 'USER_UPDATED' && session?.user) atualizarGoogleVinculado(session.user);
         });
 
@@ -205,8 +338,9 @@ export function useAuth() {
         googleVinculado, vincularGoogle, desvincularGoogle,
         loginInput, setLoginInput,
         senhaInput, setSenhaInput,
-        erroLogin, setErroLogin,
+        erroLogin, setErroLogin, entrando,
         darkMode, setDarkMode,
         efetuarLogin, entrarComoDemo, entrarComGoogle, logout, toggleDarkMode,
+        telaBloqueada, bloquearTela, desbloquearTela, desbloquearComGoogle, liberarTela,
     };
 }

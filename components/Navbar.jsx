@@ -208,11 +208,12 @@ function PainelPendencias() {
     );
 }
 
-// A conta: quem está logado, com que cargo, e as duas ações raras. Sair e
+// A conta: quem está logado, com que cargo, bloquear a tela e as duas ações
+// raras. Bloquear não encerra nada, então vai no primeiro clique. Sair e
 // desvincular o Google pedem o segundo clique no próprio item, como toda ação
 // que encerra algo no sistema — sem janela de confirmação por cima.
 function MenuConta() {
-    const { usuario, logout, googleVinculado, vincularGoogle, desvincularGoogle } = useSessao();
+    const { usuario, logout, googleVinculado, vincularGoogle, desvincularGoogle, isDemo, bloquearTela } = useSessao();
     const [abertoEm, setAbertoEm] = useState(null);
     const [confirmando, setConfirmando] = useState(null); // 'sair' | 'google'
     const pathname = usePathname();
@@ -311,6 +312,16 @@ function MenuConta() {
 
                     <hr className="border-borda-fraca mx-1 my-1" />
 
+                    {!isDemo && (
+                        <button type="button" role="menuitem" onClick={() => { fechar(); bloquearTela(); }} className={itemMenu}>
+                            <Icon name="lock" className="w-4 h-4 mt-px shrink-0 text-tinta-suave" />
+                            <span className="min-w-0">
+                                <span className="block text-corpo font-semibold text-tinta">Bloquear a tela</span>
+                                <span className="block text-mini text-tinta-suave mt-0.5">Tudo continua aberto; volta com a senha</span>
+                            </span>
+                        </button>
+                    )}
+
                     <button type="button" role="menuitem" onClick={aoClicarSair} className={`${itemMenu} items-center ${confirmando === 'sair' ? 'bg-red-50 dark:bg-red-950/30' : ''}`}>
                         <Icon name="log-out" className={`w-4 h-4 shrink-0 ${confirmando === 'sair' ? 'text-perigo' : 'text-tinta-suave'}`} />
                         <span className={`text-corpo font-semibold ${confirmando === 'sair' ? 'text-perigo' : 'text-tinta'}`}>
@@ -324,7 +335,7 @@ function MenuConta() {
 }
 
 export default function Navbar() {
-    const { toggleDarkMode, darkMode, usuario } = useSessao();
+    const { toggleDarkMode, darkMode, usuario, isDemo, bloquearTela } = useSessao();
     const { pendenciasPorDestino } = useUi();
     const { abrirChat, chatNaoLidas } = useChatEquipe();
     const pathname = usePathname();
@@ -398,6 +409,16 @@ export default function Navbar() {
                     >
                         <span className="text-brand">BERLIM</span> <span className="text-brand-azul">Gráfica</span>
                     </Link>
+                    {/* Bloquear a tela fica à mão, colado à marca: é o gesto de quem
+                        sai do balcão por um minuto. A conta de demonstração não
+                        bloqueia — o visitante não sabe a senha dela. */}
+                    {!isDemo && (
+                        <Tooltip label="Bloquear a tela">
+                            <button type="button" onClick={bloquearTela} aria-label="Bloquear a tela" className={`${botaoIcone} lg:ml-1`}>
+                                <Icon name="lock" className="w-[18px] h-[18px]" />
+                            </button>
+                        </Tooltip>
+                    )}
                 </div>
 
                 <div className="flex items-center gap-3 ml-auto min-w-0">

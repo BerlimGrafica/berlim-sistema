@@ -12,6 +12,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useAlertas } from '@/hooks/useAlertas';
 import { usePendencias } from '@/hooks/usePendencias';
 import { useChat } from '@/hooks/useChat';
+import TelaEntrada from '@/components/TelaEntrada';
 import { SessaoContext } from '@/context/SessaoContext';
 import { UiContext } from '@/context/UiContext';
 import { ChatContext } from '@/context/ChatContext';
@@ -97,9 +98,10 @@ export const AppProvider = ({ children }) => {
         googleVinculado, vincularGoogle: vincularGoogleBase, desvincularGoogle: desvincularGoogleBase,
         loginInput, setLoginInput,
         senhaInput, setSenhaInput,
-        erroLogin, setErroLogin,
+        erroLogin, setErroLogin, entrando,
         darkMode, setDarkMode,
         efetuarLogin, entrarComoDemo, entrarComGoogle, logout, toggleDarkMode,
+        telaBloqueada, bloquearTela, desbloquearTela, desbloquearComGoogle, liberarTela,
     } = useAuth();
     const [pedidos, setPedidos] = useState([]);
     const [produtos, setProdutos] = useState([]);
@@ -2328,6 +2330,7 @@ export const AppProvider = ({ children }) => {
     const acoesRef = useRef(null);
     acoesRef.current = {
         entrarComoDemo, efetuarLogin, logout, toggleDarkMode, vincularGoogle, desvincularGoogle,
+        bloquearTela, desbloquearTela, desbloquearComGoogle, liberarTela,
         removerToast, avisar, confirmar, resolverConfirm, abrirContextMenu, fecharContextMenu,
         abrirChat, nomeDoUsuarioChat, enviarMensagemChat, excluirMensagemChat,
         carregarDados, atualizarCampoInline, atualizarItemConcluido,
@@ -2365,7 +2368,9 @@ export const AppProvider = ({ children }) => {
         darkMode, setDarkMode,
         entrarComoDemo: acoes.entrarComoDemo, efetuarLogin: acoes.efetuarLogin, logout: acoes.logout,
         toggleDarkMode: acoes.toggleDarkMode, vincularGoogle: acoes.vincularGoogle, desvincularGoogle: acoes.desvincularGoogle,
-    }), [acoes, isAdmin, isOperador, isDemo, usuario, usuariosSistema, googleVinculado, loginInput, senhaInput, erroLogin, darkMode]);
+        telaBloqueada, bloquearTela: acoes.bloquearTela, desbloquearTela: acoes.desbloquearTela,
+        desbloquearComGoogle: acoes.desbloquearComGoogle, liberarTela: acoes.liberarTela,
+    }), [acoes, isAdmin, isOperador, isDemo, usuario, usuariosSistema, googleVinculado, loginInput, senhaInput, erroLogin, darkMode, telaBloqueada]);
 
     const uiValue = useMemo(() => ({
         toasts, pendingConfirm,
@@ -2524,60 +2529,23 @@ export const AppProvider = ({ children }) => {
     if (!usuario) {
         // Sessão ainda sendo restaurada (F5 já logado, volta do redirect do
         // Google): splash neutra em vez de piscar a tela de login. É também o
-        // que fica no HTML pré-renderizado.
+        // que fica no HTML pré-renderizado. O nome escrito, e não a imagem do
+        // site, pelo mesmo motivo da barra: não depende de outro servidor.
         if (restaurandoSessao) {
             return (
-                <div className="flex min-h-screen items-center justify-center bg-[#EDEFF0] select-none">
-                    <img src="https://www.berlimgraficarapida.com.br/wp-content/uploads/elementor/thumbs/logosite-rm0erpiqj90gcf7ff4jp8ujys78opflob1b9vn5jjs.png" alt="Berlim Gráfica" className="h-12 object-contain animate-pulse" />
+                <div className="flex min-h-screen items-center justify-center bg-fundo select-none">
+                    <span className="text-3xl font-black tracking-[-0.02em] animate-pulse"><span className="text-brand">BERLIM</span> <span className="text-brand-azul">Gráfica</span></span>
                 </div>
             );
         }
         return (
-            <div className="flex min-h-screen items-center justify-center bg-[#EDEFF0] text-[#454545] p-4 select-none font-sans">
-                <div className="w-full max-w-sm bg-white border border-gray-200 rounded-xl p-8 shadow-sm flex flex-col gap-6">
-                    <div className="text-center flex flex-col items-center">
-                        <img src="https://www.berlimgraficarapida.com.br/wp-content/uploads/elementor/thumbs/logosite-rm0erpiqj90gcf7ff4jp8ujys78opflob1b9vn5jjs.png" alt="Berlim Gráfica" className="h-12 object-contain mb-3" />
-                        <p className="text-mini text-gray-400 mt-1">Insira suas credenciais para acessar o ERP</p>
-                    </div>
-                    
-                    <form onSubmit={efetuarLogin} className="flex flex-col gap-4">
-                        <div>
-                            <label className="block text-micro font-semibold uppercase tracking-wider text-gray-500 mb-1.5">E-mail</label>
-                            <input required type="email" value={loginInput} onChange={e => setLoginInput(e.target.value)} className="w-full bg-white border border-gray-200 rounded px-3 py-2 text-corpo outline-none focus:border-brand transition text-gray-800" placeholder="seu@email.com" autoComplete="username" />
-                        </div>
-                        <div>
-                            <label className="block text-micro font-semibold uppercase tracking-wider text-gray-500 mb-1.5">Senha</label>
-                            <input required type="password" value={senhaInput} onChange={e => setSenhaInput(e.target.value)} className="w-full bg-white border border-gray-200 rounded px-3 py-2 text-corpo outline-none focus:border-brand transition text-gray-800" placeholder="••••••" autoComplete="current-password" />
-                        </div>
-                        {erroLogin && <p className="text-mini text-red-500 font-medium text-center">{erroLogin}</p>}
-                        <button type="submit" className="w-full bg-brand hover:bg-brandHover text-white py-2 rounded text-corpo font-semibold shadow transition mt-2">
-                            Entrar no Sistema
-                        </button>
-                    </form>
-
-                    <div className="flex items-center gap-3">
-                        <div className="flex-1 h-px bg-gray-200"></div>
-                        <span className="text-micro font-semibold text-gray-400 uppercase tracking-wider">ou</span>
-                        <div className="flex-1 h-px bg-gray-200"></div>
-                    </div>
-
-                    <button type="button" onClick={entrarComGoogle} className="w-full flex items-center justify-center gap-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 py-2 rounded text-corpo font-semibold shadow-sm transition">
-                        <svg className="w-4 h-4" viewBox="0 0 48 48" aria-hidden="true">
-                            <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.9 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 8 3l6-6C34.5 5.5 29.6 3.5 24 3.5 12.7 3.5 3.5 12.7 3.5 24S12.7 44.5 24 44.5 44.5 35.3 44.5 24c0-1.2-.1-2.4-.3-3.5z"/>
-                            <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.9 18.9 13 24 13c3.1 0 5.8 1.1 8 3l6-6C34.5 6.5 29.6 4.5 24 4.5c-7.7 0-14.4 4.4-17.7 10.2z"/>
-                            <path fill="#4CAF50" d="M24 44.5c5.5 0 10.3-1.9 14-5l-6.5-5.3C29.5 35.7 26.9 36.5 24 36.5c-5.3 0-9.8-3.1-11.4-7.6l-6.6 5.1C9.5 40.1 16.2 44.5 24 44.5z"/>
-                            <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.3 4.3-4.2 5.7l6.5 5.3C41.4 35.9 44.5 30.4 44.5 24c0-1.2-.1-2.4-.3-3.5z"/>
-                        </svg>
-                        Entrar com Google
-                    </button>
-
-                    {process.env.NEXT_PUBLIC_DEMO_EMAIL && (
-                        <button type="button" onClick={entrarComoDemo} className="w-full flex items-center justify-center gap-2 bg-white border border-dashed border-brand text-brand hover:bg-brand/5 py-2 rounded text-corpo font-semibold transition">
-                            Entrar como Visitante (Demo)
-                        </button>
-                    )}
-                </div>
-            </div>
+            <TelaEntrada
+                loginInput={loginInput} setLoginInput={setLoginInput}
+                senhaInput={senhaInput} setSenhaInput={setSenhaInput}
+                erroLogin={erroLogin} setErroLogin={setErroLogin} entrando={entrando}
+                efetuarLogin={efetuarLogin} entrarComGoogle={entrarComGoogle} entrarComoDemo={entrarComoDemo}
+                darkMode={darkMode} toggleDarkMode={toggleDarkMode}
+            />
         );
     }
 

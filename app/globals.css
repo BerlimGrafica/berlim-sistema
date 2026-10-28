@@ -1,6 +1,9 @@
 ﻿@import "tailwindcss";
 
 @custom-variant dark (&:is(.dark *));
+/* Janela baixa: o computador do balcão com zoom de 90% fica com uns 700px de
+   altura útil. A tela bloqueada se compacta nela para o cartão caber sem rolar. */
+@custom-variant janela-baixa (@media (max-height: 820px));
 
 /* ---------------------------------------------------------------------------
    Tokens do tema
@@ -398,4 +401,53 @@ html[data-troca-tema] *, html[data-troca-tema] *::before, html[data-troca-tema] 
 
 @media (prefers-reduced-motion: reduce) {
     .gaveta { transition: none; }
+}
+
+/* ---- Fundo de marca: tela de entrada e tela bloqueada ---- */
+/* O azul do logo levado ao escuro. É o mesmo nos dois temas, como uma foto:
+   o que segue o tema é o formulário em cima dele. Os pontos da retícula
+   (components/ui/Reticula.jsx) leem a cor de `.reticula`; "Gráfica" usa o
+   azul clareado do logo, o mesmo do tema escuro, porque o original some no
+   marinho. */
+:root {
+    --marca-1: #0F2A45;
+    --marca-2: #0A1C2E;
+    --marca-3: #06111D;
+    --marca-ponto: rgba(56, 140, 212, .34);
+    --marca-azul: #4A9FDB;
+}
+.fundo-marca {
+    background-color: var(--marca-3);
+    background-image: radial-gradient(120% 90% at 0% 0%, var(--marca-1) 0%, var(--marca-2) 50%, var(--marca-3) 100%);
+}
+.reticula { color: var(--marca-ponto); }
+
+/* Marcas de corte nos quatro cantos do que está dentro, como numa prova de
+   impressão: um traço de 1px na linha de cada borda, do lado de fora. */
+.marcas-de-corte {
+    --o: 18px; --l: 12px; --c: rgba(255, 255, 255, .42);
+    padding: var(--o);
+    background:
+        linear-gradient(var(--c), var(--c)) left 0 top var(--o) / var(--l) 1px,
+        linear-gradient(var(--c), var(--c)) left var(--o) top 0 / 1px var(--l),
+        linear-gradient(var(--c), var(--c)) right 0 top var(--o) / var(--l) 1px,
+        linear-gradient(var(--c), var(--c)) right var(--o) top 0 / 1px var(--l),
+        linear-gradient(var(--c), var(--c)) left 0 bottom var(--o) / var(--l) 1px,
+        linear-gradient(var(--c), var(--c)) left var(--o) bottom 0 / 1px var(--l),
+        linear-gradient(var(--c), var(--c)) right 0 bottom var(--o) / var(--l) 1px,
+        linear-gradient(var(--c), var(--c)) right var(--o) bottom 0 / 1px var(--l);
+    background-repeat: no-repeat;
+}
+@media (max-width: 760px) {
+    .marcas-de-corte { --o: 12px; --l: 8px; }
+}
+
+/* Entrada das duas telas: o fundo cobre e o conteúdo sobe 16px. */
+@keyframes cobrir { from { opacity: 0; } }
+@keyframes subir { from { opacity: 0; transform: translateY(16px); } }
+.animate-cobrir { animation: cobrir 0.45s ease both; }
+.animate-subir { animation: subir 0.7s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+@media (prefers-reduced-motion: reduce) {
+    .animate-subir { animation-name: cobrir; }
 }

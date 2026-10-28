@@ -13,14 +13,31 @@ import PageTransition from '@/components/PageTransition';
 import ToastContainer from '@/components/ToastContainer';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import ContextMenu from '@/components/ContextMenu';
+import TelaBloqueada from '@/components/TelaBloqueada';
+import { useSessao } from '@/context/SessaoContext';
 import { inscrever, haModalAberto, haModalAbertoNoServidor } from '@/lib/ui/pilhaModais';
 
 export default function AppLayout({ children }) {
-    const modalAberto = useSyncExternalStore(inscrever, haModalAberto, haModalAbertoNoServidor);
-
     return (
         <AppProvider>
-            <div className="flex flex-col min-h-screen no-print bg-fundo">
+            <Sistema>{children}</Sistema>
+        </AppProvider>
+    );
+}
+
+// Separado do AppLayout porque precisa ler a sessão, que só existe dentro do
+// AppProvider (e ele só renderiza isto com alguém logado).
+function Sistema({ children }) {
+    const modalAberto = useSyncExternalStore(inscrever, haModalAberto, haModalAbertoNoServidor);
+    const { telaBloqueada } = useSessao();
+
+    return (
+        <>
+            {/* Com a tela bloqueada, tudo aqui fica inerte — modais, chat e
+                avisos inclusive: nem o Tab nem um leitor de tela chegam ao que
+                está por baixo. Continua montado, então os dados e o tempo real
+                seguem vivos e nada precisa recarregar ao desbloquear. */}
+            <div className="flex flex-col min-h-screen no-print bg-fundo" inert={!!telaBloqueada}>
                 {/* Com um modal aberto, a página de trás fica inerte: não recebe
                     foco pelo Tab nem clique. Antes o backdrop já barrava o clique,
                     mas o Tab passava do último campo do formulário para uma linha
@@ -60,6 +77,7 @@ export default function AppLayout({ children }) {
                 <ContextMenu />
             </div>
             <PrintLayout />
-        </AppProvider>
+            {telaBloqueada && <TelaBloqueada />}
+        </>
     );
 }
