@@ -118,6 +118,9 @@ mark { background: var(--marca-busca); color: inherit; border-radius: 2px; paddi
 .aviso .link { margin-left: auto; white-space: nowrap; }
 .vazio { padding: 40px 16px; text-align: center; color: var(--tinta-suave); }
 .vazio b { display: block; color: var(--tinta); font-size: 14px; margin-bottom: 4px; }
+.folha { display: block; width: 76px; height: 84px; margin: 0 auto 14px; }
+.folha .f-papel { fill: var(--superficie); stroke: var(--borda-forte); }
+.folha .f-marca { fill: none; stroke: var(--tinta-fraca); }
 
 /* texto no formato do WhatsApp */
 .zap { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.6; color: var(--tinta-corpo); }
@@ -430,6 +433,9 @@ html[data-troca-tema] *, html[data-troca-tema] *::before, html[data-troca-tema] 
 const semAcento = s => (s || '').normalize('NFC').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const ico = (n, cls = 'ico') => `<i data-lucide="${n}" class="${cls}"></i>`;
+// Lista vazia: uma folha em branco com as marcas de corte e de registro, como
+// a prova de um arquivo que ainda não tem nada impresso.
+const FOLHA = `<svg class="folha" viewBox="0 0 76 84" aria-hidden="true"><rect class="f-papel" x="18.5" y="14.5" width="39" height="55" rx="1.5"/><g class="f-marca"><path d="M6 14.5h8M18.5 2v8M62 14.5h8M57.5 2v8M6 69.5h8M18.5 74v8M62 69.5h8M57.5 74v8M2 42h12M8 36v12M62 42h12M68 36v12"/><circle cx="8" cy="42" r="3.5"/><circle cx="68" cy="42" r="3.5"/></g></svg>`;
 const fmt = c => 'R$ ' + (c / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const guardar = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} };
 const ler = (k, d) => { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch { return d; } };
@@ -682,7 +688,7 @@ function renderA() {
     ${est.editando === 'novo' ? `<div class="grupo-cab">${ico('plus', 'ico ico-s')}Novo texto</div><div class="lista"><div class="lt-x" style="padding:14px">${editorHTML(null)}</div></div>` : ''}
     ${grupos.length ? grupos.map(g => `<div class="grupo-cab">${ico(g.cat.ico, 'ico ico-s')}${esc(g.cat.nome)} <span class="n">${g.itens.length}</span></div>
       <div class="lista">${g.itens.map(linha).join('')}</div>`).join('')
-    : `<div class="vazio"><b>Nenhum texto com “${esc(est.busca)}”</b>Tente outra palavra, ou crie um texto novo.</div>`}
+    : `<div class="vazio">${FOLHA}<b>Nenhum texto com “${esc(est.busca)}”</b>Tente outra palavra, ou crie um texto novo.</div>`}
     <div class="a-pe"><span><kbd>/</kbd> buscar</span><span><kbd>↑</kbd><kbd>↓</kbd> escolher</span><span><kbd>Enter</kbd> copiar</span><span><kbd>→</kbd> abrir</span><span><kbd>Esc</kbd> limpar</span></div>
   </div>`;
 }
@@ -732,7 +738,7 @@ function renderB() {
         <button class="btn btn-pri btn-p" data-acao="novo">${ico('plus', 'ico ico-s')}Novo texto</button></div>
       ${est.editando === 'novo' ? `<div class="cat-tit">${ico('plus', 'ico ico-s')}Novo texto</div><section class="prod">${editorHTML(null)}</section>` : ''}
       ${grupos.length ? grupos.map(g => `<div class="cat-tit">${ico(g.cat.ico, 'ico ico-s')}${esc(g.cat.nome)} <span class="n">${g.itens.length}</span></div>${g.itens.map(produto).join('')}`).join('')
-      : `<div class="vazio"><b>Nada com “${esc(est.busca)}”</b>Tente outra palavra, ou crie um texto novo.</div>`}
+      : `<div class="vazio">${FOLHA}<b>Nada com “${esc(est.busca)}”</b>Tente outra palavra, ou crie um texto novo.</div>`}
     </main>
   </div>`;
 }
@@ -863,7 +869,7 @@ function renderD() {
       ${avisoRepetidos()}
       ${est.editando === 'novo' ? `<div class="grupo-cab">${ico('plus', 'ico ico-s')}Novo texto</div><div class="lista"><div class="lt-x" style="padding:14px">${editorHTML(null)}</div></div>` : ''}
       ${grupos.length ? grupos.map(g => `<div class="grupo-cab">${ico(g.cat.ico, 'ico ico-s')}${esc(g.cat.nome)} <span class="n">${g.itens.length}</span></div><div class="lista">${g.itens.map(linha).join('')}</div>`).join('')
-      : `<div class="vazio"><b>Nenhum texto com “${esc(est.busca)}”</b>Tente outra palavra, ou crie um texto novo.</div>`}
+      : `<div class="vazio">${FOLHA}<b>Nenhum texto com “${esc(est.busca)}”</b>Tente outra palavra, ou crie um texto novo.</div>`}
     </div>
     ${painel}
     <div class="resp-barra">

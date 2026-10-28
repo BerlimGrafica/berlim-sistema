@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from 'react';
 import { useOrcamentos } from '@/context/OrcamentosContext';
+import BarraDeCor from '@/components/ui/BarraDeCor';
 
 // Protótipo da nova tela de orçamentos pré-prontos (opções A a D), aberto para
 // a equipe comparar.
@@ -20,7 +21,7 @@ export default function Page() {
     }, []);
 
     if (!modelo || orcamentosPreProntos.length === 0) {
-        return <div className="p-6 text-corpo text-tinta-suave">Carregando protótipo…</div>;
+        return <div className="min-h-[60vh] grid place-items-center"><BarraDeCor mostrarTexto texto="Carregando protótipo" /></div>;
     }
 
     const textos = orcamentosPreProntos.map(o => [o.id, o.titulo || '', o.empresa || 'Berlim', o.texto || '']);

@@ -15,6 +15,7 @@ import { mascararCliente, obterDataAtual, valorPagamentoComSinalCentavos } from 
 import { resumoDoPedido } from '@/lib/utils/servico';
 import { calcularPendencias } from '@/lib/alertas/pendencias';
 import { corDoNome } from '@/lib/prototipos/coresDoNome';
+import BarraDeCor from '@/components/ui/BarraDeCor';
 
 // Protótipo do novo Início: uma tela por cargo, com o que importa para cada um
 // (dono, atendimento, produção, financeiro), e um "Ver como" para trocar de
@@ -101,7 +102,7 @@ export default function Page() {
     }, [usuario]);
 
     if (!modelo || !dadosCarregados || !metricas || !criacao) {
-        return <div className="p-6 text-corpo text-tinta-suave">Carregando protótipo…</div>;
+        return <div className="min-h-[60vh] grid place-items-center"><BarraDeCor mostrarTexto texto="Carregando protótipo" /></div>;
     }
 
     const hoje = obterDataAtual();

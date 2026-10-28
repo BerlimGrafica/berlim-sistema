@@ -194,6 +194,9 @@ html { --altura-cabecalho: 51px; --altura-filtros: 42px; }
 .vazio { padding: 48px 16px; text-align: center; color: var(--tinta-suave); display: flex; flex-direction: column; align-items: center; gap: 10px; }
 .vazio b { color: var(--tinta); font-size: 14px; }
 .vazio-outras { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.folha { display: block; width: 76px; height: 84px; margin: 0 auto 2px; }
+.folha .f-papel { fill: var(--superficie); stroke: var(--borda-forte); }
+.folha .f-marca { fill: none; stroke: var(--tinta-fraca); }
 .dicas { margin-top: 16px; color: var(--tinta-fraca); font-size: 12px; display: flex; gap: 14px; flex-wrap: wrap; }
 .dicas span { display: inline-flex; gap: 5px; align-items: center; }
 /* espera: na primeira vez que uma aba busca no banco, linhas no formato da
@@ -409,6 +412,9 @@ html[data-troca-tema] *, html[data-troca-tema] *::before, html[data-troca-tema] 
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const ico = (n, cls = 'ico') => `<i data-lucide="${n}" class="${cls}"></i>`;
+// Lista vazia: uma folha em branco com as marcas de corte e de registro, como
+// a prova de um arquivo que ainda não tem nada impresso.
+const FOLHA = `<svg class="folha" viewBox="0 0 76 84" aria-hidden="true"><rect class="f-papel" x="18.5" y="14.5" width="39" height="55" rx="1.5"/><g class="f-marca"><path d="M6 14.5h8M18.5 2v8M62 14.5h8M57.5 2v8M6 69.5h8M18.5 74v8M62 69.5h8M57.5 74v8M2 42h12M8 36v12M62 42h12M68 36v12"/><circle cx="8" cy="42" r="3.5"/><circle cx="68" cy="42" r="3.5"/></g></svg>`;
 const semAcento = s => (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 const brl = c => 'R$ ' + (c / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const fmtN = n => Number(n || 0).toLocaleString('pt-BR');
@@ -577,7 +583,7 @@ const dicas = () => `<div class="dicas"><span><kbd>/</kbd> buscar</span><span><k
 function vazio(l, onde) {
   const outras = filtrando() && onde ? ABAS.filter(a => a.id !== onde.id).map(a => [a, daAba(l, a.id).length]).filter(([, n]) => n) : [];
   const q = est.busca.trim();
-  return `<div class="vazio"><b>Nenhuma O.S.${q ? ` com “${esc(q)}”` : ''}${onde ? ` em ${onde.nome}` : ''}${comPeriodo() ? ' neste período' : ''}</b>
+  return `<div class="vazio">${FOLHA}<b>Nenhuma O.S.${q ? ` com “${esc(q)}”` : ''}${onde ? ` em ${onde.nome}` : ''}${comPeriodo() ? ' neste período' : ''}</b>
     ${outras.length ? `<div class="vazio-outras">${outras.map(([a, n]) => `<button class="btn btn-sec btn-p" data-acao="aba" data-aba="${a.id}">${n} em ${a.nome}${ico('arrow-right', 'ico ico-s')}</button>`).join('')}</div>` : ''}
     ${filtrando() ? '<button class="btn btn-txt btn-p" data-acao="limpar-tudo">Limpar busca e período</button>' : ''}</div>`;
 }

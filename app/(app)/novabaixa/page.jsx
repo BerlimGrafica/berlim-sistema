@@ -7,6 +7,7 @@ import { mascararCliente, valorPagamentoComSinalCentavos } from '@/lib/utils/for
 import { corDoNome } from '@/lib/prototipos/coresDoNome';
 import { resumoDoPedido } from '@/lib/utils/servico';
 import { useAbrirOSDoPrototipo } from '@/hooks/useAbrirOSDoPrototipo';
+import BarraDeCor from '@/components/ui/BarraDeCor';
 
 // Protótipo da nova tela de O.S. (o Histórico/Baixa do menu): abas por situação
 // e lista agrupada por mês da venda, a opção escolhida pela equipe.
@@ -55,7 +56,7 @@ export default function Page() {
     }, [usuario]);
 
     if (!modelo || !abas) {
-        return <div className="p-6 text-corpo text-tinta-suave">Carregando protótipo…</div>;
+        return <div className="min-h-[60vh] grid place-items-center"><BarraDeCor mostrarTexto texto="Carregando protótipo" /></div>;
     }
 
     const paraProto = p => ({

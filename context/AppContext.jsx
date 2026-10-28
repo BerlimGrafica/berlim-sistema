@@ -13,6 +13,7 @@ import { useAlertas } from '@/hooks/useAlertas';
 import { usePendencias } from '@/hooks/usePendencias';
 import { useChat } from '@/hooks/useChat';
 import TelaEntrada from '@/components/TelaEntrada';
+import BarraDeCor from '@/components/ui/BarraDeCor';
 import { SessaoContext } from '@/context/SessaoContext';
 import { UiContext } from '@/context/UiContext';
 import { ChatContext } from '@/context/ChatContext';
@@ -2533,8 +2534,9 @@ export const AppProvider = ({ children }) => {
         // site, pelo mesmo motivo da barra: não depende de outro servidor.
         if (restaurandoSessao) {
             return (
-                <div className="flex min-h-screen items-center justify-center bg-fundo select-none">
-                    <span className="text-3xl font-black tracking-[-0.02em] animate-pulse"><span className="text-brand">BERLIM</span> <span className="text-brand-azul">Gráfica</span></span>
+                <div className="flex flex-col min-h-screen items-center justify-center gap-5 bg-fundo select-none">
+                    <span className="text-3xl font-black tracking-[-0.02em]"><span className="text-brand">BERLIM</span> <span className="text-brand-azul">Gráfica</span></span>
+                    <BarraDeCor texto="Abrindo o sistema" />
                 </div>
             );
         }

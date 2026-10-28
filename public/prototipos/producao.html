@@ -137,6 +137,9 @@ html { --altura-cabecalho: 51px; --altura-filtros: 42px; }
 .chip-f[aria-pressed="true"] .n { color: inherit; opacity: .7; }
 .vazio { padding: 48px 16px; text-align: center; color: var(--tinta-suave); }
 .vazio b { display: block; color: var(--tinta); font-size: 14px; margin-bottom: 4px; }
+.folha { display: block; width: 76px; height: 84px; margin: 0 auto 14px; }
+.folha .f-papel { fill: var(--superficie); stroke: var(--borda-forte); }
+.folha .f-marca { fill: none; stroke: var(--tinta-fraca); }
 
 /* átomos da linha */
 .pz { display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 8px; border-radius: 6px; font-weight: 600; font-size: 12.5px; color: var(--tinta); white-space: nowrap; font-variant-numeric: tabular-nums; transition: background .12s; }
@@ -383,6 +386,9 @@ html[data-troca-tema] *, html[data-troca-tema] *::before, html[data-troca-tema] 
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const ico = (n, cls = 'ico') => `<i data-lucide="${n}" class="${cls}"></i>`;
+// Lista vazia: uma folha em branco com as marcas de corte e de registro, como
+// a prova de um arquivo que ainda não tem nada impresso.
+const FOLHA = `<svg class="folha" viewBox="0 0 76 84" aria-hidden="true"><rect class="f-papel" x="18.5" y="14.5" width="39" height="55" rx="1.5"/><g class="f-marca"><path d="M6 14.5h8M18.5 2v8M62 14.5h8M57.5 2v8M6 69.5h8M18.5 74v8M62 69.5h8M57.5 74v8M2 42h12M8 36v12M62 42h12M68 36v12"/><circle cx="8" cy="42" r="3.5"/><circle cx="68" cy="42" r="3.5"/></g></svg>`;
 const semAcento = s => (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 const brl = c => 'R$ ' + (c / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const guardar = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} };
@@ -558,7 +564,7 @@ const marcarCortes = abas => {
   abas.classList.toggle('corta-dir', abas.scrollLeft + abas.clientWidth < abas.scrollWidth - 2);
 };
 const barraMob = () => `<div class="barra-mob"><button class="btn btn-sec" data-acao="focar-busca" aria-label="Buscar">${ico('search')}</button><button class="btn btn-pri" data-acao="nova">${ico('plus')}Nova O.S.</button></div>`;
-const vazioHTML = () => `<div class="vazio"><b>Nenhuma O.S. ${est.busca ? `com “${esc(est.busca)}”` : 'neste filtro'}</b>${est.filtro || est.busca ? '<button class="btn btn-txt btn-p" data-acao="limpar-tudo">Limpar filtros</button>' : ''}</div>`;
+const vazioHTML = () => `<div class="vazio">${FOLHA}<b>Nenhuma O.S. ${est.busca ? `com “${esc(est.busca)}”` : 'neste filtro'}</b>${est.filtro || est.busca ? '<button class="btn btn-txt btn-p" data-acao="limpar-tudo">Limpar filtros</button>' : ''}</div>`;
 
 /* ===== lista por etapa ===== */
 function linha(p) {
