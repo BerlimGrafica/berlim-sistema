@@ -1,0 +1,516 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!-- Estudo de referências do ofício da impressão para o sistema. Publicado também como artifact:
+     https://claude.ai/artifact/9BZNPWcYTYtyqyyeZy7QpK  Abra este arquivo direto no navegador. -->
+<title>Repertório gráfico da Berlim</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+/* Layout: uma faixa de marca no topo (o fundo da tela de entrada) e, embaixo, uma coluna de estudo:
+   regras, mapa por tela e uma linha por referência, com o desenho à esquerda e o encaixe à direita. */
+:root {
+  --fundo: #EDEFF0; --superficie: #ffffff; --realce: #f3f4f6;
+  --borda-fraca: #f0f1f3; --borda: #e5e7eb; --borda-forte: #d1d5db;
+  --tinta: #111827; --tinta-corpo: #374151; --tinta-suave: #6b7280; --tinta-fraca: #9ca3af;
+  --brand: #F69F00; --brand-tinta: #8A5400;
+  --fin: #059669; --fin-tinta: #047857; --fin-fundo: #ecfdf5;
+  --obs-tinta: #b45309; --obs-fundo: #fffbeb;
+  --serie-1: #2a78d6;
+  --faca: #EC008C; --sangria: rgba(236, 0, 140, .1);
+  --marca-1: #0F2A45; --marca-2: #0A1C2E; --marca-3: #06111D; --marca-azul: #4A9FDB;
+  --c: #00AEEF; --m: #EC008C; --y: #FFF200; --k: #231F20;
+  --fonte: Montserrat, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --saida: cubic-bezier(.16, 1, .3, 1);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --fundo: #0d1117; --superficie: #161b22; --realce: #21262d;
+    --borda-fraca: #232a33; --borda: #30363d; --borda-forte: #3d444d;
+    --tinta: #EDEDED; --tinta-corpo: #D4D4D8; --tinta-suave: #A1A1AA; --tinta-fraca: #71717a;
+    --brand-tinta: #FFB938; --fin: #34d399; --fin-tinta: #6ee7b7; --fin-fundo: rgba(16,185,129,.11);
+    --obs-tinta: #fcd34d; --obs-fundo: rgba(245,158,11,.1);
+    --serie-1: #3987e5; --sangria: rgba(236, 0, 140, .18);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --fundo: #0d1117; --superficie: #161b22; --realce: #21262d;
+  --borda-fraca: #232a33; --borda: #30363d; --borda-forte: #3d444d;
+  --tinta: #EDEDED; --tinta-corpo: #D4D4D8; --tinta-suave: #A1A1AA; --tinta-fraca: #71717a;
+  --brand-tinta: #FFB938; --fin: #34d399; --fin-tinta: #6ee7b7; --fin-fundo: rgba(16,185,129,.11);
+  --obs-tinta: #fcd34d; --obs-fundo: rgba(245,158,11,.1);
+  --serie-1: #3987e5; --sangria: rgba(236, 0, 140, .18);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--fundo); color: var(--tinta-corpo); font: 500 14px/1.6 var(--fonte); -webkit-font-smoothing: antialiased; }
+h1, h2, h3, p, ul, ol, dl, dd, figure { margin: 0; }
+h1, h2, h3 { color: var(--tinta); text-wrap: balance; }
+.num { font-variant-numeric: tabular-nums; }
+::selection { background: rgba(246,159,0,.3); }
+:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+
+.coluna { max-width: 1040px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+
+/* topo: o fundo de marca, com a retícula e as marcas de corte em volta do título */
+.topo { position: relative; overflow: hidden; color: #fff; background: var(--marca-3) radial-gradient(120% 90% at 0% 0%, var(--marca-1) 0%, var(--marca-2) 50%, var(--marca-3) 100%); }
+.topo canvas { position: absolute; inset: 0; width: 100%; height: 100%; color: rgba(56, 140, 212, .34); }
+.topo .coluna { position: relative; padding-block: 44px 52px; }
+.logo { font-weight: 900; font-size: 20px; letter-spacing: -.02em; color: var(--brand); }
+.logo span { color: var(--marca-azul); }
+.corte { --o: 18px; --l: 12px; --cor: rgba(255,255,255,.45); display: inline-block; max-width: 640px; margin-top: 28px; padding: var(--o);
+  background:
+    linear-gradient(var(--cor), var(--cor)) left 0 top var(--o) / var(--l) 1px, linear-gradient(var(--cor), var(--cor)) left var(--o) top 0 / 1px var(--l),
+    linear-gradient(var(--cor), var(--cor)) right 0 top var(--o) / var(--l) 1px, linear-gradient(var(--cor), var(--cor)) right var(--o) top 0 / 1px var(--l),
+    linear-gradient(var(--cor), var(--cor)) left 0 bottom var(--o) / var(--l) 1px, linear-gradient(var(--cor), var(--cor)) left var(--o) bottom 0 / 1px var(--l),
+    linear-gradient(var(--cor), var(--cor)) right 0 bottom var(--o) / var(--l) 1px, linear-gradient(var(--cor), var(--cor)) right var(--o) bottom 0 / 1px var(--l);
+  background-repeat: no-repeat; }
+.corte-dentro { padding: 6px 4px; }
+.topo h1 { color: #fff; font-size: clamp(30px, 4.4vw, 44px); font-weight: 800; letter-spacing: -.025em; line-height: 1.1; }
+.topo p { margin-top: 12px; font-size: 15px; color: rgba(255,255,255,.76); max-width: 54ch; }
+
+main { padding-block: 40px 72px; display: grid; gap: 52px; }
+section { display: grid; gap: 18px; }
+h2 { font-size: 20px; font-weight: 800; letter-spacing: -.018em; line-height: 1.25; }
+.sub { color: var(--tinta-suave); font-size: 14px; max-width: 68ch; margin-top: -10px; }
+
+/* regras */
+.regras { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px 28px; }
+.regras li { border-top: 2px solid var(--tinta); padding-top: 12px; }
+.regras b { display: block; color: var(--tinta); font-size: 14.5px; font-weight: 700; margin-bottom: 4px; }
+.regras span { color: var(--tinta-suave); font-size: 13.5px; }
+
+/* já em uso */
+.em-uso { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+.uso { background: var(--superficie); border: 1px solid var(--borda); border-radius: 10px; overflow: hidden; display: flex; flex-direction: column; }
+.uso .amostra { height: 112px; display: grid; place-items: center; border-bottom: 1px solid var(--borda-fraca); }
+.uso .txt { padding: 12px 14px 14px; }
+.uso b { color: var(--tinta); font-size: 13.5px; font-weight: 700; display: block; }
+.uso span { color: var(--tinta-suave); font-size: 12.5px; line-height: 1.45; display: block; margin-top: 2px; }
+.am-ret { width: 100%; height: 100%; background: var(--marca-3) radial-gradient(circle, rgba(56,140,212,.55) 1.7px, transparent 2.1px) 0 0 / 9px 9px;
+  -webkit-mask: linear-gradient(135deg, transparent 15%, #000 85%); mask: linear-gradient(135deg, transparent 15%, #000 85%); }
+.am-ret-wrap { width: 100%; height: 100%; background: var(--marca-3); }
+.am-corte { width: 100%; height: 100%; display: grid; place-items: center; background: var(--marca-2); }
+.am-corte .corte { margin: 0; --o: 10px; --l: 7px; }
+.am-corte .cartao { width: 70px; height: 44px; background: var(--superficie); border-radius: 5px; }
+.cmyk { display: inline-flex; gap: 3px; }
+.cmyk i { width: 12px; height: 12px; border-radius: 1px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.1); animation: imprimir 1.6s var(--saida) infinite both; }
+.cmyk i:nth-child(1) { background: var(--c); } .cmyk i:nth-child(2) { background: var(--m); animation-delay: .14s; }
+.cmyk i:nth-child(3) { background: var(--y); animation-delay: .28s; } .cmyk i:nth-child(4) { background: var(--k); animation-delay: .42s; }
+@keyframes imprimir { 0%, 8% { opacity: .15; transform: scale(.55); } 28%, 68% { opacity: 1; transform: none; } 88%, 100% { opacity: .15; transform: scale(.55); } }
+.folha .papel { fill: var(--superficie); stroke: var(--borda-forte); }
+.folha .marca { fill: none; stroke: var(--tinta-fraca); }
+
+/* mapa por tela */
+.mapa-wrap { overflow-x: auto; background: var(--superficie); border: 1px solid var(--borda); border-radius: 10px; }
+table { width: 100%; border-collapse: collapse; font-size: 13.5px; min-width: 560px; }
+th { text-align: left; font-size: 12px; font-weight: 600; color: var(--tinta-suave); padding: 10px 16px; border-bottom: 1px solid var(--borda); }
+td { padding: 11px 16px; border-bottom: 1px solid var(--borda-fraca); vertical-align: top; }
+tr:last-child td { border-bottom: 0; }
+td:first-child { color: var(--tinta); font-weight: 700; white-space: nowrap; }
+td a { color: inherit; text-decoration: underline; text-decoration-color: var(--borda-forte); text-underline-offset: 3px; }
+td a:hover { text-decoration-color: var(--brand); }
+
+.prio { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 5px; white-space: nowrap; }
+.prio::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.prio.alta { background: var(--fin-fundo); color: var(--fin-tinta); }
+.prio.media { background: var(--obs-fundo); color: var(--obs-tinta); }
+.prio.baixa { background: var(--realce); color: var(--tinta-suave); }
+
+/* uma referência por linha */
+.refs { display: grid; gap: 14px; }
+.ref { display: grid; grid-template-columns: 260px minmax(0, 1fr); background: var(--superficie); border: 1px solid var(--borda); border-radius: 10px; overflow: hidden; scroll-margin-top: 16px; }
+.ref figure { background: var(--fundo); border-right: 1px solid var(--borda-fraca); padding: 18px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; min-height: 230px; }
+.ref figcaption { font-size: 11.5px; color: var(--tinta-suave); text-align: center; line-height: 1.4; }
+.ref .corpo { padding: 20px 22px; display: grid; gap: 12px; align-content: start; }
+.ref-cab { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.ref h3 { font-size: 17px; font-weight: 800; letter-spacing: -.012em; line-height: 1.3; }
+.ref .oficio { color: var(--tinta-suave); font-size: 13.5px; max-width: 68ch; }
+.ref dl { display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 6px 14px; font-size: 13.5px; }
+.ref dt { color: var(--tinta-suave); font-weight: 600; font-size: 12.5px; padding-top: 1px; }
+.ref dd { color: var(--tinta-corpo); }
+.ref dd b { color: var(--tinta); font-weight: 700; }
+
+/* desenhos das referências */
+svg text { font-family: var(--fonte); }
+.cota line, .cota path { stroke: var(--tinta-suave); stroke-width: 1; fill: none; }
+.cota text { fill: var(--tinta-suave); font-size: 9.5px; font-weight: 600; }
+.contador { display: inline-flex; gap: 3px; padding: 6px; background: var(--tinta); border-radius: 7px; }
+.contador span { width: 22px; height: 32px; display: grid; place-items: center; background: var(--superficie); color: var(--tinta); border-radius: 3px; font-size: 18px; font-weight: 800; overflow: hidden; position: relative; }
+.contador .rola { display: block; }
+.contador .rola em { position: absolute; left: 0; right: 0; height: 32px; display: grid; place-items: center; font-style: normal; animation: rolar 3.2s var(--saida) infinite; }
+.contador .rola em + em { animation-name: rolar-novo; }
+@keyframes rolar { 0%, 55% { transform: translateY(0); } 75%, 100% { transform: translateY(-100%); } }
+@keyframes rolar-novo { 0%, 55% { transform: translateY(100%); } 75%, 100% { transform: translateY(0); } }
+.contador-pe { font-size: 12px; color: var(--tinta-suave); text-align: center; }
+.contador-pe b { color: var(--tinta); }
+.selo { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 5px; font-size: 12px; font-weight: 700; }
+.selo svg { width: 13px; height: 13px; flex-shrink: 0; }
+.selo.ok { background: var(--fin-fundo); color: var(--fin-tinta); }
+.selo.espera { background: var(--obs-fundo); color: var(--obs-tinta); }
+.prova { display: grid; gap: 8px; justify-items: center; }
+.carimbo { display: inline-grid; justify-items: center; gap: 2px; padding: 8px 16px; border: 2px solid var(--tinta-suave); outline: 1px solid var(--tinta-suave); outline-offset: 2px; border-radius: 4px; color: var(--tinta-suave); transform: rotate(-2deg); }
+.carimbo b { font-size: 17px; font-weight: 900; letter-spacing: .14em; }
+.carimbo span { font-size: 10.5px; font-weight: 700; letter-spacing: .04em; }
+.tira { display: grid; grid-template-columns: repeat(4, 46px); gap: 2px; }
+.tira i { height: 22px; border-radius: 2px; }
+.tira-rot { display: grid; grid-template-columns: repeat(4, 46px); gap: 2px; font-size: 9.5px; line-height: 1.2; color: var(--tinta-suave); text-align: center; }
+.tira-rot .aqui { color: var(--tinta); font-weight: 800; }
+.tira i.aqui { outline: 2px solid var(--brand); outline-offset: 2px; }
+.cal { display: grid; grid-template-columns: repeat(7, 18px); gap: 3px; }
+.cal i { width: 18px; height: 18px; border-radius: 3px; }
+.escala { display: flex; gap: 2px; align-items: flex-end; }
+.escala span { display: grid; gap: 3px; justify-items: center; font-size: 9px; color: var(--tinta-suave); font-weight: 600; }
+.escala i { width: 20px; height: 10px; border-radius: 1px; }
+.chips { display: flex; gap: 8px; }
+.chip { width: 66px; background: var(--superficie); border-radius: 4px; box-shadow: 0 1px 2px rgba(15,23,42,.12), 0 0 0 1px var(--borda); overflow: hidden; }
+.chip i { display: block; height: 54px; }
+.chip span { display: block; padding: 5px 6px 6px; font-size: 9.5px; line-height: 1.3; color: var(--tinta-suave); }
+.chip b { display: block; font-size: 10.5px; color: var(--tinta); }
+.pagina { width: 132px; height: 176px; background: #fff; border-radius: 2px; box-shadow: 0 1px 3px rgba(15,23,42,.18); padding: 14px 12px 0; display: flex; flex-direction: column; gap: 5px; position: relative; }
+.pagina i { display: block; height: 4px; border-radius: 2px; background: #e5e7eb; }
+.pagina i.t { height: 7px; width: 60%; background: #9ca3af; margin-bottom: 4px; }
+.pagina .slug { position: absolute; left: 12px; right: 12px; bottom: 7px; height: 2px; background: #c7cbd1; }
+.slug-zoom { font-size: 10.5px; color: var(--tinta-suave); text-align: center; border-top: 1px dashed var(--borda-forte); padding-top: 6px; font-variant-numeric: tabular-nums; }
+
+/* o que evitar */
+.evitar { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 28px; }
+.evitar li { display: grid; grid-template-columns: 18px minmax(0, 1fr); gap: 8px; font-size: 13.5px; color: var(--tinta-corpo); }
+.evitar li::before { content: ""; width: 12px; height: 2px; background: var(--tinta-fraca); margin-top: 10px; }
+.evitar b { color: var(--tinta); }
+
+.comeco { background: var(--superficie); border: 1px solid var(--borda); border-radius: 10px; padding: 20px 22px; display: grid; gap: 8px; }
+.comeco p { max-width: 72ch; }
+
+@media (max-width: 860px) {
+  .em-uso { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .regras, .evitar { grid-template-columns: minmax(0, 1fr); }
+  .ref { grid-template-columns: minmax(0, 1fr); }
+  .ref figure { border-right: 0; border-bottom: 1px solid var(--borda-fraca); min-height: 0; }
+}
+@media (max-width: 460px) {
+  .ref dl { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+  .ref dd + dt { margin-top: 8px; }
+  .corte { --o: 12px; --l: 8px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cmyk i { animation: none; }
+  .contador .rola em { animation: none; }
+  .contador .rola em + em { display: none; }
+}
+</style>
+
+</head>
+<body>
+<header class="topo">
+  <canvas id="reticula" aria-hidden="true"></canvas>
+  <div class="coluna">
+    <div class="logo">BERLIM <span>Gráfica</span></div>
+    <div class="corte"><div class="corte-dentro">
+      <h1>Repertório gráfico</h1>
+      <p>Referências do ofício da impressão para usar no sistema, cada uma com o lugar onde ela faz um trabalho de verdade.</p>
+    </div></div>
+  </div>
+</header>
+
+<main class="coluna">
+  <section aria-labelledby="t-regra">
+    <h2 id="t-regra">A regra</h2>
+    <ul class="regras">
+      <li><b>Vem do ofício</b><span>Só entra o que existe numa gráfica: prova, chapa, faca, contador, tinta. A equipe reconhece sem explicação.</span></li>
+      <li><b>Faz um trabalho</b><span>Mede, mostra um estado, ocupa uma espera ou um vazio. Se só enfeita, fica de fora.</span></li>
+      <li><b>Um por tela, em 1px</b><span>Traço fino, cor das tintas do sistema. As cores de processo (CMYK) só onde é tinta de verdade.</span></li>
+    </ul>
+  </section>
+
+  <section aria-labelledby="t-uso">
+    <h2 id="t-uso">Já em uso</h2>
+    <div class="em-uso">
+      <div class="uso">
+        <div class="amostra am-ret-wrap"><div class="am-ret"></div></div>
+        <div class="txt"><b>Retícula</b><span>Fundo da tela de entrada e da tela bloqueada.</span></div>
+      </div>
+      <div class="uso">
+        <div class="amostra am-corte"><div class="corte"><div class="cartao"></div></div></div>
+        <div class="txt"><b>Marcas de corte</b><span>Em volta do cartão da tela bloqueada.</span></div>
+      </div>
+      <div class="uso">
+        <div class="amostra">
+          <svg class="folha" width="76" height="84" viewBox="0 0 76 84" aria-hidden="true"><rect class="papel" x="18.5" y="14.5" width="39" height="55" rx="1.5"/><g class="marca"><path d="M6 14.5h8M18.5 2v8M62 14.5h8M57.5 2v8M6 69.5h8M18.5 74v8M62 69.5h8M57.5 74v8M2 42h12M8 36v12M62 42h12M68 36v12"/><circle cx="8" cy="42" r="3.5"/><circle cx="68" cy="42" r="3.5"/></g></svg>
+        </div>
+        <div class="txt"><b>Folha em branco</b><span>Lista inteira vazia em Produção, Baixa e Pré-prontos.</span></div>
+      </div>
+      <div class="uso">
+        <div class="amostra"><span class="cmyk" aria-hidden="true"><i></i><i></i><i></i><i></i></span></div>
+        <div class="txt"><b>Barra de cor</b><span>Abrir o sistema e a primeira ida a cada tela.</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="t-mapa">
+    <h2 id="t-mapa">Onde cada uma entra</h2>
+    <p class="sub">Oito referências novas, por tela. As duas primeiras usam contas que o sistema já faz hoje e só não mostra.</p>
+    <div class="mapa-wrap">
+      <table>
+        <thead><tr><th scope="col">Tela</th><th scope="col">Referência</th><th scope="col">Prioridade</th></tr></thead>
+        <tbody>
+          <tr><td>Calculadoras</td><td><a href="#montagem">Montagem na folha, com sangria e cotas</a></td><td><span class="prio alta">Alta</span></td></tr>
+          <tr><td>Equipamentos</td><td><a href="#contador">Contador mecânico</a></td><td><span class="prio alta">Alta</span></td></tr>
+          <tr><td>Produção</td><td><a href="#ok">OK para impressão</a></td><td><span class="prio alta">Alta</span></td></tr>
+          <tr><td>O.S. e Baixa</td><td><a href="#carimbo">Carimbo de baixa</a></td><td><span class="prio media">Média</span></td></tr>
+          <tr><td>Gaveta da O.S.</td><td><a href="#tira">Tira de densidade das etapas</a></td><td><span class="prio media">Média</span></td></tr>
+          <tr><td>Vendas</td><td><a href="#escala">Escala de retícula no calendário</a></td><td><span class="prio media">Média</span></td></tr>
+          <tr><td>Cadastros</td><td><a href="#chip">Chip de cor da pessoa</a></td><td><span class="prio baixa">Baixa</span></td></tr>
+          <tr><td>PDF do orçamento</td><td><a href="#slug">Linha de informação da prova</a></td><td><span class="prio baixa">Baixa</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section aria-labelledby="t-refs">
+    <h2 id="t-refs">As referências</h2>
+    <div class="refs">
+
+      <article class="ref" id="montagem">
+        <figure>
+          <svg id="svg-montagem" width="220" height="214" viewBox="0 0 220 214" role="img" aria-label="Folha SRA3 de 26 por 39 centímetros com 15 adesivos de 7 por 7 centímetros montados, linha de faca em magenta e sangria de 0,2 centímetro"></svg>
+          <figcaption>Exemplo: adesivo 7 × 7 cm, sangria 0,2 cm, cabem 15 na SRA3</figcaption>
+        </figure>
+        <div class="corpo">
+          <div class="ref-cab"><h3>Montagem na folha, com sangria e cotas</h3><span class="prio alta">Alta</span></div>
+          <p class="oficio">Na gráfica: a imposição, o desenho de como as peças cabem na folha antes de imprimir, com a linha de faca, a sangria e as medidas da folha.</p>
+          <dl>
+            <dt>Onde</dt><dd><b>Calculadora de Adesivo</b>, que já calcula quantos cabem na SRA3, no meio metro e no metro, com sangria de 0,2 cm. Depois a de <b>Casamento</b> (quantos por A4) e a de <b>Banner</b> (a peça com as cotas).</dd>
+            <dt>O que mostra</dt><dd>O aproveitamento que hoje é só um número. O atendente vê na hora se mudar 1 cm faz caber uma fileira a mais, e pode mostrar ao cliente.</dd>
+          </dl>
+        </div>
+      </article>
+
+      <article class="ref" id="contador">
+        <figure>
+          <span class="contador" aria-label="Contador da máquina: 048.274">
+            <span>0</span><span>4</span><span>8</span><span>2</span><span>7</span>
+            <span class="rola" aria-hidden="true"><em>3</em><em>4</em></span>
+          </span>
+          <p class="contador-pe num"><b>+1.240</b> cópias desde a última carga de ciano</p>
+        </figure>
+        <div class="corpo">
+          <div class="ref-cab"><h3>Contador mecânico</h3><span class="prio alta">Alta</span></div>
+          <p class="oficio">Na gráfica: o contador de cópias da impressora e o numerador dos talões, com um dígito por janela e o último girando.</p>
+          <dl>
+            <dt>Onde</dt><dd><b>Equipamentos</b>, no contador de cada máquina e no formulário de nova entrada, que já avisa quando o número recua.</dd>
+            <dt>O que mostra</dt><dd>A leitura da máquina do jeito que ela aparece no painel. Ao registrar, o último dígito gira até o novo valor, e embaixo fica quanto rodou desde a última carga de tinta, que o sistema já guarda.</dd>
+          </dl>
+        </div>
+      </article>
+
+      <article class="ref" id="ok">
+        <figure>
+          <div class="prova">
+            <svg width="96" height="78" viewBox="0 0 96 78" aria-hidden="true"><rect x="22.5" y="10.5" width="51" height="57" rx="1.5" fill="var(--superficie)" stroke="var(--borda-forte)"/><rect x="30" y="18" width="36" height="22" rx="1" fill="var(--realce)"/><rect x="30" y="45" width="28" height="3" rx="1.5" fill="var(--borda)"/><rect x="30" y="52" width="20" height="3" rx="1.5" fill="var(--borda)"/><path d="M12 10.5h6M22.5 2v5M78 10.5h6M73.5 2v5M12 67.5h6M22.5 71v5M78 67.5h6M73.5 71v5" stroke="var(--tinta-fraca)" fill="none"/></svg>
+            <span class="selo espera"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Aguardando OK do cliente</span>
+            <span class="selo ok num"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>OK para impressão · 28/10 14:32</span>
+          </div>
+        </figure>
+        <div class="corpo">
+          <div class="ref-cab"><h3>OK para impressão</h3><span class="prio alta">Alta</span></div>
+          <p class="oficio">Na gráfica: a prova que o cliente assina antes de a máquina rodar. Sem o OK, nada vai para a impressão.</p>
+          <dl>
+            <dt>Onde</dt><dd><b>Produção</b>, no "Arte aprovada" que já existe em cada O.S. e na etapa <b>Desenvolvimento de Arte</b>. Também na gaveta da O.S.</dd>
+            <dt>O que mostra</dt><dd>O estado da arte com palavra e hora: "Aguardando OK do cliente" em âmbar, "OK para impressão · 28/10 14:32" em verde. Hoje é um ícone que liga e desliga, sem dizer quando nem por quem.</dd>
+          </dl>
+        </div>
+      </article>
+
+      <article class="ref" id="carimbo">
+        <figure>
+          <div class="carimbo num" aria-label="Carimbo: Baixada em 28/10/2026"><b>BAIXADA</b><span>28/10/2026</span></div>
+        </figure>
+        <div class="corpo">
+          <div class="ref-cab"><h3>Carimbo de baixa</h3><span class="prio media">Média</span></div>
+          <p class="oficio">Na gráfica: o carimbo de "pago", "entregue" ou "conferido" na via da ordem de serviço, o sinal de que aquele papel está encerrado.</p>
+          <dl>
+            <dt>Onde</dt><dd><b>O.S. baixada</b>, quando alguém abre uma O.S. que está trancada para edição: no cabeçalho do modal e da gaveta. Uma vez só, reto ou quase.</dd>
+            <dt>O que mostra</dt><dd>Por que não dá para editar, antes de a pessoa tentar. A data da baixa fica no próprio carimbo.</dd>
+          </dl>
+        </div>
+      </article>
+
+      <article class="ref" id="tira">
+        <figure>
+          <div>
+            <div class="tira" aria-hidden="true">
+              <i style="background: color-mix(in srgb, var(--tinta) 18%, transparent)"></i>
+              <i style="background: color-mix(in srgb, var(--tinta) 40%, transparent)"></i>
+              <i class="aqui" style="background: color-mix(in srgb, var(--tinta) 65%, transparent)"></i>
+              <i style="background: color-mix(in srgb, var(--tinta) 8%, transparent); box-shadow: inset 0 0 0 1px var(--borda-forte)"></i>
+            </div>
+            <div class="tira-rot" style="margin-top: 7px"><span>Produzir</span><span>Produção</span><span class="aqui">Avisar cliente</span><span>Entrega ou retirada</span></div>
+          </div>
+          <figcaption>A O.S. está em Avisar cliente</figcaption>
+        </figure>
+        <div class="corpo">
+          <div class="ref-cab"><h3>Tira de densidade das etapas</h3><span class="prio media">Média</span></div>
+          <p class="oficio">Na gráfica: a tira de densidade, que vai do tom mais claro ao chapado e serve para conferir a tinta na impressão.</p>
+          <dl>
+            <dt>Onde</dt><dd><b>Gaveta da O.S.</b> e o modal de O.S., ao lado do nome da etapa.</dd>
+            <dt>O que mostra</dt><dd>Quanto falta para a O.S. sair: cada etapa é um tom mais escuro, e a atual tem o contorno laranja. As bolinhas coloridas de etapa continuam onde estão; a tira só mostra a posição no caminho.</dd>
+          </dl>
+        </div>
+      </article>
+
+      <article class="ref" id="escala">
+        <figure>
+          <div class="cal" id="cal" role="img" aria-label="Calendário de outubro com cada dia pintado de acordo com o valor vendido, do tom claro ao escuro"></div>
+          <div class="escala" aria-hidden="true">
+            <span><i style="background: color-mix(in srgb, var(--serie-1) 10%, transparent)"></i>10%</span>
+            <span><i style="background: color-mix(in srgb, var(--serie-1) 30%, transparent)"></i>30%</span>
+            <span><i style="background: color-mix(in srgb, var(--serie-1) 50%, transparent)"></i>50%</span>
+            <span><i style="background: color-mix(in srgb, var(--serie-1) 75%, transparent)"></i>75%</span>
+            <span><i style="background: var(--serie-1)"></i>100%</span>
+          </div>
+          <figcaption>Valores ilustrativos</figcaption>
+        </figure>
+        <div class="corpo">
+          <div class="ref-cab"><h3>Escala de retícula no calendário</h3><span class="prio media">Média</span></div>
+          <p class="oficio">Na gráfica: a escala de retícula, a tabela de uma tinta só em porcentagens (10%, 30%, 50%…) que mostra como cada tom sai impresso.</p>
+          <dl>
+            <dt>Onde</dt><dd><b>Vendas</b>, como um calendário do mês em que cada dia ganha o tom do quanto vendeu, com a escala em porcentagem servindo de legenda.</dd>
+            <dt>O que mostra</dt><dd>Os dias fortes e fracos do mês de uma vez, sem ler número. Usa uma cor só, do claro ao escuro, que é a regra de escala dos gráficos. Clicar no dia abre o mesmo relatório da gaveta que existe hoje.</dd>
+          </dl>
+        </div>
+      </article>
+
+      <article class="ref" id="chip">
+        <figure>
+          <div class="chips" aria-hidden="true">
+            <div class="chip"><i style="background: #f43f5e"></i><span><b>Ana Lima</b>Rosa 500</span></div>
+            <div class="chip"><i style="background: #0ea5e9"></i><span><b>Bruno</b>Céu 500</span></div>
+            <div class="chip"><i style="background: #10b981"></i><span><b>Cida</b>Esmeralda 500</span></div>
+          </div>
+          <figcaption>Nomes de exemplo</figcaption>
+        </figure>
+        <div class="corpo">
+          <div class="ref-cab"><h3>Chip de cor da pessoa</h3><span class="prio baixa">Baixa</span></div>
+          <p class="oficio">Na gráfica: o leque de cores especiais, um chip por cor com o nome e o código embaixo, para todo mundo falar da mesma cor.</p>
+          <dl>
+            <dt>Onde</dt><dd><b>Cadastros</b>, na aba Usuários, ao lado de cada pessoa.</dd>
+            <dt>O que mostra</dt><dd>A cor fixa de cada pessoa, a mesma do chat, das etiquetas e das bolinhas. Hoje ela existe mas ninguém vê de onde vem.</dd>
+          </dl>
+        </div>
+      </article>
+
+      <article class="ref" id="slug">
+        <figure>
+          <div class="pagina" aria-hidden="true"><i class="t"></i><i></i><i style="width: 86%"></i><i style="width: 92%"></i><i style="width: 70%"></i><i style="margin-top: 8px"></i><i style="width: 80%"></i><span class="slug"></span></div>
+          <p class="slug-zoom">Orçamento 1.204 · gerado em 28/10/2026 às 14:32 · página 1 de 1</p>
+        </figure>
+        <div class="corpo">
+          <div class="ref-cab"><h3>Linha de informação da prova</h3><span class="prio baixa">Baixa</span></div>
+          <p class="oficio">Na gráfica: a linha miúda na margem da prova, fora da área de corte, com o nome do arquivo, a data e a hora em que ela saiu.</p>
+          <dl>
+            <dt>Onde</dt><dd><b>PDF do orçamento</b> que vai para o cliente, no rodapé, fora do conteúdo.</dd>
+            <dt>O que mostra</dt><dd>Qual versão o cliente tem na mão. Quando ele volta com um orçamento antigo, a data e o número estão ali.</dd>
+          </dl>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section aria-labelledby="t-evitar">
+    <h2 id="t-evitar">O que evitar</h2>
+    <ul class="evitar">
+      <li><span><b>Textura de papel falsa.</b> Granulado, fibra e folha amassada desenhados por cima da tela.</span></li>
+      <li><span><b>Carimbo em tudo.</b> Ele vale por ser raro: só para o que está encerrado de verdade.</span></li>
+      <li><span><b>CMYK como confete.</b> As quatro cores de processo só onde se fala de tinta: carregamento e cartuchos.</span></li>
+      <li><span><b>Fonte de máquina de escrever.</b> Montserrat continua sendo a voz; o ofício entra no desenho, não na letra.</span></li>
+      <li><span><b>Página dobrando e sombra de papel.</b> Quadro continua sendo quadro, com borda de 1px.</span></li>
+      <li><span><b>Mais de um motivo por tela.</b> Retícula, corte e carimbo juntos viram cenário.</span></li>
+    </ul>
+  </section>
+
+  <section aria-labelledby="t-comeco">
+    <h2 id="t-comeco">Por onde começar</h2>
+    <div class="comeco">
+      <p><b>Montagem na folha</b> e <b>contador mecânico</b> primeiro. As duas mostram contas que o sistema já faz (quantos cabem e quanto a máquina rodou) e hoje aparecem só como número. Depois o <b>OK para impressão</b>, que transforma um ícone de liga e desliga em estado com data.</p>
+    </div>
+  </section>
+</main>
+
+<script>
+// Retícula do topo: o mesmo desenho do fundo da tela de entrada, mais denso para o canto de baixo.
+(function () {
+  const canvas = document.getElementById('reticula');
+  const ctx = canvas.getContext('2d');
+  const suave = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
+  function desenhar() {
+    const r = canvas.getBoundingClientRect(), dpr = Math.min(devicePixelRatio || 1, 2);
+    const w = r.width, h = r.height;
+    if (!w || !h) return;
+    canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, w, h);
+    ctx.fillStyle = getComputedStyle(canvas).color;
+    ctx.beginPath();
+    const passo = w < 640 ? 11 : 14, meio = passo / 2;
+    for (let lin = 0; lin * meio < h + passo; lin++) {
+      const y = lin * meio;
+      for (let x = lin % 2 ? meio : 0; x < w + passo; x += passo) {
+        const t = suave(.72, 1.5, (x / w) * .9 + (y / h) * .75 + .06 * Math.sin(x / w * 6.5 + y / h * 2.5));
+        if (t < .03) continue;
+        const raio = Math.sqrt(t * .7) * passo * .4;
+        ctx.moveTo(x + raio, y); ctx.arc(x, y, raio, 0, Math.PI * 2);
+      }
+    }
+    ctx.fill();
+  }
+  new ResizeObserver(desenhar).observe(canvas);
+})();
+
+// Montagem: SRA3 (26 × 39 cm), adesivo 7 × 7 cm com 0,2 cm de sangria de cada lado (7,4 cm por peça).
+(function () {
+  const s = document.getElementById('svg-montagem');
+  const ns = 'http://www.w3.org/2000/svg';
+  const el = (tag, at, pai = s) => { const e = document.createElementNS(ns, tag); for (const k in at) e.setAttribute(k, at[k]); pai.appendChild(e); return e; };
+  const esc = 4.6, X = 34, Y = 24, W = 26 * esc, H = 39 * esc;
+  el('rect', { x: X + .5, y: Y + .5, width: W - 1, height: H - 1, rx: 1.5, fill: 'var(--superficie)', stroke: 'var(--borda-forte)' });
+  const peca = 7.4 * esc, cols = Math.floor(26 / 7.4), lins = Math.floor(39 / 7.4);
+  const mx = X + (W - cols * peca) / 2, my = Y + (H - lins * peca) / 2;
+  for (let c = 0; c < cols; c++) for (let l = 0; l < lins; l++) {
+    const px = mx + c * peca, py = my + l * peca;
+    el('rect', { x: px, y: py, width: peca, height: peca, fill: 'var(--sangria)' });
+    el('rect', { x: px + 1.4, y: py + 1.4, width: peca - 2.8, height: peca - 2.8, rx: 2, fill: 'var(--superficie)', stroke: 'var(--faca)', 'stroke-dasharray': '3 2' });
+  }
+  const g = el('g', { class: 'cota' });
+  el('path', { d: `M${X + .5} 9v8M${X + W - .5} 9v8M${X + .5} 13H${X + W / 2 - 18}M${X + W / 2 + 18} 13H${X + W - .5}` }, g);
+  el('text', { x: X + W / 2, y: 16.5, 'text-anchor': 'middle' }, g).textContent = '26 cm';
+  const cx = X + W + 14;
+  el('path', { d: `M${cx - 4} ${Y + .5}h8M${cx - 4} ${Y + H - .5}h8M${cx} ${Y + .5}V${Y + H / 2 - 18}M${cx} ${Y + H / 2 + 18}V${Y + H - .5}` }, g);
+  el('text', { x: cx + 3.5, y: Y + H / 2, 'text-anchor': 'middle', transform: `rotate(90 ${cx} ${Y + H / 2})` }, g).textContent = '39 cm';
+})();
+
+// Calendário ilustrativo de outubro (começa numa quinta): o tom de cada dia vem de um valor inventado, estável.
+(function () {
+  const cal = document.getElementById('cal');
+  const tons = [10, 30, 50, 75, 100];
+  for (let i = 0; i < 35; i++) {
+    const d = i - 3;
+    const c = document.createElement('i');
+    if (d < 0 || d >= 31) { c.style.background = 'transparent'; }
+    else if ((i % 7) === 6) { c.style.boxShadow = 'inset 0 0 0 1px var(--borda)'; }
+    else {
+      const v = tons[(d * 7 + 3) % 5 === 0 ? 4 : (d * 5 + 1) % 4];
+      c.style.background = v === 100 ? 'var(--serie-1)' : `color-mix(in srgb, var(--serie-1) ${v}%, transparent)`;
+    }
+    cal.appendChild(c);
+  }
+})();
+</script>
+
+</body>
+</html>
