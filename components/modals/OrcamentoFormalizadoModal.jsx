@@ -7,7 +7,7 @@ import { useClientes } from "@/context/ClientesContext";
 import { useCadastros } from "@/context/CadastrosContext";
 import Icon from "@/components/Icon";
 import Tooltip from "@/components/Tooltip";
-import { formatarValorFinanceiro, formatarMoeda, centavosParaReais, mascararCliente } from '@/lib/utils/formatters';
+import { formatarValorFinanceiro, formatarMoeda, centavosParaReais, mascararCliente, rotuloCliente } from '@/lib/utils/formatters';
 import { CustomSelect } from '@/components/ui/Dropdown';
 import { useModal } from '@/components/modals/useModal';
 
@@ -52,7 +52,7 @@ export default function OrcamentoFormalizadoModal() {
                                     {clienteDropdownAberto && clientesFiltrados.length > 0 && (
                                         <ul className="absolute z-[60] w-full mt-1 max-h-48 overflow-y-auto bg-superficie border border-borda rounded shadow-xl custom-scrollbar">
                                             {clientesFiltrados.map(c => (
-                                                <li key={c.id} onClick={() => { setBuscaCliente(c.nome); setClienteSelecionadoInfo({ id: c.id, telefone: c.telefone }); setNovoPedido({...novoPedido, cliente: c.nome, cliente_id: c.id}); setClienteDropdownAberto(false); }} className="px-3 py-2.5 hover:bg-sutil cursor-pointer border-b border-borda-fraca last:border-0 flex justify-between items-center transition"><span className="font-medium text-corpo text-tinta">{c.nome}</span><span className="text-mini text-tinta-suave">{c.telefone}</span></li>
+                                                <li key={c.id} onClick={() => { setBuscaCliente(rotuloCliente(c)); setClienteSelecionadoInfo({ id: c.id, telefone: c.telefone }); setNovoPedido({...novoPedido, cliente: rotuloCliente(c), cliente_id: c.id}); setClienteDropdownAberto(false); }} className="px-3 py-2.5 hover:bg-sutil cursor-pointer border-b border-borda-fraca last:border-0 flex justify-between items-center transition"><span className="font-medium text-corpo text-tinta">{rotuloCliente(c)}</span><span className="text-mini text-tinta-suave">{c.telefone}</span></li>
                                             ))}
                                         </ul>
                                     )}

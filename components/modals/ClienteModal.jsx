@@ -20,6 +20,13 @@ export default function ClienteModal() {
                         <label className="block text-corpo font-medium mb-1.5 text-tinta-corpo">Nome</label>
                         <input required autoFocus value={novoCliente.nome} onChange={e => setNovoCliente({...novoCliente, nome: e.target.value})} className="w-full bg-elevado border border-borda-forte rounded px-3 py-2 text-corpo outline-none focus:border-brand dark:text-white transition" placeholder="Nome *" />
                     </div>
+                    <div>
+                        <label className="block text-corpo font-medium mb-1.5 text-tinta-corpo">Empresa <span className="font-normal text-tinta-suave">(opcional)</span></label>
+                        <input value={novoCliente.empresa || ''} onChange={e => setNovoCliente({...novoCliente, empresa: e.target.value})} maxLength={120} className="w-full bg-elevado border border-borda-forte rounded px-3 py-2 text-corpo outline-none focus:border-brand dark:text-white transition" placeholder="Quando o cliente compra por uma empresa" />
+                        {novoCliente.empresa?.trim() && novoCliente.nome?.trim() && (
+                            <p className="mt-1.5 text-mini text-tinta-suave">Aparece no sistema como <span className="font-semibold text-tinta-corpo">{novoCliente.nome.trim()} • {novoCliente.empresa.trim()}</span></p>
+                        )}
+                    </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label className="block text-corpo font-medium mb-1.5 text-tinta-corpo">WhatsApp</label>

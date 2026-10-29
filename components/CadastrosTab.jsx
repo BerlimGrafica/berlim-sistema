@@ -8,7 +8,7 @@ import { useCadastros } from '@/context/CadastrosContext';
 import Icon from '@/components/Icon';
 import Tooltip from '@/components/Tooltip';
 import { SkeletonLinhas } from '@/components/ui/SkeletonLinhas';
-import { formatarValorFinanceiro, centavosParaReais } from '@/lib/utils/formatters';
+import { formatarValorFinanceiro, centavosParaReais, rotuloCliente } from '@/lib/utils/formatters';
 import { SubAbas } from '@/components/ui/SubAbas';
 import { BarraAcoes } from '@/components/ui/BarraAcoes';
 import { TabelaCartoes } from '@/components/ui/TabelaCartoes';
@@ -170,7 +170,7 @@ export default function CadastrosTab() {
                                         tdClassName: 'px-6 py-4 text-corpo font-semibold',
                                         celula: c => (
                                             <span className={c.cliente_problema ? 'text-perigo' : 'text-gray-900 dark:text-gray-300'}>
-                                                {c.nome}
+                                                {rotuloCliente(c)}
                                                 {c.cliente_problema && <Icon name="alert-triangle" className="w-3.5 h-3.5 inline text-red-500 ml-1" title="Cliente Problema" />}
                                             </span>
                                         ),

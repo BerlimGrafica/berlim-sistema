@@ -2,10 +2,10 @@
 import React, { useContext, useState, useEffect, useMemo, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 import { flushSync } from 'react-dom';
-import { semAcento, contem, campoDeBusca } from '@/lib/utils/busca';
+import { semAcento, contem, campoDeBusca, empresaNoBanco, valorDoFiltro } from '@/lib/utils/busca';
 import { supabase } from '@/lib/supabaseClient';
 import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS, STATUSES_JA_RETIRADO_DA_FUTURA } from '@/lib/utils/constants';
-import { formatarMoeda, parseValorMoeda, valorPagamentoComSinal, valorPagamentoComSinalCentavos, paraCentavos, centavosParaReais, obterDataAtual, adicionarMesData, apenasDigitos } from '@/lib/utils/formatters';
+import { formatarMoeda, parseValorMoeda, valorPagamentoComSinal, valorPagamentoComSinalCentavos, paraCentavos, centavosParaReais, obterDataAtual, adicionarMesData, apenasDigitos, rotuloCliente } from '@/lib/utils/formatters';
 import { itensDoPedido, pagamentosDoPedido, observacoesDoPedido, itensDoOrcamento, observacoesDoOrcamento } from '@/lib/utils/servico';
 import { gravarItensPagamentos, clonarItensParaPedido, gravarItensOrcamento } from '@/lib/pedidos/gravacao';
 import { useAuth } from '@/hooks/useAuth';
@@ -792,7 +792,10 @@ export const AppProvider = ({ children }) => {
                 query = query.ilike('telefone_digits', `%${digitos}%`);
             } else {
                 const { coluna, termo } = await campoDeBusca(supabase, 'nome', buscaCliente);
-                query = query.ilike(coluna, `%${termo}%`);
+                // Quem atende ouve o nome da empresa tanto quanto o do contato.
+                query = await empresaNoBanco(supabase)
+                    ? query.or(`${coluna}.ilike.${valorDoFiltro(`%${termo}%`)},empresa.ilike.${valorDoFiltro(`%${buscaCliente.trim()}%`)}`)
+                    : query.ilike(coluna, `%${termo}%`);
             }
             const { data } = await query;
             if (data) setClientes(data);
@@ -855,7 +858,9 @@ export const AppProvider = ({ children }) => {
                 } else {
                     const nome = await campoDeBusca(supabase, 'nome', buscaCadClientes);
                     const email = await campoDeBusca(supabase, 'email', buscaCadClientes);
-                    query = query.or(`${nome.coluna}.ilike.%${nome.termo}%,${email.coluna}.ilike.%${email.termo}%`);
+                    const filtros = [`${nome.coluna}.ilike.%${nome.termo}%`, `${email.coluna}.ilike.%${email.termo}%`];
+                    if (await empresaNoBanco(supabase)) filtros.push(`empresa.ilike.${valorDoFiltro(`%${buscaCadClientes.trim()}%`)}`);
+                    query = query.or(filtros.join(','));
                 }
             }
             
@@ -1189,7 +1194,9 @@ export const AppProvider = ({ children }) => {
     }
 
     function abrirEdicaoCliente(cliente) {
-        setNovoCliente({ id: cliente.id, nome: cliente.nome, telefone: cliente.telefone, email: cliente.email, observacoes: cliente.observacoes, cliente_problema: cliente.cliente_problema || false });
+        // rotuloAntes: para saber, ao salvar, se o nome que as O.S. mostram mudou.
+        // empresaAntes: com empresa no cadastro, a coluna existe e pode ser limpa.
+        setNovoCliente({ id: cliente.id, nome: cliente.nome, empresa: cliente.empresa || '', telefone: cliente.telefone, email: cliente.email, observacoes: cliente.observacoes, cliente_problema: cliente.cliente_problema || false, rotuloAntes: rotuloCliente(cliente), empresaAntes: cliente.empresa || '' });
         setModalClienteAberto(true);
     }
 
@@ -1934,6 +1941,11 @@ export const AppProvider = ({ children }) => {
         e.preventDefault();
         setSalvandoCliente(true);
         const clienteFormatado = { nome: novoCliente.nome, telefone: novoCliente.telefone, email: novoCliente.email, observacoes: novoCliente.observacoes, cliente_problema: novoCliente.cliente_problema || false };
+        // A empresa só vai quando há o que gravar ou o que limpar: até a
+        // migração rodar (clientes_empresa_migration.sql), a coluna não existe e
+        // o banco recusaria o cadastro inteiro por causa dela.
+        const empresa = (novoCliente.empresa || '').trim();
+        if (empresa || novoCliente.empresaAntes) clienteFormatado.empresa = empresa || null;
 
         if (clienteFormatado.telefone && clienteFormatado.telefone.trim() !== '') {
             const telNormalizado = apenasDigitos(clienteFormatado.telefone);
@@ -1964,11 +1976,24 @@ export const AppProvider = ({ children }) => {
 
         if (novoCliente.id) {
             const { data, error } = await supabase.from('clientes').update(clienteFormatado).eq('id', novoCliente.id).select();
-            if (!error && data) { setTriggerRealtime(prev => prev + 1); setModalClienteAberto(false); setNovoCliente({ id: null, nome: '', telefone: '', email: '', observacoes: '', cliente_problema: false }); }
+            if (!error && data) {
+                // A O.S. e o orçamento guardam o nome do cliente como texto. Mudou
+                // o nome ou a empresa, os que estão ligados a este cadastro passam
+                // a mostrar o novo — senão a empresa só apareceria nas O.S. novas.
+                const rotulo = rotuloCliente(data[0]);
+                if (novoCliente.rotuloAntes && rotulo !== novoCliente.rotuloAntes) {
+                    const [os, orc] = await Promise.all([
+                        supabase.from('pedidos').update({ cliente: rotulo }).eq('cliente_id', novoCliente.id),
+                        supabase.from('orcamentos_formalizados').update({ cliente: rotulo }).eq('cliente_id', novoCliente.id),
+                    ]);
+                    if (os.error || orc.error) avisar(`Cliente salvo, mas parte das O.S. e orçamentos ainda mostra "${novoCliente.rotuloAntes}": ${(os.error || orc.error).message}`, 'erro');
+                }
+                setTriggerRealtime(prev => prev + 1); setModalClienteAberto(false); setNovoCliente({ id: null, nome: '', telefone: '', email: '', observacoes: '', cliente_problema: false });
+            }
             else avisar('Falha ao atualizar: ' + error.message, 'erro');
         } else {
             const { data, error } = await supabase.from('clientes').insert([clienteFormatado]).select();
-            if (!error && data) { setTriggerRealtime(prev => prev + 1); setNovoPedido({...novoPedido, cliente: data[0].nome, cliente_id: data[0].id}); setBuscaCliente(data[0].nome); setClienteSelecionadoInfo({ id: data[0].id, telefone: data[0].telefone }); setModalClienteAberto(false); setNovoCliente({ id: null, nome: '', telefone: '', email: '', observacoes: '', cliente_problema: false }); }
+            if (!error && data) { setTriggerRealtime(prev => prev + 1); setNovoPedido({...novoPedido, cliente: rotuloCliente(data[0]), cliente_id: data[0].id}); setBuscaCliente(rotuloCliente(data[0])); setClienteSelecionadoInfo({ id: data[0].id, telefone: data[0].telefone }); setModalClienteAberto(false); setNovoCliente({ id: null, nome: '', telefone: '', email: '', observacoes: '', cliente_problema: false }); }
             else avisar('Falha ao salvar: ' + error.message, 'erro');
         }
         setSalvandoCliente(false);
@@ -2115,10 +2140,13 @@ export const AppProvider = ({ children }) => {
             .maybeSingle();
         if (completo) setOsParaImprimir(prev => ({ ...completo, clienteInfo: prev?.clienteInfo }));
 
-        // Pedido guarda o cliente como texto solto (sem vínculo por ID com a tabela
-        // clientes) — usa ilike/trim pra não perder o telefone por causa de
+        // Pelo vínculo quando ele existe: com a empresa, o texto da O.S. ("Ana •
+        // Papelaria") já não é o nome do cadastro. Sem vínculo (O.S. antigas),
+        // pelo nome — ilike/trim pra não perder o telefone por causa de
         // maiúscula ou espaço divergente entre o nome no pedido e o cadastro atual.
-        const { data } = await supabase.from('clientes').select('*').ilike('nome', (pedido.cliente || '').trim()).limit(1).maybeSingle();
+        const { data } = pedido.cliente_id
+            ? await supabase.from('clientes').select('*').eq('id', pedido.cliente_id).maybeSingle()
+            : await supabase.from('clientes').select('*').ilike('nome', (pedido.cliente || '').trim()).limit(1).maybeSingle();
         if (data) {
             // flushSync força o React a aplicar e renderizar esse estado antes da
             // próxima linha — sem isso, window.print() captura o DOM antes do
