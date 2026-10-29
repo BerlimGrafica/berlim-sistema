@@ -132,6 +132,29 @@ export default function Page() {
         });
     }, [isDemo]);
 
+    // Calendário: o vendido de cada dia de um mês, com o mesmo recorte de
+    // metricas_vendas (data da venda, cancelados de fora). Só data e valor, e só
+    // quando o calendário abre. Um mês tem umas 400 O.S.; a busca vai em páginas
+    // de 1.000 mesmo assim, porque o que passa do limite some sem aviso.
+    const buscarCalendario = useCallback(async (mes) => {
+        const [a, m] = mes.split('-').map(Number);
+        const inicio = `${mes}-01`, fim = `${mes}-${String(new Date(a, m, 0).getDate()).padStart(2, '0')}`;
+        const dias = {};
+        for (let de = 0; ; de += 1000) {
+            const { data: d, error } = await supabase.from('pedidos').select('data_pedido, valor_total')
+                .gte('data_pedido', inicio).lte('data_pedido', fim)
+                .not('status', 'in', '("Cancelado","Cancelada")')
+                .order('id').range(de, de + 999);
+            if (error) throw error;
+            for (const p of d || []) {
+                const dia = dias[p.data_pedido] || (dias[p.data_pedido] = { centavos: 0, pedidos: 0 });
+                dia.centavos += p.valor_total || 0; dia.pedidos += 1;
+            }
+            if (!d || d.length < 1000) break;
+        }
+        return dias;
+    }, []);
+
     // O mesmo recorte de metricas_vendas: vencimento dentro do período e a
     // categoria vazia contada como "Despesa".
     const contasDaCategoria = useCallback((inicio, fim, categoria) => (contasPagar || [])
@@ -173,13 +196,17 @@ export default function Page() {
                 try { responder({ tipo: 'dia', dia: msg.dia, pedidos: await buscarDia(msg.dia) }); }
                 catch (err) { responder({ tipo: 'dia-erro', dia: msg.dia, erro: err.message || 'Não deu para carregar este dia.' }); }
             }
+            if (msg.tipo === 'pedir-calendario' && /^\d{4}-\d{2}$/.test(msg.mes || '')) {
+                try { responder({ tipo: 'calendario', mes: msg.mes, dias: await buscarCalendario(msg.mes) }); }
+                catch (err) { responder({ tipo: 'calendario-erro', mes: msg.mes, erro: err.message || 'Não deu para carregar o mês.' }); }
+            }
             if (msg.tipo === 'pedir-contas' && ehData(msg.inicio) && ehData(msg.fim) && typeof msg.categoria === 'string') {
                 responder({ tipo: 'contas', pedido: msg.pedido, categoria: msg.categoria, contas: contasDaCategoria(msg.inicio, msg.fim, msg.categoria) });
             }
         }
         window.addEventListener('message', aoReceber);
         return () => window.removeEventListener('message', aoReceber);
-    }, [iframeRef, buscarPeriodo, buscarDia, contasDaCategoria]);
+    }, [iframeRef, buscarPeriodo, buscarDia, buscarCalendario, contasDaCategoria]);
 
     // O HTML é montado uma vez: trocar de período não recarrega o iframe.
     const html = useMemo(() => {

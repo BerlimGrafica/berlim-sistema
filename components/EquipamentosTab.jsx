@@ -6,6 +6,7 @@ import { useUi } from '@/context/UiContext';
 import Icon from '@/components/Icon';
 import NovaEntradaModal from '@/components/equipamentos/NovaEntradaModal';
 import MaquinaModal from '@/components/equipamentos/MaquinaModal';
+import { ContadorMecanico } from '@/components/equipamentos/ContadorMecanico';
 import { BarraAcoes } from '@/components/ui/BarraAcoes';
 import { useEquipamentos } from '@/hooks/useEquipamentos';
 import { useRegistrosEquipamentos } from '@/hooks/useRegistrosEquipamentos';
@@ -89,9 +90,9 @@ function ConteudoCartao({ equipamento, registros, hoje, comLapis }) {
                 {detalhe && <span className="block text-mini text-tinta-suave leading-snug">{detalhe}</span>}
             </span>
             <TiraDeTintas equipamento={equipamento} ultimaCarga={ultimaCarga} hoje={hoje} />
-            <span className="mt-auto text-micro text-tinta-suave tabular-nums">
+            <span className="mt-auto flex items-center justify-between gap-2 text-micro text-tinta-suave tabular-nums">
                 {ultimoContador
-                    ? <>Contador <span className="font-semibold text-tinta">{formatarContador(ultimoContador.contador)}</span></>
+                    ? <>Contador <ContadorMecanico valor={ultimoContador.contador} /></>
                     : 'Sem registro ainda'}
             </span>
         </>

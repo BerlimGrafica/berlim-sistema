@@ -174,10 +174,19 @@ export default function PrintLayout() {
 }
 
 function PrintOrcamento({ orc }) {
-    const { isDemo } = useSessao();
+    const { isDemo, usuario } = useSessao();
     const itens = itensDoOrcamento(orc);
     const telefone = isDemo ? '' : (orc.clienteInfo?.telefone || orc.telefone || '');
     const date = new Date(orc.created_at).toLocaleDateString('pt-BR');
+    // Linha de informação da prova: como a linha miúda na margem de uma prova
+    // de impressão, diz qual orçamento é, quando o PDF saiu e quem gerou —
+    // para quando o cliente volta com uma versão antiga na mão.
+    const agora = new Date();
+    const linhaDaProva = [
+        orc.id ? `Orçamento nº ${orc.id}` : 'Orçamento',
+        `gerado em ${agora.toLocaleDateString('pt-BR')} às ${agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`,
+        usuario?.nome ? `por ${usuario.nome}` : null,
+    ].filter(Boolean).join(' · ');
     
     let obsPrazo = (observacoesDoOrcamento(orc) || '').trim();
     if (!obsPrazo) obsPrazo = "Prazo e condições a combinar.";
@@ -265,6 +274,9 @@ function PrintOrcamento({ orc }) {
                     <p className="text-[#00579D] text-[32px] font-black italic leading-none tracking-tight">R$ {formatarValorFinanceiro(centavosParaReais(orc.valor))}</p>
                 </div>
             </div>
+
+            {/* Linha da prova: fora do conteúdo, miúda e cinza, logo acima da faixa. */}
+            <p className="px-16 pb-1.5 text-right text-[7.5px] tracking-[0.02em] text-gray-400 tabular-nums shrink-0">{linhaDaProva}</p>
 
             {/* Orange Footer Bar */}
             <div className="bg-[#F37021] print-color-adjust-exact h-[80px] w-full flex justify-between items-center px-16 text-white shrink-0">

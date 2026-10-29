@@ -442,7 +442,7 @@ const FILTROS = [
   { id: 'hoje', nome: 'Hoje', f: p => p.prazo === HOJE },
   { id: 'horario', nome: 'Com horário', f: p => p.prazo && p.hora },
   { id: 'minhas', nome: 'Minhas', f: p => D.eu && p.resp.includes(D.eu) },
-  { id: 'arte', nome: 'Arte pendente', f: p => !p.arte },
+  { id: 'arte', nome: 'Aguardando OK', f: p => !p.arte },
   { id: 'prontas', nome: 'Prontas p/ entrega', f: p => p.entrega },
 ];
 
@@ -479,10 +479,11 @@ function itensChips(p) {
   if (!p.itens.length) return `<span class="resumo" title="${esc(p.resumo)}">${esc(p.resumo)}</span>`;
   return `<div class="its">${p.itens.map(([iid, nome, ok]) => `<button class="it ${ok ? 'ok' : ''}" data-acao="item" data-id="${p.id}" data-item="${iid}" title="${ok ? 'Feito — marcar como pendente' : 'Marcar como feito'}">${ico(ok ? 'check' : 'circle', 'ico')}<span>${esc(nome)}</span></button>`).join('')}</div>`;
 }
+const quando = d => `${d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })} às ${d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`;
 function flags(p, cls = '') {
   const conf = est.conf === p.id;
   return `<div class="fls ${cls}">
-    <button class="fl arte ${p.arte ? 'on' : ''}" data-acao="arte" data-id="${p.id}" title="${p.arte ? 'Arte aprovada' : 'Arte ainda não aprovada'}" aria-pressed="${p.arte}">${ico('thumbs-up', 'ico')}</button>
+    <button class="fl arte ${p.arte ? 'on' : ''}" data-acao="arte" data-id="${p.id}" title="${p.arte ? `OK para impressão${p.arteEm ? ` · ${quando(p.arteEm)}` : ''}` : 'Aguardando OK do cliente'}" aria-pressed="${p.arte}">${ico('thumbs-up', 'ico')}</button>
     <button class="fl entrega ${p.entrega ? 'on' : ''}" data-acao="entrega" data-id="${p.id}" title="${p.entrega ? 'Pronta para entrega' : 'Ainda não está pronta'}" aria-pressed="${p.entrega}">${ico('package', 'ico')}</button>
     <span class="sep"></span>
     <button class="fl concluir ${conf ? 'conf' : ''}" data-acao="concluir" data-id="${p.id}" title="Concluir O.S.">${conf ? 'Concluir?' : ico('check-circle-2', 'ico')}</button>
@@ -607,7 +608,7 @@ function detalhe(p, naGaveta) {
       ${p.itens.length ? p.itens.map(([iid, nome, ok, desc]) => `<button class="chk ${ok ? 'ok' : ''}" data-acao="item" data-id="${p.id}" data-item="${iid}"><span class="caixa">${ico('check', 'ico ico-s')}</span><span><span class="nm">${esc(nome)}</span>${desc ? `<span class="ds">${esc(desc)}</span>` : ''}</span></button>`).join('') : `<div class="sem-itens">${esc(p.resumo)}</div>`}
     </section>
     <div class="marcas">
-      <button class="marca arte ${p.arte ? 'on' : ''}" data-acao="arte" data-id="${p.id}" aria-pressed="${p.arte}"><span class="mi">${ico('thumbs-up', 'ico ico-s')}</span><span><b>Arte aprovada</b><small>${p.arte ? 'Cliente aprovou' : 'Aguardando aprovação'}</small></span></button>
+      <button class="marca arte ${p.arte ? 'on' : ''}" data-acao="arte" data-id="${p.id}" aria-pressed="${p.arte}"><span class="mi">${ico(p.arte ? 'badge-check' : 'clock', 'ico ico-s')}</span><span><b>${p.arte ? 'OK para impressão' : 'Aguardando OK do cliente'}</b><small>${p.arte ? `Cliente aprovou${p.arteEm ? ` · ${quando(p.arteEm)}${D.eu ? ` · por ${esc(D.eu)}` : ''}` : ''}` : 'Clique quando o cliente aprovar a prova'}</small></span></button>
       <button class="marca entrega ${p.entrega ? 'on' : ''}" data-acao="entrega" data-id="${p.id}" aria-pressed="${p.entrega}"><span class="mi">${ico('package', 'ico ico-s')}</span><span><b>Pronta para entrega</b><small>${p.entrega ? 'Pode sair' : 'Ainda em produção'}</small></span></button>
     </div>
     <section class="area fin"><div class="area-cab"><span class="area-ico">${ico('wallet', 'ico ico-s')}</span><h3>Pagamento</h3><span class="area-meta">${falta <= 0 ? 'Quitado' : ''}</span></div>
@@ -799,7 +800,13 @@ document.addEventListener('click', e => {
   }
   if (a === 'fechar-gaveta') { est.gaveta = null; return desarmou ? render() : renderGaveta(); }
   if (a === 'item') { const it = p.itens.find(i => String(i[0]) === el.dataset.item); it[2] = !it[2]; render(); const todos = p.itens.every(i => i[2]); if (todos && it[2]) toast(`Todos os itens da #${p.id} feitos`); return; }
-  if (a === 'arte') { p.arte = !p.arte; render(); return toast(p.arte ? `Arte da #${p.id} aprovada` : `Arte da #${p.id} voltou para pendente`); }
+  if (a === 'arte') {
+    // No sistema, quando e quem registrou o OK vão para duas colunas novas da O.S.;
+    // aqui só a tela guarda (as O.S. que já vêm aprovadas do banco não têm hora).
+    const antes = { arte: p.arte, arteEm: p.arteEm };
+    p.arte = !p.arte; p.arteEm = p.arte ? new Date() : null; render();
+    return toast(p.arte ? `OK do cliente registrado na #${p.id}` : `A arte da #${p.id} voltou a aguardar o OK`, () => { Object.assign(p, antes); render(); });
+  }
   if (a === 'entrega') { p.entrega = !p.entrega; render(); return toast(p.entrega ? `#${p.id} pronta para entrega` : `#${p.id} ainda não está pronta`); }
   if (a === 'concluir') return concluir(p, false);
   if (['editar', 'imprimir', 'duplicar'].includes(a)) return acaoSistema(a, p);

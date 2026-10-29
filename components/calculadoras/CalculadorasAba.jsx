@@ -9,7 +9,10 @@ import { CalculadoraHotmelt } from '@/components/calculadoras/CalculadoraHotmelt
 // números, e com 5xl sobrava margem vazia dos dois lados enquanto o conteúdo se
 // empilhava no meio. O teto existe só para a linha de texto não ficar longa
 // demais num monitor ultrawide.
-const LARGURAS = { bloquinho: 'max-w-[1500px]', hotmelt: 'max-w-[1500px]' };
+//
+// A de adesivos alarga só na tela grande, para caber a montagem na folha ao
+// lado da caixa — que mantém a largura de sempre (43rem, o 3xl menos o recuo).
+const LARGURAS = { bloquinho: 'max-w-[1500px]', hotmelt: 'max-w-[1500px]', adesivo: 'max-w-3xl xl:max-w-[1200px]' };
 
 export function CalculadorasAba({ calculadoraAtiva, produtos }) {
     const largura = LARGURAS[calculadoraAtiva] || 'max-w-3xl';

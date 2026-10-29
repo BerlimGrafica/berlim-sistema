@@ -179,6 +179,15 @@ html[data-troca-tema] *, html[data-troca-tema] *::before, html[data-troca-tema] 
 .cliente-busca .ico { position: absolute; right: 2px; top: 10px; color: var(--tinta-fraca); pointer-events: none; }
 .cliente-meta { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 12.5px; color: var(--tinta-suave); margin-top: 5px; align-items: center; min-height: 22px; }
 .cliente-meta span { display: inline-flex; gap: 5px; align-items: center; }
+/* Carimbo de baixa: o "pago, entregue" da via de papel. Aparece só na O.S. baixada,
+   bate uma vez quando surge e fica reto ou quase, ao lado do cliente. */
+.carimbo-baixa { flex-shrink: 0; align-self: center; display: inline-grid; justify-items: center; gap: 1px; padding: 6px 13px; margin-right: 4px; border: 2px solid var(--tinta-suave); outline: 1px solid var(--tinta-suave); outline-offset: 2px; border-radius: 4px; color: var(--tinta-suave); transform: rotate(-2deg); opacity: .92; }
+.carimbo-baixa b { font-size: 15px; font-weight: 900; letter-spacing: .14em; line-height: 1.2; }
+.carimbo-baixa span { font-size: 10.5px; font-weight: 700; letter-spacing: .03em; font-variant-numeric: tabular-nums; }
+.carimbo-baixa.batendo { animation: carimbar .42s cubic-bezier(.16, 1, .3, 1) both; }
+@keyframes carimbar { 0% { opacity: 0; transform: rotate(-6deg) scale(1.35); } 60% { opacity: .95; transform: rotate(-1.5deg) scale(.96); } 100% { opacity: .92; transform: rotate(-2deg) scale(1); } }
+@media (prefers-reduced-motion: reduce) { .carimbo-baixa.batendo { animation: none; } }
+@media (max-width: 760px) { .carimbo-baixa { padding: 4px 9px; } .carimbo-baixa b { font-size: 12px; } }
 .link { color: var(--brand-tinta); font-weight: 600; display: inline-flex; gap: 5px; align-items: center; border-radius: 5px; }
 .link:hover { text-decoration: underline; text-underline-offset: 3px; }
 .aviso-cliente { display: flex; gap: 10px; align-items: flex-start; margin-top: 10px; padding: 10px 12px; border-radius: 8px; background: var(--perigo-fundo); border: 1px solid var(--perigo-borda); color: var(--perigo); }
@@ -397,6 +406,7 @@ html[data-troca-tema] *, html[data-troca-tema] *::before, html[data-troca-tema] 
             <div class="cliente-meta" id="cli-meta"></div>
             <div id="cli-aviso"></div>
           </div>
+          <div id="carimbo-baixa"></div>
         </div>
 
         <section class="area itens" aria-labelledby="t-itens">
@@ -601,6 +611,19 @@ function renderCliente() {
   document.getElementById('cli-aviso').innerHTML = c?.problema ? `<div class="aviso-cliente"><i data-lucide="triangle-alert" class="ico" style="margin-top:2px"></i><div><b>Atenção: cliente problemático</b><span>Este cliente possui restrições ou histórico negativo na empresa. Fique atento.</span></div></div>` : '';
 }
 
+/* ===== carimbo de baixa ===== */
+// Bate só na primeira vez que aparece; depois fica parado a cada novo render.
+// A O.S. não guarda a data da baixa: o carimbo usa a do último pagamento, ou
+// "hoje" quando acabou de ser finalizada aqui.
+let carimboBatido = false;
+function renderCarimbo() {
+  const el = document.getElementById('carimbo-baixa');
+  if (os.status !== 'Finalizado') { el.innerHTML = ''; carimboBatido = false; return; }
+  const bater = !carimboBatido; carimboBatido = true;
+  const quando = os.baixadaHoje ? 'hoje' : [...os.pags].reverse().find(g => g.data)?.data || '';
+  el.innerHTML = `<div class="carimbo-baixa ${bater ? 'batendo' : ''}" role="img" aria-label="Carimbo: O.S. baixada${quando ? `, ${esc(quando)}` : ''}"><b>BAIXADA</b>${quando ? `<span>${esc(quando)}</span>` : ''}</div>`;
+}
+
 /* ===== itens ===== */
 function linhaEdicao() {
   const r = rasc, final = lerValor(r.bruto) * (1 - (parseFloat(r.desc) || 0) / 100);
@@ -759,7 +782,7 @@ function registrarPagamento() {
 
 /* ===== render geral ===== */
 function render(foco) {
-  renderCliente(); renderItens(); renderDados(); renderFin();
+  renderCliente(); renderItens(); renderDados(); renderFin(); renderCarimbo();
   document.getElementById('tit').textContent = os.modo === 'edita' ? `O.S. #${os.id || 18342}` : 'Nova O.S.';
   document.getElementById('selo').textContent = POR_CIMA ? 'Só visualização' : os.modo === 'edita' ? 'Editando' : 'Rascunho';
   document.getElementById('txt-salvar').textContent = os.modo === 'edita' ? 'Atualizar' : 'Salvar O.S.';
@@ -1027,7 +1050,7 @@ document.addEventListener('click', e => {
   const sv = t.closest('[data-salvar]'); if (sv) { salvar(); return; }
   if (t.closest('#finalizar')) {
     if (saldo() > 0) { toast('Não dá para finalizar: o valor total ainda não foi pago'); return; }
-    abrirSub('Finalizar O.S.', '<p>Tem certeza que deseja finalizar esta O.S.?</p>', 'Finalizar', () => { os.status = 'Finalizado'; render(); toast('O.S. finalizada'); });
+    abrirSub('Finalizar O.S.', '<p>Tem certeza que deseja finalizar esta O.S.?</p>', 'Finalizar', () => { os.status = 'Finalizado'; os.baixadaHoje = true; render(); toast('O.S. finalizada'); });
   }
 });
 
