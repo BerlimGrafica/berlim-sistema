@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { NIVEIS_VALIDOS, normalizarTelas } from '@/lib/acesso/telas';
+import { renomearNosRegistros } from '@/lib/usuarios/renomear';
 
 // Confirma quem está chamando a API (pelo token da sessão atual) e exige que seja Administrador.
 // Isso é o que impede qualquer pessoa de usar esta rota para criar contas com nível de acesso total.
@@ -50,12 +51,22 @@ function colunaAusente(erro) {
     return texto.includes('PGRST204') || texto.includes('42703') || /column .*telas/i.test(texto);
 }
 
+// Os registros guardam o nome, não o id (ver lib/usuarios/renomear.js): dois
+// usuários com o mesmo nome seriam a mesma pessoa em toda O.S. e tarefa.
+async function nomeEmUso(admin, nome, idIgnorado) {
+    const alvo = nome.toLocaleLowerCase('pt-BR');
+    const { data } = await admin.from('profiles').select('id, nome');
+    return (data || []).some(p => p.id !== idIgnorado && String(p.nome || '').trim().toLocaleLowerCase('pt-BR') === alvo);
+}
+const NOME_REPETIDO = (nome) => `Já existe um usuário chamado ${nome}. Use outro nome: é por ele que o sistema mostra quem abriu e quem cuida de cada O.S.`;
+
 export async function POST(request) {
     const body = await request.json();
     const { admin, erro } = await exigirAdmin(request);
     if (erro) return erro;
 
-    const { email, senha, nome, nivel } = body;
+    const { email, senha, nivel } = body;
+    const nome = String(body.nome || '').trim();
     if (!email || !senha || !nome || !nivel) {
         return NextResponse.json({ error: 'Preencha e-mail, senha, nome e nível.' }, { status: 400 });
     }
@@ -67,6 +78,7 @@ export async function POST(request) {
     }
     const { telas, erro: erroTelas } = validarTelas(body.telas);
     if (erroTelas) return NextResponse.json({ error: erroTelas }, { status: 400 });
+    if (await nomeEmUso(admin, nome)) return NextResponse.json({ error: NOME_REPETIDO(nome) }, { status: 400 });
 
     const { data: novoUsuario, error: erroCriacao } = await admin.auth.admin.createUser({
         email: String(email).trim().toLowerCase(),
@@ -104,7 +116,8 @@ export async function PUT(request) {
     const { admin, chamador, erro } = await exigirAdmin(request);
     if (erro) return erro;
 
-    const { id, nome, nivel, novaSenha } = body;
+    const { id, nivel, novaSenha } = body;
+    const nome = String(body.nome || '').trim();
     if (!id || !nome || !nivel) {
         return NextResponse.json({ error: 'Dados incompletos.' }, { status: 400 });
     }
@@ -123,6 +136,10 @@ export async function PUT(request) {
     if (chamador.id === id && nivel !== 'Administrador') {
         return NextResponse.json({ error: 'Você não pode remover o seu próprio acesso de Administrador.' }, { status: 400 });
     }
+    if (await nomeEmUso(admin, nome, id)) return NextResponse.json({ error: NOME_REPETIDO(nome) }, { status: 400 });
+
+    const { data: antes } = await admin.from('profiles').select('nome').eq('id', id).single();
+    const nomeAntigo = String(antes?.nome || '').trim();
 
     if (novaSenha) {
         const { error: erroSenha } = await admin.auth.admin.updateUserById(id, { password: novaSenha });
@@ -144,6 +161,15 @@ export async function PUT(request) {
     }
 
     if (erroPerfil) return NextResponse.json({ error: erroPerfil.message }, { status: 400 });
+
+    // Nome trocado: leva o nome novo às O.S., tarefas e pedidos de material que
+    // guardavam o antigo. As telas abertas recebem a mudança pelo tempo real.
+    if (nomeAntigo && nomeAntigo !== nome) {
+        const { erros } = await renomearNosRegistros(admin, nomeAntigo, nome);
+        if (erros.length) {
+            aviso = [aviso, `O nome mudou no cadastro, mas parte dos registros antigos ainda mostra "${nomeAntigo}". ${erros.join('; ')}`].filter(Boolean).join(' ');
+        }
+    }
 
     return NextResponse.json({ perfil, aviso });
 }
