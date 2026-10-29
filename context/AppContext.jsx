@@ -480,7 +480,11 @@ export const AppProvider = ({ children }) => {
             Object.values(timersRealtimeRef.current).forEach(clearTimeout);
             timersRealtimeRef.current = {};
         };
-    }, [usuario]);
+    // Pelo id, e não pelo objeto do perfil: qualquer mudança no perfil (foto,
+    // telas, nome) cria um objeto novo, e com ele o efeito refazia a carga
+    // inteira e o canal a cada vez — em todas as abas da pessoa. Nada aqui lê
+    // outro campo do perfil; o tratador de profiles usa usuarioRef.
+    }, [usuario?.id]);
 
     // Redundância pro Realtime: se a aba ficar em segundo plano por um tempo, o
     // navegador pode suspender a conexão e perder eventos nesse meio-tempo. Ao
@@ -505,7 +509,7 @@ export const AppProvider = ({ children }) => {
         }
         document.addEventListener('visibilitychange', aoMudarVisibilidade);
         return () => document.removeEventListener('visibilitychange', aoMudarVisibilidade);
-    }, [usuario]);
+    }, [usuario?.id]);
 
     // Rede de segurança só do chat.
     //

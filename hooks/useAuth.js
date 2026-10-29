@@ -79,17 +79,21 @@ export function useAuth() {
     }
 
     // Reflete se a sessão atual tem uma identidade Google vinculada (usado no botão de "Vincular Google" da Navbar).
-    function atualizarGoogleVinculado(user) {
+    function atualizarGoogleVinculado(user, avatarSalvo) {
         setGoogleVinculado(!!user?.identities?.some(i => i.provider === 'google'));
-        sincronizarAvatarGoogle(user);
+        sincronizarAvatarGoogle(user, avatarSalvo);
     }
 
     // Copia a foto de perfil do Google (se ainda não tiver sido salva) para profiles.avatar_url,
     // via RPC que só grava essa coluna e só na própria linha (ver avatar_google_migration.sql).
-    async function sincronizarAvatarGoogle(user) {
+    //
+    // Só grava quando a foto mudou. Regravar a mesma a cada abertura do sistema
+    // gerava um evento de tempo real no perfil, e cada aba aberta da pessoa
+    // recarregava todos os dados ao recebê-lo.
+    async function sincronizarAvatarGoogle(user, avatarSalvo) {
         const identidadeGoogle = user?.identities?.find(i => i.provider === 'google');
         const avatarGoogle = identidadeGoogle?.identity_data?.avatar_url || identidadeGoogle?.identity_data?.picture || null;
-        if (!avatarGoogle) return;
+        if (!avatarGoogle || avatarGoogle === avatarSalvo) return;
 
         const { error } = await supabase.rpc('atualizar_meu_avatar', { novo_avatar_url: avatarGoogle });
         if (!error) {
@@ -122,7 +126,7 @@ export function useAuth() {
             return;
         }
 
-        atualizarGoogleVinculado(data.user);
+        atualizarGoogleVinculado(data.user, perfil.avatar_url);
         gravarBloqueio(null);
         setTelaBloqueada(null);
         setUsuario(perfil);
@@ -310,7 +314,7 @@ export function useAuth() {
             const perfil = await carregarPerfil(session.user.id);
             if (!ativo) return;
             if (perfil) {
-                atualizarGoogleVinculado(session.user);
+                atualizarGoogleVinculado(session.user, perfil.avatar_url);
                 // No mesmo lote do setUsuario: a página nunca aparece destrancada
                 // nem por um quadro antes da tela bloqueada.
                 setTelaBloqueada(bloqueioDaSessao(session.user));
