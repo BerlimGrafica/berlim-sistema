@@ -11,6 +11,12 @@ import { trocarTema } from '@/lib/utils/trocarTema';
 // outro login (ela entrou de novo, pelo Google por exemplo), a tela abre.
 // Comparar com o último login, e não com o relógio, deixa a regra imune a um
 // computador com a hora errada.
+//
+// DESLIGADO por enquanto (29/10/2026, a pedido): sem cadeado na barra, sem o
+// item no menu da conta e sem bloqueio por tempo parado. Um bloqueio que tenha
+// ficado gravado no navegador é apagado na próxima abertura. Para religar,
+// basta voltar esta chave para true; o resto do código continua pronto.
+export const BLOQUEIO_LIGADO = false;
 const CHAVE_BLOQUEIO = 'berlim:tela-bloqueada';
 // O último uso é dividido entre as abas: quem trabalha numa aba mantém as
 // outras abertas, em vez de cada uma contar o seu próprio tempo parado.
@@ -29,6 +35,10 @@ function gravarBloqueio(registro) {
 // O bloqueio guardado ainda vale para esta sessão? Senão, some com ele.
 function bloqueioDaSessao(user) {
     const registro = lerBloqueio();
+    if (!BLOQUEIO_LIGADO) {
+        if (registro) gravarBloqueio(null);
+        return null;
+    }
     if (registro && registro.id === user.id && registro.login === (user.last_sign_in_at || null)) return { em: registro.em };
     if (registro) gravarBloqueio(null);
     return null;
@@ -203,6 +213,7 @@ export function useAuth() {
     // Bloquear não encerra nada: a sessão, os dados em memória e o que estava
     // aberto continuam por trás. Só a tela fica coberta até a senha.
     const bloquearTela = useCallback(async () => {
+        if (!BLOQUEIO_LIGADO) return;
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) return;
         const registro = { id: session.user.id, em: Date.now(), login: session.user.last_sign_in_at || null };
@@ -242,6 +253,7 @@ export function useAuth() {
 
     // Bloqueio ou desbloqueio feito em outra aba vale para esta também.
     useEffect(() => {
+        if (!BLOQUEIO_LIGADO) return;
         const aoMudar = (e) => {
             if (e.key !== CHAVE_BLOQUEIO) return;
             const registro = lerBloqueio();
@@ -257,7 +269,7 @@ export function useAuth() {
     const usuarioId = usuario?.id;
     const bloqueada = !!telaBloqueada;
     useEffect(() => {
-        if (!usuarioId || isDemo || bloqueada) return;
+        if (!BLOQUEIO_LIGADO || !usuarioId || isDemo || bloqueada) return;
         if (window.matchMedia('(hover: none) and (pointer: coarse)').matches) return;
         let ultimo = Date.now(), gravado = 0;
         const gravar = (quando) => {

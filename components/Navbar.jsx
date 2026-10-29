@@ -14,6 +14,7 @@ import { useIrParaPendencia } from "@/hooks/useIrParaPendencia";
 import { gravidadeDe } from "@/lib/alertas/pendencias";
 import { telasVisiveis } from "@/lib/acesso/telas";
 import { useMenuLateral } from "@/hooks/useMenuLateral";
+import { BLOQUEIO_LIGADO } from "@/hooks/useAuth";
 
 // A lista de destinos do menu vem de lib/acesso/telas.js, e não mais de uma
 // tabela escrita aqui dentro. Ela deixou de ser regra de menu: a mesma lista
@@ -312,7 +313,7 @@ function MenuConta() {
 
                     <hr className="border-borda-fraca mx-1 my-1" />
 
-                    {!isDemo && (
+                    {BLOQUEIO_LIGADO && !isDemo && (
                         <button type="button" role="menuitem" onClick={() => { fechar(); bloquearTela(); }} className={itemMenu}>
                             <Icon name="lock" className="w-4 h-4 mt-px shrink-0 text-tinta-suave" />
                             <span className="min-w-0">
@@ -412,7 +413,7 @@ export default function Navbar() {
                     {/* Bloquear a tela fica à mão, colado à marca: é o gesto de quem
                         sai do balcão por um minuto. A conta de demonstração não
                         bloqueia — o visitante não sabe a senha dela. */}
-                    {!isDemo && (
+                    {BLOQUEIO_LIGADO && !isDemo && (
                         <Tooltip label="Bloquear a tela">
                             <button type="button" onClick={bloquearTela} aria-label="Bloquear a tela" className={`${botaoIcone} lg:ml-1`}>
                                 <Icon name="lock" className="w-[18px] h-[18px]" />
