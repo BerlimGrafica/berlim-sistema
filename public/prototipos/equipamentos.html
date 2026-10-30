@@ -1,0 +1,993 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Equipamentos — 2 opções</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<style>
+/* Padrão do DESIGN.md: o mesmo mundo do modal de O.S. (opção B), dos pré-prontos e da Produção. */
+:root {
+  --brand: #F69F00; --brand-hover: #d98b00; --brand-tinta: #8A5400; --sobre-brand: #241600;
+  --fundo: #EDEFF0; --superficie: #ffffff; --sutil: #f9fafb; --realce: #f3f4f6;
+  --borda-fraca: #f0f1f3; --borda: #e5e7eb; --borda-forte: #d1d5db;
+  --tinta: #111827; --tinta-corpo: #374151; --tinta-suave: #6b7280; --tinta-fraca: #9ca3af;
+  --perigo: #dc2626; --perigo-fundo: #fef2f2; --perigo-borda: #fecaca;
+  --sucesso: #059669;
+  --sombra: 0 24px 56px -16px rgba(15,23,42,.32), 0 2px 8px rgba(15,23,42,.08);
+  --sombra-pop: 0 12px 28px -8px rgba(15,23,42,.24), 0 1px 3px rgba(15,23,42,.08);
+  --sombra-leve: 0 1px 2px rgba(15,23,42,.06);
+  --dados: #475569; --dados-tinta: #334155; --dados-fundo: #f1f5f9; --dados-borda: #e2e8f0;
+  --itens: #2563eb; --itens-tinta: #1d4ed8; --itens-fundo: #eff6ff; --itens-borda: #dbeafe;
+  --fin: #059669; --fin-tinta: #047857; --fin-fundo: #ecfdf5; --fin-borda: #c9f2df;
+  --obs: #d97706; --obs-tinta: #b45309; --obs-fundo: #fffbeb; --obs-borda: #fdecc4;
+  --anel-tinta: rgba(0,0,0,.18);
+  --veu: rgba(15,23,42,.36);
+}
+.dark {
+  --brand-tinta: #FFB938;
+  --fundo: #0d1117; --superficie: #161b22; --sutil: #1b2129; --realce: #21262d;
+  --borda-fraca: #232a33; --borda: #30363d; --borda-forte: #3d444d;
+  --tinta: #EDEDED; --tinta-corpo: #D4D4D8; --tinta-suave: #A1A1AA; --tinta-fraca: #71717a;
+  --perigo: #f87171; --perigo-fundo: rgba(239,68,68,.1); --perigo-borda: rgba(239,68,68,.3);
+  --sucesso: #34d399;
+  --sombra: 0 24px 56px -16px rgba(0,0,0,.7); --sombra-pop: 0 12px 28px -8px rgba(0,0,0,.6); --sombra-leve: 0 1px 2px rgba(0,0,0,.4);
+  --dados: #94a3b8; --dados-tinta: #cbd5e1; --dados-fundo: rgba(148,163,184,.09); --dados-borda: rgba(148,163,184,.2);
+  --itens: #60a5fa; --itens-tinta: #93c5fd; --itens-fundo: rgba(59,130,246,.12); --itens-borda: rgba(59,130,246,.3);
+  --fin: #34d399; --fin-tinta: #6ee7b7; --fin-fundo: rgba(16,185,129,.11); --fin-borda: rgba(16,185,129,.28);
+  --obs: #fbbf24; --obs-tinta: #fcd34d; --obs-fundo: rgba(245,158,11,.1); --obs-borda: rgba(245,158,11,.26);
+  --anel-tinta: rgba(255,255,255,.28);
+  --veu: rgba(0,0,0,.6);
+}
+* { box-sizing: border-box; margin: 0; }
+html { color-scheme: light; } html.dark { color-scheme: dark; }
+body { font-family: Montserrat, system-ui, sans-serif; font-size: 13px; line-height: 1.5; color: var(--tinta-corpo); background: var(--fundo); -webkit-font-smoothing: antialiased; }
+button, input, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; background: none; border: 0; padding: 0; text-align: inherit; }
+button[disabled] { cursor: not-allowed; }
+input, textarea { caret-color: var(--brand); }
+::selection { background: rgba(246,159,0,.3); }
+::placeholder { color: var(--tinta-suave); opacity: 1; }
+:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; border-radius: 4px; }
+* { scrollbar-width: thin; scrollbar-color: var(--borda-forte) transparent; }
+.ico { width: 16px; height: 16px; stroke-width: 2; flex-shrink: 0; }
+.ico-s { width: 14px; height: 14px; }
+.num { font-variant-numeric: tabular-nums; }
+kbd { font: 600 10.5px/1 Montserrat, sans-serif; color: var(--tinta-suave); border: 1px solid var(--borda); border-bottom-width: 2px; border-radius: 4px; padding: 2px 5px; background: var(--superficie); }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+/* moldura: a barra de cima faz o papel do cabeçalho do sistema */
+html { --altura-cabecalho: 51px; --altura-filtros: 42px; }
+.proto { position: sticky; top: 0; z-index: 40; height: 51px; display: flex; align-items: center; gap: 14px; padding: 0 20px; background: var(--superficie); border-bottom: 1px solid var(--borda); }
+.proto-nome { font-weight: 700; color: var(--tinta); white-space: nowrap; }
+.proto-nota { color: var(--tinta-suave); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.proto-dir { margin-left: auto; display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.proto-tema { display: inline-flex; align-items: center; gap: 6px; color: var(--tinta-corpo); font-weight: 600; font-size: 12.5px; padding: 6px 10px; border-radius: 6px; }
+.proto-tema:hover { background: var(--realce); color: var(--tinta); }
+.seg { display: inline-flex; padding: 2px; gap: 2px; background: var(--realce); border-radius: 8px; }
+.seg button { height: 28px; padding: 0 11px; border-radius: 6px; font-weight: 600; font-size: 12.5px; color: var(--tinta-suave); white-space: nowrap; transition: background .15s, color .15s; }
+.seg button:hover { color: var(--tinta); }
+.seg button[aria-pressed="true"] { background: var(--superficie); color: var(--tinta); box-shadow: var(--sombra-leve); }
+
+/* botões */
+.btn { height: 38px; padding: 0 16px; border-radius: 8px; font-weight: 600; font-size: 13px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; white-space: nowrap; transition: background .15s, border-color .15s, color .15s, opacity .15s; }
+.btn-pri { background: var(--brand); color: var(--sobre-brand); }
+.btn-pri:hover { background: var(--brand-hover); }
+.btn-pri[disabled] { opacity: .45; }
+.btn-pri[disabled]:hover { background: var(--brand); }
+.btn-pri kbd { background: rgba(255,255,255,.35); border-color: rgba(36,22,0,.18); color: var(--sobre-brand); }
+.btn-sec { border: 1px solid var(--borda-forte); color: var(--tinta); background: var(--superficie); }
+.btn-sec:hover { background: var(--sutil); border-color: var(--tinta-fraca); }
+.btn-txt { color: var(--tinta-suave); padding: 0 10px; }
+.btn-txt:hover { color: var(--tinta); background: var(--realce); }
+.btn-txt.perigo { color: var(--perigo); }
+.btn-txt.perigo.conf { background: var(--perigo-fundo); }
+.btn-p { height: 32px; padding: 0 12px; font-size: 12.5px; border-radius: 7px; }
+.ib { width: 30px; height: 30px; display: inline-grid; place-items: center; border-radius: 7px; color: var(--tinta-suave); transition: background .12s, color .12s; flex-shrink: 0; }
+.ib:hover { background: var(--realce); color: var(--tinta); }
+.ib.apagar:hover { color: var(--perigo); background: var(--perigo-fundo); }
+.ib.apagar.conf { width: auto; padding: 0 9px; color: var(--perigo); background: var(--perigo-fundo); font-size: 12px; font-weight: 700; }
+
+/* topo da tela */
+.pg { max-width: 1240px; margin: 0 auto; padding: 22px 28px 80px; }
+.cab { display: flex; align-items: center; gap: 16px; margin-bottom: 10px; }
+.cab h1 { font-size: 22px; font-weight: 800; color: var(--tinta); letter-spacing: -.02em; line-height: 1.2; }
+.cab p { color: var(--tinta-suave); font-size: 12.5px; margin-top: 3px; }
+.cab .acoes { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+
+/* abas */
+.abas-wrap { display: flex; align-items: flex-end; gap: 8px; border-bottom: 1px solid var(--borda); margin-bottom: 4px; height: var(--altura-filtros); background: var(--fundo); }
+@media (min-width: 761px) {
+  html { scroll-padding-top: calc(var(--altura-cabecalho) + var(--altura-filtros) + 48px); }
+  .abas-wrap { position: sticky; top: var(--altura-cabecalho); z-index: 6; }
+  .pg:has(.abas-wrap.preso) .tab-cab { box-shadow: 0 1px 0 var(--borda); }
+  .preso .acao-presa { display: inline-flex; }
+}
+.acao-presa { display: none; margin-left: 4px; }
+.abas { position: relative; display: flex; gap: 2px; flex: 1; min-width: 0; overflow-x: auto; scrollbar-width: none; margin-bottom: -1px; }
+.abas::-webkit-scrollbar { display: none; }
+.aba { display: inline-flex; align-items: center; gap: 7px; height: var(--altura-filtros); padding: 0 8px 2px; font-weight: 600; font-size: 13px; color: var(--tinta-suave); white-space: nowrap; border-radius: 6px 6px 0 0; transition: color .15s; }
+.aba:hover { color: var(--tinta-corpo); }
+.aba[aria-selected="true"] { color: var(--tinta); }
+.aba .n { min-width: 20px; height: 18px; padding: 0 6px; border-radius: 99px; display: inline-grid; place-items: center; background: var(--realce); color: var(--tinta-suave); font-size: 11px; font-weight: 700; font-variant-numeric: tabular-nums; transition: background .15s, color .15s; }
+.aba[aria-selected="true"] .n { background: var(--tinta); color: var(--superficie); }
+.indicador { position: absolute; left: 0; bottom: 0; width: 0; height: 2px; border-radius: 2px 2px 0 0; background: var(--brand); transition: left .34s cubic-bezier(.16,1,.3,1), width .34s cubic-bezier(.16,1,.3,1); pointer-events: none; }
+.abas-fim { flex-shrink: 0; display: flex; align-items: center; gap: 4px; padding-bottom: 5px; }
+.filtro-maq { display: inline-flex; align-items: center; gap: 7px; height: 30px; padding: 0 10px; border-radius: 7px; font-weight: 600; font-size: 12.5px; color: var(--tinta-corpo); border: 1px solid var(--borda); background: var(--superficie); max-width: 220px; }
+.filtro-maq:hover { border-color: var(--borda-forte); background: var(--sutil); }
+.filtro-maq span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.filtro-maq.ativo { border-color: var(--tinta); }
+
+.vazio { padding: 48px 16px; text-align: center; color: var(--tinta-suave); }
+.vazio b { display: block; color: var(--tinta); font-size: 14px; margin-bottom: 4px; }
+.folha { display: block; width: 76px; height: 84px; margin: 0 auto 14px; }
+.folha .f-papel { fill: var(--superficie); stroke: var(--borda-forte); }
+.folha .f-marca { fill: none; stroke: var(--tinta-fraca); }
+
+/* ============ tintas ============ */
+/* A amostra é a cor de processo de verdade, em qualquer tema; o anel em volta
+   garante que o preto apareça no escuro e o branco no claro. */
+.sw { display: inline-block; width: 10px; height: 10px; border-radius: 99px; box-shadow: inset 0 0 0 1px var(--anel-tinta); flex-shrink: 0; }
+.tira { display: flex; flex-wrap: wrap; gap: 3px 12px; }
+.tira .t { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 500; color: var(--tinta-suave); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.tira .t .sg { font-weight: 700; color: var(--tinta-corpo); }
+.tira .t.velha, .tira .t.velha .sg { color: var(--tinta); font-weight: 800; }
+.tira .t.nunca { color: var(--tinta-fraca); }
+
+/* contador mecânico: um dígito por janela, nos tons da linha */
+.cm { display: inline-flex; gap: 2px; padding: 2px; border-radius: 5px; border: 1px solid var(--borda); background: var(--sutil); vertical-align: middle; }
+.cm > span { position: relative; width: 13px; height: 18px; overflow: hidden; border-radius: 2px; background: var(--superficie); box-shadow: inset 0 3px 3px -2px rgba(0,0,0,.14), inset 0 -3px 3px -2px rgba(0,0,0,.14); }
+.cm > span > span { position: absolute; left: 0; right: 0; top: 0; display: flex; flex-direction: column; color: var(--tinta); transition: transform .7s cubic-bezier(.16,1,.3,1); }
+.cm > span.z > span { color: var(--tinta-fraca); }
+.cm i { height: 18px; display: grid; place-items: center; font: 700 11px Montserrat; font-style: normal; font-variant-numeric: tabular-nums; }
+.sem-cont { color: var(--tinta-fraca); font-size: 12px; }
+
+/* ============ opção A: lista por tipo ============ */
+.tab-cab, .lin { display: grid; grid-template-columns: 18px minmax(170px,1.1fr) minmax(240px,1.8fr) 136px 150px 18px; align-items: center; gap: 14px; }
+.tab-cab { padding: 8px 12px; font-size: 11.5px; font-weight: 600; color: var(--tinta-suave); position: sticky; top: calc(var(--altura-cabecalho) + var(--altura-filtros)); z-index: 5; background: var(--fundo); }
+.grp { display: flex; align-items: center; gap: 9px; padding: 18px 4px 8px; font-size: 13.5px; font-weight: 700; color: var(--tinta); }
+.grp .n { color: var(--tinta-fraca); font-weight: 500; font-variant-numeric: tabular-nums; }
+.lista { background: var(--superficie); border: 1px solid var(--borda); border-radius: 10px; overflow: hidden; }
+.lin { padding: 10px 12px; border-top: 1px solid var(--borda-fraca); min-height: 56px; cursor: pointer; transition: background .1s; }
+.lista > .lin:first-child { border-top: 0; }
+.lin:hover { background: var(--sutil); }
+.lin.sel { background: var(--realce); }
+.lin.arrastando { background: var(--realce); box-shadow: inset 0 0 0 1px var(--borda-forte); position: relative; z-index: 2; }
+.nome-m { display: block; font-weight: 700; color: var(--tinta); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sub-m { display: block; font-size: 12px; color: var(--tinta-suave); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ult { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--tinta-suave); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.ult b { color: var(--tinta-corpo); font-weight: 600; }
+.ult .ico { color: var(--tinta-fraca); }
+.alca { width: 18px; height: 28px; display: grid; place-items: center; color: var(--tinta-fraca); border-radius: 5px; cursor: grab; touch-action: none; opacity: 0; transition: opacity .12s, background .12s; }
+.lin:hover .alca, .alca:focus-visible, .lin.arrastando .alca { opacity: 1; }
+.alca:hover { background: var(--realce); color: var(--tinta-corpo); }
+.lin .seta { color: var(--tinta-fraca); }
+.lin .c-cont-in, .q-nome .c-cont-in { display: none; }
+.q-lin.sel .q-nome { background: var(--realce); }
+
+/* ============ opção B: quadro de tintas ============ */
+/* Uma grade só para o quadro inteiro (as linhas são display: contents): cada
+   tinta fica na mesma coluna em todas as máquinas, como numa folha de controle. */
+.quadro { display: grid; grid-template-columns: minmax(170px,1.4fr) repeat(var(--n), minmax(58px,.55fr)) 150px; background: var(--superficie); border: 1px solid var(--borda); border-radius: 10px; overflow-x: auto; }
+.q-lin { display: contents; }
+.q-lin + .q-lin > * { border-top: 1px solid var(--borda-fraca); }
+.q-cab > * { padding: 7px 12px; display: flex; align-items: center; font-size: 11.5px; font-weight: 600; color: var(--tinta-suave); background: var(--sutil); }
+.q-cab .q-t { flex-direction: column; justify-content: center; gap: 4px; padding: 7px 4px; border-left: 1px solid var(--borda-fraca); }
+.q-cab .q-t i { width: 22px; height: 5px; border-radius: 2px; box-shadow: inset 0 0 0 1px var(--anel-tinta); }
+.q-nome { padding: 10px 12px; min-width: 0; overflow: hidden; text-align: left; transition: background .1s; }
+.q-nome:hover { background: var(--sutil); }
+.q-cel { position: relative; display: grid; place-items: center; align-content: center; gap: 1px; min-height: 56px; border-left: 1px solid var(--borda-fraca); font-size: 12.5px; font-weight: 600; color: var(--tinta-suave); font-variant-numeric: tabular-nums; transition: background .1s; }
+button.q-cel:hover { background: var(--sutil); color: var(--tinta); }
+button.q-cel:hover .q-mais { opacity: 1; }
+.q-cel.velha { color: var(--tinta); font-weight: 800; }
+.q-cel.velha small { display: block; }
+.q-cel small { display: none; font-size: 10.5px; font-weight: 600; color: var(--tinta-suave); }
+.q-cel.na { color: var(--tinta-fraca); font-weight: 500; }
+.q-mais { position: absolute; top: 4px; right: 4px; width: 14px; height: 14px; color: var(--tinta-fraca); opacity: 0; transition: opacity .12s; }
+.q-cont { display: flex; align-items: center; justify-content: flex-end; padding: 0 12px; border-left: 1px solid var(--borda-fraca); }
+
+/* ============ histórico ============ */
+.h-mes { padding: 18px 4px 8px; font-size: 13.5px; font-weight: 700; color: var(--tinta); display: flex; gap: 9px; align-items: center; }
+.h-mes .n { color: var(--tinta-fraca); font-weight: 500; }
+.lin-h { display: grid; grid-template-columns: 44px minmax(130px,.8fr) minmax(220px,1.8fr) 110px minmax(140px,1fr) 30px 30px; align-items: center; gap: 14px; padding: 10px 12px; border-top: 1px solid var(--borda-fraca); }
+.lista > .lin-h:first-child { border-top: 0; }
+.lin-h:hover { background: var(--sutil); }
+.dia { text-align: center; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.dia b { display: block; font-size: 16px; font-weight: 800; color: var(--tinta); }
+.dia span { font-size: 10.5px; font-weight: 600; color: var(--tinta-suave); }
+.oque { min-width: 0; }
+.oque .tp { display: flex; align-items: center; gap: 6px; font-weight: 600; color: var(--tinta); }
+.oque .tp .ico { color: var(--tinta-fraca); }
+.oque .ds { font-size: 12px; color: var(--tinta-suave); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block; }
+.cores-r { display: flex; flex-wrap: wrap; gap: 3px 10px; margin-top: 2px; }
+.cores-r span { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: var(--tinta-corpo); white-space: nowrap; }
+.rend { font-size: 12px; color: var(--tinta-suave); font-variant-numeric: tabular-nums; }
+.rend b { color: var(--tinta-corpo); font-weight: 700; }
+.maq-link { font-weight: 600; color: var(--tinta-corpo); text-align: left; border-radius: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.maq-link:hover { text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--borda-forte); }
+.av { width: 24px; height: 24px; border-radius: 99px; display: inline-grid; place-items: center; font: 700 10px/1 Montserrat; letter-spacing: -.02em; color: #fff; font-style: normal; flex-shrink: 0; }
+
+/* arquivadas */
+.lin-a { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-top: 1px solid var(--borda-fraca); }
+.lista > .lin-a:first-child { border-top: 0; }
+.lin-a > div { flex: 1; min-width: 0; }
+
+/* ============ gaveta ============ */
+.det-cab { display: flex; align-items: center; gap: 8px; color: var(--tinta-suave); font-size: 12.5px; font-weight: 600; }
+.det-ferr { margin-left: auto; display: flex; gap: 2px; }
+.gaveta .det-cab { position: sticky; top: 0; z-index: 2; margin: -18px -22px 0; padding: 12px 22px; background: var(--fundo); transition: box-shadow .2s; }
+.gaveta.rolou .det-cab { box-shadow: 0 1px 0 var(--borda); }
+.det-nome { font-size: 22px; font-weight: 800; letter-spacing: -.02em; color: var(--tinta); line-height: 1.25; margin-top: 4px; overflow-wrap: anywhere; }
+.det-sub { color: var(--tinta-suave); font-size: 12.5px; margin-top: 2px; }
+.registrar { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 14px; }
+.reg { display: flex; gap: 10px; align-items: center; padding: 11px 12px; border-radius: 9px; border: 1px solid var(--borda); background: var(--superficie); text-align: left; transition: border-color .12s, background .12s; }
+.reg:hover { border-color: var(--borda-forte); background: var(--sutil); }
+.reg .mi { width: 32px; height: 32px; border-radius: 8px; display: grid; place-items: center; background: var(--realce); color: var(--tinta-corpo); flex-shrink: 0; }
+.reg b { display: block; font-size: 13px; color: var(--tinta); }
+.reg small { font-size: 11.5px; color: var(--tinta-suave); }
+.reg kbd { margin-left: auto; }
+.props { display: grid; grid-template-columns: 112px minmax(0,1fr); align-items: center; row-gap: 8px; margin-top: 16px; }
+.props dt { font-size: 12.5px; color: var(--tinta-suave); display: flex; gap: 7px; align-items: center; }
+.props dd { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; min-width: 0; font-weight: 600; color: var(--tinta); }
+.props dd small { font-weight: 500; color: var(--tinta-suave); font-size: 12px; }
+.props dd .nada { font-weight: 500; color: var(--tinta-fraca); }
+.area { border: 1px solid var(--a-borda); border-radius: 10px; background: var(--superficie); margin-top: 16px; }
+.area.dados { --a: var(--dados); --a-tinta: var(--dados-tinta); --a-fundo: var(--dados-fundo); --a-borda: var(--dados-borda); }
+.area.itens { --a: var(--itens); --a-tinta: var(--itens-tinta); --a-fundo: var(--itens-fundo); --a-borda: var(--itens-borda); }
+.area-cab { display: flex; align-items: center; gap: 10px; padding: 8px 12px 8px 10px; background: var(--a-fundo); border-bottom: 1px solid var(--a-borda); border-radius: 9px 9px 0 0; }
+.area-ico { width: 26px; height: 26px; border-radius: 7px; display: grid; place-items: center; background: var(--superficie); color: var(--a); box-shadow: 0 1px 2px rgba(15,23,42,.08); }
+.area-cab h3 { font-size: 13px; font-weight: 700; color: var(--tinta); }
+.area-meta { margin-left: auto; font-size: 12px; font-weight: 600; color: var(--a-tinta); }
+.area-cab .seg { margin-left: auto; background: var(--superficie); }
+.area-cab .seg button[aria-pressed="true"] { background: var(--a-fundo); box-shadow: inset 0 0 0 1px var(--a-borda); }
+.t-lin { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-top: 1px solid var(--borda-fraca); }
+.t-lin:first-of-type { border-top: 0; }
+.t-lin .sw { width: 16px; height: 16px; }
+.t-lin .nm { font-weight: 600; color: var(--tinta); }
+.t-lin .qd { display: block; font-size: 12px; color: var(--tinta-suave); font-variant-numeric: tabular-nums; }
+.t-lin .rd { margin-left: auto; text-align: right; font-size: 12px; color: var(--tinta-suave); font-variant-numeric: tabular-nums; }
+.t-lin .rd b { display: block; color: var(--tinta-corpo); font-weight: 700; font-size: 12.5px; }
+.selo { display: inline-flex; align-items: center; padding: 1px 7px; border-radius: 5px; font-size: 11px; font-weight: 700; background: var(--obs-fundo); color: var(--obs-tinta); margin-left: 6px; white-space: nowrap; }
+.r-lin { display: grid; grid-template-columns: 40px minmax(0,1fr) auto 30px; align-items: center; gap: 10px; padding: 9px 12px; border-top: 1px solid var(--borda-fraca); }
+.r-lin:first-of-type { border-top: 0; }
+.r-lin .dia b { font-size: 14px; }
+.r-lin .cont-r { font-size: 12px; color: var(--tinta-suave); font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+.mais-h { display: block; width: 100%; padding: 9px 12px; border-top: 1px solid var(--borda-fraca); font-weight: 600; font-size: 12.5px; color: var(--brand-tinta); text-align: left; }
+.mais-h:hover { background: var(--sutil); }
+.sem-r { padding: 12px; color: var(--tinta-suave); }
+.det-acoes { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 18px; align-items: center; }
+
+/* formulário de registro, no lugar */
+.form { padding: 14px 12px 12px; display: flex; flex-direction: column; gap: 16px; }
+.campo { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.campo > .rot { font-size: 12px; font-weight: 600; color: var(--tinta-suave); display: flex; align-items: center; gap: 8px; }
+.campo > .rot small { font-weight: 500; }
+.campo > .rot .lk { margin-left: auto; font-size: 12px; font-weight: 600; color: var(--brand-tinta); padding: 2px 4px; border-radius: 4px; }
+.campo > .rot .lk:hover { text-decoration: underline; text-underline-offset: 3px; }
+.linha-in { width: 100%; border: 0; background: transparent; outline: none; padding: 5px 0; color: var(--tinta); box-shadow: inset 0 -1px 0 var(--borda-forte); transition: box-shadow .15s; }
+.linha-in:hover { box-shadow: inset 0 -1px 0 var(--tinta-fraca); }
+.linha-in:focus { box-shadow: inset 0 -2px 0 var(--a, var(--brand)); }
+.linha-in.grande { font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
+.linha-in.titulo { font-size: 22px; font-weight: 800; letter-spacing: -.02em; }
+.dica { font-size: 12px; color: var(--tinta-suave); font-variant-numeric: tabular-nums; }
+.dica b { color: var(--tinta-corpo); }
+.dica.aviso { color: var(--obs-tinta); font-weight: 600; display: flex; gap: 6px; align-items: flex-start; }
+.caixa-in { width: 100%; border: 1px solid var(--borda-forte); border-radius: 8px; background: var(--superficie); padding: 8px 10px; outline: none; color: var(--tinta); resize: vertical; min-height: 66px; transition: border-color .15s, box-shadow .15s; }
+.caixa-in:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(246,159,0,.16); }
+.valor-in { display: flex; align-items: baseline; gap: 6px; }
+.valor-in span { font-weight: 600; color: var(--tinta-suave); }
+.esc-tintas { display: grid; grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); gap: 8px; }
+.te { display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 10px 4px 8px; border: 1px solid var(--borda); border-radius: 9px; background: var(--superficie); transition: border-color .12s, background .12s; }
+.te:hover { border-color: var(--borda-forte); }
+.te[aria-checked="true"] { border-color: var(--brand); background: rgba(246,159,0,.07); }
+.te .bola { width: 34px; height: 34px; border-radius: 99px; display: grid; place-items: center; box-shadow: inset 0 0 0 1px var(--anel-tinta); }
+.te .bola .ico { width: 18px; height: 18px; stroke-width: 3; opacity: 0; transition: opacity .12s; }
+.te[aria-checked="true"] .bola .ico { opacity: 1; }
+.te b { font-size: 12px; font-weight: 600; color: var(--tinta); line-height: 1.2; text-align: center; }
+.te small { font-size: 11px; color: var(--tinta-suave); font-variant-numeric: tabular-nums; }
+.te small.velha { color: var(--tinta); font-weight: 700; }
+.pilulas { display: flex; flex-wrap: wrap; gap: 6px; }
+.pil { height: 32px; padding: 0 13px; border-radius: 99px; border: 1px solid var(--borda); background: var(--superficie); font-weight: 600; font-size: 12.5px; color: var(--tinta-suave); transition: background .12s, border-color .12s, color .12s; }
+.pil:hover { border-color: var(--borda-forte); color: var(--tinta); }
+.pil[aria-pressed="true"] { background: var(--tinta); border-color: var(--tinta); color: var(--superficie); }
+.prop-btn { display: inline-flex; align-items: center; gap: 7px; height: 30px; padding: 0 10px; margin-left: -10px; border-radius: 7px; font-weight: 600; color: var(--tinta); align-self: flex-start; transition: background .12s; }
+.prop-btn:hover { background: var(--realce); }
+.prop-btn .ico { color: var(--tinta-fraca); }
+.form-pe { display: flex; align-items: center; justify-content: flex-end; gap: 8px; padding-top: 12px; border-top: 1px solid var(--borda-fraca); flex-wrap: wrap; }
+.form-pe .falta:empty { display: none; }
+.form-pe .falta { flex: 1; min-width: 160px; font-size: 12px; font-weight: 600; color: var(--tinta-suave); }
+
+/* A gaveta desliza da borda, sem pressa e desacelerando; ao fechar volta pelo
+   mesmo caminho, um pouco mais rápida e acelerando para fora. */
+.gaveta-veu { position: fixed; inset: var(--altura-cabecalho) 0 0 0; background: var(--veu); z-index: 60; animation: veuEntra .4s ease-out; }
+.gaveta { position: fixed; top: var(--altura-cabecalho); right: 0; bottom: 0; width: min(480px, 100%); background: var(--fundo); border-left: 1px solid var(--borda); box-shadow: var(--sombra); z-index: 61; overflow-y: auto; animation: gavetaEntra .46s cubic-bezier(.22,1,.36,1); }
+.gaveta-veu.sai { animation: veuSai .3s ease-in forwards; pointer-events: none; }
+.gaveta.sai { animation: gavetaSai .3s cubic-bezier(.55,0,1,.45) forwards; pointer-events: none; }
+.gaveta .det { padding: 18px 22px 40px; }
+@keyframes gavetaEntra { from { transform: translateX(100%); } }
+@keyframes gavetaSai { to { transform: translateX(100%); } }
+@keyframes veuEntra { from { opacity: 0; } }
+@keyframes veuSai { to { opacity: 0; } }
+@keyframes abreForm { from { opacity: 0; transform: translateY(-4px); } }
+.area.form-area { animation: abreForm .26s cubic-bezier(.16,1,.3,1); }
+
+/* popover e toast */
+.pop { position: fixed; z-index: 90; min-width: 220px; max-height: min(460px, calc(100vh - 16px)); overflow-y: auto; padding: 4px; background: var(--superficie); border: 1px solid var(--borda); border-radius: 9px; box-shadow: var(--sombra-pop); animation: pop .16s cubic-bezier(.16,1,.3,1); }
+@keyframes pop { from { opacity: 0; transform: translateY(-4px); } }
+.pop button { display: flex; align-items: center; gap: 9px; width: 100%; text-align: left; padding: 7px 10px; border-radius: 6px; font-size: 13px; color: var(--tinta-corpo); }
+.pop button:hover, .pop button:focus-visible { background: var(--realce); color: var(--tinta); outline: none; }
+.pop .ok { margin-left: auto; color: var(--brand-tinta); }
+.pop hr { border: 0; border-top: 1px solid var(--borda-fraca); margin: 4px 0; }
+.pop .rot { font-size: 11px; font-weight: 600; color: var(--tinta-suave); padding: 6px 10px 2px; }
+.pop .sub { margin-left: auto; color: var(--tinta-suave); font-size: 12px; font-variant-numeric: tabular-nums; }
+.pop .mini { display: flex; gap: 2px; margin-left: auto; }
+.pop .mini .sw { width: 8px; height: 8px; }
+.pop .livre { display: flex; align-items: center; gap: 9px; padding: 5px 10px 7px; color: var(--tinta-suave); font-size: 12.5px; }
+.pop .livre input { border: 0; background: transparent; outline: none; color: var(--tinta); font-weight: 600; box-shadow: inset 0 -1px 0 var(--borda-forte); padding: 3px 0; font-variant-numeric: tabular-nums; }
+.pop .livre input:focus { box-shadow: inset 0 -2px 0 var(--brand); }
+.toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); z-index: 95; background: var(--tinta); color: var(--superficie); padding: 8px 8px 8px 14px; border-radius: 9px; font-weight: 600; font-size: 12.5px; box-shadow: var(--sombra-pop); display: flex; gap: 10px; align-items: center; animation: sobe .22s cubic-bezier(.16,1,.3,1); max-width: calc(100vw - 32px); }
+.toast .ico { color: #34d399; }
+.toast button { color: var(--brand); font-weight: 700; padding: 4px 8px; border-radius: 6px; flex-shrink: 0; }
+.toast button:hover { background: rgba(255,255,255,.1); }
+.toast:not(:has(button)) { padding-right: 14px; }
+@keyframes sobe { from { opacity: 0; transform: translate(-50%, 8px); } }
+.dicas { margin-top: 16px; color: var(--tinta-fraca); font-size: 12px; display: flex; gap: 14px; flex-wrap: wrap; }
+.dicas span { display: inline-flex; gap: 5px; align-items: center; }
+.barra-mob { display: none; }
+html[data-troca-tema]::view-transition-old(root), html[data-troca-tema]::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
+html[data-troca-tema].dark::view-transition-new(root), html[data-troca-tema]:not(.dark)::view-transition-old(root) { z-index: 1; }
+html[data-troca-tema] *, html[data-troca-tema] *::before, html[data-troca-tema] *::after { transition: none !important; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+
+/* ============ responsivo ============ */
+@media (max-width: 1000px) {
+  .tab-cab, .lin { grid-template-columns: 18px minmax(150px,1fr) minmax(200px,1.5fr) 136px 18px; }
+  .c-ult { display: none; }
+  .lin-h { grid-template-columns: 44px minmax(120px,.8fr) minmax(200px,1.6fr) 100px 30px 30px; }
+  .lin-h .c-rend { display: none; }
+}
+@media (max-width: 760px) {
+  .proto { padding: 0 10px; gap: 8px; }
+  .proto-nota, .proto-tema span, .proto-nome { display: none; }
+  .proto-dir { margin-left: 0; width: 100%; justify-content: space-between; }
+  .pg { padding: 14px 12px 96px; }
+  .cab { flex-direction: column; align-items: stretch; gap: 12px; }
+  .cab .acoes { display: none; }
+  .abas-wrap { margin: 0 -12px 4px; padding: 0 8px 0 4px; }
+  .dicas { display: none; }
+  .tab-cab { display: none; }
+  .lin { grid-template-columns: minmax(0,1fr) auto; grid-template-areas: "nome cont" "tintas tintas"; gap: 8px 10px; padding: 12px; }
+  .lin .c-alca, .lin .c-seta, .lin .c-ult { display: none; }
+  .lin .c-nome { grid-area: nome; } .lin .c-tintas { grid-area: tintas; } .lin .c-cont { grid-area: cont; }
+  .quadro { grid-template-columns: minmax(120px,1fr) repeat(var(--n), minmax(44px,.45fr)); }
+  .q-cel.velha small { display: none; }
+  .q-cont { display: none; }
+  .q-cab .q-c { display: none; }
+  .q-nome .c-cont-in { display: block; margin-top: 4px; }
+  .lin-h { grid-template-columns: 38px minmax(0,1fr) 30px; grid-template-areas: "dia oque del" "dia meta meta"; gap: 4px 10px; padding: 11px 12px; }
+  .lin-h .c-dia { grid-area: dia; align-self: start; } .lin-h .c-oque { grid-area: oque; } .lin-h .c-del { grid-area: del; align-self: start; }
+  .lin-h .c-maq, .lin-h .c-cont, .lin-h .c-rend, .lin-h .c-por { display: none; }
+  .lin-h .c-meta { grid-area: meta; display: block !important; font-size: 12px; color: var(--tinta-suave); }
+  .barra-mob { display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; gap: 8px; padding: 10px 12px calc(10px + env(safe-area-inset-bottom)); background: var(--superficie); border-top: 1px solid var(--borda); }
+  .barra-mob .btn { height: 44px; }
+  .barra-mob .btn-pri { flex: 1; }
+  .gaveta { top: auto; height: 88dvh; width: 100%; border-left: 0; border-radius: 14px 14px 0 0; animation-name: folhaEntra; }
+  .gaveta.sai { animation-name: folhaSai; }
+  .gaveta .det { padding: 14px 14px 40px; }
+  .gaveta .det-cab { margin: -14px -14px 0; padding: 4px 6px 4px 14px; }
+  .det-ferr .ib { width: 44px; height: 44px; }
+  .registrar { grid-template-columns: 1fr; }
+  .reg { min-height: 56px; }
+  .reg kbd { display: none; }
+  .props { grid-template-columns: 126px minmax(0,1fr); }
+  .te { padding: 12px 4px 10px; }
+  .pil { height: 40px; padding: 0 16px; }
+  .form-pe .btn { height: 44px; }
+  .form-pe .btn-pri { flex: 1; }
+}
+@keyframes folhaEntra { from { transform: translateY(100%); } }
+@keyframes folhaSai { to { transform: translateY(100%); } }
+.c-meta { display: none !important; }
+</style>
+</head>
+<body>
+<div class="proto">
+  <span class="proto-nome">Equipamentos · protótipo</span>
+  <span class="proto-nota" id="nota"></span>
+  <div class="proto-dir">
+    <div class="seg" role="group" aria-label="Opção da lista de máquinas">
+      <button data-opcao="lista">A · Lista por tipo</button>
+      <button data-opcao="quadro">B · Quadro de tintas</button>
+    </div>
+    <button class="proto-tema" id="tema"></button>
+  </div>
+</div>
+<div id="tela"></div>
+<div id="gaveta-raiz"></div>
+
+<script>
+/* ===== máquinas e registros reais (injetados pela página /novosequipamentos) ===== */
+/*EQUIPAMENTOS*/
+
+const D = typeof DADOS !== 'undefined' ? DADOS : { maquinas: [], registros: [], tipos: [], tintas: [], tecnicos: [], eu: '', admin: false, organizar: false, cores: {} };
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const ico = (n, cls = 'ico') => `<i data-lucide="${n}" class="${cls}"></i>`;
+const FOLHA = `<svg class="folha" viewBox="0 0 76 84" aria-hidden="true"><rect class="f-papel" x="18.5" y="14.5" width="39" height="55" rx="1.5"/><g class="f-marca"><path d="M6 14.5h8M18.5 2v8M62 14.5h8M57.5 2v8M6 69.5h8M18.5 74v8M62 69.5h8M57.5 74v8M2 42h12M8 36v12M62 42h12M68 36v12"/><circle cx="8" cy="42" r="3.5"/><circle cx="68" cy="42" r="3.5"/></g></svg>`;
+const guardar = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} };
+const ler = (k, d) => { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch { return d; } };
+const fmt = n => n == null ? '—' : Number(n).toLocaleString('pt-BR');
+const brl = c => 'R$ ' + (c / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const iniciais = n => { const p = n.trim().split(/\s+/); return p.length > 1 ? (p[0][0] + p.at(-1)[0]).toUpperCase() : p[0].slice(0, 1).toUpperCase() + p[0].slice(1, 2).toLowerCase(); };
+const corPessoa = n => D.cores?.[n]?.[0] || '#64748b';
+const tintaPessoa = n => D.cores?.[n]?.[1] || '#fff';
+
+/* ===== catálogo ===== */
+const TINTAS = new Map(D.tintas);
+const ORDEM_TINTAS = D.tintas.map(t => t[0]);
+const tinta = id => TINTAS.get(id) || { rotulo: id, sigla: '?', cor: '#9CA3AF' };
+const fundoTinta = id => { const t = tinta(id); return t.padrao || t.cor; };
+const sw = (id, cls = 'sw') => `<span class="${cls}" style="background:${fundoTinta(id)}" aria-hidden="true"></span>`;
+const TIPOS = D.tipos;
+const rotuloTipo = id => TIPOS.find(t => t.id === id)?.rotulo || id;
+const tintasDe = m => { const cores = m.cromia === 'mono' ? ['preto'] : m.cores; return [...ORDEM_TINTAS.filter(id => cores.includes(id)), ...cores.filter(id => !TINTAS.has(id))]; };
+// Contraste do ✓ sobre a amostra (luminância da WCAG): escuro no amarelo e no branco, claro no preto.
+const checkCor = hex => { if (!/^#[0-9a-f]{6}$/i.test(hex)) return '#111827'; const c = i => { const v = parseInt(hex.slice(i, i + 2), 16) / 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }; return 0.2126 * c(1) + 0.7152 * c(3) + 0.0722 * c(5) > 0.4 ? '#111827' : '#fff'; };
+
+/* ===== datas ===== */
+const dataISO = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+const HOJE = dataISO(new Date());
+const somaDias = (iso, n) => { const d = new Date(iso + 'T12:00:00'); d.setDate(d.getDate() + n); return dataISO(d); };
+const diasDesde = iso => Math.round((new Date(HOJE + 'T12:00:00') - new Date(iso + 'T12:00:00')) / 86400000);
+const ddmm = iso => iso.slice(8, 10) + '/' + iso.slice(5, 7);
+const MESES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+const MESES_LONGOS = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+const idade = d => d == null ? '—' : d <= 0 ? 'hoje' : d === 1 ? 'ontem' : `${d}d`;
+const haDias = d => d <= 0 ? 'hoje' : d === 1 ? 'ontem' : `há ${d} dias`;
+const quandoLongo = iso => { const d = diasDesde(iso); return d <= 0 ? 'hoje' : d === 1 ? 'ontem' : d < 7 ? `há ${d} dias` : ddmm(iso); };
+const rotuloData = iso => iso === HOJE ? `Hoje, ${ddmm(iso)}` : iso === somaDias(HOJE, -1) ? `Ontem, ${ddmm(iso)}` : ddmm(iso) + '/' + iso.slice(0, 4);
+
+/* ===== dados na tela ===== */
+let MAQ = D.maquinas.map(m => ({ ...m, cores: [...m.cores] }));
+let REG = D.registros.map(r => ({ ...r, cores: [...r.cores] }));
+let proxId = -1; // registros e máquinas criados aqui têm id negativo: não existem no banco
+const maq = id => MAQ.find(m => m.id === +id);
+const emUso = () => MAQ.filter(m => !m.arquivada);
+const arquivadas = () => MAQ.filter(m => m.arquivada);
+const porOrdem = (a, b) => a.ordem - b.ordem || a.id - b.id;
+
+/* ===== contas (as mesmas de lib/equipamentos/historico.js) ===== */
+const antes = (a, b) => (a.data === b.data ? a.id < b.id : a.data < b.data);
+const daMaquina = id => REG.filter(r => r.eq === id);
+function ultimaCargaPorTinta(id) {
+  const mapa = {};
+  for (const r of daMaquina(id)) { if (r.tipo !== 'Reabastecimento') continue; for (const t of r.cores) if (!mapa[t] || antes(mapa[t], r)) mapa[t] = r; }
+  return mapa;
+}
+function ultimoComContador(id) { let u = null; for (const r of daMaquina(id)) { if (r.contador == null) continue; if (!u || antes(u, r)) u = r; } return u; }
+function ultimoDoTipo(id, tipo) { let u = null; for (const r of daMaquina(id)) { if (r.tipo !== tipo) continue; if (!u || antes(u, r)) u = r; } return u; }
+function ultimoRegistro(id) { let u = null; for (const r of daMaquina(id)) if (!u || antes(u, r)) u = r; return u; }
+// Quantas páginas a carga ANTERIOR desta tinta rendeu, medida quando ela foi trocada por esta.
+function rendimento(reg, t) {
+  if (reg.tipo !== 'Reabastecimento' || reg.contador == null) return null;
+  let ant = null;
+  for (const r of daMaquina(reg.eq)) { if (r.id === reg.id || r.tipo !== 'Reabastecimento' || !r.cores.includes(t) || !antes(r, reg)) continue; if (!ant || antes(ant, r)) ant = r; }
+  if (!ant || ant.contador == null) return null;
+  const p = reg.contador - ant.contador; return p >= 0 ? p : null;
+}
+// As tintas há mais tempo sem carga, entre as que já tiveram alguma; empate geral não destaca nada.
+function maisAntigas(id) {
+  const ult = ultimaCargaPorTinta(id);
+  const idades = tintasDe(maq(id)).filter(t => ult[t]).map(t => ({ t, d: diasDesde(ult[t].data) }));
+  if (idades.length < 2) return new Set();
+  const mx = Math.max(...idades.map(i => i.d)), mn = Math.min(...idades.map(i => i.d));
+  return mx === mn ? new Set() : new Set(idades.filter(i => i.d === mx).map(i => i.t));
+}
+
+/* ===== estado ===== */
+const est = {
+  aba: 'maquinas', opcao: ler('equip-opcao', 'lista'), filtroMaq: null,
+  gaveta: null, form: null, conf: null, pop: null, sel: null, preso: false, ind: null,
+  animar: false, rolar: {}, arrasto: null,
+};
+const podeRegistrar = D.organizar;
+
+/* ===== átomos ===== */
+// O contador de páginas como no painel da máquina. Com `de`, nasce no número
+// anterior e gira até o novo depois de desenhado (ver rolarContadores).
+function contador(n, de) {
+  if (n == null) return '<span class="sem-cont" title="Sem contador registrado">—</span><span class="sr">Sem contador registrado</span>';
+  const t = String(n), alvo = t.padStart(Math.max(6, t.length), '0'), zeros = alvo.length - t.length;
+  const ini = de != null ? String(de).padStart(alvo.length, '0').slice(-alvo.length) : alvo;
+  let h = `<span class="cm" aria-hidden="true"${de != null ? ` data-rolar="${alvo}"` : ''}>`;
+  for (let i = 0; i < alvo.length; i++) {
+    let fita = ''; for (let k = 0; k < 10; k++) fita += `<i>${k}</i>`;
+    h += `<span class="${i < zeros ? 'z' : ''}"><span style="transform:translateY(-${+ini[i] * 18}px);transition-delay:${(alvo.length - 1 - i) * 70}ms">${fita}</span></span>`;
+  }
+  return h + `</span><span class="sr">${fmt(n)} páginas</span>`;
+}
+function rolarContadores() {
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    document.querySelectorAll('.cm[data-rolar]').forEach(cm => {
+      const alvo = cm.dataset.rolar; cm.removeAttribute('data-rolar');
+      [...cm.children].forEach((j, i) => { j.firstChild.style.transform = `translateY(-${+alvo[i] * 18}px)`; });
+    });
+  }));
+}
+const contadorDe = id => { const u = ultimoComContador(id); return contador(u?.contador ?? null, est.rolar[id]); };
+function tira(m) {
+  const ult = ultimaCargaPorTinta(m.id), velhas = maisAntigas(m.id);
+  return `<div class="tira">${tintasDe(m).map(t => {
+    const r = ult[t], d = r ? diasDesde(r.data) : null;
+    return `<span class="t ${velhas.has(t) ? 'velha' : ''} ${r ? '' : 'nunca'}" title="${esc(tinta(t).rotulo)}: ${r ? `última carga ${quandoLongo(r.data)}` : 'sem carga registrada'}${velhas.has(t) ? ' — a mais antiga da máquina' : ''}">${sw(t)}<span class="sg">${esc(tinta(t).sigla)}</span>${idade(d)}</span>`;
+  }).join('')}</div>`;
+}
+function ultimoTxt(m) {
+  const u = ultimoRegistro(m.id); if (!u) return '<span class="ult" style="color:var(--tinta-fraca)" title="Sem registro ainda">—</span>';
+  const carga = u.tipo === 'Reabastecimento';
+  return `<span class="ult">${ico(carga ? 'droplet' : 'wrench', 'ico ico-s')}<b>${carga ? 'Carga' : 'Manutenção'}</b>${quandoLongo(u.data)}</span>`;
+}
+const subMaq = m => [m.modelo, m.cromia === 'mono' ? 'Monocromática' : ''].filter(Boolean).join(' · ') || rotuloTipo(m.tipo);
+const vazioHTML = (titulo, txt) => `<div class="vazio">${FOLHA}<b>${titulo}</b>${txt ? `<span>${txt}</span>` : ''}</div>`;
+const grupos = () => TIPOS.map(t => ({ tipo: t, maquinas: emUso().filter(m => m.tipo === t.id).sort(porOrdem) })).filter(g => g.maquinas.length);
+
+/* ===== cabeçalho ===== */
+function topo() {
+  const ms = emUso(); const ultimo = REG.slice().sort((a, b) => antes(a, b) ? 1 : -1)[0];
+  const sub = ms.length ? `${ms.length} ${ms.length === 1 ? 'máquina' : 'máquinas'}${ultimo ? ` · último registro ${quandoLongo(ultimo.data)}, na ${esc(maq(ultimo.eq)?.nome || 'máquina removida')}` : ''}` : 'Nenhuma máquina cadastrada';
+  return `<div class="cab"><div><h1>Equipamentos</h1><p>${sub}</p></div>
+    <div class="acoes">${D.admin ? `<button class="btn btn-sec" data-acao="nova-maquina">${ico('plus')}Nova máquina</button>` : ''}${podeRegistrar && ms.length ? `<button class="btn btn-pri" data-acao="registrar">${ico('clipboard-pen-line')}Registrar<kbd>R</kbd></button>` : ''}</div></div>
+    ${abasHTML()}`;
+}
+function abasHTML() {
+  const abas = [{ id: 'maquinas', nome: 'Máquinas', n: emUso().length }, { id: 'historico', nome: 'Histórico', n: REG.length }];
+  if (D.organizar && arquivadas().length) abas.push({ id: 'arquivadas', nome: 'Arquivadas', n: arquivadas().length });
+  const m = est.filtroMaq ? maq(est.filtroMaq) : null;
+  const fim = est.aba === 'historico' ? `<button class="filtro-maq ${m ? 'ativo' : ''}" data-pop="filtro-maq">${ico('printer', 'ico ico-s')}<span>${m ? esc(m.nome) : 'Todas as máquinas'}</span>${ico('chevron-down', 'ico ico-s')}</button>` : '';
+  return `<div class="sentinela" aria-hidden="true"></div><div class="abas-wrap ${est.preso ? 'preso' : ''}">
+    <div class="abas" role="tablist" aria-label="Seções">${abas.map(a => `<button class="aba" role="tab" data-acao="aba" data-aba="${a.id}" aria-selected="${est.aba === a.id}">${a.nome}<span class="n">${a.n}</span></button>`).join('')}<span class="indicador" aria-hidden="true"></span></div>
+    <div class="abas-fim">${fim}${podeRegistrar && emUso().length ? `<button class="btn btn-pri btn-p acao-presa" data-acao="registrar">${ico('clipboard-pen-line', 'ico ico-s')}Registrar<kbd>R</kbd></button>` : ''}</div>
+  </div>`;
+}
+const barraMob = () => podeRegistrar && emUso().length ? `<div class="barra-mob">${D.admin ? `<button class="btn btn-sec" data-acao="nova-maquina" aria-label="Nova máquina">${ico('plus')}</button>` : ''}<button class="btn btn-pri" data-acao="registrar">${ico('clipboard-pen-line')}Registrar carga ou manutenção</button></div>` : '';
+
+/* ===== opção A: lista por tipo ===== */
+function linhaMaq(m) {
+  return `<div class="lin ${est.sel === m.id ? 'sel' : ''} ${est.arrasto === m.id ? 'arrastando' : ''}" data-mid="${m.id}" data-acao="abrir" data-id="${m.id}" tabindex="0" aria-label="${esc(m.nome)}">
+    <div class="c-alca">${D.organizar ? `<button class="alca" data-alca="${m.id}" aria-label="Arrastar para mudar a ordem (Alt e as setas)" title="Arrastar para mudar a ordem">${ico('grip-vertical', 'ico ico-s')}</button>` : ''}</div>
+    <div class="c-nome"><span class="nome-m">${esc(m.nome)}</span><span class="sub-m">${esc(subMaq(m))}</span></div>
+    <div class="c-tintas">${tira(m)}</div>
+    <div class="c-cont">${contadorDe(m.id)}</div>
+    <div class="c-ult">${ultimoTxt(m)}</div>
+    <div class="c-seta">${ico('chevron-right', 'ico ico-s seta')}</div>
+  </div>`;
+}
+function renderLista() {
+  const gs = grupos();
+  if (!gs.length) return vazioHTML('Nenhuma máquina cadastrada', D.admin ? 'Use “Nova máquina” para cadastrar a primeira.' : 'Peça a um administrador para cadastrar as máquinas.');
+  return `<div class="tab-cab"><span></span><span>Máquina</span><span>Tintas · desde a última carga</span><span>Contador</span><span class="c-ult">Último registro</span><span></span></div>`
+    + gs.map(g => `<div class="grp">${esc(g.tipo.rotulo)} <span class="n">${g.maquinas.length}</span></div><div class="lista" data-grupo="${g.tipo.id}">${g.maquinas.map(linhaMaq).join('')}</div>`).join('');
+}
+
+/* ===== opção B: quadro de tintas ===== */
+function renderQuadro() {
+  const gs = grupos();
+  if (!gs.length) return vazioHTML('Nenhuma máquina cadastrada', D.admin ? 'Use “Nova máquina” para cadastrar a primeira.' : 'Peça a um administrador para cadastrar as máquinas.');
+  return gs.map(g => {
+    // As colunas são as tintas do grupo, na ordem do catálogo; máquina sem a tinta fica com "·".
+    const cols = ORDEM_TINTAS.filter(t => g.maquinas.some(m => tintasDe(m).includes(t)));
+    const cab = `<div class="q-lin q-cab"><span>Máquina</span>${cols.map(t => `<span class="q-t" title="${esc(tinta(t).rotulo)}"><i style="background:${fundoTinta(t)}"></i>${esc(tinta(t).sigla)}</span>`).join('')}<span class="q-c" style="justify-content:flex-end">Contador</span></div>`;
+    const lins = g.maquinas.map(m => {
+      const ult = ultimaCargaPorTinta(m.id), velhas = maisAntigas(m.id), tem = tintasDe(m);
+      return `<div class="q-lin" data-mid="${m.id}">
+        <button class="q-nome" data-acao="abrir" data-id="${m.id}"><span class="nome-m">${esc(m.nome)}</span><span class="sub-m">${esc(subMaq(m))}</span><span class="c-cont-in">${contadorDe(m.id)}</span></button>
+        ${cols.map(t => {
+          if (!tem.includes(t)) return `<span class="q-cel na" aria-label="${esc(m.nome)} não usa ${esc(tinta(t).rotulo)}">·</span>`;
+          const r = ult[t], d = r ? diasDesde(r.data) : null, velha = velhas.has(t);
+          const tit = `${tinta(t).rotulo} na ${m.nome}: ${r ? `última carga ${quandoLongo(r.data)}` : 'sem carga registrada'}${velha ? ' — a mais antiga' : ''}`;
+          return podeRegistrar
+            ? `<button class="q-cel ${velha ? 'velha' : ''}" data-acao="carga-tinta" data-id="${m.id}" data-tinta="${esc(t)}" title="${esc(tit)}. Toque para registrar a carga."><span>${idade(d)}</span><small>a mais antiga</small>${ico('plus', 'q-mais')}</button>`
+            : `<span class="q-cel ${velha ? 'velha' : ''}" title="${esc(tit)}"><span>${idade(d)}</span><small>a mais antiga</small></span>`;
+        }).join('')}
+        <span class="q-cont">${contadorDe(m.id)}</span>
+      </div>`;
+    }).join('');
+    return `<div class="grp">${esc(g.tipo.rotulo)} <span class="n">${g.maquinas.length}</span></div><div class="quadro" style="--n:${cols.length}">${cab}${lins}</div>`;
+  }).join('');
+}
+
+/* ===== histórico ===== */
+const regsOrdenados = () => REG.slice().sort((a, b) => antes(a, b) ? 1 : -1);
+function oqueHTML(r) {
+  if (r.tipo === 'Reabastecimento') return `<span class="tp">${ico('droplet', 'ico ico-s')}Carga de tinta</span><span class="cores-r">${r.cores.map(t => `<span>${sw(t)}${esc(tinta(t).rotulo)}</span>`).join('')}</span>`;
+  const quem = r.tecnico || (r.valor != null ? 'Equipe' : '');
+  return `<span class="tp">${ico('wrench', 'ico ico-s')}Manutenção${quem ? ` <span style="font-weight:500;color:var(--tinta-suave)">· ${esc(quem)}${r.valor != null ? ` · ${brl(r.valor)}` : ''}</span>` : ''}</span><span class="ds" title="${esc(r.desc)}">${esc(r.desc)}</span>`;
+}
+function rendHTML(r) {
+  if (r.tipo !== 'Reabastecimento') return '';
+  const rs = r.cores.map(t => ({ t, p: rendimento(r, t) })).filter(x => x.p != null);
+  if (!rs.length) return '<span class="rend">—</span>';
+  return `<span class="rend">${rs.map(x => `${esc(tinta(x.t).sigla)} rendeu <b>${fmt(x.p)}</b>`).join(' · ')}</span>`;
+}
+const podeApagar = r => D.admin || r.meu || r.id < 0;
+function apagarBtn(r) {
+  if (!podeApagar(r)) return '';
+  const conf = est.conf === 'r' + r.id;
+  return `<button class="ib apagar ${conf ? 'conf' : ''}" data-acao="apagar" data-id="${r.id}" aria-label="${conf ? 'Clique de novo para apagar' : 'Apagar este registro'}" title="Apagar este registro">${conf ? 'Apagar?' : ico('trash-2', 'ico ico-s')}</button>`;
+}
+function linhaHist(r) {
+  const m = maq(r.eq);
+  return `<div class="lin-h">
+    <div class="c-dia dia"><b>${r.data.slice(8, 10)}</b><span>${MESES[+r.data.slice(5, 7) - 1]}</span></div>
+    <div class="c-maq">${m ? `<button class="maq-link" data-acao="abrir" data-id="${m.id}">${esc(m.nome)}</button>` : '<span class="ult">Máquina removida</span>'}</div>
+    <div class="c-oque oque">${oqueHTML(r)}</div>
+    <div class="c-cont"><span class="rend">${r.contador != null ? fmt(r.contador) + ' pág.' : '—'}</span></div>
+    <div class="c-rend">${rendHTML(r)}</div>
+    <div class="c-meta">${[m ? esc(m.nome) : '', r.contador != null ? fmt(r.contador) + ' pág.' : '', r.por ? 'por ' + esc(r.por) : ''].filter(Boolean).join(' · ')}</div>
+    <div class="c-por">${r.por ? `<i class="av" style="background:${corPessoa(r.por)};color:${tintaPessoa(r.por)}" title="Registrado por ${esc(r.por)}">${esc(iniciais(r.por))}</i>` : ''}</div>
+    <div class="c-del">${apagarBtn(r)}</div>
+  </div>`;
+}
+function renderHistorico() {
+  const l = regsOrdenados().filter(r => !est.filtroMaq || r.eq === est.filtroMaq);
+  if (!l.length) return vazioHTML(est.filtroMaq ? `Nenhum registro na ${esc(maq(est.filtroMaq)?.nome || '')}` : 'Nenhum registro ainda', podeRegistrar ? 'Escolha uma máquina para lançar a primeira carga ou manutenção.' : '');
+  const meses = []; for (const r of l) { const k = r.data.slice(0, 7); let g = meses.at(-1); if (!g || g.k !== k) meses.push(g = { k, itens: [] }); g.itens.push(r); }
+  return meses.map(g => `<div class="h-mes">${MESES_LONGOS[+g.k.slice(5, 7) - 1]} de ${g.k.slice(0, 4)} <span class="n">${g.itens.length}</span></div><div class="lista">${g.itens.map(linhaHist).join('')}</div>`).join('');
+}
+function renderArquivadas() {
+  const l = arquivadas();
+  if (!l.length) return vazioHTML('Nenhuma máquina arquivada');
+  return `<div class="grp">Arquivadas <span class="n">${l.length}</span></div><div class="lista">${l.map(m => `<div class="lin-a"><div><span class="nome-m">${esc(m.nome)}</span><span class="sub-m">${esc([rotuloTipo(m.tipo), m.modelo].filter(Boolean).join(' · '))}</span></div><button class="btn btn-sec btn-p" data-acao="restaurar" data-id="${m.id}">${ico('archive-restore', 'ico ico-s')}Restaurar</button></div>`).join('')}</div>`;
+}
+
+/* ===== gaveta da máquina ===== */
+function formArea(m) {
+  const f = est.form, carga = f.modo === 'carga', ult = ultimaCargaPorTinta(m.id), velhas = maisAntigas(m.id);
+  const uc = ultimoComContador(m.id), n = f.contador ? +f.contador : null;
+  const recuou = n != null && uc?.contador != null && n < uc.contador;
+  const falta = faltaForm(m);
+  const tintasHTML = tintasDe(m).map(t => { const r = ult[t], marcada = f.cores.has(t), cor = tinta(t).cor;
+    return `<button class="te" role="checkbox" aria-checked="${marcada}" data-acao="form-tinta" data-tinta="${esc(t)}"><span class="bola" style="background:${fundoTinta(t)};color:${checkCor(cor)}">${ico('check', 'ico')}</span><b>${esc(tinta(t).rotulo)}</b><small class="${velhas.has(t) ? 'velha' : ''}">${r ? quandoLongo(r.data) : 'nunca'}</small></button>`; }).join('');
+  return `<section class="area dados form-area" aria-label="${carga ? 'Nova carga de tinta' : 'Nova manutenção'}">
+    <div class="area-cab"><span class="area-ico">${ico(carga ? 'droplet' : 'wrench', 'ico ico-s')}</span><h3>${carga ? 'Carga de tinta' : 'Manutenção'}</h3>
+      <div class="seg" role="group" aria-label="Tipo de registro"><button data-acao="form-modo" data-modo="carga" aria-pressed="${carga}">Carga</button><button data-acao="form-modo" data-modo="manut" aria-pressed="${!carga}">Manutenção</button></div></div>
+    <div class="form">
+      ${carga ? `<div class="campo"><span class="rot" id="rot-cores">Quais cores?${tintasDe(m).length > 1 ? `<button class="lk" data-acao="form-todas">${f.cores.size === tintasDe(m).length ? 'Nenhuma' : 'Todas'}</button>` : ''}</span><div class="esc-tintas" role="group" aria-labelledby="rot-cores">${tintasHTML}</div></div>` : `
+      <label class="campo"><span class="rot">O que foi feito</span><textarea class="caixa-in" data-campo="desc" rows="3" placeholder="Ex.: troca do fusor, limpeza da cabeça de impressão">${esc(f.desc)}</textarea></label>
+      <div class="campo"><span class="rot" id="rot-quem">Quem fez</span><div class="pilulas" role="group" aria-labelledby="rot-quem">${['Equipe', ...D.tecnicos].map(t => `<button class="pil" data-acao="form-tecnico" data-v="${esc(t)}" aria-pressed="${f.tecnico === t}">${esc(t)}</button>`).join('')}</div>${D.tecnicos.length ? '' : '<span class="dica">Os técnicos vêm de Cadastros › Fornecedores, com o tipo Manutenção.</span>'}</div>
+      <label class="campo"><span class="rot">Valor <small>(opcional)</small></span><span class="valor-in"><span>R$</span><input class="linha-in" data-campo="valor" inputmode="numeric" placeholder="0,00" value="${esc(f.valor)}" autocomplete="off"></span><span class="dica">Fica no histórico da máquina. Não lança conta a pagar.</span></label>`}
+      <label class="campo"><span class="rot">Contador de páginas</span><input class="linha-in grande" data-campo="contador" inputmode="numeric" placeholder="Leia no painel da máquina" value="${f.contador ? fmt(+f.contador) : ''}" autocomplete="off">
+        ${recuou ? `<span class="dica aviso">${ico('alert-triangle', 'ico ico-s')}Menor que o último registrado (${fmt(uc.contador)}, em ${ddmm(uc.data)}). Confira o número.</span>` : uc ? `<span class="dica">Último: <b>${fmt(uc.contador)}</b> em ${ddmm(uc.data)}</span>` : '<span class="dica">Primeiro contador desta máquina.</span>'}</label>
+      <div class="campo"><span class="rot">Data</span><button class="prop-btn" data-pop="data">${ico('calendar', 'ico ico-s')}${rotuloData(f.data)}${ico('chevron-down', 'ico ico-s')}</button></div>
+      <div class="form-pe"><span class="falta" aria-live="polite">${falta || ''}</span><button class="btn btn-txt" data-acao="form-cancelar">Cancelar</button><button class="btn btn-pri" data-acao="form-salvar" ${falta ? 'disabled' : ''}>${carga ? 'Registrar carga' : 'Registrar manutenção'}<kbd>Ctrl S</kbd></button></div>
+    </div>
+  </section>`;
+}
+function faltaForm(m) {
+  const f = est.form;
+  if (f.modo === 'carga' && !f.cores.size) return 'Escolha ao menos uma cor.';
+  if (!f.contador) return 'Informe o contador de páginas.';
+  if (f.modo === 'manut' && !f.desc.trim()) return 'Descreva o que foi feito.';
+  return '';
+}
+function detalheMaq(m) {
+  const ult = ultimaCargaPorTinta(m.id), velhas = maisAntigas(m.id), uc = ultimoComContador(m.id);
+  const carga = ultimoDoTipo(m.id, 'Reabastecimento'), man = ultimoDoTipo(m.id, 'Manutenção');
+  const regs = daMaquina(m.id).sort((a, b) => antes(a, b) ? 1 : -1);
+  const conf = est.conf === 'arq' + m.id;
+  return `<div class="det">
+    <div class="det-cab"><span>${esc(rotuloTipo(m.tipo))}</span><span class="det-ferr">${D.organizar ? `<button class="ib" data-acao="editar-maquina" data-id="${m.id}" aria-label="Editar máquina" title="Editar máquina">${ico('pencil')}</button>` : ''}<button class="ib" data-acao="fechar-gaveta" aria-label="Fechar" title="Fechar (Esc)">${ico('x')}</button></span></div>
+    <div class="det-nome">${esc(m.nome)}</div>
+    <div class="det-sub">${esc([m.modelo, m.cromia === 'mono' ? 'Monocromática' : 'Colorida'].filter(Boolean).join(' · '))}</div>
+    ${podeRegistrar ? (est.form ? formArea(m) : `<div class="registrar">
+      <button class="reg" data-acao="form-abrir" data-modo="carga"><span class="mi">${ico('droplet', 'ico ico-s')}</span><span><b>Carga de tinta</b><small>As cores trocadas</small></span><kbd>C</kbd></button>
+      <button class="reg" data-acao="form-abrir" data-modo="manut"><span class="mi">${ico('wrench', 'ico ico-s')}</span><span><b>Manutenção</b><small>Conserto, limpeza</small></span><kbd>M</kbd></button>
+    </div>`) : ''}
+    <dl class="props">
+      <dt>${ico('gauge', 'ico ico-s')}Contador</dt><dd>${uc ? `${contadorDe(m.id)}<small>em ${ddmm(uc.data)}</small>` : '<span class="nada">Sem registro ainda</span>'}</dd>
+      <dt>${ico('droplet', 'ico ico-s')}Última carga</dt><dd>${carga ? `${quandoLongo(carga.data)}<small>${carga.cores.map(t => esc(tinta(t).rotulo)).join(', ')}</small>` : '<span class="nada">Nenhuma</span>'}</dd>
+      <dt>${ico('wrench', 'ico ico-s')}Manutenção</dt><dd>${man ? `${quandoLongo(man.data)}<small title="${esc(man.desc)}">${esc(man.desc.length > 42 ? man.desc.slice(0, 40) + '…' : man.desc)}</small>` : '<span class="nada">Nenhuma</span>'}</dd>
+    </dl>
+    <section class="area itens"><div class="area-cab"><span class="area-ico">${ico('droplets', 'ico ico-s')}</span><h3>Tintas</h3><span class="area-meta">${tintasDe(m).length} ${tintasDe(m).length === 1 ? 'tinta' : 'tintas'}</span></div>
+      ${tintasDe(m).map(t => { const r = ult[t]; const rd = r ? rendimento(r, t) : null;
+        return `<div class="t-lin">${sw(t)}<span><span class="nm">${esc(tinta(t).rotulo)}</span>${velhas.has(t) ? '<span class="selo">a mais antiga</span>' : ''}<span class="qd">${r ? `carga em ${ddmm(r.data)} · ${haDias(diasDesde(r.data))}` : 'sem carga registrada'}</span></span><span class="rd">${rd != null ? `<b>${fmt(rd)} pág.</b>a carga anterior` : ''}</span></div>`; }).join('')}
+    </section>
+    <section class="area dados"><div class="area-cab"><span class="area-ico">${ico('history', 'ico ico-s')}</span><h3>Histórico</h3><span class="area-meta">${regs.length ? `${regs.length} ${regs.length === 1 ? 'registro' : 'registros'}` : ''}</span></div>
+      ${regs.length ? regs.slice(0, 6).map(r => `<div class="r-lin"><div class="dia"><b>${r.data.slice(8, 10)}</b><span>${MESES[+r.data.slice(5, 7) - 1]}</span></div><div class="oque">${oqueHTML(r)}${r.por ? `<span class="ds">por ${esc(r.por)}</span>` : ''}</div><span class="cont-r">${r.contador != null ? fmt(r.contador) + ' pág.' : ''}</span>${apagarBtn(r) || '<span></span>'}</div>`).join('')
+        + (regs.length > 6 ? `<button class="mais-h" data-acao="ver-historico" data-id="${m.id}">Ver os ${regs.length} registros no Histórico</button>` : '')
+        : '<div class="sem-r">Nenhum registro ainda.</div>'}
+    </section>
+    ${D.organizar ? `<div class="det-acoes"><button class="btn btn-txt btn-p" data-acao="editar-maquina" data-id="${m.id}">${ico('pencil', 'ico ico-s')}Editar máquina</button><button class="btn btn-txt btn-p perigo ${conf ? 'conf' : ''}" data-acao="arquivar" data-id="${m.id}">${ico('archive', 'ico ico-s')}${conf ? 'Clique de novo para arquivar' : 'Arquivar'}</button></div>` : ''}
+  </div>`;
+}
+
+/* ===== gaveta de cadastro (nova máquina / editar) ===== */
+function detalheCadastro() {
+  const c = est.gaveta.cad, nova = est.gaveta.tipo === 'nova';
+  const falta = faltaCad();
+  return `<div class="det">
+    <div class="det-cab"><span>${nova ? 'Nova máquina' : 'Editar máquina'}</span><span class="det-ferr"><button class="ib" data-acao="fechar-gaveta" aria-label="Fechar" title="Fechar (Esc)">${ico('x')}</button></span></div>
+    <div class="form" style="padding:6px 0 0">
+      <label class="campo"><span class="rot">Nome interno</span><input class="linha-in titulo" data-cad="nome" value="${esc(c.nome)}" placeholder="Ex.: Workforce - 07" maxlength="40" autocomplete="off"><span class="dica">É por ele que a equipe distingue duas máquinas iguais.</span></label>
+      <label class="campo"><span class="rot">Modelo <small>(opcional)</small></span><input class="linha-in" data-cad="modelo" value="${esc(c.modelo)}" placeholder="Ex.: WorkForce Pro WF-C5790" maxlength="60" autocomplete="off"></label>
+      <div class="campo"><span class="rot">Tipo</span><button class="prop-btn" data-pop="tipo">${ico('printer', 'ico ico-s')}${esc(rotuloTipo(c.tipo))}${ico('chevron-down', 'ico ico-s')}</button></div>
+      <div class="campo"><span class="rot">Cores</span><div class="seg" role="group" style="align-self:flex-start"><button data-acao="cad-cromia" data-v="cor" aria-pressed="${c.cromia === 'cor'}">Colorida</button><button data-acao="cad-cromia" data-v="mono" aria-pressed="${c.cromia === 'mono'}">Monocromática</button></div></div>
+      ${c.cromia === 'cor' ? `<div class="campo"><span class="rot" id="rot-tintas">Tintas desta máquina</span><div class="esc-tintas" role="group" aria-labelledby="rot-tintas">${ORDEM_TINTAS.map(t => `<button class="te" role="checkbox" aria-checked="${c.cores.includes(t)}" data-acao="cad-tinta" data-tinta="${esc(t)}"><span class="bola" style="background:${fundoTinta(t)};color:${checkCor(tinta(t).cor)}">${ico('check', 'ico')}</span><b>${esc(tinta(t).rotulo)}</b><small>${esc(tinta(t).sigla)}</small></button>`).join('')}</div></div>` : '<span class="dica">Monocromática usa só o preto.</span>'}
+      <div class="form-pe"><span class="falta" aria-live="polite">${falta}</span><button class="btn btn-txt" data-acao="fechar-gaveta">Cancelar</button><button class="btn btn-pri" data-acao="cad-salvar" ${falta ? 'disabled' : ''}>${nova ? 'Cadastrar máquina' : 'Salvar'}<kbd>Ctrl S</kbd></button></div>
+    </div>
+  </div>`;
+}
+function faltaCad() {
+  const c = est.gaveta.cad, nome = c.nome.trim().toLowerCase();
+  if (!nome) return 'Dê um nome à máquina.';
+  if (emUso().some(m => m.id !== c.id && m.nome.trim().toLowerCase() === nome)) return 'Já existe uma máquina com esse nome.';
+  if (c.cromia === 'cor' && !c.cores.length) return 'Escolha ao menos uma tinta.';
+  return '';
+}
+
+/* ===== popovers ===== */
+function fecharPop() { document.querySelector('.pop')?.remove(); est.pop = null; }
+function abrirPop(ancora, html) {
+  fecharPop();
+  const pop = document.createElement('div'); pop.className = 'pop'; pop.innerHTML = html; document.body.appendChild(pop);
+  const r = ancora.getBoundingClientRect();
+  pop.style.left = Math.max(8, Math.min(r.left, innerWidth - pop.offsetWidth - 8)) + 'px';
+  const topo = r.bottom + pop.offsetHeight + 6 > innerHeight && r.top > pop.offsetHeight + 6 ? r.top - pop.offsetHeight - 6 : r.bottom + 6;
+  pop.style.top = Math.max(8, Math.min(topo, innerHeight - pop.offsetHeight - 8)) + 'px';
+  pop.addEventListener('mousedown', e => { if (!e.target.closest('input')) e.preventDefault(); });
+  est.pop = { ancora }; lucide.createIcons();
+  pop.querySelector('button')?.focus({ preventScroll: true });
+  return pop;
+}
+const marca = sel => sel ? ico('check', 'ico ico-s ok') : '';
+// "Registrar": escolher a máquina e cair direto no formulário de carga.
+function popRegistrar(anc) {
+  const pop = abrirPop(anc, grupos().map(g => `<div class="rot">${esc(g.tipo.rotulo)}</div>` + g.maquinas.map(m => `<button data-v="${m.id}">${esc(m.nome)}<span class="mini">${tintasDe(m).slice(0, 6).map(t => sw(t)).join('')}</span></button>`).join('')).join(''));
+  pop.addEventListener('click', e => { const b = e.target.closest('button[data-v]'); if (!b) return; fecharPop(); abrirMaquina(maq(b.dataset.v), 'carga'); });
+}
+function popFiltroMaq(anc) {
+  const pop = abrirPop(anc, `<button data-v="">Todas as máquinas${marca(!est.filtroMaq)}</button><hr>` + MAQ.filter(m => REG.some(r => r.eq === m.id)).map(m => `<button data-v="${m.id}">${esc(m.nome)}<span class="sub">${daMaquina(m.id).length}</span>${marca(est.filtroMaq === m.id)}</button>`).join(''));
+  pop.addEventListener('click', e => { const b = e.target.closest('button[data-v]'); if (!b) return; fecharPop(); est.filtroMaq = b.dataset.v ? +b.dataset.v : null; render(); });
+}
+function popData(anc) {
+  const f = est.form; const ops = [[HOJE, 'Hoje'], [somaDias(HOJE, -1), 'Ontem'], [somaDias(HOJE, -2), 'Anteontem']];
+  const pop = abrirPop(anc, ops.map(([d, t]) => `<button data-v="${d}">${t}<span class="sub">${ddmm(d)}</span>${marca(f.data === d)}</button>`).join('')
+    + `<hr><label class="livre">${ico('calendar', 'ico ico-s')}Outra data: <input type="date" data-data value="${esc(f.data)}" max="${HOJE}"></label>`);
+  pop.addEventListener('click', e => { const b = e.target.closest('button[data-v]'); if (!b) return; f.data = b.dataset.v; fecharPop(); renderGaveta(); });
+  pop.querySelector('[data-data]').addEventListener('change', e => { if (!e.target.value) return; f.data = e.target.value > HOJE ? HOJE : e.target.value; fecharPop(); renderGaveta(); });
+}
+function popTipo(anc) {
+  const c = est.gaveta.cad;
+  const pop = abrirPop(anc, TIPOS.map(t => `<button data-v="${t.id}">${esc(t.rotulo)}${marca(c.tipo === t.id)}</button>`).join(''));
+  pop.addEventListener('click', e => { const b = e.target.closest('button[data-v]'); if (!b) return; c.tipo = b.dataset.v; fecharPop(); renderGaveta(); });
+}
+
+/* ===== ações ===== */
+let toastTimer;
+function toast(msg, desfazer) {
+  document.querySelector('.toast')?.remove(); clearTimeout(toastTimer);
+  const el = document.createElement('div'); el.className = 'toast'; el.setAttribute('role', 'status');
+  el.innerHTML = ico('check-circle-2') + `<span>${esc(msg)}</span>` + (desfazer ? '<button>Desfazer</button>' : '');
+  document.body.appendChild(el); lucide.createIcons();
+  if (desfazer) el.querySelector('button').addEventListener('click', () => { desfazer(); el.remove(); });
+  toastTimer = setTimeout(() => el.remove(), desfazer ? 5000 : 2600);
+}
+function abrirMaquina(m, modo, tintaInicial) {
+  est.gaveta = { tipo: 'maquina', id: m.id }; est.sel = m.id; est.conf = null;
+  est.form = modo ? novoForm(modo, tintaInicial) : null;
+  tela.querySelectorAll('.lin.sel').forEach(el => el.classList.remove('sel'));
+  tela.querySelector(`.lin[data-mid="${m.id}"]`)?.classList.add('sel');
+  renderGaveta(); focarForm();
+}
+const novoForm = (modo, t) => ({ modo, cores: new Set(t ? [t] : []), contador: '', desc: '', tecnico: 'Equipe', valor: '', data: HOJE });
+function focarForm() { requestAnimationFrame(() => gavetaRaiz.querySelector('[data-campo="contador"]')?.focus({ preventScroll: true })); }
+function salvarForm() {
+  const m = maq(est.gaveta.id), f = est.form; if (!m || !f || faltaForm(m)) return;
+  const ucAntes = ultimoComContador(m.id)?.contador ?? null;
+  const r = { id: proxId--, eq: m.id, tipo: f.modo === 'carga' ? 'Reabastecimento' : 'Manutenção', data: f.data, contador: +f.contador,
+    cores: f.modo === 'carga' ? tintasDe(m).filter(t => f.cores.has(t)) : [], desc: f.modo === 'carga' ? '' : f.desc.trim(),
+    tecnico: f.modo === 'carga' || f.tecnico === 'Equipe' ? '' : f.tecnico,
+    valor: f.modo === 'carga' || !f.valor ? null : Math.round(parseFloat(f.valor.replace(/\./g, '').replace(',', '.')) * 100) || null,
+    por: D.eu, meu: true };
+  REG.push(r); est.form = null;
+  if (ucAntes != null && ucAntes !== r.contador) est.rolar[m.id] = ucAntes;
+  render();
+  // O momento em que anotar o contador se paga: a carga que saiu ganha rendimento.
+  const rs = r.cores.map(t => ({ t, p: rendimento(r, t) })).filter(x => x.p != null);
+  const msg = r.tipo === 'Manutenção' ? `Manutenção registrada na ${m.nome}`
+    : rs.length ? `Carga registrada. ${rs.map(x => `${tinta(x.t).rotulo}: a anterior rendeu ${fmt(x.p)} páginas`).join('; ')}` : `Carga registrada na ${m.nome}`;
+  toast(msg, () => { REG = REG.filter(x => x.id !== r.id); render(); });
+}
+function apagarReg(r) {
+  if (est.conf !== 'r' + r.id) { est.conf = 'r' + r.id; render(); clearTimeout(apagarReg.t); apagarReg.t = setTimeout(() => { if (est.conf === 'r' + r.id) { est.conf = null; render(); } }, 3500); return; }
+  est.conf = null; const i = REG.indexOf(r); REG.splice(i, 1); render();
+  toast(`Registro de ${r.tipo === 'Reabastecimento' ? 'carga' : 'manutenção'} apagado`, () => { REG.splice(i, 0, r); render(); });
+}
+function arquivar(m) {
+  if (est.conf !== 'arq' + m.id) { est.conf = 'arq' + m.id; renderGaveta(); return; }
+  est.conf = null; m.arquivada = true; est.gaveta = null; render();
+  toast(`${m.nome} arquivada. O histórico continua guardado.`, () => { m.arquivada = false; render(); });
+}
+function abrirCadastro(m) {
+  est.gaveta = { tipo: m ? 'editar' : 'nova', cad: m ? { id: m.id, nome: m.nome, modelo: m.modelo, tipo: m.tipo, cromia: m.cromia, cores: [...m.cores] } : { id: null, nome: '', modelo: '', tipo: TIPOS[0]?.id, cromia: 'cor', cores: ['preto', 'ciano', 'magenta', 'amarelo'] } };
+  est.form = null; renderGaveta();
+  requestAnimationFrame(() => gavetaRaiz.querySelector('[data-cad="nome"]')?.focus({ preventScroll: true }));
+}
+function salvarCadastro() {
+  const c = est.gaveta.cad; if (faltaCad()) return;
+  const dados = { nome: c.nome.trim(), modelo: c.modelo.trim(), tipo: c.tipo, cromia: c.cromia, cores: c.cromia === 'mono' ? ['preto'] : ORDEM_TINTAS.filter(t => c.cores.includes(t)) };
+  if (c.id) { const m = maq(c.id); const mudouGrupo = m.tipo !== dados.tipo; Object.assign(m, dados); if (mudouGrupo) m.ordem = Math.max(0, ...emUso().filter(x => x.tipo === m.tipo && x.id !== m.id).map(x => x.ordem)) + 1; est.gaveta = { tipo: 'maquina', id: m.id }; render(); toast(`${m.nome} atualizada`); }
+  else { const m = { id: proxId--, ...dados, ordem: Math.max(0, ...emUso().filter(x => x.tipo === dados.tipo).map(x => x.ordem)) + 1, arquivada: false }; MAQ.push(m); est.gaveta = null; est.aba = 'maquinas'; render(); toast(`${m.nome} cadastrada`); }
+}
+// Mudar a ordem dentro do grupo: arrastando pela alça ou com Alt e as setas.
+function moverNaOrdem(m, para) {
+  const l = emUso().filter(x => x.tipo === m.tipo).sort(porOrdem); const de = l.indexOf(m);
+  if (para < 0 || para >= l.length || para === de) return false;
+  l.splice(de, 1); l.splice(para, 0, m); l.forEach((x, i) => { x.ordem = i + 1; }); return true;
+}
+function iniciarArrasto(e, m) {
+  e.preventDefault(); est.arrasto = m.id; render();
+  const mover = ev => {
+    const alvo = document.elementFromPoint(ev.clientX, ev.clientY)?.closest('.lin[data-mid]'); if (!alvo) return;
+    const o = maq(alvo.dataset.mid); if (!o || o === m || o.tipo !== m.tipo) return;
+    const l = emUso().filter(x => x.tipo === m.tipo).sort(porOrdem);
+    if (moverNaOrdem(m, l.indexOf(o))) { est.animar = true; render(); }
+  };
+  const soltar = () => { removeEventListener('pointermove', mover); removeEventListener('pointerup', soltar); est.arrasto = null; render(); toast('Ordem guardada'); };
+  addEventListener('pointermove', mover); addEventListener('pointerup', soltar);
+}
+
+/* ===== render ===== */
+const tela = document.getElementById('tela');
+const gavetaRaiz = document.getElementById('gaveta-raiz');
+const menosMovimento = matchMedia('(prefers-reduced-motion: reduce)');
+function medir() { const m = {}; tela.querySelectorAll('[data-mid]').forEach(el => { m[el.dataset.mid] = el.getBoundingClientRect(); }); return m; }
+function render() {
+  const antesPos = est.animar ? medir() : null;
+  const corpo = est.aba === 'historico' ? renderHistorico() : est.aba === 'arquivadas' ? renderArquivadas() : est.opcao === 'quadro' ? renderQuadro() : renderLista();
+  tela.innerHTML = `<div class="pg">${topo()}<div class="conteudo">${corpo}</div>
+    <div class="dicas">${podeRegistrar ? '<span><kbd>R</kbd> registrar</span>' : ''}${D.admin ? '<span><kbd>N</kbd> nova máquina</span>' : ''}<span><kbd>↑</kbd><kbd>↓</kbd> escolher a máquina</span><span><kbd>Enter</kbd> abrir</span>${D.organizar ? '<span><kbd>Alt</kbd> + setas muda a ordem</span>' : ''}</div></div>${barraMob()}`;
+  vigiaFaixa.disconnect(); const s = tela.querySelector('.sentinela'); if (s) vigiaFaixa.observe(s);
+  document.querySelectorAll('[data-opcao]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.opcao === est.opcao)));
+  document.getElementById('nota').textContent = `${emUso().length} máquinas e ${D.registros.length} registros reais · nada aqui grava no sistema`;
+  renderGaveta();
+  lucide.createIcons(); posicionarIndicador(); rolarContadores(); est.rolar = {};
+  if (antesPos) {
+    est.animar = false;
+    tela.querySelectorAll('[data-mid]').forEach(el => { const a = antesPos[el.dataset.mid]; if (!a) return; const b = el.getBoundingClientRect(); const dy = a.top - b.top;
+      if (Math.abs(dy) > 1) el.animate([{ transform: `translateY(${dy}px)` }, { transform: 'none' }], { duration: 300, easing: 'cubic-bezier(.16,1,.3,1)' }); });
+  }
+}
+// A gaveta mora fora da tela redesenhada: entra uma vez, depois só troca o conteúdo.
+function renderGaveta() {
+  const g = est.gaveta;
+  const conteudo = !g ? null : g.tipo === 'maquina' ? (maq(g.id) ? detalheMaq(maq(g.id)) : null) : detalheCadastro();
+  const rotulo = !g ? '' : g.tipo === 'maquina' ? maq(g.id)?.nome : g.tipo === 'nova' ? 'Nova máquina' : 'Editar máquina';
+  const aberta = gavetaRaiz.querySelector('.gaveta:not(.sai)');
+  if (conteudo && aberta) {
+    const foco = document.activeElement; const campo = foco?.dataset?.campo || foco?.dataset?.cad; const pos = foco?.selectionStart;
+    aberta.setAttribute('aria-label', rotulo); aberta.innerHTML = conteudo; lucide.createIcons(); rolarContadores();
+    if (campo) { const i = aberta.querySelector(`[data-campo="${campo}"], [data-cad="${campo}"]`); i?.focus({ preventScroll: true }); try { i?.setSelectionRange(pos, pos); } catch {} }
+    return;
+  }
+  if (conteudo) { gavetaRaiz.innerHTML = `<div class="gaveta-veu" data-acao="fechar-gaveta"></div><aside class="gaveta" role="dialog" aria-label="${esc(rotulo)}">${conteudo}</aside>`; lucide.createIcons(); return; }
+  if (!aberta) return;
+  const saindo = gavetaRaiz.querySelectorAll('.gaveta-veu, .gaveta');
+  if (menosMovimento.matches) { gavetaRaiz.innerHTML = ''; return; }
+  saindo.forEach(el => { el.classList.add('sai'); el.addEventListener('animationend', () => el.remove(), { once: true }); });
+}
+function fecharGaveta() { est.gaveta = null; est.form = null; est.conf = null; renderGaveta(); }
+
+/* ===== faixa presa e abas ===== */
+const alturaCabecalho = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--altura-cabecalho'));
+const vigiaFaixa = new IntersectionObserver(([e]) => {
+  const preso = !e.isIntersecting && e.boundingClientRect.top < e.rootBounds.top;
+  if (preso === est.preso) return; est.preso = preso;
+  const faixa = tela.querySelector('.abas-wrap'); if (!faixa) return; faixa.classList.toggle('preso', preso);
+  if (preso && !menosMovimento.matches) faixa.querySelector('.acao-presa')?.animate([{ opacity: 0, transform: 'translateX(10px)' }, { opacity: 1, transform: 'none' }], { duration: 340, easing: 'cubic-bezier(.16,1,.3,1)' });
+}, { root: document, rootMargin: `-${alturaCabecalho}px 0px 0px 0px` });
+function posicionarIndicador() {
+  const abas = tela.querySelector('.abas'); if (!abas) return;
+  const ind = abas.querySelector('.indicador'); const at = abas.querySelector('[aria-selected="true"]'); if (!at) return;
+  const novo = { left: at.offsetLeft + 8, width: at.offsetWidth - 16 }; const ant = est.ind;
+  if (ant && (ant.left !== novo.left || ant.width !== novo.width)) { ind.style.transition = 'none'; ind.style.left = ant.left + 'px'; ind.style.width = ant.width + 'px'; void ind.offsetWidth; ind.style.transition = ''; }
+  ind.style.left = novo.left + 'px'; ind.style.width = novo.width + 'px'; est.ind = novo;
+}
+const ORDEM_ABAS = ['maquinas', 'historico', 'arquivadas'];
+function entrarLista(lado) {
+  const c = tela.querySelector('.conteudo'); if (!c || !lado) return;
+  c.animate(menosMovimento.matches ? [{ opacity: 0 }, { opacity: 1 }] : [{ opacity: 0, transform: `translateX(${lado * 24}px)` }, { opacity: 1, transform: 'none' }], { duration: menosMovimento.matches ? 150 : 300, easing: 'cubic-bezier(.16,1,.3,1)' });
+}
+
+/* ===== eventos ===== */
+document.addEventListener('click', e => {
+  if (est.pop && !e.target.closest('.pop')) { const a = est.pop.ancora; fecharPop(); if (a && a.contains(e.target)) return; }
+  const op = e.target.closest('[data-opcao]');
+  if (op) { est.opcao = op.dataset.opcao; guardar('equip-opcao', est.opcao); if (est.aba !== 'maquinas') est.aba = 'maquinas'; render(); return entrarLista(est.opcao === 'quadro' ? 1 : -1); }
+  const pp = e.target.closest('[data-pop]');
+  if (pp && (tela.contains(pp) || gavetaRaiz.contains(pp))) { e.stopPropagation(); return ({ 'filtro-maq': popFiltroMaq, data: popData, tipo: popTipo })[pp.dataset.pop](pp); }
+  if (e.target.closest('[data-alca]')) return;
+  const el = e.target.closest('[data-acao]'); if (!el || !(tela.contains(el) || gavetaRaiz.contains(el))) return;
+  const a = el.dataset.acao, id = el.dataset.id;
+  if (a !== 'apagar' && a !== 'arquivar' && est.conf) { est.conf = null; }
+  if (a === 'abrir') return abrirMaquina(maq(id));
+  if (a === 'carga-tinta') return abrirMaquina(maq(id), 'carga', el.dataset.tinta);
+  if (a === 'fechar-gaveta') return fecharGaveta();
+  if (a === 'registrar') { if (est.gaveta?.tipo === 'maquina') { est.form = novoForm('carga'); renderGaveta(); return focarForm(); } return popRegistrar(el); }
+  if (a === 'nova-maquina') return abrirCadastro(null);
+  if (a === 'editar-maquina') return abrirCadastro(maq(id));
+  if (a === 'arquivar') return arquivar(maq(id));
+  if (a === 'restaurar') { const m = maq(id); m.arquivada = false; m.ordem = Math.max(0, ...emUso().filter(x => x.tipo === m.tipo && x !== m).map(x => x.ordem)) + 1; if (!arquivadas().length) est.aba = 'maquinas'; render(); return toast(`${m.nome} voltou para a lista`); }
+  if (a === 'apagar') { const r = REG.find(x => x.id === +id); return r && apagarReg(r); }
+  if (a === 'ver-historico') { est.filtroMaq = +id; est.aba = 'historico'; fecharGaveta(); render(); return; }
+  if (a === 'aba') { const lado = Math.sign(ORDEM_ABAS.indexOf(el.dataset.aba) - ORDEM_ABAS.indexOf(est.aba)); est.aba = el.dataset.aba; render(); if (est.preso) scrollTo({ top: tela.querySelector('.sentinela').getBoundingClientRect().top + scrollY - alturaCabecalho + 1 }); return entrarLista(lado); }
+  // formulário de registro
+  const f = est.form;
+  if (a === 'form-abrir') { est.form = novoForm(el.dataset.modo); renderGaveta(); return focarForm(); }
+  if (a === 'form-cancelar') { est.form = null; return renderGaveta(); }
+  if (a === 'form-modo' && f) { f.modo = el.dataset.modo; return renderGaveta(); }
+  if (a === 'form-tinta' && f) { const t = el.dataset.tinta; f.cores.has(t) ? f.cores.delete(t) : f.cores.add(t); return renderGaveta(); }
+  if (a === 'form-todas' && f) { const todas = tintasDe(maq(est.gaveta.id)); f.cores = f.cores.size === todas.length ? new Set() : new Set(todas); return renderGaveta(); }
+  if (a === 'form-tecnico' && f) { f.tecnico = el.dataset.v; return renderGaveta(); }
+  if (a === 'form-salvar') return salvarForm();
+  // cadastro
+  const c = est.gaveta?.cad;
+  if (a === 'cad-cromia' && c) { c.cromia = el.dataset.v; return renderGaveta(); }
+  if (a === 'cad-tinta' && c) { const t = el.dataset.tinta; c.cores = c.cores.includes(t) ? c.cores.filter(x => x !== t) : [...c.cores, t]; return renderGaveta(); }
+  if (a === 'cad-salvar') return salvarCadastro();
+});
+document.addEventListener('pointerdown', e => { const h = e.target.closest('[data-alca]'); if (h && e.button === 0) iniciarArrasto(e, maq(h.dataset.alca)); });
+document.addEventListener('input', e => {
+  const f = est.form, c = est.gaveta?.cad, t = e.target;
+  if (t.dataset.campo === 'contador' && f) { const pos = t.selectionStart, antesLen = t.value.length; f.contador = t.value.replace(/\D/g, '').slice(0, 9); renderGaveta(); const i = gavetaRaiz.querySelector('[data-campo="contador"]'); const novaPos = Math.max(0, pos + (i.value.length - antesLen)); i.setSelectionRange(novaPos, novaPos); return; }
+  if (t.dataset.campo === 'valor' && f) { const d = t.value.replace(/\D/g, '').slice(0, 9); f.valor = d ? (parseInt(d, 10) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 }) : ''; renderGaveta(); const v = gavetaRaiz.querySelector('[data-campo="valor"]'); v?.focus(); v?.setSelectionRange(v.value.length, v.value.length); return; }
+  if (t.dataset.campo === 'desc' && f) { f.desc = t.value; const pe = gavetaRaiz.querySelector('.form-pe'); if (pe) { const falta = faltaForm(maq(est.gaveta.id)); pe.querySelector('.falta').textContent = falta; pe.querySelector('[data-acao="form-salvar"]').disabled = !!falta; } return; }
+  if (t.dataset.cad && c) { c[t.dataset.cad] = t.value; const pe = gavetaRaiz.querySelector('.form-pe'); if (pe) { const falta = faltaCad(); pe.querySelector('.falta').textContent = falta; pe.querySelector('[data-acao="cad-salvar"]').disabled = !!falta; } }
+});
+document.addEventListener('keydown', e => {
+  const digitando = e.target.matches?.('input, textarea');
+  if (e.key === 'Escape') { if (est.pop) return fecharPop(); if (est.form) { est.form = null; return renderGaveta(); } if (est.gaveta) return fecharGaveta(); return; }
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') { if (est.form) { e.preventDefault(); return salvarForm(); } if (est.gaveta?.cad) { e.preventDefault(); return salvarCadastro(); } }
+  if (digitando || e.ctrlKey || e.metaKey) return;
+  const k = e.key.toLowerCase();
+  if (est.gaveta?.tipo === 'maquina' && !est.form && podeRegistrar && (k === 'c' || k === 'm')) { e.preventDefault(); est.form = novoForm(k === 'c' ? 'carga' : 'manut'); renderGaveta(); return focarForm(); }
+  if (k === 'r' && podeRegistrar && !est.gaveta) { e.preventDefault(); const b = tela.querySelector('.cab [data-acao="registrar"]') || tela.querySelector('[data-acao="registrar"]'); return b && popRegistrar(b); }
+  if (k === 'n' && D.admin && !est.gaveta) { e.preventDefault(); return abrirCadastro(null); }
+  // ↑ ↓ escolhem a máquina; Alt + setas mudam a ordem no grupo; Enter abre.
+  if (est.aba === 'maquinas' && !est.gaveta && ['ArrowUp', 'ArrowDown'].includes(e.key)) {
+    const ids = grupos().flatMap(g => g.maquinas.map(m => m.id)); if (!ids.length) return; e.preventDefault();
+    if (e.altKey && D.organizar && est.sel) { const m = maq(est.sel); const l = emUso().filter(x => x.tipo === m.tipo).sort(porOrdem); if (moverNaOrdem(m, l.indexOf(m) + (e.key === 'ArrowUp' ? -1 : 1))) { est.animar = true; render(); } return; }
+    const i = ids.indexOf(est.sel); est.sel = ids[Math.max(0, Math.min(ids.length - 1, i < 0 ? 0 : i + (e.key === 'ArrowUp' ? -1 : 1)))];
+    tela.querySelectorAll('.lin.sel, .q-lin.sel').forEach(x => x.classList.remove('sel'));
+    const lin = tela.querySelector(`[data-mid="${est.sel}"]`); lin?.classList.add('sel'); lin?.scrollIntoView({ block: 'nearest' }); return;
+  }
+  if (e.key === 'Enter' && e.target.matches?.('.lin[data-mid]')) { e.preventDefault(); return abrirMaquina(maq(e.target.dataset.mid)); }
+  if (e.key === 'Enter' && est.sel && !est.gaveta && !e.target.closest?.('button')) { e.preventDefault(); return abrirMaquina(maq(est.sel)); }
+});
+addEventListener('resize', () => { fecharPop(); est.ind = null; posicionarIndicador(); });
+addEventListener('scroll', e => { if (est.pop && !e.target.closest?.('.pop')) fecharPop(); if (e.target.matches?.('.gaveta')) e.target.classList.toggle('rolou', e.target.scrollTop > 2); }, true);
+
+/* ===== tema ===== */
+const temaBtn = document.getElementById('tema');
+function aplicarTema(escuro) { document.documentElement.classList.toggle('dark', escuro); temaBtn.innerHTML = ico(escuro ? 'sun' : 'moon', 'ico ico-s') + `<span>${escuro ? 'Claro' : 'Escuro'}</span>`; lucide.createIcons(); guardar('prod-tema', escuro); }
+let trocaAtual = null;
+function trocarTema(escuro, origem, aplicar) {
+  const raiz = document.documentElement; const trocar = () => { raiz.classList.toggle('dark', escuro); aplicar?.(); };
+  if (!document.startViewTransition) return trocar();
+  const r = origem?.getBoundingClientRect(); const x = r ? r.left + r.width / 2 : innerWidth / 2, y = r ? r.top + r.height / 2 : innerHeight / 2;
+  const raio = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y)); const reduzido = menosMovimento.matches;
+  raiz.dataset.trocaTema = ''; const troca = document.startViewTransition(trocar); trocaAtual = troca; let anim;
+  troca.ready.then(() => { const circulo = [`circle(0px at ${x}px ${y}px)`, `circle(${raio}px at ${x}px ${y}px)`];
+    anim = raiz.animate(reduzido ? { opacity: escuro ? [0, 1] : [1, 0] } : { clipPath: escuro ? circulo : circulo.reverse() }, { duration: reduzido ? 200 : escuro ? 600 : 450, easing: reduzido ? 'ease' : escuro ? 'cubic-bezier(.45,0,.2,1)' : 'cubic-bezier(.8,0,.55,1)', fill: 'forwards', pseudoElement: escuro ? '::view-transition-new(root)' : '::view-transition-old(root)' });
+  }).catch(() => {});
+  const fim = () => { anim?.cancel(); if (trocaAtual === troca) delete raiz.dataset.trocaTema; }; troca.finished.then(fim, fim);
+}
+temaBtn.addEventListener('click', () => { const escuro = !document.documentElement.classList.contains('dark'); trocarTema(escuro, temaBtn, () => aplicarTema(escuro)); });
+aplicarTema(ler('prod-tema', false));
+render();
+document.fonts?.ready.then(() => { est.ind = null; posicionarIndicador(); });
+</script>
+</body>
+</html>
