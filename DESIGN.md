@@ -46,6 +46,13 @@ colors:
   categoria-manutencao: "#F59E0B"
   categoria-terceirizacao: "#A855F7"
   categoria-impostos: "#F43F5E"
+  processo-ciano: "#00AEEF"
+  processo-magenta: "#EC008C"
+  processo-amarelo: "#FFF200"
+  processo-preto: "#231F20"
+  marca-1: "#0F2A45"
+  marca-2: "#0A1C2E"
+  marca-3: "#06111D"
 typography:
   titulo-tela:
     fontFamily: "Montserrat, system-ui, sans-serif"
@@ -306,7 +313,7 @@ Texto que vai para o cliente aparece no balão do WhatsApp (cores e fonte do pr�
 Ação que encerra pede o segundo clique no próprio botão ("Concluir?", "Clique de novo para excluir"). Ação reversível não pergunta: faz e mostra toast com "Desfazer" por 5s.
 
 ### Espera (carregamento)
-Quando uma lista precisa buscar no banco (na tela de O.S., a primeira vez que se abre Baixadas, Canceladas ou Abandonadas; Abertas e À dar baixa já estão na memória), o lugar dela mostra **linhas de espera**: as mesmas colunas e a mesma caixa da lista, com barras em `borda` (a do título do grupo em `borda-forte`) que pulsam em onda de cima para baixo (1,4s, 90ms entre linhas). Quando as O.S. chegam, entram no lugar delas subindo 6px uma atrás da outra (22ms, só as dez primeiras), e nada pula porque as colunas já estavam certas. Só aparece se a busca passar de ~150ms e, aparecendo, fica pelo menos ~300ms, para não piscar. Voltar a uma aba já vista é na hora. O leitor de tela ouve "Carregando Baixadas…". Nada de rodinha girando no meio da tela.
+A espera de página inteira — abrir o sistema, a primeira ida a uma tela, um protótipo carregando — é a **barra de cor** (ver **Motivos do ofício**). Quando uma lista precisa buscar no banco (na tela de O.S., a primeira vez que se abre Baixadas, Canceladas ou Abandonadas; Abertas e À dar baixa já estão na memória), o lugar dela mostra **linhas de espera**: as mesmas colunas e a mesma caixa da lista, com barras em `borda` (a do título do grupo em `borda-forte`) que pulsam em onda de cima para baixo (1,4s, 90ms entre linhas). Quando as O.S. chegam, entram no lugar delas subindo 6px uma atrás da outra (22ms, só as dez primeiras), e nada pula porque as colunas já estavam certas. Só aparece se a busca passar de ~150ms e, aparecendo, fica pelo menos ~300ms, para não piscar. Voltar a uma aba já vista é na hora. O leitor de tela ouve "Carregando Baixadas…". Nada de rodinha girando no meio da tela.
 
 ### Troca de tema
 O botão de lua/sol acende o tema a partir dele: o escuro se espalha em círculo saindo do botão até cobrir a tela (.6s, suave nas duas pontas) e, ao voltar ao claro, se recolhe para dentro do botão pelo mesmo caminho, um pouco mais rápido (.45s). O ícone troca junto com as cores. Feito com View Transitions (`lib/utils/trocarTema.js`); navegador sem suporte troca seco, e com movimento reduzido vira um esmaecer de .2s.
@@ -325,6 +332,20 @@ Pendências e conta abrem como popover: raio 9px, borda e `sombra-pop`, descendo
 
 No celular ficam o ícone da marca, chat, pendências, tema e só a bolinha da conta. Os sites descem para a faixa do seletor de seções, num botão com os três ícones sobrepostos.
 
+### Motivos do ofício
+É uma gráfica: quando uma tela pede um desenho, ele vem da própria impressão — prova, registro, sangria, barra de cor, carimbo —, nunca de ilustração genérica. **Um motivo por tela**, em 1px e sutil, e ele tem que explicar alguma coisa (está carregando, não há nada, quantas cabem, quando foi aprovado). As cores de processo (`processo-ciano`, `-magenta`, `-amarelo`, `-preto`) só aparecem nos motivos e nas tintas das máquinas. O motivo nunca substitui a palavra.
+- **Barra de cor** (`components/ui/BarraDeCor.jsx`, `.barra-de-cor`): quatro quadrados de 10px em C, M, Y, K acendendo em sequência (1,6s, 140ms entre eles), com "Carregando…" quando cabe. É a espera de página inteira; lista que está chegando continua com as linhas de espera. Com movimento reduzido, só pulsam.
+- **Folha de prova em branco**: o estado vazio de lista é a folha (76×84) com as marcas de registro em `tinta-fraca`, acima do texto que diz o que não foi achado. Sempre a mesma, em toda lista.
+- **Retícula e marcas de corte** (`components/ui/Reticula.jsx`, `.fundo-marca`, `.marcas-de-corte`): só nas telas de marca, entrada e bloqueio. Fundo de `marca-1` a `marca-3`, pontos de meio-tom a 45° que "imprimem" numa varredura diagonal, e o cartão emoldurado por traços de 1px nos quatro cantos, do lado de fora. Nunca em tela de trabalho.
+- **Montagem na folha** (`components/calculadoras/MontagemNaFolha.jsx`): na calculadora de Adesivos, num painel **ao lado** da caixa da calculadora, que fica como sempre foi. Desenho em escala da folha que o preço usa (SRA3, meio metro ou metro), com sangria em magenta a 10% e a linha de corte tracejada em magenta — o magenta da faca fica só no desenho, nunca em texto —, as cotas, o número por folha e o aviso âmbar quando deitado cabe mais.
+- **Contador mecânico** (`components/equipamentos/ContadorMecanico.jsx`): o último contador de páginas da máquina, um dígito por janela, nos tons do card (nunca caixa preta), zeros à esquerda em `tinta-fraca`. Os dígitos que mudam giram até o número novo, o da direita primeiro.
+- **Linha da prova** (`PrintOrcamento`): no pé do documento impresso, acima da faixa da marca, em 7,5px cinza à direita: "Orçamento nº 22 · gerado em 29/10/2026 às 12:35 · por Murilo". Só no papel.
+- **OK para impressão**: o marcador da arte diz quando e quem — "Cliente aprovou · 29/10 às 12:32 · por Murilo" —; desligado, "Aguardando OK do cliente". O filtro se chama "Aguardando OK".
+- **Carimbo de baixa**: "BAIXADA" com a data, em moldura dupla `tinta-suave` girada -2°, ao lado do cliente da O.S. finalizada. Bate uma vez (.42s) e fica parado; sem cor de estado.
+- **Calendário de vendas**: cada dia no tom de quanto vendeu, em cinco tons de `fin` (14 a 100%), com a legenda de até quanto vale cada tom; clicar no dia abre o relatório do dia. O mês vem do banco ao ser aberto, um por vez.
+
+Testado e recusado: a tira de densidade marcando a etapa da O.S. na gaveta da Produção (29/10/2026).
+
 ## Do's and Don'ts
 
 ### Do:
@@ -337,6 +358,7 @@ No celular ficam o ícone da marca, chat, pendências, tema e só a bolinha da c
 - **Do** usar a cor de cada pessoa e de cada local de `corPorNome`, nunca uma cor nova.
 - **Do** mostrar como um total se divide com o quadro de composição (destaque, barra fatiada e lista), não com uma barra por linha.
 - **Do** abrir o registro numa gaveta ou no lugar, sem tirar a pessoa da lista.
+- **Do** tirar o desenho de uma tela do próprio ofício da impressão (ver **Motivos do ofício**), um por tela.
 - **Do** protótipo antes de código: tela nova nasce em `public/prototipos/` com dados reais injetados pela página da rota (nada no arquivo público), e só vai para o sistema depois de aprovada.
 
 ### Don't:
@@ -350,3 +372,5 @@ No celular ficam o ícone da marca, chat, pendências, tema e só a bolinha da c
 - **Don't** deixar ação rara e que encerra algo (sair, desvincular) solta na barra do sistema, ao lado de um ícone de uso diário: ela vai no menu da conta.
 - **Don't** repetir o mesmo valor em vários lugares do mesmo bloco (ex.: "falta pagar" no cabeçalho, no resumo e na lista).
 - **Don't** deixar texto de propriedade vazar da coluna: corte com "…" e ponha o valor inteiro no `title`.
+- **Don't** usar as cores de processo (C, M, Y, K) fora dos motivos do ofício e das tintas das máquinas, nem o magenta da faca em texto.
+- **Don't** pôr retícula ou marcas de corte em tela de trabalho: são da marca (entrada e bloqueio).
