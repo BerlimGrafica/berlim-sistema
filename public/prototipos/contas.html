@@ -424,14 +424,14 @@ function quando(c) {
   if (!c.vencimento) return '<small>sem vencimento</small>';
   const d = diasEntre(HOJE, c.vencimento);
   if (d < 0) return `<small class="atraso">venceu há ${plural(-d, 'dia', 'dias')}</small>`;
-  if (d === 0) return '<small class="hoje">vence hoje</small>';
+  if (d === 0) return '<small class="atraso">vence hoje</small>';
   if (d === 1) return '<small class="hoje">vence amanhã</small>';
   return `<small>em ${d} dias</small>`;
 }
 function dataEmBloco(c) {
   if (!c.vencimento) return '<span class="diaf"><span>sem</span><span>data</span></span>';
   const d = dataLocal(c.vencimento), longe = Math.abs(diasEntre(HOJE, c.vencimento)) > 6;
-  const tom = paga(c) ? '' : vencida(c) ? 'atraso' : c.vencimento === HOJE ? 'hoje' : '';
+  const tom = paga(c) ? '' : vencida(c) || c.vencimento === HOJE ? 'atraso' : c.vencimento === somarDias(HOJE, 1) ? 'hoje' : '';
   return `<span class="diaf ${tom}" title="${SEMANA[d.getDay()]}, ${d.getDate()} de ${MESES[d.getMonth()]}"><b class="num">${String(d.getDate()).padStart(2, '0')}</b><span>${c.vencimento === HOJE ? 'hoje' : longe ? MESES[d.getMonth()].slice(0, 3) : SEMANA[d.getDay()].slice(0, 3)}</span></span>`;
 }
 const repete = c => c.recorrente ? (c.parcelas ? `parcela ${c.parcela || 1} de ${c.parcelas}` : 'todo mês') : '';
@@ -464,8 +464,8 @@ function grupos(lista) {
   const abertas = lista.filter(c => !paga(c)).sort((a, b) => (a.vencimento || '9').localeCompare(b.vencimento || '9') || b.valor - a.valor);
   return [
     { id: 'g-vencidas', tom: 'atraso', icone: 'alert-triangle', rot: 'Vencidas', itens: abertas.filter(vencida) },
-    { id: 'g-hoje', tom: 'hoje', icone: 'clock', rot: 'Vencem hoje', itens: abertas.filter(c => c.vencimento === HOJE) },
-    { id: 'g-amanha', icone: 'calendar', rot: 'Amanhã', itens: abertas.filter(c => c.vencimento === amanha) },
+    { id: 'g-hoje', tom: 'atraso', icone: 'clock', rot: 'Vencem hoje', itens: abertas.filter(c => c.vencimento === HOJE) },
+    { id: 'g-amanha', tom: 'hoje', icone: 'calendar', rot: 'Amanhã', itens: abertas.filter(c => c.vencimento === amanha) },
     { id: 'g-semana', icone: 'calendar-range', rot: 'Próximos 7 dias', itens: abertas.filter(c => c.vencimento > amanha && c.vencimento <= fim7) },
     { id: 'g-depois', icone: 'calendar-days', rot: est.mes ? 'Mais tarde no mês' : 'Mais à frente', itens: abertas.filter(c => !c.vencimento || c.vencimento > fim7) },
   ].filter(g => g.itens.length);
@@ -527,7 +527,7 @@ function render(foco) {
   const atual = HOJE.slice(0, 7);
   tela.innerHTML = `
     <div class="cab"><div><h1>Contas a pagar</h1>
-      <p class="sub">${venc ? `<span class="selo atraso">${ico('alert-triangle')}${plural(venc, 'vencida', 'vencidas')}</span>` : ''}${hoje ? `<span class="selo hoje">${ico('clock')}${plural(hoje, 'vence hoje', 'vencem hoje')}</span>` : ''}${!venc && !hoje ? '<span>Nada atrasado nem vencendo hoje.</span>' : ''}</p></div>
+      <p class="sub">${venc ? `<span class="selo atraso">${ico('alert-triangle')}${plural(venc, 'vencida', 'vencidas')}</span>` : ''}${hoje ? `<span class="selo atraso">${ico('clock')}${plural(hoje, 'vence hoje', 'vencem hoje')}</span>` : ''}${!venc && !hoje ? '<span>Nada atrasado nem vencendo hoje.</span>' : ''}</p></div>
       <div class="cab-dir">
         <div class="mes" role="group" aria-label="Mês"><button class="ib" data-mes="-1" aria-label="Mês anterior" title="Mês anterior (←)">${ico('chevron-left')}</button><span class="rot">${est.mes ? rotuloMes(est.mes).replace(/^./, x => x.toUpperCase()) : 'Todo o período'}</span><button class="ib" data-mes="1" aria-label="Próximo mês" title="Próximo mês (→)">${ico('chevron-right')}</button></div>
         ${est.mes !== atual ? `<button class="voltar-mes" data-mes="hoje">Este mês</button>` : ''}
@@ -559,7 +559,7 @@ function detalhe(c) {
   const k = cat(c), conf = est.conf === c.id;
   const venc = !c.vencimento ? '<span class="mudo">sem vencimento</span>' : (() => {
     const d = dataLocal(c.vencimento), n = diasEntre(HOJE, c.vencimento);
-    const rel = paga(c) ? '' : n < 0 ? `<span class="atraso">venceu há ${plural(-n, 'dia', 'dias')}</span>` : n === 0 ? '<span class="hoje">vence hoje</span>' : n === 1 ? '<span class="hoje">vence amanhã</span>' : `<span class="mudo">em ${n} dias</span>`;
+    const rel = paga(c) ? '' : n < 0 ? `<span class="atraso">venceu há ${plural(-n, 'dia', 'dias')}</span>` : n === 0 ? '<span class="atraso">vence hoje</span>' : n === 1 ? '<span class="hoje">vence amanhã</span>' : `<span class="mudo">em ${n} dias</span>`;
     return `${SEMANA[d.getDay()]}, ${d.getDate()} de ${MESES[d.getMonth()]} ${rel}`;
   })();
   return `<div class="det">

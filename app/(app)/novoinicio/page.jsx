@@ -182,7 +182,7 @@ export default function Page() {
             fornecedor: fornecedores.find(f => f.id === c.fornecedor_id)?.nome || '',
             recorrente: !!c.recorrente, parcelas: c.recorrente_total_parcelas || null, parcela: c.recorrente_parcela_atual || null,
         })),
-        categorias: Object.fromEntries(CATEGORIAS_CONTA.map(c => [c.value, { label: c.label, icone: c.icone }])),
+        categorias: Object.fromEntries(CATEGORIAS_CONTA.map(c => [c.value, { label: c.label, icone: c.icone, cor: c.cor }])),
         requisicoes: requisicoesMaterial.filter(r => r.status === 'Pendente').map(r => ({ id: r.id, itens: r.itens || '', quando: (r.created_at || '').slice(0, 10) })),
         // O que espera aprovação de faturamento e emissão de nota, para a visão
         // Geral. Tudo da memória; "a emitir" e "a preencher" pela mesma regra

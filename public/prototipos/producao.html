@@ -148,6 +148,9 @@ html { --altura-cabecalho: 51px; --altura-filtros: 42px; }
 .pz.vazio { color: var(--tinta-fraca); font-weight: 500; padding: 0 8px; }
 .pz.atrasado { color: var(--perigo); background: var(--perigo-fundo); }
 .pz.atrasado .ico { color: var(--perigo); }
+.pz.vence-hoje { color: var(--perigo); background: var(--perigo-fundo); }
+.pz.vence-hoje .ico { color: var(--perigo); }
+/* "hoje" pinta de âmbar: é o tom de quem vence AMANHÃ */
 .pz.hoje { color: var(--obs-tinta); background: var(--obs-fundo); }
 .pz.hoje .ico { color: var(--obs); }
 .hr { display: inline-flex; align-items: center; gap: 4px; padding: 1px 7px; border-radius: 5px; font-size: 11.5px; font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; border: 1px solid var(--borda-forte); color: var(--tinta-corpo); background: var(--superficie); }
@@ -155,6 +158,23 @@ html { --altura-cabecalho: 51px; --altura-filtros: 42px; }
 .hr.perto { background: #fbbf24; border-color: #fbbf24; color: #451a03; }
 .hr.passou { background: var(--perigo); border-color: var(--perigo); color: #fff; }
 .prazo-cel { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; }
+/* quadrinho de data na lista (o mesmo do Financeiro e de Contas a pagar) */
+.pzb { display: inline-flex; align-items: center; gap: 10px; padding: 3px 8px 3px 3px; margin-left: -3px; border-radius: 9px; text-align: left; max-width: 100%; transition: background .12s; }
+.pzb:hover { background: var(--realce); }
+.diaf { width: 40px; height: 40px; border-radius: 8px; box-shadow: inset 0 0 0 1px var(--borda); background: var(--superficie); display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.1; flex-shrink: 0; }
+.diaf b { font-size: 13.5px; font-weight: 700; color: var(--tinta); font-variant-numeric: tabular-nums; }
+.diaf span { font-size: 11.5px; font-weight: 600; color: var(--tinta-suave); }
+.diaf.atraso { background: var(--perigo-fundo); box-shadow: inset 0 0 0 1px var(--perigo-borda); }
+.diaf.atraso b, .diaf.atraso span { color: var(--perigo); }
+.diaf.hoje { background: var(--obs-fundo); box-shadow: inset 0 0 0 1px var(--obs-borda); }
+.diaf.hoje b, .diaf.hoje span { color: var(--obs-tinta); }
+.diaf.vazio { box-shadow: inset 0 0 0 1px var(--borda); border: 1px dashed var(--borda-forte); box-shadow: none; color: var(--tinta-fraca); }
+.pzb-txt { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; min-width: 0; }
+.pzb .rel { font-size: 12.5px; font-weight: 600; color: var(--tinta-corpo); white-space: nowrap; }
+.pzb .rel.atraso { color: var(--perigo); }
+.pzb .rel.hoje { color: var(--obs-tinta); }
+.pzb .rel.mudo { color: var(--tinta-fraca); font-weight: 500; }
+.pzb .sub { font-size: 11.5px; color: var(--tinta-suave); white-space: nowrap; margin-top: -3px; }
 .avs { display: inline-flex; align-items: center; gap: 6px; padding: 3px 6px; margin-left: -6px; border-radius: 7px; max-width: 100%; transition: background .12s; }
 .avs:hover { background: var(--realce); }
 .avs .grp-av { display: inline-flex; }
@@ -217,6 +237,10 @@ html { --altura-cabecalho: 51px; --altura-filtros: 42px; }
 .lista > .lin:first-child { border-top: 0; }
 .lin:hover { background: var(--sutil); }
 .lin.sel { background: var(--realce); }
+/* Filete de prioridade no canto esquerdo da linha (3px, por dentro, sem mexer
+   no alinhamento): vermelho para atrasada ou vence hoje, âmbar para amanhã. */
+.lin.pri-alta { box-shadow: inset 3px 0 0 var(--perigo); }
+.lin.pri-media { box-shadow: inset 3px 0 0 var(--obs); }
 .lin .c-cli { min-width: 0; }
 .lin .resp-in { display: none; }
 
@@ -341,6 +365,8 @@ html[data-troca-tema] *, html[data-troca-tema] *::before, html[data-troca-tema] 
   .lin .c-ac { display: none; }
   .lin .c-st .fls-mob { display: inline-flex !important; margin-left: auto; }
   .prazo-cel { align-items: flex-end; }
+  .pzb { flex-direction: row-reverse; padding: 3px 3px 3px 8px; margin: 0 -3px 0 0; }
+  .pzb-txt { align-items: flex-end; }
 }
 @media (max-width: 760px) {
   .proto { padding: 0 10px; gap: 8px; }
@@ -431,8 +457,9 @@ function estadoPrazo(p) {
   if (!p.prazo) return { cls: 'vazio', txt: 'Sem prazo' };
   const d = dias(p.prazo);
   if (d < 0) return semAtraso(p) ? { cls: '', txt: ddmm(p.prazo) } : { cls: 'atrasado', txt: `Atrasada · ${ddmm(p.prazo)}` };
-  if (d === 0) return { cls: semAtraso(p) ? '' : 'hoje', txt: 'Hoje' };
-  if (d === 1) return { cls: '', txt: 'Amanhã' };
+  // Padrão do sistema: vencendo hoje é vermelho (como atrasada), amanhã é âmbar.
+  if (d === 0) return { cls: semAtraso(p) ? '' : 'vence-hoje', txt: 'Hoje' };
+  if (d === 1) return { cls: semAtraso(p) ? '' : 'hoje', txt: 'Amanhã' };
   if (d < 7) return { cls: '', txt: `${diaSem(p.prazo)} ${ddmm(p.prazo)}` };
   return { cls: '', txt: ddmm(p.prazo) };
 }
@@ -471,7 +498,25 @@ function seloHora(p) {
   return `<span class="hr ${cls}" title="Horário limite">${ico('clock', 'ico')}até ${esc(p.hora)}</span>`;
 }
 function prazoBtn(p) { const e = estadoPrazo(p); return `<button class="pz ${e.cls}" data-pop="prazo" data-id="${p.id}" title="Mudar prazo">${ico('calendar', 'ico ico-s')}${e.txt}</button>`; }
-const prazoCel = p => `<div class="prazo-cel">${prazoBtn(p)}${seloHora(p)}</div>`;
+// Na lista, o prazo é o quadrinho de data do Financeiro: o dia grande e,
+// embaixo, o dia da semana (perto) ou o mês (longe). Ao lado, quanto falta, em
+// palavras, e o horário limite. Vermelho para atrasada, âmbar para hoje — a
+// mesma regra do selo (etapas antes da arte e Retirada não atrasam). O
+// quadrinho continua sendo o botão que muda o prazo.
+const MES_CURTO = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+function prazoCel(p) {
+  if (!p.prazo) return `<button class="pzb" data-pop="prazo" data-id="${p.id}" title="Definir prazo"><span class="diaf vazio">${ico('calendar-plus', 'ico ico-s')}</span><span class="pzb-txt"><span class="rel mudo">Sem prazo</span></span></button>`;
+  const e = estadoPrazo(p), n = dias(p.prazo), d = new Date(p.prazo + 'T12:00:00');
+  // Atrasada e vencendo hoje: vermelho. Amanhã: âmbar.
+  const tom = e.cls === 'atrasado' || e.cls === 'vence-hoje' ? 'atraso' : e.cls === 'hoje' ? 'hoje' : '';
+  // O quadrinho é só a data (dia e mês); "hoje", "amanhã" e quanto falta ficam no texto ao lado.
+  const baixo = MES_CURTO[d.getMonth()];
+  const rel = n === 0 ? 'Hoje' : n === 1 ? 'Amanhã' : n === -1 ? 'Ontem' : n < 0 ? `Há ${-n} dias` : `Em ${n} dias`;
+  return `<button class="pzb" data-pop="prazo" data-id="${p.id}" title="${SEM[d.getDay()]}, ${ddmm(p.prazo)} · mudar prazo">
+    <span class="diaf ${tom}"><b>${String(d.getDate()).padStart(2, '0')}</b><span>${baixo}</span></span>
+    <span class="pzb-txt"><span class="rel ${tom}">${e.cls === 'atrasado' ? 'Atrasada' : rel}</span>${e.cls === 'atrasado' ? `<span class="sub">${rel.toLowerCase()}</span>` : ''}${seloHora(p)}</span>
+  </button>`;
+}
 function avs(p, comNomes) {
   if (!p.resp.length) return `<button class="avs" data-pop="resp" data-id="${p.id}"><span class="ninguem">+ Resp.</span></button>`;
   return `<button class="avs" data-pop="resp" data-id="${p.id}" title="${esc(p.resp.join(', '))}"><span class="grp-av">${p.resp.slice(0, 3).map(n => `<i style="background:${corPessoa(n)};color:${tintaPessoa(n)}">${esc(iniciais(n))}</i>`).join('')}</span>${comNomes ? `<span class="nomes">${esc(p.resp.join(', '))}</span>` : (p.resp.length > 3 ? `<span class="nomes">+${p.resp.length - 3}</span>` : '')}</button>`;
@@ -570,8 +615,14 @@ const barraMob = () => `<div class="barra-mob"><button class="btn btn-sec" data-
 const vazioHTML = () => `<div class="vazio">${FOLHA}<b>Nenhuma O.S. ${est.busca ? `com “${esc(est.busca)}”` : 'neste filtro'}</b>${est.filtro || est.busca ? '<button class="btn btn-txt btn-p" data-acao="limpar-tudo">Limpar filtros</button>' : ''}</div>`;
 
 /* ===== lista por etapa ===== */
+// A prioridade da O.S. pelo prazo, para o filete no canto esquerdo da linha:
+// atrasada ou vence hoje → vermelho; amanhã → âmbar; o resto, sem filete.
+function prioridade(p) {
+  const c = estadoPrazo(p).cls;
+  return c === 'atrasado' || c === 'vence-hoje' ? 'pri-alta' : c === 'hoje' ? 'pri-media' : '';
+}
 function linha(p) {
-  return `<div class="lin ${est.sel === p.id ? 'sel' : ''}" data-pid="${p.id}" data-acao="abrir" data-id="${p.id}">
+  return `<div class="lin ${prioridade(p)} ${est.sel === p.id ? 'sel' : ''}" data-pid="${p.id}" data-acao="abrir" data-id="${p.id}">
     <div class="c-id"><button class="oid" data-acao="abrir" data-id="${p.id}">#${p.id}</button></div>
     <div class="c-cli">${cliBtn(p)}${locais(p)}<div class="resp-in">${avs(p, false)}</div></div>
     <div class="c-resp">${avs(p, false)}</div>

@@ -266,6 +266,10 @@ kbd { font: 600 10.5px/1 Montserrat, sans-serif; color: var(--tinta-suave); bord
 .lin { display: flex; align-items: center; gap: 11px; padding: 9px 16px; border-top: 1px solid var(--borda-fraca); min-width: 0; width: 100%; }
 .lista > li:first-child .lin { border-top: 0; }
 button.lin:hover { background: var(--sutil); }
+/* Filete de prioridade (DESIGN.md › Selos de prazo): 3px por dentro da linha,
+   vermelho para vencido ou vence hoje, âmbar para amanhã. */
+.lin.pri-alta { box-shadow: inset 3px 0 0 var(--perigo); }
+.lin.pri-media { box-shadow: inset 3px 0 0 var(--obs); }
 .lin-txt { min-width: 0; flex: 1; }
 .lin-tit, .lin-sub { display: block; }
 .lin-tit { font-weight: 600; color: var(--tinta); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -656,7 +660,9 @@ const avisoProto = txt => { document.querySelector('.aviso-proto')?.remove(); co
 // hoje), categorias de conta (CATEGORIAS_CONTA) e situação das O.S.
 const COR_FORMA = { 'PIX': '#10b981', 'Cartão de Crédito': '#6366f1', 'Cartão de Débito': '#0ea5e9', 'Link de Pagamento': '#8b5cf6', 'Dinheiro': '#f59e0b', 'Boleto': '#64748b', 'Estorno': '#ef4444' };
 const corForma = f => COR_FORMA[f] || '#9ca3af';
-const COR_CATEG = { 'Despesa': '#10b981', 'Material': '#3b82f6', 'Manutenção': '#f59e0b', 'Terceirização': '#a855f7', 'Impostos': '#f43f5e' };
+// A cor de cada categoria de conta vem do sistema (CATEGORIAS_CONTA, em
+// lib/utils/constants.js); a de reserva só vale com o arquivo aberto fora dele.
+const COR_CATEG = DADOS.coresCategoria || { 'Despesa': '#64748B', 'Material': '#2A78D6', 'Manutenção': '#EB6834', 'Terceirização': '#6250D6', 'Impostos': '#E87BA4' };
 // As linhas de produtos: a paleta categórica validada (dataviz), oito cores em
 // ordem fixa, com o passo próprio do escuro. Um produto fica com a cor que
 // recebeu enquanto estiver no gráfico — tirar outro não repinta os que ficam.
@@ -751,11 +757,13 @@ function partes(ps, todo) {
   const usado = ps.reduce((s, p) => s + Math.max(0, p.v), 0);
   return `<span class="medidor rv" aria-hidden="true">${ps.filter(p => p.v > 0).map(p => `<i class="${p.cls || ''}" style="flex:${p.v}"></i>`).join('')}${todo > usado ? `<i class="vazio" style="flex:${todo - usado}"></i>` : ''}</span>`;
 }
-// A data em bloco, como nas novas Contas: vencida em vermelho, hoje em âmbar.
+// A data em bloco (dia e mês), como nas novas Contas: vencida ou vence hoje em vermelho, amanhã em âmbar.
+// O filete de prioridade da linha segue o tom do quadrinho.
+const priDe = tom => tom === 'atraso' ? 'pri-alta' : tom === 'hoje' ? 'pri-media' : '';
 function dataEmBloco(iso, tom) {
   if (!iso) return '<span class="diaf"><span>sem</span><span>data</span></span>';
   const d = dataLocal(iso), longe = Math.abs(diasEntre(HOJE, iso)) > 6;
-  return `<span class="diaf ${tom || ''}" title="${SEMANA[d.getDay()]}, ${d.getDate()} de ${MESES[d.getMonth()]} de ${d.getFullYear()}"><b class="num">${String(d.getDate()).padStart(2, '0')}</b><span>${iso === HOJE ? 'hoje' : longe ? MESES[d.getMonth()].slice(0, 3) : SEMANA[d.getDay()].slice(0, 3)}</span></span>`;
+  return `<span class="diaf ${tom || ''}" title="${SEMANA[d.getDay()]}, ${d.getDate()} de ${MESES[d.getMonth()]} de ${d.getFullYear()}"><b class="num">${String(d.getDate()).padStart(2, '0')}</b><span>${MESES[d.getMonth()].slice(0, 3)}</span></span>`;
 }
 // Eixo em dois degraus redondos (0, passo, 2×passo) que cobrem o maior valor.
 function passoDoEixo(maior) {
@@ -942,9 +950,10 @@ function blocoSituacao() {
 }
 function blocoMaioresContas() {
   const l = M.despesas.maiores || [];
-  const tom = c => c.status === 'Pago' ? 'paga' : c.vencimento && c.vencimento < HOJE ? 'atraso' : c.vencimento === HOJE ? 'hoje' : '';
+  const amanha = (() => { const d = new Date(HOJE + 'T12:00:00'); d.setDate(d.getDate() + 1); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; })();
+  const tom = c => c.status === 'Pago' ? 'paga' : c.vencimento && c.vencimento <= HOJE ? 'atraso' : c.vencimento === amanha ? 'hoje' : '';
   const sit = c => c.status === 'Pago' ? '<small>paga</small>' : c.vencimento && c.vencimento < HOJE ? '<small class="falta">vencida</small>' : '<small>a pagar</small>';
-  const corpo = l.length ? `<ul class="lista compacta">${l.map(c => `<li><div class="lin">${dataEmBloco(c.vencimento, tom(c))}<span class="lin-txt"><span class="lin-tit" title="${esc(c.descricao || 'Conta')}">${esc(c.descricao || 'Conta')}</span></span><span class="lin-dir num">${c.centavos ? reais(c.centavos) : '<small>a definir</small>'}${sit(c)}</span></div></li>`).join('')}</ul>` : vazio('Nenhuma conta no período.', 'receipt');
+  const corpo = l.length ? `<ul class="lista compacta">${l.map(c => `<li><div class="lin ${priDe(tom(c))}">${dataEmBloco(c.vencimento, tom(c))}<span class="lin-txt"><span class="lin-tit" title="${esc(c.descricao || 'Conta')}">${esc(c.descricao || 'Conta')}</span></span><span class="lin-dir num">${c.centavos ? reais(c.centavos) : '<small>a definir</small>'}${sit(c)}</span></div></li>`).join('')}</ul>` : vazio('Nenhuma conta no período.', 'receipt');
   return area('a-dados', 'list-ordered', 'Maiores contas<small>as mais altas do período</small>', '', corpo);
 }
 
@@ -1206,12 +1215,14 @@ function conteudoCateg() {
     g.contas.push(c); m.set(k, g); return m;
   }, new Map()).values()].map(g => ({ ...g, total: soma(g.contas, c => c.valor), pendente: soma(g.contas.filter(c => !pagaC(c)), c => c.valor), vencidas: g.contas.filter(vencidaC).length }))
     .sort((a, b) => b.total - a.total || a.nome.localeCompare(b.nome));
-  const tom = c => pagaC(c) ? 'paga' : vencidaC(c) ? 'atraso' : c.vencimento === HOJE ? 'hoje' : '';
-  const sit = c => pagaC(c) ? 'paga' : vencidaC(c) ? '<span class="desce">vencida</span>' : c.vencimento === HOJE ? 'vence hoje' : 'a pagar';
+  // Padrão de vencimento: vencida ou vencendo hoje em vermelho, amanhã em âmbar.
+  const amanha = (() => { const d = new Date(HOJE + 'T12:00:00'); d.setDate(d.getDate() + 1); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; })();
+  const tom = c => pagaC(c) ? 'paga' : vencidaC(c) || c.vencimento === HOJE ? 'atraso' : c.vencimento === amanha ? 'hoje' : '';
+  const sit = c => pagaC(c) ? 'paga' : vencidaC(c) ? '<span class="desce">vencida</span>' : c.vencimento === HOJE ? '<span class="desce">vence hoje</span>' : c.vencimento === amanha ? 'vence amanhã' : 'a pagar';
   const repete = c => c.recorrente ? (c.parcelas ? `parcela ${c.parcela || 1} de ${c.parcelas}` : 'todo mês') : '';
   // Dentro do grupo, a descrição só aparece quando diz algo além do nome dele.
   const desc = (c, g) => semAcento(c.descricao).replace(/\s+/g, ' ').trim() !== g.chave ? esc(c.descricao) : '';
-  const linhaConta = (c, g) => `<li><div class="lin">${dataEmBloco(c.vencimento, tom(c))}<span class="lin-txt"><span class="lin-tit">${desc(c, g) || reais(c.valor)}</span><span class="lin-sub">${[sit(c), repete(c)].filter(Boolean).join(' · ')}</span></span><span class="lin-dir num">${desc(c, g) ? (c.valor ? reais(c.valor) : '<small>a definir</small>') : ''}</span><button class="ib" data-editar-conta="${c.id}" aria-label="Editar ${esc(c.descricao)} no modal atual" title="Editar no modal atual">${ico('pencil', 'ico ico-s')}</button></div></li>`;
+  const linhaConta = (c, g) => `<li><div class="lin ${priDe(tom(c))}">${dataEmBloco(c.vencimento, tom(c))}<span class="lin-txt"><span class="lin-tit">${desc(c, g) || reais(c.valor)}</span><span class="lin-sub">${[sit(c), repete(c)].filter(Boolean).join(' · ')}</span></span><span class="lin-dir num">${desc(c, g) ? (c.valor ? reais(c.valor) : '<small>a definir</small>') : ''}</span><button class="ib" data-editar-conta="${c.id}" aria-label="Editar ${esc(c.descricao)} no modal atual" title="Editar no modal atual">${ico('pencil', 'ico ico-s')}</button></div></li>`;
   // Uma linha por fornecedor: nome, total e parte da categoria; embaixo, só o
   // que acrescenta (mais de uma conta, o que falta pagar, o que venceu). A
   // parte vai em número, não numa barra por linha (DESIGN.md › Do's).
