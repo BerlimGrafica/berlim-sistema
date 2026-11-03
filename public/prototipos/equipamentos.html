@@ -103,7 +103,6 @@ html { --altura-cabecalho: 51px; --altura-filtros: 42px; }
 @media (min-width: 761px) {
   html { scroll-padding-top: calc(var(--altura-cabecalho) + var(--altura-filtros) + 48px); }
   .abas-wrap { position: sticky; top: var(--altura-cabecalho); z-index: 6; }
-  .pg:has(.abas-wrap.preso) .tab-cab { box-shadow: 0 1px 0 var(--borda); }
   .preso .acao-presa { display: inline-flex; }
 }
 .acao-presa { display: none; margin-left: 4px; }
@@ -120,6 +119,22 @@ html { --altura-cabecalho: 51px; --altura-filtros: 42px; }
 .filtro-maq:hover { border-color: var(--borda-forte); background: var(--sutil); }
 .filtro-maq span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .filtro-maq.ativo { border-color: var(--tinta); }
+/* Filtros do histórico, combináveis, numa linha acima da lista. */
+.filtros-h { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding-top: 14px; }
+/* Filtro escolhido: o nome (abre as opções para trocar) e um × que tira só ele. */
+.filtro-ativo { display: inline-flex; align-items: center; max-width: 240px; border: 1px solid var(--tinta); border-radius: 7px; background: var(--superficie); }
+.filtro-ativo .filtro-maq { border: 0; background: transparent; padding-right: 4px; min-width: 0; }
+.filtro-ativo .filtro-maq:hover { background: var(--sutil); border-radius: 6px 0 0 6px; }
+.tira-f { width: 26px; height: 28px; display: grid; place-items: center; flex-shrink: 0; color: var(--tinta-suave); border-radius: 0 6px 6px 0; }
+.tira-f:hover { color: var(--tinta); background: var(--realce); }
+.limpar-f { height: 30px; padding: 0 8px; border-radius: 7px; font-size: 12.5px; font-weight: 600; color: var(--tinta-suave); }
+.limpar-f:hover { color: var(--tinta); background: var(--realce); }
+/* Espera do histórico (vem do banco): linhas pulsando no lugar das que vêm. */
+.esq-lin { display: flex; align-items: center; gap: 14px; padding: 15px 12px; border-top: 1px solid var(--borda-fraca); }
+.lista > .esq-lin:first-child { border-top: 0; }
+.esq { display: block; height: 12px; border-radius: 4px; background: var(--borda); animation: pulsa 1.4s ease-in-out infinite; animation-delay: calc(var(--i, 0) * 90ms); }
+@keyframes pulsa { 50% { opacity: .45; } }
+.rodape-h { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 4px 0; font-size: 12.5px; color: var(--tinta-suave); font-variant-numeric: tabular-nums; }
 
 .vazio { padding: 48px 16px; text-align: center; color: var(--tinta-suave); }
 .vazio b { display: block; color: var(--tinta); font-size: 14px; margin-bottom: 4px; }
@@ -131,11 +146,6 @@ html { --altura-cabecalho: 51px; --altura-filtros: 42px; }
 /* A amostra é a cor de processo de verdade, em qualquer tema; o anel em volta
    garante que o preto apareça no escuro e o branco no claro. */
 .sw { display: inline-block; width: 10px; height: 10px; border-radius: 99px; box-shadow: inset 0 0 0 1px var(--anel-tinta); flex-shrink: 0; }
-.tira { display: flex; flex-wrap: wrap; gap: 3px 12px; }
-.tira .t { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 500; color: var(--tinta-suave); font-variant-numeric: tabular-nums; white-space: nowrap; }
-.tira .t .sg { font-weight: 700; color: var(--tinta-corpo); }
-.tira .t.velha, .tira .t.velha .sg { color: var(--tinta); font-weight: 800; }
-.tira .t.nunca { color: var(--tinta-fraca); }
 
 /* contador mecânico: um dígito por janela, nos tons da linha */
 .cm { display: inline-flex; gap: 2px; padding: 2px; border-radius: 5px; border: 1px solid var(--borda); background: var(--sutil); vertical-align: middle; }
@@ -145,30 +155,21 @@ html { --altura-cabecalho: 51px; --altura-filtros: 42px; }
 .cm i { height: 18px; display: grid; place-items: center; font: 700 11px Montserrat; font-style: normal; font-variant-numeric: tabular-nums; }
 .sem-cont { color: var(--tinta-fraca); font-size: 12px; }
 
-/* ============ opção A: lista por tipo ============ */
-.tab-cab, .lin { display: grid; grid-template-columns: 18px minmax(170px,1.1fr) minmax(240px,1.8fr) 136px 150px 18px; align-items: center; gap: 14px; }
-.tab-cab { padding: 8px 12px; font-size: 11.5px; font-weight: 600; color: var(--tinta-suave); position: sticky; top: calc(var(--altura-cabecalho) + var(--altura-filtros)); z-index: 5; background: var(--fundo); }
+/* ============ grupos e listas ============ */
 .grp { display: flex; align-items: center; gap: 9px; padding: 18px 4px 8px; font-size: 13.5px; font-weight: 700; color: var(--tinta); }
 .grp .n { color: var(--tinta-fraca); font-weight: 500; font-variant-numeric: tabular-nums; }
 .lista { background: var(--superficie); border: 1px solid var(--borda); border-radius: 10px; overflow: hidden; }
-.lin { padding: 10px 12px; border-top: 1px solid var(--borda-fraca); min-height: 56px; cursor: pointer; transition: background .1s; }
-.lista > .lin:first-child { border-top: 0; }
-.lin:hover { background: var(--sutil); }
-.lin.sel { background: var(--realce); }
-.lin.arrastando { background: var(--realce); box-shadow: inset 0 0 0 1px var(--borda-forte); position: relative; z-index: 2; }
 .nome-m { display: block; font-weight: 700; color: var(--tinta); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .sub-m { display: block; font-size: 12px; color: var(--tinta-suave); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.ult { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--tinta-suave); white-space: nowrap; font-variant-numeric: tabular-nums; }
-.ult b { color: var(--tinta-corpo); font-weight: 600; }
-.ult .ico { color: var(--tinta-fraca); }
+/* Alça para mudar a ordem da máquina no grupo (só quem organiza a vê). */
 .alca { width: 18px; height: 28px; display: grid; place-items: center; color: var(--tinta-fraca); border-radius: 5px; cursor: grab; touch-action: none; opacity: 0; transition: opacity .12s, background .12s; }
-.lin:hover .alca, .alca:focus-visible, .lin.arrastando .alca { opacity: 1; }
+.q-lin:hover .alca, .alca:focus-visible, .q-lin.arrastando .alca { opacity: 1; }
 .alca:hover { background: var(--realce); color: var(--tinta-corpo); }
-.lin .seta { color: var(--tinta-fraca); }
-.lin .c-cont-in, .q-nome .c-cont-in { display: none; }
-.q-lin.sel .q-nome { background: var(--realce); }
+.q-nome .c-cont-in { display: none; }
+.q-lin.sel .q-nome-cel { background: var(--realce); }
+.q-lin.arrastando > * { background: var(--realce); }
 
-/* ============ opção B: quadro de tintas ============ */
+/* ============ quadro de tintas (a lista de máquinas) ============ */
 /* Uma grade só para o quadro inteiro (as linhas são display: contents): cada
    tinta fica na mesma coluna em todas as máquinas, como numa folha de controle. */
 .quadro { display: grid; grid-template-columns: minmax(170px,1.4fr) repeat(var(--n), minmax(58px,.55fr)) 150px; background: var(--superficie); border: 1px solid var(--borda); border-radius: 10px; overflow-x: auto; }
@@ -177,8 +178,12 @@ html { --altura-cabecalho: 51px; --altura-filtros: 42px; }
 .q-cab > * { padding: 7px 12px; display: flex; align-items: center; font-size: 11.5px; font-weight: 600; color: var(--tinta-suave); background: var(--sutil); }
 .q-cab .q-t { flex-direction: column; justify-content: center; gap: 4px; padding: 7px 4px; border-left: 1px solid var(--borda-fraca); }
 .q-cab .q-t i { width: 22px; height: 5px; border-radius: 2px; box-shadow: inset 0 0 0 1px var(--anel-tinta); }
-.q-nome { padding: 10px 12px; min-width: 0; overflow: hidden; text-align: left; transition: background .1s; }
-.q-nome:hover { background: var(--sutil); }
+/* A primeira célula: a alça (quem organiza) e o nome, que abre a máquina. */
+.q-nome-cel { display: flex; align-items: stretch; min-width: 0; transition: background .1s; }
+.q-nome-cel .alca { align-self: center; margin-left: 4px; flex-shrink: 0; }
+.q-nome { flex: 1; padding: 10px 12px; min-width: 0; overflow: hidden; text-align: left; }
+.q-nome-cel:hover { background: var(--sutil); }
+.q-nome-cel .alca + .q-nome { padding-left: 4px; }
 .q-cel { position: relative; display: grid; place-items: center; align-content: center; gap: 1px; min-height: 56px; border-left: 1px solid var(--borda-fraca); font-size: 12.5px; font-weight: 600; color: var(--tinta-suave); font-variant-numeric: tabular-nums; transition: background .1s; }
 button.q-cel:hover { background: var(--sutil); color: var(--tinta); }
 button.q-cel:hover .q-mais { opacity: 1; }
@@ -344,8 +349,6 @@ html[data-troca-tema] *, html[data-troca-tema] *::before, html[data-troca-tema] 
 
 /* ============ responsivo ============ */
 @media (max-width: 1000px) {
-  .tab-cab, .lin { grid-template-columns: 18px minmax(150px,1fr) minmax(200px,1.5fr) 136px 18px; }
-  .c-ult { display: none; }
   .lin-h { grid-template-columns: 44px minmax(120px,.8fr) minmax(200px,1.6fr) 100px 30px 30px; }
   .lin-h .c-rend { display: none; }
 }
@@ -358,10 +361,7 @@ html[data-troca-tema] *, html[data-troca-tema] *::before, html[data-troca-tema] 
   .cab .acoes { display: none; }
   .abas-wrap { margin: 0 -12px 4px; padding: 0 8px 0 4px; }
   .dicas { display: none; }
-  .tab-cab { display: none; }
-  .lin { grid-template-columns: minmax(0,1fr) auto; grid-template-areas: "nome cont" "tintas tintas"; gap: 8px 10px; padding: 12px; }
-  .lin .c-alca, .lin .c-seta, .lin .c-ult { display: none; }
-  .lin .c-nome { grid-area: nome; } .lin .c-tintas { grid-area: tintas; } .lin .c-cont { grid-area: cont; }
+  .q-nome-cel .alca { display: none; }
   .quadro { grid-template-columns: minmax(120px,1fr) repeat(var(--n), minmax(44px,.45fr)); }
   .q-cel.velha small { display: none; }
   .q-cont { display: none; }
@@ -398,10 +398,6 @@ html[data-troca-tema] *, html[data-troca-tema] *::before, html[data-troca-tema] 
   <span class="proto-nome">Equipamentos · protótipo</span>
   <span class="proto-nota" id="nota"></span>
   <div class="proto-dir">
-    <div class="seg" role="group" aria-label="Opção da lista de máquinas">
-      <button data-opcao="lista">A · Lista por tipo</button>
-      <button data-opcao="quadro">B · Quadro de tintas</button>
-    </div>
     <button class="proto-tema" id="tema"></button>
   </div>
 </div>
@@ -451,7 +447,12 @@ const rotuloData = iso => iso === HOJE ? `Hoje, ${ddmm(iso)}` : iso === somaDias
 
 /* ===== dados na tela ===== */
 let MAQ = D.maquinas.map(m => ({ ...m, cores: [...m.cores] }));
+// REG é o RESUMO dos registros, não a tabela inteira: os recentes de cada
+// máquina, a última e a penúltima carga de cada tinta, o último contador — o que
+// o quadro, a gaveta e o formulário usam. O histórico vem do banco em páginas
+// (ver "histórico" abaixo). TOTAL é quantos registros existem.
 let REG = D.registros.map(r => ({ ...r, cores: [...r.cores] }));
+let TOTAL = D.totalRegistros ?? REG.length;
 let proxId = -1; // registros e máquinas criados aqui têm id negativo: não existem no banco
 const maq = id => MAQ.find(m => m.id === +id);
 const emUso = () => MAQ.filter(m => !m.arquivada);
@@ -477,6 +478,9 @@ function rendimento(reg, t) {
   if (!ant || ant.contador == null) return null;
   const p = reg.contador - ant.contador; return p >= 0 ? p : null;
 }
+// O rendimento que veio pronto do banco (`rend`) ou, num registro criado aqui,
+// a conta com o resumo (que tem a carga anterior de cada tinta).
+const rendeu = (r, t) => r.rend ? (r.rend[t] ?? null) : rendimento(r, t);
 // As tintas há mais tempo sem carga, entre as que já tiveram alguma; empate geral não destaca nada.
 function maisAntigas(id) {
   const ult = ultimaCargaPorTinta(id);
@@ -488,7 +492,12 @@ function maisAntigas(id) {
 
 /* ===== estado ===== */
 const est = {
-  aba: 'maquinas', opcao: ler('equip-opcao', 'lista'), filtroMaq: null,
+  // Filtros do histórico: máquina, tipo de registro, cor (tinta) e técnico.
+  // Cada um é uma lista (escolha múltipla); vazia é "todas".
+  aba: 'maquinas', filtroMaq: [], filtroTipo: [], filtroCor: [], filtroTec: [],
+  // A página do histórico vinda do banco ({ chave, pedido, carregando, itens,
+  // total, erro, mais }) e os registros apagados aqui (o protótipo não grava).
+  hist: null, removidos: new Set(),
   gaveta: null, form: null, conf: null, pop: null, sel: null, preso: false, ind: null,
   animar: false, rolar: {}, arrasto: null,
 };
@@ -517,18 +526,6 @@ function rolarContadores() {
   }));
 }
 const contadorDe = id => { const u = ultimoComContador(id); return contador(u?.contador ?? null, est.rolar[id]); };
-function tira(m) {
-  const ult = ultimaCargaPorTinta(m.id), velhas = maisAntigas(m.id);
-  return `<div class="tira">${tintasDe(m).map(t => {
-    const r = ult[t], d = r ? diasDesde(r.data) : null;
-    return `<span class="t ${velhas.has(t) ? 'velha' : ''} ${r ? '' : 'nunca'}" title="${esc(tinta(t).rotulo)}: ${r ? `última carga ${quandoLongo(r.data)}` : 'sem carga registrada'}${velhas.has(t) ? ' — a mais antiga da máquina' : ''}">${sw(t)}<span class="sg">${esc(tinta(t).sigla)}</span>${idade(d)}</span>`;
-  }).join('')}</div>`;
-}
-function ultimoTxt(m) {
-  const u = ultimoRegistro(m.id); if (!u) return '<span class="ult" style="color:var(--tinta-fraca)" title="Sem registro ainda">—</span>';
-  const carga = u.tipo === 'Reabastecimento';
-  return `<span class="ult">${ico(carga ? 'droplet' : 'wrench', 'ico ico-s')}<b>${carga ? 'Carga' : 'Manutenção'}</b>${quandoLongo(u.data)}</span>`;
-}
 const subMaq = m => [m.modelo, m.cromia === 'mono' ? 'Monocromática' : ''].filter(Boolean).join(' · ') || rotuloTipo(m.tipo);
 const vazioHTML = (titulo, txt) => `<div class="vazio">${FOLHA}<b>${titulo}</b>${txt ? `<span>${txt}</span>` : ''}</div>`;
 const grupos = () => TIPOS.map(t => ({ tipo: t, maquinas: emUso().filter(m => m.tipo === t.id).sort(porOrdem) })).filter(g => g.maquinas.length);
@@ -542,36 +539,18 @@ function topo() {
     ${abasHTML()}`;
 }
 function abasHTML() {
-  const abas = [{ id: 'maquinas', nome: 'Máquinas', n: emUso().length }, { id: 'historico', nome: 'Histórico', n: REG.length }];
+  const abas = [{ id: 'maquinas', nome: 'Máquinas', n: emUso().length }, { id: 'historico', nome: 'Histórico', n: TOTAL }];
   if (D.organizar && arquivadas().length) abas.push({ id: 'arquivadas', nome: 'Arquivadas', n: arquivadas().length });
-  const m = est.filtroMaq ? maq(est.filtroMaq) : null;
-  const fim = est.aba === 'historico' ? `<button class="filtro-maq ${m ? 'ativo' : ''}" data-pop="filtro-maq">${ico('printer', 'ico ico-s')}<span>${m ? esc(m.nome) : 'Todas as máquinas'}</span>${ico('chevron-down', 'ico ico-s')}</button>` : '';
   return `<div class="sentinela" aria-hidden="true"></div><div class="abas-wrap ${est.preso ? 'preso' : ''}">
     <div class="abas" role="tablist" aria-label="Seções">${abas.map(a => `<button class="aba" role="tab" data-acao="aba" data-aba="${a.id}" aria-selected="${est.aba === a.id}">${a.nome}<span class="n">${a.n}</span></button>`).join('')}<span class="indicador" aria-hidden="true"></span></div>
-    <div class="abas-fim">${fim}${podeRegistrar && emUso().length ? `<button class="btn btn-pri btn-p acao-presa" data-acao="registrar">${ico('clipboard-pen-line', 'ico ico-s')}Registrar<kbd>R</kbd></button>` : ''}</div>
+    <div class="abas-fim">${podeRegistrar && emUso().length ? `<button class="btn btn-pri btn-p acao-presa" data-acao="registrar">${ico('clipboard-pen-line', 'ico ico-s')}Registrar<kbd>R</kbd></button>` : ''}</div>
   </div>`;
 }
 const barraMob = () => podeRegistrar && emUso().length ? `<div class="barra-mob">${D.admin ? `<button class="btn btn-sec" data-acao="nova-maquina" aria-label="Nova máquina">${ico('plus')}</button>` : ''}<button class="btn btn-pri" data-acao="registrar">${ico('clipboard-pen-line')}Registrar carga ou manutenção</button></div>` : '';
 
-/* ===== opção A: lista por tipo ===== */
-function linhaMaq(m) {
-  return `<div class="lin ${est.sel === m.id ? 'sel' : ''} ${est.arrasto === m.id ? 'arrastando' : ''}" data-mid="${m.id}" data-acao="abrir" data-id="${m.id}" tabindex="0" aria-label="${esc(m.nome)}">
-    <div class="c-alca">${D.organizar ? `<button class="alca" data-alca="${m.id}" aria-label="Arrastar para mudar a ordem (Alt e as setas)" title="Arrastar para mudar a ordem">${ico('grip-vertical', 'ico ico-s')}</button>` : ''}</div>
-    <div class="c-nome"><span class="nome-m">${esc(m.nome)}</span><span class="sub-m">${esc(subMaq(m))}</span></div>
-    <div class="c-tintas">${tira(m)}</div>
-    <div class="c-cont">${contadorDe(m.id)}</div>
-    <div class="c-ult">${ultimoTxt(m)}</div>
-    <div class="c-seta">${ico('chevron-right', 'ico ico-s seta')}</div>
-  </div>`;
-}
-function renderLista() {
-  const gs = grupos();
-  if (!gs.length) return vazioHTML('Nenhuma máquina cadastrada', D.admin ? 'Use “Nova máquina” para cadastrar a primeira.' : 'Peça a um administrador para cadastrar as máquinas.');
-  return `<div class="tab-cab"><span></span><span>Máquina</span><span>Tintas · desde a última carga</span><span>Contador</span><span class="c-ult">Último registro</span><span></span></div>`
-    + gs.map(g => `<div class="grp">${esc(g.tipo.rotulo)} <span class="n">${g.maquinas.length}</span></div><div class="lista" data-grupo="${g.tipo.id}">${g.maquinas.map(linhaMaq).join('')}</div>`).join('');
-}
-
-/* ===== opção B: quadro de tintas ===== */
+/* ===== a lista de máquinas: quadro de tintas ===== */
+// Uma tinta por coluna em todas as máquinas do grupo, como numa folha de
+// controle (era a opção B; a lista por tipo, opção A, saiu em 02/11/2026).
 function renderQuadro() {
   const gs = grupos();
   if (!gs.length) return vazioHTML('Nenhuma máquina cadastrada', D.admin ? 'Use “Nova máquina” para cadastrar a primeira.' : 'Peça a um administrador para cadastrar as máquinas.');
@@ -581,8 +560,8 @@ function renderQuadro() {
     const cab = `<div class="q-lin q-cab"><span>Máquina</span>${cols.map(t => `<span class="q-t" title="${esc(tinta(t).rotulo)}"><i style="background:${fundoTinta(t)}"></i>${esc(tinta(t).sigla)}</span>`).join('')}<span class="q-c" style="justify-content:flex-end">Contador</span></div>`;
     const lins = g.maquinas.map(m => {
       const ult = ultimaCargaPorTinta(m.id), velhas = maisAntigas(m.id), tem = tintasDe(m);
-      return `<div class="q-lin" data-mid="${m.id}">
-        <button class="q-nome" data-acao="abrir" data-id="${m.id}"><span class="nome-m">${esc(m.nome)}</span><span class="sub-m">${esc(subMaq(m))}</span><span class="c-cont-in">${contadorDe(m.id)}</span></button>
+      return `<div class="q-lin ${est.sel === m.id ? 'sel' : ''} ${est.arrasto === m.id ? 'arrastando' : ''}" data-mid="${m.id}">
+        <div class="q-nome-cel">${D.organizar ? `<button class="alca" data-alca="${m.id}" aria-label="Arrastar para mudar a ordem (Alt e as setas)" title="Arrastar para mudar a ordem">${ico('grip-vertical', 'ico ico-s')}</button>` : ''}<button class="q-nome" data-acao="abrir" data-id="${m.id}"><span class="nome-m">${esc(m.nome)}</span><span class="sub-m">${esc(subMaq(m))}</span><span class="c-cont-in">${contadorDe(m.id)}</span></button></div>
         ${cols.map(t => {
           if (!tem.includes(t)) return `<span class="q-cel na" aria-label="${esc(m.nome)} não usa ${esc(tinta(t).rotulo)}">·</span>`;
           const r = ult[t], d = r ? diasDesde(r.data) : null, velha = velhas.has(t);
@@ -607,7 +586,7 @@ function oqueHTML(r) {
 }
 function rendHTML(r) {
   if (r.tipo !== 'Reabastecimento') return '';
-  const rs = r.cores.map(t => ({ t, p: rendimento(r, t) })).filter(x => x.p != null);
+  const rs = r.cores.map(t => ({ t, p: rendeu(r, t) })).filter(x => x.p != null);
   if (!rs.length) return '<span class="rend">—</span>';
   return `<span class="rend">${rs.map(x => `${esc(tinta(x.t).sigla)} rendeu <b>${fmt(x.p)}</b>`).join(' · ')}</span>`;
 }
@@ -621,7 +600,7 @@ function linhaHist(r) {
   const m = maq(r.eq);
   return `<div class="lin-h">
     <div class="c-dia dia"><b>${r.data.slice(8, 10)}</b><span>${MESES[+r.data.slice(5, 7) - 1]}</span></div>
-    <div class="c-maq">${m ? `<button class="maq-link" data-acao="abrir" data-id="${m.id}">${esc(m.nome)}</button>` : '<span class="ult">Máquina removida</span>'}</div>
+    <div class="c-maq">${m ? `<button class="maq-link" data-acao="abrir" data-id="${m.id}">${esc(m.nome)}</button>` : '<span class="rend">Máquina removida</span>'}</div>
     <div class="c-oque oque">${oqueHTML(r)}</div>
     <div class="c-cont"><span class="rend">${r.contador != null ? fmt(r.contador) + ' pág.' : '—'}</span></div>
     <div class="c-rend">${rendHTML(r)}</div>
@@ -630,11 +609,93 @@ function linhaHist(r) {
     <div class="c-del">${apagarBtn(r)}</div>
   </div>`;
 }
+// Filtros do histórico, combinados entre si, e cada um com escolha múltipla:
+// duas máquinas, Ciano e Magenta... Dentro de um filtro vale qualquer uma das
+// marcadas; entre filtros, todos. Cor só existe em carga e técnico só em
+// manutenção ("Equipe" quando não veio de fora).
+const CAMPO_FILTRO = { maq: 'filtroMaq', tipo: 'filtroTipo', cor: 'filtroCor', tec: 'filtroTec' };
+const filtrosH = () => ({ maq: est.filtroMaq, tipo: est.filtroTipo, cor: est.filtroCor, tec: est.filtroTec });
+const algumFiltroH = () => Object.values(filtrosH()).some(v => v.length);
+const limparFiltrosH = () => { est.filtroMaq = []; est.filtroTipo = []; est.filtroCor = []; est.filtroTec = []; };
+const tecDe = r => r.tipo === 'Manutenção' ? (r.tecnico || 'Equipe') : null;
+const passaFiltros = (r, f) => (!f.maq.length || f.maq.includes(r.eq)) && (!f.tipo.length || f.tipo.includes(r.tipo))
+  && (!f.cor.length || f.cor.some(c => r.cores.includes(c))) && (!f.tec.length || f.tec.includes(tecDe(r)));
+// O nome do filtro escolhido: a opção, se for uma; senão quantas ("2 cores").
+const ROTULO_FILTRO = {
+  maq: { vazio: 'Máquina', um: v => esc(maq(v)?.nome || 'Máquina removida'), varios: n => `${n} máquinas` },
+  tipo: { vazio: 'Tipo', um: v => v === 'Manutenção' ? 'Manutenções' : 'Cargas', varios: () => 'Cargas e manutenções' },
+  cor: { vazio: 'Cor', um: v => esc(tinta(v).rotulo), varios: n => `${n} cores` },
+  tec: { vazio: 'Técnico', um: v => esc(v), varios: n => `${n} técnicos` },
+};
+function barraFiltrosH() {
+  const f = filtrosH();
+  // Escolhido, o filtro ganha um × que tira só ele; o nome continua abrindo as
+  // opções para trocar. Sem escolha, é o botão com a seta.
+  const NOMES = { maq: 'máquina', tipo: 'tipo', cor: 'cor', tec: 'técnico' };
+  const icone = chave => chave === 'cor' && f.cor.length ? f.cor.slice(0, 3).map(sw).join('')
+    : ico({ maq: 'printer', tipo: f.tipo.length === 1 && f.tipo[0] === 'Manutenção' ? 'wrench' : 'droplet', cor: 'palette', tec: 'user-cog' }[chave], 'ico ico-s');
+  const btn = chave => {
+    const vs = f[chave], r = ROTULO_FILTRO[chave];
+    if (!vs.length) return `<button class="filtro-maq" data-pop="f-${chave}">${icone(chave)}<span>${r.vazio}</span>${ico('chevron-down', 'ico ico-s')}</button>`;
+    const rotulo = vs.length === 1 ? r.um(vs[0]) : r.varios(vs.length);
+    return `<span class="filtro-ativo"><button class="filtro-maq" data-pop="f-${chave}" title="Trocar o filtro de ${NOMES[chave]}">${icone(chave)}<span>${rotulo}</span></button><button class="tira-f" data-acao="tirar-filtro" data-chave="${chave}" aria-label="Tirar o filtro de ${NOMES[chave]}" title="Tirar este filtro">${ico('x', 'ico ico-s')}</button></span>`;
+  };
+  return `<div class="filtros-h" role="group" aria-label="Filtrar o histórico">
+    ${['maq', 'tipo', 'cor', 'tec'].map(btn).join('')}
+    ${algumFiltroH() ? '<button class="limpar-f" data-acao="limpar-filtros">Limpar filtros</button>' : ''}
+  </div>`;
+}
+/* ===== histórico: do banco, uma página por vez ===== */
+// O protótipo recebe só o resumo dos registros. O histórico ele pede à página:
+// 50 por vez, com os filtros feitos no banco, e só com a aba aberta — de novo
+// apenas quando um filtro muda ou ao pedir mais. Fora do sistema, sem página
+// para pedir, mostra o resumo filtrado aqui.
+const noSistema = window.parent !== window;
+let pedidosHist = 0;
+// Chamado a cada render: só pede quando a aba é a do histórico e o filtro mudou.
+function pedirHistorico(mais) {
+  if (!noSistema || est.aba !== 'historico') return;
+  const filtros = filtrosH(), chave = JSON.stringify(filtros);
+  if (!mais && est.hist?.chave === chave) return;
+  const de = mais ? est.hist.itens.length : 0;
+  est.hist = mais ? { ...est.hist, mais: true } : { chave, carregando: true, itens: [], total: 0, erro: null, mais: false };
+  est.hist.pedido = ++pedidosHist;
+  window.parent.postMessage({ tipo: 'pedir-historico', pedido: est.hist.pedido, filtros, de }, '/');
+}
+addEventListener('message', e => {
+  if (!noSistema || e.source !== window.parent) return;
+  const m = e.data || {};
+  // Resposta de um pedido que já ficou para trás (o filtro mudou) não vale.
+  if ((m.tipo !== 'historico' && m.tipo !== 'historico-erro') || !est.hist || m.pedido !== est.hist.pedido) return;
+  if (m.tipo === 'historico-erro') est.hist = { ...est.hist, carregando: false, mais: false, erro: m.erro };
+  else {
+    const novos = (m.registros || []).map(r => ({ ...r, cores: [...r.cores] }));
+    est.hist = { ...est.hist, carregando: false, mais: false, erro: null, total: m.total, itens: m.de ? [...est.hist.itens, ...novos] : novos };
+  }
+  render();
+});
+// Linhas de espera com o jeito das linhas do histórico: quando chegam, nada pula.
+const esperaHist = () => `<p class="sr" role="status">Carregando o histórico…</p><div class="h-mes"><span class="esq" style="width:120px"></span></div><div class="lista" aria-hidden="true">${[42, 58, 34, 50, 46].map((w, i) => `<div class="esq-lin"><span class="esq" style="width:34px;height:30px;--i:${i}"></span><span class="esq" style="width:110px;--i:${i}"></span><span class="esq" style="width:${w}%;--i:${i}"></span></div>`).join('')}</div>`;
+
 function renderHistorico() {
-  const l = regsOrdenados().filter(r => !est.filtroMaq || r.eq === est.filtroMaq);
-  if (!l.length) return vazioHTML(est.filtroMaq ? `Nenhum registro na ${esc(maq(est.filtroMaq)?.nome || '')}` : 'Nenhum registro ainda', podeRegistrar ? 'Escolha uma máquina para lançar a primeira carga ou manutenção.' : '');
+  const f = filtrosH(), barra = barraFiltrosH();
+  let l, rodape = '';
+  if (noSistema) {
+    const h = est.hist;
+    if (!h || h.carregando) return barra + esperaHist();
+    if (h.erro) return barra + vazioHTML(esc(h.erro));
+    // Os registros criados aqui (id negativo, o protótipo não grava) entram no topo.
+    const locais = REG.filter(r => r.id < 0 && passaFiltros(r, f)).sort((a, b) => antes(a, b) ? 1 : -1);
+    const doBanco = h.itens.filter(r => !est.removidos.has(r.id));
+    l = [...locais, ...doBanco];
+    const total = h.total + locais.length - (h.itens.length - doBanco.length);
+    if (h.itens.length < h.total) rodape = `<div class="rodape-h"><span>${fmt(l.length)} de ${fmt(total)}</span><button class="btn btn-sec btn-p" data-acao="hist-mais" ${h.mais ? 'disabled' : ''}>${h.mais ? 'Carregando…' : 'Carregar mais 50'}</button></div>`;
+  } else {
+    l = regsOrdenados().filter(r => passaFiltros(r, f));
+  }
+  if (!l.length) return barra + (algumFiltroH() ? vazioHTML('Nenhum registro com esses filtros') : vazioHTML('Nenhum registro ainda', podeRegistrar ? 'Escolha uma máquina para lançar a primeira carga ou manutenção.' : ''));
   const meses = []; for (const r of l) { const k = r.data.slice(0, 7); let g = meses.at(-1); if (!g || g.k !== k) meses.push(g = { k, itens: [] }); g.itens.push(r); }
-  return meses.map(g => `<div class="h-mes">${MESES_LONGOS[+g.k.slice(5, 7) - 1]} de ${g.k.slice(0, 4)} <span class="n">${g.itens.length}</span></div><div class="lista">${g.itens.map(linhaHist).join('')}</div>`).join('');
+  return barra + meses.map(g => `<div class="h-mes">${MESES_LONGOS[+g.k.slice(5, 7) - 1]} de ${g.k.slice(0, 4)} <span class="n">${g.itens.length}</span></div><div class="lista">${g.itens.map(linhaHist).join('')}</div>`).join('') + rodape;
 }
 function renderArquivadas() {
   const l = arquivadas();
@@ -691,12 +752,12 @@ function detalheMaq(m) {
       <dt>${ico('wrench', 'ico ico-s')}Manutenção</dt><dd>${man ? `${quandoLongo(man.data)}<small title="${esc(man.desc)}">${esc(man.desc.length > 42 ? man.desc.slice(0, 40) + '…' : man.desc)}</small>` : '<span class="nada">Nenhuma</span>'}</dd>
     </dl>
     <section class="area itens"><div class="area-cab"><span class="area-ico">${ico('droplets', 'ico ico-s')}</span><h3>Tintas</h3><span class="area-meta">${tintasDe(m).length} ${tintasDe(m).length === 1 ? 'tinta' : 'tintas'}</span></div>
-      ${tintasDe(m).map(t => { const r = ult[t]; const rd = r ? rendimento(r, t) : null;
+      ${tintasDe(m).map(t => { const r = ult[t]; const rd = r ? rendeu(r, t) : null;
         return `<div class="t-lin">${sw(t)}<span><span class="nm">${esc(tinta(t).rotulo)}</span>${velhas.has(t) ? '<span class="selo">a mais antiga</span>' : ''}<span class="qd">${r ? `carga em ${ddmm(r.data)} · ${haDias(diasDesde(r.data))}` : 'sem carga registrada'}</span></span><span class="rd">${rd != null ? `<b>${fmt(rd)} pág.</b>a carga anterior` : ''}</span></div>`; }).join('')}
     </section>
-    <section class="area dados"><div class="area-cab"><span class="area-ico">${ico('history', 'ico ico-s')}</span><h3>Histórico</h3><span class="area-meta">${regs.length ? `${regs.length} ${regs.length === 1 ? 'registro' : 'registros'}` : ''}</span></div>
-      ${regs.length ? regs.slice(0, 6).map(r => `<div class="r-lin"><div class="dia"><b>${r.data.slice(8, 10)}</b><span>${MESES[+r.data.slice(5, 7) - 1]}</span></div><div class="oque">${oqueHTML(r)}${r.por ? `<span class="ds">por ${esc(r.por)}</span>` : ''}</div><span class="cont-r">${r.contador != null ? fmt(r.contador) + ' pág.' : ''}</span>${apagarBtn(r) || '<span></span>'}</div>`).join('')
-        + (regs.length > 6 ? `<button class="mais-h" data-acao="ver-historico" data-id="${m.id}">Ver os ${regs.length} registros no Histórico</button>` : '')
+    <section class="area dados"><div class="area-cab"><span class="area-ico">${ico('history', 'ico ico-s')}</span><h3>Histórico</h3><span class="area-meta">${regs.length ? 'recentes' : ''}</span></div>
+      ${regs.length ? regs.slice(0, 5).map(r => `<div class="r-lin"><div class="dia"><b>${r.data.slice(8, 10)}</b><span>${MESES[+r.data.slice(5, 7) - 1]}</span></div><div class="oque">${oqueHTML(r)}${r.por ? `<span class="ds">por ${esc(r.por)}</span>` : ''}</div><span class="cont-r">${r.contador != null ? fmt(r.contador) + ' pág.' : ''}</span>${apagarBtn(r) || '<span></span>'}</div>`).join('')
+        + `<button class="mais-h" data-acao="ver-historico" data-id="${m.id}">Ver o histórico completo</button>`
         : '<div class="sem-r">Nenhum registro ainda.</div>'}
     </section>
     ${D.organizar ? `<div class="det-acoes"><button class="btn btn-txt btn-p" data-acao="editar-maquina" data-id="${m.id}">${ico('pencil', 'ico ico-s')}Editar máquina</button><button class="btn btn-txt btn-p perigo ${conf ? 'conf' : ''}" data-acao="arquivar" data-id="${m.id}">${ico('archive', 'ico ico-s')}${conf ? 'Clique de novo para arquivar' : 'Arquivar'}</button></div>` : ''}
@@ -747,9 +808,39 @@ function popRegistrar(anc) {
   const pop = abrirPop(anc, grupos().map(g => `<div class="rot">${esc(g.tipo.rotulo)}</div>` + g.maquinas.map(m => `<button data-v="${m.id}">${esc(m.nome)}<span class="mini">${tintasDe(m).slice(0, 6).map(t => sw(t)).join('')}</span></button>`).join('')).join(''));
   pop.addEventListener('click', e => { const b = e.target.closest('button[data-v]'); if (!b) return; fecharPop(); abrirMaquina(maq(b.dataset.v), 'carga'); });
 }
-function popFiltroMaq(anc) {
-  const pop = abrirPop(anc, `<button data-v="">Todas as máquinas${marca(!est.filtroMaq)}</button><hr>` + MAQ.filter(m => REG.some(r => r.eq === m.id)).map(m => `<button data-v="${m.id}">${esc(m.nome)}<span class="sub">${daMaquina(m.id).length}</span>${marca(est.filtroMaq === m.id)}</button>`).join(''));
-  pop.addEventListener('click', e => { const b = e.target.closest('button[data-v]'); if (!b) return; fecharPop(); est.filtroMaq = b.dataset.v ? +b.dataset.v : null; render(); });
+// Um filtro do histórico: "todas" em cima e, embaixo, as opções. Elas saem do
+// cadastro (as máquinas, as tintas que elas usam, os técnicos de manutenção), e
+// não dos registros: o histórico está no banco, não inteiro na tela.
+function popFiltroH(anc, chave) {
+  const tecnicos = [...new Set([...(D.tecnicos || []), ...REG.map(r => r.tecnico).filter(Boolean)])].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+  const ops = {
+    maq: () => [[null, 'Todas as máquinas'], ...[...emUso().sort(porOrdem), ...arquivadas()].map(m => [m.id, `${esc(m.nome)}${m.arquivada ? '<span class="sub">arquivada</span>' : ''}`])],
+    tipo: () => [[null, 'Cargas e manutenções'], ['Reabastecimento', `${ico('droplet', 'ico ico-s')}Cargas de tinta`], ['Manutenção', `${ico('wrench', 'ico ico-s')}Manutenções`]],
+    cor: () => [[null, 'Todas as cores'], ...ORDEM_TINTAS.filter(t => MAQ.some(m => tintasDe(m).includes(t))).map(t => [t, `${sw(t)}${esc(tinta(t).rotulo)}`])],
+    tec: () => [[null, 'Todos os técnicos'], ['Equipe', 'Equipe'], ...tecnicos.filter(n => n !== 'Equipe').map(n => [n, esc(n)])],
+  }[chave]();
+  // Escolha múltipla: cada clique marca ou desmarca e o popover fica aberto
+  // para marcar mais; "todas" desmarca tudo daquele filtro. A lista atrás se
+  // redesenha a cada clique (e pede ao banco), e o popover passa a se ancorar
+  // no botão novo.
+  const campo = CAMPO_FILTRO[chave];
+  const conteudo = () => { const sel = est[campo];
+    return ops.map(([v, rot], i) => `${i === 1 ? '<hr>' : ''}<button data-v="${v == null ? '' : esc(String(v))}" role="menuitemcheckbox" aria-checked="${v == null ? !sel.length : sel.includes(v)}">${rot}${marca(v == null ? !sel.length : sel.includes(v))}</button>`).join(''); };
+  const pop = abrirPop(anc, conteudo());
+  pop.addEventListener('click', e => {
+    // O clique redesenha o popover e o botão clicado sai do documento: sem
+    // parar aqui, o ouvinte geral acharia que o clique foi fora e o fecharia.
+    e.stopPropagation();
+    const b = e.target.closest('button[data-v]'); if (!b) return;
+    const v = b.dataset.v, valor = !v ? null : chave === 'maq' ? +v : v, sel = est[campo];
+    est[campo] = valor == null ? [] : sel.includes(valor) ? sel.filter(x => x !== valor) : [...sel, valor];
+    // Os dois tipos marcados é o mesmo que nenhum.
+    if (chave === 'tipo' && est[campo].length === ops.length - 1) est[campo] = [];
+    render();
+    pop.innerHTML = conteudo(); lucide.createIcons();
+    pop.querySelector(`button[data-v="${valor == null ? '' : esc(String(valor))}"]`)?.focus({ preventScroll: true });
+    if (est.pop) est.pop.ancora = tela.querySelector(`[data-pop="f-${chave}"]`);
+  });
 }
 function popData(anc) {
   const f = est.form; const ops = [[HOJE, 'Hoje'], [somaDias(HOJE, -1), 'Ontem'], [somaDias(HOJE, -2), 'Anteontem']];
@@ -777,8 +868,8 @@ function toast(msg, desfazer) {
 function abrirMaquina(m, modo, tintaInicial) {
   est.gaveta = { tipo: 'maquina', id: m.id }; est.sel = m.id; est.conf = null;
   est.form = modo ? novoForm(modo, tintaInicial) : null;
-  tela.querySelectorAll('.lin.sel').forEach(el => el.classList.remove('sel'));
-  tela.querySelector(`.lin[data-mid="${m.id}"]`)?.classList.add('sel');
+  tela.querySelectorAll('.q-lin.sel').forEach(el => el.classList.remove('sel'));
+  tela.querySelector(`.q-lin[data-mid="${m.id}"]`)?.classList.add('sel');
   renderGaveta(); focarForm();
 }
 const novoForm = (modo, t) => ({ modo, cores: new Set(t ? [t] : []), contador: '', desc: '', tecnico: 'Equipe', valor: '', data: HOJE });
@@ -791,19 +882,26 @@ function salvarForm() {
     tecnico: f.modo === 'carga' || f.tecnico === 'Equipe' ? '' : f.tecnico,
     valor: f.modo === 'carga' || !f.valor ? null : Math.round(parseFloat(f.valor.replace(/\./g, '').replace(',', '.')) * 100) || null,
     por: D.eu, meu: true };
-  REG.push(r); est.form = null;
+  REG.push(r); TOTAL++; est.form = null;
   if (ucAntes != null && ucAntes !== r.contador) est.rolar[m.id] = ucAntes;
   render();
   // O momento em que anotar o contador se paga: a carga que saiu ganha rendimento.
   const rs = r.cores.map(t => ({ t, p: rendimento(r, t) })).filter(x => x.p != null);
   const msg = r.tipo === 'Manutenção' ? `Manutenção registrada na ${m.nome}`
     : rs.length ? `Carga registrada. ${rs.map(x => `${tinta(x.t).rotulo}: a anterior rendeu ${fmt(x.p)} páginas`).join('; ')}` : `Carga registrada na ${m.nome}`;
-  toast(msg, () => { REG = REG.filter(x => x.id !== r.id); render(); });
+  toast(msg, () => { REG = REG.filter(x => x.id !== r.id); TOTAL--; render(); });
 }
 function apagarReg(r) {
   if (est.conf !== 'r' + r.id) { est.conf = 'r' + r.id; render(); clearTimeout(apagarReg.t); apagarReg.t = setTimeout(() => { if (est.conf === 'r' + r.id) { est.conf = null; render(); } }, 3500); return; }
-  est.conf = null; const i = REG.indexOf(r); REG.splice(i, 1); render();
-  toast(`Registro de ${r.tipo === 'Reabastecimento' ? 'carga' : 'manutenção'} apagado`, () => { REG.splice(i, 0, r); render(); });
+  // O registro pode estar no resumo (gaveta, quadro), na página do histórico ou
+  // nos dois, como objetos diferentes: sai dos dois pelo id. Nada é gravado.
+  est.conf = null;
+  const i = REG.findIndex(x => x.id === r.id), doResumo = i >= 0 ? REG.splice(i, 1)[0] : null;
+  est.removidos.add(r.id); TOTAL--; render();
+  toast(`Registro de ${r.tipo === 'Reabastecimento' ? 'carga' : 'manutenção'} apagado`, () => {
+    if (doResumo) REG.splice(i, 0, doResumo);
+    est.removidos.delete(r.id); TOTAL++; render();
+  });
 }
 function arquivar(m) {
   if (est.conf !== 'arq' + m.id) { est.conf = 'arq' + m.id; renderGaveta(); return; }
@@ -830,7 +928,8 @@ function moverNaOrdem(m, para) {
 function iniciarArrasto(e, m) {
   e.preventDefault(); est.arrasto = m.id; render();
   const mover = ev => {
-    const alvo = document.elementFromPoint(ev.clientX, ev.clientY)?.closest('.lin[data-mid]'); if (!alvo) return;
+    // A linha do quadro é display: contents; o ponto cai numa célula, e a linha é a mãe dela.
+    const alvo = document.elementFromPoint(ev.clientX, ev.clientY)?.closest('.q-lin[data-mid]'); if (!alvo) return;
     const o = maq(alvo.dataset.mid); if (!o || o === m || o.tipo !== m.tipo) return;
     const l = emUso().filter(x => x.tipo === m.tipo).sort(porOrdem);
     if (moverNaOrdem(m, l.indexOf(o))) { est.animar = true; render(); }
@@ -846,11 +945,11 @@ const menosMovimento = matchMedia('(prefers-reduced-motion: reduce)');
 function medir() { const m = {}; tela.querySelectorAll('[data-mid]').forEach(el => { m[el.dataset.mid] = el.getBoundingClientRect(); }); return m; }
 function render() {
   const antesPos = est.animar ? medir() : null;
-  const corpo = est.aba === 'historico' ? renderHistorico() : est.aba === 'arquivadas' ? renderArquivadas() : est.opcao === 'quadro' ? renderQuadro() : renderLista();
+  pedirHistorico();
+  const corpo = est.aba === 'historico' ? renderHistorico() : est.aba === 'arquivadas' ? renderArquivadas() : renderQuadro();
   tela.innerHTML = `<div class="pg">${topo()}<div class="conteudo">${corpo}</div>
     <div class="dicas">${podeRegistrar ? '<span><kbd>R</kbd> registrar</span>' : ''}${D.admin ? '<span><kbd>N</kbd> nova máquina</span>' : ''}<span><kbd>↑</kbd><kbd>↓</kbd> escolher a máquina</span><span><kbd>Enter</kbd> abrir</span>${D.organizar ? '<span><kbd>Alt</kbd> + setas muda a ordem</span>' : ''}</div></div>${barraMob()}`;
   vigiaFaixa.disconnect(); const s = tela.querySelector('.sentinela'); if (s) vigiaFaixa.observe(s);
-  document.querySelectorAll('[data-opcao]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.opcao === est.opcao)));
   document.getElementById('nota').textContent = `${emUso().length} máquinas e ${D.registros.length} registros reais · nada aqui grava no sistema`;
   renderGaveta();
   lucide.createIcons(); posicionarIndicador(); rolarContadores(); est.rolar = {};
@@ -904,10 +1003,8 @@ function entrarLista(lado) {
 /* ===== eventos ===== */
 document.addEventListener('click', e => {
   if (est.pop && !e.target.closest('.pop')) { const a = est.pop.ancora; fecharPop(); if (a && a.contains(e.target)) return; }
-  const op = e.target.closest('[data-opcao]');
-  if (op) { est.opcao = op.dataset.opcao; guardar('equip-opcao', est.opcao); if (est.aba !== 'maquinas') est.aba = 'maquinas'; render(); return entrarLista(est.opcao === 'quadro' ? 1 : -1); }
   const pp = e.target.closest('[data-pop]');
-  if (pp && (tela.contains(pp) || gavetaRaiz.contains(pp))) { e.stopPropagation(); return ({ 'filtro-maq': popFiltroMaq, data: popData, tipo: popTipo })[pp.dataset.pop](pp); }
+  if (pp && (tela.contains(pp) || gavetaRaiz.contains(pp))) { e.stopPropagation(); return ({ 'f-maq': a => popFiltroH(a, 'maq'), 'f-tipo': a => popFiltroH(a, 'tipo'), 'f-cor': a => popFiltroH(a, 'cor'), 'f-tec': a => popFiltroH(a, 'tec'), data: popData, tipo: popTipo })[pp.dataset.pop](pp); }
   if (e.target.closest('[data-alca]')) return;
   const el = e.target.closest('[data-acao]'); if (!el || !(tela.contains(el) || gavetaRaiz.contains(el))) return;
   const a = el.dataset.acao, id = el.dataset.id;
@@ -920,8 +1017,12 @@ document.addEventListener('click', e => {
   if (a === 'editar-maquina') return abrirCadastro(maq(id));
   if (a === 'arquivar') return arquivar(maq(id));
   if (a === 'restaurar') { const m = maq(id); m.arquivada = false; m.ordem = Math.max(0, ...emUso().filter(x => x.tipo === m.tipo && x !== m).map(x => x.ordem)) + 1; if (!arquivadas().length) est.aba = 'maquinas'; render(); return toast(`${m.nome} voltou para a lista`); }
-  if (a === 'apagar') { const r = REG.find(x => x.id === +id); return r && apagarReg(r); }
-  if (a === 'ver-historico') { est.filtroMaq = +id; est.aba = 'historico'; fecharGaveta(); render(); return; }
+  if (a === 'apagar') { const r = REG.find(x => x.id === +id) || est.hist?.itens.find(x => x.id === +id); return r && apagarReg(r); }
+  if (a === 'hist-mais') { if (!est.hist?.mais) { pedirHistorico(true); render(); } return; }
+  // "Ver o histórico" de uma máquina: só ela, sem os outros filtros.
+  if (a === 'ver-historico') { limparFiltrosH(); est.filtroMaq = [+id]; est.aba = 'historico'; fecharGaveta(); render(); return; }
+  if (a === 'limpar-filtros') { limparFiltrosH(); render(); return; }
+  if (a === 'tirar-filtro') { const campo = CAMPO_FILTRO[el.dataset.chave]; if (campo) { est[campo] = []; render(); } return; }
   if (a === 'aba') { const lado = Math.sign(ORDEM_ABAS.indexOf(el.dataset.aba) - ORDEM_ABAS.indexOf(est.aba)); est.aba = el.dataset.aba; render(); if (est.preso) scrollTo({ top: tela.querySelector('.sentinela').getBoundingClientRect().top + scrollY - alturaCabecalho + 1 }); return entrarLista(lado); }
   // formulário de registro
   const f = est.form;
@@ -960,10 +1061,9 @@ document.addEventListener('keydown', e => {
     const ids = grupos().flatMap(g => g.maquinas.map(m => m.id)); if (!ids.length) return; e.preventDefault();
     if (e.altKey && D.organizar && est.sel) { const m = maq(est.sel); const l = emUso().filter(x => x.tipo === m.tipo).sort(porOrdem); if (moverNaOrdem(m, l.indexOf(m) + (e.key === 'ArrowUp' ? -1 : 1))) { est.animar = true; render(); } return; }
     const i = ids.indexOf(est.sel); est.sel = ids[Math.max(0, Math.min(ids.length - 1, i < 0 ? 0 : i + (e.key === 'ArrowUp' ? -1 : 1)))];
-    tela.querySelectorAll('.lin.sel, .q-lin.sel').forEach(x => x.classList.remove('sel'));
+    tela.querySelectorAll('.q-lin.sel').forEach(x => x.classList.remove('sel'));
     const lin = tela.querySelector(`[data-mid="${est.sel}"]`); lin?.classList.add('sel'); lin?.scrollIntoView({ block: 'nearest' }); return;
   }
-  if (e.key === 'Enter' && e.target.matches?.('.lin[data-mid]')) { e.preventDefault(); return abrirMaquina(maq(e.target.dataset.mid)); }
   if (e.key === 'Enter' && est.sel && !est.gaveta && !e.target.closest?.('button')) { e.preventDefault(); return abrirMaquina(maq(est.sel)); }
 });
 addEventListener('resize', () => { fecharPop(); est.ind = null; posicionarIndicador(); });

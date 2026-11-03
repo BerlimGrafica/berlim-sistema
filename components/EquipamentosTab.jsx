@@ -10,6 +10,7 @@ import { ContadorMecanico } from '@/components/equipamentos/ContadorMecanico';
 import { BarraAcoes } from '@/components/ui/BarraAcoes';
 import { useEquipamentos } from '@/hooks/useEquipamentos';
 import { useRegistrosEquipamentos } from '@/hooks/useRegistrosEquipamentos';
+import { useHistoricoEquipamentos } from '@/hooks/useHistoricoEquipamentos';
 import { useTecnicosManutencao } from '@/hooks/useTecnicosManutencao';
 import { obterDataAtual, formatarValorFinanceiro, centavosParaReais } from '@/lib/utils/formatters';
 import { TIPOS_EQUIPAMENTO, tipoPorId, tintasDe, tintaPorId, fundoDaTinta } from '@/lib/equipamentos/catalogo';
@@ -35,9 +36,6 @@ import {
 // imitando o papel. A folha era o suporte, não o valor.
 
 const MESES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
-
-const ordenar = (lista) => [...lista].sort((a, b) =>
-    a.data === b.data ? b.id - a.id : (a.data < b.data ? 1 : -1));
 
 function TiraDeTintas({ equipamento, ultimaCarga, hoje }) {
     const tintas = tintasDe(equipamento);
@@ -436,7 +434,12 @@ function LinhaRegistro({ registro, registros, nomeMaquina, autor, podeApagar, ao
                     <ul className="flex flex-col gap-1">
                         {(registro.cores || []).map(id => {
                             const tinta = tintaPorId(id);
-                            const rendeu = rendimentoDaCargaAnterior(registros, registro, id);
+                            // O histórico vem em páginas, com o rendimento já
+                            // calculado no banco (a carga anterior pode estar em
+                            // outra página). Sem a migração, calcula com o que há.
+                            const rendeu = registro.rendimentos
+                                ? (registro.rendimentos[id] ?? null)
+                                : rendimentoDaCargaAnterior(registros, registro, id);
                             return (
                                 <li key={id} className="text-mini text-tinta-corpo">
                                     <span className="flex items-center gap-1.5">
@@ -501,7 +504,7 @@ export default function EquipamentosTab() {
     const { confirmar, avisar } = useUi();
     const maquinasApi = useEquipamentos();
     const { equipamentos } = maquinasApi;
-    const { registros, carregando, erro, indisponivel, registrar, apagar } = useRegistrosEquipamentos();
+    const { registros, indisponivel, registrar, apagar } = useRegistrosEquipamentos();
     const tecnicos = useTecnicosManutencao();
     const [escolhido, setEscolhido] = useState(null);
     const [alvoCadastro, setAlvoCadastro] = useState(null);
@@ -524,10 +527,10 @@ export default function EquipamentosTab() {
         [usuariosSistema],
     );
 
-    const historico = useMemo(() => {
-        const ordenados = ordenar(registros);
-        return filtro === 'todas' ? ordenados : ordenados.filter(r => r.equipamento === filtro);
-    }, [registros, filtro]);
+    // O histórico vem do banco em páginas de 50, já filtrado pela máquina
+    // escolhida; os cards de cima usam o resumo (useRegistrosEquipamentos).
+    const historicoApi = useHistoricoEquipamentos({ equipamento: filtro === 'todas' ? null : filtro }, !indisponivel);
+    const historico = historicoApi.registros;
 
     const nomeDoRegistro = (registro) => porId.get(registro.equipamento)?.nome || 'Máquina removida';
 
@@ -540,6 +543,7 @@ export default function EquipamentosTab() {
     async function salvarEntrada(entrada) {
         const resultado = await registrar(entrada);
         if (resultado.erro) return resultado;
+        historicoApi.recarregar();
 
         // O momento em que anotar o contador se paga: a carga que acabou de sair
         // finalmente tem rendimento conhecido.
@@ -601,6 +605,7 @@ export default function EquipamentosTab() {
         if (!(await confirmar(`Apagar este registro de ${registro.tipo.toLowerCase()} da ${nomeDoRegistro(registro)}?`))) return;
         const resultado = await apagar(registro.id);
         if (resultado.erro) avisar(resultado.erro, 'erro');
+        else historicoApi.recarregar();
     }
 
     const maquinasComRegistro = equipamentos.filter(e => registros.some(r => r.equipamento === e.id));
@@ -746,7 +751,7 @@ export default function EquipamentosTab() {
                 </div>
 
                 <div className="rounded-xl border border-borda bg-superficie px-4 sm:px-5">
-                    {carregando ? (
+                    {historicoApi.carregando ? (
                         <div aria-label="Carregando histórico">
                             {Array.from({ length: 4 }).map((_, i) => (
                                 <div key={i} className="flex gap-3 py-3.5 border-b border-borda-fraca last:border-b-0">
@@ -758,8 +763,8 @@ export default function EquipamentosTab() {
                                 </div>
                             ))}
                         </div>
-                    ) : erro ? (
-                        <p className="py-8 text-center text-corpo text-perigo">Não foi possível carregar o histórico: {erro}</p>
+                    ) : historicoApi.erro ? (
+                        <p className="py-8 text-center text-corpo text-perigo">Não foi possível carregar o histórico: {historicoApi.erro}</p>
                     ) : historico.length === 0 ? (
                         <div className="py-10 text-center">
                             <p className="text-corpo font-semibold text-tinta">Nenhum registro ainda</p>
@@ -783,6 +788,22 @@ export default function EquipamentosTab() {
                                 />
                             ))}
                         </ul>
+                    )}
+                    {/* Os próximos 50 só quando pedidos. */}
+                    {!historicoApi.carregando && historicoApi.temMais && (
+                        <div className="flex items-center justify-between gap-3 py-3 border-t border-borda-fraca">
+                            <span className="text-mini text-tinta-suave tabular-nums">
+                                {historico.length} de {historicoApi.total}
+                            </span>
+                            <button
+                                type="button"
+                                onClick={historicoApi.carregarMais}
+                                disabled={historicoApi.buscandoMais}
+                                className="h-10 px-3.5 rounded-lg border border-borda text-mini font-semibold text-tinta-suave hover:text-tinta hover:border-borda-forte transition-colors duration-150 disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-brand"
+                            >
+                                {historicoApi.buscandoMais ? 'Carregando…' : `Carregar mais ${historicoApi.porPagina}`}
+                            </button>
+                        </div>
                     )}
                 </div>
             </section>
