@@ -180,7 +180,7 @@ Cada área de uma tela tem uma cor que aparece **só** na faixa do cabeçalho (f
 - **Local**: Berlim (#F97316) e Futura (#3B82F6) têm cor fixa; os demais locais tiram a cor do nome (`corPorNome`).
 
 ### Séries — fatias e linhas de gráfico
-Quem já tem cor no sistema usa a dela: etapa, local, pessoa, **forma de pagamento** (PIX #10B981, crédito #6366F1, débito #0EA5E9, link #8B5CF6, dinheiro #F59E0B, boleto #64748B, estorno #EF4444) e **categoria de conta** (despesa #10B981, material #3B82F6, manutenção #F59E0B, terceirização #A855F7, impostos #F43F5E). Para o que não tem cor (cliente, produto, instituição), oito cores em ordem fixa, validadas para quem não distingue cores (tokens `serie-1` a `serie-8`, com tom próprio no escuro): azul #2A78D6, laranja #EB6834, verde-água #1BAF7A, amarelo #EDA100, rosa #E87BA4, verde #008300, violeta #6250D6, vermelho #E34948.
+Quem já tem cor no sistema usa a dela: etapa, local, pessoa, **forma de pagamento** (PIX #10B981, crédito #6366F1, débito #0EA5E9, link #8B5CF6, dinheiro #F59E0B, boleto #64748B, estorno #EF4444) e **categoria de conta** (despesa #64748B, material #2A78D6, manutenção #EB6834, terceirização #6250D6, impostos #E87BA4 — fonte única em `CATEGORIAS_CONTA`; a paleta evita vermelho, âmbar e verde, que já dizem vencido, amanhã e valor; na lista, uma bolinha da cor ao lado do nome, como a dos locais terceiros). Para o que não tem cor (cliente, produto, instituição), oito cores em ordem fixa, validadas para quem não distingue cores (tokens `serie-1` a `serie-8`, com tom próprio no escuro): azul #2A78D6, laranja #EB6834, verde-água #1BAF7A, amarelo #EDA100, rosa #E87BA4, verde #008300, violeta #6250D6, vermelho #E34948.
 - Num ranking dos maiores (5 clientes, 5 produtos), as cores vão nessa ordem.
 - Num gráfico em que se tira e põe item (as linhas de produtos de Vendas), a cor fica com o item enquanto ele estiver lá: tirar um não repinta os outros.
 - No máximo oito de uma vez, sem repetir cor. Passou disso, o resto vira "os demais", em `borda-forte`.
@@ -242,7 +242,7 @@ Plano por padrão, com profundidade por camadas tonais (Fundo → Superfície �
 
 ## Shapes
 
-Cantos suaves e consistentes: selo 5px, controle e popover 7–9px, botão 8px, área e lista 10px, janela 12px; pílula (99px) só para chips de filtro e interruptores. Divisórias de 1px. Nenhuma borda colorida lateral acima de 1px.
+Cantos suaves e consistentes: selo 5px, controle e popover 7–9px, botão 8px, área e lista 10px, janela 12px; pílula (99px) só para chips de filtro e interruptores. Divisórias de 1px. Nenhuma borda colorida lateral acima de 1px, com uma exceção: o **filete de prioridade** (ver **Selos de prazo e horário**).
 
 ## Components
 
@@ -268,10 +268,10 @@ Superfície + borda da cor da área + raio 10px. Cabeçalho tingido com ícone e
 ### Chips e selos
 - **Chip de filtro:** pílula de 30px com contagem; ativo inverte (fundo tinta, texto superfície).
 - **Chip de local:** contorno na cor do local, fundo superfície.
-- **Selo:** 5px de raio, 11–12px, para estado curto (prazo, "até 14:00", "Rascunho"). Âmbar = atenção, vermelho = passou.
+- **Selo:** 5px de raio, 11–12px, para estado curto (prazo, "até 14:00", "Rascunho"). Âmbar = atenção (vence amanhã), vermelho = passou, vence hoje ou está devendo.
 
 ### Listas
-Linha com título em 600 + uma linha de resumo em tinta-suave; meta (prazo, preço) à direita em números tabulares; ações no hover; linha ativa pelo teclado em Realce. Clique abre no lugar (expande) em vez de navegar.
+Linha com título em 600 + uma linha de resumo em tinta-suave; meta (prazo, preço) à direita em números tabulares; **ações da linha sempre à mostra** na ponta direita, nunca escondidas até o hover: botões de ícone de 30px em tinta-fraca (hover Realce), o de concluir/pagar em verde, que no primeiro clique vira a pergunta ("Concluir?", "Pagar?") e no segundo confirma — o mesmo da nova Produção; linha já concluída guarda o lugar sem o botão; linha ativa pelo teclado em Realce. Clique abre no lugar (expande) em vez de navegar.
 
 ### Popover e toast
 Popover em superfície, raio 9px, sombra Popover, entra com 160ms deslizando 4px; itens com hover Realce e ✓ no selecionado. Toast escuro centrado no rodapé, 2,2s, com ícone de ✓ verde.
@@ -294,7 +294,13 @@ O cabeçalho gruda no topo da gaveta ao rolar e traz o nº à esquerda e, à dir
 Bolinha de 24px com **duas letras** (nome simples: as duas primeiras, "Mu"; composto: inicial do primeiro e do último, "AL") na cor fixa de `corPorNome` — a mesma do chat e das etiquetas. Sobreposição de 3px; até três bolinhas e uma "+N" cinza. Como texto: "Ana", "Ana e Rafael", e a partir de três só "3 pessoas" (lista inteira no `title`). Nos protótipos as cores chegam por `lib/prototipos/coresDoNome.js`.
 
 ### Selos de prazo e horário
-Prazo: "Atrasada · 28/08" (`perigo`), "Hoje" (`obs`), "Amanhã", "sex 24/10" (até 7 dias), "24/10", "Sem prazo". Horário limite só quando existe: "até 14:00" neutro, âmbar faltando 2h, vermelho depois que passa. Nas etapas de `STATUSES_SEM_ATRASO` (**Aguardando Pagamento** e **Aguardando Retorno**, que esperam o cliente antes da arte, e **Retirada**, já pronta) o prazo vencido é neutro, o de hoje também, e nenhuma delas conta como atraso; Entrega conta.
+**A régua de prazo e vencimento é uma só no sistema todo** (prazo de O.S., conta a pagar, boleto, conta a receber): vencido, vence **hoje** ou está devendo → vermelho (`perigo`); vence **amanhã** → âmbar (`obs`); o resto, neutro. É a mesma régua do campo de prazo da tela atual ("verde por padrão, amarelo faltando 1 dia, vermelho no último dia ou atrasado"). Vale para selo, texto do prazo, quadrinho de data e o fundo dos grupos ("Para hoje" e "Atrasadas" em vermelho claro, "Amanhã" em âmbar claro). Data que não é prazo (dia em que a nota foi pedida, dia da venda) fica neutra.
+
+**Quadrinho de data.** Em lista com prazo ou vencimento, a data entra num quadrinho de 40px no começo da linha: o **dia** grande (13.5px, 700) e, embaixo, o **mês** abreviado ("03 / nov"). Ele é só a data: "Hoje", "Amanhã", "Em 3 dias", "Há 4 dias" vão no texto ao lado (ou à direita), nunca repetidos dentro do quadrinho. Fundo e contorno seguem a régua (vermelho claro, âmbar claro ou neutro); sem data, o quadrinho fica tracejado. Quando o quadrinho é o próprio controle do prazo, clicar nele abre o popover de data.
+
+**Filete de prioridade.** Toda linha de lista com prazo ou vencimento ganha um filete de 3px no canto esquerdo, por dentro (`box-shadow: inset 3px 0 0`, sem mexer no alinhamento): vermelho para vencido ou vence hoje, âmbar para amanhã, nenhum para o resto. Linha paga, concluída ou numa etapa que não atrasa não tem filete. Classes nos protótipos: `pri-alta` e `pri-media`.
+
+Prazo: "Atrasada · 28/08" (`perigo`), "Hoje" (`perigo`), "Amanhã" (`obs`), "sex 24/10" (até 7 dias), "24/10", "Sem prazo". Horário limite só quando existe: "até 14:00" neutro, âmbar faltando 2h, vermelho depois que passa. Nas etapas de `STATUSES_SEM_ATRASO` (**Aguardando Pagamento** e **Aguardando Retorno**, que esperam o cliente antes da arte, e **Retirada**, já pronta) o prazo vencido é neutro, o de hoje também, e nenhuma delas conta como atraso; Entrega conta.
 
 ### Resumo de pagamento
 Um resumo só: total em número grande, barra do que já entrou (`fin`), "Recebido R$ x · Falta R$ y" (falta em `perigo`; "Quitado" ✓; "Pago a mais" em `obs-tinta`) e a lista de recebimentos. Cada valor aparece uma vez; o cabeçalho da área só mostra "Quitado".
@@ -369,7 +375,7 @@ Testado e recusado: a tira de densidade marcando a etapa da O.S. na gaveta da Pr
 - **Don't** pintar faixas inteiras de cor saturada (cabeçalhos de grupo, barras de título) — cor de área é tinta clara.
 - **Don't** usar texto branco sobre o laranja de marca.
 - **Don't** usar select nativo, `alert()` ou modal para escolha simples ou confirmação leve.
-- **Don't** colocar borda lateral colorida grossa em cartão, linha ou aviso.
+- **Don't** colocar borda lateral colorida grossa em cartão, linha ou aviso (o filete de prioridade de 3px das listas com prazo é a única exceção).
 - **Don't** usar caixa alta espaçada em rótulos e títulos.
 - **Don't** criar cartões iguais em grade como estrutura de página quando uma lista densa resolve.
 - **Don't** misturar busca, chips e botões numa mesma faixa de ferramentas: busca no cabeçalho, filtros em abas.
