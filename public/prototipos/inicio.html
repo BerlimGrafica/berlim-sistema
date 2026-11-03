@@ -119,6 +119,7 @@ a { color: inherit; text-decoration: none; }
 
 .selo { display: inline-flex; align-items: center; gap: 4px; font-size: 11.5px; font-weight: 600; border-radius: 5px; padding: 1px 7px; white-space: nowrap; background: var(--realce); color: var(--tinta-corpo); }
 .selo .ico { width: 12px; height: 12px; }
+a.selo:hover { text-decoration: underline; text-underline-offset: 2px; }
 .selo.atraso { background: var(--perigo-fundo); color: var(--perigo); }
 .selo.hoje { background: var(--obs-fundo); color: var(--obs-tinta); }
 .selo.fin { background: var(--fin-fundo); color: var(--fin-tinta); }
@@ -126,7 +127,7 @@ a { color: inherit; text-decoration: none; }
 
 /* números do topo: uma peça só, dividida por fios. Cada número traz o
    contexto que o explica — a comparação, a parte, as O.S. uma a uma. */
-.numeros { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); background: var(--superficie); border: 1px solid var(--borda); border-radius: 10px; margin: 20px 0 22px; overflow: hidden; }
+.numeros { display: grid; grid-template-columns: repeat(var(--n, 4), minmax(0, 1fr)); background: var(--superficie); border: 1px solid var(--borda); border-radius: 10px; margin: 20px 0 22px; overflow: hidden; }
 .n-cel { padding: 16px 18px 15px; border-left: 1px solid var(--borda-fraca); display: flex; flex-direction: column; gap: 10px; min-width: 0; transition: background .12s; }
 .n-cel:first-child { border-left: 0; }
 a.n-cel:hover { background: var(--sutil); }
@@ -168,6 +169,12 @@ a.n-cel:hover { background: var(--sutil); }
 .col { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
 .lado.fixo { position: sticky; top: 71px; }
 .par { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; }
+/* Visão Geral: os quadros andam juntos por módulo (Vendas, Financeiro,
+   Produção e, ao lado, Avisos), cada grupo com um rótulo leve em cima. */
+.secao { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+.secao + .secao { margin-top: 12px; }
+.secao-tit { display: flex; align-items: center; gap: 7px; margin-bottom: -10px; font-size: 13px; font-weight: 700; color: var(--tinta-suave); }
+.secao-tit .ico { width: 15px; height: 15px; }
 
 /* área: borda e faixa do cabeçalho na cor da área, corpo neutro */
 .area { background: var(--superficie); border: 1px solid var(--c-borda); border-radius: 10px; overflow: hidden; min-width: 0; }
@@ -183,6 +190,9 @@ a.n-cel:hover { background: var(--sutil); }
 .area.compacto .area-cab { border-bottom: 0; }
 .area.compacto .area-meta { color: var(--tinta-suave); font-weight: 500; }
 .par:has(.compacto) { align-items: start; }
+/* Par de listas de tamanhos muito diferentes: cada card na altura do que tem,
+   em vez de esticar o menor e sobrar um bloco em branco. */
+.par.solto { align-items: start; }
 .area.chegou { animation: chegou 1.1s var(--saida); }
 @keyframes chegou { 0%, 35% { box-shadow: 0 0 0 3px var(--c-borda), 0 0 0 6px color-mix(in srgb, var(--c) 18%, transparent); } }
 .area.elevado { border: 0; border-radius: 12px; box-shadow: 0 1px 2px rgba(15,23,42,.06), 0 16px 36px -18px rgba(15,23,42,.34); }
@@ -266,6 +276,32 @@ a.lin:hover { background: var(--sutil); }
 .diaf.atraso b, .diaf.atraso span { color: var(--perigo); }
 .diaf.hoje { background: var(--obs-fundo); box-shadow: inset 0 0 0 1px var(--obs-borda); }
 .diaf.hoje b, .diaf.hoje span { color: var(--obs-tinta); }
+/* Visão Produção: a lista em grupos de prazo, e cada O.S. mostrando só o que
+   produzir — os itens, um por linha. */
+.lin.prod { align-items: flex-start; gap: 14px; padding: 11px 16px; }
+.prod-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.prod-item { display: block; font-size: 14px; font-weight: 700; color: var(--tinta); line-height: 1.35; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.prod-feitos { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--tinta-fraca); }
+.prod-feitos .ico { color: var(--sucesso); }
+.prod-rodape { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 8px; font-size: 12px; color: var(--tinta-suave); }
+.prod-rodape .oid { color: var(--tinta-fraca); }
+.tag-entrega { display: inline-flex; align-items: center; gap: 4px; font-size: 11.5px; font-weight: 600; padding: 0 6px; border-radius: 5px; background: var(--fin-fundo); color: var(--fin-tinta); }
+.tag-entrega .ico { width: 12px; height: 12px; }
+.prod-dir { flex-shrink: 0; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; text-align: right; }
+.prod-dir .quando { font-size: 12.5px; font-weight: 600; color: var(--tinta-corpo); white-space: nowrap; }
+.prod-dir small { font-size: 12px; color: var(--tinta-suave); white-space: nowrap; }
+.prod-rodape { margin-top: 2px; }
+/* Hoje e atrasadas num bloco de fundo claro, na cor do estado — o cabeçalho do
+   grupo e as linhas juntos —, que se vê de longe; os outros dias ficam no
+   branco. Tinta clara, sem faixa saturada nem borda lateral (DESIGN.md). */
+.lista > .grupo-rot.hoje, .lista > li.tom-hoje { background: var(--obs-fundo); }
+.lista > .grupo-rot.atraso, .lista > li.tom-atraso { background: var(--perigo-fundo); }
+.lista > li.tom-hoje .lin { border-top-color: var(--obs-borda); }
+.lista > li.tom-atraso .lin { border-top-color: var(--perigo-borda); }
+.lista > .grupo-rot.hoje { border-top-color: var(--obs-borda); }
+.lista > .grupo-rot.atraso { border-top-color: var(--perigo-borda); }
+.lista > li.tom-hoje .lin:hover, .lista > li.tom-atraso .lin:hover { background: rgba(0, 0, 0, .025); }
+.dark .lista > li.tom-hoje .lin:hover, .dark .lista > li.tom-atraso .lin:hover { background: rgba(255, 255, 255, .03); }
 
 /* pendências: ícone e cor dizem a gravidade, a palavra repete no title */
 .g-ico { width: 28px; height: 28px; border-radius: 7px; display: grid; place-items: center; flex-shrink: 0; align-self: flex-start; }
@@ -289,10 +325,12 @@ a.lin:hover { background: var(--sutil); }
 .graf-area { position: relative; height: 190px; margin-top: 22px; border-bottom: 1px solid var(--borda); }
 .graf-grade { position: absolute; left: 0; right: 0; border-top: 1px solid var(--borda-fraca); }
 .graf-grade span { position: absolute; left: 0; top: -17px; font-size: 10.5px; color: var(--tinta-suave); font-variant-numeric: tabular-nums; }
-.graf-media { position: absolute; left: 0; right: 0; border-top: 1px dashed var(--tinta-fraca); z-index: 1; pointer-events: none; }
+/* A média em laranja: a referência contra a qual cada coluna é lida. */
+.graf-media { position: absolute; left: 0; right: 0; border-top: 1.5px dashed var(--brand); z-index: 1; pointer-events: none; }
 .graf-cols { position: absolute; inset: 0; display: flex; align-items: flex-end; }
 .graf-col { position: relative; flex: 1; height: 100%; display: flex; align-items: flex-end; justify-content: center; border-radius: 4px 4px 0 0; }
 .graf-col:hover, .graf-col:focus-visible { outline: none; background: var(--sutil); }
+button.graf-col { cursor: pointer; }
 .graf-col i { position: relative; width: min(24px, 58%); min-height: 2px; background: var(--fin); border-radius: 4px 4px 0 0; }
 .graf-col i.passado { opacity: .42; transition: opacity .12s; }
 .graf-col:hover i.passado, .graf-col:focus-visible i.passado { opacity: .8; }
@@ -309,7 +347,8 @@ a.lin:hover { background: var(--sutil); }
 .graf-leg b { color: var(--tinta); font-weight: 600; }
 .graf-leg .m-col { width: 9px; height: 12px; border-radius: 2px 2px 0 0; background: var(--fin); }
 .graf-leg .m-proj { width: 9px; height: 12px; border: 1.5px dashed var(--fin); border-bottom: 0; border-radius: 2px 2px 0 0; }
-.graf-leg .m-media { width: 16px; border-top: 1px dashed var(--tinta-fraca); }
+.graf-leg .m-media { width: 16px; border-top: 1.5px dashed var(--brand); }
+.graf-leg .dica { margin-left: auto; color: var(--brand-tinta); font-weight: 600; }
 /* ============ gaveta (computador) / folha (celular), como na nova Produção ============ */
 .gv-veu { position: fixed; inset: 51px 0 0 0; background: rgba(15,23,42,.36); z-index: 60; animation: veuEntra .4s ease-out; }
 .dark .gv-veu { background: rgba(0,0,0,.6); }
@@ -503,6 +542,7 @@ a.lin:hover { background: var(--sutil); }
   .stats b { font-size: 13.5px; }
   .graf-area { height: 160px; }
   .graf-x span:nth-child(even):not(.hoje) { visibility: hidden; }
+  .graf-leg .dica { margin-left: 0; }
   .rosca-wrap { grid-template-columns: 1fr; justify-items: center; gap: 16px; padding: 18px 16px 14px; }
   .rosca { width: 176px; height: 176px; }
   .rosca-wrap > div:last-child { width: 100%; }
@@ -556,6 +596,11 @@ const irPara = href => { try { window.top.location.href = href; } catch {} };
 const COR = { 'Aguardando Pagamento': '#10b981', 'Aguardando Retorno': '#84cc16', 'Desenvolvimento de Arte': '#06b6d4', 'Etiqueta Escolar': '#2563eb', 'Produzir': '#a855f7', 'Produção': '#6b7280', 'Avisar Cliente': '#ec4899', 'Retirada': '#0ea5e9', 'Entrega': '#14b8a6', 'Concluído': '#f97316' };
 const ETAPAS = ['Aguardando Pagamento', 'Aguardando Retorno', 'Desenvolvimento de Arte', 'Etiqueta Escolar', 'Produzir', 'Produção', 'Avisar Cliente', 'Entrega', 'Retirada'];
 const FILA = ['Desenvolvimento de Arte', 'Etiqueta Escolar', 'Produzir', 'Produção'];
+// A fila vista por quem produz (visão Produção): sem Produzir.
+const FILA_PRODUCAO = FILA.filter(e => e !== 'Produzir');
+// Avisar o cliente não é trabalho de quem produz: na visão Produção não entra em
+// "Para hoje" (e nenhum atraso de fora da fila da produção aparece lá).
+const FORA_DA_PRODUCAO = ['Avisar Cliente'];
 const PRONTAS = ['Avisar Cliente', 'Entrega', 'Retirada'];
 // A esteira: por onde a O.S. anda, em três fases.
 const FASES = [['Esperando o cliente', ['Aguardando Pagamento', 'Aguardando Retorno']], ['Na produção', FILA], ['Prontas', PRONTAS]];
@@ -565,11 +610,18 @@ const CURTO = { 'Aguardando Pagamento': 'Pagamento', 'Aguardando Retorno': 'Reto
 const PEDIDOS = DADOS.pedidos;
 const abertas = PEDIDOS.filter(p => ETAPAS.includes(p.status));
 const saldo = p => p.valor - p.pago;
-// Retirada não conta atraso: o serviço já está pronto esperando o cliente.
-// Retirada já está pronta esperando o cliente; Concluído já foi entregue: o
-// prazo de produção virou história nos dois, não é atraso.
-const atrasada = p => p.prazo && p.prazo < HOJE && p.status !== 'Retirada' && p.status !== 'Concluído';
+// Etapas em que prazo vencido não é atraso, a mesma regra do sistema
+// (STATUSES_SEM_ATRASO, que a página manda): antes da arte, Aguardando
+// Pagamento e Aguardando Retorno esperam o cliente, e não dependem da gráfica;
+// em Retirada o serviço já está pronto. Concluído já foi entregue. Nelas o
+// prazo de hoje também fica neutro e a O.S. não entra em "Prazos de hoje". A
+// lista de reserva só vale com o arquivo aberto fora do sistema.
+const SEM_ATRASO = [...(DADOS.semAtraso || ['Aguardando Pagamento', 'Aguardando Retorno', 'Retirada']), 'Concluído'];
+const semAtraso = p => SEM_ATRASO.includes(p.status);
+const atrasada = p => p.prazo && p.prazo < HOJE && !semAtraso(p);
 const ehHoje = p => p.prazo === HOJE;
+// Prazo de hoje que pede atenção: o de uma etapa que conta atraso.
+const urgeHoje = p => ehHoje(p) && !semAtraso(p);
 const porPrazo = (a, b) => (a.prazo || '9999').localeCompare(b.prazo || '9999') || (a.hora || '99').localeCompare(b.hora || '99') || a.id - b.id;
 const doLado = (p, nome) => p.resp.includes(nome);
 const corLocal = l => DADOS.coresLocais?.[l] || '#64748b';
@@ -578,7 +630,8 @@ const foraDeCasa = p => p.locais.filter(l => l.toLowerCase() !== 'berlim');
 function seloPrazo(p) {
   if (!p.prazo) return '<span class="selo">Sem prazo</span>';
   if (atrasada(p)) return `<span class="selo atraso">${ico('alert-triangle')}Atrasada · ${ddmm(p.prazo)}</span>`;
-  if (ehHoje(p)) return `<span class="selo hoje">${ico('clock')}${p.hora ? 'até ' + esc(p.hora) : 'Hoje'}</span>`;
+  if (urgeHoje(p)) return `<span class="selo hoje">${ico('clock')}${p.hora ? 'até ' + esc(p.hora) : 'Hoje'}</span>`;
+  if (ehHoje(p)) return '<span class="selo">Hoje</span>';
   const d = diasEntre(HOJE, p.prazo);
   return `<span class="selo">${d === 1 ? 'Amanhã' : d < 7 ? SEMANA[dataLocal(p.prazo).getDay()].slice(0, 3) + ' ' + ddmm(p.prazo) : ddmm(p.prazo)}</span>`;
 }
@@ -603,13 +656,15 @@ function area(cls, icone, titulo, meta, corpo, pe, acao, id) {
   return `<section class="area ${cls}"${id ? ` id="${id}"` : ''}><div class="area-cab"><span class="area-ico">${ico(icone)}</span><h2>${titulo}</h2>${meta ? `<span class="area-meta">${meta}</span>` : ''}${acao || ''}</div>${corpo}${pe ? `<div class="area-pe">${pe}</div>` : ''}</section>`;
 }
 const ver = (rot, href) => `<a class="ver" href="#" data-ir="${href}">${rot}${ico('arrow-right', 'ico ico-s')}</a>`;
+// Um módulo da visão Geral: o rótulo e os quadros dele, juntos.
+const secao = (titulo, icone, blocos) => `<div class="secao"><h2 class="secao-tit">${ico(icone)}${titulo}</h2>${blocos.join('')}</div>`;
 const vazio = txt => `<div class="vazio">${ico('check-circle-2')}${txt}</div>`;
 const seg = (rotulo, opcoes, atual, attr, cls = '') => `<div class="seg ${cls}" role="group" aria-label="${rotulo}"><span class="seg-trilho"></span>${opcoes.map(([id, rot]) => `<button ${attr}="${id}" aria-pressed="${id === atual}">${rot}</button>`).join('')}</div>`;
 
 // Os números do topo. Cada um traz, embaixo, o que o explica: a comparação
 // (tend), a série recente (mini), a proporção (med) ou as O.S. uma a uma.
 function numeros(cels) {
-  return `<div class="numeros">${cels.map(c => {
+  return `<div class="numeros" style="--n:${cels.length}">${cels.map(c => {
     const tag = c.alvo ? `a href="#${c.alvo}" data-rolar="${c.alvo}"` : c.href ? `a href="#" data-ir="${c.href}"` : 'div';
     return `<${tag} class="n-cel a-${c.area || 'dados'} ${c.laranja ? 'laranja' : ''}" ${c.title ? `title="${esc(c.title)}"` : ''}>
       <span class="n-topo"><span class="n-ico">${ico(c.icone)}</span><span class="n-rot">${c.rot}</span></span>
@@ -639,30 +694,95 @@ const legenda = itens => itens.filter(([, , n]) => n).map(([cor, txt]) => `<span
 
 /* ===== blocos ===== */
 const GRAV = { critico: ['alert-triangle', 'Atrasado'], atencao: ['clock', 'Para hoje'], tarefa: ['list-todo', 'A fazer'] };
-function blocoPendencias(nome, jaNaTela = []) {
-  const lista = (DADOS.pendencias[nome] || []).filter(p => !jaNaTela.includes(p.titulo));
+// Uma linha de aviso. Com `alvo`, ela rola até o card da própria tela que
+// detalha o assunto, em vez de levar a outra tela.
+const linhaPendencia = p => `<li><a class="lin" ${p.alvo ? `href="#${p.alvo}" data-rolar="${p.alvo}"` : `href="#" data-ir="${esc(p.destino || '/')}"`}><span class="g-ico ${p.gravidade}" title="${GRAV[p.gravidade]?.[1] || ''}">${ico(GRAV[p.gravidade]?.[0] || 'circle')}</span><span class="lin-txt"><span class="lin-tit">${esc(p.titulo)}</span><span class="lin-sub" title="${esc(p.detalhe)}">${esc(p.detalhe)}</span></span></a></li>`;
+// As pendências da pessoa, pela regra do sino. Cada visão escolhe pelo assunto
+// (`tipo`: conta, futura, tarefa...): `tirar` some com os que já têm card na
+// tela ou não competem ao cargo; `so` mostra só aqueles.
+// Quando a tela já tem o card de contas a pagar, as contas não se repetem uma a
+// uma no aviso: viram uma linha só ("1 vencida · 4 até amanhã"), que leva ao
+// card. O aviso continua dizendo que há conta vencida; a lista fica no card.
+function agruparContas(lista, alvo) {
+  const i = lista.findIndex(p => p.tipo === 'conta'); if (i < 0) return lista;
+  const contas = lista.filter(p => p.tipo === 'conta'), venc = contas.filter(p => p.gravidade === 'critico').length, logo = contas.length - venc;
+  const resumo = { tipo: 'conta', alvo, gravidade: venc ? 'critico' : 'atencao', titulo: 'Contas a pagar',
+    detalhe: [venc ? plural(venc, 'vencida', 'vencidas') : '', logo ? `${logo} até amanhã` : ''].filter(Boolean).join(' · ') };
+  const resto = lista.filter(p => p.tipo !== 'conta'); resto.splice(i, 0, resumo); return resto;
+}
+function blocoPendencias(nome, { tirar = [], so = null, titulo = 'Precisa de você', vazioTxt = 'Nenhuma pendência sua agora.', contasNoCard = null } = {}) {
+  let lista = (DADOS.pendencias[nome] || []).filter(p => !tirar.includes(p.tipo) && (!so || so.includes(p.tipo)));
+  if (contasNoCard) lista = agruparContas(lista, contasNoCard);
   const mostrar = lista.slice(0, 7);
   const corpo = lista.length
-    ? `<ul class="lista">${mostrar.map(p => `<li><a class="lin" href="#" data-ir="${esc(p.destino || '/')}"><span class="g-ico ${p.gravidade}" title="${GRAV[p.gravidade]?.[1] || ''}">${ico(GRAV[p.gravidade]?.[0] || 'circle')}</span><span class="lin-txt"><span class="lin-tit">${esc(p.titulo)}</span><span class="lin-sub" title="${esc(p.detalhe)}">${esc(p.detalhe)}</span></span></a></li>`).join('')}</ul>`
-    : `<div class="tudo-ok"><span class="ok-ico">${ico('check')}</span><div><b>Tudo em dia</b><span>Nenhuma pendência sua agora.</span></div></div>`;
+    ? `<ul class="lista">${mostrar.map(linhaPendencia).join('')}</ul>`
+    : `<div class="tudo-ok"><span class="ok-ico">${ico('check')}</span><div><b>Tudo em dia</b><span>${vazioTxt}</span></div></div>`;
   const criticos = lista.filter(p => p.gravidade === 'critico').length;
-  return area(`a-obs${criticos ? ' elevado' : ''}`, 'bell', criticos ? 'Precisa de você<small>comece pelos atrasados</small>' : 'Precisa de você', lista.length ? (criticos ? `${criticos} atrasad${criticos === 1 ? 'a' : 'as'} · ${lista.length}` : String(lista.length)) : '', corpo,
+  return area(`a-obs${criticos ? ' elevado' : ''}`, 'bell', criticos ? `${titulo}<small>comece pelos atrasados</small>` : titulo, lista.length ? (criticos ? `${criticos} atrasad${criticos === 1 ? 'a' : 'as'} · ${lista.length}` : String(lista.length)) : '', corpo,
     lista.length > mostrar.length ? `<span class="ver" style="cursor:default">e mais ${lista.length - mostrar.length} no sino da barra</span>` : '');
 }
 
+// A visão Geral separa as pendências em três: as gerais, que cabem a quem
+// administra a gráfica e não a uma pessoa; as fiscais, que têm card próprio; e
+// o resto, que o sino pôs no nome da pessoa (tarefa, material a comprar, link
+// de pagamento...) e vai para "No seu nome".
+const AVISOS_GERAIS = ['conta', 'futura'];
+const AVISOS_FISCAIS = ['faturamento', 'nf-emitir', 'nf-preencher'];
+// "hoje", "ontem", "há 3 dias"
+const haQuanto = iso => { const d = iso ? diasEntre(iso, HOJE) : 0; return d <= 0 ? 'hoje' : d === 1 ? 'ontem' : `há ${d} dias`; };
+
+// No seu nome: o que é da pessoa, e não da gráfica — as O.S. dela na produção
+// e as pendências pessoais. Os avisos gerais e os fiscais ficam nos cards deles.
+function blocoNoSeuNome(eu) {
+  const os = abertas.filter(p => FILA.includes(p.status) && doLado(p, eu)).sort(porPrazo);
+  const avisos = (DADOS.pendencias[eu] || []).filter(p => !AVISOS_GERAIS.includes(p.tipo) && !AVISOS_FISCAIS.includes(p.tipo));
+  const total = os.length + avisos.length;
+  const corpo = total ? listaEmGrupos([
+    { icone: 'layers', rotulo: 'Suas O.S. na produção', itens: os, linha: p => linhaLimpa(p, `${prazoTexto(p)}<small>${esc(p.status)}</small>`), max: 5, resto: n => `e mais ${n} com prazo mais à frente` },
+    { icone: 'list-todo', rotulo: 'Tarefas e avisos', itens: avisos, linha: linhaPendencia, max: 6, resto: n => `e mais ${n} no sino da barra` },
+  ]) : `<div class="tudo-ok"><span class="ok-ico">${ico('check')}</span><div><b>Nada no seu nome</b><span>Nenhuma O.S., tarefa ou aviso seu agora.</span></div></div>`;
+  const urge = os.filter(p => atrasada(p) || urgeHoje(p)).length + avisos.filter(p => p.gravidade === 'critico').length;
+  return area(`a-itens${urge ? ' elevado' : ''}`, 'user-check', 'No seu nome', total ? String(total) : '', corpo, os.length ? ver('Abrir a Produção', '/producao') : '');
+}
+
+// Faturamento e notas fiscais: o que espera a aprovação de faturamento de uma
+// empresa e o que espera emissão de nota. Card vazio encolhe para o cabeçalho.
+function blocoFiscal() {
+  const fat = [...DADOS.faturamento].sort((a, b) => a.desde.localeCompare(b.desde));
+  const notas = [...DADOS.notas].sort((a, b) => a.quando.localeCompare(b.quando));
+  const emitir = notas.filter(n => n.pronta), preencher = notas.filter(n => !n.pronta);
+  const lin = (href, tit, sub, dir) => `<li><a class="lin" href="#" data-ir="${href}"><span class="lin-txt"><span class="lin-tit">${esc(tit)}</span><span class="lin-sub">${sub}</span></span>${dir ? `<span class="lin-dir"><small>${esc(dir)}</small></span>` : ''}</a></li>`;
+  const cardFat = fat.length
+    ? area('a-fin elevado', 'badge-check', 'Faturamento a aprovar<small>empresas em análise</small>', String(fat.length),
+        `<ul class="lista">${fat.slice(0, 5).map(e => lin('/financeiro', e.nome, `cadastrada ${haQuanto(e.desde)}`)).join('')}</ul>`, fat.length > 5 ? ver(`Ver as ${fat.length}`, '/financeiro') : ver('Abrir o Financeiro', '/financeiro'), '', 'card-faturamento')
+    : area('a-fin compacto', 'badge-check', 'Faturamento a aprovar', 'nada agora', '', '', '', 'card-faturamento');
+  const cardNotas = notas.length
+    ? area(`a-dados${emitir.length ? ' elevado' : ''}`, 'file-text', 'Notas fiscais<small>a emitir e a preencher</small>', emitir.length ? `${emitir.length} a emitir · ${notas.length}` : String(notas.length),
+        listaEmGrupos([
+          { icone: 'file-check-2', rotulo: 'Prontas para emitir', itens: emitir, linha: n => lin('/financeiro', n.cliente, `pedida ${haQuanto(n.quando)}`, n.tipo), max: 5, resto: k => `e mais ${k} para emitir` },
+          { icone: 'file-pen-line', rotulo: 'A preencher · pedidas pelo cliente', itens: preencher, linha: n => lin('/notas-fiscais', n.cliente, `pedida ${haQuanto(n.quando)}`, n.tipo), max: 3, resto: k => `e mais ${k} a preencher` },
+        ]), ver('Abrir notas fiscais', '/notas-fiscais'), '', 'card-notas')
+    : area('a-dados compacto', 'file-text', 'Notas fiscais', 'nada agora', '', '', '', 'card-notas');
+  return `<div class="par solto">${cardFat}${cardNotas}</div>`;
+}
+
+// Vazio, encolhe para o cabeçalho, como os cards do Atendimento.
 function blocoHoje(filtro, titulo = 'Prazos de hoje') {
-  const hoje = abertas.filter(p => ehHoje(p) && p.status !== 'Retirada' && (!filtro || filtro(p))).sort(porPrazo);
-  const corpo = hoje.length ? `<ul class="lista">${hoje.slice(0, 8).map(p => linhaOS(p, seloPrazo(p))).join('')}</ul>` : vazio('Nenhuma O.S. vence hoje.');
-  return area('a-itens', 'calendar-clock', titulo, hoje.length ? String(hoje.length) : '', corpo, hoje.length > 8 ? ver(`Ver as ${hoje.length}`, '/producao') : '');
+  const hoje = abertas.filter(p => urgeHoje(p) && (!filtro || filtro(p))).sort(porPrazo);
+  if (!hoje.length) return area('a-itens compacto', 'calendar-clock', titulo, 'nenhuma O.S. vence hoje', '', '', '', 'card-hoje');
+  return area('a-itens', 'calendar-clock', titulo, String(hoje.length), `<ul class="lista">${hoje.slice(0, 8).map(p => linhaOS(p, seloPrazo(p))).join('')}</ul>`, hoje.length > 8 ? ver(`Ver as ${hoje.length}`, '/producao') : '', '', 'card-hoje');
 }
 
 // A esteira da produção: quantas O.S. em cada etapa, na ordem em que andam.
 // As cores são as das etapas no sistema; o número vai escrito em cima.
-function blocoEsteira() {
+// `semAtrasoAqui`: etapas que, nesta visão, não mostram atraso (na Produção,
+// Avisar Cliente — avisar não é trabalho de quem produz).
+function blocoEsteira(semAtrasoAqui = []) {
   const n = e => abertas.filter(p => p.status === e).length;
-  const atrDe = e => abertas.filter(p => p.status === e && atrasada(p)).length;
+  const contaAqui = p => atrasada(p) && !semAtrasoAqui.includes(p.status);
+  const atrDe = e => abertas.filter(p => p.status === e && contaAqui(p)).length;
   const max = Math.max(1, ...ETAPAS.map(n));
-  const atr = abertas.filter(atrasada).length;
+  const atr = abertas.filter(contaAqui).length;
   let i = 0;
   const corpo = `<div class="est" role="img" aria-label="${ETAPAS.map(e => `${e}: ${n(e)}`).join(', ')}">${FASES.map(([fase, etapas]) => `
     <div class="est-fase"><div class="est-cols">${etapas.map(e => { const q = n(e), a = atrDe(e);
@@ -670,7 +790,7 @@ function blocoEsteira() {
         <span class="est-plot"><b class="est-q num">${q}</b><i class="est-barra cy" style="--cor:${COR[e]};--p:${q / max};--i:${i++}"></i></span>
         <span class="est-txt"><span class="est-nome">${esc(CURTO[e] || e)}</span>${a ? `<span class="est-atr">${plural(a, 'atrasada', 'atrasadas')}</span>` : ''}</span></a>`; }).join('')}</div>
       <div class="est-fase-rot"><span>${fase}</span><b class="num">${etapas.reduce((s, e) => s + n(e), 0)}</b></div></div>`).join('')}</div>`;
-  return area('a-itens', 'layers', 'Produção agora', `${plural(abertas.length, 'O.S.', 'O.S.')}${atr ? ` · ${atr} atrasada${atr === 1 ? '' : 's'}` : ''}`, corpo, ver('Abrir a Produção', '/producao'));
+  return area('a-itens', 'layers', 'Produção agora', `${plural(abertas.length, 'O.S.', 'O.S.')}${atr ? ` · ${atr} atrasada${atr === 1 ? '' : 's'}` : ''}`, corpo, ver('Abrir a Produção', '/producao'), '', 'bloco-esteira');
 }
 
 // Vendas: o resumo do mês e o gráfico, por dia (os 15 últimos dias com venda)
@@ -689,7 +809,7 @@ function grafVendas(modo) {
     if (pontos.at(-1)?.atual) proj = Math.round(V.bruto / dia * new Date(a, m, 0).getDate());
   } else {
     pontos = [...V.serieDia].reverse().map(s => { const d = dataLocal(s.rotulo);
-      return { v: s.centavos, atual: s.rotulo === HOJE, x: s.rotulo === HOJE ? 'hoje' : String(d.getDate()), tip: `${SEMANA[d.getDay()]}, ${d.getDate()} de ${MESES[d.getMonth()]}` }; });
+      return { v: s.centavos, iso: s.rotulo, atual: s.rotulo === HOJE, x: s.rotulo === HOJE ? 'hoje' : String(d.getDate()), tip: `${SEMANA[d.getDay()]}, ${d.getDate()} de ${MESES[d.getMonth()]}` }; });
     media = pontos.length ? pontos.reduce((s, p) => s + p.v, 0) / pontos.length : 0;
     rotMedia = 'média por dia com venda';
   }
@@ -706,13 +826,19 @@ function grafVendas(modo) {
     const temProj = j === ultimo && proj > p.v;
     const rot = temProj ? `<b class="graf-val suave ${j === ultimo && pontos.length > 4 ? 'fim' : ''}" style="bottom:calc(${pct(proj)}% + 4px)">~ ${compacto(proj)}</b>`
       : (j === ultimo || (j === iMaior && iMaior < ultimo - 1)) ? `<b class="graf-val ${j === ultimo ? (pontos.length > 4 ? 'fim' : '') : 'suave'}" style="bottom:calc(${pct(p.v)}% + 4px)">${compacto(p.v)}</b>` : '';
-    return `<div class="graf-col" tabindex="0" data-tip="${esc(p.tip)}|${reais(p.v, true)}${temProj ? ` · projeção ~ ${reais(proj)}` : ''}">
-      ${temProj ? `<span class="proj" style="bottom:${pct(p.v)}%;height:${pct(proj) - pct(p.v)}%"></span>` : ''}
-      <i class="cy ${j === ultimo ? '' : 'passado'}" style="height:${pct(p.v)}%;--i:${j}"></i>${rot}</div>`;
+    const tip = `${esc(p.tip)}${modo === 'dia' ? ' · clique para ver' : ''}|${reais(p.v, true)}${temProj ? ` · projeção ~ ${reais(proj)}` : ''}`;
+    const dentro = `${temProj ? `<span class="proj" style="bottom:${pct(p.v)}%;height:${pct(proj) - pct(p.v)}%"></span>` : ''}
+      <i class="cy ${j === ultimo ? '' : 'passado'}" style="height:${pct(p.v)}%;--i:${j}"></i>${rot}`;
+    // Por dia, cada coluna abre o relatório do dia, como na tela de Vendas.
+    return modo === 'dia'
+      ? `<button class="graf-col" data-dia="${p.iso}" data-tip="${tip}" aria-label="${esc(p.tip)}: ${reais(p.v, true)}. Ver o que foi vendido">${dentro}</button>`
+      : `<div class="graf-col" tabindex="0" data-tip="${tip}">${dentro}</div>`;
   }).join('');
-  return `<div class="graf" role="img" aria-label="Vendas ${modo === 'mes' ? 'por mês' : 'por dia'}; ${rotMedia}: ${reais(media)}">
-    <div class="graf-area" aria-hidden="true">
-      ${[1, 2].map(k => `<div class="graf-grade" style="bottom:${k * 50}%"><span>${compacto(passo * k)}</span></div>`).join('')}
+  // Por dia as colunas são botões e o leitor de tela chega a elas; por mês o
+  // gráfico é só figura, e a tabela escondida embaixo traz os números.
+  return `<div class="graf" role="${modo === 'dia' ? 'group' : 'img'}" aria-label="Vendas ${modo === 'mes' ? 'por mês' : 'por dia'}; ${rotMedia}: ${reais(media)}">
+    <div class="graf-area"${modo === 'dia' ? '' : ' aria-hidden="true"'}>
+      ${[1, 2].map(k => `<div class="graf-grade" style="bottom:${k * 50}%" aria-hidden="true"><span>${compacto(passo * k)}</span></div>`).join('')}
       ${media ? `<div class="graf-media" style="bottom:${pct(media)}%"></div>` : ''}
       <div class="graf-cols">${cols}</div>
     </div>
@@ -721,6 +847,7 @@ function grafVendas(modo) {
       <span><i class="m-col"></i>${modo === 'mes' ? 'vendido no mês' : 'vendido no dia'}</span>
       ${proj ? '<span><i class="m-proj"></i>projeção até o fim do mês</span>' : ''}
       ${media ? `<span><i class="m-media"></i>${rotMedia} <b class="num">${reais(media)}</b></span>` : ''}
+      ${modo === 'dia' ? `<span class="dica">${ico('mouse-pointer-click', 'ico ico-s')}clique num dia para ver o que foi vendido</span>` : ''}
     </div>
     <table class="so-leitor"><caption>Vendas ${modo === 'mes' ? 'por mês' : 'por dia'}</caption><tbody>${pontos.map(p => `<tr><th>${esc(p.tip)}</th><td>${reais(p.v, true)}</td></tr>`).join('')}</tbody></table>
   </div>`;
@@ -787,7 +914,7 @@ function blocoContas(destaque) {
   const corpo = contas.length
     ? `<ul class="lista">${contas.slice(0, 7).map(c => `<li><a class="lin" href="#" data-conta="${c.id}">${dataEmBloco(c.vencimento)}<span class="lin-txt"><span class="lin-tit">${esc(c.descricao)}</span><span class="lin-sub">${c.vencimento < HOJE ? `<span class="desce">vencida</span> · ` : ''}${esc(c.categoria || 'Sem categoria')}</span></span><span class="lin-dir num">${c.valor ? reais(c.valor) : '<small>valor a definir</small>'}</span></a></li>`).join('')}</ul>`
     : vazio('Nenhuma conta vence nos próximos 7 dias.');
-  return area(`a-fin${destaque && contas.length ? ' elevado' : ''}`, 'receipt', destaque && contas.length ? 'Contas a pagar · 7 dias<small>as vencidas e as da semana</small>' : 'Contas a pagar · 7 dias', contas.length ? `${vencidas.length ? `${vencidas.length} vencida${vencidas.length === 1 ? '' : 's'} · ` : ''}${reais(total)}` : '', corpo, contas.length > 7 ? ver(`Ver as ${contas.length}`, '/financeiro') : '');
+  return area(`a-fin${destaque && contas.length ? ' elevado' : ''}`, 'receipt', destaque && contas.length ? 'Contas a pagar · 7 dias<small>as vencidas e as da semana</small>' : 'Contas a pagar · 7 dias', contas.length ? `${vencidas.length ? `${vencidas.length} vencida${vencidas.length === 1 ? '' : 's'} · ` : ''}${reais(total)}` : '', corpo, contas.length > 7 ? ver(`Ver as ${contas.length}`, '/financeiro') : '', '', 'card-contas');
 }
 
 // Quem abriu O.S.: quantas cada pessoa abriu no período, a parte dela no total
@@ -853,11 +980,57 @@ function legivel(txt) {
 function prazoTexto(p) {
   if (!p.prazo) return '<span class="pz">sem prazo</span>';
   if (atrasada(p)) return `<span class="pz atraso">atrasada · ${ddmm(p.prazo)}</span>`;
-  if (ehHoje(p)) return `<span class="pz hoje">hoje${p.hora ? ' até ' + esc(p.hora) : ''}</span>`;
+  if (urgeHoje(p)) return `<span class="pz hoje">hoje${p.hora ? ' até ' + esc(p.hora) : ''}</span>`;
+  if (ehHoje(p)) return '<span class="pz">hoje</span>';
   const d = diasEntre(HOJE, p.prazo);
   if (d === 1) return `<span class="pz amanha">amanhã${p.hora ? ' até ' + esc(p.hora) : ''}</span>`;
   return `<span class="pz">${d < 7 ? SEMANA[dataLocal(p.prazo).getDay()].slice(0, 3) + ' ' : ''}${ddmm(p.prazo)}</span>`;
 }
+
+/* ===== visão Produção: o que produzir ===== */
+// O item "Entrega" não é algo a produzir: vira um selo na O.S.
+const ehEntrega = nome => /^entrega\b/i.test(String(nome || '').trim());
+const itensAProduzir = p => p.itens.filter(i => !ehEntrega(i[1]));
+const temEntrega = p => p.entrega || p.itens.some(i => ehEntrega(i[1]));
+
+// Uma O.S. na visão Produção, simples: os itens a fazer, um por linha (a
+// especificação fica na gaveta, que abre no clique); o que já está feito numa
+// linha discreta; e, no rodapé, cliente, nº e entrega, para achar a O.S.
+// À direita, o que a lista pedir (`dir`). `tom` ('hoje' ou 'atraso') pinta o
+// fundo da linha.
+function linhaProducao(p, dir = '', tom = '') {
+  const itens = itensAProduzir(p), aFazer = itens.filter(i => !i[2]), feitos = itens.filter(i => i[2]);
+  const nome = i => esc(legivel(i[1]));
+  let corpo;
+  if (aFazer.length) corpo = aFazer.slice(0, 3).map(i => `<span class="prod-item" title="${nome(i)}">${nome(i)}</span>`).join('')
+    + (aFazer.length > 3 ? `<span class="prod-feitos">+ ${plural(aFazer.length - 3, 'item', 'itens')} a fazer</span>` : '');
+  else corpo = `<span class="prod-item">${itens.length ? itens.map(nome).join(' + ') : esc(legivel(p.resumo || 'Sem itens lançados'))}</span>`;
+  const feitosTxt = !feitos.length ? '' : `<span class="prod-feitos">${ico('check', 'ico ico-s')}${aFazer.length ? `feito: ${feitos.map(nome).join(', ')}` : 'tudo feito'}</span>`;
+  const rodape = `<span class="prod-rodape"><span>${esc(p.cliente)}</span><span class="oid">O.S. ${p.id}</span>${foraDeCasa(p).length ? `<span>${esc(foraDeCasa(p).join(', '))}</span>` : ''}${temEntrega(p) ? `<span class="tag-entrega">${ico('truck')}Entrega</span>` : ''}</span>`;
+  return `<li${tom ? ` class="tom-${tom}"` : ''}><a class="lin prod" href="#" data-os="${p.id}" title="Abrir a O.S. ${p.id}"><span class="prod-txt">${corpo}${feitosTxt}${rodape}</span>${dir ? `<span class="prod-dir">${dir}</span>` : ''}</a></li>`;
+}
+
+// A lista da produção em grupos de prazo. A data sai da linha e vira cabeçalho;
+// nos grupos que juntam vários dias, a linha mostra o dia à direita.
+function gruposDePrazo(lista, linha) {
+  const amanha = somarDias(HOJE, 1), fimSemana = somarDias(HOJE, 6);
+  const hora = p => p.hora ? `<span class="selo ${urgeHoje(p) ? 'hoje' : ''}">${ico('clock')}até ${esc(p.hora)}</span>` : '';
+  const dia = p => `<span class="quando">${SEMANA[dataLocal(p.prazo).getDay()].slice(0, 3)} ${ddmm(p.prazo)}</span>`;
+  return [
+    { tom: 'atraso', icone: 'alert-triangle', rotulo: 'Atrasadas', itens: lista.filter(atrasada), linha: p => linha(p, `<span class="quando">${ddmm(p.prazo)}</span>`, 'atraso') },
+    { tom: 'hoje', icone: 'clock', rotulo: 'Para hoje', itens: lista.filter(p => p.prazo === HOJE), linha: p => linha(p, hora(p), 'hoje') },
+    { icone: 'calendar', rotulo: `Amanhã · ${SEMANA[dataLocal(amanha).getDay()]}`, itens: lista.filter(p => p.prazo === amanha), linha: p => linha(p, hora(p)) },
+    { icone: 'calendar-range', rotulo: 'Esta semana', itens: lista.filter(p => p.prazo > amanha && p.prazo <= fimSemana), linha: p => linha(p, dia(p) + hora(p)), max: 5, resto: n => `e mais ${n} esta semana` },
+    { icone: 'calendar-range', rotulo: 'Mais adiante', itens: lista.filter(p => p.prazo > fimSemana), linha: p => linha(p, `<span class="quando">${ddmm(p.prazo)}</span>`), max: 3, resto: n => `e mais ${n} mais adiante` },
+    { icone: 'calendar-x', rotulo: 'Sem prazo', itens: lista.filter(p => !p.prazo), linha: p => linha(p), max: 3, resto: n => `e mais ${n} sem prazo` },
+  ];
+}
+
+// O resto da fila, enxuto: o que é, de quem é a O.S., o prazo e quem está com ela.
+const linhaOutraProducao = p => { const nomes = itensAProduzir(p).map(i => legivel(i[1])).join(' + ') || legivel(p.resumo);
+  // As de hoje e as atrasadas com o mesmo fundo da lista de cima.
+  const tom = atrasada(p) ? 'atraso' : urgeHoje(p) ? 'hoje' : '';
+  return `<li${tom ? ` class="tom-${tom}"` : ''}><a class="lin" href="#" data-os="${p.id}" title="${esc(nomes)}"><span class="lin-txt"><span class="lin-tit">${esc(nomes)}</span><span class="lin-sub">${esc(p.cliente)} · O.S. ${p.id}</span></span><span class="lin-dir">${prazoTexto(p)}${p.resp.length ? respMini(p) : '<small>sem responsável</small>'}</span></a></li>`; };
 
 // Linha enxuta: número e cliente; embaixo o que é; à direita só o que decide.
 const linhaLimpa = (p, dir) => `<li><a class="lin" href="#" data-os="${p.id}" title="${esc(p.cliente)} — ${esc(p.resumo)}">
@@ -1011,41 +1184,60 @@ const TELAS = {
     const prontoCobrar = aReceber.filter(p => PRONTAS.includes(p.status)).reduce((s, p) => s + saldo(p), 0);
     const prontasNaoPagas = PEDIDOS.filter(p => [...PRONTAS, 'Concluído'].includes(p.status) && saldo(p) > 0).sort((x, y) => saldo(y) - saldo(x));
     const atr = abertas.filter(atrasada).length;
-    const hoje = abertas.filter(p => ehHoje(p) && p.status !== 'Retirada').length;
+    const hoje = abertas.filter(urgeHoje).length;
+    const fatN = DADOS.faturamento.length, emitirN = DADOS.notas.filter(n => n.pronta).length;
     const mesNome = MESES[m - 1], mesAnt = MESES[(m + 10) % 12];
     const serie = [...V.serieDia].reverse();
     const mediaDia = serie.length ? serie.reduce((s, x) => s + x.centavos, 0) / serie.length : 0;
     const ult7 = serie.slice(-7);
     const fechouAnt = V.serieMes.find(s => s.rotulo === isoDe(new Date(a, m - 2, 1)).slice(0, 7))?.centavos || 0;
     return {
-      resumo: [atr && ['atraso', 'alert-triangle', plural(atr, 'O.S. atrasada', 'O.S. atrasadas')], hoje && ['hoje', 'calendar-clock', plural(hoje, 'prazo hoje', 'prazos hoje')], ['fin', 'shopping-bag', `${reais(V.hoje)} vendidos hoje`]],
+      // Os selos levam ao quadro do assunto, que fica no módulo dele.
+      resumo: [atr && ['atraso', 'alert-triangle', plural(atr, 'O.S. atrasada', 'O.S. atrasadas'), 'bloco-esteira'], hoje && ['hoje', 'calendar-clock', plural(hoje, 'prazo hoje', 'prazos hoje'), 'card-hoje'],
+        fatN && ['fin', 'badge-check', plural(fatN, 'faturamento para aprovar', 'faturamentos para aprovar'), 'card-faturamento'], emitirN && ['', 'file-text', plural(emitirN, 'nota para emitir', 'notas para emitir'), 'card-notas'],
+        ['fin', 'shopping-bag', `${reais(V.hoje)} vendidos hoje`]],
       numeros: numeros([
         { rot: 'Vendas hoje', icone: 'shopping-bag', area: 'fin', laranja: true, val: dinheiro(V.hoje), tend: V.hoje ? tendencia(V.hoje, mediaDia, 'a média por dia com venda') : '',
           mini: ult7.length > 1 ? MED.mini(ult7.map(s => s.centavos), ult7.at(-1).rotulo === HOJE ? ult7.length - 1 : -1) : '',
-          ctx: `média de <b>${reais(mediaDia)}</b> por dia com venda`, href: '/vendas', title: reais(V.hoje, true) },
+          // Embaixo, só o essencial; a frase inteira fica na dica.
+          ctx: `média/dia <b>${reais(mediaDia)}</b>`, href: '/vendas', title: `${reais(V.hoje, true)} · média de ${reais(mediaDia)} por dia com venda` },
         { rot: `Vendas em ${mesNome}`, icone: 'trending-up', area: 'fin', val: dinheiro(V.bruto), tend: tendencia(V.bruto, A.bruto, `1 a ${Math.min(dia, new Date(a, m - 1, 0).getDate())} de ${mesAnt}`),
           med: fechouAnt ? MED.partes([{ v: Math.min(V.bruto, fechouAnt) }], fechouAnt) : '',
-          ctx: fechouAnt ? `<b>${pctDe(V.bruto, fechouAnt)}%</b> do que ${mesAnt} fechou (${reais(fechouAnt)})` : 'vs. mesmo período do mês passado', href: '/vendas', title: reais(V.bruto, true) },
-        { rot: 'Recebido das vendas do mês', icone: 'wallet', area: 'fin', val: dinheiro(V.recebido),
+          ctx: fechouAnt ? `<b>${pctDe(V.bruto, fechouAnt)}%</b> de ${mesAnt} · ${reais(fechouAnt)}` : '',
+          href: '/vendas', title: `${reais(V.bruto, true)}${fechouAnt ? ` · ${pctDe(V.bruto, fechouAnt)}% do que ${mesAnt} fechou (${reais(fechouAnt)})` : ''}` },
+        { rot: 'Recebido no mês', icone: 'wallet', area: 'fin', val: dinheiro(V.recebido),
           med: V.bruto ? MED.partes([{ v: Math.min(V.recebido, V.bruto) }], V.bruto) : '',
-          ctx: V.bruto ? `<b>${pctDe(V.recebido, V.bruto)}%</b> do vendido no mês` : '', href: '/vendas', title: reais(V.recebido, true) },
-        { rot: 'A receber nas O.S. abertas', icone: 'hand-coins', area: 'fin', val: dinheiro(totalReceber),
+          ctx: V.bruto ? `<b>${pctDe(V.recebido, V.bruto)}%</b> do vendido` : '', href: '/vendas', title: `${reais(V.recebido, true)} recebidos das vendas de ${mesNome}` },
+        // A barra continua mostrando a parte já pronta para cobrar (o trecho
+        // escuro); o valor dela fica na dica.
+        { rot: 'A receber', icone: 'hand-coins', area: 'fin', val: dinheiro(totalReceber),
           med: totalReceber ? MED.partes([{ v: prontoCobrar }, { v: totalReceber - prontoCobrar, cls: 'claro' }], totalReceber) : '',
-          ctx: prontoCobrar ? `<b>${reais(prontoCobrar)}</b> já prontos para cobrar · ${plural(aReceber.length, 'O.S.', 'O.S.')}` : plural(aReceber.length, 'O.S. com saldo', 'O.S. com saldo'), href: '/baixa' },
+          ctx: plural(aReceber.length, 'O.S.', 'O.S.'), href: '/baixa',
+          title: `${reais(totalReceber, true)} a receber em ${plural(aReceber.length, 'O.S. aberta', 'O.S. abertas')}${prontoCobrar ? ` · ${reais(prontoCobrar)} já prontos para cobrar` : ''}` },
       ]),
+      // Um módulo por vez, na ordem do dinheiro ao trabalho: o que se vendeu,
+      // o que entra e sai do caixa (com faturamento e notas, que não podem
+      // passar batido), e a produção. Ao lado, só os avisos.
       principal: [
-        blocoVendas(),
-        blocoEsteira(),
-        `<div class="par">${blocoCobrar(prontasNaoPagas, 'Prontas e não pagas')}${blocoContas()}</div>`,
-        `<div class="par">${composicao({ cls: 'a-dados', icone: 'star', titulo: `Melhores clientes de ${mesNome}`, sub: 'os cinco que mais compraram',
+        secao('Vendas', 'trending-up', [
+          blocoVendas(),
+          `<div class="par">${composicao({ cls: 'a-dados', icone: 'star', titulo: `Melhores clientes de ${mesNome}`, sub: 'os cinco que mais compraram',
             itens: V.clientes.slice(0, 5), rotulo: c => c.nome, cor: (c, k) => corSlot(k), extra: c => plural(c.qtd, 'O.S.', 'O.S.'),
             frase: i => `comprado por <b>${esc(i.rot)}</b>`, todo: V.bruto, demais: 'os demais clientes', pe: ver('Ver tudo', '/vendas') })}
           ${composicao({ cls: 'a-itens', icone: 'package', titulo: `Mais vendidos de ${mesNome}`, sub: 'os cinco produtos que mais venderam',
             itens: V.produtos.slice(0, 5), rotulo: p => legivel(p.rotulo), cor: (p, k) => corSlot(k),
             frase: i => `em <b>${esc(i.rot)}</b>`, todo: V.totalProdutos, demais: 'os demais produtos', pe: ver('Ver tudo', '/vendas') })}</div>`,
-        blocoCriacao(),
+          blocoCriacao(),
+        ]),
+        secao('Financeiro', 'wallet', [
+          blocoFiscal(),
+          `<div class="par">${blocoCobrar(prontasNaoPagas, 'Prontas e não pagas')}${blocoContas()}</div>`,
+        ]),
+        secao('Produção', 'layers', [blocoEsteira(), blocoHoje()]),
       ],
-      lado: [blocoPendencias(eu), blocoHoje()],
+      // A visão Geral é só do Administrador: os avisos da gráfica e o que está
+      // no nome da pessoa, juntos na coluna que acompanha a rolagem.
+      lado: [secao('Avisos', 'bell', [blocoPendencias(eu, { so: AVISOS_GERAIS, titulo: 'Avisos gerais', vazioTxt: 'Nenhum aviso geral agora.', contasNoCard: 'card-contas' }), blocoNoSeuNome(eu)])],
     };
   },
 
@@ -1099,47 +1291,63 @@ const TELAS = {
           ${card('card-retirada', 'a-obs', 'package-open', 'Parado na retirada', parada, p => linhaLimpa(p, `<span class="pz">${diasEntre(p.retirada, HOJE)} dias</span>`), parada.length ? `${parada.length} há mais de 7 dias` : '')}</div>`,
       ],
       // O que os cards já mostram não se repete aqui.
-      lado: [blocoPendencias(eu, ['Parada na retirada', 'Retirar na Futura'])],
+      lado: [blocoPendencias(eu, { tirar: ['retirada', 'futura'] })],
     };
   },
 
   // Produção: a fila — o que fazer agora, na ordem do prazo e do horário.
+  // Aqui "na fila" não conta Produzir: o que vai para o nome de quem faz a mão
+  // de obra já está em Produção. As terceirizadas continuam olhando a fila toda.
   Produção(eu) {
-    const fila = abertas.filter(p => FILA.includes(p.status)).sort(porPrazo);
-    const atr = abertas.filter(atrasada).sort(porPrazo);
-    const hoje = abertas.filter(p => ehHoje(p) && p.status !== 'Retirada').sort(porPrazo);
-    const hojeNaFila = hoje.filter(p => FILA.includes(p.status));
+    const fila = abertas.filter(p => FILA_PRODUCAO.includes(p.status)).sort(porPrazo);
+    const daProducao = p => !FORA_DA_PRODUCAO.includes(p.status);
+    // Para hoje: o que está na fila e o que já ficou pronto e ainda sai
+    // (Entrega). Quem espera o cliente, Produzir, Avisar e Retirada ficam de fora.
+    const hoje = abertas.filter(p => urgeHoje(p) && daProducao(p) && (FILA_PRODUCAO.includes(p.status) || PRONTAS.includes(p.status))).sort(porPrazo);
+    const hojeNaFila = hoje.filter(p => FILA_PRODUCAO.includes(p.status));
     const fora = abertas.filter(p => FILA.includes(p.status) && foraDeCasa(p).length).sort(porPrazo);
+    // A fila em duas: a da pessoa, que é o trabalho dela, e a do resto da
+    // equipe (com as bolinhas de quem está com cada uma; sem ninguém, avisa).
     const minhas = fila.filter(p => doLado(p, eu));
-    const linhasFila = l => l.length ? `<ul class="lista">${l.slice(0, 10).map(p => linhaOS(p, `${seloPrazo(p)}<small>${esc(p.status)}${foraDeCasa(p).length ? ' · ' + esc(p.locais.join(', ')) : ''}</small>`)).join('')}</ul>` : vazio('Fila vazia.');
+    const outras = fila.filter(p => !doLado(p, eu));
+    const terceirizadas = area('a-dados', 'truck', 'Terceirizadas', fora.length ? String(fora.length) : '', fora.length ? `<ul class="lista">${fora.slice(0, 8).map(p => linhaOS(p, `${seloPrazo(p)}<small>${esc(foraDeCasa(p).join(', '))}</small>`)).join('')}</ul>` : vazio('Nada fora da casa.'), fora.length > 8 ? ver(`Ver as ${fora.length}`, '/producao') : '');
     const porLocal = {};
     fora.forEach(p => foraDeCasa(p).forEach(l => { (porLocal[l] ||= []).push(p); }));
     const comHora = hoje.filter(p => p.hora).length;
     return {
-      resumo: [['itens', 'layers', plural(fila.length, 'O.S. na fila', 'O.S. na fila')], atr.length && ['atraso', 'alert-triangle', plural(atr.length, 'atrasada', 'atrasadas')], minhas.length && ['hoje', 'user-check', `${minhas.length} com você`]],
+      // Sem selo nem card de atrasadas: o que atrasa fora da produção (avisar,
+      // entregar) não é dela, e o que é dela abre a lista no grupo "Atrasadas".
+      // Quantas estão com a pessoa vai no card "No seu nome", não repete aqui.
+      resumo: [['itens', 'layers', plural(fila.length, 'O.S. na fila', 'O.S. na fila')]],
       numeros: numeros([
         { rot: 'Para hoje', icone: 'calendar-clock', area: 'obs', laranja: true, val: hoje.length, href: '/producao',
           med: hoje.length ? MED.unidades(hoje, p => FILA.includes(p.status) ? 'var(--obs)' : 'var(--fin)', p => `${tituloOS(p)}${p.hora ? ' · até ' + p.hora : ''}`) : '',
           ctx: hoje.length ? legenda([['var(--obs)', `${hojeNaFila.length} na fila`, hojeNaFila.length], ['var(--fin)', plural(hoje.length - hojeNaFila.length, 'pronta', 'prontas'), hoje.length - hojeNaFila.length]]) + (comHora ? ` · ${comHora} com horário` : '') : 'nenhuma' },
-        { rot: 'Atrasadas', icone: 'alert-triangle', area: atr.length ? 'perigo' : 'dados', val: atr.length, alerta: atr.length > 0, href: '/producao',
-          med: atr.length ? MED.unidades(atr, () => 'var(--perigo)', tituloOS) : '',
-          ctx: atr.length ? 'resolver primeiro' : 'nenhuma' },
+        // Quantas da fila estão no nome da pessoa; as de hoje (e atrasadas) em
+        // âmbar, como o bloco de hoje na lista. Leva à lista "Suas próximas".
+        { rot: 'No seu nome', icone: 'user-check', area: 'itens', val: minhas.length, alvo: 'bloco-suas',
+          med: minhas.length ? MED.unidades(minhas, p => atrasada(p) || urgeHoje(p) ? 'var(--obs)' : 'var(--itens)', tituloOS) : '',
+          ctx: minhas.length ? ([[minhas.filter(p => atrasada(p) || urgeHoje(p)).length, 'hoje'], [minhas.filter(p => p.prazo === somarDias(HOJE, 1)).length, 'amanhã']].filter(([n]) => n).map(([n, t]) => `${n} ${t}`).join(' · ') || 'nenhuma para hoje') : 'nada agora' },
         { rot: 'Na fila', icone: 'layers', area: 'itens', val: fila.length, href: '/producao',
           med: fila.length ? MED.unidades(fila, p => COR[p.status], tituloOS) : '',
-          ctx: legenda(FILA.map(e => [COR[e], `${CURTO[e] || e} ${fila.filter(p => p.status === e).length}`, fila.filter(p => p.status === e).length])) || 'vazia' },
+          ctx: legenda(FILA_PRODUCAO.map(e => [COR[e], `${CURTO[e] || e} ${fila.filter(p => p.status === e).length}`, fila.filter(p => p.status === e).length])) || 'vazia' },
         { rot: 'Em terceirizadas', icone: 'truck', area: 'dados', val: fora.length, href: '/producao',
           med: fora.length ? MED.unidades(fora, p => corLocal(foraDeCasa(p)[0]), p => `${tituloOS(p)} · ${foraDeCasa(p).join(', ')}`) : '',
           ctx: legenda(Object.entries(porLocal).map(([l, ps]) => [corLocal(l), `${esc(l)} ${ps.length}`, ps.length])) || 'nenhuma' },
       ]),
+      // No quadro grande, o que está no nome da pessoa; embaixo, o resto da
+      // fila, com quem está cada uma. As terceirizadas vão para a coluna ao lado.
       principal: [
-        area('a-itens elevado', 'list-ordered', 'Próximas da fila<small>na ordem do prazo e do horário</small>', fila.length ? plural(fila.length, 'O.S.', 'O.S.') : '', linhasFila(fila), fila.length > 10 ? ver(`Ver as ${fila.length}`, '/producao') : ''),
-        blocoEsteira(),
-        `<div class="par">${area('a-dados', 'truck', 'Terceirizadas', fora.length ? String(fora.length) : '', fora.length ? `<ul class="lista">${fora.slice(0, 6).map(p => linhaOS(p, `${seloPrazo(p)}<small>${esc(foraDeCasa(p).join(', '))}</small>`)).join('')}</ul>` : vazio('Nada fora da casa.'))}
-          ${area('a-obs', 'shopping-cart', 'Material pedido', DADOS.requisicoes.length ? String(DADOS.requisicoes.length) : '', DADOS.requisicoes.length ? `<ul class="lista">${DADOS.requisicoes.slice(0, 6).map(r => `<li><a class="lin" href="#" data-ir="/comunicacao">${r.quando ? dataEmBloco(r.quando, true) : ''}<span class="lin-txt"><span class="lin-tit">${esc(r.itens)}</span><span class="lin-sub">${!r.quando ? 'pedido' : diasEntre(r.quando, HOJE) ? `pedido há ${plural(diasEntre(r.quando, HOJE), 'dia', 'dias')}` : 'pedido hoje'}</span></span></a></li>`).join('')}</ul>` : vazio('Nenhum material pendente.'))}</div>`,
+        area('a-itens elevado', 'list-ordered', 'Suas próximas<small>no seu nome, pelo prazo</small>', minhas.length ? plural(minhas.length, 'O.S.', 'O.S.') : '',
+          minhas.length ? listaEmGrupos(gruposDePrazo(minhas, linhaProducao)) : vazio('Nada no seu nome na fila.'), ver('Abrir a Produção', '/producao'), '', 'bloco-suas'),
+        area('a-itens', 'users', 'Com outras pessoas<small>o resto da fila</small>', outras.length ? plural(outras.length, 'O.S.', 'O.S.') : '',
+          outras.length ? `<ul class="lista">${outras.slice(0, 8).map(linhaOutraProducao).join('')}</ul>` : vazio('Nada com o resto da equipe.'), outras.length > 8 ? ver(`Ver as ${outras.length}`, '/producao') : ''),
+        // A esteira só marca atraso nas etapas da produção.
+        blocoEsteira(ETAPAS.filter(e => !FILA_PRODUCAO.includes(e))),
+        area('a-obs', 'shopping-cart', 'Material pedido', DADOS.requisicoes.length ? String(DADOS.requisicoes.length) : '', DADOS.requisicoes.length ? `<ul class="lista">${DADOS.requisicoes.slice(0, 6).map(r => `<li><a class="lin" href="#" data-ir="/comunicacao">${r.quando ? dataEmBloco(r.quando, true) : ''}<span class="lin-txt"><span class="lin-tit">${esc(r.itens)}</span><span class="lin-sub">${!r.quando ? 'pedido' : diasEntre(r.quando, HOJE) ? `pedido há ${plural(diasEntre(r.quando, HOJE), 'dia', 'dias')}` : 'pedido hoje'}</span></span></a></li>`).join('')}</ul>` : vazio('Nenhum material pendente.')),
       ],
-      // "Com você" e não "prazos de hoje": os de hoje já abrem a fila ao lado.
-      lado: [blocoPendencias(eu),
-        area('a-itens', 'user-check', 'Com você', minhas.length ? String(minhas.length) : '', minhas.length ? `<ul class="lista">${minhas.slice(0, 8).map(p => linhaOS(p, seloPrazo(p))).join('')}</ul>` : vazio('Nenhuma O.S. da fila com você.'), minhas.length > 8 ? ver(`Ver as ${minhas.length}`, '/producao') : '')],
+      // Contas a pagar não competem a quem produz: saem do "Precisa de você".
+      lado: [blocoPendencias(eu, { tirar: ['conta'] }), terceirizadas],
     };
   },
 
@@ -1184,7 +1392,8 @@ const TELAS = {
         `<div class="par">${blocoCobrar(prontasNaoPagas, 'Prontas e não pagas')}
           ${area('a-dados', 'check-check', 'Para dar baixa', darBaixa.length ? String(darBaixa.length) : '', darBaixa.length ? `<ul class="lista">${darBaixa.slice(0, 6).map(p => linhaOS(p, `<span class="num">${reais(p.valor)}</span><small>quitada</small>`)).join('')}</ul>` : vazio('Nada esperando baixa.'), darBaixa.length > 6 ? ver(`Ver as ${darBaixa.length}`, '/baixa') : ver('Abrir O.S.', '/baixa'))}</div>`,
       ],
-      lado: [blocoPendencias(eu),
+      // Buscar material na Futura não é assunto do caixa.
+      lado: [blocoPendencias(eu, { tirar: ['futura'], contasNoCard: 'card-contas' }),
         composicao({ cls: 'a-fin', icone: 'wallet', titulo: `Como pagaram em ${mesNome}`, itens: V.formas, rotulo: f => f.rotulo, cor: f => corForma(f.rotulo),
           frase: i => `pago em <b>${esc(i.rot)}</b>`, todo: totalFormas, pe: ver('Ver tudo', '/vendas') })],
     };
@@ -1218,7 +1427,9 @@ function render(anterior) {
   const ordem = VISOES.findIndex(([id]) => id === visao);
   tela.innerHTML = `
     <div class="cab"><div><h1>${saudacao()}, ${esc(p.nome.split(' ')[0])}</h1>
-      <p class="sub"><span>${maiuscula(SEMANA[d.getDay()])}, ${d.getDate()} de ${MESES[d.getMonth()]}</span>${t.resumo.filter(Boolean).map(([tom, ic, txt]) => `<span class="selo ${tom}">${ico(ic)}${txt}</span>`).join('')}</p></div>
+      <p class="sub"><span>${maiuscula(SEMANA[d.getDay()])}, ${d.getDate()} de ${MESES[d.getMonth()]}</span>${t.resumo.filter(Boolean).map(([tom, ic, txt, alvo]) => alvo
+        ? `<a class="selo ${tom}" href="#${alvo}" data-rolar="${alvo}">${ico(ic)}${txt}</a>`
+        : `<span class="selo ${tom}">${ico(ic)}${txt}</span>`).join('')}</p></div>
       ${podeTrocar ? seg('Visão do Início', VISOES, visao, 'data-visao') : ''}</div>
     ${t.numeros}
     <div class="grade"><div class="col">${t.principal.join('')}</div><div class="col lado">${t.lado.join('')}</div></div>`;
@@ -1341,6 +1552,13 @@ document.addEventListener('click', e => {
     graf.innerHTML = grafVendas(est.serie);
     lucide.createIcons();
     return;
+  }
+  // Um dia do gráfico: a página abre o relatório do dia da tela de Vendas.
+  const colDia = t.closest('[data-dia]');
+  if (colDia) {
+    tip.hidden = true;
+    if (window.parent === window) return avisoProto('Fora do sistema o protótipo não abre o relatório do dia.');
+    return paraPai({ tipo: 'abrir-dia', dia: colDia.dataset.dia });
   }
   const gv = t.closest('[data-gv]');
   if (gv) { e.preventDefault(); return acaoGaveta(gv.dataset.gv); }

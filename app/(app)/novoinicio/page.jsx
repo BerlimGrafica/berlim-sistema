@@ -10,12 +10,13 @@ import { useNotasFiscais } from '@/context/NotasFiscaisContext';
 import { useCadastros } from '@/context/CadastrosContext';
 import { useAbrirOSDoPrototipo } from '@/hooks/useAbrirOSDoPrototipo';
 import { useContaDoPrototipo } from '@/hooks/useContaDoPrototipo';
-import { CATEGORIAS_CONTA } from '@/lib/utils/constants';
+import { CATEGORIAS_CONTA, STATUSES_SEM_ATRASO } from '@/lib/utils/constants';
 import { mascararCliente, obterDataAtual, valorPagamentoComSinalCentavos } from '@/lib/utils/formatters';
-import { resumoDoPedido } from '@/lib/utils/servico';
+import { resumoDoPedido, observacoesDoPedido } from '@/lib/utils/servico';
 import { calcularPendencias } from '@/lib/alertas/pendencias';
 import { corDoNome } from '@/lib/prototipos/coresDoNome';
 import BarraDeCor from '@/components/ui/BarraDeCor';
+import RelatorioDoDiaModal from '@/components/vendas/RelatorioDoDiaModal';
 
 // Protótipo do novo Início: uma tela por cargo, com o que importa para cada um
 // (dono, atendimento, produção, financeiro), e um "Ver como" para trocar de
@@ -26,7 +27,11 @@ import BarraDeCor from '@/components/ui/BarraDeCor';
 // está logado. Quase tudo já está na memória do sistema (O.S. abertas, contas,
 // tarefas, requisições, notas). Do banco vêm só as métricas de vendas — duas
 // chamadas de metricas_vendas, somadas lá dentro — e só com esta tela aberta.
+// Clicar num dia do gráfico de vendas abre o relatório do dia da tela de Vendas,
+// que lê só as O.S. daquele dia, e só quando abre.
 // Só leitura: nada grava.
+
+const ehData = s => typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s);
 
 // O mesmo dia do mês anterior, para comparar "outubro até hoje" com "setembro
 // até o mesmo dia" (dia 31 num mês de 30 vira o último dia dele).
@@ -55,6 +60,21 @@ export default function Page() {
     // hoje, que é quem grava. O Início só mostra O.S. abertas, nenhuma baixada.
     const { iframeRef, modalOS } = useAbrirOSDoPrototipo();
     useContaDoPrototipo(iframeRef);
+    // O dia aberto no relatório. O protótipo só diz qual dia; o modal busca.
+    const [diaAberto, setDiaAberto] = useState(null);
+
+    useEffect(() => {
+        const aoReceber = (e) => {
+            // Só o iframe desta página fala com ela.
+            if (!iframeRef.current || e.source !== iframeRef.current.contentWindow) return;
+            if (e.data?.tipo !== 'abrir-dia' || !ehData(e.data.dia)) return;
+            // O foco sai do iframe, senão o Esc e o teclado ficam presos atrás do modal.
+            iframeRef.current.blur();
+            setDiaAberto(e.data.dia);
+        };
+        window.addEventListener('message', aoReceber);
+        return () => window.removeEventListener('message', aoReceber);
+    }, [iframeRef]);
 
     useEffect(() => {
         let vivo = true;
@@ -129,6 +149,8 @@ export default function Page() {
 
     const dados = {
         hoje,
+        // As etapas em que prazo vencido não é atraso: a mesma regra do sistema.
+        semAtraso: STATUSES_SEM_ATRASO,
         eu: usuario?.nome || '',
         equipe: equipe.map(u => ({ nome: u.nome, nivel: u.nivel, cor: corDoNome(u.nome) })),
         // A cor de cada local, a mesma dos chips de local da Produção.
@@ -148,8 +170,10 @@ export default function Page() {
             pago: Math.round((p.pedido_pagamentos || []).reduce((s, pg) => s + valorPagamentoComSinalCentavos(pg), 0) * 100),
             locais: (p.local_producao || 'Berlim').split(',').map(s => s.trim()).filter(Boolean),
             resumo: resumoDoPedido(p),
-            // para a gaveta: itens, arte aprovada e entrega
+            // para a gaveta e a visão Produção: itens (com a especificação),
+            // as observações do pedido, arte aprovada e entrega
             itens: [...(p.pedido_itens || [])].sort((a, b) => a.ordem - b.ordem).map(i => [i.id, i.nome || 'Item', !!i.concluido, i.descricao || '']),
+            obs: observacoesDoPedido(p).trim().slice(0, 300),
             arte: !!p.aprovado,
             entrega: !!p.entrega,
         })),
@@ -160,9 +184,21 @@ export default function Page() {
         })),
         categorias: Object.fromEntries(CATEGORIAS_CONTA.map(c => [c.value, { label: c.label, icone: c.icone }])),
         requisicoes: requisicoesMaterial.filter(r => r.status === 'Pendente').map(r => ({ id: r.id, itens: r.itens || '', quando: (r.created_at || '').slice(0, 10) })),
+        // O que espera aprovação de faturamento e emissão de nota, para a visão
+        // Geral. Tudo da memória; "a emitir" e "a preencher" pela mesma regra
+        // das pendências (serviço ou valor já preenchidos).
+        faturamento: empresasFaturamento.filter(e => e.status === 'Em Análise').map(e => ({
+            id: e.id, nome: mascararCliente(e.nome, isDemo) || 'Sem nome', desde: (e.created_at || '').slice(0, 10),
+        })),
+        notas: notasFiscais.filter(n => n.concluido === false).map(n => ({
+            id: n.id, cliente: mascararCliente(n.cliente || n.razao_social || n.cnpj, isDemo) || 'Sem nome',
+            tipo: n.tipo_nota || '', pronta: !!(n.servico_feito || n.valor_pago), quando: (n.created_at || '').slice(0, 10),
+        })),
         // As pendências de cada pessoa, pela mesma regra do sino: o "Ver como"
-        // mostra exatamente o que aquela pessoa vê hoje.
-        pendencias: Object.fromEntries(equipe.map(u => [u.nome, calcularPendencias({ ...listas, usuario: u }).map(p => ({ gravidade: p.gravidade, titulo: p.titulo, detalhe: p.detalhe, destino: p.destino || '' }))])),
+        // mostra exatamente o que aquela pessoa vê hoje. `tipo` é o assunto (o
+        // começo do id: conta, futura, tarefa...), para cada visão escolher o
+        // que mostra sem depender do texto do título.
+        pendencias: Object.fromEntries(equipe.map(u => [u.nome, calcularPendencias({ ...listas, usuario: u }).map(p => ({ tipo: String(p.id).split(':')[0], gravidade: p.gravidade, titulo: p.titulo, detalhe: p.detalhe, destino: p.destino || '' }))])),
         vendas: { mes: resumirMetricas(metricas.mes), anterior: resumirMetricas(metricas.anterior) },
         criacao,
     };
@@ -181,6 +217,9 @@ export default function Page() {
                 className="absolute inset-0 w-full h-full border-0"
             />
             {modalOS}
+            {/* Montado sempre, como na tela de Vendas (ver VisaoGeralPanel): o
+                useModal não se dá com montagem condicional no StrictMode. */}
+            <RelatorioDoDiaModal dia={diaAberto} aoFechar={() => setDiaAberto(null)} />
         </>
     );
 }
