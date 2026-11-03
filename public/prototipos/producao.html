@@ -420,10 +420,12 @@ const SEM = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
 const ddmm = iso => iso.slice(8, 10) + '/' + iso.slice(5, 7);
 const diaSem = iso => SEM[new Date(iso + 'T12:00:00').getDay()];
 const minutosAte = p => { if (!p.prazo || !p.hora) return null; const [h, m] = p.hora.split(':').map(Number); return Math.round((new Date(p.prazo + 'T00:00:00').getTime() + (h * 60 + m) * 60000 - Date.now()) / 60000); };
-// Em Retirada o serviço já está pronto, esperando o cliente buscar: o prazo de
-// produção passou a ser história, não atraso. Nessas etapas o prazo aparece
-// neutro e a O.S. não entra na contagem nem no filtro de atrasadas.
-const ETAPAS_SEM_ATRASO = ['Retirada'];
+// Etapas em que prazo vencido não é atraso: antes da arte (Aguardando Pagamento
+// e Aguardando Retorno) o serviço espera o cliente, e em Retirada já está pronto
+// esperando ele buscar. Nessas etapas o prazo aparece neutro e a O.S. não entra
+// na contagem nem no filtro de atrasadas. A lista vem do sistema
+// (STATUSES_SEM_ATRASO); a de reserva só vale com o arquivo aberto fora dele.
+const ETAPAS_SEM_ATRASO = D.semAtraso || ['Aguardando Pagamento', 'Aguardando Retorno', 'Retirada'];
 const semAtraso = p => ETAPAS_SEM_ATRASO.includes(p.status);
 function estadoPrazo(p) {
   if (!p.prazo) return { cls: 'vazio', txt: 'Sem prazo' };

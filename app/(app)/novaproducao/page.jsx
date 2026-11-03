@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { usePedidos } from '@/context/PedidosContext';
 import { useSessao } from '@/context/SessaoContext';
 import { useClientes } from '@/context/ClientesContext';
-import { STATUSES_PRODUCAO } from '@/lib/utils/constants';
+import { STATUSES_PRODUCAO, STATUSES_SEM_ATRASO } from '@/lib/utils/constants';
 import { mascararCliente, valorPagamentoComSinalCentavos } from '@/lib/utils/formatters';
 import { corDoNome } from '@/lib/prototipos/coresDoNome';
 import { resumoDoPedido } from '@/lib/utils/servico';
@@ -60,6 +60,8 @@ export default function Page() {
         equipe,
         cores: Object.fromEntries([...nomes].map(n => [n, corDoNome(n)])),
         status: STATUSES_PRODUCAO,
+        // As etapas em que prazo vencido não é atraso: a mesma regra do sistema.
+        semAtraso: STATUSES_SEM_ATRASO,
         permitidos: opcoesStatusPermitidas,
         eu: usuario?.nome || '',
     };
