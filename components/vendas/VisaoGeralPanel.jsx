@@ -77,6 +77,7 @@ const CORES_FORMA = ['bg-amber-500', 'bg-yellow-500', 'bg-orange-500', 'bg-lime-
 const CORES_INST = ['bg-emerald-500', 'bg-teal-500', 'bg-cyan-500', 'bg-sky-500'];
 // Mesma paleta do modal, da listagem e do cadastro — ver CATEGORIAS_CONTA.
 const CORES_CATEGORIA = Object.fromEntries(CATEGORIAS_CONTA.map(c => [c.value, c.ponto]));
+const MESES_CURTOS = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
 
 export default function VisaoGeralPanel({ metricas, rotulo }) {
     const [slide, setSlide] = useState(0);
@@ -105,6 +106,9 @@ export default function VisaoGeralPanel({ metricas, rotulo }) {
     const anoAnterior = String(Number(ano.rotulo) - 1);
     const brutoMenosDespesas = resumo.recebido_centavos - despesas.total_centavos;
     const crescimento = Number(ano.crescimento_pct) || 0;
+    // O crescimento compara os mesmos meses fechados dos dois anos (janeiro até
+    // o mês passado); em janeiro não há mês fechado e ele vem nulo.
+    const mesesComparados = ano.meses_fechados > 1 ? `jan–${MESES_CURTOS[ano.meses_fechados - 1]} ` : ano.meses_fechados === 1 ? 'jan ' : '';
 
     return (
         <div className="flex flex-col gap-8">
@@ -143,7 +147,9 @@ export default function VisaoGeralPanel({ metricas, rotulo }) {
                             </div>
                         </div>
                         <p className={`text-mini font-bold mt-3 ${crescimento >= 0 ? 'text-sucesso' : 'text-perigo'}`}>
-                            {crescimento >= 0 ? '+' : '-'}{Math.abs(crescimento).toFixed(1)}% — {ano.rotulo} vs {anoAnterior}
+                            {ano.crescimento_pct == null && ano.meses_fechados === 0
+                                ? `Sem mês fechado em ${ano.rotulo} para comparar`
+                                : `${crescimento >= 0 ? '+' : '-'}${Math.abs(crescimento).toFixed(1)}% — ${mesesComparados}${ano.rotulo} vs ${anoAnterior}`}
                         </p>
                     </div>
 

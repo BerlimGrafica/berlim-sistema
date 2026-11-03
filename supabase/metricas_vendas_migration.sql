@@ -33,6 +33,17 @@
 -- Valores sempre em CENTAVOS (inteiro), como no resto do sistema. A conversão
 -- para reais acontece só na exibição.
 --
+-- FATURAMENTO DE ANTES DO SISTEMA (vendas_historico, ver
+-- vendas_historico_migration.sql): até julho de 2026 só existe o total de cada
+-- mês, de uma planilha. Ele entra SÓ nas leituras de tendência: as séries por
+-- mês e por ano e o comparativo do ano. Resumo, recebido, a receber, ticket,
+-- rankings e "sem baixa" continuam só com O.S., porque a planilha não tem esse
+-- detalhe e somar um total sem pedido ali estragaria cada uma dessas contas.
+-- Para o período escolhido, o que a planilha tem nele vai num campo à parte
+-- ("historico"), e a tela decide como mostrar.
+-- Ordem para rodar: vendas_historico_migration.sql, depois os dados, depois
+-- este arquivo (a função lê a tabela, que precisa existir antes).
+--
 -- security invoker (padrão): a RLS continua valendo: quem não enxerga
 -- contas_pagar recebe as despesas zeradas, em vez de furar a política.
 -- ----------------------------------------------------------------------------
@@ -72,8 +83,8 @@ base as (
 ),
 
 -- Todos os pedidos não cancelados, sem recorte de período: usado só pelos
--- indicadores que são explicitamente históricos (série anual, comparativo
--- ano a ano) e por "Vendas Hoje".
+-- indicadores que são explicitamente históricos (séries, comparativo ano a
+-- ano, que somam também a planilha em fat_mes) e por "Vendas Hoje".
 base_historico as (
     select p.data_pedido, p.valor_total
     from public.pedidos p
@@ -175,24 +186,57 @@ ranking_cliente as (
     group by chave, eh_balcao
 ),
 
--- As três séries de "Faturamento no tempo" leem base_historico, e não base:
+-- O faturamento de antes do sistema: um total por mês, sem pedido nenhum.
+historico as (
+    select mes, valor_centavos from public.vendas_historico
+),
+
+-- Faturamento por mês para as leituras de tendência: o da planilha nos meses
+-- que ela cobre, o das O.S. no resto. Num mês que a planilha cobre, uma O.S.
+-- com data antiga (digitada errada, por exemplo) não soma: vale o número
+-- importado. "planilha" diz quanto do mês veio dela, para a tela marcar.
+fat_mes as (
+    select mes, valor_centavos as centavos, valor_centavos as planilha
+    from historico
+    union all
+    select date_trunc('month', data_pedido)::date, sum(valor_total)::bigint, 0
+    from base_historico
+    where date_trunc('month', data_pedido)::date not in (select mes from historico)
+    group by 1
+),
+
+-- O que a planilha tem dentro do período escolhido. Ela só tem o total do mês,
+-- então só conta o mês que cabe inteiro no período; o mês cortado pelo período
+-- vai à parte, para a tela dizer que ficou de fora em vez de inventar um pedaço.
+historico_periodo as (
+    select mes, valor_centavos,
+           (mes >= p_inicio and (mes + interval '1 month' - interval '1 day')::date <= p_fim) as inteiro
+    from historico
+    where mes <= p_fim and (mes + interval '1 month' - interval '1 day')::date >= p_inicio
+),
+
+-- As três séries de "Faturamento no tempo" não seguem o período escolhido:
 -- elas mostram a evolução do faturamento, que é uma leitura de tendência e não
 -- do recorte selecionado. Com o filtro aplicado, "por dia" dentro de um período
 -- de um mês repetia o que o próprio filtro já dizia, e comparar dois meses
 -- exigia trocar o período — justamente o que a série deveria evitar.
 -- O `limit 15` é o que segura o tamanho: são sempre os 15 dias, meses e anos
 -- mais recentes COM faturamento, independente do intervalo escolhido em cima.
+-- Mês e ano incluem a planilha; dia não, porque ela não tem o dia.
 serie_dia as (
     select to_char(data_pedido, 'YYYY-MM-DD') as rotulo, sum(valor_total)::bigint as centavos
     from base_historico group by 1 order by 1 desc limit 15
 ),
 serie_mes as (
-    select to_char(data_pedido, 'YYYY-MM') as rotulo, sum(valor_total)::bigint as centavos
-    from base_historico group by 1 order by 1 desc limit 15
+    select to_char(mes, 'YYYY-MM') as rotulo, centavos, planilha
+    from fat_mes order by mes desc limit 15
 ),
+-- "meses": quantos meses do ano têm faturamento. O primeiro ano da planilha
+-- (2020) tem só dois, e a tela não o trata como ano fechado.
 serie_ano as (
-    select to_char(data_pedido, 'YYYY') as rotulo, sum(valor_total)::bigint as centavos
-    from base_historico group by 1 order by 1 desc limit 15
+    select to_char(mes, 'YYYY') as rotulo, sum(centavos)::bigint as centavos, sum(planilha)::bigint as planilha,
+           count(*)::int as meses
+    from fat_mes group by 1 order by 1 desc limit 15
 ),
 
 -- Contas a pagar recortadas pelo MESMO período da receita (pelo vencimento).
@@ -262,12 +306,26 @@ serie_produto as (
     group by prod.produto
 ),
 
-ano_atual as (select to_char((select d from hoje), 'YYYY') as a),
+-- O ano corrente contra o anterior, pelo faturamento por mês (com a planilha).
+-- "fechado" é de janeiro até o mês passado: a comparação justa, os mesmos meses
+-- dos dois anos. O ano anterior inteiro continua indo, para dar o tamanho dele.
+ano_atual as (
+    select to_char(d, 'YYYY') as a,
+           extract(year from d)::int as ano,
+           extract(month from d)::int - 1 as fechados
+    from hoje
+),
 totais_ano as (
     select
-        coalesce(sum(valor_total) filter (where to_char(data_pedido, 'YYYY') = (select a from ano_atual)), 0)::bigint as atual,
-        coalesce(sum(valor_total) filter (where to_char(data_pedido, 'YYYY') = ((select a from ano_atual)::int - 1)::text), 0)::bigint as anterior
-    from base_historico
+        coalesce(sum(f.centavos) filter (where extract(year from f.mes) = h.ano), 0)::bigint as atual,
+        coalesce(sum(f.centavos) filter (where extract(year from f.mes) = h.ano - 1), 0)::bigint as anterior,
+        coalesce(sum(f.centavos) filter (where extract(year from f.mes) = h.ano and extract(month from f.mes) <= h.fechados), 0)::bigint as atual_fechado,
+        coalesce(sum(f.centavos) filter (where extract(year from f.mes) = h.ano - 1 and extract(month from f.mes) <= h.fechados), 0)::bigint as anterior_fechado,
+        coalesce(sum(f.planilha) filter (where extract(year from f.mes) = h.ano), 0)::bigint as atual_planilha,
+        h.fechados
+    from ano_atual h
+    left join fat_mes f on extract(year from f.mes) between h.ano - 1 and h.ano
+    group by h.fechados
 )
 
 select jsonb_build_object(
@@ -300,16 +358,35 @@ select jsonb_build_object(
         'rotulo', (select a from ano_atual),
         'atual_centavos', atual,
         'anterior_centavos', anterior,
+        'meses_fechados', fechados,
+        'atual_fechado_centavos', atual_fechado,
+        'anterior_fechado_centavos', anterior_fechado,
+        'planilha_centavos', atual_planilha,
+        -- Os mesmos meses fechados dos dois anos. Antes era o ano corrente até
+        -- hoje contra o anterior inteiro, que só fica justo em dezembro. Em
+        -- janeiro não há mês fechado: sem crescimento (null), em vez de um
+        -- número que compara dias com um ano.
         'crescimento_pct', case
-            when anterior > 0 then round(((atual - anterior)::numeric / anterior) * 100, 1)
-            when atual > 0 then 100
+            when fechados = 0 then null
+            when anterior_fechado > 0 then round(((atual_fechado - anterior_fechado)::numeric / anterior_fechado) * 100, 1)
+            when atual_fechado > 0 then 100
             else 0 end
     ) from totais_ano),
 
+    -- O que a planilha tem no período escolhido (só meses inteiros; os
+    -- cortados vão listados) e o último mês dela: dali em diante é o sistema.
+    'historico', jsonb_build_object(
+        'centavos', (select coalesce(sum(valor_centavos), 0)::bigint from historico_periodo where inteiro),
+        'meses', (select count(*)::int from historico_periodo where inteiro),
+        'cortados', coalesce((select jsonb_agg(to_char(mes, 'YYYY-MM') order by mes) from historico_periodo where not inteiro), '[]'::jsonb),
+        'ultimo_mes', (select to_char(max(mes), 'YYYY-MM') from historico)
+    ),
+
     -- A ordem é reafirmada no jsonb_agg: o "order by" de uma CTE não é garantia
     -- de ordem na agregação de fora. Mais recente primeiro, como na tela.
-    'serie_ano', coalesce((select jsonb_agg(jsonb_build_object('rotulo', rotulo, 'centavos', centavos) order by rotulo desc) from serie_ano), '[]'::jsonb),
-    'serie_mes', coalesce((select jsonb_agg(jsonb_build_object('rotulo', rotulo, 'centavos', centavos) order by rotulo desc) from serie_mes), '[]'::jsonb),
+    -- planilha_centavos: quanto daquele mês ou ano veio da planilha.
+    'serie_ano', coalesce((select jsonb_agg(jsonb_build_object('rotulo', rotulo, 'centavos', centavos, 'planilha_centavos', planilha, 'meses', meses) order by rotulo desc) from serie_ano), '[]'::jsonb),
+    'serie_mes', coalesce((select jsonb_agg(jsonb_build_object('rotulo', rotulo, 'centavos', centavos, 'planilha_centavos', planilha) order by rotulo desc) from serie_mes), '[]'::jsonb),
     'serie_dia', coalesce((select jsonb_agg(jsonb_build_object('rotulo', rotulo, 'centavos', centavos) order by rotulo desc) from serie_dia), '[]'::jsonb),
 
     'ranking_local', coalesce((select jsonb_agg(jsonb_build_object('rotulo', rotulo, 'centavos', centavos) order by centavos desc) from ranking_local), '[]'::jsonb),

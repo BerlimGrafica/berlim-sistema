@@ -129,6 +129,11 @@ kbd { font: 600 10.5px/1 Montserrat, sans-serif; color: var(--tinta-suave); bord
 .conteudo { transition: opacity .2s; }
 .conteudo.esperando { opacity: .45; pointer-events: none; }
 .erro-faixa { display: flex; gap: 10px; align-items: center; margin-bottom: 16px; padding: 10px 14px; border-radius: 10px; background: var(--perigo-fundo); border: 1px solid var(--perigo-borda); color: var(--perigo); font-weight: 600; font-size: 12.5px; }
+/* Período que pega meses de antes do sistema: diz o que veio da planilha e o
+   que ela não tem. A marca é a hachura das colunas da planilha no gráfico. */
+.nota-hist { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 16px; padding: 10px 14px; border-radius: 10px; background: var(--superficie); border: 1px solid var(--borda); font-size: 12.5px; line-height: 1.5; color: var(--tinta-corpo); }
+.nota-hist b { color: var(--tinta); font-weight: 600; }
+.nota-hist .m-pl { width: 10px; height: 16px; margin-top: 2px; border-radius: 2px 2px 0 0; }
 
 .selo { display: inline-flex; align-items: center; gap: 4px; font-size: 11.5px; font-weight: 600; border-radius: 5px; padding: 1px 7px; white-space: nowrap; background: var(--realce); color: var(--tinta-corpo); }
 .selo .ico { width: 12px; height: 12px; }
@@ -308,6 +313,12 @@ button.calv-dia:hover, button.calv-dia:focus-visible { box-shadow: 0 0 0 2px var
 .calv-dia.hoje { box-shadow: inset 0 0 0 2px var(--brand); }
 .calv-dia.espera { background: var(--realce); animation: pulsar-cal 1.2s ease-in-out infinite; }
 @keyframes pulsar-cal { 50% { opacity: .45; } }
+/* Mês de antes do sistema: a planilha não tem o dia, então no lugar da grade
+   vai o total do mês, com a altura da grade para o quadro não pular. */
+.calv-hist { display: flex; align-items: center; justify-content: center; gap: 14px; min-height: 232px; margin-top: 10px; padding: 16px; border-radius: 8px; box-shadow: inset 0 0 0 1px var(--borda); }
+.calv-hist .m-pl { width: 22px; height: 52px; border-radius: 4px 4px 0 0; }
+.calv-hist b { display: block; font-size: 20px; font-weight: 700; color: var(--tinta); }
+.calv-hist p { max-width: 380px; font-size: 12.5px; color: var(--tinta-suave); }
 .calv-escala { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; max-width: 560px; margin-top: 12px; }
 .calv-escala span { display: grid; gap: 2px; font-size: 10.5px; font-weight: 600; color: var(--tinta-suave); font-variant-numeric: tabular-nums; }
 .calv-escala b { color: var(--tinta-corpo); font-weight: 700; }
@@ -337,6 +348,15 @@ button.graf-col { cursor: pointer; }
 .graf-leg b { color: var(--tinta); font-weight: 600; }
 .graf-leg .m-col { width: 9px; height: 12px; border-radius: 2px 2px 0 0; background: var(--fin); }
 .graf-leg .m-proj { width: 9px; height: 12px; border: 1.5px dashed var(--fin); border-bottom: 0; border-radius: 2px 2px 0 0; }
+/* O que veio da planilha (antes do sistema, só o total do mês): hachura a 135°
+   no tom da série, para a origem não depender só da cor. A mesma marca na
+   coluna, na legenda, no calendário e na nota do período. O vão é opaco: na
+   coluna que mistura (o ano em que o sistema começou) a hachura fica por cima
+   da parte cheia, e vão transparente deixaria o cheio aparecer. */
+.graf-col i.pl, .graf-col .pl-parte, .m-pl { background: repeating-linear-gradient(135deg, var(--fin) 0 2px, color-mix(in srgb, var(--fin) 30%, var(--superficie)) 2px 5px); }
+.graf-col .pl-parte { position: absolute; left: 0; right: 0; bottom: 0; }
+.m-pl { display: inline-block; flex-shrink: 0; }
+.graf-leg .m-pl { width: 9px; height: 12px; border-radius: 2px 2px 0 0; }
 .graf-leg .m-media { width: 16px; border-top: 1.5px dashed var(--brand); }
 .graf-leg .dica { margin-left: auto; color: var(--brand-tinta); font-weight: 600; }
 .tip { position: fixed; z-index: 95; pointer-events: none; background: var(--tinta); color: var(--superficie); border-radius: 7px; padding: 6px 9px; font-size: 12px; box-shadow: var(--sombra-pop); white-space: nowrap; }
@@ -680,6 +700,12 @@ const ABAS = [['geral', 'Visão geral', 'layout-dashboard'], ['vendas_produto', 
 const mesInteiro = m => { const [a, mm] = m.split('-').map(Number); return { tipo: 'mes', chave: m, inicio: `${m}-01`, fim: `${m}-${String(ultimoDia(a, mm)).padStart(2, '0')}` }; };
 const anoInteiro = a => ({ tipo: 'ano', chave: String(a), inicio: `${a}-01-01`, fim: `${a}-12-31` });
 const somarMes = (m, n) => { const [a, mm] = m.split('-').map(Number); return isoDe(new Date(a, mm - 1 + n, 1)).slice(0, 7); };
+// O mês em que o sistema começou a registrar vendas: o seguinte ao último da
+// planilha (vendas_historico). "ago/2026" e "agosto de 2026".
+const inicioSistema = () => M.historico?.ultimo_mes ? somarMes(M.historico.ultimo_mes, 1) : null;
+const mesCurto = m => m ? `${MESES[+m.slice(5, 7) - 1].slice(0, 3)}/${m.slice(0, 4)}` : '';
+const mesAno = m => m ? `${MESES[+m.slice(5, 7) - 1]} de ${m.slice(0, 4)}` : '';
+const listaMeses = ms => { const l = ms.map(mesCurto); return l.length > 1 ? `${l.slice(0, -1).join(', ')} e ${l.at(-1)}` : l[0] || ''; };
 const ATALHOS = [
   ['mes', 'Este mês', () => mesInteiro(HOJE.slice(0, 7))],
   ['mesant', 'Mês passado', () => mesInteiro(somarMes(HOJE.slice(0, 7), -1))],
@@ -774,6 +800,10 @@ function passoDoEixo(maior) {
 /* ===== visão geral ===== */
 function telaGeral() {
   const R = M.resumo, D = M.despesas, A = ANT?.resumo;
+  // O que a planilha tem no período (meses de antes do sistema, só o total).
+  // Soma só no vendido: recebido, a receber e ticket contam as O.S.
+  const H = M.historico || { centavos: 0, meses: 0 }, HA = ANT?.historico || { centavos: 0 };
+  const vendido = R.bruto_centavos + H.centavos;
   const comp = rotuloComparacao();
   const resultado = R.recebido_centavos - D.total_centavos;
   const resAnt = ANT ? ANT.resumo.recebido_centavos - ANT.despesas.total_centavos : 0;
@@ -783,18 +813,31 @@ function telaGeral() {
   const mediaDia = serie.length ? soma(serie) / serie.length : 0;
   const ano = M.ano, anoAnt = +ano.rotulo - 1;
   const mesesDoAno = [...(M.serie_mes || [])].reverse().filter(s => s.rotulo.startsWith(ano.rotulo) && s.centavos > 0);
+  const mediaMes = ano.atual_centavos / Math.max(1, mesesDoAno.length);
+  // O ano contra o anterior nos mesmos meses fechados (janeiro até o mês
+  // passado). Em janeiro não há mês fechado, e não há comparação.
+  const fechados = ano.meses_fechados, ateMes = fechados > 1 ? `jan–${MESES[fechados - 1].slice(0, 3)}` : 'jan';
+  const anoComp = fechados == null
+    ? { tend: tendencia(ano.atual_centavos, ano.anterior_centavos, `${anoAnt} inteiro`), ctx: `média de <b>${reais(mediaMes)}</b> por mês com venda · ${ano.anterior_centavos > 0 ? `vs. ${anoAnt} inteiro (<b>${reais(ano.anterior_centavos)}</b>)` : `sem ${anoAnt} para comparar`}`, title: '' }
+    : !fechados ? { tend: '', ctx: `média de <b>${reais(mediaMes)}</b> por mês com venda`, title: '' }
+    : { tend: tendencia(ano.atual_fechado_centavos, ano.anterior_fechado_centavos, `${ateMes} de ${anoAnt}`),
+        ctx: ano.anterior_fechado_centavos > 0 ? `vs. <b>${reais(ano.anterior_fechado_centavos)}</b> em ${ateMes} de ${anoAnt}` : `sem ${anoAnt} para comparar`,
+        title: ` · ${ateMes}: ${reais(ano.atual_fechado_centavos)} contra ${reais(ano.anterior_fechado_centavos)} em ${anoAnt} · ${anoAnt} inteiro: ${reais(ano.anterior_centavos)}` };
   const pctPago = pctDe(D.pago_centavos, D.total_centavos);
   return numeros([
-    { rot: 'Vendido no período', icone: 'shopping-bag', area: 'fin', laranja: true, val: dinheiro(R.bruto_centavos), title: reais(R.bruto_centavos, true),
-      tend: A ? tendencia(R.bruto_centavos, A.bruto_centavos, comp) : '',
-      ctx: R.qtd_pedidos ? `<b>${plural(R.qtd_pedidos, 'pedido', 'pedidos')}</b> · ticket médio <b>${reais(R.ticket_medio_centavos)}</b>` : 'nenhum pedido no período' },
+    { rot: 'Vendido no período', icone: 'shopping-bag', area: 'fin', laranja: true, val: dinheiro(vendido),
+      title: H.meses ? `${reais(vendido, true)}: ${reais(H.centavos, true)} da planilha e ${reais(R.bruto_centavos, true)} em O.S.` : reais(R.bruto_centavos, true),
+      tend: A ? tendencia(vendido, A.bruto_centavos + HA.centavos, comp) : '',
+      ctx: H.meses && !R.qtd_pedidos ? `<b>${plural(H.meses, 'mês', 'meses')}</b> da planilha, só o total de cada um`
+        : H.meses ? `<b>${reais(H.centavos)}</b> da planilha · <b>${plural(R.qtd_pedidos, 'pedido', 'pedidos')}</b>`
+        : R.qtd_pedidos ? `<b>${plural(R.qtd_pedidos, 'pedido', 'pedidos')}</b> · ticket médio <b>${reais(R.ticket_medio_centavos)}</b>` : 'nenhum pedido no período' },
     { rot: 'Recebido', icone: 'wallet', area: 'fin', val: dinheiro(R.recebido_centavos), title: reais(R.recebido_centavos, true),
       tend: A ? tendencia(R.recebido_centavos, A.recebido_centavos, comp) : '',
       med: R.bruto_centavos ? partes([{ v: Math.min(R.recebido_centavos, R.bruto_centavos) }], R.bruto_centavos) : '',
-      ctx: R.bruto_centavos ? `<b>${pctDe(R.recebido_centavos, R.bruto_centavos)}%</b> do vendido no período` : 'nada vendido no período' },
+      ctx: R.bruto_centavos ? `<b>${pctDe(R.recebido_centavos, R.bruto_centavos)}%</b> do vendido ${H.meses ? 'em O.S.' : 'no período'}` : H.meses ? 'a planilha não tem pagamentos' : 'nada vendido no período' },
     { rot: 'A receber', icone: 'hand-coins', area: 'obs', val: dinheiro(aReceber), title: `${reais(aReceber, true)} — o vendido no período que ainda não tem pagamento lançado (o saldo devedor)`,
       med: R.bruto_centavos && aReceber ? partes([{ v: Math.min(aReceber, R.bruto_centavos) }], R.bruto_centavos) : '',
-      ctx: aReceber ? `<b>${pctTxt(aReceber, R.bruto_centavos)}</b> do vendido ainda não entrou` : 'tudo recebido' },
+      ctx: aReceber ? `<b>${pctTxt(aReceber, R.bruto_centavos)}</b> do vendido ${H.meses ? 'em O.S. ' : ''}ainda não entrou` : H.meses && !R.bruto_centavos ? 'a planilha não tem pagamentos' : 'tudo recebido' },
     { rot: 'Recebido menos despesas', icone: 'scale', area: resultado < 0 ? 'perigo' : 'dados', val: dinheiro(resultado), alerta: resultado < 0, title: reais(resultado, true),
       tend: ANT && resAnt > 0 ? tendencia(resultado, resAnt, comp) : '',
       med: R.recebido_centavos > 0 ? partes([{ v: Math.min(D.total_centavos, R.recebido_centavos), cls: 'desp' }], R.recebido_centavos) : '',
@@ -812,10 +855,11 @@ function telaGeral() {
       ctx: D.total_centavos ? `${D.qtd_vencidas ? `<span class="desce">${plural(D.qtd_vencidas, 'vencida', 'vencidas')}</span>` : 'nenhuma vencida'} · <b>${pctPago}%</b> pago` : 'nenhuma conta no período' },
     // O ano em destaque leve: os meses dele em colunas pequenas (o atual aceso)
     // e a média por mês com venda, que diz o ritmo melhor que o total sozinho.
-    { rot: 'Crescimento no ano', icone: 'trending-up', area: 'fin', leve: true, val: dinheiro(ano.atual_centavos), title: `${reais(ano.atual_centavos, true)} vendidos em ${ano.rotulo}`,
-      tend: tendencia(ano.atual_centavos, ano.anterior_centavos, `${anoAnt} inteiro`),
+    { rot: 'Crescimento no ano', icone: 'trending-up', area: 'fin', leve: true, val: dinheiro(ano.atual_centavos),
+      title: `${reais(ano.atual_centavos, true)} vendidos em ${ano.rotulo}${ano.planilha_centavos ? ` (${reais(ano.planilha_centavos)} da planilha)` : ''}${anoComp.title} · média de ${reais(mediaMes)} por mês com venda`,
+      tend: anoComp.tend,
       mini: mesesDoAno.length > 1 ? mini(mesesDoAno.map(s => s.centavos), mesesDoAno.at(-1).rotulo === HOJE.slice(0, 7) ? mesesDoAno.length - 1 : -1) : '',
-      ctx: `média de <b>${reais(ano.atual_centavos / Math.max(1, mesesDoAno.length))}</b> por mês com venda · ${ano.anterior_centavos > 0 ? `vs. ${anoAnt} inteiro (<b>${reais(ano.anterior_centavos)}</b>)` : `sem ${anoAnt} para comparar`}` },
+      ctx: anoComp.ctx },
   ], 'menor')
     + `${blocoFaturamento()}
       <div class="secao"><h2>Entradas</h2><span>o vendido no período: onde foi feito, como foi pago e em que conta caiu</span></div>
@@ -840,18 +884,24 @@ function grafSerie(modo) {
   const pontos = [...fonte].reverse().map(s => {
     if (modo === 'dia') { const dt = dataLocal(s.rotulo), atual = s.rotulo === HOJE;
       return { v: s.centavos, atual, iso: s.rotulo, x: atual ? 'hoje' : String(dt.getDate()), tip: `${SEMANA[dt.getDay()]}, ${dt.getDate()} de ${MESES[dt.getMonth()]}${s.rotulo.slice(0, 4) !== HOJE.slice(0, 4) ? ` de ${s.rotulo.slice(0, 4)}` : ''}` }; }
+    // pl: quanto da coluna veio da planilha (antes do sistema).
     if (modo === 'mes') { const [ano, mm] = s.rotulo.split('-').map(Number), atual = s.rotulo === HOJE.slice(0, 7);
-      return { v: s.centavos, atual, x: mm === 1 ? `jan/${String(ano).slice(2)}` : MESES[mm - 1].slice(0, 3), tip: `${MESES[mm - 1]} de ${ano}${atual ? ' (até hoje)' : ''}` }; }
-    const atual = s.rotulo === HOJE.slice(0, 4);
-    return { v: s.centavos, atual, x: s.rotulo, tip: `${s.rotulo}${atual ? ' (até hoje)' : ''}` };
+      return { v: s.centavos, pl: s.planilha_centavos || 0, atual, x: mm === 1 ? `jan/${String(ano).slice(2)}` : MESES[mm - 1].slice(0, 3), tip: `${MESES[mm - 1]} de ${ano}${atual ? ' (até hoje)' : ''}` }; }
+    // O primeiro ano da planilha tem só alguns meses: não é ano fechado.
+    const atual = s.rotulo === HOJE.slice(0, 4), meses = s.meses ?? 12;
+    return { v: s.centavos, pl: s.planilha_centavos || 0, atual, meses, x: s.rotulo, tip: `${s.rotulo}${atual ? ' (até hoje)' : meses < 12 ? ` (só ${meses} meses)` : ''}` };
   });
   if (!pontos.length) return vazio('Ainda sem vendas registradas.', 'bar-chart-3');
+  // A coluna toda da planilha leva "planilha" no rótulo; a que mistura (o ano em
+  // que o sistema começou) diz quanto veio dela, junto do valor.
+  pontos.forEach(p => { if (p.pl && p.pl >= p.v) p.tip += ' · planilha'; });
+  const valorPl = p => p.pl && p.pl < p.v ? ` · ${reais(p.pl)} da planilha` : '';
   // A projeção (mês e ano em andamento) segue o ritmo até hoje; é estimativa.
   const ult = pontos.at(-1);
   if (ult.atual && modo === 'mes') proj = Math.round(ult.v / d * ultimoDia(a, m));
   if (ult.atual && modo === 'ano') { const dia = diasEntre(`${a}-01-01`, HOJE) + 1, total = diasEntre(`${a}-01-01`, `${a}-12-31`) + 1; proj = Math.round(ult.v / dia * total); }
   if (modo === 'dia') { media = soma(pontos, p => p.v) / pontos.length; rotMedia = 'média por dia com venda'; }
-  else { const f = pontos.filter(p => !p.atual); media = f.length ? soma(f, p => p.v) / f.length : 0; rotMedia = modo === 'mes' ? 'média dos meses fechados' : 'média dos anos fechados'; }
+  else { const f = pontos.filter(p => !p.atual && (p.meses ?? 12) >= 12); media = f.length ? soma(f, p => p.v) / f.length : 0; rotMedia = modo === 'mes' ? 'média dos meses fechados' : 'média dos anos fechados'; }
   const passo = passoDoEixo(Math.max(...pontos.map(p => p.v), proj));
   const pct = c => Math.min(100, c / (passo * 2) * 100);
   const ultimo = pontos.length - 1;
@@ -861,8 +911,9 @@ function grafSerie(modo) {
     const temProj = j === ultimo && proj > p.v;
     const rot = temProj ? `<b class="graf-val suave ${fim}" style="bottom:calc(${pct(proj)}% + 4px)">~ ${compacto(proj)}</b>`
       : (j === ultimo || (j === iMaior && iMaior < ultimo - 1)) ? `<b class="graf-val ${j === ultimo ? fim : 'suave'}" style="bottom:calc(${pct(p.v)}% + 4px)">${compacto(p.v)}</b>` : '';
-    const tip = `${esc(p.tip)}${modo === 'dia' ? ' · clique para ver' : ''}|${reais(p.v, true)}${temProj ? ` · ~ ${reais(proj)} no ritmo` : ''}`;
-    const dentro = `${temProj ? `<span class="proj" style="bottom:${pct(p.v)}%;height:${pct(proj) - pct(p.v)}%"></span>` : ''}<i class="cy ${j === ultimo ? '' : 'passado'}" style="height:${pct(p.v)}%;--i:${j}"></i>${rot}`;
+    const tip = `${esc(p.tip)}${modo === 'dia' ? ' · clique para ver' : ''}|${reais(p.v, true)}${valorPl(p)}${temProj ? ` · ~ ${reais(proj)} no ritmo` : ''}`;
+    const plPct = p.pl ? Math.min(100, p.pl / p.v * 100) : 0;
+    const dentro = `${temProj ? `<span class="proj" style="bottom:${pct(p.v)}%;height:${pct(proj) - pct(p.v)}%"></span>` : ''}<i class="cy ${j === ultimo ? '' : 'passado'} ${plPct >= 100 ? 'pl' : ''}" style="height:${pct(p.v)}%;--i:${j}">${plPct > 0 && plPct < 100 ? `<span class="pl-parte" style="height:${plPct}%"></span>` : ''}</i>${rot}`;
     return modo === 'dia'
       ? `<button class="graf-col" data-dia="${p.iso}" data-tip="${tip}" aria-label="${esc(p.tip)}: ${reais(p.v, true)}. Ver o que foi vendido">${dentro}</button>`
       : `<div class="graf-col" tabindex="0" data-tip="${tip}">${dentro}</div>`;
@@ -876,11 +927,12 @@ function grafSerie(modo) {
     <div class="graf-x" aria-hidden="true">${pontos.map(p => `<span class="${p.atual ? 'hoje' : ''}">${p.x}</span>`).join('')}</div>
     <div class="graf-leg">
       <span aria-hidden="true"><i class="m-col"></i>vendido ${modo === 'dia' ? 'no dia' : modo === 'mes' ? 'no mês' : 'no ano'}</span>
+      ${pontos.some(p => p.pl) ? `<span aria-hidden="true"><i class="m-pl"></i>planilha · antes de ${mesCurto(inicioSistema())}</span>` : ''}
       ${proj ? `<span aria-hidden="true"><i class="m-proj"></i>no ritmo até o fim ${modo === 'mes' ? 'do mês' : 'do ano'}</span>` : ''}
       ${media ? `<span><i class="m-media"></i>${rotMedia} <b class="num">${reais(media)}</b></span>` : ''}
       ${modo === 'dia' ? `<span class="dica">${ico('mouse-pointer-click', 'ico ico-s')}clique num dia para ver o que foi vendido</span>` : ''}
     </div>
-    <table class="so-leitor"><caption>Faturamento</caption><tbody>${pontos.map(p => `<tr><th>${esc(p.tip)}</th><td>${reais(p.v, true)}</td></tr>`).join('')}</tbody></table>
+    <table class="so-leitor"><caption>Faturamento</caption><tbody>${pontos.map(p => `<tr><th>${esc(p.tip)}</th><td>${reais(p.v, true)}${valorPl(p)}</td></tr>`).join('')}</tbody></table>
   </div>`;
 }
 
@@ -1092,7 +1144,8 @@ function linhasClientes() {
 /* ===== calendário do mês ===== */
 // Começa no mês do fim do período escolhido (nunca depois de hoje) e anda com ‹ ›.
 // Os dias vêm da página, só quando o calendário abre, e ficam guardados por mês.
-const cal = { mes: null, meses: {}, erros: {} };
+// hist: o total da planilha de um mês de antes do sistema (null quando não há).
+const cal = { mes: null, meses: {}, erros: {}, hist: {} };
 const mesDoPeriodo = () => { const f = est.per?.fim && est.per.tipo !== 'tudo' ? est.per.fim : HOJE; return (f > HOJE ? HOJE : f).slice(0, 7); };
 const somarMesCal = (mes, n) => { const [a, m] = mes.split('-').map(Number); const d = new Date(a, m - 1 + n, 1); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`; };
 const TONS_CAL = [14, 32, 52, 76, 100];
@@ -1100,7 +1153,13 @@ function grafCalendario() {
   const mes = cal.mes || mesDoPeriodo();
   const [a, m] = mes.split('-').map(Number), total = ultimoDia(a, m), inicio = new Date(a, m - 1, 1).getDay();
   const dias = cal.meses[mes];
-  if (!dias && !cal.erros[mes]) { cal.mes = mes; if (!paraPai({ tipo: 'pedir-calendario', mes })) cal.erros[mes] = 'Fora do sistema o protótipo não busca o mês.'; }
+  // Mês de antes do sistema: a página lê só o total dele na planilha.
+  const planilha = !!M.historico?.ultimo_mes && mes <= M.historico.ultimo_mes;
+  if (!dias && !cal.erros[mes]) { cal.mes = mes; if (!paraPai({ tipo: 'pedir-calendario', mes, planilha })) cal.erros[mes] = 'Fora do sistema o protótipo não busca o mês.'; }
+  const topo = resumo => `<div class="calv-topo"><button class="ib" data-cal-mes="-1" aria-label="Mês anterior">${ico('chevron-left')}</button><b>${maiuscula(MESES[m - 1])} de ${a}</b><button class="ib" data-cal-mes="1" aria-label="Próximo mês" ${mes >= HOJE.slice(0, 7) ? 'disabled' : ''}>${ico('chevron-right')}</button><span class="resumo-mes">${resumo}</span></div>`;
+  const doMes = cal.hist[mes];
+  if (dias && doMes != null) return topo(`${reais(doMes)} no mês · planilha`)
+    + `<div class="calv-hist"><i class="m-pl" aria-hidden="true"></i><div><b class="num">${reais(doMes, true)}</b><p>vendidos em ${MESES[m - 1]} de ${a}, segundo a planilha. Antes de ${mesAno(inicioSistema())} só existe o total de cada mês: o vendido por dia começa ali.</p></div></div>`;
   const lista = dias ? Object.values(dias) : [];
   const maior = Math.max(1, ...lista.map(x => x.centavos)), soma = lista.reduce((t, x) => t + x.centavos, 0);
   const faixa = v => Math.min(4, Math.max(0, Math.ceil(v / maior * 5) - 1));
@@ -1117,7 +1176,7 @@ function grafCalendario() {
   }
   const escala = dias && lista.length ? TONS_CAL.map((t, k) => `<span><i style="background:${cor(t)}"></i><b>${t}%</b>até ${compacto(maior * (k + 1) / 5)}</span>`).join('') : '';
   const resumo = dias ? (lista.length ? `${reais(soma)} em ${lista.length} ${lista.length === 1 ? 'dia' : 'dias'} com venda · média ${reais(soma / lista.length)}` : 'Nenhuma venda neste mês') : (cal.erros[mes] || 'Somando o mês…');
-  return `<div class="calv-topo"><button class="ib" data-cal-mes="-1" aria-label="Mês anterior">${ico('chevron-left')}</button><b>${maiuscula(MESES[m - 1])} de ${a}</b><button class="ib" data-cal-mes="1" aria-label="Próximo mês" ${mes >= HOJE.slice(0, 7) ? 'disabled' : ''}>${ico('chevron-right')}</button><span class="resumo-mes">${resumo}</span></div>`
+  return topo(resumo)
     + `<div class="calv-grade" role="group" aria-label="Vendido por dia em ${MESES[m - 1]} de ${a}">${h}</div>`
     + (escala ? `<div class="calv-escala" aria-hidden="true">${escala}</div>` : '');
 }
@@ -1284,7 +1343,7 @@ function cabecalho() {
   const unidade = est.per.tipo === 'ano' ? 'ano' : 'mês';
   const noAtual = est.per.tipo === 'mes' && est.per.chave === HOJE.slice(0, 7);
   return `<div class="cab"><div><h1>Vendas</h1>
-      <p class="sub">${est.carregando ? `<span class="somando">${ico('loader-circle')}somando ${esc(rotuloPeriodo().toLowerCase())} no banco…</span>` : comp && !ANT?.resumo?.bruto_centavos ? `<span>sem vendas em <b>${esc(comp)}</b> para comparar</span>` : comp ? `<span>comparando com <b>${esc(comp)}</b>${est.per.fim > HOJE && est.per.inicio <= HOJE ? ', até o mesmo dia' : ''}</span>` : '<span>todo o histórico, sem comparação</span>'}</p></div>
+      <p class="sub">${est.carregando ? `<span class="somando">${ico('loader-circle')}somando ${esc(rotuloPeriodo().toLowerCase())} no banco…</span>` : comp && !ANT?.resumo?.bruto_centavos && !ANT?.historico?.centavos ? `<span>sem vendas em <b>${esc(comp)}</b> para comparar</span>` : comp ? `<span>comparando com <b>${esc(comp)}</b>${est.per.fim > HOJE && est.per.inicio <= HOJE ? ', até o mesmo dia' : ''}</span>` : '<span>todo o histórico, sem comparação</span>'}</p></div>
     <div class="cab-dir">
       ${noAtual ? '' : '<button class="voltar-mes" data-atalho="mes">Este mês</button>'}
       <div class="mes" role="group" aria-label="Período">
@@ -1316,12 +1375,30 @@ function moverTrilho(segEl, de) {
   tr.style.transition = 'none'; por(de || alvo); tr.offsetWidth; tr.style.transition = '';
   if (de) por(alvo);
 }
+// Período que pega meses de antes do sistema: quanto veio da planilha, o que
+// ela não tem e o mês que ficou de fora porque o período o corta (a planilha
+// só tem o mês inteiro). Nas abas de produtos e clientes, só o que falta.
+function notaHistorico() {
+  const H = M.historico, HA = ANT?.historico;
+  if (!H?.ultimo_mes) return '';
+  const ini = mesAno(inicioSistema());
+  const ficou = ms => `${listaMeses(ms)} ${ms.length > 1 ? 'ficaram' : 'ficou'} de fora`;
+  const frases = est.aba !== 'geral'
+    ? (H.meses || H.cortados.length ? [`Antes de ${ini} só existe o total de cada mês, vindo da planilha, sem produtos nem clientes: esta aba conta só as O.S. de ${ini} em diante.`] : [])
+    : [
+      H.meses && `<b>${reais(H.centavos)}</b> deste período vem da planilha: antes de ${ini} só existe o total de cada mês. Ele soma no vendido e no faturamento no tempo; recebido, a receber, ticket, locais e formas de pagamento contam só as O.S.`,
+      H.cortados.length && `${ficou(H.cortados)}: o período corta o mês, e a planilha só tem o mês inteiro.`,
+      HA?.cortados?.length && `Na comparação, ${ficou(HA.cortados)}${H.cortados.length ? ' pelo mesmo motivo' : ': o período anterior corta o mês, e a planilha só tem o mês inteiro'}.`,
+    ].filter(Boolean);
+  return frases.length ? `<div class="nota-hist"><i class="m-pl" aria-hidden="true"></i><p>${frases.join(' ')}</p></div>` : '';
+}
 // modo: 'abrir' (a tela entra), 'lado' (troca de aba), 'troca' (chegou outro
 // período: o conteúdo reacende e as marcas crescem de novo) ou 'quieto'.
 function render(modo = 'quieto', lado = 0) {
   tela.classList.toggle('parado', modo === 'quieto');
   tela.innerHTML = cabecalho()
     + (est.erro ? `<div class="erro-faixa">${ico('alert-triangle')}Não foi possível somar o período: ${esc(est.erro)}</div>` : '')
+    + notaHistorico()
     + `<div class="conteudo ${est.carregando ? 'esperando' : ''} ${modo === 'troca' ? 'troca' : ''}" id="conteudo" aria-busy="${est.carregando}">${(TELAS[est.aba] || telaGeral)()}</div>`;
   lucide.createIcons();
   moverIndicador();
@@ -1525,7 +1602,7 @@ addEventListener('message', e => {
     ajustarSelecao(); render('troca');
   }
   if (m.tipo === 'periodo-erro' && m.pedido === est.pedido) { est.carregando = false; est.erro = m.erro; render('quieto'); }
-  if (m.tipo === 'calendario') { cal.meses[m.mes] = m.dias || {}; redesenharCalendario(); }
+  if (m.tipo === 'calendario') { cal.meses[m.mes] = m.dias || {}; cal.hist[m.mes] = m.historico ?? null; redesenharCalendario(); }
   if (m.tipo === 'calendario-erro') { cal.erros[m.mes] = m.erro; redesenharCalendario(); }
   if (m.tipo === 'dia' && m.dia === dia.iso) { dia.pedidos = m.pedidos || []; renderGaveta(); }
   if (m.tipo === 'dia-erro' && m.dia === dia.iso) { dia.erro = m.erro; renderGaveta(); }

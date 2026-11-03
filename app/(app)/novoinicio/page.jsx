@@ -32,6 +32,8 @@ import RelatorioDoDiaModal from '@/components/vendas/RelatorioDoDiaModal';
 // Só leitura: nada grava.
 
 const ehData = s => typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s);
+// "2026-07" → "2026-08".
+const mesSeguinte = m => { const [a, mm] = m.split('-').map(Number); return mm === 12 ? `${a + 1}-01` : `${a}-${String(mm + 1).padStart(2, '0')}`; };
 
 // O mesmo dia do mês anterior, para comparar "outubro até hoje" com "setembro
 // até o mesmo dia" (dia 31 num mês de 30 vira o último dia dele).
@@ -137,6 +139,9 @@ export default function Page() {
         hoje: m.vendas_hoje_centavos || 0,
         serieDia: m.serie_dia || [],
         serieMes: m.serie_mes || [],
+        // O mês em que o sistema começou: o seguinte ao último da planilha.
+        // Antes dele a série por mês mostra o total importado, com hachura.
+        inicioSistema: m.historico?.ultimo_mes ? mesSeguinte(m.historico.ultimo_mes) : null,
         clientes: (m.ranking_cliente || []).slice(0, 6).map(c => ({ nome: c.eh_balcao ? 'Balcão' : mascararCliente(c.rotulo, isDemo), centavos: c.centavos, qtd: c.qtd })),
         produtos: (m.ranking_produto || []).slice(0, 6),
         // O todo do quadro de mais vendidos: o vendido em itens no mês inteiro,

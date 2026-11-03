@@ -103,8 +103,8 @@ export default function Page() {
         return {
             inicio, fim,
             atual,
-            // Do anterior só vai o que a comparação usa.
-            anterior: ant && { resumo: ant.resumo, despesas: { total_centavos: ant.despesas?.total_centavos || 0 } },
+            // Do anterior só vai o que a comparação usa (o vendido soma a planilha).
+            anterior: ant && { resumo: ant.resumo, despesas: { total_centavos: ant.despesas?.total_centavos || 0 }, historico: ant.historico },
             periodoAnterior: anterior,
             cores: Object.fromEntries((m.ranking_local || []).map(l => [l.rotulo, corDoNome(l.rotulo)[0]])),
         };
@@ -137,7 +137,14 @@ export default function Page() {
     // metricas_vendas (data da venda, cancelados de fora). Só data e valor, e só
     // quando o calendário abre. Um mês tem umas 400 O.S.; a busca vai em páginas
     // de 1.000 mesmo assim, porque o que passa do limite some sem aviso.
-    const buscarCalendario = useCallback(async (mes) => {
+    // Mês de antes do sistema (o protótipo avisa): só o total da planilha, uma
+    // linha de vendas_historico, e nenhuma O.S. — como nas séries, ele vale.
+    const buscarCalendario = useCallback(async (mes, planilha) => {
+        if (planilha) {
+            const { data: h, error } = await supabase.from('vendas_historico').select('valor_centavos').eq('mes', `${mes}-01`).maybeSingle();
+            if (error) throw error;
+            if (h) return { dias: {}, historico: h.valor_centavos };
+        }
         const [a, m] = mes.split('-').map(Number);
         const inicio = `${mes}-01`, fim = `${mes}-${String(new Date(a, m, 0).getDate()).padStart(2, '0')}`;
         const dias = {};
@@ -153,7 +160,7 @@ export default function Page() {
             }
             if (!d || d.length < 1000) break;
         }
-        return dias;
+        return { dias };
     }, []);
 
     // O mesmo recorte de metricas_vendas: vencimento dentro do período e a
@@ -198,7 +205,7 @@ export default function Page() {
                 catch (err) { responder({ tipo: 'dia-erro', dia: msg.dia, erro: err.message || 'Não deu para carregar este dia.' }); }
             }
             if (msg.tipo === 'pedir-calendario' && /^\d{4}-\d{2}$/.test(msg.mes || '')) {
-                try { responder({ tipo: 'calendario', mes: msg.mes, dias: await buscarCalendario(msg.mes) }); }
+                try { responder({ tipo: 'calendario', mes: msg.mes, ...(await buscarCalendario(msg.mes, msg.planilha === true)) }); }
                 catch (err) { responder({ tipo: 'calendario-erro', mes: msg.mes, erro: err.message || 'Não deu para carregar o mês.' }); }
             }
             if (msg.tipo === 'pedir-contas' && ehData(msg.inicio) && ehData(msg.fim) && typeof msg.categoria === 'string') {

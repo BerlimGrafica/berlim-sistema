@@ -356,6 +356,9 @@ button.graf-col { cursor: pointer; }
 .graf-leg b { color: var(--tinta); font-weight: 600; }
 .graf-leg .m-col { width: 9px; height: 12px; border-radius: 2px 2px 0 0; background: var(--fin); }
 .graf-leg .m-proj { width: 9px; height: 12px; border: 1.5px dashed var(--fin); border-bottom: 0; border-radius: 2px 2px 0 0; }
+/* mês que veio da planilha (antes do sistema): hachura a 135°, como em Vendas */
+.graf-col i.pl, .graf-leg .m-pl { background: repeating-linear-gradient(135deg, var(--fin) 0 2px, color-mix(in srgb, var(--fin) 30%, var(--superficie)) 2px 5px); }
+.graf-leg .m-pl { width: 9px; height: 12px; border-radius: 2px 2px 0 0; }
 .graf-leg .m-media { width: 16px; border-top: 1.5px dashed var(--brand); }
 .graf-leg .dica { margin-left: auto; color: var(--brand-tinta); font-weight: 600; }
 /* ============ gaveta (computador) / folha (celular), como na nova Produção ============ */
@@ -815,8 +818,9 @@ function grafVendas(modo) {
   const mesAtual = HOJE.slice(0, 7);
   let pontos, media, rotMedia, proj = 0;
   if (modo === 'mes') {
-    pontos = [...V.serieMes].reverse().map(s => { const [ano, mm] = s.rotulo.split('-').map(Number), atual = s.rotulo === mesAtual;
-      return { v: s.centavos, atual, x: mm === 1 ? `jan/${String(ano).slice(2)}` : MESES[mm - 1].slice(0, 3), tip: `${MESES[mm - 1]} de ${ano}${atual ? ' (até hoje)' : ''}` }; });
+    // pl: o mês veio da planilha (antes do sistema), como na tela de Vendas.
+    pontos = [...V.serieMes].reverse().map(s => { const [ano, mm] = s.rotulo.split('-').map(Number), atual = s.rotulo === mesAtual, pl = s.planilha_centavos > 0;
+      return { v: s.centavos, atual, pl, x: mm === 1 ? `jan/${String(ano).slice(2)}` : MESES[mm - 1].slice(0, 3), tip: `${MESES[mm - 1]} de ${ano}${atual ? ' (até hoje)' : ''}${pl ? ' · planilha' : ''}` }; });
     const fechados = pontos.filter(p => !p.atual);
     media = fechados.length ? fechados.reduce((s, p) => s + p.v, 0) / fechados.length : 0;
     rotMedia = 'média dos meses fechados';
@@ -842,7 +846,7 @@ function grafVendas(modo) {
       : (j === ultimo || (j === iMaior && iMaior < ultimo - 1)) ? `<b class="graf-val ${j === ultimo ? (pontos.length > 4 ? 'fim' : '') : 'suave'}" style="bottom:calc(${pct(p.v)}% + 4px)">${compacto(p.v)}</b>` : '';
     const tip = `${esc(p.tip)}${modo === 'dia' ? ' · clique para ver' : ''}|${reais(p.v, true)}${temProj ? ` · projeção ~ ${reais(proj)}` : ''}`;
     const dentro = `${temProj ? `<span class="proj" style="bottom:${pct(p.v)}%;height:${pct(proj) - pct(p.v)}%"></span>` : ''}
-      <i class="cy ${j === ultimo ? '' : 'passado'}" style="height:${pct(p.v)}%;--i:${j}"></i>${rot}`;
+      <i class="cy ${j === ultimo ? '' : 'passado'} ${p.pl ? 'pl' : ''}" style="height:${pct(p.v)}%;--i:${j}"></i>${rot}`;
     // Por dia, cada coluna abre o relatório do dia, como na tela de Vendas.
     return modo === 'dia'
       ? `<button class="graf-col" data-dia="${p.iso}" data-tip="${tip}" aria-label="${esc(p.tip)}: ${reais(p.v, true)}. Ver o que foi vendido">${dentro}</button>`
@@ -859,6 +863,7 @@ function grafVendas(modo) {
     <div class="graf-x" aria-hidden="true">${pontos.map(p => `<span class="${p.atual ? 'hoje' : ''}">${p.x}</span>`).join('')}</div>
     <div class="graf-leg" aria-hidden="true">
       <span><i class="m-col"></i>${modo === 'mes' ? 'vendido no mês' : 'vendido no dia'}</span>
+      ${pontos.some(p => p.pl) && V.inicioSistema ? `<span><i class="m-pl"></i>planilha · antes de ${MESES[+V.inicioSistema.slice(5, 7) - 1].slice(0, 3)}/${V.inicioSistema.slice(0, 4)}</span>` : ''}
       ${proj ? '<span><i class="m-proj"></i>projeção até o fim do mês</span>' : ''}
       ${media ? `<span><i class="m-media"></i>${rotMedia} <b class="num">${reais(media)}</b></span>` : ''}
       ${modo === 'dia' ? `<span class="dica">${ico('mouse-pointer-click', 'ico ico-s')}clique num dia para ver o que foi vendido</span>` : ''}

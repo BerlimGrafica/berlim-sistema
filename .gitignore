@@ -55,3 +55,8 @@ nul
 # Protótipo local do modal de O.S.: o catálogo embutido tem preços reais.
 # A versão publicada fica em public/prototipos/novaos.html, sem dados.
 prototipo-modal-os/
+
+# Faturamento real da gráfica: a planilha de origem e o SQL que a importa
+# (supabase/vendas_historico_migration.sql explica a tabela).
+Faturamento-total.xlsx
+supabase/vendas_historico_dados.sql

@@ -325,6 +325,14 @@ Quando a lista mostra só os primeiros (os 5 maiores clientes do mês), o que fa
 
 Substitui o ranking com uma barra por linha: a barra única mostra a proporção de uma vez, e a lista dá os números exatos. Em uso: Vendas (por local, formas de pagamento, instituições, por categoria e situação das contas) e Início (melhores clientes, mais vendidos e como pagaram).
 
+### Dado de antes do sistema (planilha)
+O sistema registra vendas desde agosto de 2026. O faturamento anterior existe só como um **total por mês**, importado de uma planilha (`vendas_historico`), e entra apenas nas leituras de tendência: as séries por mês e por ano, o comparativo do ano e o vendido de um período. Recebido, a receber, ticket, rankings, produtos e clientes contam só as O.S.
+- **Hachura a 135°** no tom da série marca o que veio da planilha: traço de 2px e vão de 3px a 30% do tom sobre a superfície, opaco. A coluna toda da planilha é hachurada; o ano que mistura as duas origens tem a parte da planilha hachurada embaixo e a das O.S. cheia em cima. A origem nunca fica só na cor.
+- A legenda diz "planilha · antes de ago/2026", e a dica da coluna diz "planilha" (ou quanto veio dela, na coluna que mistura).
+- No calendário, um mês da planilha não tem dia: no lugar da grade vai o total do mês, com a mesma hachura e a altura da grade.
+- Período que pega esses meses ganha uma **nota** acima dos números, com a hachura na frente: quanto veio da planilha, onde ele soma e onde não. Mês cortado pelo período fica de fora e a nota diz qual. Nunca se inventa um pedaço de mês.
+- Comparativo de ano é sempre nos mesmos meses fechados (jan até o mês passado) dos dois anos.
+
 ### Prévia do WhatsApp
 Texto que vai para o cliente aparece no balão do WhatsApp (cores e fonte do próprio WhatsApp, só ali). Clicar no balão vira campo com os asteriscos; ao sair, volta formatado com "editada". O ajuste vale só para a próxima cópia, com "Desfazer" e "Salvar no texto".
 
@@ -390,6 +398,7 @@ Testado e recusado: a tira de densidade marcando a etapa da O.S. na gaveta da Pr
 - **Don't** criar cartões iguais em grade como estrutura de página quando uma lista densa resolve.
 - **Don't** misturar busca, chips e botões numa mesma faixa de ferramentas: busca no cabeçalho, filtros em abas.
 - **Don't** pôr botão de atualizar: o tempo real atualiza a tela, e uma lista que veio do banco relê só as linhas das O.S. que mudaram.
+- **Don't** lançar um total antigo como O.S. sem cliente para o gráfico fechar: ele estraga ranking, ticket e a receber. Vai para `vendas_historico` e aparece hachurado (ver **Dado de antes do sistema**).
 - **Don't** deixar ação rara e que encerra algo (sair, desvincular) solta na barra do sistema, ao lado de um ícone de uso diário: ela vai no menu da conta.
 - **Don't** repetir o mesmo valor em vários lugares do mesmo bloco (ex.: "falta pagar" no cabeçalho, no resumo e na lista).
 - **Don't** escrever na tela uma frase que explica o que o rótulo e o contexto já dizem ("por dia com venda", "já prontos para cobrar"): se for útil, ela vai na dica.
