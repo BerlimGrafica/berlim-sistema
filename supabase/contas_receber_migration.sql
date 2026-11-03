@@ -18,7 +18,10 @@
 -- Entra a O.S. que tem total - recebido > 0. Finalizada só entra se ainda tiver
 -- boleto em aberto (é comum dar baixa na O.S. assim que o boleto sai).
 --
--- Valores em centavos, como no resto do sistema.
+-- Valores em centavos, como no resto do sistema. O vencimento sai como texto
+-- 'AAAA-MM-DD': pedidos.prazo_pagamento é texto e vencimento_boleto é data, e
+-- converter o texto para data quebraria a vista inteira por causa de um valor
+-- antigo fora do formato.
 -- security_invoker: a RLS de pedidos e pedido_pagamentos continua valendo.
 -- ----------------------------------------------------------------------------
 
@@ -52,7 +55,7 @@ select p.id,
        p.data_pedido,
        p.prazo,
        p.data_retirada,
-       coalesce(p.prazo_pagamento, g.boleto_vence) as boleto_vence,
+       coalesce(nullif(trim(p.prazo_pagamento), ''), g.boleto_vence::text) as boleto_vence,
        p.valor_total as total,
        coalesce(g.recebido, 0) as recebido,
        coalesce(g.em_boleto, 0) as em_boleto,

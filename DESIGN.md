@@ -282,6 +282,11 @@ Popover em superfície, raio 9px, sombra Popover, entra com 160ms deslizando 4px
 ### Abas de filtro
 O recorte principal de uma lista vira abas com contagem (Todas, Atrasadas, Hoje…) sobre a linha que separa o cabeçalho da lista; um traço `brand` de 2px desliza até a aba ativa (.34s). A contagem da aba ativa fica em `tinta`; a de alerta (Atrasadas) fica em `perigo` mesmo inativa. Ações da lista (recolher todas) entram na ponta direita como ícone com dica. No celular a faixa rola na horizontal, vai sozinha até a aba ativa e esmaece as bordas quando há mais abas. Busca e o botão primário ficam no cabeçalho, à direita do título — nunca na mesma linha das abas, com uma exceção: no computador a faixa gruda no topo ao rolar e, presa, recebe o botão primário compacto (32px, com `kbd`) na ponta direita, no mesmo lugar onde estava o botão grande. Ele entra deslizando 10px e o ícone de recolher escorrega para abrir espaço. Trocar de aba com a faixa presa leva ao começo da lista nova, logo abaixo da faixa. A lista nova entra do lado da aba escolhida (24px e esmaecendo, .3s), na mesma direção em que o traço anda; cabeçalho, faixa e títulos das colunas ficam parados. Se a aba precisa buscar no banco, quem entra primeiro são as linhas de espera (ver **Espera**).
 
+### Filtro de período
+Toda lista que filtra por data usa o **mesmo botão de período** (ícone de calendário, nome do período e seta), na linha da busca. Ele abre um popover com os atalhos à esquerda — Todo o período, Este mês, Mês passado, Últimos 30 dias, Este ano — e um calendário de intervalo à direita: o primeiro clique marca o início, o segundo o fim, e o título leva aos meses e aos anos. **Próximo mês** só entra onde a data pode estar no futuro (vencimento de conta e de boleto). A dica do botão diz por qual data ele filtra ("Filtrar pelo vencimento").
+
+Nada de setas de mês, seletor próprio de uma tela ou campo de data nativo. Uma tela só foge do padrão quando o calendário é o próprio conteúdo (o **Calendário de vendas**). O período inicial é o que a pessoa procura ali: Este mês para vencimentos, Este ano para o que ainda se cobra. E o que importa não some por estar fora do período: uma linha logo abaixo da busca avisa "Mais 1 conta vencida de antes de 01/11 · Ver todo o período".
+
 ### Lista agrupada
 Cabeçalho de grupo leve (seta, bolinha da etapa, nome, contagem e alerta "x atrasadas"), lista densa em `superficie` com borda. Abrir/fechar o grupo troca só uma classe (grid `1fr → 0fr`, .36s) sem redesenhar a lista; "Recolher todas" faz o mesmo em todos. Grupos recolhidos não são guardados entre visitas. Linha que muda de grupo desliza até o lugar novo (FLIP). Ordem dentro do grupo: prazo, depois horário limite.
 
@@ -379,6 +384,7 @@ Testado e recusado: a tira de densidade marcando a etapa da O.S. na gaveta da Pr
 - **Don't** usar caixa alta espaçada em rótulos e títulos.
 - **Don't** criar cartões iguais em grade como estrutura de página quando uma lista densa resolve.
 - **Don't** misturar busca, chips e botões numa mesma faixa de ferramentas: busca no cabeçalho, filtros em abas.
+- **Don't** pôr botão de atualizar: o tempo real atualiza a tela, e uma lista que veio do banco relê só as linhas das O.S. que mudaram.
 - **Don't** deixar ação rara e que encerra algo (sair, desvincular) solta na barra do sistema, ao lado de um ícone de uso diário: ela vai no menu da conta.
 - **Don't** repetir o mesmo valor em vários lugares do mesmo bloco (ex.: "falta pagar" no cabeçalho, no resumo e na lista).
 - **Don't** escrever na tela uma frase que explica o que o rótulo e o contexto já dizem ("por dia com venda", "já prontos para cobrar"): se for útil, ela vai na dica.

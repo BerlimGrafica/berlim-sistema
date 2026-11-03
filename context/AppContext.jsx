@@ -8,6 +8,7 @@ import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS, STATUSES_JA_RETIRADO_DA_FUTURA
 import { formatarMoeda, parseValorMoeda, valorPagamentoComSinal, valorPagamentoComSinalCentavos, paraCentavos, centavosParaReais, obterDataAtual, adicionarMesData, apenasDigitos, rotuloCliente } from '@/lib/utils/formatters';
 import { itensDoPedido, pagamentosDoPedido, observacoesDoPedido, itensDoOrcamento, observacoesDoOrcamento } from '@/lib/utils/servico';
 import { gravarItensPagamentos, clonarItensParaPedido, gravarItensOrcamento } from '@/lib/pedidos/gravacao';
+import { avisarPedidosMudados } from '@/lib/pedidos/mudancas';
 import { useAuth } from '@/hooks/useAuth';
 import { useAlertas } from '@/hooks/useAlertas';
 import { usePendencias } from '@/hooks/usePendencias';
@@ -324,6 +325,8 @@ export const AppProvider = ({ children }) => {
     // pagamentos (delete + insert), o que produz uma dezena de eventos em
     // poucos milissegundos. Sem isso, cada evento viraria uma consulta.
     const timersRealtimeRef = useRef({});
+    // As O.S. que mudaram desde o último aviso (ver marcarParaRebuscar).
+    const pedidosMudadosRef = useRef(new Set());
     const agendarRealtime = (chave, fn, ms = 350) => {
         clearTimeout(timersRealtimeRef.current[chave]);
         timersRealtimeRef.current[chave] = setTimeout(fn, ms);
@@ -354,8 +357,18 @@ export const AppProvider = ({ children }) => {
         };
         // Telas com busca própria (Histórico, Contas a Receber, Boletos, clientes
         // problemáticos) reagem a este contador. Agrupado para que uma rajada de
-        // eventos resulte numa única rodada de consultas.
-        const marcarParaRebuscar = () => agendarRealtime('trigger', () => setTriggerRealtime(prev => prev + 1));
+        // eventos resulte numa única rodada de consultas. Junto vão as O.S. que
+        // mudaram (lib/pedidos/mudancas.js), para quem relê só elas; '*' marca
+        // um evento que não disse de qual O.S. era.
+        const marcarParaRebuscar = (pedidoId) => {
+            if (pedidoId != null) pedidosMudadosRef.current.add(pedidoId);
+            agendarRealtime('trigger', () => {
+                const mudados = pedidosMudadosRef.current;
+                pedidosMudadosRef.current = new Set();
+                avisarPedidosMudados([...mudados].filter(id => id !== '*'), mudados.has('*'));
+                setTriggerRealtime(prev => prev + 1);
+            });
+        };
 
         // Um tratador por tabela. O que não está aqui é simplesmente ignorado.
         const tratadores = {
@@ -385,19 +398,21 @@ export const AppProvider = ({ children }) => {
                     // pagamentos, sem esperar a próxima recarga.
                     else if (!anterior && ficaNaMemoria(payload.new)) agendarSincronia(payload.new.id);
                 }
-                marcarParaRebuscar();
+                marcarParaRebuscar(payload.new?.id ?? payload.old?.id ?? '*');
             },
 
             pedido_itens: (payload) => {
-                agendarSincronia(payload.new?.pedido_id ?? payload.old?.pedido_id);
+                const pedidoId = payload.new?.pedido_id ?? payload.old?.pedido_id;
+                agendarSincronia(pedidoId);
                 // Sem isto o Histórico não refazia a busca quando o carrinho mudava,
                 // e continuava exibindo o resumo antigo dos itens.
-                marcarParaRebuscar();
+                marcarParaRebuscar(pedidoId ?? '*');
             },
 
             pedido_pagamentos: (payload) => {
-                agendarSincronia(payload.new?.pedido_id ?? payload.old?.pedido_id);
-                marcarParaRebuscar();
+                const pedidoId = payload.new?.pedido_id ?? payload.old?.pedido_id;
+                agendarSincronia(pedidoId);
+                marcarParaRebuscar(pedidoId ?? '*');
             },
 
             notas_fiscais: (payload) => aplicarEventoNaLista(setNotasFiscais, payload, porCriacaoDesc),
@@ -2064,8 +2079,10 @@ export const AppProvider = ({ children }) => {
         else avisar('Falha ao excluir: ' + error.message, 'erro');
     }
 
-    async function reabrirNotaFiscal(nota) {
-        if (!(await confirmar(`Deseja gerar uma nova nota pendente para "${nota.razao_social || nota.cnpj}"?`))) return;
+    // Devolve a nota nova. `jaConfirmado`: quem chama já perguntou (o protótipo
+    // do Financeiro confirma no próprio botão, com o segundo clique).
+    async function reabrirNotaFiscal(nota, { jaConfirmado = false } = {}) {
+        if (!jaConfirmado && !(await confirmar(`Deseja gerar uma nova nota pendente para "${nota.razao_social || nota.cnpj}"?`))) return null;
 
         const payload = {
             razao_social: nota.razao_social,
@@ -2087,9 +2104,10 @@ export const AppProvider = ({ children }) => {
         const { data, error } = await supabase.from('notas_fiscais').insert([payload]).select();
         if (!error && data) {
             setNotasFiscais(prev => [data[0], ...prev]);
-        } else {
-            avisar('Falha ao gerar nova nota: ' + (error?.message || 'Erro desconhecido'), 'erro');
+            return data[0];
         }
+        avisar('Falha ao gerar nova nota: ' + (error?.message || 'Erro desconhecido'), 'erro');
+        return null;
     }
 
     async function concluirRequisicao(id) {

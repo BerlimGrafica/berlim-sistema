@@ -10,6 +10,7 @@ import { useAbrirOSDoPrototipo } from '@/hooks/useAbrirOSDoPrototipo';
 import { buscarContasReceber } from '@/lib/financeiro/receber';
 import { buscarBoletos } from '@/lib/financeiro/boletos';
 import { buscarNotasConcluidas } from '@/lib/financeiro/notas';
+import { ouvirPedidosMudados } from '@/lib/pedidos/mudancas';
 import { CATEGORIAS_CONTA } from '@/lib/utils/constants';
 import { formatarMoeda, mascararCliente, obterDataAtual } from '@/lib/utils/formatters';
 import BarraDeCor from '@/components/ui/BarraDeCor';
@@ -23,7 +24,8 @@ import BarraDeCor from '@/components/ui/BarraDeCor';
 // - Contas a receber e Boletos o protótipo PEDE por mensagem quando a aba abre:
 //   a vista contas_receber (uma linha por O.S. que deve, somada no banco) e os
 //   boletos lidos pelo lado do pagamento (lib/financeiro/). Nada é lido sem a
-//   aba aberta, e nada em laço; "Atualizar" relê quando a pessoa pede.
+//   aba aberta, e nada em laço. Depois, o tempo real diz quais O.S. mudaram
+//   (lib/pedidos/mudancas.js) e o protótipo relê só essas, no mesmo período.
 // Quase nada grava aqui: "Abrir O.S." abre a O.S. real por cima
 // (useAbrirOSDoPrototipo); conta, nota e empresa abrem os modais de hoje, que
 // gravam. A exceção são os dados do boleto (CNPJ, número, valor, emissão,
@@ -58,11 +60,13 @@ const notaParaProto = (n, isDemo) => ({
 });
 
 export default function Page() {
-    const { isDemo } = useSessao();
+    const { isDemo, usuario } = useSessao();
+    // Quem conclui nota e gera uma nova a partir de outra: as mesmas pessoas da tela de hoje.
+    const podeNotas = usuario?.nivel === 'Administrador' || usuario?.nivel === 'Financeiro';
     const { contasPagar, empresasFaturamento, dadosCarregados, setNovaEmpresaFaturamento, setModalEmpresaFaturamentoAberto, atualizarPagamentoBoleto, concluirBoletoContasReceber } = useFinanceiro();
     const { atualizarCampoInline } = usePedidos();
     const { fornecedores } = useCadastros();
-    const { notasFiscais, setNotaFiscalEmEdicao, setModalNotaFiscalAberto } = useNotasFiscais();
+    const { notasFiscais, setNotaFiscalEmEdicao, setModalNotaFiscalAberto, reabrirNotaFiscal } = useNotasFiscais();
     const [modelo, setModelo] = useState(null);
     const { iframeRef, modalOS } = useAbrirOSDoPrototipo();
     useContaDoPrototipo(iframeRef);
@@ -83,11 +87,14 @@ export default function Page() {
             const responder = r => quadro.contentWindow?.postMessage(r, '/');
             // O período vem do protótipo: só passa adiante data de verdade.
             const periodo = { de: ehData(msg.de) ? msg.de : '', ate: ehData(msg.ate) ? msg.ate : '' };
+            // Releitura do tempo real: só as O.S. que mudaram (números, e poucas).
+            const ids = Array.isArray(msg.ids) ? msg.ids.filter(Number.isInteger).slice(0, 100) : null;
+            if (ids && !ids.length) return;
             if (msg.tipo === 'pedir-receber') {
-                const r = await buscarContasReceber(periodo);
-                if (r.erro) return responder({ tipo: 'receber-erro', pedido: msg.pedido, erro: r.erro.message || 'Não deu para carregar as contas a receber.' });
+                const r = await buscarContasReceber(periodo, ids);
+                if (r.erro) return responder({ tipo: 'receber-erro', pedido: msg.pedido, ids, erro: r.erro.message || 'Não deu para carregar as contas a receber.' });
                 responder({
-                    tipo: 'receber', pedido: msg.pedido, total: r.total, antes: r.antes,
+                    tipo: 'receber', pedido: msg.pedido, ids, total: r.total, antes: r.antes,
                     lista: r.lista.map(o => ({
                         id: o.id, cliente: mascararCliente(o.cliente || '', isDemo), clienteId: o.cliente_id || null, status: o.status,
                         pedido: o.data_pedido || '', prazo: o.prazo || '', retirada: o.data_retirada || '', vence: o.boleto_vence || '',
@@ -97,9 +104,9 @@ export default function Page() {
                 });
             }
             if (msg.tipo === 'pedir-boletos') {
-                const r = await buscarBoletos(periodo);
-                if (r.erro) return responder({ tipo: 'boletos-erro', pedido: msg.pedido, erro: r.erro.message || 'Não deu para carregar os boletos.' });
-                responder({ tipo: 'boletos', pedido: msg.pedido, vencidosAntes: r.vencidosAntes, lista: r.lista.map(b => ({ ...b, cliente: mascararCliente(b.cliente, isDemo), cnpj: isDemo ? '' : b.cnpj })) });
+                const r = await buscarBoletos(periodo, ids);
+                if (r.erro) return responder({ tipo: 'boletos-erro', pedido: msg.pedido, ids, erro: r.erro.message || 'Não deu para carregar os boletos.' });
+                responder({ tipo: 'boletos', pedido: msg.pedido, ids, vencidosAntes: r.vencidosAntes, lista: r.lista.map(b => ({ ...b, cliente: mascararCliente(b.cliente, isDemo), cnpj: isDemo ? '' : b.cnpj })) });
             }
             // Preencher o boleto: grava pelas funções da tela de Boletos de hoje.
             if (msg.tipo === 'salvar-boleto' && Number.isInteger(msg.os)) {
@@ -125,6 +132,18 @@ export default function Page() {
                 setNotaFiscalEmEdicao({ ...n, valor_pago: n.valor_pago ? formatarMoeda(Math.round(n.valor_pago).toString()) : '' });
                 setModalNotaFiscalAberto(true);
             }
+            // "Gerar nova nota" a partir de uma concluída: a função da tela de hoje
+            // (dados da empresa; serviço, valor e tipo em branco), já confirmada no
+            // botão do protótipo. A nota nova abre no modal para preencher o resto.
+            if (msg.tipo === 'gerar-nota' && Number.isInteger(msg.id) && podeNotas && !isDemo) {
+                const n = notasFiscais.find(x => x.id === msg.id);
+                if (!n?.concluido) return;
+                const nova = await reabrirNotaFiscal(n, { jaConfirmado: true });
+                if (!nova) return;
+                quadro.blur();
+                setNotaFiscalEmEdicao({ ...nova, valor_pago: '' });
+                setModalNotaFiscalAberto(true);
+            }
             if (msg.tipo === 'editar-empresa' && Number.isInteger(msg.id)) {
                 const emp = empresasFaturamento.find(x => x.id === msg.id);
                 if (!emp) return;
@@ -140,7 +159,13 @@ export default function Page() {
         }
         window.addEventListener('message', aoReceber);
         return () => window.removeEventListener('message', aoReceber);
-    }, [iframeRef, isDemo, notasFiscais, empresasFaturamento, setNotaFiscalEmEdicao, setModalNotaFiscalAberto, setNovaEmpresaFaturamento, setModalEmpresaFaturamentoAberto, atualizarPagamentoBoleto, concluirBoletoContasReceber, atualizarCampoInline]);
+    }, [iframeRef, isDemo, podeNotas, reabrirNotaFiscal, notasFiscais, empresasFaturamento, setNotaFiscalEmEdicao, setModalNotaFiscalAberto, setNovaEmpresaFaturamento, setModalEmpresaFaturamentoAberto, atualizarPagamentoBoleto, concluirBoletoContasReceber, atualizarCampoInline]);
+
+    // O tempo real diz quais O.S. mudaram; o protótipo relê só essas nas abas
+    // que vieram do banco. É isto que dispensa um botão de atualizar.
+    useEffect(() => ouvirPedidosMudados(({ ids, tudo }) => {
+        iframeRef.current?.contentWindow?.postMessage({ tipo: 'pedidos-mudaram', ids, tudo }, '/');
+    }), [iframeRef]);
 
     if (!modelo || !dadosCarregados) {
         return <div className="min-h-[60vh] grid place-items-center"><BarraDeCor mostrarTexto texto="Carregando protótipo" /></div>;
@@ -163,6 +188,7 @@ export default function Page() {
         })),
         // Só as pendentes; as concluídas o protótipo pede por período.
         notas: notasFiscais.filter(n => !n.concluido).map(n => notaParaProto(n, isDemo)),
+        podeNotas: podeNotas && !isDemo,
     };
     // "<" escapado para um nome nunca fechar o <script> do protótipo.
     const json = JSON.stringify(dados).replace(/</g, '\\u003c');
