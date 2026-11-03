@@ -25,6 +25,9 @@
   --itens: #2563eb; --itens-tinta: #1d4ed8; --itens-fundo: #eff6ff; --itens-borda: #dbeafe;
   --fin: #059669; --fin-tinta: #047857; --fin-fundo: #ecfdf5; --fin-borda: #c9f2df;
   --obs: #d97706; --obs-tinta: #b45309; --obs-fundo: #fffbeb; --obs-borda: #fdecc4;
+  /* calendário de contas: o vermelho dos cinco tons do "a pagar" e o texto nos
+     dois mais fortes (escolhidos para passar 4.5:1 em todos os tons) */
+  --cal-pagar: #a51d1d; --cal-forte: #ffffff;
   --saida: cubic-bezier(.16, 1, .3, 1);
 }
 .dark {
@@ -40,6 +43,7 @@
   --itens: #60a5fa; --itens-tinta: #93c5fd; --itens-fundo: rgba(59,130,246,.12); --itens-borda: rgba(59,130,246,.3);
   --fin: #34d399; --fin-tinta: #6ee7b7; --fin-fundo: rgba(16,185,129,.11); --fin-borda: rgba(16,185,129,.28);
   --obs: #fbbf24; --obs-tinta: #fcd34d; --obs-fundo: rgba(245,158,11,.1); --obs-borda: rgba(245,158,11,.26);
+  --cal-pagar: #f87171; --cal-forte: #0d1117;
 }
 * { box-sizing: border-box; margin: 0; }
 html { color-scheme: light; } html.dark { color-scheme: dark; }
@@ -93,8 +97,8 @@ body .lin-dir .v, body .rank .v, body .prox b { color: var(--fin); }
 .selo.ok { background: var(--fin-fundo); color: var(--fin-tinta); }
 .dprops dd .ib { width: 26px; height: 26px; }
 /* campos do boleto: sem caixa até a mão chegar (DESIGN.md › campos sem caixa) */
-.rot-campos { display: flex; align-items: center; gap: 6px; margin-top: 18px; padding-top: 12px; border-top: 1px solid var(--borda-fraca); font-size: 11.5px; font-weight: 600; color: var(--tinta-suave); }
-.rot-campos .ico { width: 13px; height: 13px; }
+/* Na gaveta do boleto, uma linha separa a situação dos campos que se editam. */
+.div-campos { border: 0; border-top: 1px solid var(--borda); margin: 16px 0 6px; }
 .dprops.campos-bol { margin-top: 6px; }
 .campo-in { width: 100%; max-width: 230px; height: 32px; padding: 0 8px; margin-left: -8px; border: 1px solid transparent; border-radius: 7px; background: transparent; font: inherit; font-weight: 600; color: var(--tinta); outline: none; transition: background .12s, border-color .12s, box-shadow .12s; }
 .campo-in:hover { background: var(--realce); }
@@ -317,7 +321,9 @@ a.n-cel:hover { background: var(--sutil); }
 .fl.conf:hover { background: var(--tinta); color: var(--superficie); }
 .fl.concluir.conf { width: auto; padding: 0 9px; background: var(--fin); color: #fff; font-size: 12px; font-weight: 700; }
 .dark .fl.concluir.conf { color: #04140d; }
-.lin.paga .fl.concluir { visibility: hidden; }
+/* Linha paga não desenha o botão (nem escondido): guarda o lugar com .fl-lugar,
+   de largura fixa, para o valor ficar alinhado com o das outras linhas mesmo
+   se o "Pagar?" da confirmação tiver ficado marcado nela. */
 
 
 
@@ -331,6 +337,69 @@ a.n-cel:hover { background: var(--sutil); }
 .diaf.hoje b, .diaf.hoje span { color: var(--obs-tinta); }
 .vazio { display: flex; align-items: center; gap: 10px; padding: 18px 16px; color: var(--tinta-suave); font-size: 12.5px; }
 .vazio .ico { color: var(--sucesso); }
+/* ---- calendário de contas a pagar ---- */
+/* O desenho do calendário de vendas. O que falta pagar fica em vermelho, em
+   cinco tons pelo valor do dia; o dia todo pago fica verde. A situação vai num
+   selo com o ícone do grupo da lista e no contorno da régua de prazo: vermelho
+   vencida ou vence hoje, âmbar amanhã. */
+.area-cab .vista { margin-left: 4px; }
+.vista button { display: inline-flex; align-items: center; gap: 5px; }
+.vista .ico { width: 14px; height: 14px; }
+.calc { padding: 12px 16px 16px; }
+.calc-topo { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.calc-topo b { min-width: 150px; text-align: center; font-size: 13px; font-weight: 700; color: var(--tinta); }
+.calc-topo .ib { width: 28px; height: 28px; }
+.calc-topo .resumo { margin-left: auto; font-size: 12px; color: var(--tinta-suave); font-variant-numeric: tabular-nums; }
+.calc-topo .resumo strong { font-weight: 700; }
+.calc-topo .resumo .apagar { color: var(--perigo); }
+.calc-topo .resumo .pago { color: var(--fin-tinta); }
+.calc-grade { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; margin-top: 10px; }
+.calc-grade .sem { font-size: 11px; font-weight: 600; color: var(--tinta-suave); text-align: center; }
+.calc-dia { position: relative; min-height: 46px; border-radius: 6px; padding: 5px 7px; display: flex; flex-direction: column; justify-content: space-between; text-align: left; font-variant-numeric: tabular-nums; color: var(--tinta); box-shadow: inset 0 0 0 1px var(--borda); }
+.calc-dia .n { font-size: 12px; font-weight: 700; }
+.calc-dia .v { font-size: 10.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.calc-dia.tom { box-shadow: none; }
+.calc-dia.forte { color: var(--cal-forte); }
+.calc-dia.livre { color: var(--tinta-fraca); }
+.calc-dia.fora { box-shadow: inset 0 0 0 1px var(--borda-fraca); color: var(--tinta-fraca); opacity: .55; }
+.calc-dia.pago { background: color-mix(in srgb, var(--fin) 16%, var(--superficie)); box-shadow: none; }
+.calc-dia.pago .v { color: var(--fin-tinta); }
+.calc-dia.hoje { box-shadow: inset 0 0 0 2px var(--brand); }
+.calc-dia.r-atraso { box-shadow: 0 0 0 2px var(--perigo); }
+.calc-dia.r-amanha { box-shadow: 0 0 0 2px var(--obs); }
+button.calc-dia { transition: outline-color .12s; }
+button.calc-dia:hover, button.calc-dia:focus-visible { outline: 2px solid var(--tinta); outline-offset: 1px; }
+button.calc-dia[aria-pressed="true"] { outline: 2px solid var(--brand); outline-offset: 2px; }
+.calc-marca { position: absolute; top: 4px; right: 4px; width: 18px; height: 18px; border-radius: 99px; display: grid; place-items: center; background: var(--superficie); box-shadow: var(--sombra-leve); }
+.calc-marca .ico { width: 11px; height: 11px; stroke-width: 2.4; }
+.calc-marca.atraso { color: var(--perigo); }
+.calc-marca.amanha { color: var(--obs-tinta); }
+.calc-marca.pago { color: var(--fin-tinta); }
+/* Legenda em duas faixas: os tons do a pagar e o verde do pago; embaixo, as marcas. */
+.calc-legenda { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px 24px; margin-top: 14px; }
+.calc-escala { flex: 0 1 520px; min-width: 0; }
+/* Sem espaço, o "até" desce sozinho e o valor nunca parte ao meio. */
+.calc-escala span b { font-weight: inherit; white-space: nowrap; }
+.calc-escala > small { display: block; margin-bottom: 4px; font-size: 11px; font-weight: 600; color: var(--tinta-suave); }
+.calc-escala > div { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; }
+.calc-escala > div > span { display: grid; gap: 3px; font-size: 10.5px; font-weight: 600; color: var(--tinta-suave); font-variant-numeric: tabular-nums; }
+.calc-escala i { height: 10px; border-radius: 2px; }
+.calc-escala.pago { flex: 0 0 auto; }
+.calc-escala.pago > div { grid-template-columns: auto; }
+.calc-escala.pago i { width: 64px; background: color-mix(in srgb, var(--fin) 16%, var(--superficie)); box-shadow: inset 0 0 0 1px var(--fin-borda); }
+.calc-marcas { flex-basis: 100%; display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 11.5px; color: var(--tinta-suave); }
+.calc-marcas > span { display: inline-flex; align-items: center; gap: 6px; }
+.calc-marcas .calc-marca { position: static; }
+@media (max-width: 560px) {
+  .calc { padding: 10px 10px 14px; }
+  .calc-grade { gap: 4px; }
+  .calc-dia { min-height: 38px; padding: 4px 5px; }
+  .calc-dia .v { display: none; }
+  .calc-dia .calc-marca { top: 2px; right: 2px; width: 14px; height: 14px; }
+  .calc-dia .calc-marca .ico { width: 9px; height: 9px; }
+  .calc-topo b { min-width: 0; flex: 1; }
+  .calc-topo .resumo { margin-left: 0; width: 100%; }
+}
 .dicas { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 14px; color: var(--tinta-suave); font-size: 12px; }
 .dicas span { display: inline-flex; gap: 5px; align-items: center; }
 
@@ -578,7 +647,10 @@ const CONTAS = DADOS.contas;
 const lerSessao = (k, padrao) => { try { return sessionStorage.getItem(k) || padrao; } catch { return padrao; } };
 const gravarSessao = (k, v) => { try { sessionStorage.setItem(k, v); } catch { /* sem armazenamento: só não lembra */ } };
 // O período de Contas a pagar nasce em "Este mês", logo depois dos PERIODOS.
-const est = { aba: lerSessao('fin-aba', 'receber'), periodo: null, busca: '', categoria: '', verPagas: false, gaveta: null, conf: null };
+// vista: Contas a pagar em lista ou em calendário (lembrada na sessão, como a
+// aba); diaCal: o dia do calendário com as contas abertas embaixo.
+const est = { aba: lerSessao('fin-aba', 'receber'), periodo: null, busca: '', categoria: '', verPagas: false, gaveta: null, conf: null,
+  vista: lerSessao('fin-pagar-vista', 'lista') === 'cal' ? 'cal' : 'lista', diaCal: null };
 
 /* ===== situação de uma conta ===== */
 const paga = c => c.status === 'Pago';
@@ -632,7 +704,7 @@ function linha(c) {
     ${dataEmBloco(c)}
     <span class="lin-txt"><span class="lin-tit"><span>${esc(c.descricao)}</span>${c.recorrente ? `<i data-lucide="repeat" class="ico ico-s rep" title="Repete"></i>` : ''}</span><span class="lin-sub">${sub}</span></span>
     <span class="lin-dir"><span class="v num">${c.valor ? reais(c.valor) : '<small>a definir</small>'}</span>${quando(c)}</span>
-    <span class="fls"><button class="fl concluir ${conf ? 'conf' : ''}" data-pagar="${c.id}" aria-label="Marcar como paga" title="${conf ? 'Clique de novo para confirmar' : 'Marcar como paga'}">${conf ? 'Pagar?' : ico('check-circle-2', 'ico')}</button></span>
+    <span class="fls">${paga(c) ? '<span class="fl-lugar" aria-hidden="true"></span>' : `<button class="fl concluir ${conf ? 'conf' : ''}" data-pagar="${c.id}" aria-label="Marcar como paga" title="${conf ? 'Clique de novo para confirmar' : 'Marcar como paga'}">${conf ? 'Pagar?' : ico('check-circle-2', 'ico')}</button>`}</span>
   </div></li>`;
 }
 
@@ -654,8 +726,10 @@ function blocoLista() {
   const gs = grupos(lista);
   const filtro = est.busca || est.categoria;
   const mes = mesDoPeriodo(est.periodo), comP = comPeriodo(est.periodo);
+  const cal = est.vista === 'cal';
   let corpo = '';
-  if (!lista.length) corpo = `<div class="vazio">${ico('search')}${filtro ? 'Nenhuma conta com esse filtro.' : mes ? `Nenhuma conta em ${rotuloMes(mes)}.` : comP ? 'Nenhuma conta no período.' : 'Nenhuma conta lançada.'}</div>`;
+  if (cal) corpo = calendarioContas(lista);
+  else if (!lista.length) corpo = `<div class="vazio">${ico('search')}${filtro ? 'Nenhuma conta com esse filtro.' : mes ? `Nenhuma conta em ${rotuloMes(mes)}.` : comP ? 'Nenhuma conta no período.' : 'Nenhuma conta lançada.'}</div>`;
   else {
     corpo = `<ul class="lista">${gs.map(g => `<li class="grupo-rot ${g.tom || ''}" id="${g.id}">${ico(g.icone)}${g.rot}<span class="tot num">${plural(g.itens.length, 'conta', 'contas')} · ${reais(soma(g.itens))}</span></li>${g.itens.map(linha).join('')}`).join('')}
       ${!gs.length && pagas.length ? `<li><div class="vazio">${ico('check-circle-2')}Tudo pago${mes ? ' neste mês' : comP ? ' no período' : ''}.</div></li>` : ''}
@@ -663,8 +737,93 @@ function blocoLista() {
       </ul>`;
   }
   const titulo = mes ? `Contas de ${rotuloMes(mes).replace(/ de \d+$/, '')}` : comP ? 'Contas no período' : 'Todas as contas';
-  return `<section class="area a-dados" id="bloco-lista"><div class="area-cab"><span class="area-ico">${ico('receipt')}</span><h2>${titulo}</h2><span class="area-meta num">${plural(lista.length, 'conta', 'contas')}</span></div>${corpo}</section>
-    <div class="dicas"><span><kbd>/</kbd> buscar</span><span><kbd>N</kbd> nova conta</span><span>clique na conta para ver tudo</span></div>`;
+  const vista = `<span class="seg-mini vista" role="radiogroup" aria-label="Ver as contas em">${[['lista', 'Lista', 'list'], ['cal', 'Calendário', 'calendar-days']].map(([k, r, ic]) => `<button role="radio" data-vista="${k}" aria-checked="${est.vista === k}">${ico(ic, 'ico')}${r}</button>`).join('')}</span>`;
+  return `<section class="area a-dados" id="bloco-lista"><div class="area-cab"><span class="area-ico">${ico(cal ? 'calendar-days' : 'receipt')}</span><h2>${titulo}</h2><span class="area-meta num">${plural(lista.length, 'conta', 'contas')}</span>${vista}</div>${corpo}</section>
+    <div class="dicas"><span><kbd>/</kbd> buscar</span><span><kbd>N</kbd> nova conta</span><span>${cal ? 'clique num dia para ver as contas dele' : 'clique na conta para ver tudo'}</span></div>`;
+}
+
+/* ===== calendário de contas a pagar ===== */
+// O mesmo desenho do calendário de vendas, sobre as contas que já estão na
+// memória (nenhuma consulta): o que falta pagar no dia fica em vermelho, mais
+// forte quanto maior o valor; o dia todo pago fica verde. Ele segue o período:
+// as setas trocam o período para o mês ao lado, e os números do topo e as
+// categorias andam junto. Busca e categoria filtram os dias.
+const TONS_CAL = [14, 32, 52, 76, 100];
+const maiuscula = s => s.replace(/^./, x => x.toUpperCase());
+// O mês do calendário: o do período; num período que não é um mês, o de hoje
+// quando ele cabe no período, senão o do começo do período.
+function mesDoCal() {
+  const p = est.periodo, m = mesDoPeriodo(p);
+  if (m) return m;
+  if ((!p.de || p.de <= HOJE) && (!p.ate || p.ate >= HOJE)) return HOJE.slice(0, 7);
+  return mesDe(p.de || p.ate);
+}
+function diasDoCal(lista, mes) {
+  const dias = {};
+  for (const c of lista) {
+    if (mesDe(c.vencimento) !== mes) continue;
+    const d = dias[c.vencimento] || (dias[c.vencimento] = { contas: [], aPagar: 0, pago: 0, pendentes: 0 });
+    d.contas.push(c);
+    if (paga(c)) d.pago += c.valor || 0;
+    else { d.aPagar += c.valor || 0; d.pendentes++; }
+  }
+  return dias;
+}
+// O dia aberto embaixo: o que a pessoa escolheu; senão o próximo com conta a
+// pagar; senão o primeiro com conta pendente; senão o primeiro com conta.
+function diaDoCal(dias, mes) {
+  if (est.diaCal && mesDe(est.diaCal) === mes) return est.diaCal;
+  const isos = Object.keys(dias).sort();
+  return isos.find(i => i >= HOJE && dias[i].pendentes) || isos.find(i => dias[i].pendentes) || isos[0] || null;
+}
+// A situação do dia, com o ícone do grupo da lista: [classe, ícone, palavra].
+function marcaDoDia(iso, x) {
+  if (!x.pendentes) return ['pago', 'check', 'tudo pago'];
+  if (iso < HOJE) return ['atraso', 'alert-triangle', x.pendentes === 1 ? 'vencida' : 'vencidas'];
+  if (iso === HOJE) return ['atraso', 'clock', x.pendentes === 1 ? 'vence hoje' : 'vencem hoje'];
+  if (iso === somarDias(HOJE, 1)) return ['amanha', 'calendar', x.pendentes === 1 ? 'vence amanhã' : 'vencem amanhã'];
+  return null;
+}
+function calendarioContas(lista) {
+  const mes = mesDoCal(), [a, m] = mes.split('-').map(Number);
+  const total = +ultimoDia(`${mes}-01`).slice(8), inicio = new Date(a, m - 1, 1).getDay();
+  const { de, ate } = est.periodo;
+  const dias = diasDoCal(lista, mes), sel = diaDoCal(dias, mes), vals = Object.values(dias);
+  const maior = Math.max(1, ...vals.map(x => x.aPagar));
+  const faixa = v => Math.min(4, Math.max(0, Math.ceil(v / maior * 5) - 1));
+  const tom = t => `color-mix(in srgb, var(--cal-pagar) ${t}%, var(--superficie))`;
+  let h = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'].map(x => `<span class="sem">${x}</span>`).join('') + '<span></span>'.repeat(inicio);
+  for (let d = 1; d <= total; d++) {
+    const iso = `${mes}-${String(d).padStart(2, '0')}`, x = dias[iso], data = dataLocal(iso);
+    const tit = `${maiuscula(SEMANA[data.getDay()])}, ${d} de ${MESES[m - 1]}`;
+    if ((de && iso < de) || (ate && iso > ate)) { h += `<span class="calc-dia fora" title="${tit}: fora do período"><span class="n">${d}</span></span>`; continue; }
+    if (!x) { h += `<span class="calc-dia livre ${iso === HOJE ? 'hoje' : ''}" title="${tit}: nenhuma conta"><span class="n">${d}</span></span>`; continue; }
+    const marca = marcaDoDia(iso, x), t = x.pendentes ? TONS_CAL[faixa(x.aPagar)] : 0;
+    const anel = marca?.[0] === 'atraso' ? 'r-atraso' : marca?.[0] === 'amanha' ? 'r-amanha' : iso === HOJE ? 'hoje' : '';
+    const cls = ['calc-dia', t ? 'tom' : '', t >= 76 ? 'forte' : '', x.pendentes ? '' : 'pago', anel].filter(Boolean).join(' ');
+    const valor = x.pendentes ? (x.aPagar ? reais(x.aPagar) : 'a definir') : reais(x.pago);
+    const sobre = [plural(x.contas.length, 'conta', 'contas'), x.aPagar ? `${reais(x.aPagar)} a pagar` : x.pendentes ? 'a pagar com valor a definir' : '', x.pago ? `${reais(x.pago)} pago` : '', marca?.[2]].filter(Boolean).join(' · ');
+    h += `<button class="${cls}" ${t ? `style="background:${tom(t)}"` : ''} data-cal-dia="${iso}" aria-pressed="${iso === sel}" title="${esc(`${tit} · ${sobre}`)}" aria-label="${esc(`${tit}: ${sobre}`)}"><span class="n">${d}</span>${marca ? `<span class="calc-marca ${marca[0]}" aria-hidden="true">${ico(marca[1], 'ico')}</span>` : ''}<span class="v">${valor}</span></button>`;
+  }
+  const aPagar = vals.reduce((s, x) => s + x.aPagar, 0), pago = vals.reduce((s, x) => s + x.pago, 0), semData = lista.filter(c => !c.vencimento).length;
+  const resumo = vals.length ? [aPagar ? `<strong class="apagar">${reais(aPagar)}</strong> a pagar` : 'nada a pagar', pago ? `<strong class="pago">${reais(pago)}</strong> pago` : '', semData ? plural(semData, 'conta sem vencimento', 'contas sem vencimento') : ''].filter(Boolean).join(' · ') : 'Nenhuma conta neste mês';
+  // A legenda: os cinco tons do a pagar com até quanto vale cada um, o verde do
+  // dia pago e as marcas de situação.
+  const escala = `${aPagar ? `<div class="calc-escala"><small>A pagar no dia</small><div>${TONS_CAL.map((t, k) => `<span><i style="background:${tom(t)}"></i><span>até <b>${reais(Math.round(maior * (k + 1) / 5))}</b></span></span>`).join('')}</div></div>` : ''}
+    <div class="calc-escala pago"><small>Pago</small><div><span><i></i>dia todo pago</span></div></div>`;
+  const marcas = `<div class="calc-marcas" aria-hidden="true">${[['atraso', 'alert-triangle', 'vencida'], ['atraso', 'clock', 'vence hoje'], ['amanha', 'calendar', 'vence amanhã'], ['pago', 'check', 'tudo pago']].map(([c, i, r]) => `<span><span class="calc-marca ${c}">${ico(i, 'ico')}</span>${r}</span>`).join('')}</div>`;
+  // As contas do dia escolhido, com as mesmas linhas da lista (pagar, abrir).
+  let painel;
+  if (!sel) painel = `<div class="vazio">${ico('calendar')}${est.busca || est.categoria ? 'Nenhuma conta com esse filtro neste mês.' : 'Nenhuma conta vence neste mês.'}</div>`;
+  else {
+    const dl = dataLocal(sel), contas = [...(dias[sel]?.contas || [])].sort((p, q) => paga(p) - paga(q) || (q.valor || 0) - (p.valor || 0));
+    painel = `<ul class="lista"><li class="grupo-rot">${ico('calendar')}${maiuscula(SEMANA[dl.getDay()])}, ${dl.getDate()} de ${MESES[dl.getMonth()]}<span class="tot num">${plural(contas.length, 'conta', 'contas')} · ${reais(soma(contas))}</span></li>${contas.length ? contas.map(linha).join('') : `<li><div class="vazio">${ico('check-circle-2')}Nenhuma conta neste dia.</div></li>`}</ul>`;
+  }
+  return `<div class="calc">
+      <div class="calc-topo"><button class="ib" data-cal-mes="-1" aria-label="Mês anterior" title="Mês anterior">${ico('chevron-left')}</button><b>${maiuscula(rotuloMes(mes))}</b><button class="ib" data-cal-mes="1" aria-label="Próximo mês" title="Próximo mês">${ico('chevron-right')}</button><span class="resumo">${resumo}</span></div>
+      <div class="calc-grade" role="group" aria-label="Contas a pagar por dia em ${rotuloMes(mes)}">${h}</div>
+      <div class="calc-legenda">${escala}${marcas}</div>
+    </div>${painel}`;
 }
 
 function blocoNumeros() {
@@ -1238,6 +1397,13 @@ document.addEventListener('click', e => {
     if (pg) { e.stopPropagation(); return pagar(porId(+pg.dataset.pagar), false); }
     const lin = t.closest('[data-conta]');
     if (lin) return abrirGaveta(+lin.dataset.conta);
+    const vista = t.closest('[data-vista]');
+    if (vista) { est.vista = vista.dataset.vista; gravarSessao('fin-pagar-vista', est.vista); return render(`[data-vista="${est.vista}"]`); }
+    const dia = t.closest('[data-cal-dia]');
+    if (dia) { est.diaCal = dia.dataset.calDia; return render(`[data-cal-dia="${est.diaCal}"]`); }
+    // As setas do calendário trocam o período para o mês ao lado.
+    const cm = t.closest('[data-cal-mes]');
+    if (cm) { est.periodo = periodoDoMes(somarMes(mesDoCal(), +cm.dataset.calMes)); est.verPagas = false; est.diaCal = null; return render(`[data-cal-mes="${cm.dataset.calMes}"]`); }
     const per = t.closest('[data-periodo]'); if (per) return abrirPeriodo(per, est.periodo, mudarPeriodo, true);
     if (t.closest('[data-per-todo]')) return mudarPeriodo(periodoDe(''));
     const ch = t.closest('[data-cat]'); if (ch) { est.categoria = ch.dataset.cat; return render(); }
@@ -1246,6 +1412,8 @@ document.addEventListener('click', e => {
   }
   if (rol) {
     e.preventDefault();
+    // Os números do topo levam a um grupo da lista: no calendário, volta para ela.
+    if (est.aba === 'pagar' && est.vista === 'cal') { est.vista = 'lista'; gravarSessao('fin-pagar-vista', 'lista'); render(); }
     if (est.aba === 'pagar' && rol.dataset.rolar === 'g-pagas' && !est.verPagas) { est.verPagas = true; render(); }
     if (est.aba !== 'pagar') MODULOS[est.aba].antesDeRolar?.(rol.dataset.rolar);
     const alvo = document.getElementById(rol.dataset.rolar) || document.getElementById('bloco-lista');
@@ -1619,7 +1787,7 @@ const notaPeriodo = (txt, alerta, acao) => `<div class="per-nota ${alerta ? 'ale
       ${blocoData(b.vence, tom, 'Vencimento')}
       <span class="lin-txt"><span class="lin-tit"><span>${esc(b.cliente || 'Sem cliente')}</span>${b.protesto ? '<span class="selo atraso" style="flex-shrink:0">protesto</span>' : ''}</span><span class="lin-sub">${sub}</span></span>
       <span class="lin-dir"><span class="v num">${b.valor ? reais(b.valor) : "<small>a definir</small>"}</span>${quando(b)}</span>
-      <span class="fls"><button class="fl concluir ${B.conf === b.id ? 'conf' : ''}" data-bol-pagar="${b.id}" aria-label="Marcar boleto como pago" title="${B.conf === b.id ? 'Clique de novo para confirmar' : 'Marcar boleto como pago'}">${B.conf === b.id ? 'Pago?' : ico('check-circle-2', 'ico')}</button></span>
+      <span class="fls">${pago(b) ? '<span class="fl-lugar" aria-hidden="true"></span>' : `<button class="fl concluir ${B.conf === b.id ? 'conf' : ''}" data-bol-pagar="${b.id}" aria-label="Marcar boleto como pago" title="${B.conf === b.id ? 'Clique de novo para confirmar' : 'Marcar boleto como pago'}">${B.conf === b.id ? 'Pago?' : ico('check-circle-2', 'ico')}</button>`}</span>
     </div></li>`;
   }
   function grupos(l) {
@@ -1684,7 +1852,7 @@ const notaPeriodo = (txt, alerta, acao) => `<div class="per-nota ${alerta ? 'ale
       <dl class="dprops">
         <dt>${ico(pago(b) ? 'check-circle-2' : 'circle', 'ico ico-s')}Situação</dt><dd>${pago(b) ? `<span class="ok">Pago${b.pagoEm ? ' em ' + dataLonga(b.pagoEm) : ''}</span>` : 'Em aberto'}</dd>
       </dl>
-      <p class="rot-campos">${ico('pencil', 'ico ico-s')}Dados do boleto · gravam ao sair do campo</p>
+      <hr class="div-campos">
       <dl class="dprops campos-bol">
         <dt>${ico('banknote', 'ico ico-s')}Valor</dt><dd><span class="pre">R$</span><input class="campo-in num" data-bcampo="valor" value="${b.valor ? brl(b.valor) : ''}" placeholder="0,00" inputmode="numeric" autocomplete="off"></dd>
         <dt>${ico('hash', 'ico ico-s')}Número</dt><dd><input class="campo-in" data-bcampo="boleto_numero" value="${esc(b.numero)}" placeholder="Nº do boleto" autocomplete="off" maxlength="60">${b.numero ? `<button class="ib" data-gv="copiar-num" aria-label="Copiar número" title="Copiar">${ico('copy', 'ico ico-s')}</button>` : ''}</dd>
