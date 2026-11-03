@@ -79,7 +79,22 @@ function estadoDoPagamento(pedido) {
 // um `grid` embutido nesta constante brigaria com o `hidden` — as duas são
 // utilitárias de display, e quem vence é a ordem do CSS gerado, não a ordem em
 // que aparecem no atributo. Cada uso declara o próprio display.
-const COLUNAS = 'grid-cols-[minmax(0,1fr)_auto] sm:grid-cols-[minmax(0,13rem)_minmax(0,1fr)_7rem_auto] gap-x-4 items-baseline';
+//
+// No computador, Pagamento e Valor têm largura fixa. Cada linha é um grid
+// próprio: com o Valor em `auto`, um valor maior (R$ 2.810,00 contra R$ 65,00)
+// alargava a última coluna só naquela linha, o `1fr` do Serviço encolhia para
+// compensar e a coluna Pagamento andava para a esquerda — linha a linha, cada
+// uma num lugar. 8rem cabe "R$ 99.999,99" e a seta.
+const COLUNAS = 'grid-cols-[minmax(0,1fr)_auto] sm:grid-cols-[minmax(0,13rem)_minmax(0,1fr)_8.5rem_8rem] gap-x-4 items-baseline';
+
+// Um número do resumo do dia: rótulo pequeno em cima, valor grande embaixo. No
+// computador uma divisória fina separa um do outro, sem caixa em volta.
+const Numero = ({ rotulo, classe = 'text-tinta', children }) => (
+    <div className="min-w-0 sm:px-5 sm:first:pl-0 sm:border-l sm:first:border-l-0 border-borda-fraca">
+        <dt className="text-mini font-semibold text-tinta-suave">{rotulo}</dt>
+        <dd className={`mt-0.5 text-lg font-bold leading-tight tabular-nums truncate ${classe}`}>{children}</dd>
+    </div>
+);
 
 function LinhaPedido({ pedido, isDemo, aberto, aoAlternar }) {
     const itens = [...(pedido.pedido_itens || [])].sort((a, b) => (a.ordem ?? 0) - (b.ordem ?? 0));
@@ -289,15 +304,17 @@ export default function RelatorioDoDiaModal({ dia, aoFechar }) {
                 </div>
 
                 {!carregando && !erro && lista.length > 0 && (
-                    <div className="px-4 sm:px-6 py-4 bg-superficie border-b border-borda shrink-0 flex flex-col gap-3">
-                        <p className="text-corpo text-tinta-corpo">
-                            <strong className="font-bold text-tinta tabular-nums">{lista.length}</strong>{' '}
-                            {lista.length === 1 ? 'pedido' : 'pedidos'}, <Valor centavos={total} className="font-bold text-tinta" /> vendidos
-                            <span className="text-tinta-suave"> · ticket médio <Valor centavos={ticket} /></span>
+                    <div className="px-4 sm:px-6 py-4 bg-superficie border-b border-borda shrink-0 flex flex-col gap-4">
+                        {/* Quatro números, cada um com o seu rótulo, em vez de uma
+                            frase corrida: lidos de relance, sem decifrar texto. */}
+                        <dl className="grid grid-cols-2 gap-x-4 gap-y-3 sm:grid-cols-4 sm:gap-x-0">
+                            <Numero rotulo={lista.length === 1 ? 'Pedido' : 'Pedidos'}>{lista.length}</Numero>
+                            <Numero rotulo="Vendido"><Valor centavos={total} /></Numero>
+                            <Numero rotulo="Ticket médio"><Valor centavos={ticket} /></Numero>
                             {aReceber > 0
-                                ? <> · <Valor centavos={aReceber} className="font-semibold text-aviso" /> <span className="text-aviso font-semibold">a receber</span></>
-                                : <span className="text-sucesso font-semibold"> · tudo recebido</span>}
-                        </p>
+                                ? <Numero rotulo="A receber" classe="text-aviso"><Valor centavos={aReceber} /></Numero>
+                                : <Numero rotulo="A receber" classe="text-sucesso">Tudo recebido</Numero>}
+                        </dl>
                         <Composicao porForma={porForma} total={totalPorForma} />
                     </div>
                 )}
@@ -362,8 +379,11 @@ export default function RelatorioDoDiaModal({ dia, aoFechar }) {
                 {!carregando && !erro && lista.length > 0 && (
                     <div className="px-4 sm:px-6 py-3 bg-superficie border-t border-borda shrink-0 flex items-baseline justify-between gap-4">
                         <span className="text-micro text-tinta-fraca">Clique numa linha para ver itens e pagamentos</span>
-                        <span className="text-mini text-tinta-suave shrink-0">
-                            recebido <Valor centavos={recebido} className="font-bold text-sucesso" />
+                        {/* O recebido no dia, só o valor: o verde marca o que
+                            entrou, e o nome fica no title e para o leitor de tela. */}
+                        <span className="shrink-0" title="Recebido no dia">
+                            <span className="sr-only">Recebido no dia: </span>
+                            <Valor centavos={recebido} className="text-[15px] font-bold text-sucesso" />
                         </span>
                     </div>
                 )}

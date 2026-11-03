@@ -312,7 +312,8 @@ button.calv-dia:hover, button.calv-dia:focus-visible { box-shadow: 0 0 0 2px var
 @media (prefers-reduced-motion: reduce) { .calv-dia.espera { animation: none; } }
 .graf-grade { position: absolute; left: 0; right: 0; border-top: 1px solid var(--borda-fraca); }
 .graf-grade span { position: absolute; left: 0; top: -17px; font-size: 10.5px; color: var(--tinta-suave); font-variant-numeric: tabular-nums; }
-.graf-media { position: absolute; left: 0; right: 0; border-top: 1px dashed var(--tinta-fraca); z-index: 1; pointer-events: none; }
+/* A média em laranja: a referência contra a qual cada coluna é lida. */
+.graf-media { position: absolute; left: 0; right: 0; border-top: 1.5px dashed var(--brand); z-index: 1; pointer-events: none; }
 .graf-cols { position: absolute; inset: 0; display: flex; align-items: flex-end; }
 .graf-col { position: relative; flex: 1; height: 100%; display: flex; align-items: flex-end; justify-content: center; border-radius: 4px 4px 0 0; }
 .graf-col:hover, .graf-col:focus-visible { outline: none; background: var(--sutil); }
@@ -332,7 +333,7 @@ button.graf-col { cursor: pointer; }
 .graf-leg b { color: var(--tinta); font-weight: 600; }
 .graf-leg .m-col { width: 9px; height: 12px; border-radius: 2px 2px 0 0; background: var(--fin); }
 .graf-leg .m-proj { width: 9px; height: 12px; border: 1.5px dashed var(--fin); border-bottom: 0; border-radius: 2px 2px 0 0; }
-.graf-leg .m-media { width: 16px; border-top: 1px dashed var(--tinta-fraca); }
+.graf-leg .m-media { width: 16px; border-top: 1.5px dashed var(--brand); }
 .graf-leg .dica { margin-left: auto; color: var(--brand-tinta); font-weight: 600; }
 .tip { position: fixed; z-index: 95; pointer-events: none; background: var(--tinta); color: var(--superficie); border-radius: 7px; padding: 6px 9px; font-size: 12px; box-shadow: var(--sombra-pop); white-space: nowrap; }
 .tip b { font-size: 13px; display: block; }
@@ -415,6 +416,43 @@ button.tab-lin:hover { background: var(--sutil); }
 .det-valor small { font-size: 13.5px; font-weight: 600; color: var(--tinta-suave); margin-right: 4px; letter-spacing: 0; }
 .det-sub { font-size: 12.5px; color: var(--tinta-suave); margin-top: 3px; }
 .det-sub b { color: var(--tinta-corpo); }
+.det-tit .categ-dot { width: 10px; height: 10px; margin-right: 9px; position: relative; top: -3px; }
+/* O resumo embaixo do valor: um número por célula, cada um com o seu rótulo
+   curto, em vez de uma frase corrida (DESIGN.md › A Regra do Texto que Aponta). */
+/* Colunas na largura do conteúdo (`auto`): "Contas 24" não precisa do mesmo
+   espaço que "R$ 11.211,02", e com colunas iguais o valor cortava. */
+.det-nums { display: grid; grid-template-columns: repeat(var(--n, 3), auto); margin-top: 14px; background: var(--superficie); border: 1px solid var(--borda); border-radius: 10px; overflow: hidden; }
+.det-nums > div { min-width: 0; padding: 9px 12px; border-left: 1px solid var(--borda-fraca); }
+.det-nums > div:first-child { border-left: 0; }
+.det-nums dt { font-size: 11.5px; font-weight: 600; color: var(--tinta-suave); }
+.det-nums dd { margin: 1px 0 0; font-size: 15px; font-weight: 700; color: var(--tinta); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.det-nums dd.sobe { color: var(--sucesso); }
+.det-nums dd.desce { color: var(--perigo); }
+.det-nums dd.pend { color: var(--obs-tinta); }
+@media (max-width: 480px) {
+  .det-nums { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .det-nums > div:nth-child(3) { border-left: 0; }
+  .det-nums > div:nth-child(n+3) { border-top: 1px solid var(--borda-fraca); }
+}
+/* Falta pagar (âmbar): o que ainda não venceu. Vencido continua em perigo. */
+.pend { color: var(--obs-tinta); font-weight: 600; }
+.medidor i.pend { background: var(--obs); }
+/* Despesas de uma categoria, uma linha por fornecedor: nome, total, parte da
+   categoria; embaixo, só o que pede atenção. Abre no lugar com as contas. */
+.grupos { list-style: none; padding: 0; }
+.grp-bt { display: grid; grid-template-columns: minmax(0, 1fr) auto 38px 14px; column-gap: 10px; row-gap: 1px; align-items: center; width: 100%; padding: 9px 12px; border-top: 1px solid var(--borda-fraca); text-align: left; transition: background .12s; }
+.grp:first-child > .grp-bt { border-top: 0; }
+.grp-bt:hover { background: var(--sutil); }
+.grp-bt:focus-visible { background: var(--sutil); outline: 2px solid var(--brand); outline-offset: -2px; }
+.grp-nome { font-weight: 600; color: var(--tinta); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.grp-v { font-weight: 600; color: var(--tinta); text-align: right; white-space: nowrap; }
+.grp-v small { font-size: 12px; font-weight: 500; color: var(--tinta-suave); }
+.grp-p { font-size: 12px; color: var(--tinta-suave); text-align: right; }
+.grp-bt .chev { color: var(--tinta-fraca); transition: transform .2s var(--saida); }
+.grp.aberto .chev { transform: rotate(180deg); }
+.grp-sub { grid-column: 1 / 4; font-size: 12px; color: var(--tinta-suave); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.grp-itens { background: var(--sutil); border-top: 1px solid var(--borda-fraca); }
+.lista.grp-itens .lin { padding: 7px 8px 7px 12px; }
 .comp { margin-top: 14px; }
 .comp .fatias { margin: 0 0 8px; height: 8px; }
 .comp-leg { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12px; color: var(--tinta-suave); }
@@ -592,6 +630,7 @@ const ultimoDia = (a, m) => new Date(a, m, 0).getDate();
 // valor exato fica no title/tooltip.
 const brl = (c, cheio) => { const r = c / 100; return (cheio || Math.abs(r) < 1000 ? r.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : Math.round(r).toLocaleString('pt-BR')); };
 const reais = (c, cheio) => `${c < 0 ? '−' : ''}R$ ${brl(Math.abs(c), cheio)}`;
+const reaisCheio = c => reais(c, true);
 const dinheiro = c => `${c < 0 ? '−' : ''}<small>R$</small>${brl(Math.abs(c))}`;
 const compacto = c => { const r = c / 100; return Math.abs(r) >= 1000 ? `R$ ${(r / 1000).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} mil` : `R$ ${Math.round(r)}`; };
 const inteiro = n => Number(n || 0).toLocaleString('pt-BR');
@@ -1079,6 +1118,10 @@ function redesenharCalendario() { if (est.serie !== 'cal') return; const g = doc
 // O que aconteceu num dia: quem comprou, o que levou e como pagou. A página lê
 // só as O.S. daquele dia, quando a gaveta abre, com o mesmo recorte da coluna.
 const valorPag = g => g.forma === 'Estorno' ? -g.valor : g.valor;
+// O resumo embaixo do valor da gaveta: um número por célula, com rótulo curto.
+// Cada célula é [rótulo, valor, tom, dica]; a que vier vazia sai.
+const numerosGaveta = cels => { const c = cels.filter(Boolean);
+  return `<dl class="det-nums" style="--n:${c.length}">${c.map(([rot, val, tom, dica]) => `<div${dica ? ` title="${esc(dica)}"` : ''}><dt>${rot}</dt><dd class="num ${tom || ''}">${val}</dd></div>`).join('')}</dl>`; };
 const gvRaiz = document.getElementById('gv');
 function abrirDia(iso) {
   categ.nome = null;
@@ -1087,6 +1130,9 @@ function abrirDia(iso) {
   if (!paraPai({ tipo: 'pedir-dia', dia: iso })) { dia.erro = 'Fora do sistema o protótipo não busca os pedidos do dia.'; renderGaveta(); }
 }
 function conteudoDia() {
+  // Na gaveta todo valor vai com centavos, para a coluna ter um padrão só
+  // ("R$ 5.936,00" ao lado de "R$ 590,00", e não "R$ 5.936").
+  const reais = c => reaisCheio(c);
   const d = dataLocal(dia.iso);
   const titulo = `${maiuscula(SEMANA[d.getDay()])}, ${d.getDate()} de ${MESES[d.getMonth()]}${dia.iso.slice(0, 4) !== HOJE.slice(0, 4) ? ` de ${dia.iso.slice(0, 4)}` : ''}`;
   const cab = `<div class="det-cab"><span>Vendas do dia</span><span class="det-ferr"><button class="ib" data-fechar-gv aria-label="Fechar" title="Fechar (Esc)">${ico('x')}</button></span></div><div class="det-tit">${titulo}</div>`;
@@ -1114,11 +1160,14 @@ function conteudoDia() {
       </div>` : ''}</li>`; }).join('');
   return `<div class="det">${cab}
     <div class="det-valor"><small>R$</small>${brl(total, true)}</div>
-    <div class="det-sub"><b>${plural(l.length, 'pedido', 'pedidos')}</b> · ticket médio <b>${reais(Math.round(total / l.length))}</b> · ${aReceber > 0 ? `<span class="desce">${reais(aReceber)} a receber</span>` : '<span class="sobe">tudo recebido</span>'}</div>
+    ${numerosGaveta([
+      [l.length === 1 ? 'Pedido' : 'Pedidos', l.length],
+      ['Ticket médio', reais(Math.round(total / l.length))],
+      aReceber > 0 ? ['A receber', reais(aReceber), 'pend'] : ['A receber', 'Tudo recebido', 'sobe'],
+    ])}
     ${totForma > 0 ? `<div class="comp"><div class="fatias" role="img" aria-label="${formas.map(([f, v]) => `${f}: ${pctTxt(v, totForma)}`).join(', ')}">${formas.map(([f, v]) => `<i style="flex:${v};background:${corForma(f)}" title="${esc(f)}: ${reais(v, true)}"></i>`).join('')}</div>
       <div class="comp-leg">${formas.map(([f, v]) => `<span class="leg-i"><i style="background:${corForma(f)}"></i>${esc(f)} <b>${pctTxt(v, totForma)}</b></span>`).join('')}</div></div>` : ''}
-    <section class="dsec a-itens"><div class="dsec-cab"><h3>Pedidos do dia</h3><span class="area-meta num">recebido ${reais(recebido)}</span></div><ul class="lista">${pedidos}</ul></section>
-    <p class="det-sub" style="margin-top:10px">Clique num pedido para ver itens e pagamentos.</p>
+    <section class="dsec a-itens"><div class="dsec-cab"><h3>Pedidos</h3><span class="area-meta num" title="Recebido no dia">recebido ${reais(recebido)}</span></div><ul class="lista">${pedidos}</ul></section>
   </div>`;
 }
 /* ===== contas de uma categoria de despesa (a mesma gaveta) ===== */
@@ -1132,17 +1181,22 @@ function abrirCateg(nome) {
   if (!paraPai({ tipo: 'pedir-contas', pedido: ++categ.pedido, inicio: est.per.inicio, fim: est.per.fim, categoria: nome })) { categ.erro = 'Fora do sistema o protótipo não busca as contas.'; renderGaveta(); }
 }
 function conteudoCateg() {
+  const reais = c => reaisCheio(c);   // sempre com centavos (ver conteudoDia)
   const nome = categ.nome;
   const cab = `<div class="det-cab"><span>Despesas por categoria</span><span class="det-ferr"><button class="ib" data-fechar-gv aria-label="Fechar" title="Fechar (Esc)">${ico('x')}</button></span></div>
     <div class="det-tit"><i class="dot categ-dot" style="background:${COR_CATEG[nome] || '#9ca3af'}"></i>${esc(nome)}</div>
-    <div class="det-sub">contas com vencimento em ${esc(rotuloPeriodo().toLowerCase())}</div>`;
+    <div class="det-sub" title="Contas com vencimento no período">${esc(rotuloPeriodo())}</div>`;
   if (categ.erro) return `<div class="det">${cab}<div class="vazio" style="padding:18px 0">${ico('alert-triangle')}${esc(categ.erro)}</div></div>`;
   if (!categ.contas) return `<div class="det">${cab}<div class="dsec a-dados" aria-busy="true"><div class="dsec-cab"><h3>Carregando as contas…</h3></div><div class="espera">${Array.from({ length: 5 }, (_, i) => `<div style="--i:${i}"><i style="width:${40 + (i % 3) * 14}%;--i:${i}"></i><i style="width:64px;--i:${i}"></i></div>`).join('')}</div></div></div>`;
   const l = categ.contas;
   if (!l.length) return `<div class="det">${cab}<div class="vazio" style="padding:18px 0">${ico('receipt')}Nenhuma conta desta categoria no período.</div></div>`;
   const pagaC = c => c.status === 'Pago', vencidaC = c => !pagaC(c) && c.vencimento < HOJE;
   const total = soma(l, c => c.valor), pago = soma(l.filter(pagaC), c => c.valor), pendente = total - pago;
-  const vencidas = l.filter(vencidaC).length;
+  // Em aberto conta pela situação, não pelo valor: uma conta vencida ainda sem
+  // valor ("a definir") soma zero, e olhar só o pendente dava "tudo pago" ao
+  // lado de "1 vencida".
+  const emAberto = l.filter(c => !pagaC(c)).length;
+  const vencidas = l.filter(vencidaC), vencido = soma(vencidas, c => c.valor);
   // O que é igual soma junto: o mesmo fornecedor ou, sem fornecedor, a mesma
   // descrição (sem acento, caixa e espaços sobrando). A Futura com dez
   // lançamentos vira uma linha só, com o total gasto nela.
@@ -1152,25 +1206,34 @@ function conteudoCateg() {
     g.contas.push(c); m.set(k, g); return m;
   }, new Map()).values()].map(g => ({ ...g, total: soma(g.contas, c => c.valor), pendente: soma(g.contas.filter(c => !pagaC(c)), c => c.valor), vencidas: g.contas.filter(vencidaC).length }))
     .sort((a, b) => b.total - a.total || a.nome.localeCompare(b.nome));
-  const maior = Math.max(1, ...grupos.map(g => g.total)), cor = COR_CATEG[categ.nome] || '#9ca3af';
   const tom = c => pagaC(c) ? 'paga' : vencidaC(c) ? 'atraso' : c.vencimento === HOJE ? 'hoje' : '';
   const sit = c => pagaC(c) ? 'paga' : vencidaC(c) ? '<span class="desce">vencida</span>' : c.vencimento === HOJE ? 'vence hoje' : 'a pagar';
   const repete = c => c.recorrente ? (c.parcelas ? `parcela ${c.parcela || 1} de ${c.parcelas}` : 'todo mês') : '';
   // Dentro do grupo, a descrição só aparece quando diz algo além do nome dele.
   const desc = (c, g) => semAcento(c.descricao).replace(/\s+/g, ' ').trim() !== g.chave ? esc(c.descricao) : '';
   const linhaConta = (c, g) => `<li><div class="lin">${dataEmBloco(c.vencimento, tom(c))}<span class="lin-txt"><span class="lin-tit">${desc(c, g) || reais(c.valor)}</span><span class="lin-sub">${[sit(c), repete(c)].filter(Boolean).join(' · ')}</span></span><span class="lin-dir num">${desc(c, g) ? (c.valor ? reais(c.valor) : '<small>a definir</small>') : ''}</span><button class="ib" data-editar-conta="${c.id}" aria-label="Editar ${esc(c.descricao)} no modal atual" title="Editar no modal atual">${ico('pencil', 'ico ico-s')}</button></div></li>`;
+  // Uma linha por fornecedor: nome, total e parte da categoria; embaixo, só o
+  // que acrescenta (mais de uma conta, o que falta pagar, o que venceu). A
+  // parte vai em número, não numa barra por linha (DESIGN.md › Do's).
+  const linhaGrupo = g => { const aberto = categ.abertos.has(g.chave);
+    const sub = [g.contas.length > 1 ? plural(g.contas.length, 'conta', 'contas') : '',
+      g.pendente ? `<span class="pend">${reais(g.pendente)} a pagar</span>` : '',
+      g.vencidas ? `<span class="desce">${plural(g.vencidas, 'vencida', 'vencidas')}</span>` : ''].filter(Boolean).join(' · ');
+    return `<li class="grp ${aberto ? 'aberto' : ''}"><button class="grp-bt" data-grupo="${esc(g.chave)}" aria-expanded="${aberto}" title="${aberto ? 'Esconder' : 'Ver'} as contas desta linha">
+        <span class="grp-nome">${esc(g.nome)}</span><span class="grp-v num">${g.total ? reais(g.total) : '<small>a definir</small>'}</span><span class="grp-p num" title="Parte da categoria">${g.total ? pctTxt(g.total, total) : ''}</span>${ico('chevron-down', 'ico ico-s chev')}
+        ${sub ? `<span class="grp-sub">${sub}</span>` : ''}</button>
+      ${aberto ? `<ul class="lista compacta grp-itens">${[...g.contas].sort((a, b) => (a.vencimento || '').localeCompare(b.vencimento || '')).map(c => linhaConta(c, g)).join('')}</ul>` : ''}</li>`; };
   return `<div class="det">${cab}
     <div class="det-valor"><small>R$</small>${brl(total, true)}</div>
-    <div class="det-sub"><b>${plural(l.length, 'conta', 'contas')}</b> · pago <b>${reais(pago)}</b> · ${pendente > 0 ? `<span class="desce">${reais(pendente)} pendente</span>` : '<span class="sobe">tudo pago</span>'}${vencidas ? ` · <span class="desce">${plural(vencidas, 'vencida', 'vencidas')}</span>` : ''}</div>
-    <div class="comp">${partes([{ v: pago, cls: 'ok' }, { v: pendente, cls: 'atr' }], total).replace('class="medidor rv"', 'class="medidor" style="height:8px"')}</div>
-    <section class="dsec a-dados"><div class="dsec-cab"><h3>Contas iguais somadas</h3><span class="area-meta">${plural(grupos.length, 'linha', 'linhas')} · do maior para o menor</span></div>
-      <ul class="grupos">${grupos.map(g => { const aberto = categ.abertos.has(g.chave);
-        return `<li class="grp ${aberto ? 'aberto' : ''}"><button class="grp-bt" data-grupo="${esc(g.chave)}" aria-expanded="${aberto}" title="${aberto ? 'Esconder' : 'Ver'} as contas que entram nesta soma">
-          <span class="grp-nome">${esc(g.nome)}</span><span class="grp-v num">${reais(g.total)}</span>${ico('chevron-down', 'ico ico-s chev')}
-          <span class="grp-sub">${plural(g.contas.length, 'conta', 'contas')} · ${pctTxt(g.total, total)} da categoria${g.pendente ? ` · <span class="desce">${reais(g.pendente)} pendente</span>` : ''}${g.vencidas ? ` · <span class="desce">${plural(g.vencidas, 'vencida', 'vencidas')}</span>` : ''}</span>
-          <span class="grp-trilho"><i style="width:${g.total ? Math.max(2, g.total / maior * 100) : 0}%;background:${cor}"></i></span></button>
-          ${aberto ? `<ul class="lista grp-itens">${[...g.contas].sort((a, b) => (a.vencimento || '').localeCompare(b.vencimento || '')).map(c => linhaConta(c, g)).join('')}</ul>` : ''}</li>`; }).join('')}</ul></section>
-    <p class="det-sub" style="margin-top:10px">Clique numa linha para ver as contas que entram na soma. O lápis abre a conta no modal de hoje, que é onde se edita.</p>
+    ${numerosGaveta([
+      ['Contas', l.length],
+      ['Pago', reais(pago)],
+      emAberto ? ['A pagar', pendente ? reais(pendente) : 'a definir', 'pend', pendente ? '' : 'As contas em aberto ainda estão sem valor'] : ['A pagar', 'Tudo pago', 'sobe'],
+      vencidas.length ? ['Vencidas', vencidas.length, 'desce', vencido ? `${reais(vencido, true)} vencidos` : 'Vencidas ainda sem valor'] : null,
+    ])}
+    <div class="comp" title="Pago, a pagar e vencido">${partes([{ v: pago, cls: 'ok' }, { v: pendente - vencido, cls: 'pend' }, { v: vencido, cls: 'atr' }], total).replace('class="medidor rv"', 'class="medidor" style="height:8px"')}</div>
+    <section class="dsec a-dados"><div class="dsec-cab"><h3 title="Contas do mesmo fornecedor, ou com a mesma descrição, somadas numa linha">Por fornecedor</h3><span class="area-meta num">${grupos.length}</span></div>
+      <ul class="grupos">${grupos.map(linhaGrupo).join('')}</ul></section>
   </div>`;
 }
 
