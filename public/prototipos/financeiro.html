@@ -1,0 +1,1883 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Financeiro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<style>
+/* Padrão do DESIGN.md: o mesmo mundo do novo Início, da nova Produção e da nova O.S. */
+:root {
+  --brand: #F69F00; --brand-hover: #d98b00; --brand-tinta: #8A5400; --sobre-brand: #241600;
+  --fundo: #EDEFF0; --superficie: #ffffff; --sutil: #f9fafb; --realce: #f3f4f6;
+  --borda-fraca: #f0f1f3; --borda: #e5e7eb; --borda-forte: #d1d5db;
+  --tinta: #111827; --tinta-corpo: #374151; --tinta-suave: #6b7280; --tinta-fraca: #9ca3af;
+  --perigo: #dc2626; --perigo-fundo: #fef2f2; --perigo-borda: #fecaca;
+  --sucesso: #059669;
+  --sombra: 0 24px 56px -16px rgba(15,23,42,.32), 0 2px 8px rgba(15,23,42,.08);
+  --sombra-pop: 0 12px 28px -8px rgba(15,23,42,.24), 0 1px 3px rgba(15,23,42,.08);
+  --sombra-leve: 0 1px 2px rgba(15,23,42,.06);
+  --veu: rgba(15,23,42,.36);
+  --dados: #475569; --dados-tinta: #334155; --dados-fundo: #f8fafc; --dados-borda: #e2e8f0;
+  --itens: #2563eb; --itens-tinta: #1d4ed8; --itens-fundo: #eff6ff; --itens-borda: #dbeafe;
+  --fin: #059669; --fin-tinta: #047857; --fin-fundo: #ecfdf5; --fin-borda: #c9f2df;
+  --obs: #d97706; --obs-tinta: #b45309; --obs-fundo: #fffbeb; --obs-borda: #fdecc4;
+  --saida: cubic-bezier(.16, 1, .3, 1);
+}
+.dark {
+  --brand-tinta: #FFB938;
+  --fundo: #0d1117; --superficie: #161b22; --sutil: #1b2129; --realce: #21262d;
+  --borda-fraca: #232a33; --borda: #30363d; --borda-forte: #3d444d;
+  --tinta: #EDEDED; --tinta-corpo: #D4D4D8; --tinta-suave: #A1A1AA; --tinta-fraca: #71717a;
+  --perigo: #f87171; --perigo-fundo: rgba(239,68,68,.1); --perigo-borda: rgba(239,68,68,.3);
+  --sucesso: #34d399;
+  --sombra: 0 24px 56px -16px rgba(0,0,0,.7); --sombra-pop: 0 12px 28px -8px rgba(0,0,0,.6); --sombra-leve: 0 1px 2px rgba(0,0,0,.4);
+  --veu: rgba(0,0,0,.6);
+  --dados: #94a3b8; --dados-tinta: #cbd5e1; --dados-fundo: rgba(148,163,184,.08); --dados-borda: rgba(148,163,184,.22);
+  --itens: #60a5fa; --itens-tinta: #93c5fd; --itens-fundo: rgba(59,130,246,.12); --itens-borda: rgba(59,130,246,.3);
+  --fin: #34d399; --fin-tinta: #6ee7b7; --fin-fundo: rgba(16,185,129,.11); --fin-borda: rgba(16,185,129,.28);
+  --obs: #fbbf24; --obs-tinta: #fcd34d; --obs-fundo: rgba(245,158,11,.1); --obs-borda: rgba(245,158,11,.26);
+}
+* { box-sizing: border-box; margin: 0; }
+html { color-scheme: light; } html.dark { color-scheme: dark; }
+body { font-family: Montserrat, system-ui, sans-serif; font-size: 13px; line-height: 1.5; color: var(--tinta-corpo); background: var(--fundo); -webkit-font-smoothing: antialiased; }
+button, input { font: inherit; color: inherit; }
+button { cursor: pointer; background: none; border: 0; padding: 0; text-align: inherit; }
+a { color: inherit; text-decoration: none; }
+input { caret-color: var(--brand); }
+::placeholder { color: var(--tinta-suave); opacity: 1; }
+::selection { background: rgba(246,159,0,.3); }
+:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; border-radius: 4px; }
+* { scrollbar-width: thin; scrollbar-color: var(--borda-forte) transparent; }
+[hidden] { display: none !important; }
+.ico { width: 16px; height: 16px; stroke-width: 2; flex-shrink: 0; }
+.ico-s { width: 14px; height: 14px; }
+.num { font-variant-numeric: tabular-nums; }
+kbd { font: 600 10.5px/1 Montserrat, sans-serif; color: var(--tinta-suave); border: 1px solid var(--borda); border-bottom-width: 2px; border-radius: 5px; padding: 2px 5px; background: var(--superficie); }
+
+.a-dados { --c: var(--dados); --c-tinta: var(--dados-tinta); --c-fundo: var(--dados-fundo); --c-borda: var(--dados-borda); }
+.a-fin { --c: var(--fin); --c-tinta: var(--fin-tinta); --c-fundo: var(--fin-fundo); --c-borda: var(--fin-borda); }
+.a-obs { --c: var(--obs); --c-tinta: var(--obs-tinta); --c-fundo: var(--obs-fundo); --c-borda: var(--obs-borda); }
+.a-perigo { --c: var(--perigo); --c-tinta: var(--perigo); --c-fundo: var(--perigo-fundo); --c-borda: var(--perigo-borda); }
+.a-itens { --c: var(--itens); --c-tinta: var(--itens-tinta); --c-fundo: var(--itens-fundo); --c-borda: var(--itens-borda); }
+
+/* abas do Financeiro: o traço laranja corre até a aba escolhida (DESIGN.md › Abas de filtro) */
+.faixa { display: flex; align-items: flex-end; border-bottom: 1px solid var(--borda); margin: 0 0 22px; }
+.abas { position: relative; display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; margin-bottom: -1px; }
+.abas::-webkit-scrollbar { display: none; }
+.aba { display: inline-flex; align-items: center; gap: 7px; height: 42px; padding: 0 10px 2px; font-weight: 600; font-size: 13px; color: var(--tinta-suave); white-space: nowrap; border-radius: 6px 6px 0 0; transition: color .15s; }
+.aba:hover { color: var(--tinta-corpo); }
+.aba[aria-selected="true"] { color: var(--tinta); }
+.aba .n { min-width: 20px; height: 18px; padding: 0 6px; border-radius: 99px; display: inline-grid; place-items: center; background: var(--realce); color: var(--tinta-suave); font-size: 11px; font-weight: 700; font-variant-numeric: tabular-nums; transition: background .15s, color .15s; }
+.aba[aria-selected="true"] .n { background: var(--tinta); color: var(--superficie); }
+.aba .n.alerta { background: var(--perigo-fundo); color: var(--perigo); }
+.indicador { position: absolute; left: 0; bottom: 0; width: 0; height: 2px; border-radius: 2px 2px 0 0; background: var(--brand); transition: left .34s var(--saida), width .34s var(--saida); pointer-events: none; }
+
+/* contas a receber */
+/* Nos quadros de baixo, o valor de cada linha (e do ranking) vai no verde do
+   Financeiro (DESIGN.md › Verde — pagamentos, totais, quitado). Os números do
+   topo e a gaveta ficam como são. "body" na frente: as regras de base dessas
+   peças vêm depois no arquivo. */
+body .lin-dir .v, body .rank .v, body .prox b { color: var(--fin); }
+/* cor da categoria de conta (CATEGORIAS_CONTA): a bolinha ao lado do nome,
+   como a dos locais terceiros, e o ícone do seletor do modal */
+.cat-dot { display: inline-block; width: 8px; height: 8px; border-radius: 99px; background: var(--cat, var(--tinta-fraca)); flex-shrink: 0; }
+.chip .cat-dot { margin-right: 1px; }
+.chip[aria-pressed="true"] .cat-dot { box-shadow: 0 0 0 2px var(--superficie); }
+.mc-cats button .ico { color: var(--cat, currentColor); }
+.lin-sub .st { color: var(--tinta-corpo); font-weight: 600; }
+.lin-sub .mudo, .itens-l .mudo { color: var(--tinta-suave); font-weight: 500; }
+.selo.ok { background: var(--fin-fundo); color: var(--fin-tinta); }
+.dprops dd .ib { width: 26px; height: 26px; }
+/* dado copiável: o texto quebra à vontade e o botão fica no fim da linha */
+.dprops dd.copiavel { flex-wrap: nowrap; align-items: flex-start; }
+.dprops dd.copiavel span { flex: 1; min-width: 0; overflow-wrap: anywhere; padding-top: 6px; }
+.dprops dd.copiavel .ib { color: var(--tinta-fraca); margin-top: 2px; }
+.dprops dd.copiavel .ib:hover { color: var(--tinta); }
+.dprops dd.copiavel.copiou .ib { color: var(--fin); }
+.lin-dir small.boleto { color: var(--obs-tinta); font-weight: 600; }
+.rank.clica li { cursor: pointer; border-radius: 0; transition: background .1s; }
+.rank.clica li:hover { background: var(--sutil); }
+.rank.clica li[aria-pressed="true"] { background: var(--realce); }
+.rank .v small.n-os { margin-left: 0; display: block; font-size: 11.5px; text-align: right; }
+/* composição do valor: recebido / em boleto / falta — uma barra só, sem barra por linha */
+.compo { display: flex; height: 8px; border-radius: 5px; background: var(--realce); overflow: hidden; margin-top: 12px; gap: 2px; }
+.compo i { height: 100%; }
+.compo .rec { background: var(--fin); } .compo .bol { background: var(--obs); } .compo .falta { background: var(--perigo); opacity: .75; }
+.compo-leg { display: flex; flex-wrap: wrap; gap: 4px 16px; margin-top: 8px; font-size: 12px; color: var(--tinta-suave); }
+.compo-leg span { display: inline-flex; align-items: center; gap: 6px; }
+.compo-leg b { color: var(--tinta); font-weight: 600; font-variant-numeric: tabular-nums; }
+.compo-leg i { width: 8px; height: 8px; border-radius: 2px; }
+.itens-l { list-style: none; padding: 0; }
+.itens-l li { padding: 7px 12px; border-top: 1px solid var(--borda-fraca); font-weight: 600; color: var(--tinta); }
+.itens-l li:first-child { border-top: 0; }
+/* esperando a resposta do banco: o desenho da tela, sem números */
+.esq { display: block; border-radius: 6px; background: var(--realce); animation: piscar 1.2s ease-in-out infinite; }
+@keyframes piscar { 50% { opacity: .5; } }
+.erro-faixa { display: flex; gap: 10px; align-items: center; margin: 18px 0; padding: 10px 14px; border-radius: 10px; background: var(--perigo-fundo); border: 1px solid var(--perigo-borda); color: var(--perigo); font-weight: 600; font-size: 12.5px; }
+.erro-faixa .btn { margin-left: auto; }
+/* período: o mesmo seletor da tela de O.S. (baixa.html) — atalhos à esquerda,
+   calendário de intervalo à direita. Cada escolha busca no banco. */
+.per { display: inline-flex; align-items: center; gap: 6px; height: 40px; padding: 0 12px; border-radius: 9px; border: 1px solid var(--borda); background: var(--superficie); font-weight: 600; font-size: 12.5px; color: var(--tinta-corpo); white-space: nowrap; transition: border-color .12s, color .12s; }
+.per:hover { border-color: var(--borda-forte); color: var(--tinta); }
+.per .chev { color: var(--tinta-fraca); }
+.per.ativo { color: var(--tinta); border-color: var(--borda-forte); }
+.per.ativo .ico:first-child { color: var(--brand-tinta); }
+.per-nota { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 14px 0 -4px; font-size: 12.5px; line-height: 1.4; color: var(--tinta-suave); }
+.per-nota .ico { width: 14px; height: 14px; }
+.per-nota b { color: var(--tinta-corpo); font-weight: 600; }
+.per-nota.alerta { color: var(--perigo); } .per-nota.alerta b { color: var(--perigo); }
+.pop { position: fixed; z-index: 90; min-width: 210px; max-width: calc(100vw - 16px); max-height: min(460px, calc(100vh - 16px)); overflow-y: auto; padding: 4px; background: var(--superficie); border: 1px solid var(--borda); border-radius: 9px; box-shadow: var(--sombra-pop); animation: popEntra .16s var(--saida); }
+@keyframes popEntra { from { opacity: 0; transform: translateY(-4px); } }
+.pop button { display: flex; align-items: center; gap: 9px; width: 100%; text-align: left; padding: 7px 10px; border-radius: 6px; font-size: 13px; color: var(--tinta-corpo); white-space: nowrap; }
+.pop button:hover, .pop button:focus-visible { background: var(--realce); color: var(--tinta); outline: none; }
+.pop .ok { margin-left: auto; color: var(--brand-tinta); }
+.per-pop { display: flex; gap: 4px; --faixa: color-mix(in srgb, var(--brand) 15%, transparent); --faixa-previa: color-mix(in srgb, var(--brand) 8%, transparent); }
+.atalhos { display: flex; flex-direction: column; gap: 1px; min-width: 156px; padding-right: 4px; border-right: 1px solid var(--borda-fraca); }
+.pcal { width: 268px; padding: 4px 6px 2px 8px; }
+.pop .pcal button { width: auto; padding: 0; gap: 0; justify-content: center; border-radius: 6px; font-size: 12.5px; color: var(--tinta-corpo); }
+.pop .pcal button:hover { background: var(--realce); color: var(--tinta); }
+.pcal-cab { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px; }
+.pop .pcal .pcal-nav { width: 30px; height: 30px; display: grid; place-items: center; color: var(--tinta-suave); }
+.pop .pcal .pcal-tit { height: 30px; padding: 0 10px; font-weight: 700; font-size: 13px; color: var(--tinta); }
+.pcal-sem, .pcal-dias { display: grid; grid-template-columns: repeat(7, 1fr); }
+.pcal-sem span { height: 26px; display: grid; place-items: center; font-size: 11px; font-weight: 600; color: var(--tinta-fraca); }
+.pcal-dias { row-gap: 2px; }
+.pop .pcal .pd { position: relative; height: 34px; display: grid; place-items: center; border-radius: 0; }
+.pop .pcal .pd:hover { background: none; }
+.pd b { position: relative; z-index: 1; width: 32px; height: 32px; display: grid; place-items: center; border-radius: 8px; font-weight: 500; font-variant-numeric: tabular-nums; transition: background .1s, color .1s; }
+.pop .pcal .pd:hover b { background: var(--realce); color: var(--tinta); }
+.pd.hoje b { font-weight: 700; color: var(--brand-tinta); box-shadow: inset 0 0 0 1px var(--borda-forte); }
+.pd::before { position: absolute; top: 1px; bottom: 1px; left: 0; right: 0; background: var(--faixa); }
+.pd.meio::before, .pd.com-fim::before, .pd.fim::before { content: ""; }
+.pd.com-fim::before { left: 50%; }
+.pd.fim::before { right: 50%; }
+.pd.ini.fim::before { content: none; }
+.pcal-dias > :nth-child(7n+1).meio::before { left: 2px; border-radius: 8px 0 0 8px; }
+.pcal-dias > :nth-child(7n).meio::before { right: 2px; border-radius: 0 8px 8px 0; }
+.pcal-dias > :nth-child(7n).com-fim::before, .pcal-dias > :nth-child(7n+1).fim::before { content: none; }
+.pcal-dias.previa .pd::before { background: var(--faixa-previa); }
+.pd.meio b { color: var(--brand-tinta); }
+.pop .pcal .pd.meio:hover b { background: var(--faixa); }
+.pd.ini b, .pd.fim b, .pop .pcal .pd.ini:hover b, .pop .pcal .pd.fim:hover b { background: var(--brand); color: var(--sobre-brand); font-weight: 700; box-shadow: none; }
+.pcal-grade { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; padding: 6px 0 4px; }
+.pop .pcal .pcal-op { height: 40px; font-weight: 600; text-transform: capitalize; }
+.pop .pcal .pcal-op.on, .pop .pcal .pcal-op.on:hover { background: var(--brand); color: var(--sobre-brand); }
+.pcal-pe { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 36px; margin-top: 6px; padding: 6px 2px 0; border-top: 1px solid var(--borda-fraca); font-size: 12px; color: var(--tinta-suave); font-variant-numeric: tabular-nums; }
+.pcal-pe b { color: var(--tinta); font-weight: 700; }
+.pop .pcal .pcal-limpar { padding: 4px 8px; font-weight: 600; color: var(--tinta-suave); }
+@media (max-width: 520px) {
+  .per-pop { flex-direction: column; }
+  .atalhos { flex-direction: row; flex-wrap: wrap; gap: 4px; min-width: 0; padding: 4px 4px 8px; border-right: 0; border-bottom: 1px solid var(--borda-fraca); }
+  .pop .atalhos button { width: auto; padding: 5px 10px; border: 1px solid var(--borda); border-radius: 99px; font-size: 12px; }
+  .pop .atalhos .ok { display: none; }
+  .pop .atalhos button.on { background: var(--tinta); border-color: var(--tinta); color: var(--superficie); }
+  .pcal { width: 100%; padding: 6px 4px 2px; }
+}
+.esperando { opacity: .45; pointer-events: none; transition: opacity .2s; }
+.em-breve { padding: 36px 20px; text-align: center; color: var(--tinta-suave); }
+.em-breve b { display: block; font-size: 15px; color: var(--tinta); margin-bottom: 4px; }
+
+/* moldura do protótipo */
+.proto { position: sticky; top: 0; z-index: 40; height: 51px; display: flex; align-items: center; gap: 14px; padding: 8px 20px; background: var(--superficie); border-bottom: 1px solid var(--borda); }
+.proto-nome { font-weight: 700; color: var(--tinta); white-space: nowrap; }
+.proto-nota { color: var(--tinta-suave); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.proto-bt { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; color: var(--tinta-corpo); font-weight: 600; font-size: 12.5px; padding: 6px 10px; border-radius: 7px; white-space: nowrap; }
+.proto-bt:hover { background: var(--realce); color: var(--tinta); }
+
+/* botões */
+.btn { height: 38px; padding: 0 16px; border-radius: 8px; font-weight: 600; font-size: 13px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; white-space: nowrap; transition: background .15s, border-color .15s, color .15s, filter .15s; }
+.btn-pri { background: var(--brand); color: var(--sobre-brand); }
+.btn-pri:hover { background: var(--brand-hover); }
+.btn-pri kbd { background: rgba(255,255,255,.35); border-color: rgba(36,22,0,.18); color: var(--sobre-brand); }
+.btn-sec { border: 1px solid var(--borda-forte); color: var(--tinta); background: var(--superficie); }
+.btn-sec:hover { background: var(--sutil); border-color: var(--tinta-fraca); }
+.btn-txt { color: var(--tinta-suave); padding: 0 10px; }
+.btn-txt:hover { color: var(--tinta); background: var(--realce); }
+.btn-p { height: 34px; padding: 0 13px; font-size: 12.5px; border-radius: 7px; }
+.btn-ok { background: var(--fin); color: #fff; } .btn-ok:hover { filter: brightness(.95); } .dark .btn-ok { color: var(--fundo); }
+.btn-ok.conf { background: var(--perigo); color: #fff; }
+.ib { width: 30px; height: 30px; display: inline-grid; place-items: center; border-radius: 7px; color: var(--tinta-suave); transition: background .12s, color .12s; flex-shrink: 0; }
+.ib:hover { background: var(--realce); color: var(--tinta); }
+
+/* página */
+.pg { max-width: 1280px; margin: 0 auto; padding: 26px 28px 64px; }
+.cab { display: flex; align-items: flex-end; gap: 16px; flex-wrap: wrap; }
+.cab h1 { font-size: 22px; font-weight: 800; color: var(--tinta); letter-spacing: -.02em; line-height: 1.2; }
+.cab .sub { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 8px; margin-top: 7px; color: var(--tinta-suave); font-size: 12.5px; }
+.cab-dir { margin-left: auto; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.selo { display: inline-flex; align-items: center; gap: 4px; font-size: 11.5px; font-weight: 600; border-radius: 5px; padding: 1px 7px; white-space: nowrap; background: var(--realce); color: var(--tinta-corpo); }
+.selo .ico { width: 12px; height: 12px; }
+.selo.atraso { background: var(--perigo-fundo); color: var(--perigo); }
+.selo.hoje { background: var(--obs-fundo); color: var(--obs-tinta); }
+
+/* navegador de mês: ‹ outubro de 2026 › */
+.mes { display: inline-flex; align-items: center; gap: 2px; background: var(--superficie); border: 1px solid var(--borda); border-radius: 8px; padding: 2px; }
+.mes .rot { min-width: 150px; text-align: center; font-weight: 700; color: var(--tinta); font-size: 13px; padding: 0 6px; }
+.mes .ib { width: 30px; height: 30px; }
+.voltar-mes { font-size: 12px; font-weight: 600; color: var(--brand-tinta); padding: 6px 8px; border-radius: 7px; }
+.voltar-mes:hover { background: var(--realce); }
+
+/* busca grande + chips de categoria (DESIGN.md › telas de lista) */
+.busca-linha { display: flex; gap: 10px; align-items: center; margin-top: 20px; flex-wrap: wrap; }
+.busca { position: relative; flex: 1 1 320px; max-width: 520px; }
+.busca .ico { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--tinta-suave); pointer-events: none; }
+.busca input { width: 100%; height: 40px; border: 1px solid var(--borda); border-radius: 9px; background: var(--superficie); padding: 0 40px 0 36px; outline: none; transition: border-color .15s, box-shadow .15s; }
+.busca input:hover { border-color: var(--borda-forte); }
+.busca input:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(246,159,0,.16); }
+.busca kbd { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip { height: 30px; padding: 0 11px; border-radius: 99px; border: 1px solid var(--borda); background: var(--superficie); color: var(--tinta-corpo); font-size: 12.5px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; transition: background .12s, border-color .12s, color .12s; }
+.chip:hover { border-color: var(--borda-forte); }
+.chip[aria-pressed="true"] { background: var(--tinta); border-color: var(--tinta); color: var(--superficie); }
+.chip .ico { width: 13px; height: 13px; }
+
+/* números do topo: rótulo, número e uma linha de texto; clicar leva ao grupo */
+.numeros { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); background: var(--superficie); border: 1px solid var(--borda); border-radius: 10px; margin: 18px 0 20px; overflow: hidden; }
+.n-cel { padding: 15px 18px 14px; border-left: 1px solid var(--borda-fraca); display: flex; flex-direction: column; gap: 8px; min-width: 0; transition: background .12s; }
+.n-cel:first-child { border-left: 0; }
+a.n-cel:hover { background: var(--sutil); }
+.n-topo { display: flex; align-items: center; gap: 10px; }
+.n-ico { width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; background: var(--c-fundo); color: var(--c); box-shadow: inset 0 0 0 1px var(--c-borda); flex-shrink: 0; }
+.n-rot { font-size: 12px; font-weight: 600; color: var(--tinta-suave); }
+.n-val { font-size: 30px; font-weight: 700; color: var(--tinta); letter-spacing: -.022em; line-height: 1.15; white-space: nowrap; }
+.n-val small { font-size: 13.5px; font-weight: 600; color: var(--tinta-suave); margin-right: 3px; letter-spacing: 0; }
+.n-val.alerta { color: var(--perigo); }
+.n-ctx { font-size: 12px; color: var(--tinta-suave); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.n-ctx b { color: var(--tinta-corpo); font-weight: 600; }
+.medidor { display: flex; height: 6px; border-radius: 5px; background: var(--realce); overflow: hidden; }
+.medidor i { height: 100%; background: var(--fin); border-radius: 5px; transition: width .5s var(--saida); }
+
+/* grade: a lista à esquerda, o resumo do mês à direita */
+.grade { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 20px; align-items: start; }
+.col { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+.area { background: var(--superficie); border: 1px solid var(--c-borda); border-radius: 10px; overflow: hidden; min-width: 0; scroll-margin-top: 70px; }
+.area-cab { display: flex; align-items: center; gap: 10px; min-height: 47px; padding: 9px 14px; background: var(--c-fundo); border-bottom: 1px solid var(--c-borda); }
+.area-ico { width: 26px; height: 26px; border-radius: 7px; background: var(--superficie); display: grid; place-items: center; color: var(--c); box-shadow: var(--sombra-leve); flex-shrink: 0; }
+.area-cab h2 { font-size: 13.5px; font-weight: 700; color: var(--tinta); line-height: 1.3; }
+.area-meta { margin-left: auto; font-size: 12px; font-weight: 600; color: var(--c-tinta); white-space: nowrap; }
+
+/* lista agrupada: o rótulo do grupo separa a urgência sem outro card */
+.lista { list-style: none; padding: 0; }
+.grupo-rot { display: flex; align-items: center; gap: 8px; padding: 10px 16px 5px; font-size: 11.5px; font-weight: 700; color: var(--tinta-suave); border-top: 1px solid var(--borda-fraca); scroll-margin-top: 70px; }
+.lista > .grupo-rot:first-child { border-top: 0; }
+.grupo-rot .ico { width: 13px; height: 13px; }
+.grupo-rot .tot { margin-left: auto; font-weight: 700; }
+.grupo-rot.atraso { color: var(--perigo); }
+.grupo-rot.hoje { color: var(--obs-tinta); }
+.grupo-rot.pagas { cursor: pointer; }
+.grupo-rot.pagas:hover { color: var(--tinta); }
+.grupo-rot.pagas .chev { transition: transform .2s var(--saida); }
+.grupo-rot.pagas[aria-expanded="true"] .chev { transform: rotate(180deg); }
+.grupo-rot.chegou { animation: chegou 1.1s var(--saida); }
+@keyframes chegou { 0%, 35% { background: var(--realce); } }
+.grupo-rot + li .lin { border-top: 0; }
+.lin { display: flex; align-items: center; gap: 12px; padding: 9px 16px; border-top: 1px solid var(--borda-fraca); min-width: 0; cursor: pointer; transition: background .1s; }
+.lin:hover { background: var(--sutil); }
+/* Filete de prioridade (DESIGN.md › Selos de prazo): 3px por dentro da linha,
+   vermelho para vencido ou vence hoje, âmbar para amanhã. */
+.lin.pri-alta { box-shadow: inset 3px 0 0 var(--perigo); }
+.lin.pri-media { box-shadow: inset 3px 0 0 var(--obs); }
+.lin.aberta { background: var(--realce); }
+.lin.paga { opacity: .62; }
+.lin-txt { min-width: 0; flex: 1; }
+.lin-tit { display: flex; align-items: center; gap: 6px; font-weight: 600; color: var(--tinta); min-width: 0; }
+.lin-tit span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lin-tit .rep { color: var(--itens); flex-shrink: 0; }
+.lin-sub { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--tinta-suave); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 1px; }
+.lin-sub .ico { width: 12px; height: 12px; }
+.lin-dir { margin-left: auto; text-align: right; flex-shrink: 0; }
+.lin-dir .v { font-weight: 700; color: var(--tinta); }
+.lin-dir small { display: block; font-size: 11.5px; font-weight: 500; color: var(--tinta-suave); }
+.lin-dir small.atraso { color: var(--perigo); font-weight: 600; }
+.lin-dir small.hoje { color: var(--obs-tinta); font-weight: 600; }
+.lin-dir small.ok { color: var(--sucesso); font-weight: 600; }
+/* pagar sem abrir: aparece ao passar o mouse */
+/* Ações da linha: o mesmo botão da nova Produção (.fl), sempre à mostra na
+   ponta da linha. Concluir é verde; o primeiro clique vira a pergunta e o
+   segundo confirma. Linha já paga/concluída guarda o lugar, sem o botão. */
+.fls { display: inline-flex; align-items: center; gap: 2px; flex-shrink: 0; }
+.fl { width: 30px; height: 30px; display: inline-grid; place-items: center; border-radius: 7px; color: var(--tinta-fraca); transition: background .12s, color .12s; white-space: nowrap; }
+.fl:hover { background: var(--realce); color: var(--tinta-corpo); }
+.fl.concluir { color: var(--fin); }
+.fl.concluir:hover { background: var(--fin-fundo); }
+.fl.concluir.conf { width: auto; padding: 0 9px; background: var(--fin); color: #fff; font-size: 12px; font-weight: 700; }
+.dark .fl.concluir.conf { color: #04140d; }
+.lin.paga .fl.concluir { visibility: hidden; }
+
+
+
+
+.diaf { width: 40px; height: 40px; border-radius: 8px; box-shadow: inset 0 0 0 1px var(--borda); display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.1; flex-shrink: 0; }
+.diaf b { font-size: 13.5px; font-weight: 700; color: var(--tinta); }
+.diaf span { font-size: 11.5px; font-weight: 600; color: var(--tinta-suave); }
+.diaf.atraso { background: var(--perigo-fundo); box-shadow: inset 0 0 0 1px var(--perigo-borda); }
+.diaf.atraso b, .diaf.atraso span { color: var(--perigo); }
+.diaf.hoje { background: var(--obs-fundo); box-shadow: inset 0 0 0 1px var(--obs-borda); }
+.diaf.hoje b, .diaf.hoje span { color: var(--obs-tinta); }
+.vazio { display: flex; align-items: center; gap: 10px; padding: 18px 16px; color: var(--tinta-suave); font-size: 12.5px; }
+.vazio .ico { color: var(--sucesso); }
+.dicas { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 14px; color: var(--tinta-suave); font-size: 12px; }
+.dicas span { display: inline-flex; gap: 5px; align-items: center; }
+
+/* por categoria: posição, nome, valor e a parte; uma cor só, o comprimento é o dado */
+.rank { list-style: none; padding: 6px 0; }
+.rank li { display: grid; grid-template-columns: 18px minmax(0, 1fr) auto; align-items: center; gap: 4px 10px; padding: 8px 16px; }
+.rank .cat-ico { color: var(--tinta-suave); }
+.rank .nome { min-width: 0; font-weight: 600; color: var(--tinta); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rank .v { font-weight: 600; color: var(--tinta); text-align: right; white-space: nowrap; }
+.rank .v small { color: var(--tinta-suave); font-weight: 500; margin-left: 6px; }
+.rank .trilho { grid-column: 2 / -1; height: 6px; border-radius: 5px; background: var(--realce); overflow: hidden; }
+.rank .trilho i { display: block; height: 100%; border-radius: 5px; background: var(--c); }
+.rank li:not(:first-child) .trilho i { opacity: .55; }
+.prox { padding: 14px 16px; }
+.prox b { display: block; font-size: 22px; font-weight: 700; color: var(--tinta); letter-spacing: -.02em; }
+.prox span { font-size: 12px; color: var(--tinta-suave); }
+
+/* gaveta (computador) / folha (celular), a mesma da nova Produção */
+.gv-veu { position: fixed; inset: 51px 0 0 0; background: var(--veu); z-index: 60; animation: veuEntra .4s ease-out; }
+.gaveta { position: fixed; top: 51px; right: 0; bottom: 0; width: min(460px, 100%); background: var(--fundo); border-left: 1px solid var(--borda); box-shadow: var(--sombra); z-index: 61; overflow-y: auto; animation: gavetaEntra .46s cubic-bezier(.22,1,.36,1); }
+.gv-veu.sai { animation: veuSai .3s ease-in forwards; pointer-events: none; }
+.gaveta.sai { animation: gavetaSai .3s cubic-bezier(.55,0,1,.45) forwards; pointer-events: none; }
+@keyframes gavetaEntra { from { transform: translateX(100%); } }
+@keyframes gavetaSai { to { transform: translateX(100%); } }
+@keyframes veuEntra { from { opacity: 0; } }
+@keyframes veuSai { to { opacity: 0; } }
+.det { padding: 0 22px 40px; }
+.det-cab { position: sticky; top: 0; z-index: 2; display: flex; align-items: center; gap: 8px; margin: 0 -22px; padding: 12px 22px; background: var(--fundo); color: var(--tinta-suave); font-size: 13px; font-weight: 600; transition: box-shadow .2s; }
+.gaveta.rolou .det-cab { box-shadow: 0 1px 0 var(--borda); }
+.det-ferr { margin-left: auto; display: flex; gap: 2px; }
+.det-tit { font-size: 22px; font-weight: 800; letter-spacing: -.02em; color: var(--tinta); line-height: 1.25; margin-top: 2px; }
+.det-valor { font-size: 30px; font-weight: 700; letter-spacing: -.022em; color: var(--tinta); margin-top: 10px; }
+.det-valor small { font-size: 13.5px; font-weight: 600; color: var(--tinta-suave); margin-right: 4px; letter-spacing: 0; }
+.dprops { display: grid; grid-template-columns: 104px minmax(0, 1fr); align-items: center; row-gap: 2px; margin-top: 16px; }
+.dprops dt { font-size: 12.5px; color: var(--tinta-suave); display: flex; gap: 7px; align-items: center; min-height: 32px; }
+.dprops dd { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; min-width: 0; font-weight: 600; color: var(--tinta); }
+.dprops .mudo { color: var(--tinta-suave); font-weight: 500; }
+.dprops .atraso { color: var(--perigo); } .dprops .hoje { color: var(--obs-tinta); } .dprops .ok { color: var(--sucesso); }
+.det-acoes { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 18px; }
+.det-acoes .esp { flex: 1; }
+.det-nota { font-size: 12px; color: var(--tinta-suave); margin-top: 12px; }
+.dsec { border: 1px solid var(--c-borda); border-radius: 10px; background: var(--superficie); margin-top: 20px; overflow: hidden; }
+.dsec-cab { display: flex; align-items: center; gap: 10px; padding: 8px 12px 8px 10px; background: var(--c-fundo); border-bottom: 1px solid var(--c-borda); }
+.dsec-cab h3 { font-size: 13px; font-weight: 700; color: var(--tinta); }
+.hist li { display: flex; justify-content: space-between; gap: 10px; padding: 8px 12px; border-top: 1px solid var(--borda-fraca); font-variant-numeric: tabular-nums; }
+.hist li:first-child { border-top: 0; }
+.hist .q { color: var(--tinta-corpo); }
+.hist .v { font-weight: 600; color: var(--tinta); }
+.hist .v small { font-weight: 500; color: var(--tinta-suave); margin-left: 6px; }
+
+/* ============ modal de conta (novo) ============
+   Janela 12px; categoria num seletor no topo; descrição (ou fornecedor) como
+   título editável; valor grande; o resto são propriedades editáveis no lugar,
+   com popover — nenhum campo em caixa (DESIGN.md › campos sem caixa). */
+.mc-veu { position: fixed; inset: 0; z-index: 70; background: var(--veu); animation: veuEntra .3s ease-out; }
+.mc { position: fixed; z-index: 71; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(600px, calc(100% - 32px));
+  /* Altura FIXA: abrir calendário, aparecer erro ou nota não mexe no tamanho da
+     janela. Cabe o caso mais cheio sem rolar; só numa tela muito baixa o corpo
+     rola, e aí o espaço da barra já está reservado (nada pula de lado). */
+  height: min(560px, calc(100dvh - 32px)); display: flex; flex-direction: column; background: var(--superficie); border: 1px solid var(--borda); border-radius: 12px; box-shadow: var(--sombra); animation: mcEntra .32s var(--saida); }
+@keyframes mcEntra { from { opacity: 0; transform: translate(-50%, calc(-50% + 10px)) scale(.985); } }
+.mc-cab { display: flex; align-items: center; gap: 10px; padding: 0 12px 0 22px; height: 54px; border-bottom: 1px solid var(--borda); flex-shrink: 0; }
+.mc-cab h2 { font-size: 14px; font-weight: 700; color: var(--tinta); }
+.mc-cab .ib { margin-left: auto; }
+.mc-corpo { flex: 1; min-height: 0; padding: 18px 22px 22px; overflow-y: auto; scrollbar-gutter: stable; }
+/* categoria: um seletor de cinco, com o ícone de cada uma */
+.mc-cats { display: flex; gap: 2px; padding: 3px; background: var(--realce); border-radius: 9px; overflow-x: auto; scrollbar-width: none; }
+.mc-cats button { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 6px 10px; border-radius: 7px; font-size: 12.5px; font-weight: 600; color: var(--tinta-suave); white-space: nowrap; transition: background .15s, color .15s, box-shadow .15s; }
+.mc-cats button:hover { color: var(--tinta); }
+.mc-cats button[aria-checked="true"] { background: var(--superficie); color: var(--tinta); box-shadow: var(--sombra-leve); }
+.mc-cats .ico { width: 14px; height: 14px; }
+.mc-rot { display: block; font-size: 11.5px; font-weight: 600; color: var(--tinta-suave); margin: 18px 0 2px; }
+.mc-campo { position: relative; }
+.mc-grande { width: 100%; border: 0; background: transparent; outline: none; padding: 4px 0 6px; font-size: 22px; font-weight: 700; color: var(--tinta); letter-spacing: -.018em; line-height: 1.25; box-shadow: inset 0 -2px 0 transparent; transition: box-shadow .15s; }
+.mc-grande::placeholder { color: var(--tinta-fraca); font-weight: 600; }
+.mc-grande:hover { box-shadow: inset 0 -2px 0 var(--borda); }
+.mc-grande:focus { box-shadow: inset 0 -2px 0 var(--brand); }
+.mc-grande.erro { box-shadow: inset 0 -2px 0 var(--perigo); }
+.mc-campo .chev { position: absolute; right: 0; top: 12px; color: var(--tinta-suave); pointer-events: none; }
+/* erro e aviso moram na linha do rótulo: não acrescentam linha nem empurram nada */
+.mc-rot .mc-erro-i { color: var(--perigo); font-weight: 600; }
+.mc-rot .mc-aviso-i { color: var(--obs-tinta); font-weight: 600; }
+.mc-valor { display: flex; align-items: baseline; gap: 6px; margin-top: 6px; }
+.mc-valor small { font-size: 13.5px; font-weight: 600; color: var(--tinta-suave); }
+.mc-valor input { width: 100%; border: 0; background: transparent; outline: none; font-size: 30px; font-weight: 700; color: var(--tinta); letter-spacing: -.022em; font-variant-numeric: tabular-nums; padding: 2px 0 4px; box-shadow: inset 0 -2px 0 transparent; transition: box-shadow .15s; }
+.mc-valor input::placeholder { color: var(--tinta-fraca); }
+.mc-valor input:hover { box-shadow: inset 0 -2px 0 var(--borda); }
+.mc-valor input:focus { box-shadow: inset 0 -2px 0 var(--brand); }
+.mc-valor input.erro { box-shadow: inset 0 -2px 0 var(--perigo); }
+.mc-ultima { font-size: 12px; color: var(--tinta-suave); margin-top: 4px; min-height: 18px; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.mc-ultima b { color: var(--tinta-corpo); font-weight: 600; }
+.mc-link { color: var(--brand-tinta); font-weight: 600; border-radius: 5px; }
+.mc-link:hover { text-decoration: underline; text-underline-offset: 3px; }
+.mc .dprops { margin-top: 14px; border-top: 1px solid var(--borda-fraca); padding-top: 8px; }
+.prop { display: inline-flex; align-items: center; gap: 8px; max-width: 100%; padding: 6px 8px; margin-left: -8px; border-radius: 7px; font-weight: 600; color: var(--tinta); transition: background .12s; }
+.prop:hover, .prop[aria-expanded="true"] { background: var(--realce); }
+.prop .mudo { font-weight: 500; color: var(--tinta-suave); }
+.prop .atraso { color: var(--perigo); }
+.prop .vazio-p { color: var(--tinta-suave); font-weight: 500; }
+.chave { position: relative; width: 30px; height: 18px; border-radius: 99px; background: var(--borda-forte); transition: background .18s; flex-shrink: 0; }
+.chave::after { content: ""; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 99px; background: #fff; box-shadow: var(--sombra-leve); transition: transform .2s var(--saida); }
+[aria-checked="true"] > .chave { background: var(--fin); }
+[aria-checked="true"] > .chave::after { transform: translateX(12px); }
+.seg-mini { display: inline-flex; gap: 2px; padding: 3px; background: var(--realce); border-radius: 8px; }
+.seg-mini button { padding: 4px 10px; border-radius: 7px; font-size: 12.5px; font-weight: 600; color: var(--tinta-suave); white-space: nowrap; }
+.seg-mini button[aria-checked="true"] { background: var(--superficie); color: var(--tinta); box-shadow: var(--sombra-leve); }
+.passo { display: inline-flex; align-items: center; gap: 2px; margin-left: 8px; }
+.passo .ib { width: 26px; height: 26px; }
+.passo b { min-width: 26px; text-align: center; font-variant-numeric: tabular-nums; }
+.passo span { color: var(--tinta-suave); font-weight: 500; font-size: 12.5px; margin-left: 2px; }
+.mc-nota { font-size: 12px; color: var(--tinta-suave); margin-top: 8px; min-height: 36px; }   /* espaço reservado: aparecer não empurra nada */
+.mc-pe { display: flex; align-items: center; gap: 8px; padding: 12px 14px 12px 22px; border-top: 1px solid var(--borda); flex-shrink: 0; flex-wrap: wrap; }
+.mc-pe .esp { flex: 1; }
+.mc-proto { font-size: 12px; color: var(--tinta-suave); display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+/* listas suspensas do modal: sugestões, fornecedores, vencimento */
+/* listas e calendário flutuam por cima da janela, fora do corpo que rola */
+.mc-flutua { position: fixed; z-index: 75; }
+.mc-lista { max-height: 260px; overflow-y: auto; padding: 4px; background: var(--superficie); border: 1px solid var(--borda); border-radius: 9px; box-shadow: var(--sombra-pop); }
+.mc-lista button { display: flex; align-items: center; gap: 9px; width: 100%; padding: 7px 10px; border-radius: 7px; text-align: left; font-size: 13px; color: var(--tinta-corpo); }
+.mc-lista button:hover, .mc-lista button.ativo { background: var(--realce); color: var(--tinta); }
+.mc-lista .sub { margin-left: auto; font-size: 12px; color: var(--tinta-suave); white-space: nowrap; padding-left: 12px; }
+.mc-lista .rot-l { font-size: 11px; font-weight: 600; color: var(--tinta-suave); padding: 6px 10px 2px; }
+.cal { width: 300px; max-width: calc(100vw - 16px); padding: 10px; background: var(--superficie); border: 1px solid var(--borda); border-radius: 9px; box-shadow: var(--sombra-pop); }
+.cal-atalhos { display: flex; flex-wrap: wrap; gap: 4px; padding-bottom: 10px; margin-bottom: 8px; border-bottom: 1px solid var(--borda-fraca); }
+.cal-atalhos button { padding: 4px 9px; border-radius: 7px; border: 1px solid var(--borda); font-size: 12px; font-weight: 600; color: var(--tinta-corpo); }
+.cal-atalhos button:hover { border-color: var(--borda-forte); color: var(--tinta); }
+.cal-cab { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+.cal-cab b { font-size: 13px; color: var(--tinta); }
+.cal-grade { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; }
+.cal-grade .sem { font-size: 11px; font-weight: 600; color: var(--tinta-suave); padding: 4px 0; }
+.cal-grade button { height: 32px; border-radius: 7px; font-size: 12.5px; font-weight: 600; color: var(--tinta-corpo); font-variant-numeric: tabular-nums; }
+.cal-grade button:hover { background: var(--realce); color: var(--tinta); }
+.cal-grade button.fora { color: var(--tinta-fraca); font-weight: 500; }
+.cal-grade button.hoje { box-shadow: inset 0 0 0 1px var(--brand); }
+.cal-grade button.sel { background: var(--brand); color: var(--sobre-brand); }
+.lin.chegou { animation: linChegou 1.6s var(--saida); }
+@keyframes linChegou { 0%, 40% { background: var(--fin-fundo); } }
+@media (max-width: 760px) {
+  .mc { left: 0; right: 0; top: auto; bottom: 0; transform: none; width: 100%; height: 92dvh; border-radius: 12px 12px 0 0; animation-name: folhaEntra; }
+  .mc-cab { padding-left: 16px; }
+  .mc-corpo { padding: 14px 16px 18px; }
+  .mc-cats button { flex: 0 0 auto; }
+  .mc-pe { padding: 10px 12px calc(10px + env(safe-area-inset-bottom)); }
+  .mc-pe .btn { height: 44px; }
+  .mc-pe .btn-pri { flex: 1; }
+  .mc-pe .btn-pri kbd, .mc-proto .txt { display: none; }
+}
+.aviso-proto { position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%); z-index: 96; background: var(--tinta); color: var(--superficie); padding: 9px 14px; border-radius: 8px; font-size: 12.5px; font-weight: 600; box-shadow: var(--sombra-pop); animation: pop .2s var(--saida); }
+@keyframes pop { from { opacity: 0; transform: translate(-50%, 4px); } }
+
+@media (max-width: 1100px) { .grade { grid-template-columns: minmax(0, 1fr) 280px; } }
+@media (max-width: 960px) {
+  .grade { grid-template-columns: 1fr; }
+  .numeros { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .n-cel:nth-child(3) { border-left: 0; }
+  .n-cel:nth-child(n+3) { border-top: 1px solid var(--borda-fraca); }
+}
+@media (max-width: 760px) {
+  .proto { padding: 8px 12px; }
+  .proto-nota, .proto-bt .txt { display: none; }
+  .pg { padding: 18px 12px 48px; }
+  .cab-dir { margin-left: 0; width: 100%; justify-content: space-between; }
+  .mes .rot { min-width: 0; }
+  .cab-dir .btn-pri kbd { display: none; }
+  .busca { max-width: none; flex-basis: 100%; }
+  .busca kbd { display: none; }
+  .chips { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin: 0 -12px; padding: 0 12px; }
+  .n-cel { padding: 13px 14px; }
+  .n-val { font-size: 22px; }
+  .lin { padding: 10px 14px; gap: 10px; }
+
+  .dicas { display: none; }
+  .gv-veu { inset: 0; }
+  .gaveta { top: auto; height: 88dvh; width: 100%; border-left: 0; border-radius: 12px 12px 0 0; animation-name: folhaEntra; }
+  .gaveta.sai { animation-name: folhaSai; }
+  .det { padding: 0 14px 40px; }
+  .det-cab { margin: 0 -14px; padding: 8px 6px 8px 14px; }
+}
+@keyframes folhaEntra { from { transform: translateY(100%); } }
+@keyframes folhaSai { to { transform: translateY(100%); } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+html[data-troca-tema]::view-transition-old(root), html[data-troca-tema]::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
+html[data-troca-tema].dark::view-transition-new(root), html[data-troca-tema]:not(.dark)::view-transition-old(root) { z-index: 1; }
+html[data-troca-tema] *, html[data-troca-tema] *::before, html[data-troca-tema] *::after { transition: none !important; }
+</style>
+</head>
+<body>
+<div class="proto">
+  <span class="proto-nome">Financeiro · protótipo</span>
+  <span class="proto-nota">Dados reais · nada grava aqui; “Abrir O.S.” e “Abrir no modal atual” levam para as telas de hoje, que gravam</span>
+  <button class="proto-bt" id="tema"><i data-lucide="moon" class="ico ico-s"></i><span class="txt">Escuro</span></button>
+</div>
+<main class="pg"><div id="abas"></div><div id="tela"></div></main>
+
+<script>
+/*FINANCEIRO*/
+
+/* ===== base ===== */
+const ico = (n, c = 'ico') => `<i data-lucide="${n}" class="${c}"></i>`;
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const HOJE = DADOS.hoje;
+const dataLocal = iso => { const [a, m, d] = iso.slice(0, 10).split('-').map(Number); return new Date(a, m - 1, d); };
+const isoDe = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+const somarDias = (iso, n) => { const d = dataLocal(iso); d.setDate(d.getDate() + n); return isoDe(d); };
+const diasEntre = (de, ate) => Math.round((dataLocal(ate) - dataLocal(de)) / 864e5);
+const MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+const SEMANA = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
+const ddmm = iso => iso ? `${iso.slice(8, 10)}/${iso.slice(5, 7)}` : '';
+const brl = c => (c / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const reais = c => `R$ ${brl(c)}`;
+// No número grande, acima de mil o centavo só atrapalha; o exato fica no title.
+const curto = c => Math.abs(c) >= 100000 ? Math.round(c / 100).toLocaleString('pt-BR') : brl(c);
+const plural = (n, um, varios) => `${n} ${n === 1 ? um : varios}`;
+const semAcento = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+const CATEG = DADOS.categorias;
+const cat = c => CATEG[c.categoria] || { label: c.categoria || 'Despesa', icone: 'dollar-sign' };
+// A bolinha na cor da categoria (a cor vem do sistema, CATEGORIAS_CONTA).
+const catDot = k => `<span class="cat-dot" style="--cat:${(CATEG[k] || CATEG.Despesa || {}).cor || '#9ca3af'}"></span>`;
+const mesDe = iso => (iso || '').slice(0, 7);
+const rotuloMes = m => { if (!m) return 'Todo o período'; const [a, mm] = m.split('-').map(Number); return `${MESES[mm - 1]} de ${a}`; };
+const somarMes = (m, n) => { const [a, mm] = m.split('-').map(Number); const d = new Date(a, mm - 1 + n, 1); return isoDe(d).slice(0, 7); };
+// Pedir algo à página (abrir O.S., editar conta) abre um modal lá fora: o foco
+// sai daqui junto, senão o Esc e o teclado ficam presos atrás do modal.
+const paraPai = msg => { if (window.parent !== window) { document.activeElement?.blur(); window.parent.postMessage(msg, '/'); } };
+const avisoProto = txt => { document.querySelector('.aviso-proto')?.remove(); const t = document.createElement('div'); t.className = 'aviso-proto'; t.textContent = txt; document.body.appendChild(t); setTimeout(() => t.remove(), 2600); };
+const CONTAS = DADOS.contas;
+
+/* ===== estado ===== */
+// A aba fica guardada na sessão: gravar uma conta lá fora redesenha o protótipo
+// inteiro, e ele não pode voltar sempre para a primeira aba.
+const lerSessao = (k, padrao) => { try { return sessionStorage.getItem(k) || padrao; } catch { return padrao; } };
+const gravarSessao = (k, v) => { try { sessionStorage.setItem(k, v); } catch { /* sem armazenamento: só não lembra */ } };
+const est = { aba: lerSessao('fin-aba', 'receber'), mes: HOJE.slice(0, 7), busca: '', categoria: '', verPagas: false, gaveta: null, conf: null };
+
+/* ===== situação de uma conta ===== */
+const paga = c => c.status === 'Pago';
+const vencida = c => !paga(c) && c.vencimento && c.vencimento < HOJE;
+// O padrão do sistema para vencimento (o mesmo do campo de prazo de hoje):
+// vencido ou vencendo HOJE é vermelho; vence AMANHÃ é âmbar; o resto, neutro.
+// As classes: "atraso" pinta de vermelho, "hoje" pinta de âmbar.
+const tomVence = iso => !iso ? '' : iso <= HOJE ? 'atraso' : iso === somarDias(HOJE, 1) ? 'hoje' : '';
+// O filete no canto esquerdo da linha segue o mesmo tom.
+const priDe = tom => tom === 'atraso' ? 'pri-alta' : tom === 'hoje' ? 'pri-media' : '';
+function quando(c) {
+  if (paga(c)) return '<small class="ok">paga</small>';
+  if (!c.vencimento) return '<small>sem vencimento</small>';
+  const d = diasEntre(HOJE, c.vencimento);
+  if (d < 0) return `<small class="atraso">venceu há ${plural(-d, 'dia', 'dias')}</small>`;
+  if (d === 0) return '<small class="atraso">vence hoje</small>';
+  if (d === 1) return '<small class="hoje">vence amanhã</small>';
+  return `<small>em ${d} dias</small>`;
+}
+function dataEmBloco(c) {
+  if (!c.vencimento) return '<span class="diaf"><span>sem</span><span>data</span></span>';
+  const d = dataLocal(c.vencimento), longe = Math.abs(diasEntre(HOJE, c.vencimento)) > 6;
+  const tom = paga(c) ? '' : tomVence(c.vencimento);
+  return `<span class="diaf ${tom}" title="${SEMANA[d.getDay()]}, ${d.getDate()} de ${MESES[d.getMonth()]}"><b class="num">${String(d.getDate()).padStart(2, '0')}</b><span>${MESES[d.getMonth()].slice(0, 3)}</span></span>`;
+}
+const repete = c => c.recorrente ? (c.parcelas ? `parcela ${c.parcela || 1} de ${c.parcelas}` : 'todo mês') : '';
+
+/* ===== filtros ===== */
+function doMes() { return CONTAS.filter(c => !est.mes || mesDe(c.vencimento) === est.mes); }
+function filtradas() {
+  const q = semAcento(est.busca.trim());
+  return doMes().filter(c => (!est.categoria || (c.categoria || 'Despesa') === est.categoria)
+    && (!q || semAcento(c.descricao).includes(q) || semAcento(c.fornecedor).includes(q) || semAcento(cat(c).label).includes(q)));
+}
+
+/* ===== peças ===== */
+const soma = l => l.reduce((s, c) => s + (c.valor || 0), 0);
+function linha(c) {
+  const conf = est.conf === c.id;
+  // Nas categorias com fornecedor a descrição já é o nome dele: não repetir.
+  const fornDiferente = c.fornecedor && semAcento(c.fornecedor).trim() !== semAcento(c.descricao).trim();
+  const sub = [`${catDot(c.categoria || 'Despesa')}${esc(cat(c).label)}`, fornDiferente ? esc(c.fornecedor) : '', repete(c)].filter(Boolean).join(' · ');
+  return `<li><div class="lin ${paga(c) ? 'paga' : priDe(tomVence(c.vencimento))} ${est.gaveta === c.id ? 'aberta' : ''}" data-conta="${c.id}" tabindex="0" role="button" aria-label="${esc(c.descricao)}, ${reais(c.valor)}">
+    ${dataEmBloco(c)}
+    <span class="lin-txt"><span class="lin-tit"><span>${esc(c.descricao)}</span>${c.recorrente ? `<i data-lucide="repeat" class="ico ico-s rep" title="Repete"></i>` : ''}</span><span class="lin-sub">${sub}</span></span>
+    <span class="lin-dir"><span class="v num">${c.valor ? reais(c.valor) : '<small>a definir</small>'}</span>${quando(c)}</span>
+    <span class="fls"><button class="fl concluir ${conf ? 'conf' : ''}" data-pagar="${c.id}" aria-label="Marcar como paga" title="${conf ? 'Clique de novo para confirmar' : 'Marcar como paga'}">${conf ? 'Pagar?' : ico('check-circle-2', 'ico')}</button></span>
+  </div></li>`;
+}
+
+function grupos(lista) {
+  const fim7 = somarDias(HOJE, 7), amanha = somarDias(HOJE, 1);
+  const abertas = lista.filter(c => !paga(c)).sort((a, b) => (a.vencimento || '9').localeCompare(b.vencimento || '9') || b.valor - a.valor);
+  return [
+    { id: 'g-vencidas', tom: 'atraso', icone: 'alert-triangle', rot: 'Vencidas', itens: abertas.filter(vencida) },
+    { id: 'g-hoje', tom: 'atraso', icone: 'clock', rot: 'Vencem hoje', itens: abertas.filter(c => c.vencimento === HOJE) },
+    { id: 'g-amanha', tom: 'hoje', icone: 'calendar', rot: 'Amanhã', itens: abertas.filter(c => c.vencimento === amanha) },
+    { id: 'g-semana', icone: 'calendar-range', rot: 'Próximos 7 dias', itens: abertas.filter(c => c.vencimento > amanha && c.vencimento <= fim7) },
+    { id: 'g-depois', icone: 'calendar-days', rot: est.mes ? 'Mais tarde no mês' : 'Mais à frente', itens: abertas.filter(c => !c.vencimento || c.vencimento > fim7) },
+  ].filter(g => g.itens.length);
+}
+
+function blocoLista() {
+  const lista = filtradas();
+  const pagas = lista.filter(paga).sort((a, b) => (b.vencimento || '').localeCompare(a.vencimento || ''));
+  const gs = grupos(lista);
+  const filtro = est.busca || est.categoria;
+  let corpo = '';
+  if (!lista.length) corpo = `<div class="vazio">${ico('search')}${filtro ? 'Nenhuma conta com esse filtro.' : `Nenhuma conta em ${rotuloMes(est.mes)}.`}</div>`;
+  else {
+    corpo = `<ul class="lista">${gs.map(g => `<li class="grupo-rot ${g.tom || ''}" id="${g.id}">${ico(g.icone)}${g.rot}<span class="tot num">${plural(g.itens.length, 'conta', 'contas')} · ${reais(soma(g.itens))}</span></li>${g.itens.map(linha).join('')}`).join('')}
+      ${!gs.length && pagas.length ? `<li><div class="vazio">${ico('check-circle-2')}Tudo pago${est.mes ? ' neste mês' : ''}.</div></li>` : ''}
+      ${pagas.length ? `<li class="grupo-rot pagas" id="g-pagas" data-pagas aria-expanded="${est.verPagas}">${ico('check-circle-2')}Pagas${est.verPagas ? '' : ' · clique para ver'}<span class="tot num">${plural(pagas.length, 'conta', 'contas')} · ${reais(soma(pagas))}</span>${ico('chevron-down', 'ico ico-s chev')}</li>${est.verPagas ? pagas.map(linha).join('') : ''}` : ''}
+      </ul>`;
+  }
+  const titulo = est.mes ? `Contas de ${rotuloMes(est.mes).replace(/ de \d+$/, '')}` : 'Todas as contas';
+  return `<section class="area a-dados" id="bloco-lista"><div class="area-cab"><span class="area-ico">${ico('receipt')}</span><h2>${titulo}</h2><span class="area-meta num">${plural(lista.length, 'conta', 'contas')}</span></div>${corpo}</section>
+    <div class="dicas"><span><kbd>/</kbd> buscar</span><span><kbd>N</kbd> nova conta</span><span><kbd>←</kbd><kbd>→</kbd> mês</span><span>clique na conta para ver tudo</span></div>`;
+}
+
+function blocoNumeros() {
+  const l = filtradas();
+  const venc = l.filter(vencida), aVencer = l.filter(c => !paga(c) && !vencida(c)), pagas = l.filter(paga);
+  const total = soma(l), pago = soma(pagas), pct = total ? Math.round(pago / total * 100) : 0;
+  const maisAntiga = venc.length ? Math.max(...venc.map(c => diasEntre(c.vencimento, HOJE))) : 0;
+  const prox7 = aVencer.filter(c => c.vencimento && c.vencimento <= somarDias(HOJE, 7));
+  const cel = (alvo, area, icone, rot, valor, ctx, alerta, extra = '') => `<a class="n-cel a-${area}" href="#${alvo}" data-rolar="${alvo}" title="${reais(valor)}">
+    <span class="n-topo"><span class="n-ico">${ico(icone)}</span><span class="n-rot">${rot}</span></span>
+    <span class="n-val num ${alerta ? 'alerta' : ''}"><small>R$</small>${curto(valor)}</span>${extra}<span class="n-ctx">${ctx}</span></a>`;
+  return `<div class="numeros">
+    ${cel('g-vencidas', venc.length ? 'perigo' : 'dados', 'alert-triangle', 'Vencidas', soma(venc), venc.length ? `${plural(venc.length, 'conta', 'contas')} · a mais antiga há <b>${plural(maisAntiga, 'dia', 'dias')}</b>` : 'nenhuma atrasada', venc.length > 0)}
+    ${cel(prox7.length ? 'g-hoje' : 'g-depois', 'obs', 'calendar-clock', 'A vencer', soma(aVencer), aVencer.length ? `${plural(aVencer.length, 'conta', 'contas')}${prox7.length ? ` · <b>${reais(soma(prox7))}</b> em 7 dias` : ''}` : 'nada a vencer')}
+    ${cel('g-pagas', 'fin', 'check-circle-2', 'Pago', pago, pagas.length ? `${plural(pagas.length, 'conta', 'contas')} · <b>${pct}%</b> do total` : 'nada pago ainda', false, `<span class="medidor" aria-hidden="true"><i style="width:${pct}%"></i></span>`)}
+    ${cel('bloco-lista', 'dados', 'sigma', est.mes ? 'Total do mês' : 'Total', total, plural(l.length, 'conta', 'contas'))}
+  </div>`;
+}
+
+function blocoCategorias() {
+  const l = filtradas(), total = soma(l);
+  const porCat = Object.entries(l.reduce((o, c) => { const k = c.categoria || 'Despesa'; o[k] = (o[k] || 0) + (c.valor || 0); return o; }, {})).sort((a, b) => b[1] - a[1]);
+  const max = Math.max(1, ...porCat.map(x => x[1]));
+  const corpo = porCat.length ? `<ul class="rank">${porCat.map(([k, v]) => `<li><span class="cat-ico">${catDot(k)}</span><span class="nome">${esc(CATEG[k]?.label || k)}</span><span class="v num">${reais(v)}<small>${total ? Math.round(v / total * 100) : 0}%</small></span><span class="trilho"><i style="width:${Math.max(2, v / max * 100)}%;background:${CATEG[k]?.cor || 'var(--c)'};opacity:1"></i></span></li>`).join('')}</ul>` : '<div class="vazio">Nada no período.</div>';
+  return `<section class="area a-dados"><div class="area-cab"><span class="area-ico">${ico('pie-chart')}</span><h2>Por categoria</h2></div>${corpo}</section>`;
+}
+function blocoProximo() {
+  if (!est.mes) return '';
+  const prox = somarMes(est.mes, 1), l = CONTAS.filter(c => mesDe(c.vencimento) === prox);
+  return `<section class="area a-dados"><div class="area-cab"><span class="area-ico">${ico('calendar-plus')}</span><h2>Já lançado para ${rotuloMes(prox).replace(/ de \d+$/, '')}</h2></div>
+    <div class="prox">${l.length ? `<b class="num">${reais(soma(l))}</b><span>${plural(l.length, 'conta', 'contas')}${l.some(c => c.recorrente) ? ` · ${l.filter(c => c.recorrente).length} que repetem` : ''}</span>` : '<span>Nada lançado ainda. As que repetem entram quando a deste mês é paga.</span>'}</div></section>`;
+}
+
+/* ===== tela ===== */
+const tela = document.getElementById('tela');
+const abasEl = document.getElementById('abas');
+
+/* ===== abas ===== */
+// Cada parte do Financeiro é um módulo com o seu desenho; render() desenha a
+// aba aberta. Receber e Boletos vêm do banco, pedidos quando a aba abre.
+const ABAS = [
+  ['pagar', 'Contas a pagar', 'receipt'],
+  ['receber', 'Contas a receber', 'hand-coins'],
+  ['boletos', 'Boletos', 'barcode'],
+  ['faturamento', 'Faturamento', 'building-2'],
+  ['notas', 'Notas fiscais', 'file-text'],
+];
+const MODULOS = {};
+function numeroDaAba(id) {
+  if (id === 'pagar') { const v = CONTAS.filter(vencida).length; return v ? [v, true, plural(v, 'conta vencida', 'contas vencidas')] : null; }
+  return MODULOS[id]?.numero?.() || null;
+}
+let indicadorAnt = null;
+function renderAbas() {
+  abasEl.innerHTML = `<div class="faixa"><div class="abas" role="tablist" aria-label="Partes do Financeiro">${ABAS.map(([id, rot, ic]) => {
+    const n = numeroDaAba(id);
+    return `<button class="aba" role="tab" data-aba="${id}" aria-selected="${est.aba === id}">${ico(ic, 'ico ico-s')}${rot}${n ? `<span class="n num ${n[1] ? 'alerta' : ''}" title="${esc(n[2] || '')}">${n[0]}</span>` : ''}</button>`;
+  }).join('')}<span class="indicador"></span></div></div>`;
+  const ind = abasEl.querySelector('.indicador'), alvo = abasEl.querySelector('.aba[aria-selected="true"]');
+  if (!ind || !alvo) return;
+  const por = (l, w) => { ind.style.left = `${l}px`; ind.style.width = `${w}px`; };
+  ind.style.transition = 'none'; por(...(indicadorAnt || [alvo.offsetLeft, alvo.offsetWidth])); ind.offsetWidth; ind.style.transition = '';
+  por(alvo.offsetLeft, alvo.offsetWidth);
+  indicadorAnt = [alvo.offsetLeft, alvo.offsetWidth];
+}
+function trocarAba(id) {
+  if (id === est.aba || !ABAS.some(a => a[0] === id)) return;
+  fecharGaveta(true);
+  est.aba = id; est.busca = ''; gravarSessao('fin-aba', id);
+  render(); scrollTo({ top: 0 });
+  MODULOS[id]?.carregar?.();
+}
+function render(foco) {
+  renderAbas();
+  if (est.aba === 'pagar') renderPagar(foco);
+  else MODULOS[est.aba].render(foco);
+  lucide.createIcons();
+  if (foco) { const el = document.querySelector(foco); el?.focus(); if (el?.setSelectionRange) el.setSelectionRange(el.value.length, el.value.length); }
+}
+// Uma peça comum: número do topo (rótulo, número, uma linha de texto) que leva ao grupo.
+const celula = ({ alvo, area, icone, rot, val, ctx, alerta, extra = '', titulo }) => `<a class="n-cel a-${area}" href="#${alvo}" data-rolar="${alvo}" ${titulo ? `title="${esc(titulo)}"` : ''}>
+    <span class="n-topo"><span class="n-ico">${ico(icone)}</span><span class="n-rot">${rot}</span></span>
+    <span class="n-val num ${alerta ? 'alerta' : ''}">${val}</span>${extra}<span class="n-ctx">${ctx}</span></a>`;
+const numeros = cels => `<div class="numeros" style="grid-template-columns: repeat(${cels.length}, minmax(0, 1fr))">${cels.join('')}</div>`;
+const dinheiro = c => `<small>R$</small>${curto(c)}`;
+// Uma lista agrupada: rótulo do grupo e as linhas dele.
+const listaEmGrupos = (gs, linha) => `<ul class="lista">${gs.map(g => `<li class="grupo-rot ${g.tom || ''}" id="${g.id}">${ico(g.icone)}${g.rot}<span class="tot num">${g.tot || ''}</span></li>${g.itens.map(linha).join('')}${g.mais || ''}`).join('')}</ul>`;
+const area = (cls, icone, titulo, corpo, meta = '', id = '') => `<section class="area ${cls}" ${id ? `id="${id}"` : ''}><div class="area-cab"><span class="area-ico">${ico(icone)}</span><h2>${titulo}</h2>${meta ? `<span class="area-meta num">${meta}</span>` : ''}</div>${corpo}</section>`;
+const buscaCampo = (ph) => `<label class="busca">${ico('search')}<input id="busca" value="${esc(est.busca)}" placeholder="${esc(ph)}" autocomplete="off"><kbd>/</kbd></label>`;
+const chipsDe = (attr, atual, opcoes) => `<div class="chips" role="group">${opcoes.map(([k, rot, ic]) => `<button class="chip" data-${attr}="${esc(k)}" aria-pressed="${atual === k}">${ic ? ico(ic) : ''}${esc(rot)}</button>`).join('')}</div>`;
+// Data em bloco: dia e, embaixo, o dia da semana (perto) ou o mês (longe).
+function blocoData(iso, tom = '', titulo = '') {
+  if (!iso) return '<span class="diaf"><span>sem</span><span>data</span></span>';
+  const d = dataLocal(iso), longe = Math.abs(diasEntre(HOJE, iso)) > 6;
+  return `<span class="diaf ${tom}" title="${esc(titulo ? titulo + ' · ' : '')}${SEMANA[d.getDay()]}, ${d.getDate()} de ${MESES[d.getMonth()]}"><b class="num">${String(d.getDate()).padStart(2, '0')}</b><span>${MESES[d.getMonth()].slice(0, 3)}</span></span>`;
+}
+const dataLonga = iso => { if (!iso) return ''; const d = dataLocal(iso); return `${SEMANA[d.getDay()].slice(0, 3)}, ${d.getDate()} de ${MESES[d.getMonth()]}${d.getFullYear() !== +HOJE.slice(0, 4) ? ' de ' + d.getFullYear() : ''}`; };
+const haDias = iso => { const n = diasEntre(iso, HOJE); return n <= 0 ? 'hoje' : n === 1 ? 'ontem' : `há ${n} dias`; };
+const esqueleto = () => `<div class="numeros" style="grid-template-columns: repeat(4, minmax(0, 1fr))">${'<div class="n-cel"><span class="esq" style="width:60%;height:14px"></span><span class="esq" style="width:70%;height:30px"></span><span class="esq" style="width:50%;height:12px"></span></div>'.repeat(4)}</div>
+  <div class="grade"><div class="col"><section class="area a-dados"><div class="area-cab"><span class="esq" style="width:160px;height:14px"></span></div>${'<div class="lin"><span class="esq" style="width:40px;height:40px"></span><span class="lin-txt"><span class="esq" style="width:45%;height:13px"></span><span class="esq" style="width:65%;height:11px;margin-top:6px"></span></span><span class="esq" style="width:80px;height:14px"></span></div>'.repeat(6)}</section></div><div class="col"><section class="area a-dados"><div class="area-cab"><span class="esq" style="width:120px;height:14px"></span></div><div style="padding:16px"><span class="esq" style="height:90px"></span></div></section></div></div>`;
+const faixaErro = (msg, acao) => `<div class="erro-faixa">${ico('alert-triangle')}${esc(msg)}<button class="btn btn-sec btn-p" data-tentar="${acao}">Tentar de novo</button></div>`;
+
+// Pedidos ao banco, feitos pela página: cada um com um número, para uma
+// resposta atrasada nunca pintar por cima de outra mais nova.
+let pedidoN = 0;
+function pedirAoBanco(tipo, extra = {}) { pedidoN++; paraPaiQuieto({ ...extra, tipo, pedido: pedidoN }); return pedidoN; }
+const paraPaiQuieto = msg => { if (window.parent !== window) window.parent.postMessage(msg, '/'); };
+
+function renderPagar(foco) {
+  const l = doMes(), venc = l.filter(vencida).length, hoje = l.filter(c => !paga(c) && c.vencimento === HOJE).length;
+  const amanha = l.filter(c => !paga(c) && c.vencimento === somarDias(HOJE, 1)).length;
+  const atual = HOJE.slice(0, 7);
+  tela.innerHTML = `
+    <div class="cab"><div><h1>Contas a pagar</h1>
+      <p class="sub">${venc ? `<span class="selo atraso">${ico('alert-triangle')}${plural(venc, 'vencida', 'vencidas')}</span>` : ''}${hoje ? `<span class="selo atraso">${ico('clock')}${plural(hoje, 'vence hoje', 'vencem hoje')}</span>` : ''}${amanha ? `<span class="selo hoje">${ico('calendar')}${plural(amanha, 'vence amanhã', 'vencem amanhã')}</span>` : ''}${!venc && !hoje && !amanha ? '<span>Nada atrasado nem vencendo hoje.</span>' : ''}</p></div>
+      <div class="cab-dir">
+        <div class="mes" role="group" aria-label="Mês"><button class="ib" data-mes="-1" aria-label="Mês anterior" title="Mês anterior (←)">${ico('chevron-left')}</button><span class="rot">${est.mes ? rotuloMes(est.mes).replace(/^./, x => x.toUpperCase()) : 'Todo o período'}</span><button class="ib" data-mes="1" aria-label="Próximo mês" title="Próximo mês (→)">${ico('chevron-right')}</button></div>
+        ${est.mes !== atual ? `<button class="voltar-mes" data-mes="hoje">Este mês</button>` : ''}
+        <button class="voltar-mes" data-mes="todos" ${!est.mes ? 'hidden' : ''}>Todo o período</button>
+        <button class="btn btn-pri" data-nova>${ico('plus')}Nova conta<kbd>N</kbd></button>
+      </div></div>
+    <div class="busca-linha">
+      <label class="busca">${ico('search')}<input id="busca" value="${esc(est.busca)}" placeholder="Buscar conta, fornecedor ou categoria" autocomplete="off"><kbd>/</kbd></label>
+      <div class="chips" role="group" aria-label="Categoria">${[['', 'Todas']].concat(Object.entries(CATEG).map(([k, v]) => [k, v.label])).map(([k, rot]) => `<button class="chip" data-cat="${esc(k)}" aria-pressed="${est.categoria === k}">${k ? catDot(k) : ''}${esc(rot)}</button>`).join('')}</div>
+    </div>
+    ${blocoNumeros()}
+    <div class="grade"><div class="col">${blocoLista()}</div><div class="col">${blocoCategorias()}${blocoProximo()}</div></div>`;
+}
+
+/* ===== gaveta: a conta inteira, as ações e o histórico dela ===== */
+const gavetaRaiz = document.createElement('div'); document.body.appendChild(gavetaRaiz);
+const porId = id => CONTAS.find(c => c.id === id);
+function historico(c) {
+  // As outras vezes que essa conta apareceu: mesma descrição, mais recentes primeiro.
+  const chave = semAcento(c.descricao).trim();
+  const outras = CONTAS.filter(x => x.id !== c.id && semAcento(x.descricao).trim() === chave && x.vencimento).sort((a, b) => b.vencimento.localeCompare(a.vencimento)).slice(0, 5);
+  if (!outras.length) return '';
+  return `<section class="dsec a-dados"><div class="dsec-cab"><span class="area-ico">${ico('history', 'ico ico-s')}</span><h3>Outras vezes</h3></div>
+    <ul class="lista hist">${outras.map(o => { const dif = c.valor && o.valor ? Math.round((c.valor - o.valor) / o.valor * 100) : 0; return `<li><span class="q">${rotuloMes(mesDe(o.vencimento)).replace(/^./, x => x.toUpperCase())}${paga(o) ? '' : ' · pendente'}</span><span class="v">${reais(o.valor)}${dif ? `<small>${dif > 0 ? 'esta é ' + dif + '% maior' : 'esta é ' + -dif + '% menor'}</small>` : ''}</span></li>`; }).join('')}</ul></section>`;
+}
+function detalhe(c) {
+  const k = cat(c), conf = est.conf === c.id;
+  const venc = !c.vencimento ? '<span class="mudo">sem vencimento</span>' : (() => {
+    const d = dataLocal(c.vencimento), n = diasEntre(HOJE, c.vencimento);
+    const rel = paga(c) ? '' : n < 0 ? `<span class="atraso">venceu há ${plural(-n, 'dia', 'dias')}</span>` : n === 0 ? '<span class="atraso">vence hoje</span>' : n === 1 ? '<span class="hoje">vence amanhã</span>' : `<span class="mudo">em ${n} dias</span>`;
+    return `${SEMANA[d.getDay()]}, ${d.getDate()} de ${MESES[d.getMonth()]} ${rel}`;
+  })();
+  return `<div class="det">
+    <div class="det-cab">Conta a pagar<span class="det-ferr"><button class="ib" data-gv="editar" aria-label="Editar conta" title="Editar">${ico('pencil', 'ico ico-s')}</button><button class="ib" data-gv="fechar" aria-label="Fechar" title="Fechar (Esc)">${ico('x', 'ico ico-s')}</button></span></div>
+    <div class="det-tit">${esc(c.descricao)}</div>
+    <div class="det-valor num">${c.valor ? `<small>R$</small>${brl(c.valor)}` : '<small>valor a definir</small>'}</div>
+    <dl class="dprops">
+      <dt>${ico('calendar', 'ico ico-s')}Vencimento</dt><dd>${venc}</dd>
+      <dt>${ico(paga(c) ? 'check-circle-2' : 'circle', 'ico ico-s')}Situação</dt><dd>${paga(c) ? '<span class="ok">Paga</span>' : 'Pendente'}</dd>
+      <dt>${ico(k.icone, 'ico ico-s')}Categoria</dt><dd>${catDot(c.categoria || 'Despesa')}${esc(k.label)}</dd>
+      ${c.fornecedor ? `<dt>${ico('building-2', 'ico ico-s')}Fornecedor</dt><dd>${esc(c.fornecedor)}</dd>` : ''}
+      <dt>${ico('repeat', 'ico ico-s')}Repete</dt><dd>${repete(c) ? esc(repete(c).replace(/^./, x => x.toUpperCase())) : '<span class="mudo">Não</span>'}</dd>
+    </dl>
+    <div class="det-acoes">
+      ${paga(c) ? '' : `<button class="btn btn-ok btn-p ${conf ? 'conf' : ''}" data-gv="pagar">${ico('check-circle-2')}${conf ? 'Clique de novo para confirmar' : 'Marcar como paga'}</button>`}
+      <button class="btn btn-sec btn-p" data-gv="editar">${ico('pencil')}Editar</button>
+      <span class="esp"></span>
+      <button class="btn btn-txt btn-p" data-gv="copiar">${ico('copy')}Copiar linha</button>
+    </div>
+    ${c.recorrente && !paga(c) ? '<p class="det-nota">Ao pagar, a próxima já entra no mês seguinte.</p>' : ''}
+    ${historico(c)}
+  </div>`;
+}
+// A gaveta é uma só para todas as abas: cada módulo diz como achar o item
+// (porId), como desenhá-lo (detalhe), o nome da gaveta e o atributo da linha.
+const GAVETA_PAGAR = { porId, detalhe, rotulo: 'Conta a pagar', attr: 'conta' };
+const modGaveta = () => est.aba === 'pagar' ? GAVETA_PAGAR : MODULOS[est.aba].gaveta;
+function renderGaveta() {
+  const m = modGaveta();
+  const c = est.gaveta != null && m ? m.porId(est.gaveta) : null;
+  document.querySelectorAll('.lin.aberta').forEach(x => x.classList.remove('aberta'));
+  if (c) {
+    document.querySelector(`.lin[data-${m.attr}="${c.id}"]`)?.classList.add('aberta');
+    const aberta = gavetaRaiz.querySelector('.gaveta:not(.sai)');
+    if (aberta) aberta.innerHTML = m.detalhe(c);
+    else {
+      gavetaRaiz.innerHTML = `<div class="gv-veu" data-gv="fechar"></div><aside class="gaveta" role="dialog" aria-label="${esc(m.rotulo)}">${m.detalhe(c)}</aside>`;
+      const g = gavetaRaiz.querySelector('.gaveta');
+      g.addEventListener('scroll', () => g.classList.toggle('rolou', g.scrollTop > 4), { passive: true });
+    }
+    lucide.createIcons(); gavetaRaiz.querySelector('.det-ferr .ib')?.focus({ preventScroll: true });
+    return;
+  }
+  const saindo = gavetaRaiz.querySelectorAll('.gv-veu, .gaveta');
+  if (!saindo.length) return;
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) { gavetaRaiz.innerHTML = ''; return; }
+  saindo.forEach(x => x.classList.add('sai'));
+  setTimeout(() => { if (est.gaveta == null) gavetaRaiz.innerHTML = ''; }, 300);
+}
+function abrirGaveta(id) { est.gaveta = id; est.conf = null; renderGaveta(); }
+function fecharGaveta(quieto) {
+  if (est.gaveta == null) return;
+  const id = est.gaveta, attr = modGaveta()?.attr;
+  est.gaveta = null; est.conf = null; renderGaveta();
+  if (!quieto && attr) document.querySelector(`.lin[data-${attr}="${id}"]`)?.focus({ preventScroll: true });
+}
+function pagar(c, naGaveta) {
+  if (est.conf !== c.id) { est.conf = c.id; naGaveta ? renderGaveta() : render(); return; }
+  c.status = 'Pago'; est.conf = null; render(); renderGaveta();
+  avisoProto(`“${c.descricao}” marcada como paga (protótipo: não grava)`);
+}
+
+/* ===== modal de conta (novo) ===== */
+// As regras são as do ContaModal de hoje: cinco categorias; Material,
+// Manutenção e Terceirização pedem um fornecedor do mesmo tipo (e a conta
+// leva o nome dele); valor obrigatório; Pendente ou Paga; repete todo mês ou
+// parcelado em 2 ou mais vezes. Salvar aqui só muda a tela (protótipo); o
+// "Abrir no modal atual" leva o que foi digitado para o modal de hoje, que grava.
+const FORNS = (DADOS.fornecedores || []).slice().sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+const PEDE_FORN = ['Material', 'Manutenção', 'Terceirização'];
+const MESES_CURTOS = MESES.map(m => m.slice(0, 3));
+let mc = null;               // o rascunho aberto
+const modalRaiz = document.createElement('div'); document.body.appendChild(modalRaiz);
+const valorTexto = c => c ? brl(c) : '';
+const lerCentavos = s => { const d = String(s).replace(/\D/g, ''); return d ? parseInt(d, 10) : 0; };
+
+// As descrições já lançadas, cada uma com a vez mais recente: viram sugestão
+// ao digitar, e escolher uma traz categoria, fornecedor, valor e repetição.
+// A vez mais recente COM valor: a deste mês costuma estar lançada ainda sem
+// valor ("a definir"), e sugerir R$ 0 não ajuda ninguém.
+function historicoDe(desc) {
+  const chave = semAcento(desc).trim(); if (!chave) return null;
+  return CONTAS.filter(c => semAcento(c.descricao).trim() === chave && c.vencimento && c.valor > 0 && (!mc || c.id !== mc.id)).sort((a, b) => b.vencimento.localeCompare(a.vencimento))[0] || null;
+}
+function sugestoes(q) {
+  const k = semAcento(q).trim(); if (k.length < 2) return [];
+  const vistas = new Map();
+  CONTAS.filter(c => c.vencimento).sort((a, b) => b.vencimento.localeCompare(a.vencimento)).forEach(c => {
+    const ch = semAcento(c.descricao).trim();
+    if (ch.includes(k) && !vistas.has(ch)) vistas.set(ch, historicoDe(c.descricao) || c);
+  });
+  return [...vistas.values()].slice(0, 6);
+}
+
+function abrirModalConta(conta) {
+  mc = conta ? {
+    id: conta.id, cat: conta.categoria || 'Despesa', desc: conta.descricao, fornId: conta.fornecedorId || null,
+    valor: conta.valor || 0, venc: conta.vencimento || '', paga: conta.status === 'Pago',
+    rep: conta.recorrente ? (conta.parcelas ? 'parc' : 'mes') : 'nao', parcelas: conta.parcelas || 10, parcelaAtual: conta.parcela || 1,
+  } : { id: null, cat: 'Despesa', desc: '', fornId: null, valor: 0, venc: '', paga: false, rep: 'nao', parcelas: 10, parcelaAtual: 1 };
+  mc.erros = {}; mc.pop = null; mc.calMes = (mc.venc || HOJE).slice(0, 7);
+  renderModalConta(true);
+}
+function fecharModalConta() { mc = null; modalRaiz.innerHTML = ''; document.querySelector('[data-nova]')?.focus({ preventScroll: true }); }
+
+function textoVenc() {
+  if (!mc.venc) return '<span class="vazio-p">Escolher a data</span>';
+  const d = dataLocal(mc.venc), n = diasEntre(HOJE, mc.venc);
+  const rel = mc.paga ? '' : n < 0 ? `<span class="atraso">venceu há ${plural(-n, 'dia', 'dias')}</span>` : n === 0 ? '<span class="mudo">hoje</span>' : n === 1 ? '<span class="mudo">amanhã</span>' : `<span class="mudo">em ${n} dias</span>`;
+  return `${SEMANA[d.getDay()].slice(0, 3)}, ${d.getDate()} de ${MESES[d.getMonth()]}${d.getFullYear() !== +HOJE.slice(0, 4) ? ' de ' + d.getFullYear() : ''} ${rel}`;
+}
+function calendario() {
+  const [a, m] = mc.calMes.split('-').map(Number);
+  const primeiro = new Date(a, m - 1, 1), inicio = new Date(a, m - 1, 1 - primeiro.getDay());
+  const dias = Array.from({ length: 42 }, (_, i) => { const d = new Date(inicio); d.setDate(inicio.getDate() + i); return d; });
+  // atalhos: hoje, amanhã e os próximos dias de vencimento mais comuns
+  const proximoDia = dia => { const h = dataLocal(HOJE); const d = new Date(h.getFullYear(), h.getMonth(), dia); if (d <= h) d.setMonth(d.getMonth() + 1); return isoDe(d); };
+  const atalhos = [['Hoje', HOJE], ['Amanhã', somarDias(HOJE, 1)], ...[5, 10, 15, 20].map(n => { const iso = proximoDia(n); return [`dia ${n} (${MESES_CURTOS[+iso.slice(5, 7) - 1]})`, iso]; })];
+  return `<div class="cal" role="dialog" aria-label="Vencimento">
+    <div class="cal-atalhos">${atalhos.map(([r, iso]) => `<button data-mc-dia="${iso}">${r}</button>`).join('')}</div>
+    <div class="cal-cab"><button class="ib" data-mc-cal="-1" aria-label="Mês anterior">${ico('chevron-left', 'ico ico-s')}</button><b>${MESES[m - 1].replace(/^./, x => x.toUpperCase())} de ${a}</b><button class="ib" data-mc-cal="1" aria-label="Próximo mês">${ico('chevron-right', 'ico ico-s')}</button></div>
+    <div class="cal-grade">${['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map(x => `<span class="sem">${x}</span>`).join('')}${dias.map(d => { const iso = isoDe(d); return `<button data-mc-dia="${iso}" class="${d.getMonth() !== m - 1 ? 'fora' : ''} ${iso === HOJE ? 'hoje' : ''} ${iso === mc.venc ? 'sel' : ''}" aria-label="${d.getDate()} de ${MESES[d.getMonth()]}">${d.getDate()}</button>`; }).join('')}</div>
+  </div>`;
+}
+function listaTitulo() {
+  if (mc.pop !== 'lista') return '';
+  if (PEDE_FORN.includes(mc.cat)) {
+    const k = semAcento(mc.buscaForn || '');
+    const l = FORNS.filter(f => f.tipo === mc.cat && (!k || semAcento(f.nome).includes(k)));
+    return `<div class="mc-lista" role="listbox">${l.length ? l.map((f, i) => `<button role="option" data-mc-forn="${f.id}" class="${i === (mc.ativo || 0) ? 'ativo' : ''}">${ico('building-2', 'ico ico-s')}${esc(f.nome)}${f.id === mc.fornId ? `<span class="sub">${ico('check', 'ico ico-s')}</span>` : ''}</button>`).join('') : `<div class="rot-l">Nenhum fornecedor de ${esc(mc.cat)} com esse nome.</div>`}</div>`;
+  }
+  const l = sugestoes(mc.desc);
+  if (!l.length) return '';
+  return `<div class="mc-lista" role="listbox"><div class="rot-l">Já lançadas · escolher traz o resto</div>${l.map((c, i) => `<button role="option" data-mc-sug="${c.id}" class="${i === (mc.ativo || 0) ? 'ativo' : ''}">${ico(cat(c).icone, 'ico ico-s')}${esc(c.descricao)}<span class="sub">${c.valor ? reais(c.valor) : 'sem valor'} · ${MESES_CURTOS[+c.vencimento.slice(5, 7) - 1]}</span></button>`).join('')}</div>`;
+}
+function linhaUltima() {
+  const h = mc.cat && PEDE_FORN.includes(mc.cat) ? (mc.fornId ? CONTAS.filter(c => c.fornecedorId === mc.fornId && c.vencimento && c.id !== mc.id).sort((a, b) => b.vencimento.localeCompare(a.vencimento))[0] : null) : historicoDe(mc.desc);
+  if (!h || !h.valor) return '';
+  return `${ico('history', 'ico ico-s')}<span>Última vez: <b>${reais(h.valor)}</b> em ${MESES[+h.vencimento.slice(5, 7) - 1]}</span>${h.valor !== mc.valor ? `<button class="mc-link" data-mc="usar-ultima" data-v="${h.valor}">usar</button>` : ''}`;
+}
+
+// Redesenhar a janela troca os elementos: sem isto o foco caía no body e o
+// teclado (Ctrl+Enter, Esc, Tab) ficava falando com o nada.
+const chaveFoco = el => {
+  if (!el || !modalRaiz.contains(el)) return null;
+  if (el.id) return '#' + el.id;
+  for (const a of ['mc', 'mc-cat', 'mc-rep', 'mc-dia', 'mc-cal', 'mc-forn', 'mc-sug']) { const v = el.getAttribute('data-' + a); if (v != null) return `[data-${a}="${v}"]`; }
+  return null;
+};
+// Trocar de categoria leva o foco ao campo de cima sem abrir a lista de
+// fornecedores sozinha: aberta, ela cobria valor e vencimento, e o próximo
+// clique ali escolhia um fornecedor sem querer. A lista abre no clique ou ao digitar.
+function focoSemAbrir() { mc.semAbrir = true; document.getElementById('mc-tit-in')?.focus(); mc.semAbrir = false; }
+modalRaiz.addEventListener('mousedown', e => {
+  const el = e.target.closest('[data-mc-in="forn"]');
+  if (el && mc && mc.pop !== 'lista') { mc.pop = 'lista'; mc.buscaForn = ''; el.value = ''; trocarLista(); }
+});
+function renderModalConta(primeira) {
+  if (!mc) return;
+  const voltaFoco = chaveFoco(document.activeElement);
+  const pedeForn = PEDE_FORN.includes(mc.cat);
+  const fornsDoTipo = FORNS.filter(f => f.tipo === mc.cat);
+  const fornNome = FORNS.find(f => f.id === mc.fornId)?.nome || '';
+  const titulo = pedeForn
+    ? `<label class="mc-rot" for="mc-tit-in">Fornecedor de ${esc(mc.cat)}${mc.erros.titulo ? '<span class="mc-erro-i" id="mc-erro-titulo"> · escolha o fornecedor</span>' : !fornsDoTipo.length ? '<span class="mc-aviso-i"> · nenhum cadastrado (Cadastros → Fornecedores)</span>' : ''}</label>
+       <div class="mc-campo"><input id="mc-tit-in" class="mc-grande ${mc.erros.titulo ? 'erro' : ''}" data-mc-in="forn" value="${esc(mc.pop === 'lista' ? (mc.buscaForn ?? fornNome) : fornNome)}" placeholder="Escolha o fornecedor" autocomplete="off" role="combobox" aria-expanded="${mc.pop === 'lista'}">${ico('chevron-down', 'ico chev')}</div>`
+    : `<label class="mc-rot" for="mc-tit-in">Descrição${mc.erros.titulo ? '<span class="mc-erro-i" id="mc-erro-titulo"> · escreva a descrição</span>' : ''}</label>
+       <div class="mc-campo"><input id="mc-tit-in" class="mc-grande ${mc.erros.titulo ? 'erro' : ''}" data-mc-in="desc" value="${esc(mc.desc)}" placeholder="Ex.: Conta de energia" autocomplete="off"></div>`;
+  const miolo = `
+    <div class="mc-cab"><h2 id="mc-tit">${mc.id ? 'Editar conta' : 'Nova conta a pagar'}</h2><span class="selo">${mc.id ? 'Editando' : 'Rascunho'}</span><button class="ib" data-mc="fechar" aria-label="Fechar" title="Fechar (Esc)">${ico('x')}</button></div>
+    <div class="mc-corpo">
+      <div class="mc-cats" role="radiogroup" aria-label="Categoria">${Object.entries(CATEG).map(([k, v]) => `<button role="radio" data-mc-cat="${esc(k)}" aria-checked="${mc.cat === k}" tabindex="${mc.cat === k ? 0 : -1}" style="--cat:${v.cor || 'currentColor'}">${ico(v.icone)}${esc(v.label)}</button>`).join('')}</div>
+      ${titulo}
+      <label class="mc-rot" for="mc-valor">Valor${mc.erros.valor ? '<span class="mc-erro-i" id="mc-erro-valor"> · informe o valor</span>' : ''}</label>
+      <div class="mc-valor"><small>R$</small><input id="mc-valor" class="${mc.erros.valor ? 'erro' : ''}" data-mc-in="valor" value="${valorTexto(mc.valor)}" placeholder="0,00" inputmode="decimal" autocomplete="off"></div>
+      <div class="mc-ultima" id="mc-ultima">${linhaUltima()}</div>
+      <dl class="dprops">
+        <dt>${ico('calendar', 'ico ico-s')}Vencimento</dt><dd><button class="prop" data-mc="cal" aria-expanded="${mc.pop === 'cal'}">${textoVenc()}</button></dd>
+        <dt>${ico('check-circle-2', 'ico ico-s')}Situação</dt><dd><button class="prop" role="switch" data-mc="paga" aria-checked="${mc.paga}"><span class="chave"></span>${mc.paga ? 'Já está paga' : 'Pendente'}</button></dd>
+        <dt>${ico('repeat', 'ico ico-s')}Repete</dt><dd><span class="seg-mini" role="radiogroup" aria-label="Repete">${[['nao', 'Não'], ['mes', 'Todo mês'], ['parc', 'Parcelado']].map(([k, r]) => `<button role="radio" data-mc-rep="${k}" aria-checked="${mc.rep === k}">${r}</button>`).join('')}</span>
+          ${mc.rep === 'parc' ? `<span class="passo"><button class="ib" data-mc="menos" aria-label="Menos uma vez">${ico('minus', 'ico ico-s')}</button><b>${mc.parcelas}</b><button class="ib" data-mc="mais" aria-label="Mais uma vez">${ico('plus', 'ico ico-s')}</button><span>vezes</span></span>` : ''}</dd>
+      </dl>
+      <p class="mc-nota">${mc.rep !== 'nao' ? (() => {
+        const parcela = mc.rep === 'parc' && mc.id && mc.parcelaAtual > 1 ? `Esta é a parcela ${mc.parcelaAtual} de ${mc.parcelas}. ` : '';
+        const ate = mc.rep === 'parc' ? `, até a ${mc.parcelas}ª` : '';
+        // Igual ao sistema: a próxima nasce quando esta vira paga (ou quando já
+        // é lançada paga). Editar uma que já estava paga não gera outra.
+        const frase = !mc.paga ? `Quando esta for paga, a próxima entra sozinha no mês seguinte${ate}.` : !mc.id ? `Lançada já paga, a próxima entra no mês seguinte${ate}.` : '';
+        return parcela + frase;
+      })() : ''}</p>
+    </div>
+    <div class="mc-pe">
+      <span class="mc-proto">${ico('info', 'ico ico-s')}<span class="txt">Protótipo: não grava ·</span><button class="mc-link" data-mc="atual">Abrir no modal atual</button></span>
+      <span class="esp"></span>
+      <button class="btn btn-txt btn-p" data-mc="fechar">Cancelar</button>
+      <button class="btn btn-pri btn-p" data-mc="salvar">${ico('check')}Salvar<kbd>Ctrl ↵</kbd></button>
+    </div>`;
+  // A janela e o véu nascem uma vez, ao abrir; depois só o miolo troca. Trocar
+  // tudo a cada clique repetia a entrada (véu escurecendo, janela subindo) e
+  // parecia que o modal recarregava. A rolagem do corpo fica onde estava.
+  const janela = modalRaiz.querySelector('.mc');
+  if (primeira || !janela) {
+    modalRaiz.innerHTML = `<div class="mc-veu" data-mc="fechar"></div><div class="mc" role="dialog" aria-modal="true" aria-labelledby="mc-tit">${miolo}</div>`;
+  } else {
+    const rolagem = janela.querySelector('.mc-corpo')?.scrollTop || 0;
+    janela.innerHTML = miolo;
+    janela.querySelector('.mc-corpo').scrollTop = rolagem;
+  }
+  renderFlutua();
+  lucide.createIcons();
+  // Ao abrir, o foco vai para o título sem já abrir a lista de fornecedores por cima.
+  if (primeira) { mc.semAbrir = true; document.getElementById('mc-tit-in')?.focus(); mc.semAbrir = false; }
+  else if (voltaFoco) { mc.semAbrir = true; modalRaiz.querySelector(voltaFoco)?.focus(); mc.semAbrir = false; }
+}
+// Digitar não redesenha a janela (perderia o cursor): só o que depende do texto.
+function aoDigitar(el) {
+  const tipo = el.dataset.mcIn;
+  if (tipo === 'valor') { mc.valor = lerCentavos(el.value); el.value = valorTexto(mc.valor); if (mc.valor) limparErro('valor', el); }
+  else if (tipo === 'desc') { mc.desc = el.value; mc.pop = 'lista'; mc.ativo = 0; if (mc.desc.trim()) limparErro('titulo', el); trocarLista(el); }
+  else if (tipo === 'forn') { mc.buscaForn = el.value; mc.pop = 'lista'; mc.ativo = 0; trocarLista(el); }
+  document.getElementById('mc-ultima').innerHTML = linhaUltima(); lucide.createIcons();
+}
+function limparErro(campo, el) {
+  if (!mc.erros[campo]) return;
+  mc.erros[campo] = false; el.classList.remove('erro'); document.getElementById('mc-erro-' + campo)?.remove();
+}
+function trocarLista() { renderFlutua(); lucide.createIcons(); }
+// Listas e calendário vivem numa camada à parte, presa à tela (position: fixed)
+// e posta junto do campo que os abriu. Dentro do corpo da janela eles a faziam
+// crescer ou ganhar barra de rolagem; aqui flutuam por cima, como um popover.
+function renderFlutua() {
+  modalRaiz.querySelector('.mc-flutua')?.remove();
+  if (!mc?.pop) return;
+  const html = mc.pop === 'cal' ? calendario() : listaTitulo();
+  if (!html) return;
+  const camada = document.createElement('div'); camada.className = 'mc-flutua'; camada.innerHTML = html;
+  modalRaiz.appendChild(camada);
+  posicionarFlutua();
+}
+function posicionarFlutua() {
+  const camada = modalRaiz.querySelector('.mc-flutua'); if (!camada || !mc) return;
+  const ancora = mc.pop === 'cal' ? modalRaiz.querySelector('[data-mc="cal"]') : document.getElementById('mc-tit-in');
+  if (!ancora) return;
+  const r = ancora.getBoundingClientRect();
+  if (mc.pop === 'lista') camada.style.width = r.width + 'px';
+  const h = camada.offsetHeight, w = camada.offsetWidth;
+  // embaixo do campo; sem espaço embaixo, em cima
+  const top = r.bottom + 6 + h > innerHeight - 8 && r.top - 6 - h > 8 ? r.top - 6 - h : Math.min(r.bottom + 6, innerHeight - h - 8);
+  camada.style.top = Math.max(8, top) + 'px';
+  camada.style.left = Math.max(8, Math.min(r.left, innerWidth - w - 8)) + 'px';
+}
+modalRaiz.addEventListener('scroll', posicionarFlutua, true);
+addEventListener('resize', posicionarFlutua);
+function usarSugestao(c) {
+  mc.desc = c.descricao; mc.cat = c.categoria || 'Despesa'; mc.fornId = c.fornecedorId || null;
+  if (!mc.valor && c.valor) mc.valor = c.valor;
+  if (c.recorrente) { mc.rep = c.parcelas ? 'parc' : 'mes'; if (c.parcelas) mc.parcelas = c.parcelas; }
+  mc.pop = null; renderModalConta(); document.getElementById('mc-valor')?.focus();
+}
+function rascunhoParaSistema() {
+  const forn = FORNS.find(f => f.id === mc.fornId);
+  return { descricao: PEDE_FORN.includes(mc.cat) ? (forn?.nome || '') : mc.desc.trim(), valor: mc.valor, vencimento: mc.venc, status: mc.paga ? 'Pago' : 'Pendente', categoria: mc.cat,
+    fornecedor_id: PEDE_FORN.includes(mc.cat) ? mc.fornId : null, recorrente: mc.rep !== 'nao', recorrente_total_parcelas: mc.rep === 'parc' ? mc.parcelas : null };
+}
+function salvarModalConta() {
+  const pedeForn = PEDE_FORN.includes(mc.cat);
+  mc.erros = { titulo: pedeForn ? !mc.fornId : !mc.desc.trim(), valor: !mc.valor };
+  if (mc.erros.titulo || mc.erros.valor) { mc.pop = null; renderModalConta(); document.querySelector(mc.erros.titulo ? '#mc-tit-in' : '#mc-valor')?.focus(); return; }
+  const r = rascunhoParaSistema();
+  const dados = { descricao: r.descricao, valor: r.valor, vencimento: r.vencimento, status: r.status, categoria: r.categoria, fornecedorId: r.fornecedor_id, fornecedor: pedeForn ? r.descricao : '', recorrente: r.recorrente, parcelas: r.recorrente_total_parcelas, parcela: mc.parcelaAtual || 1 };
+  let conta = mc.id ? porId(mc.id) : null;
+  if (conta) Object.assign(conta, dados);
+  else { conta = { id: Math.max(1e9, ...CONTAS.map(c => c.id)) + 1, ...dados }; CONTAS.push(conta); }
+  const novo = !mc.id;
+  fecharModalConta();
+  if (conta.vencimento && est.mes && mesDe(conta.vencimento) !== est.mes) est.mes = mesDe(conta.vencimento);
+  if (paga(conta)) est.verPagas = true;
+  render(); renderGaveta();
+  const lin = document.querySelector(`.lin[data-conta="${conta.id}"]`);
+  if (lin) { lin.scrollIntoView({ block: 'center', behavior: 'smooth' }); lin.classList.add('chegou'); }
+  avisoProto(`${novo ? 'Conta lançada' : 'Conta atualizada'} (protótipo: não grava)`);
+}
+function acaoModal(a, el) {
+  if (a === 'fechar') return fecharModalConta();
+  if (a === 'salvar') return salvarModalConta();
+  if (a === 'cal') { mc.pop = mc.pop === 'cal' ? null : 'cal'; mc.calMes = (mc.venc || HOJE).slice(0, 7); return renderModalConta(); }
+  if (a === 'paga') { mc.paga = !mc.paga; return renderModalConta(); }
+  if (a === 'menos') { mc.parcelas = Math.max(2, mc.parcelas - 1); return renderModalConta(); }
+  if (a === 'mais') { mc.parcelas = Math.min(120, mc.parcelas + 1); return renderModalConta(); }
+  if (a === 'usar-ultima') { mc.valor = +el.dataset.v; mc.erros.valor = false; return renderModalConta(); }
+  if (a === 'atual') {
+    // Leva o rascunho para o modal de hoje, que grava. Conta lançada só aqui no
+    // protótipo (id local) vai como conta nova.
+    const real = mc.id && mc.id < 1e9;
+    paraPai({ tipo: real ? 'editar-conta' : 'nova-conta', id: real ? mc.id : undefined, rascunho: rascunhoParaSistema() });
+    return fecharModalConta();
+  }
+}
+modalRaiz.addEventListener('click', e => {
+  const t = e.target;
+  const b = t.closest('[data-mc]'); if (b) { e.preventDefault(); return acaoModal(b.dataset.mc, b); }
+  const c = t.closest('[data-mc-cat]');
+  if (c) { if (mc.cat !== c.dataset.mcCat) { mc.cat = c.dataset.mcCat; mc.fornId = null; mc.buscaForn = undefined; if (PEDE_FORN.includes(mc.cat)) mc.desc = ''; mc.pop = null; mc.erros.titulo = false; renderModalConta(); focoSemAbrir(); } return; }
+  const rp = t.closest('[data-mc-rep]'); if (rp) { mc.rep = rp.dataset.mcRep; return renderModalConta(); }
+  const d = t.closest('[data-mc-dia]'); if (d) { mc.venc = d.dataset.mcDia; mc.pop = null; renderModalConta(); return document.querySelector('[data-mc="cal"]')?.focus(); }
+  const cm = t.closest('[data-mc-cal]'); if (cm) { mc.calMes = somarMes(mc.calMes, +cm.dataset.mcCal); return renderModalConta(); }
+  const sg = t.closest('[data-mc-sug]'); if (sg) return usarSugestao(porId(+sg.dataset.mcSug));
+  const fo = t.closest('[data-mc-forn]');
+  if (fo) { mc.fornId = +fo.dataset.mcForn; mc.buscaForn = undefined; mc.pop = null; mc.erros.titulo = false; renderModalConta(); return document.getElementById('mc-valor')?.focus(); }
+  // clique fora de uma lista aberta fecha a lista
+  if (mc?.pop && !t.closest('.mc-lista, .cal, [data-mc-in]')) { mc.pop = null; mc.buscaForn = undefined; renderModalConta(); }
+});
+modalRaiz.addEventListener('input', e => { if (e.target.dataset.mcIn) aoDigitar(e.target); });
+modalRaiz.addEventListener('focusin', e => {
+  if (e.target.dataset.mcIn === 'forn' && mc.pop !== 'lista' && !mc.semAbrir) { mc.pop = 'lista'; mc.buscaForn = ''; e.target.value = ''; trocarLista(e.target); }
+});
+document.addEventListener('keydown', e => {
+  if (!mc) return;
+  // stopImmediatePropagation: o teclado da página escuta no mesmo lugar, e o Esc
+  // que fecha o modal não pode chegar lá e fechar também a gaveta de trás.
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); e.stopImmediatePropagation(); return salvarModalConta(); }
+  if (e.key === 'Escape') { e.preventDefault(); e.stopImmediatePropagation(); if (mc.pop) { mc.pop = null; mc.buscaForn = undefined; renderModalConta(); return document.getElementById('mc-tit-in')?.focus(); } return fecharModalConta(); }
+  // categoria: ← → trocam, como num grupo de rádio
+  const c = e.target.closest('[data-mc-cat]');
+  if (c && (e.key === 'ArrowRight' || e.key === 'ArrowLeft')) {
+    const ks = Object.keys(CATEG), i = ks.indexOf(mc.cat), n = ks[(i + (e.key === 'ArrowRight' ? 1 : -1) + ks.length) % ks.length];
+    e.preventDefault(); mc.cat = n; mc.fornId = null; mc.buscaForn = undefined; if (PEDE_FORN.includes(n)) mc.desc = ''; renderModalConta(); return document.querySelector(`[data-mc-cat="${n}"]`)?.focus();
+  }
+  // listas: ↑ ↓ andam, Enter escolhe
+  const lista = modalRaiz.querySelector('.mc-lista');
+  if (lista && e.target.dataset.mcIn && ['ArrowDown', 'ArrowUp', 'Enter'].includes(e.key)) {
+    const bs = [...lista.querySelectorAll('button')]; if (!bs.length) return;
+    e.preventDefault();
+    if (e.key === 'Enter') return bs[mc.ativo || 0]?.click();
+    mc.ativo = ((mc.ativo || 0) + (e.key === 'ArrowDown' ? 1 : -1) + bs.length) % bs.length;
+    bs.forEach((b, i) => b.classList.toggle('ativo', i === mc.ativo)); bs[mc.ativo].scrollIntoView({ block: 'nearest' });
+  }
+});
+
+/* ===== troca de tema (a mesma do sistema) ===== */
+function trocarTema(escuro, origem, aplicar) {
+  const raiz = document.documentElement;
+  const trocar = () => { raiz.classList.toggle('dark', escuro); aplicar?.(); };
+  if (!document.startViewTransition) return trocar();
+  const r = origem?.getBoundingClientRect();
+  const x = r ? r.left + r.width / 2 : innerWidth / 2, y = r ? r.top + r.height / 2 : innerHeight / 2;
+  const raio = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+  const reduzido = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  raiz.dataset.trocaTema = '';
+  const troca = document.startViewTransition(trocar);
+  let anim;
+  troca.ready.then(() => {
+    const circulo = [`circle(0px at ${x}px ${y}px)`, `circle(${raio}px at ${x}px ${y}px)`];
+    anim = raiz.animate(reduzido ? { opacity: escuro ? [0, 1] : [1, 0] } : { clipPath: escuro ? circulo : circulo.reverse() }, {
+      duration: reduzido ? 200 : escuro ? 600 : 450, easing: reduzido ? 'ease' : escuro ? 'cubic-bezier(.45,0,.2,1)' : 'cubic-bezier(.8,0,.55,1)',
+      fill: 'forwards', pseudoElement: escuro ? '::view-transition-new(root)' : '::view-transition-old(root)',
+    });
+  }).catch(() => {});
+  const fim = () => { anim?.cancel(); delete raiz.dataset.trocaTema; };
+  troca.finished.then(fim, fim);
+}
+
+/* ===== eventos ===== */
+function mudarMes(v) {
+  if (v === 'hoje') est.mes = HOJE.slice(0, 7);
+  else if (v === 'todos') est.mes = '';
+  else est.mes = somarMes(est.mes || HOJE.slice(0, 7), +v);
+  est.verPagas = false; render();
+}
+document.addEventListener('click', e => {
+  const t = e.target;
+  // Clique fora fecha o popover; no próprio botão que o abriu, só fecha.
+  if (popAberto && !t.closest('.pop')) { const a = popAberto.ancora; fecharPop(); if (a?.contains(t)) return; }
+  if (t.closest('#tema')) {
+    const bt = t.closest('#tema'), escuro = !document.documentElement.classList.contains('dark');
+    trocarTema(escuro, bt, () => { bt.innerHTML = `<i data-lucide="${escuro ? 'sun' : 'moon'}" class="ico ico-s"></i><span class="txt">${escuro ? 'Claro' : 'Escuro'}</span>`; lucide.createIcons(); });
+    return;
+  }
+  const ab = t.closest('[data-aba]'); if (ab) return trocarAba(ab.dataset.aba);
+  const gv = t.closest('[data-gv]');
+  if (gv) {
+    e.preventDefault();
+    const a = gv.dataset.gv;
+    if (a === 'fechar') return fecharGaveta();
+    if (est.aba !== 'pagar') { const m = MODULOS[est.aba], item = m.gaveta.porId(est.gaveta); return item && m.acao?.(a, item, gv); }
+    const c = porId(est.gaveta);
+    if (!c) return;
+    if (a === 'editar') return abrirModalConta(c);
+    if (a === 'pagar') return pagar(c, true);
+    if (a === 'copiar') { navigator.clipboard?.writeText([ddmm(c.vencimento), c.descricao, cat(c).label, reais(c.valor), c.status].join('\t')); return avisoProto('Linha copiada'); }
+  }
+  const tentar = t.closest('[data-tentar]'); if (tentar) return MODULOS[est.aba]?.carregar?.(true);
+  const rol = t.closest('[data-rolar]');
+  if (est.aba !== 'pagar') {
+    if (!rol) { MODULOS[est.aba].clique?.(t, e); return; }
+  } else {
+    const pg = t.closest('[data-pagar]');
+    if (pg) { e.stopPropagation(); return pagar(porId(+pg.dataset.pagar), false); }
+    const lin = t.closest('[data-conta]');
+    if (lin) return abrirGaveta(+lin.dataset.conta);
+    const m = t.closest('[data-mes]'); if (m) return mudarMes(m.dataset.mes);
+    const ch = t.closest('[data-cat]'); if (ch) { est.categoria = ch.dataset.cat; return render(); }
+    if (t.closest('[data-pagas]')) { est.verPagas = !est.verPagas; return render(); }
+    if (t.closest('[data-nova]')) return abrirModalConta(null);
+  }
+  if (rol) {
+    e.preventDefault();
+    if (est.aba === 'pagar' && rol.dataset.rolar === 'g-pagas' && !est.verPagas) { est.verPagas = true; render(); }
+    if (est.aba !== 'pagar') MODULOS[est.aba].antesDeRolar?.(rol.dataset.rolar);
+    const alvo = document.getElementById(rol.dataset.rolar) || document.getElementById('bloco-lista');
+    alvo.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+    if (alvo.classList.contains('grupo-rot')) { alvo.classList.remove('chegou'); void alvo.offsetWidth; alvo.classList.add('chegou'); }
+  }
+});
+document.addEventListener('input', e => { if (e.target.id === 'busca') { est.busca = e.target.value; render('#busca'); } });
+document.addEventListener('keydown', e => {
+  if (mc) return;   // com o modal aberto, o teclado é dele
+  if (popAberto && e.key === 'Escape') { e.preventDefault(); const a = popAberto.ancora; fecharPop(); return a?.focus(); }
+  if (est.gaveta != null && e.key === 'Escape') { e.preventDefault(); return fecharGaveta(); }
+  if (e.target.id === 'busca' && e.key === 'Escape') { est.busca = ''; render(); return; }
+  // Enter na linha (ou num item clicável do ranking) faz o mesmo que o clique.
+  const lin = e.target.closest?.('.lin, li[role="button"]');
+  if (lin && e.target === lin && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); lin.click(); return; }
+  if (e.target.closest('input')) return;
+  if (e.target.closest('.abas') && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
+    e.preventDefault(); const ids = ABAS.map(a => a[0]), i = ids.indexOf(est.aba);
+    trocarAba(ids[(i + (e.key === 'ArrowRight' ? 1 : -1) + ids.length) % ids.length]);
+    return abasEl.querySelector('.aba[aria-selected="true"]')?.focus();
+  }
+  if (e.key === '/') { e.preventDefault(); document.getElementById('busca')?.focus(); return; }
+  if (est.aba !== 'pagar') return MODULOS[est.aba].tecla?.(e);
+  if (e.key.toLowerCase() === 'n' && !e.ctrlKey && !e.metaKey) { e.preventDefault(); abrirModalConta(null); }
+  else if (e.key === 'ArrowLeft' && est.gaveta == null) mudarMes(-1);
+  else if (e.key === 'ArrowRight' && est.gaveta == null) mudarMes(1);
+});
+
+// As respostas do banco chegam por mensagem da página.
+addEventListener('message', e => {
+  if (e.source !== window.parent) return;
+  const msg = e.data || {};
+  Object.values(MODULOS).forEach(m => m.aoReceber?.(msg));
+});
+
+/* ===== peças comuns às abas novas ===== */
+// Ranking com barra: uma cor só, o comprimento é o dado. Clicar filtra.
+function ranking(itens, attr, atual) {
+  itens = itens.filter(x => x.v > 0);
+  if (!itens.length) return '<div class="vazio">Nada aqui.</div>';
+  const max = Math.max(1, ...itens.map(x => x.v));
+  return `<ul class="rank clica">${itens.map((x, i) => `<li data-${attr}="${esc(x.k)}" aria-pressed="${atual === x.k}" tabindex="0" role="button"><span class="cat-ico num" style="font-size:11.5px;font-weight:700">${i + 1}</span><span class="nome" title="${esc(x.nome)}">${esc(x.nome)}</span><span class="v num">${reais(x.v)}<small class="n-os">${x.sub}</small></span><span class="trilho"><i style="width:${Math.max(2, x.v / max * 100)}%"></i></span></li>`).join('')}</ul>`;
+}
+const copiar = (txt, aviso = 'Copiado') => { navigator.clipboard?.writeText(txt); avisoProto(aviso); };
+const somaPor = (l, f) => l.reduce((s, x) => s + (f(x) || 0), 0);
+const cabTela = (titulo, selos, dir = '') => `<div class="cab"><div><h1>${titulo}</h1><p class="sub">${selos.filter(Boolean).join('') || '<span>Nada atrasado.</span>'}</p></div>${dir ? `<div class="cab-dir">${dir}</div>` : ''}</div>`;
+const seloDe = (tom, icone, txt) => `<span class="selo ${tom}">${ico(icone)}${txt}</span>`;
+const casa = (txt, q) => !q || semAcento(txt).includes(q);
+const MAX_GRUPO = 25;
+
+/* ===== período (o mesmo seletor da tela de O.S.) ===== */
+// Cada aba que lê do banco guarda o seu período; escolher um busca de novo,
+// com o filtro feito lá. O mês inteiro (até o último dia) porque vencimento e
+// boleto também caem no futuro.
+const ultimoDia = iso => { const [a, m] = iso.split('-').map(Number); return isoDe(new Date(a, m, 0)); };
+const PERIODOS = [
+  { id: '', nome: 'Todo o período' },
+  { id: 'mes', nome: 'Este mês', de: () => HOJE.slice(0, 8) + '01', ate: () => ultimoDia(HOJE) },
+  { id: 'mespassado', nome: 'Mês passado', de: () => somarMes(HOJE.slice(0, 7), -1) + '-01', ate: () => ultimoDia(somarMes(HOJE.slice(0, 7), -1) + '-01') },
+  { id: '30', nome: 'Últimos 30 dias', de: () => somarDias(HOJE, -29), ate: () => HOJE },
+  { id: 'ano', nome: 'Este ano', de: () => HOJE.slice(0, 4) + '-01-01', ate: () => HOJE.slice(0, 4) + '-12-31' },
+];
+const periodoDe = id => { const x = PERIODOS.find(p => p.id === id); return x?.id ? { id, de: x.de(), ate: x.ate() } : { id: '', de: '', ate: '' }; };
+const comPeriodo = p => !!(p.de || p.ate);
+const dataCurta = iso => !iso ? '…' : iso.slice(0, 4) === HOJE.slice(0, 4) ? ddmm(iso) : `${ddmm(iso)}/${iso.slice(2, 4)}`;
+const rotuloPeriodo = p => { if (!comPeriodo(p)) return 'Todo o período'; const pre = PERIODOS.find(x => x.id && x.id === p.id); return pre ? pre.nome : `${dataCurta(p.de)} – ${dataCurta(p.ate)}`; };
+const botaoPeriodo = (p, dica) => `<button class="per ${comPeriodo(p) ? 'ativo' : ''}" data-periodo aria-haspopup="dialog" title="${esc(dica)}">${ico('calendar', 'ico ico-s')}<span>${esc(rotuloPeriodo(p))}</span>${ico('chevron-down', 'ico ico-s chev')}</button>`;
+
+let popAberto = null;
+function fecharPop() { popAberto?.el.remove(); popAberto = null; }
+function abrirPop(ancora, html) {
+  fecharPop();
+  const pop = document.createElement('div'); pop.className = 'pop'; pop.innerHTML = html; document.body.appendChild(pop);
+  const r = ancora.getBoundingClientRect();
+  pop.style.left = Math.max(8, Math.min(r.left, innerWidth - pop.offsetWidth - 8)) + 'px';
+  const topo = r.bottom + pop.offsetHeight + 6 > innerHeight && r.top > pop.offsetHeight + 6 ? r.top - pop.offsetHeight - 6 : r.bottom + 6;
+  pop.style.top = Math.max(8, Math.min(topo, innerHeight - pop.offsetHeight - 8)) + 'px';
+  pop.addEventListener('mousedown', e => e.preventDefault());
+  popAberto = { el: pop, ancora }; lucide.createIcons();
+  return pop;
+}
+addEventListener('scroll', e => { if (popAberto && !popAberto.el.contains(e.target)) fecharPop(); }, true);
+addEventListener('resize', () => fecharPop());
+// Setas desenhadas aqui: o calendário se redesenha a cada dia sob o mouse, e
+// chamar o lucide toda vez varreria a página inteira.
+const seta = d => `<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="${d}"/></svg>`;
+const SETA_E = seta('m15 18-6-6 6-6'), SETA_D = seta('m9 18 6-6-6-6');
+const SEM_CAL = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
+function calPeriodo(c, p) {
+  const y = c.base.getFullYear(), m = c.base.getMonth();
+  const cab = (passo, titulo, vista) => `<div class="pcal-cab"><button class="pcal-nav" data-nav="${-passo}" aria-label="Anterior">${SETA_E}</button>${vista ? `<button class="pcal-tit" data-vista="${vista}">${titulo}</button>` : `<span class="pcal-tit">${titulo}</span>`}<button class="pcal-nav" data-nav="${passo}" aria-label="Próximo">${SETA_D}</button></div>`;
+  if (c.vista === 'meses') return cab(12, y, 'anos') + `<div class="pcal-grade">${MESES.map((n, i) => `<button class="pcal-op ${i === m ? 'on' : ''}" data-pmes="${i}">${n.slice(0, 3)}</button>`).join('')}</div>`;
+  if (c.vista === 'anos') { const anos = Array.from({ length: 12 }, (_, i) => y - 5 + i);
+    return cab(144, `${anos[0]} – ${anos[11]}`) + `<div class="pcal-grade">${anos.map(a => `<button class="pcal-op ${a === y ? 'on' : ''}" data-pano="${a}">${a}</button>`).join('')}</div>`; }
+  // Com o início escolhido e o fim ainda não, a faixa acompanha o mouse (prévia).
+  const fim = p.ate || (p.de && c.hover && c.hover > p.de ? c.hover : '');
+  let cel = '';
+  for (let i = new Date(y, m, 1).getDay(); i > 0; i--) cel += '<span></span>';
+  for (let d = 1, n = new Date(y, m + 1, 0).getDate(); d <= n; d++) {
+    const iso = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    const cls = [iso === HOJE && 'hoje', iso === p.de && 'ini', iso === p.de && fim && fim !== p.de && 'com-fim', fim && iso === fim && 'fim', p.de && fim && iso > p.de && iso < fim && 'meio'].filter(Boolean).join(' ');
+    cel += `<button class="pd ${cls}" data-pdia="${iso}" aria-label="${d} de ${MESES[m]}"><b>${d}</b></button>`;
+  }
+  const dica = !p.de ? 'Escolha a data inicial' : !p.ate ? `De <b>${dataCurta(p.de)}</b> até…` : `<b>${dataCurta(p.de)}</b> – <b>${dataCurta(p.ate)}</b>`;
+  return cab(1, `${MESES[m][0].toUpperCase() + MESES[m].slice(1)} de ${y}`, 'meses')
+    + `<div class="pcal-sem">${SEM_CAL.map(s => `<span>${s}</span>`).join('')}</div>`
+    + `<div class="pcal-dias ${p.de && !p.ate && fim ? 'previa' : ''}">${cel}</div>`
+    + `<div class="pcal-pe"><span>${dica}</span>${p.de ? '<button class="pcal-limpar" data-plimpar>Limpar</button>' : ''}</div>`;
+}
+// Abre o seletor junto do botão. `aoEscolher` só é chamado com um período
+// pronto (atalho, intervalo completo ou limpar): escolher só o início não busca.
+function abrirPeriodo(anc, atual, aoEscolher) {
+  let sel = { ...atual };
+  // Abre no mês de hoje quando o período o inclui ("Este ano" não abre em dezembro).
+  const ref = sel.de && sel.ate && sel.de <= HOJE && HOJE <= sel.ate ? HOJE : sel.ate || sel.de || HOJE;
+  const c = { vista: 'dias', base: new Date(ref.slice(0, 7) + '-01T12:00:00'), hover: null };
+  const marca = on => on ? ico('check', 'ico ico-s ok') : '';
+  const atalhos = () => PERIODOS.map(x => { const on = x.id ? sel.id === x.id : !comPeriodo(sel); return `<button class="${on ? 'on' : ''}" data-p="${x.id}">${x.nome}${marca(on)}</button>`; }).join('');
+  const pop = abrirPop(anc, `<div class="per-pop"><div class="atalhos">${atalhos()}</div><div class="pcal">${calPeriodo(c, sel)}</div></div>`);
+  const desenhar = () => { pop.querySelector('.pcal').innerHTML = calPeriodo(c, sel); };
+  const escolher = p => { fecharPop(); aoEscolher(p); };
+  pop.addEventListener('click', e => {
+    // O clique redesenha o calendário e o alvo sai do documento: sem parar aqui,
+    // o clique "de fora" fecharia o popover.
+    e.stopPropagation();
+    const at = e.target.closest('[data-p]'); if (at) return escolher(periodoDe(at.dataset.p));
+    const nav = e.target.closest('[data-nav]'); if (nav) { c.base.setMonth(c.base.getMonth() + +nav.dataset.nav); return desenhar(); }
+    const vista = e.target.closest('[data-vista]'); if (vista) { c.vista = vista.dataset.vista; return desenhar(); }
+    const mes = e.target.closest('[data-pmes]'); if (mes) { c.base.setMonth(+mes.dataset.pmes); c.vista = 'dias'; return desenhar(); }
+    const ano = e.target.closest('[data-pano]'); if (ano) { c.base.setFullYear(+ano.dataset.pano); c.vista = 'meses'; return desenhar(); }
+    if (e.target.closest('[data-plimpar]')) return escolher(periodoDe(''));
+    const dia = e.target.closest('[data-pdia]'); if (!dia) return;
+    const iso = dia.dataset.pdia;
+    // Primeiro clique marca o início; o segundo, o fim (antes do início recomeça).
+    if (!sel.de || sel.ate || iso < sel.de) { sel = { id: 'livre', de: iso, ate: '' }; c.hover = null; pop.querySelector('.atalhos').innerHTML = atalhos(); lucide.createIcons(); return desenhar(); }
+    escolher({ id: 'livre', de: sel.de, ate: iso });
+  });
+  pop.addEventListener('mouseover', e => {
+    const d = e.target.closest('[data-pdia]')?.dataset.pdia || null;
+    if (d === c.hover || (!d && e.target.closest('.pcal-dias'))) return; c.hover = d;
+    if (sel.de && !sel.ate) desenhar();
+  });
+}
+// A linha logo abaixo da busca: o que ficou de fora do período, sem baixar.
+const notaPeriodo = (txt, alerta, acao) => `<div class="per-nota ${alerta ? 'alerta' : ''}">${ico(alerta ? 'alert-triangle' : 'info')}<span>${txt}</span>${acao ? `<button class="mc-link" data-per-todo>${acao}</button>` : ''}</div>`;
+
+/* ===== Contas a receber ===== */
+// Uma linha por O.S. que deve, já somada no banco (vista contas_receber):
+// total, recebido, em boleto (lançado e ainda não pago) e saldo (nem combinado).
+// Cada O.S. cai num grupo só, pelo que a pessoa precisa fazer com ela.
+(() => {
+  // Começa no ano: o que se cobra é recente, e uma dívida mais antiga não some —
+  // a linha de aviso conta quantas ficaram de fora e leva para o período todo.
+  const R = { lista: null, carregando: false, erro: null, pedido: 0, situacao: '', cliente: '', abertos: new Set(), periodo: periodoDe('ano'), total: 0, antes: 0 };
+  const ENTREGUE = ['Concluído', 'Finalizado'], PRONTA = ['Avisar Cliente', 'Retirada', 'Entrega'], ANTES = ['Aguardando Pagamento', 'Aguardando Retorno'];
+  const falta = o => o.saldo + o.boleto;
+  const grupoDe = o => o.saldo <= 0 ? 'boleto' : ENTREGUE.includes(o.status) ? 'entregue' : PRONTA.includes(o.status) ? 'pronta' : ANTES.includes(o.status) ? 'antes' : 'producao';
+  // A data que importa em cada grupo: quando foi entregue, quando ficou pronta,
+  // quando vence o boleto ou quando sai da produção.
+  const dataRef = o => ({ entregue: o.prazo || o.retirada, pronta: o.retirada || o.prazo, boleto: o.vence }[grupoDe(o)] ?? o.prazo);
+  const GRUPOS = [
+    { id: 'entregue', rot: 'Entregues sem pagar', icone: 'alert-triangle', tom: 'atraso', chip: 'Entregues', data: 'Concluída' },
+    { id: 'boleto', rot: 'Em boleto', icone: 'barcode', chip: 'Em boleto', data: 'Boleto vence' },
+    { id: 'pronta', rot: 'Prontas', icone: 'package-check', chip: 'Prontas', data: 'Pronta' },
+    { id: 'producao', rot: 'Na produção', icone: 'printer', chip: 'Na produção', data: 'Entrega' },
+    { id: 'antes', rot: 'Aguardando o cliente', icone: 'hourglass', chip: 'Aguardando', data: 'Prazo' },
+  ];
+  const chaveCli = o => o.clienteId ? 'c' + o.clienteId : 'n' + semAcento(o.cliente).trim();
+  const nomeCli = o => o.cliente || 'Sem cliente';
+  const vencido = o => o.boleto > 0 && o.vence && o.vence < HOJE;
+
+  function filtradas(comSituacao = true) {
+    const q = semAcento(est.busca.trim());
+    return (R.lista || []).filter(o => (!R.cliente || chaveCli(o) === R.cliente)
+      && (!comSituacao || !R.situacao || grupoDe(o) === R.situacao)
+      && (!q || casa(o.cliente, q) || String(o.id).includes(q) || casa(o.itens, q)));
+  }
+  function quando(o) {
+    const g = grupoDe(o);
+    if (g === 'boleto') {
+      if (!o.vence) return '<small class="boleto">boleto sem vencimento</small>';
+      const n = diasEntre(HOJE, o.vence);
+      return n < 0 ? `<small class="atraso">venceu há ${plural(-n, 'dia', 'dias')}</small>` : n === 0 ? '<small class="atraso">vence hoje</small>' : n === 1 ? '<small class="hoje">vence amanhã</small>' : `<small>vence ${ddmm(o.vence)}</small>`;
+    }
+    if (o.boleto > 0) return `<small class="boleto">+ ${reais(o.boleto)} em boleto</small>`;
+    return o.recebido > 0 ? `<small>de ${reais(o.total)}</small>` : '<small>nada pago</small>';
+  }
+  function linha(o) {
+    const g = grupoDe(o), ref = dataRef(o);
+    // Entregue sem pagar é dívida: sempre vermelho. Boleto segue o vencimento
+    // (hoje ou vencido vermelho, amanhã âmbar). Nas outras, a data é a de
+    // entrega: hoje vermelho, amanhã âmbar; antes da arte, nunca.
+    const tom = g === 'entregue' ? 'atraso' : g === 'boleto' ? tomVence(o.vence) : g === 'antes' ? '' : (ref && ref >= HOJE ? tomVence(ref) : '');
+    const st = g === 'entregue' || g === 'boleto' ? (o.status === 'Finalizado' ? 'Finalizada' : '') : o.status;
+    const sub = [`O.S. ${o.id}`, st ? `<span class="st">${esc(st)}</span>` : '', esc(o.itens)].filter(Boolean).join(' · ');
+    return `<li><div class="lin ${priDe(tom)} ${est.gaveta === o.id ? 'aberta' : ''}" data-os="${o.id}" tabindex="0" role="button" aria-label="O.S. ${o.id}, ${esc(nomeCli(o))}, ${reais(falta(o))}">
+      ${blocoData(ref, tom, GRUPOS.find(x => x.id === g).data)}
+      <span class="lin-txt"><span class="lin-tit"><span>${esc(nomeCli(o))}</span></span><span class="lin-sub">${sub}</span></span>
+      <span class="lin-dir"><span class="v num">${reais(g === 'boleto' ? o.boleto : o.saldo)}</span>${quando(o)}</span>
+    </div></li>`;
+  }
+  function blocoLista(l) {
+    const gs = GRUPOS.map(g => {
+      const itens = l.filter(o => grupoDe(o) === g.id).sort((a, b) => (dataRef(a) || '9').localeCompare(dataRef(b) || '9') || falta(b) - falta(a));
+      const todos = R.abertos.has(g.id) || itens.length <= MAX_GRUPO + 5;
+      const valor = somaPor(itens, o => g.id === 'boleto' ? o.boleto : o.saldo);
+      return { ...g, id: 'g-' + g.id, itensTodos: itens, itens: todos ? itens : itens.slice(0, MAX_GRUPO), tot: `${plural(itens.length, 'O.S.', 'O.S.')} · ${reais(valor)}`,
+        mais: todos ? '' : `<li><button class="grupo-rot pagas" data-mais="${g.id}" style="width:100%">${ico('chevrons-down')}Mostrar mais ${itens.length - MAX_GRUPO}</button></li>` };
+    }).filter(g => g.itensTodos.length);
+    const corpo = l.length ? listaEmGrupos(gs, linha) : `<div class="vazio">${ico(est.busca || R.cliente || R.situacao ? 'search' : 'check-circle-2')}${est.busca || R.cliente || R.situacao ? 'Nenhuma O.S. com esse filtro.' : 'Nada a receber. Tudo pago.'}</div>`;
+    return area('a-dados', 'list', 'O.S. a receber', corpo, plural(l.length, 'O.S.', 'O.S.'), 'bloco-receber')
+      + '<div class="dicas"><span><kbd>/</kbd> buscar</span><span>clique na O.S. para ver tudo</span><span>clique num cliente para filtrar</span></div>';
+  }
+  function blocoNumeros(l) {
+    const por = id => l.filter(o => grupoDe(o) === id);
+    const ent = por('entregue'), pro = por('pronta'), bol = l.filter(o => o.boleto > 0), venc = bol.filter(vencido);
+    const maisAntiga = ent.length ? Math.max(0, ...ent.map(o => dataRef(o) ? diasEntre(dataRef(o), HOJE) : 0)) : 0;
+    const prox = bol.filter(o => o.vence && o.vence >= HOJE).sort((a, b) => a.vence.localeCompare(b.vence))[0];
+    const tot = somaPor(l, falta);
+    return numeros([
+      celula({ alvo: 'bloco-receber', area: 'dados', icone: 'wallet', rot: 'A receber', val: dinheiro(tot), titulo: reais(tot), ctx: plural(l.length, 'O.S.', 'O.S.') }),
+      celula({ alvo: 'g-entregue', area: ent.length ? 'perigo' : 'dados', icone: 'alert-triangle', rot: 'Entregues sem pagar', val: dinheiro(somaPor(ent, o => o.saldo)), alerta: ent.length > 0,
+        ctx: ent.length ? `${plural(ent.length, 'O.S.', 'O.S.')} · até <b>${plural(maisAntiga, 'dia', 'dias')}</b>` : 'nenhuma' }),
+      celula({ alvo: 'g-pronta', area: 'itens', icone: 'package-check', rot: 'Prontas', val: dinheiro(somaPor(pro, o => o.saldo)), ctx: pro.length ? plural(pro.length, 'O.S.', 'O.S.') : 'nenhuma' }),
+      celula({ alvo: 'g-boleto', area: venc.length ? 'perigo' : 'obs', icone: 'barcode', rot: 'Em boleto', val: dinheiro(somaPor(bol, o => o.boleto)),
+        ctx: venc.length ? `<b>${plural(venc.length, 'vencido', 'vencidos')}</b>` : prox ? `próximo ${ddmm(prox.vence)}` : bol.length ? plural(bol.length, 'boleto', 'boletos') : 'nenhum' }),
+    ]);
+  }
+  function blocoClientes(l) {
+    const m = new Map();
+    l.forEach(o => { const k = chaveCli(o), x = m.get(k) || { k, nome: nomeCli(o), v: 0, n: 0 }; x.v += falta(o); x.n++; m.set(k, x); });
+    const top = [...m.values()].sort((a, b) => b.v - a.v).slice(0, 8).map(x => ({ ...x, sub: plural(x.n, 'O.S.', 'O.S.') }));
+    return area('a-dados', 'users', 'Quem mais deve', ranking(top, 'cli', R.cliente), R.cliente ? '<button class="mc-link" data-cli="">limpar</button>' : '');
+  }
+  function blocoNaEntrega(l) {
+    const x = l.filter(o => ['producao', 'antes'].includes(grupoDe(o)));
+    if (!x.length) return '';
+    return area('a-dados', 'calendar-clock', 'Entra na entrega', `<div class="prox"><b class="num">${reais(somaPor(x, o => o.saldo))}</b><span>${plural(x.length, 'O.S.', 'O.S.')} ainda na produção</span></div>`);
+  }
+
+  function detalhe(o) {
+    const g = grupoDe(o), f = falta(o);
+    const pct = v => o.total ? Math.max(0, v / o.total * 100) : 0;
+    const linhaData = (rot, iso, extra = '') => iso ? `<dt>${ico('calendar', 'ico ico-s')}${rot}</dt><dd>${dataLonga(iso)} ${extra}</dd>` : '';
+    const venceTxt = !o.vence ? '' : (() => { const n = diasEntre(HOJE, o.vence); return n < 0 ? `<span class="atraso">venceu há ${plural(-n, 'dia', 'dias')}</span>` : n === 0 ? '<span class="atraso">hoje</span>' : n === 1 ? '<span class="hoje">amanhã</span>' : `<span class="mudo">em ${plural(n, 'dia', 'dias')}</span>`; })();
+    const itens = o.itens ? o.itens.split(' · ') : [];
+    return `<div class="det">
+      <div class="det-cab">O.S. ${o.id}<span class="det-ferr"><button class="ib" data-gv="abrir" aria-label="Abrir O.S." title="Abrir O.S.">${ico('maximize-2', 'ico ico-s')}</button><button class="ib" data-gv="fechar" aria-label="Fechar" title="Fechar (Esc)">${ico('x', 'ico ico-s')}</button></span></div>
+      <div class="det-tit">${esc(nomeCli(o))}</div>
+      <div class="det-valor num"><small>R$</small>${brl(f)}</div>
+      <div class="compo" role="img" aria-label="Recebido ${reais(o.recebido)}, em boleto ${reais(o.boleto)}, falta ${reais(o.saldo)}">${o.recebido > 0 ? `<i class="rec" style="width:${pct(o.recebido)}%"></i>` : ''}${o.boleto > 0 ? `<i class="bol" style="width:${pct(o.boleto)}%"></i>` : ''}${o.saldo > 0 ? `<i class="falta" style="width:${pct(o.saldo)}%"></i>` : ''}</div>
+      <div class="compo-leg"><span><i style="background:var(--fin)"></i>Recebido <b>${reais(o.recebido)}</b></span>${o.boleto > 0 ? `<span><i style="background:var(--obs)"></i>Em boleto <b>${reais(o.boleto)}</b></span>` : ''}<span><i style="background:var(--perigo)"></i>Falta <b>${reais(o.saldo)}</b></span><span>de <b>${reais(o.total)}</b></span></div>
+      <dl class="dprops">
+        <dt>${ico('circle-dot', 'ico ico-s')}Situação</dt><dd>${esc(o.status)}${g === 'entregue' ? ' <span class="atraso">· sem pagar</span>' : ''}</dd>
+        ${linhaData('Pedido', o.pedido)}
+        ${linhaData(g === 'entregue' ? 'Concluída' : 'Entrega', o.prazo, g === 'entregue' && o.prazo ? `<span class="mudo">${haDias(o.prazo)}</span>` : '')}
+        ${linhaData('Retirada', o.retirada)}
+        ${o.boleto > 0 ? `<dt>${ico('barcode', 'ico ico-s')}Boleto</dt><dd>${o.vence ? `vence ${dataLonga(o.vence)} ${venceTxt}` : '<span class="mudo">sem vencimento</span>'}</dd>` : ''}
+        ${o.ultimo ? `<dt>${ico('check-circle-2', 'ico ico-s')}Último pag.</dt><dd>${dataLonga(o.ultimo)} <span class="mudo">${haDias(o.ultimo)}</span></dd>` : ''}
+        ${o.formas.length ? `<dt>${ico('credit-card', 'ico ico-s')}Formas</dt><dd>${o.formas.map(esc).join(', ')}</dd>` : ''}
+      </dl>
+      <div class="det-acoes">
+        <button class="btn btn-pri btn-p" data-gv="abrir">${ico('maximize-2')}Abrir O.S.</button>
+        <span class="esp"></span>
+        <button class="btn btn-txt btn-p" data-gv="copiar">${ico('copy')}Copiar linha</button>
+      </div>
+      <p class="det-nota">O pagamento se registra na O.S.</p>
+      ${itens.length ? `<section class="dsec a-itens"><div class="dsec-cab"><span class="area-ico">${ico('list', 'ico ico-s')}</span><h3>${plural(o.nItens, 'item', 'itens')}</h3></div><ul class="itens-l">${itens.map(i => `<li>${esc(i)}</li>`).join('')}${o.nItens > itens.length ? `<li class="mudo">+ ${o.nItens - itens.length}</li>` : ''}</ul></section>` : ''}
+    </div>`;
+  }
+
+  MODULOS.receber = {
+    gaveta: { porId: id => R.lista?.find(o => o.id === id), detalhe, rotulo: 'Conta a receber', attr: 'os' },
+    numero() {
+      if (!R.lista) return null;
+      const e = R.lista.filter(o => grupoDe(o) === 'entregue').length;
+      return e ? [e, true, plural(e, 'entregue sem pagar', 'entregues sem pagar')] : [R.lista.length, false, 'O.S. a receber'];
+    },
+    carregar(forcar) {
+      if ((R.lista || R.carregando) && !forcar) return;
+      R.carregando = true; R.erro = null; R.pedido = pedirAoBanco('pedir-receber', { de: R.periodo.de, ate: R.periodo.ate });
+      if (est.aba === 'receber') render();
+    },
+    aoReceber(msg) {
+      if (msg.pedido !== R.pedido || !['receber', 'receber-erro'].includes(msg.tipo)) return;
+      R.carregando = false;
+      if (msg.tipo === 'receber') { R.lista = msg.lista || []; R.total = msg.total ?? R.lista.length; R.antes = msg.antes || 0; } else R.erro = msg.erro;
+      if (est.aba === 'receber') { render(); renderGaveta(); } else renderAbas();
+    },
+    render() {
+      const todas = filtradas(false), l = filtradas();
+      const ent = (R.lista || []).filter(o => grupoDe(o) === 'entregue').length, venc = (R.lista || []).filter(vencido).length, hoje = (R.lista || []).filter(o => o.boleto > 0 && o.vence === HOJE).length;
+      const dir = `<button class="btn btn-sec btn-p" data-tentar="receber" ${R.carregando ? 'disabled' : ''} title="Ler de novo do banco">${ico('refresh-cw')}${R.carregando ? 'Lendo…' : 'Atualizar'}</button>`;
+      // O que ficou de fora: as O.S. a receber pedidas antes do período (só a
+      // contagem veio do banco) e, se passou do limite de uma leitura, o aviso.
+      const nota = !R.lista ? ''
+        : R.antes ? notaPeriodo(`Mais <b>${plural(R.antes, 'O.S.', 'O.S.')}</b> a receber de antes de ${dataCurta(R.periodo.de)}`, true, 'Ver todo o período')
+        : R.total > R.lista.length ? notaPeriodo(`Mostrando ${R.lista.length} de ${R.total} O.S. Escolha um período menor.`) : '';
+      tela.innerHTML = cabTela('Contas a receber', !R.lista ? ['<span>Lendo do banco…</span>'] : [
+          ent && seloDe('atraso', 'alert-triangle', plural(ent, 'entregue sem pagar', 'entregues sem pagar')),
+          venc && seloDe('atraso', 'barcode', plural(venc, 'boleto vencido', 'boletos vencidos')),
+          hoje && seloDe('atraso', 'clock', plural(hoje, 'boleto vence hoje', 'boletos vencem hoje')),
+        ], dir)
+        + `<div class="busca-linha">${buscaCampo('Buscar cliente, nº da O.S. ou item')}${botaoPeriodo(R.periodo, 'Filtrar pela data do pedido')}${chipsDe('sit', R.situacao, [['', 'Todas'], ...GRUPOS.map(g => [g.id, g.chip, g.icone])])}</div>`
+        + nota
+        + (R.erro ? faixaErro(R.erro, 'receber') : '')
+        + (!R.lista ? (R.erro ? '' : esqueleto()) : `<div class="${R.carregando ? 'esperando' : ''}">${blocoNumeros(todas)}<div class="grade"><div class="col">${blocoLista(l)}</div><div class="col">${blocoClientes(todas)}${blocoNaEntrega(todas)}</div></div></div>`);
+    },
+    clique(t) {
+      const per = t.closest('[data-periodo]');
+      if (per) return abrirPeriodo(per, R.periodo, p => { R.periodo = p; R.cliente = ''; MODULOS.receber.carregar(true); });
+      if (t.closest('[data-per-todo]')) { R.periodo = periodoDe(''); return MODULOS.receber.carregar(true); }
+      const os = t.closest('[data-os]'); if (os) return abrirGaveta(+os.dataset.os);
+      const s = t.closest('[data-sit]'); if (s) { R.situacao = s.dataset.sit; return render(); }
+      const c = t.closest('[data-cli]'); if (c) { R.cliente = R.cliente === c.dataset.cli ? '' : c.dataset.cli; return render(); }
+      const m = t.closest('[data-mais]'); if (m) { R.abertos.add(m.dataset.mais); return render(); }
+    },
+    acao(a, o) {
+      if (a === 'abrir') return paraPai({ tipo: 'abrir-os', id: o.id });
+      if (a === 'copiar') return copiar([`#${o.id}`, nomeCli(o), o.status, reais(o.total), reais(o.recebido), reais(o.boleto), reais(o.saldo)].join('\t'), 'Linha copiada');
+    },
+    antesDeRolar() { if (R.situacao) { R.situacao = ''; render(); } },
+  };
+})();
+
+/* ===== Boletos ===== */
+// Um registro por boleto (não por O.S.), lido do banco quando a aba abre e a
+// cada período escolhido (pelo vencimento). Os sem vencimento vêm sempre; dos
+// vencidos de antes do período vem só a contagem, para o aviso.
+(() => {
+  const B = { lista: null, carregando: false, erro: null, pedido: 0, verPagos: false, cliente: '', conf: null, abertos: new Set(), periodo: periodoDe('mes'), antes: 0 };
+  const pago = b => b.pago;
+  const vencido = b => !pago(b) && b.vence && b.vence < HOJE;
+  const faltaDado = b => !pago(b) && (!b.valor || !b.numero || !b.emissao || !b.cnpj);
+  const chaveCli = b => semAcento(b.cliente || 'sem cliente').trim();
+  function filtrados() {
+    const q = semAcento(est.busca.trim());
+    return (B.lista || []).filter(b => (!B.cliente || chaveCli(b) === B.cliente)
+      && (!q || casa(b.cliente, q) || String(b.os).includes(q) || casa(b.numero, q) || casa(b.cnpj, q)));
+  }
+  function quando(b) {
+    if (pago(b)) return `<small class="ok">pago${b.pagoEm ? ' ' + ddmm(b.pagoEm) : ''}</small>`;
+    if (!b.vence) return '<small>sem vencimento</small>';
+    const n = diasEntre(HOJE, b.vence);
+    return n < 0 ? `<small class="atraso">venceu há ${plural(-n, 'dia', 'dias')}</small>` : n === 0 ? '<small class="atraso">vence hoje</small>' : n === 1 ? '<small class="hoje">vence amanhã</small>' : `<small>em ${n} dias</small>`;
+  }
+  function linha(b) {
+    const tom = pago(b) ? '' : tomVence(b.vence);
+    const sub = [`O.S. ${b.os}`, b.numero ? `nº ${esc(b.numero)}` : '<span class="st">sem número</span>', b.banco ? esc(b.banco) : '', b.parcelas > 1 ? `${b.parcelas}x` : ''].filter(Boolean).join(' · ');
+    return `<li><div class="lin ${pago(b) ? 'paga' : priDe(tom)} ${est.gaveta === b.id ? 'aberta' : ''}" data-bol="${b.id}" tabindex="0" role="button" aria-label="Boleto da O.S. ${b.os}, ${esc(b.cliente)}, ${reais(b.valor)}">
+      ${blocoData(b.vence, tom, 'Vencimento')}
+      <span class="lin-txt"><span class="lin-tit"><span>${esc(b.cliente || 'Sem cliente')}</span>${b.protesto ? '<span class="selo atraso" style="flex-shrink:0">protesto</span>' : ''}</span><span class="lin-sub">${sub}</span></span>
+      <span class="lin-dir"><span class="v num">${b.valor ? reais(b.valor) : "<small>a definir</small>"}</span>${quando(b)}</span>
+      <span class="fls"><button class="fl concluir ${B.conf === b.id ? 'conf' : ''}" data-bol-pagar="${b.id}" aria-label="Marcar boleto como pago" title="${B.conf === b.id ? 'Clique de novo para confirmar' : 'Marcar boleto como pago'}">${B.conf === b.id ? 'Pago?' : ico('check-circle-2', 'ico')}</button></span>
+    </div></li>`;
+  }
+  function grupos(l) {
+    const abertos = l.filter(b => !pago(b)).sort((a, b) => (a.vence || '9').localeCompare(b.vence || '9'));
+    const fim7 = somarDias(HOJE, 7), amanha = somarDias(HOJE, 1);
+    return [
+      { id: 'b-vencidos', tom: 'atraso', icone: 'alert-triangle', rot: 'Vencidos', itens: abertos.filter(vencido) },
+      { id: 'b-hoje', tom: 'atraso', icone: 'clock', rot: 'Vencem hoje', itens: abertos.filter(b => b.vence === HOJE) },
+      { id: 'b-amanha', tom: 'hoje', icone: 'calendar', rot: 'Vencem amanhã', itens: abertos.filter(b => b.vence === amanha) },
+      { id: 'b-semana', icone: 'calendar-range', rot: 'Próximos 7 dias', itens: abertos.filter(b => b.vence > amanha && b.vence <= fim7) },
+      { id: 'b-depois', icone: 'calendar-days', rot: 'Mais à frente', itens: abertos.filter(b => b.vence > fim7) },
+      { id: 'b-sem', icone: 'calendar-off', rot: 'Sem vencimento', itens: abertos.filter(b => !b.vence) },
+    ].filter(g => g.itens.length).map(g => {
+      const todos = B.abertos.has(g.id) || g.itens.length <= MAX_GRUPO + 5;
+      return { ...g, tot: `${plural(g.itens.length, 'boleto', 'boletos')} · ${reais(somaPor(g.itens, b => b.valor))}`,
+        mais: todos ? '' : `<li><button class="grupo-rot pagas" data-mais="${g.id}" style="width:100%">${ico('chevrons-down')}Mostrar mais ${g.itens.length - MAX_GRUPO}</button></li>`,
+        itens: todos ? g.itens : g.itens.slice(0, MAX_GRUPO) };
+    });
+  }
+  function blocoLista(l) {
+    const gs = grupos(l), pagos = l.filter(pago).sort((a, b) => (b.pagoEm || '').localeCompare(a.pagoEm || ''));
+    const filtro = est.busca || B.cliente;
+    const corpo = !l.length ? `<div class="vazio">${ico('search')}${filtro ? 'Nenhum boleto com esse filtro.' : 'Nenhum boleto em aberto.'}</div>`
+      : listaEmGrupos(gs, linha).replace(/<\/ul>$/, '')
+        + (!gs.length ? `<li><div class="vazio">${ico('check-circle-2')}Nenhum boleto em aberto${filtro ? ' com esse filtro' : ''}.</div></li>` : '')
+        + (pagos.length ? `<li class="grupo-rot pagas" id="b-pagos" data-pagos aria-expanded="${B.verPagos}">${ico('check-circle-2')}Pagos${B.verPagos ? '' : ' · clique para ver'}<span class="tot num">${plural(pagos.length, 'boleto', 'boletos')} · ${reais(somaPor(pagos, b => b.valor))}</span>${ico('chevron-down', 'ico ico-s chev')}</li>${B.verPagos ? pagos.map(linha).join('') : ''}` : '')
+        + '</ul>';
+    return area('a-dados', 'barcode', 'Boletos', corpo, plural(l.filter(b => !pago(b)).length, 'em aberto', 'em aberto'), 'bloco-boletos')
+      + '<div class="dicas"><span><kbd>/</kbd> buscar</span><span>clique no boleto para ver tudo</span></div>';
+  }
+  function blocoNumeros(l) {
+    const ab = l.filter(b => !pago(b)), venc = ab.filter(vencido), prox = ab.filter(b => b.vence >= HOJE && b.vence <= somarDias(HOJE, 7)), pagos = l.filter(pago);
+    const maisAntigo = venc.length ? Math.max(...venc.map(b => diasEntre(b.vence, HOJE))) : 0;
+    return numeros([
+      celula({ alvo: 'bloco-boletos', area: 'dados', icone: 'barcode', rot: 'Em aberto', val: dinheiro(somaPor(ab, b => b.valor)), ctx: ab.length ? plural(ab.length, 'boleto', 'boletos') : 'nenhum' }),
+      celula({ alvo: 'b-vencidos', area: venc.length ? 'perigo' : 'dados', icone: 'alert-triangle', rot: 'Vencidos', val: dinheiro(somaPor(venc, b => b.valor)), alerta: venc.length > 0,
+        ctx: venc.length ? `${plural(venc.length, 'boleto', 'boletos')} · até <b>${plural(maisAntigo, 'dia', 'dias')}</b>` : 'nenhum' }),
+      celula({ alvo: prox.length ? (prox.some(b => b.vence === HOJE) ? 'b-hoje' : 'b-semana') : 'bloco-boletos', area: 'obs', icone: 'calendar-clock', rot: 'Em 7 dias', val: dinheiro(somaPor(prox, b => b.valor)), ctx: prox.length ? plural(prox.length, 'boleto', 'boletos') : 'nenhum' }),
+      celula({ alvo: 'b-pagos', area: 'fin', icone: 'check-circle-2', rot: 'Pagos', val: dinheiro(somaPor(pagos, b => b.valor)), ctx: pagos.length ? plural(pagos.length, 'boleto', 'boletos') : 'nenhum' }),
+    ]);
+  }
+  function blocoFaltando(l) {
+    const f = l.filter(faltaDado);
+    if (!f.length) return area('a-fin', 'check-circle-2', 'Dados dos boletos', `<div class="vazio">${ico('check-circle-2')}Todos com valor, número, emissão e CNPJ.</div>`);
+    const falta = b => [!b.valor && 'valor', !b.numero && 'número', !b.emissao && 'emissão', !b.cnpj && 'CNPJ'].filter(Boolean).join(', ');
+    return area('a-obs', 'clipboard-list', 'Faltando dados', `<ul class="lista">${f.slice(0, 6).map(b => `<li><div class="lin" data-bol="${b.id}" tabindex="0" role="button"><span class="lin-txt"><span class="lin-tit"><span>${esc(b.cliente || 'Sem cliente')}</span></span><span class="lin-sub">O.S. ${b.os} · sem ${falta(b)}</span></span></div></li>`).join('')}</ul>`, plural(f.length, 'boleto', 'boletos'));
+  }
+  function blocoClientes(l) {
+    const m = new Map();
+    l.filter(b => !pago(b)).forEach(b => { const k = chaveCli(b), x = m.get(k) || { k, nome: b.cliente || 'Sem cliente', v: 0, n: 0 }; x.v += b.valor; x.n++; m.set(k, x); });
+    // Boleto ainda sem valor não entra: sem nenhum com valor, o quadro some.
+    const top = [...m.values()].filter(x => x.v > 0).sort((a, b) => b.v - a.v).slice(0, 6).map(x => ({ ...x, sub: plural(x.n, 'boleto', 'boletos') }));
+    return top.length ? area('a-dados', 'users', 'Por cliente', ranking(top, 'cli', B.cliente), B.cliente ? '<button class="mc-link" data-cli="">limpar</button>' : '') : '';
+  }
+  function detalhe(b) {
+    const conf = B.conf === b.id;
+    const venc = !b.vence ? '<span class="mudo">sem vencimento</span>' : (() => { const n = diasEntre(HOJE, b.vence); return `${dataLonga(b.vence)} ${pago(b) ? '' : n < 0 ? `<span class="atraso">venceu há ${plural(-n, 'dia', 'dias')}</span>` : n === 0 ? '<span class="atraso">hoje</span>' : n === 1 ? '<span class="hoje">amanhã</span>' : `<span class="mudo">em ${plural(n, 'dia', 'dias')}</span>`}`; })();
+    const ou = (v, txt = 'não informado') => v ? esc(v) : `<span class="mudo">${txt}</span>`;
+    return `<div class="det">
+      <div class="det-cab">Boleto · O.S. ${b.os}<span class="det-ferr"><button class="ib" data-gv="abrir" aria-label="Abrir O.S." title="Abrir O.S.">${ico('maximize-2', 'ico ico-s')}</button><button class="ib" data-gv="fechar" aria-label="Fechar" title="Fechar (Esc)">${ico('x', 'ico ico-s')}</button></span></div>
+      <div class="det-tit">${esc(b.cliente || 'Sem cliente')}</div>
+      <div class="det-valor num"><small>R$</small>${brl(b.valor)}</div>
+      <dl class="dprops">
+        <dt>${ico('calendar', 'ico ico-s')}Vencimento</dt><dd>${venc}</dd>
+        <dt>${ico(pago(b) ? 'check-circle-2' : 'circle', 'ico ico-s')}Situação</dt><dd>${pago(b) ? `<span class="ok">Pago${b.pagoEm ? ' em ' + dataLonga(b.pagoEm) : ''}</span>` : 'Em aberto'}</dd>
+        <dt>${ico('hash', 'ico ico-s')}Número</dt><dd>${ou(b.numero)}${b.numero ? `<button class="ib" data-gv="copiar-num" aria-label="Copiar número" title="Copiar">${ico('copy', 'ico ico-s')}</button>` : ''}</dd>
+        <dt>${ico('file-text', 'ico ico-s')}Emissão</dt><dd>${b.emissao ? dataLonga(b.emissao) : ou('')}</dd>
+        <dt>${ico('building-2', 'ico ico-s')}CNPJ</dt><dd>${ou(b.cnpj)}</dd>
+        <dt>${ico('landmark', 'ico ico-s')}Banco</dt><dd>${ou(b.banco)}${b.parcelas > 1 ? ` <span class="mudo">· ${b.parcelas}x</span>` : ''}</dd>
+        <dt>${ico('gavel', 'ico ico-s')}Protesto</dt><dd>${b.protesto ? '<span class="atraso">Sim</span>' : '<span class="mudo">Não</span>'}</dd>
+        <dt>${ico('circle-dot', 'ico ico-s')}O.S.</dt><dd>${esc(b.status)} <span class="mudo">· total ${reais(b.totalOS)}</span></dd>
+      </dl>
+      <div class="det-acoes">
+        ${pago(b) ? '' : `<button class="btn btn-ok btn-p ${conf ? 'conf' : ''}" data-gv="pagar">${ico('check-circle-2')}${conf ? 'Clique de novo para confirmar' : 'Marcar como pago'}</button>`}
+        <button class="btn btn-sec btn-p" data-gv="abrir">${ico('maximize-2')}Abrir O.S.</button>
+        <span class="esp"></span>
+        <button class="btn btn-txt btn-p" data-gv="copiar">${ico('copy')}Copiar linha</button>
+      </div>
+    </div>`;
+  }
+  MODULOS.boletos = {
+    gaveta: { porId: id => B.lista?.find(b => b.id === id), detalhe, rotulo: 'Boleto', attr: 'bol' },
+    numero() { if (!B.lista) return null; const v = B.lista.filter(vencido).length; return v ? [v, true, plural(v, 'boleto vencido', 'boletos vencidos')] : null; },
+    carregar(forcar) {
+      if ((B.lista || B.carregando) && !forcar) return;
+      B.carregando = true; B.erro = null; B.pedido = pedirAoBanco('pedir-boletos', { de: B.periodo.de, ate: B.periodo.ate });
+      if (est.aba === 'boletos') render();
+    },
+    aoReceber(msg) {
+      if (msg.pedido !== B.pedido || !['boletos', 'boletos-erro'].includes(msg.tipo)) return;
+      B.carregando = false;
+      if (msg.tipo === 'boletos') { B.lista = msg.lista || []; B.antes = msg.vencidosAntes || 0; } else B.erro = msg.erro;
+      if (est.aba === 'boletos') { render(); renderGaveta(); } else renderAbas();
+    },
+    render() {
+      const l = filtrados(), todos = B.lista || [];
+      // Os vencidos de antes do período também contam no aviso do topo.
+      const venc = todos.filter(vencido).length + (B.antes || 0), hoje = todos.filter(b => !pago(b) && b.vence === HOJE).length;
+      const dir = `<button class="btn btn-sec btn-p" data-tentar="boletos" ${B.carregando ? 'disabled' : ''} title="Ler de novo do banco">${ico('refresh-cw')}${B.carregando ? 'Lendo…' : 'Atualizar'}</button>`;
+      tela.innerHTML = cabTela('Boletos', B.lista ? [venc && seloDe('atraso', 'alert-triangle', plural(venc, 'vencido', 'vencidos')), hoje && seloDe('atraso', 'clock', plural(hoje, 'vence hoje', 'vencem hoje'))] : ['<span>Lendo do banco…</span>'], dir)
+        + `<div class="busca-linha">${buscaCampo('Buscar cliente, nº da O.S., do boleto ou CNPJ')}${botaoPeriodo(B.periodo, 'Filtrar pelo vencimento')}</div>`
+        + (B.lista && B.antes ? notaPeriodo(`Mais <b>${plural(B.antes, 'boleto vencido', 'boletos vencidos')}</b> de antes de ${dataCurta(B.periodo.de)}`, true, 'Ver todo o período') : '')
+        + (B.erro ? faixaErro(B.erro, 'boletos') : '')
+        + (!B.lista ? (B.erro ? '' : esqueleto()) : `<div class="${B.carregando ? 'esperando' : ''}">${blocoNumeros(l)}<div class="grade"><div class="col">${blocoLista(l)}</div><div class="col">${blocoFaltando(l)}${blocoClientes(l)}</div></div></div>`);
+    },
+    clique(t) {
+      const per = t.closest('[data-periodo]');
+      if (per) return abrirPeriodo(per, B.periodo, p => { B.periodo = p; B.cliente = ''; MODULOS.boletos.carregar(true); });
+      if (t.closest('[data-per-todo]')) { B.periodo = periodoDe(''); return MODULOS.boletos.carregar(true); }
+      // O botão de marcar pago vem antes: ele fica dentro da linha, que abre a gaveta.
+      const bp = t.closest('[data-bol-pagar]'); if (bp) { const b = B.lista?.find(x => x.id === +bp.dataset.bolPagar); return b && MODULOS.boletos.acao('pagar', b); }
+      const b = t.closest('[data-bol]'); if (b) return abrirGaveta(+b.dataset.bol);
+      if (t.closest('[data-pagos]')) { B.verPagos = !B.verPagos; return render(); }
+      const c = t.closest('[data-cli]'); if (c) { B.cliente = B.cliente === c.dataset.cli ? '' : c.dataset.cli; return render(); }
+      const m = t.closest('[data-mais]'); if (m) { B.abertos.add(m.dataset.mais); return render(); }
+    },
+    acao(a, b) {
+      if (a === 'abrir') return paraPai({ tipo: 'abrir-os', id: b.os });
+      if (a === 'copiar-num') return copiar(b.numero, 'Número copiado');
+      if (a === 'copiar') return copiar([`#${b.os}`, b.cliente, b.numero || '', b.cnpj || '', reais(b.valor), ddmm(b.vence), pago(b) ? 'Pago' : 'Em aberto'].join('\t'), 'Linha copiada');
+      if (a === 'pagar') {
+        if (B.conf !== b.id) { B.conf = b.id; render(); return renderGaveta(); }
+        b.pago = true; b.pagoEm = HOJE; B.conf = null; render(); renderGaveta();
+        return avisoProto('Boleto marcado como pago (protótipo: não grava)');
+      }
+    },
+    antesDeRolar(id) { if (id === 'b-pagos' && !B.verPagos) { B.verPagos = true; render(); } },
+  };
+})();
+
+/* ===== Faturamento ===== */
+// As empresas que podem comprar faturado. Já estão na memória do sistema.
+(() => {
+  const F = { lista: DADOS.empresas || [], filtro: '' };
+  const SIT = {
+    'Em Análise': { id: 'f-analise', rot: 'Em análise', icone: 'hourglass', tom: 'hoje', selo: 'hoje' },
+    'Aprovado': { id: 'f-aprovadas', rot: 'Aprovadas', icone: 'check-circle-2', selo: 'ok' },
+    'Bloqueado': { id: 'f-bloqueadas', rot: 'Bloqueadas', icone: 'ban', tom: 'atraso', selo: 'atraso' },
+  };
+  const sit = e => SIT[e.status] || { id: 'f-outras', rot: e.status || 'Sem situação', icone: 'circle', selo: '' };
+  const iniciais = n => String(n || '?').trim().split(/\s+/).slice(0, 2).map(p => p[0]).join('').toUpperCase();
+  function filtradas() {
+    const q = semAcento(est.busca.trim()), qd = est.busca.replace(/\D/g, '');
+    return F.lista.filter(e => (!F.filtro || e.status === F.filtro) && (!q || casa(e.nome, q) || (qd && String(e.cnpj || '').replace(/\D/g, '').includes(qd)) || casa(e.obs, q)));
+  }
+  function linha(e) {
+    const s = sit(e);
+    return `<li><div class="lin ${est.gaveta === e.id ? 'aberta' : ''}" data-emp="${e.id}" tabindex="0" role="button" aria-label="${esc(e.nome)}, ${esc(s.rot)}">
+      <span class="diaf"><b style="font-size:13px">${esc(iniciais(e.nome))}</b></span>
+      <span class="lin-txt"><span class="lin-tit"><span>${esc(e.nome)}</span></span><span class="lin-sub">${[e.cnpj ? esc(e.cnpj) : 'sem CNPJ', e.obs ? esc(e.obs) : ''].filter(Boolean).join(' · ')}</span></span>
+      <span class="lin-dir"><span class="selo ${s.selo}">${esc(s.rot.replace(/s$/, '').replace(/^Em análise$/, 'Em análise'))}</span></span>
+    </div></li>`;
+  }
+  function detalhe(e) {
+    const s = sit(e);
+    return `<div class="det">
+      <div class="det-cab">Empresa de faturamento<span class="det-ferr"><button class="ib" data-gv="editar" aria-label="Editar" title="Editar">${ico('pencil', 'ico ico-s')}</button><button class="ib" data-gv="fechar" aria-label="Fechar" title="Fechar (Esc)">${ico('x', 'ico ico-s')}</button></span></div>
+      <div class="det-tit">${esc(e.nome)}</div>
+      <dl class="dprops">
+        <dt>${ico('hash', 'ico ico-s')}CNPJ/CPF</dt><dd>${e.cnpj ? `${esc(e.cnpj)}<button class="ib" data-gv="copiar" aria-label="Copiar" title="Copiar">${ico('copy', 'ico ico-s')}</button>` : '<span class="mudo">não informado</span>'}</dd>
+        <dt>${ico(s.icone, 'ico ico-s')}Situação</dt><dd><span class="seg-mini" role="radiogroup" aria-label="Situação">${Object.keys(SIT).map(k => `<button role="radio" data-gv="sit" data-v="${esc(k)}" aria-checked="${e.status === k}">${esc(SIT[k].rot.replace(/s$/, ''))}</button>`).join('')}</span></dd>
+        ${e.criado ? `<dt>${ico('calendar', 'ico ico-s')}Cadastro</dt><dd>${dataLonga(e.criado)} <span class="mudo">${haDias(e.criado)}</span></dd>` : ''}
+        <dt>${ico('sticky-note', 'ico ico-s')}Observações</dt><dd>${e.obs ? esc(e.obs) : '<span class="mudo">nenhuma</span>'}</dd>
+      </dl>
+      <div class="det-acoes">
+        <button class="btn btn-sec btn-p" data-gv="editar">${ico('pencil')}Editar no modal atual</button>
+      </div>
+      <p class="det-nota">Trocar a situação aqui só muda a tela (protótipo).</p>
+    </div>`;
+  }
+  MODULOS.faturamento = {
+    gaveta: { porId: id => F.lista.find(e => e.id === id), detalhe, rotulo: 'Empresa de faturamento', attr: 'emp' },
+    numero() { const n = F.lista.filter(e => e.status === 'Em Análise').length; return n ? [n, false, plural(n, 'empresa em análise', 'empresas em análise')] : null; },
+    render() {
+      const l = filtradas(), cont = k => F.lista.filter(e => e.status === k).length;
+      const ana = cont('Em Análise');
+      const gs = [...new Set([...Object.keys(SIT), ...l.map(e => e.status)])].map(k => {
+        const itens = l.filter(e => e.status === k).sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+        const s = sit({ status: k });
+        return { ...s, itens, tot: plural(itens.length, 'empresa', 'empresas') };
+      }).filter(g => g.itens.length);
+      const corpo = l.length ? listaEmGrupos(gs, linha) : `<div class="vazio">${ico('search')}${est.busca || F.filtro ? 'Nenhuma empresa com esse filtro.' : 'Nenhuma empresa cadastrada.'}</div>`;
+      tela.innerHTML = cabTela('Faturamento', [ana ? seloDe('hoje', 'hourglass', plural(ana, 'esperando análise', 'esperando análise')) : '<span>Nenhuma esperando análise.</span>'], `<button class="btn btn-pri" data-nova-emp>${ico('plus')}Adicionar empresa</button>`)
+        + `<div class="busca-linha">${buscaCampo('Buscar empresa ou CNPJ')}${chipsDe('fsit', F.filtro, [['', 'Todas'], ...Object.entries(SIT).map(([k, s]) => [k, s.rot, s.icone])])}</div>`
+        + numeros(Object.entries(SIT).map(([k, s]) => celula({ alvo: s.id, area: k === 'Em Análise' ? 'obs' : k === 'Aprovado' ? 'fin' : 'dados', icone: s.icone, rot: s.rot, val: cont(k), ctx: k === 'Em Análise' ? (cont(k) ? 'esperando decisão' : 'nenhuma') : cont(k) ? plural(cont(k), 'empresa', 'empresas') : 'nenhuma' })))
+        + `<div class="col">${area('a-dados', 'building-2', 'Empresas', corpo, plural(l.length, 'empresa', 'empresas'), 'bloco-emp')}</div>`;
+    },
+    clique(t) {
+      const e = t.closest('[data-emp]'); if (e) return abrirGaveta(+e.dataset.emp);
+      const s = t.closest('[data-fsit]'); if (s) { F.filtro = s.dataset.fsit; return render(); }
+      if (t.closest('[data-nova-emp]')) return paraPai({ tipo: 'nova-empresa' });
+    },
+    acao(a, e, el) {
+      if (a === 'editar') return paraPai({ tipo: 'editar-empresa', id: e.id });
+      if (a === 'copiar') return copiar(e.cnpj, 'CNPJ copiado');
+      if (a === 'sit') { e.status = el.dataset.v; render(); renderGaveta(); return avisoProto(`${e.nome}: ${SIT[e.status].rot.replace(/s$/, '').toLowerCase()} (protótipo: não grava)`); }
+    },
+    tecla(e) { if (e.key.toLowerCase() === 'n' && !e.ctrlKey && !e.metaKey) { e.preventDefault(); paraPai({ tipo: 'nova-empresa' }); } },
+    antesDeRolar() { if (F.filtro) { F.filtro = ''; render(); } },
+  };
+})();
+
+/* ===== Notas fiscais ===== */
+// Os pedidos de nota que os clientes mandam pelo formulário. As pendentes vêm
+// da memória (são poucas, e os alertas já as usam); as concluídas, do banco,
+// pelo período escolhido (dia em que a nota foi pedida).
+(() => {
+  const N = { pend: DADOS.notas || [], conc: null, total: 0, periodo: periodoDe('mes'), carregando: false, erro: null, pedido: 0, ver: 'pendentes', tipo: '', conf: null };
+  const todas = () => [...N.pend, ...(N.conc || [])];
+  const nome = n => n.cliente || n.razao || 'Sem identificação';
+  const tipos = () => [...new Set(todas().map(n => n.tipo).filter(Boolean))];
+  function filtradas() {
+    const q = semAcento(est.busca.trim()), qd = est.busca.replace(/\D/g, '');
+    return (N.ver === 'pendentes' ? N.pend : (N.conc || [])).filter(n => (N.ver === 'pendentes' ? !n.concluida : n.concluida) && (!N.tipo || n.tipo === N.tipo)
+      && (!q || casa(n.cliente, q) || casa(n.razao, q) || (qd && String(n.cnpj || '').replace(/\D/g, '').includes(qd)) || casa(n.servico, q)));
+  }
+  function linha(n) {
+    const dias = n.criado ? diasEntre(n.criado, HOJE) : 0;
+    const tom = !n.concluida && dias > 7 ? 'atraso' : '';
+    const sub = [n.tipo ? `<span class="st">${esc(n.tipo)}</span>` : '', n.servico ? esc(n.servico) : '<span class="mudo">serviço a preencher</span>', n.razao && n.cliente ? esc(n.razao) : ''].filter(Boolean).join(' · ');
+    return `<li><div class="lin ${n.concluida ? 'paga' : ''} ${est.gaveta === n.id ? 'aberta' : ''}" data-nota="${n.id}" tabindex="0" role="button" aria-label="Nota de ${esc(nome(n))}">
+      ${blocoData(n.criado, tom, 'Pedida')}
+      <span class="lin-txt"><span class="lin-tit"><span>${esc(nome(n))}</span></span><span class="lin-sub">${sub}</span></span>
+      <span class="lin-dir"><span class="v num">${n.valor ? reais(n.valor) : '<small>sem valor</small>'}</span><small class="${tom === 'atraso' ? 'atraso' : ''}">${n.concluida ? 'concluída' : n.criado ? haDias(n.criado) : ''}</small></span>
+      <span class="fls"><button class="fl concluir ${N.conf === n.id ? 'conf' : ''}" data-nota-concluir="${n.id}" aria-label="Concluir nota" title="${N.conf === n.id ? 'Clique de novo para confirmar' : 'Concluir nota'}">${N.conf === n.id ? 'Concluir?' : ico('check-circle-2', 'ico')}</button></span>
+    </div></li>`;
+  }
+  function grupos(l) {
+    if (N.ver === 'pendentes') {
+      const ord = l.slice().sort((a, b) => (a.criado || '').localeCompare(b.criado || ''));
+      const d = n => n.criado ? diasEntre(n.criado, HOJE) : 0;
+      return [
+        { id: 'n-antigas', tom: 'atraso', icone: 'alert-triangle', rot: 'Há mais de 7 dias', itens: ord.filter(n => d(n) > 7) },
+        { id: 'n-semana', icone: 'calendar-range', rot: 'Nesta semana', itens: ord.filter(n => d(n) > 0 && d(n) <= 7) },
+        { id: 'n-hoje', icone: 'clock', rot: 'Hoje', itens: ord.filter(n => d(n) <= 0) },
+      ].filter(g => g.itens.length).map(g => ({ ...g, tot: `${plural(g.itens.length, 'nota', 'notas')} · ${reais(somaPor(g.itens, n => n.valor))}` }));
+    }
+    // Concluídas: por mês do pedido, as mais recentes primeiro.
+    const meses = new Map();
+    l.slice().sort((a, b) => (b.criado || '').localeCompare(a.criado || '')).forEach(n => { const m = mesDe(n.criado) || 'sem'; if (!meses.has(m)) meses.set(m, []); meses.get(m).push(n); });
+    return [...meses].map(([m, itens], i) => ({ id: 'n-m' + i, icone: 'calendar-days', rot: m === 'sem' ? 'Sem data' : rotuloMes(m).replace(/^./, x => x.toUpperCase()), itens, tot: `${plural(itens.length, 'nota', 'notas')} · ${reais(somaPor(itens, n => n.valor))}` }));
+  }
+  function detalhe(n) {
+    const conf = N.conf === n.id;
+    const p = (icone, rot, v) => v ? `<dt>${ico(icone, 'ico ico-s')}${rot}</dt><dd>${v}</dd>` : '';
+    // Um dado da nota com o botão de copiar ao lado, como no modal de hoje: quem
+    // emite a nota copia campo por campo para o sistema da prefeitura/Sefaz.
+    const pc = (icone, rot, v) => v ? `<dt>${ico(icone, 'ico ico-s')}${rot}</dt><dd class="copiavel"><span>${esc(v)}</span><button class="ib" data-gv="copiar-campo" data-v="${esc(v)}" data-rot="${esc(rot)}" aria-label="Copiar ${esc(rot)}" title="Copiar">${ico('copy', 'ico ico-s')}</button></dd>` : '';
+    return `<div class="det">
+      <div class="det-cab">Nota fiscal${n.tipo ? ' · ' + esc(n.tipo) : ''}<span class="det-ferr"><button class="ib" data-gv="editar" aria-label="Editar" title="Editar">${ico('pencil', 'ico ico-s')}</button><button class="ib" data-gv="fechar" aria-label="Fechar" title="Fechar (Esc)">${ico('x', 'ico ico-s')}</button></span></div>
+      <div class="det-tit">${esc(nome(n))}</div>
+      <div class="det-valor num">${n.valor ? `<small>R$</small>${brl(n.valor)}` : '<small>valor a preencher</small>'}</div>
+      <dl class="dprops">
+        ${pc('user', 'Cliente', n.cliente)}
+        ${pc('building-2', 'Razão social', n.razao)}
+        ${pc('hash', 'CPF/CNPJ', n.cnpj)}
+        ${pc(n.envio === 'E-mail' ? 'mail' : 'phone', 'Contato', n.contato)}
+        ${pc('map-pin', 'Endereço', n.endereco)}
+        ${pc('wrench', 'Serviço', n.servico) || p('wrench', 'Serviço', '<span class="mudo">a preencher</span>')}
+        ${pc('banknote', 'Valor', n.valor ? brl(n.valor) : '')}
+        ${pc('credit-card', 'Pagamento', n.pagamento)}
+        ${pc('truck', 'Transporte', n.transporte)}
+        ${pc('message-square', 'Do cliente', n.obsCliente)}
+        ${pc('sticky-note', 'Observações', n.obs)}
+        ${p('circle-dot', 'Situação', n.concluida ? '<span class="ok">Concluída</span>' : `Pendente <span class="mudo">· ${n.criado ? haDias(n.criado) : ''}</span>`)}
+        ${p('calendar', 'Pedida', n.criado ? dataLonga(n.criado) : '')}
+      </dl>
+      <div class="det-acoes">
+        ${n.concluida ? '' : `<button class="btn btn-ok btn-p ${conf ? 'conf' : ''}" data-gv="concluir">${ico('check-circle-2')}${conf ? 'Clique de novo para confirmar' : 'Concluir nota'}</button>`}
+        <button class="btn btn-sec btn-p" data-gv="editar">${ico('pencil')}Editar no modal atual</button>
+      </div>
+    </div>`;
+  }
+  MODULOS.notas = {
+    gaveta: { porId: id => todas().find(n => n.id === id), detalhe, rotulo: 'Nota fiscal', attr: 'nota' },
+    numero() { const p = N.pend.filter(n => !n.concluida); return p.length ? [p.length, p.some(n => n.criado && diasEntre(n.criado, HOJE) > 7), plural(p.length, 'nota pendente', 'notas pendentes')] : null; },
+    carregar(forcar) {
+      if ((N.conc || N.carregando) && !forcar) return;
+      N.carregando = true; N.erro = null; N.pedido = pedirAoBanco('pedir-notas', { de: N.periodo.de, ate: N.periodo.ate });
+      if (est.aba === 'notas') render();
+    },
+    aoReceber(msg) {
+      if (msg.pedido !== N.pedido || !['notas', 'notas-erro'].includes(msg.tipo)) return;
+      N.carregando = false;
+      if (msg.tipo === 'notas') { N.conc = msg.lista || []; N.total = msg.total ?? N.conc.length; } else N.erro = msg.erro;
+      if (est.aba === 'notas') { render(); renderGaveta(); }
+    },
+    render() {
+      const l = filtradas(), pend = N.pend.filter(n => !n.concluida), conc = N.conc;
+      const maisAntiga = pend.filter(n => n.criado).sort((a, b) => a.criado.localeCompare(b.criado))[0];
+      const dias = maisAntiga ? diasEntre(maisAntiga.criado, HOJE) : 0;
+      const nasConcluidas = N.ver === 'concluidas';
+      const lendo = nasConcluidas && !conc;
+      const corpo = lendo ? (N.erro ? '' : `<div class="vazio">${ico('loader')}Lendo do banco…</div>`)
+        : l.length ? listaEmGrupos(grupos(l), linha)
+        : `<div class="vazio">${ico(!nasConcluidas && !est.busca && !N.tipo ? 'check-circle-2' : 'search')}${!nasConcluidas && !est.busca && !N.tipo ? 'Nenhuma nota esperando.' : nasConcluidas && !est.busca && !N.tipo ? `Nenhuma nota concluída em ${rotuloPeriodo(N.periodo).toLowerCase()}.` : 'Nenhuma nota com esse filtro.'}</div>`;
+      const rotPer = rotuloPeriodo(N.periodo);
+      tela.innerHTML = cabTela('Notas fiscais', [!pend.length ? '<span>Nenhuma nota esperando.</span>' : seloDe(dias > 7 ? 'atraso' : 'hoje', 'file-text', plural(pend.length, 'pendente', 'pendentes'))],
+          `<button class="btn btn-sec" data-link-nota title="Copiar o link do formulário">${ico('link')}Copiar link</button><button class="btn btn-pri" data-form-nota>${ico('external-link')}Formulário</button>`)
+        + `<div class="busca-linha">${buscaCampo('Buscar cliente, razão social ou CNPJ')}${chipsDe('nver', N.ver, [['pendentes', `Pendentes · ${pend.length}`, 'clock'], ['concluidas', 'Concluídas', 'check-circle-2']])}${nasConcluidas ? botaoPeriodo(N.periodo, 'Filtrar pelo dia em que a nota foi pedida') : ''}${chipsDe('ntipo', N.tipo, [['', 'Todos os tipos'], ...tipos().map(t => [t, t])])}</div>`
+        + (nasConcluidas && conc && N.total > conc.length ? notaPeriodo(`Mostrando as ${conc.length} mais recentes de ${N.total}. Escolha um período menor.`) : '')
+        + (nasConcluidas && N.erro ? faixaErro(N.erro, 'notas') : '')
+        + numeros([
+          celula({ alvo: 'bloco-notas', area: pend.length ? 'obs' : 'dados', icone: 'file-text', rot: 'Pendentes', val: pend.length, ctx: pend.length ? reais(somaPor(pend, n => n.valor)) : 'nenhuma' }),
+          celula({ alvo: maisAntiga && dias > 7 ? 'n-antigas' : 'bloco-notas', area: dias > 7 ? 'perigo' : 'dados', icone: 'hourglass', rot: 'Esperando há mais tempo', val: maisAntiga ? `${dias}<small style="margin-left:4px">${dias === 1 ? 'dia' : 'dias'}</small>` : '—', alerta: dias > 7, ctx: maisAntiga ? esc(nome(maisAntiga)) : 'nenhuma' }),
+          celula({ alvo: 'bloco-notas', area: 'fin', icone: 'check-circle-2', rot: `Concluídas · ${rotPer.toLowerCase()}`, val: conc ? N.total : '…', ctx: conc && conc.length ? reais(somaPor(conc, n => n.valor)) : conc ? 'nenhuma' : 'lendo…' }),
+        ])
+        + `<div class="col ${N.carregando && conc ? 'esperando' : ''}">${area('a-dados', 'file-text', nasConcluidas ? 'Concluídas' : 'Esperando emissão', corpo, lendo ? '' : plural(l.length, 'nota', 'notas'), 'bloco-notas')}</div>`;
+    },
+    clique(t) {
+      const per = t.closest('[data-periodo]');
+      if (per) return abrirPeriodo(per, N.periodo, p => { N.periodo = p; MODULOS.notas.carregar(true); });
+      const nc = t.closest('[data-nota-concluir]'); if (nc) { const n = todas().find(x => x.id === +nc.dataset.notaConcluir); return n && MODULOS.notas.acao('concluir', n); }
+      const n = t.closest('[data-nota]'); if (n) return abrirGaveta(+n.dataset.nota);
+      const v = t.closest('[data-nver]'); if (v) { N.ver = v.dataset.nver; return render(); }
+      const tp = t.closest('[data-ntipo]'); if (tp) { N.tipo = tp.dataset.ntipo; return render(); }
+      // "Formulário" abre o formulário novo (protótipo); "Copiar link" segue
+      // copiando o de hoje, que é o que vai para os clientes.
+      const origem = parent.location?.origin || location.origin, link = `${origem}/solicitar-nota`;
+      if (t.closest('[data-form-nota]')) return window.open(`${origem}/prototipos/solicitar-nota.html`, '_blank');
+      if (t.closest('[data-link-nota]')) return copiar(link, 'Link do formulário copiado');
+    },
+    acao(a, n, el) {
+      if (a === 'editar') return paraPai({ tipo: 'editar-nota', id: n.id });
+      if (a === 'copiar-campo') return copiar(el.dataset.v, `${el.dataset.rot} copiado`);
+      if (a === 'concluir') {
+        if (N.conf !== n.id) { N.conf = n.id; render(); return renderGaveta(); }
+        n.concluida = true; N.conf = null;
+        N.pend = N.pend.filter(x => x !== n); if (N.conc) { N.conc.unshift(n); N.total++; }
+        if (!N.conc) N.pend.push(n);   // sem a lista de concluídas lida, ela fica achável pela gaveta
+        render(); renderGaveta();
+        return avisoProto('Nota concluída (protótipo: não grava)');
+      }
+    },
+    antesDeRolar() { if (N.ver !== 'pendentes') { N.ver = 'pendentes'; render(); } },
+  };
+})();
+
+render();
+if (est.aba !== 'pagar') MODULOS[est.aba].carregar?.();
+</script>
+</body>
+</html>
