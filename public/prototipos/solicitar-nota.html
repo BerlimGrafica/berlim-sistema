@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Berlim Gráfica | Nota fiscal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<style>
+/* O formulário público de nota fiscal (app/solicitar-nota/page.jsx) com o
+   mesmo fluxo e os mesmos campos de hoje — escolher pessoa física ou jurídica,
+   depois os dados — só no visual do DESIGN.md. */
+:root {
+  --brand: #F69F00; --brand-hover: #d98b00; --brand-tinta: #8A5400; --sobre-brand: #241600;
+  --fundo: #EDEFF0; --superficie: #ffffff; --sutil: #f9fafb; --realce: #f3f4f6;
+  --borda-fraca: #f0f1f3; --borda: #e5e7eb; --borda-forte: #d1d5db;
+  --tinta: #111827; --tinta-corpo: #374151; --tinta-suave: #6b7280; --tinta-fraca: #9ca3af;
+  --perigo: #dc2626; --perigo-fundo: #fef2f2; --perigo-borda: #fecaca;
+  --fin: #059669; --fin-fundo: #ecfdf5; --fin-borda: #c9f2df;
+  --sombra: 0 24px 56px -16px rgba(15,23,42,.22), 0 2px 8px rgba(15,23,42,.06);
+  --sombra-leve: 0 1px 2px rgba(15,23,42,.06);
+  --saida: cubic-bezier(.16, 1, .3, 1);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --brand-tinta: #FFB938;
+    --fundo: #0d1117; --superficie: #161b22; --sutil: #1b2129; --realce: #21262d;
+    --borda-fraca: #232a33; --borda: #30363d; --borda-forte: #3d444d;
+    --tinta: #EDEDED; --tinta-corpo: #D4D4D8; --tinta-suave: #A1A1AA; --tinta-fraca: #71717a;
+    --perigo: #f87171; --perigo-fundo: rgba(239,68,68,.1); --perigo-borda: rgba(239,68,68,.3);
+    --fin: #34d399; --fin-fundo: rgba(16,185,129,.11); --fin-borda: rgba(16,185,129,.28);
+    --sombra: 0 24px 56px -16px rgba(0,0,0,.7); --sombra-leve: 0 1px 2px rgba(0,0,0,.4);
+  }
+}
+* { box-sizing: border-box; margin: 0; }
+body { font-family: Montserrat, system-ui, sans-serif; font-size: 14px; line-height: 1.5; color: var(--tinta-corpo); background: var(--fundo); -webkit-font-smoothing: antialiased; min-height: 100dvh; display: flex; flex-direction: column; }
+button, input, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; background: none; border: 0; padding: 0; text-align: inherit; }
+::placeholder { color: var(--tinta-fraca); opacity: 1; }
+::selection { background: rgba(246,159,0,.3); }
+:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; border-radius: 6px; }
+.ico { width: 16px; height: 16px; stroke-width: 2; flex-shrink: 0; }
+
+.proto { display: flex; align-items: center; gap: 8px; justify-content: center; padding: 7px 16px; background: var(--tinta); color: var(--superficie); font-size: 12px; font-weight: 600; }
+.proto .ico { width: 14px; height: 14px; }
+
+.pg { flex: 1; width: 100%; max-width: 520px; margin: 0 auto; padding: 32px 16px 48px; display: flex; flex-direction: column; justify-content: center; }
+.marca { display: flex; justify-content: center; margin-bottom: 22px; }
+.marca img { height: 40px; object-fit: contain; }
+.cartao { background: var(--superficie); border: 1px solid var(--borda); border-radius: 14px; box-shadow: var(--sombra); overflow: hidden; }
+/* o andamento: metade na escolha, cheio nos dados */
+.andamento { height: 4px; background: var(--realce); }
+.andamento i { display: block; height: 100%; background: var(--brand); border-radius: 0 4px 4px 0; transition: width .4s var(--saida); }
+.corpo { padding: 28px; animation: entra .35s var(--saida); }
+@keyframes entra { from { opacity: 0; transform: translateY(8px); } }
+
+/* passo 1: quem é */
+.ola { text-align: center; margin-bottom: 22px; }
+.ola h1 { font-size: 21px; font-weight: 800; color: var(--tinta); letter-spacing: -.02em; }
+.ola p { color: var(--tinta-suave); margin-top: 5px; font-size: 13.5px; }
+.escolha { display: flex; align-items: center; gap: 14px; width: 100%; padding: 14px 16px; border: 1px solid var(--borda); border-radius: 12px; background: var(--superficie); font-weight: 600; font-size: 15px; color: var(--tinta); transition: border-color .15s, background .15s, box-shadow .15s; }
+.escolha + .escolha { margin-top: 10px; }
+.escolha:hover { border-color: var(--brand); background: var(--sutil); box-shadow: var(--sombra-leve); }
+.escolha .bola { width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; background: var(--realce); color: var(--tinta-suave); transition: background .15s, color .15s; }
+.escolha:hover .bola { background: color-mix(in srgb, var(--brand) 14%, transparent); color: var(--brand-tinta); }
+.escolha .chev { margin-left: auto; color: var(--tinta-fraca); transition: color .15s, transform .2s var(--saida); }
+.escolha:hover .chev { color: var(--brand-tinta); transform: translateX(2px); }
+
+/* passo 2: os dados */
+.cab { display: flex; align-items: center; gap: 12px; padding-bottom: 16px; margin-bottom: 20px; border-bottom: 1px solid var(--borda-fraca); }
+.cab h2 { font-size: 18px; font-weight: 800; color: var(--tinta); letter-spacing: -.015em; }
+.cab .tipo { font-size: 11.5px; font-weight: 600; color: var(--tinta-suave); background: var(--realce); border-radius: 5px; padding: 1px 7px; }
+.voltar { margin-left: auto; display: inline-flex; align-items: center; gap: 4px; padding: 6px 10px 6px 6px; border-radius: 8px; font-weight: 600; font-size: 13px; color: var(--tinta-suave); transition: background .12s, color .12s; }
+.voltar:hover { background: var(--realce); color: var(--tinta); }
+.campo + .campo { margin-top: 16px; }
+.rot { display: block; font-size: 12.5px; font-weight: 600; color: var(--tinta-corpo); margin-bottom: 6px; }
+.rot .opc { font-weight: 500; color: var(--tinta-suave); }
+.caixa { position: relative; }
+.caixa > .ico { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--tinta-suave); pointer-events: none; }
+input, textarea { width: 100%; height: 46px; border: 1px solid var(--borda-forte); border-radius: 10px; background: var(--superficie); padding: 0 14px; outline: none; font-size: 15px; color: var(--tinta); transition: border-color .15s, box-shadow .15s; }
+.caixa > .ico + input { padding-left: 38px; }
+textarea { height: auto; padding: 11px 14px; resize: vertical; line-height: 1.45; }
+input:hover, textarea:hover { border-color: var(--tinta-fraca); }
+input:focus, textarea:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(246,159,0,.18); }
+.divisa { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--borda-fraca); }
+/* forma de envio: o seletor de dois, com o fundo que desliza */
+.seg { position: relative; display: grid; grid-template-columns: 1fr 1fr; gap: 2px; padding: 3px; background: var(--realce); border-radius: 10px; }
+.seg button { position: relative; z-index: 1; display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 40px; border-radius: 8px; font-weight: 600; font-size: 13.5px; color: var(--tinta-suave); transition: color .15s; }
+.seg button[aria-checked="true"] { color: var(--tinta); }
+.seg .trilho { position: absolute; top: 3px; bottom: 3px; left: 3px; width: calc(50% - 4px); border-radius: 8px; background: var(--superficie); box-shadow: var(--sombra-leve); transition: transform .28s var(--saida); }
+.seg.dir .trilho { transform: translateX(calc(100% + 2px)); }
+
+.enviar { width: 100%; height: 50px; margin-top: 24px; border-radius: 10px; background: var(--brand); color: var(--sobre-brand); font-weight: 700; font-size: 15px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: background .15s; }
+.enviar:hover { background: var(--brand-hover); }
+.enviar:disabled { opacity: .6; cursor: default; }
+.giro { width: 16px; height: 16px; border-radius: 99px; border: 2px solid rgba(36,22,0,.25); border-top-color: var(--sobre-brand); animation: girar .7s linear infinite; }
+@keyframes girar { to { transform: rotate(360deg); } }
+.falha { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 12px; padding: 10px 12px; border-radius: 10px; background: var(--perigo-fundo); border: 1px solid var(--perigo-borda); color: var(--perigo); font-weight: 600; font-size: 13px; }
+
+/* enviado */
+.pronto { text-align: center; padding: 12px 0 6px; }
+.pronto .selo { width: 60px; height: 60px; border-radius: 99px; margin: 0 auto 16px; display: grid; place-items: center; background: var(--fin-fundo); color: var(--fin); box-shadow: inset 0 0 0 1px var(--fin-borda); }
+.pronto .selo .ico { width: 28px; height: 28px; }
+.pronto h2 { font-size: 21px; font-weight: 800; color: var(--tinta); letter-spacing: -.02em; }
+.pronto p { color: var(--tinta-suave); margin-top: 8px; line-height: 1.6; }
+.pronto p b { color: var(--tinta); }
+
+@media (max-width: 480px) {
+  .pg { padding: 20px 12px 32px; justify-content: flex-start; }
+  .corpo { padding: 22px 18px; }
+}
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="proto"><i data-lucide="info" class="ico"></i>Protótipo · enviar não grava nada</div>
+<main class="pg">
+  <div class="marca"><img src="https://www.berlimgraficarapida.com.br/wp-content/uploads/elementor/thumbs/logosite-rm0erpiqj90gcf7ff4jp8ujys78opflob1b9vn5jjs.png" alt="Berlim Gráfica"></div>
+  <div class="cartao" id="cartao"></div>
+</main>
+
+<script>
+const ico = (n, c = 'ico') => `<i data-lucide="${n}" class="${c}"></i>`;
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+// As mesmas máscaras do formulário de hoje.
+function mascaraDoc(v, tipo) {
+  v = v.replace(/\D/g, '');
+  if (tipo === 'J') {
+    const x = v.match(/(\d{0,2})(\d{0,3})(\d{0,3})(\d{0,4})(\d{0,2})/);
+    return !x[2] ? x[1] : x[1] + '.' + x[2] + (x[3] ? '.' : '') + x[3] + (x[4] ? '/' : '') + x[4] + (x[5] ? '-' : '') + x[5];
+  }
+  const x = v.match(/(\d{0,3})(\d{0,3})(\d{0,3})(\d{0,2})/);
+  return !x[2] ? x[1] : x[1] + '.' + x[2] + (x[3] ? '.' : '') + x[3] + (x[4] ? '-' : '') + x[4];
+}
+function mascaraTel(v) {
+  const x = v.replace(/\D/g, '').match(/(\d{0,2})(\d{0,5})(\d{0,4})/);
+  if (!x[2]) return x[1] ? '(' + x[1] : '';
+  return '(' + x[1] + ') ' + x[2] + (x[3] ? '-' + x[3] : '');
+}
+
+/* ===== estado (os mesmos campos da tabela notas_fiscais) ===== */
+let tipoPessoa = null;   // 'F' ou 'J'
+let enviando = false, enviado = false, falha = '';
+const form = { cliente: '', razao_social: '', cnpj: '', forma_envio: 'Whatsapp', contato: '', endereco: '', observacao_cliente: '', tipo_nota: '' };
+
+const cartao = document.getElementById('cartao');
+function campo(nome, rot, { ph = '', tipo = 'text', area = 0, icone, opc, modo } = {}) {
+  const ctl = area
+    ? `<textarea id="${nome}" name="${nome}" rows="${area}" ${opc ? '' : 'required'} placeholder="${esc(ph)}">${esc(form[nome])}</textarea>`
+    : `<input id="${nome}" name="${nome}" type="${tipo}" ${opc ? '' : 'required'} value="${esc(form[nome])}" placeholder="${esc(ph)}" ${modo ? `inputmode="${modo}"` : ''}>`;
+  return `<div class="campo"><label class="rot" for="${nome}">${rot}${opc ? ' <span class="opc">(opcional)</span>' : ''}</label><div class="caixa">${icone ? ico(icone) : ''}${ctl}</div></div>`;
+}
+function escolha() {
+  return `<div class="ola"><h1>Solicitação de nota fiscal</h1><p>Indique como deseja emitir a sua nota fiscal.</p></div>
+    <button class="escolha" data-tipo="F"><span class="bola">${ico('user')}</span>Sou pessoa física${ico('chevron-right', 'ico chev')}</button>
+    <button class="escolha" data-tipo="J"><span class="bola">${ico('building-2')}</span>Sou pessoa jurídica${ico('chevron-right', 'ico chev')}</button>`;
+}
+function dados() {
+  const F = tipoPessoa === 'F', zap = form.forma_envio === 'Whatsapp';
+  return `<form id="form">
+    <div class="cab"><h2>Dados para emissão</h2><span class="tipo">${F ? 'Pessoa física' : 'Pessoa jurídica'}</span><button type="button" class="voltar" data-voltar>${ico('chevron-left')}Voltar</button></div>
+    ${campo('cliente', F ? 'Nome do contato que conversamos no WhatsApp' : 'Seu nome / nome fantasia', { ph: F ? 'Seu nome, ou o do contato que fechou o pedido com a gente' : 'Como devemos identificar você?' })}
+    ${campo('razao_social', F ? 'Nome completo' : 'Razão social', { ph: F ? 'Seu nome completo' : 'Razão social da empresa' })}
+    ${campo('cnpj', F ? 'CPF' : 'CNPJ', { ph: F ? '000.000.000-00' : '00.000.000/0000-00', modo: 'numeric' })}
+    ${campo('endereco', 'Endereço completo', { area: 3, ph: 'Rua, número, bairro, cidade, estado, CEP' })}
+    <div class="divisa"><span class="rot">Como prefere receber a nota fiscal?</span>
+      <div class="seg ${zap ? '' : 'dir'}" role="radiogroup" aria-label="Forma de envio"><span class="trilho"></span>
+        <button type="button" role="radio" data-envio="Whatsapp" aria-checked="${zap}">${ico('message-circle')}WhatsApp</button>
+        <button type="button" role="radio" data-envio="E-mail" aria-checked="${!zap}">${ico('mail')}E-mail</button>
+      </div></div>
+    <div class="campo" style="margin-top:16px">${campo('contato', zap ? 'WhatsApp para envio' : 'E-mail para envio', { tipo: zap ? 'tel' : 'email', modo: zap ? 'tel' : 'email', icone: zap ? 'phone' : 'mail', ph: zap ? '(00) 00000-0000' : 'seuemail@exemplo.com' }).replace(/^<div class="campo">|<\/div>$/g, '')}</div>
+    <div class="campo" style="margin-top:16px">${campo('observacao_cliente', 'Observações', { area: 2, opc: true, ph: 'Alguma informação adicional sobre esta nota?' }).replace(/^<div class="campo">|<\/div>$/g, '')}</div>
+    <button type="submit" class="enviar" ${enviando ? 'disabled' : ''}>${enviando ? '<span class="giro"></span>Enviando…' : 'Enviar dados'}</button>
+    ${falha ? `<p class="falha">${ico('alert-triangle')}${esc(falha)}</p>` : ''}
+  </form>`;
+}
+function pronto() {
+  return `<div class="pronto"><div class="selo">${ico('check')}</div><h2>Dados enviados!</h2>
+    <p>Recebemos as suas informações. A Berlim Gráfica fará a emissão da nota fiscal em breve, e o envio será feito por <b>${form.forma_envio === 'Whatsapp' ? 'WhatsApp' : 'e-mail'}</b>.</p></div>`;
+}
+function render(foco) {
+  const passo = enviado ? 100 : tipoPessoa ? 100 : 50;
+  cartao.innerHTML = `${enviado ? '' : `<div class="andamento"><i style="width:${passo}%"></i></div>`}<div class="corpo">${enviado ? pronto() : tipoPessoa ? dados() : escolha()}</div>`;
+  lucide.createIcons();
+  if (foco) document.getElementById(foco)?.focus();
+}
+
+cartao.addEventListener('click', e => {
+  const t = e.target;
+  const tp = t.closest('[data-tipo]'); if (tp) { tipoPessoa = tp.dataset.tipo; form.cnpj = ''; return render('cliente'); }
+  if (t.closest('[data-voltar]')) { tipoPessoa = null; return render(); }
+  const en = t.closest('[data-envio]');
+  if (en && en.dataset.envio !== form.forma_envio) {
+    // Trocar a forma limpa o contato, como hoje. Só o trilho e o campo mudam,
+    // para o que já foi digitado nos outros campos continuar lá.
+    form.forma_envio = en.dataset.envio; form.contato = '';
+    return render('contato');
+  }
+});
+cartao.addEventListener('input', e => {
+  const el = e.target; if (!(el.name in form)) return;
+  let v = el.value;
+  if (el.name === 'cnpj') v = mascaraDoc(v, tipoPessoa);
+  if (el.name === 'contato' && form.forma_envio === 'Whatsapp') v = mascaraTel(v);
+  form[el.name] = v;
+  if (el.value !== v) el.value = v;
+});
+cartao.addEventListener('submit', async e => {
+  e.preventDefault();
+  enviando = true; falha = ''; render();
+  // Protótipo: não grava. No sistema, aqui segue o
+  // supabase.from('notas_fiscais').insert([form]) de hoje.
+  console.info('Nota que seria gravada:', form);
+  await new Promise(r => setTimeout(r, 700));
+  enviando = false; enviado = true; render();
+});
+render();
+</script>
+</body>
+</html>
