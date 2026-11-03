@@ -158,6 +158,7 @@ A versão navegável deste documento, com cada componente em prévia ao vivo nos
 - Propriedades editáveis no lugar (clicou, abriu um popover), não formulários.
 - Teclado de primeira classe: `/` busca, `↑↓` navega, `Enter` age, `Esc` volta, com dicas em `kbd`.
 - Claro e escuro com o mesmo peso.
+- Texto enxuto: rótulo curto e apoio que referencia, não explica (ver **A Regra do Texto que Aponta**).
 
 ## Colors
 
@@ -214,6 +215,8 @@ Quem já tem cor no sistema usa a dela: etapa, local, pessoa, **forma de pagamen
 
 ### Named Rules
 **A Regra da Caixa Normal.** Rótulos em caixa normal. Nada de eyebrow/kicker em caixa alta espaçada acima de título.
+
+**A Regra do Texto que Aponta.** Texto de apoio aponta, não explica. O rótulo diz o assunto em duas ou três palavras ("A receber", não "A receber nas O.S. abertas"), e o que a própria tela já deixa claro fica de fora. Embaixo de um número vai só a referência que o situa — "média/dia R$ 4.249", "0% de outubro · R$ 101.720", "26 O.S." —, nunca a frase que conta o que ele é ("média de R$ 4.249 por dia com venda", "R$ 1.330 já prontos para cobrar"). Quando a frase inteira ajuda, ela vai na dica (`title`) do próprio elemento: não some, só sai da frente.
 
 ## Layout
 
@@ -291,7 +294,7 @@ O cabeçalho gruda no topo da gaveta ao rolar e traz o nº à esquerda e, à dir
 Bolinha de 24px com **duas letras** (nome simples: as duas primeiras, "Mu"; composto: inicial do primeiro e do último, "AL") na cor fixa de `corPorNome` — a mesma do chat e das etiquetas. Sobreposição de 3px; até três bolinhas e uma "+N" cinza. Como texto: "Ana", "Ana e Rafael", e a partir de três só "3 pessoas" (lista inteira no `title`). Nos protótipos as cores chegam por `lib/prototipos/coresDoNome.js`.
 
 ### Selos de prazo e horário
-Prazo: "Atrasada · 28/08" (`perigo`), "Hoje" (`obs`), "Amanhã", "sex 24/10" (até 7 dias), "24/10", "Sem prazo". Horário limite só quando existe: "até 14:00" neutro, âmbar faltando 2h, vermelho depois que passa. Nas etapas de `STATUSES_SEM_ATRASO` (hoje só **Retirada**) o prazo vencido é neutro e não conta como atraso; Entrega conta.
+Prazo: "Atrasada · 28/08" (`perigo`), "Hoje" (`obs`), "Amanhã", "sex 24/10" (até 7 dias), "24/10", "Sem prazo". Horário limite só quando existe: "até 14:00" neutro, âmbar faltando 2h, vermelho depois que passa. Nas etapas de `STATUSES_SEM_ATRASO` (**Aguardando Pagamento** e **Aguardando Retorno**, que esperam o cliente antes da arte, e **Retirada**, já pronta) o prazo vencido é neutro, o de hoje também, e nenhuma delas conta como atraso; Entrega conta.
 
 ### Resumo de pagamento
 Um resumo só: total em número grande, barra do que já entrou (`fin`), "Recebido R$ x · Falta R$ y" (falta em `perigo`; "Quitado" ✓; "Pago a mais" em `obs-tinta`) e a lista de recebimentos. Cada valor aparece uma vez; o cabeçalho da área só mostra "Quitado".
@@ -355,6 +358,7 @@ Testado e recusado: a tira de densidade marcando a etapa da O.S. na gaveta da Pr
 - **Do** testar toda tela em 390px e no tema escuro antes de dar por pronta.
 - **Do** usar números tabulares em datas, horas e valores.
 - **Do** mostrar o estado com selo pequeno e palavra ("até 14:00", "editada"), não só com cor.
+- **Do** escrever o texto de apoio como referência curta — o número e o que o situa ("26 O.S.", "0% de outubro") —, com a explicação completa na dica.
 - **Do** usar a cor de cada pessoa e de cada local de `corPorNome`, nunca uma cor nova.
 - **Do** mostrar como um total se divide com o quadro de composição (destaque, barra fatiada e lista), não com uma barra por linha.
 - **Do** abrir o registro numa gaveta ou no lugar, sem tirar a pessoa da lista.
@@ -371,6 +375,7 @@ Testado e recusado: a tira de densidade marcando a etapa da O.S. na gaveta da Pr
 - **Don't** misturar busca, chips e botões numa mesma faixa de ferramentas: busca no cabeçalho, filtros em abas.
 - **Don't** deixar ação rara e que encerra algo (sair, desvincular) solta na barra do sistema, ao lado de um ícone de uso diário: ela vai no menu da conta.
 - **Don't** repetir o mesmo valor em vários lugares do mesmo bloco (ex.: "falta pagar" no cabeçalho, no resumo e na lista).
+- **Don't** escrever na tela uma frase que explica o que o rótulo e o contexto já dizem ("por dia com venda", "já prontos para cobrar"): se for útil, ela vai na dica.
 - **Don't** deixar texto de propriedade vazar da coluna: corte com "…" e ponha o valor inteiro no `title`.
 - **Don't** usar as cores de processo (C, M, Y, K) fora dos motivos do ofício e das tintas das máquinas, nem o magenta da faca em texto.
 - **Don't** pôr retícula ou marcas de corte em tela de trabalho: são da marca (entrada e bloqueio).
