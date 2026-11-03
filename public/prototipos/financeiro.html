@@ -92,6 +92,21 @@ body .lin-dir .v, body .rank .v, body .prox b { color: var(--fin); }
 .lin-sub .mudo, .itens-l .mudo { color: var(--tinta-suave); font-weight: 500; }
 .selo.ok { background: var(--fin-fundo); color: var(--fin-tinta); }
 .dprops dd .ib { width: 26px; height: 26px; }
+/* campos do boleto: sem caixa até a mão chegar (DESIGN.md › campos sem caixa) */
+.rot-campos { display: flex; align-items: center; gap: 6px; margin-top: 18px; padding-top: 12px; border-top: 1px solid var(--borda-fraca); font-size: 11.5px; font-weight: 600; color: var(--tinta-suave); }
+.rot-campos .ico { width: 13px; height: 13px; }
+.dprops.campos-bol { margin-top: 6px; }
+.campo-in { width: 100%; max-width: 230px; height: 32px; padding: 0 8px; margin-left: -8px; border: 1px solid transparent; border-radius: 7px; background: transparent; font: inherit; font-weight: 600; color: var(--tinta); outline: none; transition: background .12s, border-color .12s, box-shadow .12s; }
+.campo-in:hover { background: var(--realce); }
+.campo-in:focus { background: var(--superficie); border-color: var(--brand); box-shadow: 0 0 0 3px rgba(246,159,0,.16); }
+.campo-in::placeholder { color: var(--tinta-fraca); font-weight: 500; }
+.campo-in[type="date"] { max-width: 170px; color-scheme: light; }
+.dark .campo-in[type="date"] { color-scheme: dark; }
+.campo-in.salvo { animation: salvo 1.4s var(--saida); }
+@keyframes salvo { 0%, 50% { border-color: var(--fin); box-shadow: 0 0 0 3px var(--fin-fundo); } }
+.campos-bol .pre { font-weight: 600; color: var(--tinta-suave); margin-right: 6px; }
+.campos-bol .pre + .campo-in { margin-left: 0; max-width: 160px; }
+.rel-venc { font-size: 12px; font-weight: 600; white-space: nowrap; }
 /* dado copiável: o texto quebra à vontade e o botão fica no fim da linha */
 .dprops dd.copiavel { flex-wrap: nowrap; align-items: flex-start; }
 .dprops dd.copiavel span { flex: 1; min-width: 0; overflow-wrap: anywhere; padding-top: 6px; }
@@ -509,7 +524,7 @@ html[data-troca-tema] *, html[data-troca-tema] *::before, html[data-troca-tema] 
 <body>
 <div class="proto">
   <span class="proto-nome">Financeiro · protótipo</span>
-  <span class="proto-nota">Dados reais · nada grava aqui; “Abrir O.S.” e “Abrir no modal atual” levam para as telas de hoje, que gravam</span>
+  <span class="proto-nota">Dados reais · os dados e o “pago” do boleto gravam de verdade, como na tela de hoje; o resto não grava (“Abrir O.S.” e “Abrir no modal atual” levam para as telas de hoje)</span>
   <button class="proto-bt" id="tema"><i data-lucide="moon" class="ico ico-s"></i><span class="txt">Escuro</span></button>
 </div>
 <main class="pg"><div id="abas"></div><div id="tela"></div></main>
@@ -1601,13 +1616,19 @@ const notaPeriodo = (txt, alerta, acao) => `<div class="per-nota ${alerta ? 'ale
       <div class="det-tit">${esc(b.cliente || 'Sem cliente')}</div>
       <div class="det-valor num"><small>R$</small>${brl(b.valor)}</div>
       <dl class="dprops">
-        <dt>${ico('calendar', 'ico ico-s')}Vencimento</dt><dd>${venc}</dd>
         <dt>${ico(pago(b) ? 'check-circle-2' : 'circle', 'ico ico-s')}Situação</dt><dd>${pago(b) ? `<span class="ok">Pago${b.pagoEm ? ' em ' + dataLonga(b.pagoEm) : ''}</span>` : 'Em aberto'}</dd>
-        <dt>${ico('hash', 'ico ico-s')}Número</dt><dd>${ou(b.numero)}${b.numero ? `<button class="ib" data-gv="copiar-num" aria-label="Copiar número" title="Copiar">${ico('copy', 'ico ico-s')}</button>` : ''}</dd>
-        <dt>${ico('file-text', 'ico ico-s')}Emissão</dt><dd>${b.emissao ? dataLonga(b.emissao) : ou('')}</dd>
-        <dt>${ico('building-2', 'ico ico-s')}CNPJ</dt><dd>${ou(b.cnpj)}</dd>
+      </dl>
+      <p class="rot-campos">${ico('pencil', 'ico ico-s')}Dados do boleto · gravam ao sair do campo</p>
+      <dl class="dprops campos-bol">
+        <dt>${ico('banknote', 'ico ico-s')}Valor</dt><dd><span class="pre">R$</span><input class="campo-in num" data-bcampo="valor" value="${b.valor ? brl(b.valor) : ''}" placeholder="0,00" inputmode="numeric" autocomplete="off"></dd>
+        <dt>${ico('hash', 'ico ico-s')}Número</dt><dd><input class="campo-in" data-bcampo="boleto_numero" value="${esc(b.numero)}" placeholder="Nº do boleto" autocomplete="off" maxlength="60">${b.numero ? `<button class="ib" data-gv="copiar-num" aria-label="Copiar número" title="Copiar">${ico('copy', 'ico ico-s')}</button>` : ''}</dd>
+        <dt>${ico('building-2', 'ico ico-s')}CNPJ</dt><dd><input class="campo-in num" data-bcampo="boleto_cnpj" value="${esc(b.cnpj)}" placeholder="00.000.000/0000-00" inputmode="numeric" autocomplete="off"></dd>
+        <dt>${ico('file-text', 'ico ico-s')}Emissão</dt><dd><input class="campo-in" type="date" data-bcampo="boleto_data_emissao" value="${esc(b.emissao)}"></dd>
+        <dt>${ico('calendar', 'ico ico-s')}Vencimento</dt><dd><input class="campo-in" type="date" data-bcampo="prazo_pagamento" value="${esc(b.vence)}"><span class="rel-venc">${b.vence ? venc.replace(dataLonga(b.vence), '').trim() : ''}</span></dd>
+        <dt>${ico('gavel', 'ico ico-s')}Protesto</dt><dd><span class="seg-mini" role="radiogroup" aria-label="Protesto ou negativação">${[[false, 'Não'], [true, 'Sim']].map(([v, r]) => `<button role="radio" data-gv="protesto" data-v="${v}" aria-checked="${!!b.protesto === v}">${r}</button>`).join('')}</span></dd>
+      </dl>
+      <dl class="dprops">
         <dt>${ico('landmark', 'ico ico-s')}Banco</dt><dd>${ou(b.banco)}${b.parcelas > 1 ? ` <span class="mudo">· ${b.parcelas}x</span>` : ''}</dd>
-        <dt>${ico('gavel', 'ico ico-s')}Protesto</dt><dd>${b.protesto ? '<span class="atraso">Sim</span>' : '<span class="mudo">Não</span>'}</dd>
         <dt>${ico('circle-dot', 'ico ico-s')}O.S.</dt><dd>${esc(b.status)} <span class="mudo">· total ${reais(b.totalOS)}</span></dd>
       </dl>
       <div class="det-acoes">
@@ -1618,6 +1639,35 @@ const notaPeriodo = (txt, alerta, acao) => `<div class="per-nota ${alerta ? 'ale
       </div>
     </div>`;
   }
+  // Preencher o boleto grava de verdade: a página usa as mesmas funções da tela
+  // de Boletos de hoje. Cada campo grava ao sair dele (ou no Enter); a tela já
+  // mostra o valor novo sem esperar a volta.
+  function salvar(b, campo, valor) {
+    paraPaiQuieto(campo === 'valor' ? { tipo: 'salvar-boleto', os: b.os, campo, centavos: valor } : { tipo: 'salvar-boleto', os: b.os, campo, valor });
+  }
+  const mascaraDoc = v => { const d = v.replace(/\D/g, '').slice(0, 14); return d.length <= 11
+    ? d.replace(/^(\d{3})(\d)/, '$1.$2').replace(/^(\d{3})\.(\d{3})(\d)/, '$1.$2.$3').replace(/\.(\d{3})(\d)/, '.$1-$2')
+    : d.replace(/^(\d{2})(\d)/, '$1.$2').replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3').replace(/\.(\d{3})(\d)/, '.$1/$2').replace(/(\d{4})(\d)/, '$1-$2'); };
+  const PROP = { valor: 'valor', boleto_numero: 'numero', boleto_cnpj: 'cnpj', boleto_data_emissao: 'emissao', prazo_pagamento: 'vence' };
+  gavetaRaiz.addEventListener('input', e => {
+    const el = e.target, campo = el.dataset?.bcampo; if (!campo) return;
+    if (campo === 'valor') { const c = parseInt(el.value.replace(/\D/g, '') || '0', 10); el.value = c ? brl(c) : ''; }
+    if (campo === 'boleto_cnpj') el.value = mascaraDoc(el.value);
+  });
+  gavetaRaiz.addEventListener('change', e => {
+    const el = e.target, campo = el.dataset?.bcampo; if (!campo || est.aba !== 'boletos') return;
+    const b = B.lista?.find(x => x.id === est.gaveta); if (!b) return;
+    const valor = campo === 'valor' ? parseInt(el.value.replace(/\D/g, '') || '0', 10) : el.value.trim();
+    if (b[PROP[campo]] === valor || (!b[PROP[campo]] && !valor)) return;
+    b[PROP[campo]] = valor;
+    salvar(b, campo, valor);
+    // A lista atrás redesenha (vencimento, faltando dados); a gaveta fica como
+    // está, para o Tab seguir para o próximo campo sem perder o foco.
+    render();
+    document.querySelector(`.lin[data-bol="${b.id}"]`)?.classList.add('aberta');
+    const dv = gavetaRaiz.querySelector('.det-valor'); if (dv && campo === 'valor') dv.innerHTML = `<small>R$</small>${brl(b.valor)}`;
+    el.classList.remove('salvo'); void el.offsetWidth; el.classList.add('salvo');
+  });
   MODULOS.boletos = {
     gaveta: { porId: id => B.lista?.find(b => b.id === id), detalhe, rotulo: 'Boleto', attr: 'bol' },
     numero() { if (!B.lista) return null; const v = B.lista.filter(vencido).length; return v ? [v, true, plural(v, 'boleto vencido', 'boletos vencidos')] : null; },
@@ -1654,14 +1704,17 @@ const notaPeriodo = (txt, alerta, acao) => `<div class="per-nota ${alerta ? 'ale
       const c = t.closest('[data-cli]'); if (c) { B.cliente = B.cliente === c.dataset.cli ? '' : c.dataset.cli; return render(); }
       const m = t.closest('[data-mais]'); if (m) { B.abertos.add(m.dataset.mais); return render(); }
     },
-    acao(a, b) {
+    acao(a, b, el) {
       if (a === 'abrir') return paraPai({ tipo: 'abrir-os', id: b.os });
+      if (a === 'protesto') { const v = el.dataset.v === 'true'; if (!!b.protesto === v) return; b.protesto = v; salvar(b, 'boleto_protesto_negativacao', v); render(); return renderGaveta(); }
       if (a === 'copiar-num') return copiar(b.numero, 'Número copiado');
       if (a === 'copiar') return copiar([`#${b.os}`, b.cliente, b.numero || '', b.cnpj || '', reais(b.valor), ddmm(b.vence), pago(b) ? 'Pago' : 'Em aberto'].join('\t'), 'Linha copiada');
       if (a === 'pagar') {
         if (B.conf !== b.id) { B.conf = b.id; render(); return renderGaveta(); }
+        // Grava de verdade, como o "Concluir boleto" da tela de hoje.
         b.pago = true; b.pagoEm = HOJE; B.conf = null; render(); renderGaveta();
-        return avisoProto('Boleto marcado como pago (protótipo: não grava)');
+        paraPaiQuieto({ tipo: 'concluir-boleto', os: b.os });
+        return avisoProto('Boleto marcado como pago');
       }
     },
     antesDeRolar(id) { if (id === 'b-pagos' && !B.verPagos) { B.verPagos = true; render(); } },

@@ -4,6 +4,7 @@ import { useSessao } from '@/context/SessaoContext';
 import { useFinanceiro } from '@/context/FinanceiroContext';
 import { useCadastros } from '@/context/CadastrosContext';
 import { useNotasFiscais } from '@/context/NotasFiscaisContext';
+import { usePedidos } from '@/context/PedidosContext';
 import { useContaDoPrototipo } from '@/hooks/useContaDoPrototipo';
 import { useAbrirOSDoPrototipo } from '@/hooks/useAbrirOSDoPrototipo';
 import { buscarContasReceber } from '@/lib/financeiro/receber';
@@ -23,8 +24,12 @@ import BarraDeCor from '@/components/ui/BarraDeCor';
 //   a vista contas_receber (uma linha por O.S. que deve, somada no banco) e os
 //   boletos lidos pelo lado do pagamento (lib/financeiro/). Nada é lido sem a
 //   aba aberta, e nada em laço; "Atualizar" relê quando a pessoa pede.
-// Nada grava aqui: "Abrir O.S." abre a O.S. real por cima (useAbrirOSDoPrototipo);
-// conta, nota e empresa abrem os modais de hoje, que gravam.
+// Quase nada grava aqui: "Abrir O.S." abre a O.S. real por cima
+// (useAbrirOSDoPrototipo); conta, nota e empresa abrem os modais de hoje, que
+// gravam. A exceção são os dados do boleto (CNPJ, número, valor, emissão,
+// vencimento, protesto) e o "pago": gravam de verdade, pelas MESMAS funções da
+// tela de Boletos de hoje (atualizarCampoInline / atualizarPagamentoBoleto), com
+// as mesmas permissões — não há modal para levar esse preenchimento.
 // created_at é um instante em UTC; a data que importa é a do dia em Brasília.
 const dataLocalDe = ts => {
     if (!ts) return '';
@@ -33,6 +38,16 @@ const dataLocalDe = ts => {
 };
 
 const ehData = s => typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s);
+
+// Os campos do boleto que moram na O.S. e o tipo de valor que cada um aceita.
+// Só estes passam: a mensagem vem do iframe e não escolhe coluna à vontade.
+const CAMPOS_BOLETO = {
+    boleto_cnpj: v => typeof v === 'string' && v.length <= 20,
+    boleto_numero: v => typeof v === 'string' && v.length <= 60,
+    boleto_data_emissao: v => v === '' || ehData(v),
+    prazo_pagamento: v => v === '' || ehData(v),
+    boleto_protesto_negativacao: v => typeof v === 'boolean',
+};
 
 // Uma nota no formato do protótipo (no modo demonstração, sem dado pessoal).
 const notaParaProto = (n, isDemo) => ({
@@ -44,7 +59,8 @@ const notaParaProto = (n, isDemo) => ({
 
 export default function Page() {
     const { isDemo } = useSessao();
-    const { contasPagar, empresasFaturamento, dadosCarregados, setNovaEmpresaFaturamento, setModalEmpresaFaturamentoAberto } = useFinanceiro();
+    const { contasPagar, empresasFaturamento, dadosCarregados, setNovaEmpresaFaturamento, setModalEmpresaFaturamentoAberto, atualizarPagamentoBoleto, concluirBoletoContasReceber } = useFinanceiro();
+    const { atualizarCampoInline } = usePedidos();
     const { fornecedores } = useCadastros();
     const { notasFiscais, setNotaFiscalEmEdicao, setModalNotaFiscalAberto } = useNotasFiscais();
     const [modelo, setModelo] = useState(null);
@@ -85,6 +101,16 @@ export default function Page() {
                 if (r.erro) return responder({ tipo: 'boletos-erro', pedido: msg.pedido, erro: r.erro.message || 'Não deu para carregar os boletos.' });
                 responder({ tipo: 'boletos', pedido: msg.pedido, vencidosAntes: r.vencidosAntes, lista: r.lista.map(b => ({ ...b, cliente: mascararCliente(b.cliente, isDemo), cnpj: isDemo ? '' : b.cnpj })) });
             }
+            // Preencher o boleto: grava pelas funções da tela de Boletos de hoje.
+            if (msg.tipo === 'salvar-boleto' && Number.isInteger(msg.os)) {
+                if (msg.campo === 'valor' && Number.isInteger(msg.centavos) && msg.centavos >= 0) {
+                    return atualizarPagamentoBoleto({ id: msg.os }, { valor: formatarMoeda(String(msg.centavos)) });
+                }
+                const valido = CAMPOS_BOLETO[msg.campo];
+                if (valido && valido(msg.valor)) return atualizarCampoInline(msg.os, msg.campo, msg.valor === '' ? null : msg.valor);
+                return;
+            }
+            if (msg.tipo === 'concluir-boleto' && Number.isInteger(msg.os)) return concluirBoletoContasReceber({ id: msg.os });
             if (msg.tipo === 'pedir-notas') {
                 const r = await buscarNotasConcluidas(periodo);
                 if (r.erro) return responder({ tipo: 'notas-erro', pedido: msg.pedido, erro: r.erro.message || 'Não deu para carregar as notas.' });
@@ -114,7 +140,7 @@ export default function Page() {
         }
         window.addEventListener('message', aoReceber);
         return () => window.removeEventListener('message', aoReceber);
-    }, [iframeRef, isDemo, notasFiscais, empresasFaturamento, setNotaFiscalEmEdicao, setModalNotaFiscalAberto, setNovaEmpresaFaturamento, setModalEmpresaFaturamentoAberto]);
+    }, [iframeRef, isDemo, notasFiscais, empresasFaturamento, setNotaFiscalEmEdicao, setModalNotaFiscalAberto, setNovaEmpresaFaturamento, setModalEmpresaFaturamentoAberto, atualizarPagamentoBoleto, concluirBoletoContasReceber, atualizarCampoInline]);
 
     if (!modelo || !dadosCarregados) {
         return <div className="min-h-[60vh] grid place-items-center"><BarraDeCor mostrarTexto texto="Carregando protótipo" /></div>;
