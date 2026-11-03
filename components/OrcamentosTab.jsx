@@ -182,7 +182,9 @@ export default function OrcamentosTab() {
                         ) : (
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {orcsFiltrados.map(orc => (
-                                    <div key={orc.id} onClick={() => { setNovoOrcamentoPre({...orc, texto: orc.texto || ''}); setModalOrcamentoPreAberto(true); }} className="bg-superficie rounded-xl shadow-sm border border-borda flex flex-col group relative cursor-pointer hover:border-brand/50 transition-colors">
+                                    // Só administrador edita (é o que o banco aceita): para os outros o
+                                    // cartão é leitura, com o "Copiar Texto" logo abaixo.
+                                    <div key={orc.id} onClick={isAdmin ? () => { setNovoOrcamentoPre({...orc, titulo: orc.titulo || '', texto: orc.texto || ''}); setModalOrcamentoPreAberto(true); } : undefined} className={`bg-superficie rounded-xl shadow-sm border border-borda flex flex-col group relative transition-colors ${isAdmin ? 'cursor-pointer hover:border-brand/50' : ''}`}>
                                         <div className="flex justify-between items-start gap-3 px-5 py-3.5 bg-gray-50/70 dark:bg-darkElevated/60 rounded-t-xl border-b border-dashed border-borda-forte">
                                             <div className="flex flex-col flex-1 min-w-0">
                                                 <h3 className="font-bold text-tinta leading-tight truncate">{orc.titulo}</h3>

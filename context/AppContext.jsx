@@ -1509,29 +1509,32 @@ export const AppProvider = ({ children }) => {
     }
 
     // === FUNÇÕES ORÇAMENTOS PRÉ PRONTOS ===
+    // A RLS só deixa Administrador gravar (orcpp_write). Para os outros níveis
+    // o update e o delete não mudam linha nenhuma e NÃO devolvem erro: a
+    // resposta vem vazia. Antes esse "nada" ia para o lugar do texto na lista
+    // e a tela quebrava ao redesenhar. Agora gravação sem linha é recusa.
+    const SO_ADMIN_PRE = 'Só administrador pode alterar os textos pré-prontos.';
     async function salvarOrcamentoPre(e) {
         e.preventDefault();
         const payload = { titulo: novoOrcamentoPre.titulo, texto: novoOrcamentoPre.texto, empresa: novoOrcamentoPre.empresa || 'Berlim' };
-        if (novoOrcamentoPre.id) {
-            const { data, error } = await supabase.from('orcamentos_pre_prontos').update(payload).eq('id', novoOrcamentoPre.id).select();
-            if (!error && data) {
-                setOrcamentosPreProntos(orcamentosPreProntos.map(o => o.id === novoOrcamentoPre.id ? data[0] : o));
-                setModalOrcamentoPreAberto(false);
-            } else avisar('Erro: ' + error?.message, 'erro');
-        } else {
-            const { data, error } = await supabase.from('orcamentos_pre_prontos').insert([payload]).select();
-            if (!error && data) {
-                setOrcamentosPreProntos([data[0], ...orcamentosPreProntos]);
-                setModalOrcamentoPreAberto(false);
-            } else avisar('Erro: ' + error?.message, 'erro');
-        }
+        const { data, error } = novoOrcamentoPre.id
+            ? await supabase.from('orcamentos_pre_prontos').update(payload).eq('id', novoOrcamentoPre.id).select()
+            : await supabase.from('orcamentos_pre_prontos').insert([payload]).select();
+        // 42501: o insert barrado pela RLS, esse sim volta como erro.
+        if (error) { avisar(error.code === '42501' ? SO_ADMIN_PRE : 'Erro ao salvar o texto: ' + error.message, 'erro'); return; }
+        if (!data?.length) { avisar(SO_ADMIN_PRE, 'erro'); return; }
+        // Pela função: o tempo real pode ter mexido na lista enquanto gravava.
+        if (novoOrcamentoPre.id) setOrcamentosPreProntos(lista => lista.map(o => o.id === novoOrcamentoPre.id ? data[0] : o));
+        else setOrcamentosPreProntos(lista => lista.some(o => o.id === data[0].id) ? lista : [data[0], ...lista]);
+        setModalOrcamentoPreAberto(false);
     }
 
     async function excluirOrcamentoPre(id) {
         if (!(await confirmar('Excluir este modelo pré-pronto?'))) return;
-        const { error } = await supabase.from('orcamentos_pre_prontos').delete().eq('id', id);
-        if (!error) setOrcamentosPreProntos(orcamentosPreProntos.filter(o => o.id !== id));
-        else avisar('Erro: ' + error.message, 'erro');
+        const { data, error } = await supabase.from('orcamentos_pre_prontos').delete().eq('id', id).select('id');
+        if (error) avisar('Erro: ' + error.message, 'erro');
+        else if (!data?.length) avisar(SO_ADMIN_PRE, 'erro');
+        else setOrcamentosPreProntos(lista => lista.filter(o => o.id !== id));
     }
 
     // === FUNÇÕES ORÇAMENTOS FORMALIZADOS ===
