@@ -133,8 +133,18 @@ export default function TelaEntrada({
                             </div>
                         </div>
                         <div>
-                            <div className="flex items-baseline justify-between gap-3 mb-[7px]">
-                                <label htmlFor="entrada-senha" className="text-[12.5px] font-semibold text-tinta-corpo">Senha</label>
+                            <label htmlFor="entrada-senha" className="block mb-[7px] text-[12.5px] font-semibold text-tinta-corpo">Senha</label>
+                            <CampoSenha
+                                id="entrada-senha"
+                                inputRef={senhaRef}
+                                value={senhaInput}
+                                onChange={(v) => { setSenhaInput(v); limparErro(); }}
+                                comErro={erroNaSenha}
+                            />
+                            {/* Embaixo do campo, e não ao lado do rótulo: ali ele ficava
+                                entre o e-mail e a senha na ordem do Tab, e quem passava de
+                                um campo para o outro caía no link. */}
+                            <div className="mt-2 flex justify-end">
                                 <button
                                     type="button"
                                     onClick={() => setAjudaSenha(a => !a)}
@@ -145,13 +155,6 @@ export default function TelaEntrada({
                                     Esqueceu a senha?
                                 </button>
                             </div>
-                            <CampoSenha
-                                id="entrada-senha"
-                                inputRef={senhaRef}
-                                value={senhaInput}
-                                onChange={(v) => { setSenhaInput(v); limparErro(); }}
-                                comErro={erroNaSenha}
-                            />
                             {ajudaSenha && (
                                 <p id="entrada-ajuda-senha" className="mt-2 flex items-start gap-[7px] text-[12.5px] leading-snug text-tinta-suave">
                                     <Icon name="info" className="w-3.5 h-3.5 mt-0.5 shrink-0" />
