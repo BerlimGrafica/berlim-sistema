@@ -71,6 +71,11 @@ typography:
     fontSize: "13.5px"
     fontWeight: 700
     lineHeight: 1.3
+  titulo-linha:
+    fontFamily: "Montserrat, system-ui, sans-serif"
+    fontSize: "14px"
+    fontWeight: 600
+    lineHeight: 1.4
   corpo:
     fontFamily: "Montserrat, system-ui, sans-serif"
     fontSize: "13px"
@@ -271,7 +276,7 @@ Superfície + borda da cor da área + raio 10px. Cabeçalho tingido com ícone e
 - **Selo:** 5px de raio, 11–12px, para estado curto (prazo, "até 14:00", "Rascunho"). Âmbar = atenção (vence amanhã), vermelho = passou, vence hoje ou está devendo.
 
 ### Listas
-Linha com título em 600 + uma linha de resumo em tinta-suave; meta (prazo, preço) à direita em números tabulares; **ações da linha sempre à mostra** na ponta direita, nunca escondidas até o hover: botões de ícone de 30px em tinta-fraca (hover Realce), o de concluir/pagar em verde, que no primeiro clique vira a pergunta ("Concluir?", "Pagar?") e no segundo confirma — o mesmo da nova Produção; linha já concluída guarda o lugar sem o botão; linha ativa pelo teclado em Realce. Clique abre no lugar (expande) em vez de navegar.
+Linha com o título (a informação principal: cliente, conta, produto) em `titulo-linha`, 14px e 600 — um ponto acima do corpo, para ser a primeira coisa que o olho acha (o nome do cliente na Produção e nas baixadas fica em 700) — + uma linha de resumo em tinta-suave; meta (prazo, preço) à direita em números tabulares; **ações da linha sempre à mostra** na ponta direita, nunca escondidas até o hover: botões de ícone de 30px em tinta-fraca (hover Realce), o de concluir/pagar em verde, que no primeiro clique vira a pergunta ("Concluir?", "Pagar?") e no segundo confirma — o mesmo da nova Produção; linha já concluída guarda o lugar sem o botão; linha ativa pelo teclado em Realce. Clique abre no lugar (expande) em vez de navegar.
 
 ### Popover e toast
 Popover em superfície, raio 9px, sombra Popover, entra com 160ms deslizando 4px; itens com hover Realce e ✓ no selecionado. Toast escuro centrado no rodapé, 2,2s, com ícone de ✓ verde.
