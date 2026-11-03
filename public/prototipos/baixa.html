@@ -137,8 +137,13 @@ html { --altura-cabecalho: 51px; --altura-filtros: 42px; }
 .tab-cab .dir { text-align: right; }
 .ord { display: inline-flex; align-items: center; gap: 4px; font-weight: 600; border-radius: 4px; }
 .ord:hover { color: var(--tinta); }
-.ord .ico { width: 13px; height: 13px; transition: transform .2s cubic-bezier(.16,1,.3,1); }
+.ord .ico { width: 13px; height: 13px; transition: transform .2s cubic-bezier(.16,1,.3,1), opacity .15s; }
 .ord.asc .ico { transform: rotate(180deg); }
+/* A setinha fica só na coluna que ordena; nas outras aparece fraca no hover,
+   mostrando que dá para ordenar por ela. */
+.ord.ativo { color: var(--tinta); }
+.ord:not(.ativo) .ico { opacity: 0; }
+.ord:not(.ativo):hover .ico, .ord:not(.ativo):focus-visible .ico { opacity: .5; }
 .grp { display: flex; align-items: center; gap: 9px; padding: 18px 4px 8px; }
 .grp-btn { display: inline-flex; align-items: center; gap: 9px; font-size: 13.5px; font-weight: 700; color: var(--tinta); border-radius: 6px; padding: 2px 4px 2px 2px; white-space: nowrap; flex-shrink: 0; }
 .grp-btn .chev { color: var(--tinta-fraca); transition: transform .2s cubic-bezier(.16,1,.3,1); }
@@ -442,7 +447,7 @@ const hash = s => { let h = 0; for (const c of s) h = (h * 31 + c.charCodeAt(0))
 const corPessoa = n => D.cores?.[n]?.[0] || PALETA[hash(n) % PALETA.length];
 const tintaPessoa = n => D.cores?.[n]?.[1] || '#fff';
 const iniciais = n => { const p = n.trim().split(/\s+/); return p.length > 1 ? (p[0][0] + p.at(-1)[0]).toUpperCase() : p[0].slice(0, 1).toUpperCase() + p[0].slice(1, 2).toLowerCase(); };
-const porId = id => PED.find(p => p.id === +id);
+const porId = id => PED.find(p => p.id === +id) || est.remoto?.pedidos.find(p => p.id === +id);
 
 /* ===== cargo: quem dá baixa e quem vê o criador ===== */
 const CARGOS = [['admin', 'Administrador'], ['financeiro', 'Financeiro'], ['operador', 'Atendimento ou Produção']];
@@ -484,23 +489,82 @@ const noPeriodo = p => (!est.periodo.de || p.venda >= est.periodo.de) && (!est.p
 /* ===== estado ===== */
 const est = {
   cargo: D.nivel === 'Administrador' ? 'admin' : D.nivel === 'Financeiro' ? 'financeiro' : 'operador',
-  aba: 'abertas', busca: '', periodo: { id: '', de: '', ate: '' }, ordem: 'desc',
+  // `campo` é a coluna que ordena (id, cliente ou valor); `ordem`, o sentido.
+  aba: 'abertas', busca: '', periodo: { id: '', de: '', ate: '' }, campo: 'id', ordem: 'desc',
   recolhidos: new Set(),
   sel: null, gaveta: null, conf: null, pop: null, preso: false, ind: null, animar: false, carregando: null,
+  // O resultado do filtro feito no banco: { chave, pedido, carregando, totais, pedidos, erro }.
+  remoto: null,
 };
 const termos = () => semAcento(est.busca.replace(/#/g, ' ')).split(/\s+/).filter(Boolean);
 const filtrando = () => !!(est.busca.trim() || comPeriodo());
-// Número procura o nº da O.S. (começo) e o nome; texto procura cliente, itens e criador.
+// Número procura o nº da O.S. (começo) e o nome; texto procura cliente, itens e
+// criador. No sistema, com filtro, o banco já procurou (cliente ou nº, como no
+// Histórico) e isto só confere e realça o que voltou.
 const casa = (p, ts) => ts.every(t => (/^\d+$/.test(t) && String(p.id).startsWith(t)) || semAcento(`${p.cliente} ${p.resumo} ${p.itens.map(i => i[0]).join(' ')} ${p.criado}`).includes(t));
-const filtrados = () => { const ts = termos(); return PED.filter(p => noPeriodo(p) && casa(p, ts)); };
+const filtrados = () => { const ts = termos(); return (est.remoto ? est.remoto.pedidos : PED).filter(p => noPeriodo(p) && casa(p, ts)); };
 const daAba = (l, id) => l.filter(p => abaDoStatus(p.status) === id);
-// Sem busca nem período, a contagem é a do banco; filtrando, é a do que casou.
-const contagem = (l, id) => filtrando() ? daAba(l, id).length : TOT[id];
-const ordenar = l => l.slice().sort((a, b) => est.ordem === 'asc' ? a.id - b.id : b.id - a.id);
+// Sem busca nem período, a contagem é a do banco; filtrando no sistema, também
+// (a do filtro, que a página conta); fora dele, é a do que casou aqui.
+const contagem = (l, id) => !filtrando() ? TOT[id] : est.remoto ? (est.remoto.totais?.[id] ?? null) : daAba(l, id).length;
+
+/* ===== filtro no banco ===== */
+// A carga inicial traz só as 80 O.S. mais recentes de cada aba: filtrar nelas
+// deixava um mês antigo vazio, com mais de mil baixadas no banco. Com período ou
+// busca, quem filtra é o banco: o protótipo pede à página a contagem de cada aba
+// e as primeiras O.S. da aba aberta. Fora do sistema, sem página para pedir,
+// continua filtrando o que tem.
+const noSistema = window.parent !== window;
+const buscaBanco = () => est.busca.replace(/#/g, ' ').trim();
+// A ordem também vai ao banco quando não é a padrão (nº, mais novas primeiro) e
+// a aba tem mais O.S. no banco do que na tela: senão "maior valor" seria o maior
+// entre as 80 mais recentes. Aba que já está inteira na tela ordena aqui mesmo.
+const ordemPadrao = () => est.campo === 'id' && est.ordem === 'desc';
+const precisaBanco = () => filtrando() || (!ordemPadrao() && TOT[est.aba] > daAba(PED, est.aba).length);
+let pedidosFiltro = 0;
+// Chamado a cada render: só pede quando o filtro, a aba ou a ordem mudaram.
+function pedirFiltro() {
+  if (!noSistema || !precisaBanco()) { clearTimeout(pedirFiltro.t); est.remoto = null; return; }
+  const chave = JSON.stringify([est.aba, est.periodo.de, est.periodo.ate, buscaBanco(), est.campo, est.ordem]);
+  if (est.remoto?.chave === chave) return;
+  clearTimeout(pedirFiltro.t);
+  est.remoto = { chave, pedido: null, carregando: true, totais: est.remoto?.totais || null, pedidos: [], erro: null };
+  const alvo = est.remoto;
+  // Digitando, espera a pessoa parar; período e aba vão na hora.
+  pedirFiltro.t = setTimeout(() => {
+    alvo.pedido = ++pedidosFiltro;
+    // Só ordenando, sem filtro, as contagens das abas não mudam: não se pede.
+    window.parent.postMessage({ tipo: 'pedir-filtro', pedido: alvo.pedido, aba: est.aba, de: est.periodo.de, ate: est.periodo.ate, busca: buscaBanco(), campo: est.campo, ordem: est.ordem, contar: filtrando() }, '/');
+  }, est.busca.trim() ? 300 : 0);
+}
+addEventListener('message', e => {
+  if (!noSistema || e.source !== window.parent) return;
+  const m = e.data || {};
+  // Resposta atrasada (de um filtro que já mudou) não vale.
+  if ((m.tipo !== 'filtro' && m.tipo !== 'filtro-erro') || !est.remoto || m.pedido !== est.remoto.pedido) return;
+  if (m.tipo === 'filtro-erro') est.remoto = { ...est.remoto, carregando: false, pedidos: [], erro: m.erro || 'Não deu para filtrar as O.S.' };
+  else {
+    Object.assign(D.cores, m.cores || {});
+    est.remoto = { ...est.remoto, carregando: false, totais: m.totais || null, pedidos: (m.pedidos || []).map(p => ({ ...p })) };
+  }
+  render(); animarConteudo('chega');
+});
+// Ordenar pela coluna da setinha: nº da O.S., cliente (de A a Z, sem ligar
+// para acento e caixa) ou valor. Empate vai pelo nº, mais nova primeiro.
+const ORDENS = {
+  id: { padrao: 'desc', cmp: (a, b) => a.id - b.id, dica: { desc: 'Mais novas primeiro', asc: 'Mais antigas primeiro' } },
+  cliente: { padrao: 'asc', cmp: (a, b) => a.cliente.localeCompare(b.cliente, 'pt-BR', { sensitivity: 'base' }), dica: { asc: 'Clientes de A a Z', desc: 'Clientes de Z a A' } },
+  valor: { padrao: 'desc', cmp: (a, b) => a.valor - b.valor, dica: { desc: 'Maior valor primeiro', asc: 'Menor valor primeiro' } },
+};
+const ordenar = l => l.slice().sort((a, b) => ORDENS[est.campo].cmp(a, b) * (est.ordem === 'asc' ? 1 : -1) || b.id - a.id);
+// A lista continua agrupada por mês da venda; a ordem vale dentro de cada mês.
+// Os meses seguem o nº só quando é ele que ordena; nas outras colunas, o mais
+// recente fica em cima.
 function porMes(l) {
   const g = new Map();
   ordenar(l).forEach(p => { const k = ehData(p.venda) ? p.venda.slice(0, 7) : ''; if (!g.has(k)) g.set(k, []); g.get(k).push(p); });
-  return [...g].sort(([a], [b]) => (a === '') - (b === '') || (est.ordem === 'asc' ? a.localeCompare(b) : b.localeCompare(a))).map(([k, itens]) => ({ chave: 'mes:' + (k || 'sem'), nome: nomeMes(k), itens }));
+  const antigosPrimeiro = est.campo === 'id' && est.ordem === 'asc';
+  return [...g].sort(([a], [b]) => (a === '') - (b === '') || (antigosPrimeiro ? a.localeCompare(b) : b.localeCompare(a))).map(([k, itens]) => ({ chave: 'mes:' + (k || 'sem'), nome: nomeMes(k), itens }));
 }
 
 /* ===== pagamento ===== */
@@ -562,7 +626,14 @@ function grupoHTML(chave, titulo, n, linhasHTML) {
   return `<div class="grp ${fechado ? 'fechado' : ''}"><button class="grp-btn" data-acao="grupo" data-g="${esc(chave)}" aria-expanded="${!fechado}">${ico('chevron-down', 'ico ico-s chev')}${titulo} <span class="n">${n}</span></button></div>
     <div class="grp-corpo ${fechado ? 'fechado' : ''}"><div class="grp-dentro"><div class="lista">${linhasHTML}</div></div></div>`;
 }
-const cabTabela = () => `<div class="tab-cab"><span><button class="ord ${est.ordem}" data-acao="ordem" title="${est.ordem === 'desc' ? 'Mais novas primeiro — clique para inverter' : 'Mais antigas primeiro — clique para inverter'}">O.S.${ico('arrow-down', 'ico')}</button></span><span>Cliente e serviço</span><span>Situação</span><span>Venda</span><span class="dir">Valor</span>${veCriador() ? '<span class="c-criado">Criado por</span>' : ''}<span></span></div>`;
+// O botão da setinha de uma coluna: ativo mostra o sentido (clicar inverte);
+// inativo começa no sentido mais útil dela (valor: o maior; cliente: de A a Z).
+function botaoOrdem(campo, rotulo) {
+  const o = ORDENS[campo], ativo = est.campo === campo, sentido = ativo ? est.ordem : o.padrao;
+  const dica = ativo ? `${o.dica[sentido]} — clique para inverter` : `Ordenar: ${o.dica[sentido].toLowerCase()}`;
+  return `<button class="ord ${sentido} ${ativo ? 'ativo' : ''}" data-acao="ordem" data-campo="${campo}" title="${dica}" aria-label="${dica}">${rotulo}${ico('arrow-down', 'ico')}</button>`;
+}
+const cabTabela = () => `<div class="tab-cab"><span>${botaoOrdem('id', 'O.S.')}</span><span>${botaoOrdem('cliente', 'Cliente e serviço')}</span><span>Situação</span><span>Venda</span><span class="dir">${botaoOrdem('valor', 'Valor')}</span>${veCriador() ? '<span class="c-criado">Criado por</span>' : ''}<span></span></div>`;
 
 /* ===== cabeçalho e faixa ===== */
 const buscaHTML = ph => `<label class="busca">${ico('search')}<input data-busca value="${esc(est.busca)}" placeholder="${ph}" aria-label="${ph}" autocomplete="off">${est.busca ? `<button class="limpar" data-acao="limpar" aria-label="Limpar busca">${ico('x', 'ico ico-s')}</button>` : '<kbd>/</kbd>'}</label>`;
@@ -575,13 +646,13 @@ const botaoTodos = chaves => { if (!chaves.length) return ''; const todas = chav
   return `<button class="ib todos" data-acao="todos" data-chaves="${esc(JSON.stringify(chaves))}" aria-pressed="${todas}" aria-label="${rot}" title="${rot}">${ico(todas ? 'unfold-vertical' : 'fold-vertical', 'ico')}</button>`; };
 function faixaAbas(l, chaves) {
   return `<div class="sentinela" aria-hidden="true"></div><div class="faixa ${est.preso ? 'preso' : ''}">
-    <div class="abas" role="tablist" aria-label="Situação">${ABAS.map(a => `<button class="aba" role="tab" data-acao="aba" data-aba="${a.id}" aria-selected="${est.aba === a.id}" title="${a.leg}">${a.nome}<span class="n">${fmtN(contagem(l, a.id))}</span></button>`).join('')}<span class="indicador" aria-hidden="true"></span></div>
+    <div class="abas" role="tablist" aria-label="Situação">${ABAS.map(a => { const n = contagem(l, a.id); return `<button class="aba" role="tab" data-acao="aba" data-aba="${a.id}" aria-selected="${est.aba === a.id}" title="${a.leg}">${a.nome}<span class="n">${n == null ? '…' : fmtN(n)}</span></button>`; }).join('')}<span class="indicador" aria-hidden="true"></span></div>
     <div class="abas-fim">${botaoPeriodo()}${botaoTodos(chaves)}${botaoNova(true)}</div></div>`;
 }
 const barraMob = () => `<div class="barra-mob"><button class="btn btn-sec" data-acao="focar-busca" aria-label="Buscar">${ico('search')}</button><button class="btn btn-pri" data-acao="nova">${ico('plus')}Nova O.S.</button></div>`;
 const dicas = () => `<div class="dicas"><span><kbd>/</kbd> buscar</span><span><kbd>↑</kbd><kbd>↓</kbd> navega</span><span><kbd>Enter</kbd> abre</span><span><kbd>N</kbd> nova O.S.</span><span>botão direito para mais ações</span></div>`;
 function vazio(l, onde) {
-  const outras = filtrando() && onde ? ABAS.filter(a => a.id !== onde.id).map(a => [a, daAba(l, a.id).length]).filter(([, n]) => n) : [];
+  const outras = filtrando() && onde ? ABAS.filter(a => a.id !== onde.id).map(a => [a, est.remoto ? (est.remoto.totais?.[a.id] || 0) : daAba(l, a.id).length]).filter(([, n]) => n) : [];
   const q = est.busca.trim();
   return `<div class="vazio">${FOLHA}<b>Nenhuma O.S.${q ? ` com “${esc(q)}”` : ''}${onde ? ` em ${onde.nome}` : ''}${comPeriodo() ? ' neste período' : ''}</b>
     ${outras.length ? `<div class="vazio-outras">${outras.map(([a, n]) => `<button class="btn btn-sec btn-p" data-acao="aba" data-aba="${a.id}">${n} em ${a.nome}${ico('arrow-right', 'ico ico-s')}</button>`).join('')}</div>` : ''}
@@ -601,21 +672,24 @@ function esqueleto(def) {
     <div aria-hidden="true"><div class="grp"><span class="esq forte" style="width:110px"></span></div><div class="lista">${LARG_ESQ.map(lin).join('')}</div></div>`;
 }
 function rodape(aba, n) {
-  const faltam = TOT[aba] - daAba(PED, aba).length;
-  if (filtrando() || faltam <= 0) return '';
-  return `<div class="rodape"><span>Mostrando ${fmtN(n)} de ${fmtN(TOT[aba])}</span><button class="btn btn-sec btn-p" data-acao="carregar">Carregar mais 50</button></div>`;
+  if (filtrando() && !est.remoto) return '';
+  // Com filtro, o total é o que o banco contou; só ordenando, é o da aba.
+  const total = est.remoto?.totais?.[aba] ?? (filtrando() ? n : TOT[aba]);
+  if (total - n <= 0) return '';
+  return `<div class="rodape"><span>Mostrando ${fmtN(n)} de ${fmtN(total)}</span><button class="btn btn-sec btn-p" data-acao="carregar">Carregar mais 50</button></div>`;
 }
 
 /* ===== a tela: abas por situação, lista agrupada por mês da venda ===== */
 function renderTela() {
   const l = filtrados(); const def = ABAS.find(a => a.id === est.aba); const naAba = daAba(l, est.aba);
-  const carregando = est.carregando === est.aba;
+  const carregando = est.carregando === est.aba || !!est.remoto?.carregando;
   let corpo, chaves = [];
   if (carregando) corpo = esqueleto(def);
+  else if (est.remoto?.erro) corpo = `<div class="vazio">${FOLHA}<b>${esc(est.remoto.erro)}</b><button class="btn btn-txt btn-p" data-acao="limpar-tudo">Limpar busca e período</button></div>`;
   else if (!naAba.length) corpo = vazio(l, def);
   else { const gs = porMes(naAba); chaves = gs.map(g => g.chave); corpo = gs.map(g => grupoHTML(g.chave, esc(g.nome), g.itens.length, g.itens.map(linha).join(''))).join(''); }
   return `<div class="pg ${veCriador() ? 'com-criado' : ''}">
-    <div class="cab"><div class="cab-tit"><h1>O.S.</h1><p>${def.leg}</p></div><div class="acoes">${buscaHTML('Buscar cliente, nº ou item')}${botaoNova()}</div></div>
+    <div class="cab"><div class="cab-tit"><h1>O.S.</h1><p>${def.leg}</p></div><div class="acoes">${buscaHTML(noSistema ? 'Buscar cliente ou nº' : 'Buscar cliente, nº ou item')}${botaoNova()}</div></div>
     ${faixaAbas(l, chaves)}${carregando || naAba.length ? cabTabela() : ''}<div class="conteudo" ${carregando ? 'aria-busy="true"' : ''}>${corpo}${carregando ? '' : rodape(est.aba, naAba.length)}</div>${dicas()}</div>${barraMob()}`;
 }
 
@@ -863,6 +937,7 @@ function render() {
   const foco = document.activeElement; const naBusca = foco?.matches?.('[data-busca]'); const pos = naBusca ? foco.selectionStart : null;
   const antes = est.animar ? medir() : null;
   const scFaixa = tela.querySelector('.abas')?.scrollLeft;
+  pedirFiltro();
   tela.innerHTML = renderTela();
   vigiaFaixa.disconnect(); const sentinela = tela.querySelector('.sentinela'); if (sentinela) vigiaFaixa.observe(sentinela);
   renderGaveta();
@@ -916,7 +991,7 @@ function trocarAba(id) {
   const lado = Math.sign(idxAba(id) - idxAba(est.aba));
   est.aba = id; est.sel = null;
   clearTimeout(trocarAba.t);
-  est.carregando = vistas.has(id) || filtrando() ? null : id;
+  est.carregando = vistas.has(id) || precisaBanco() ? null : id;
   render(); voltarAoInicioDaLista(); animarConteudo('entra', lado);
   if (!est.carregando) return vistas.add(id);
   trocarAba.t = setTimeout(() => { vistas.add(id); est.carregando = null; render(); animarConteudo('chega'); }, ESPERA_SIMULADA_MS);
@@ -1008,7 +1083,13 @@ document.addEventListener('click', e => {
     return atualizarTodos();
   }
   if (a === 'aba') return trocarAba(el.dataset.aba);
-  if (a === 'ordem') { est.ordem = est.ordem === 'desc' ? 'asc' : 'desc'; return render(); }
+  // A mesma coluna inverte o sentido; outra coluna começa no sentido padrão dela.
+  if (a === 'ordem') {
+    const campo = ORDENS[el.dataset.campo] ? el.dataset.campo : 'id';
+    if (est.campo === campo) est.ordem = est.ordem === 'desc' ? 'asc' : 'desc';
+    else { est.campo = campo; est.ordem = ORDENS[campo].padrao; }
+    render(); return voltarAoInicioDaLista();
+  }
   if (a === 'limpar') { est.busca = ''; render(); return tela.querySelector('[data-busca]')?.focus(); }
   if (a === 'limpar-tudo') { est.busca = ''; est.periodo = { id: '', de: '', ate: '' }; return render(); }
   if (a === 'focar-busca') { scrollTo({ top: 0, behavior: 'smooth' }); return tela.querySelector('[data-busca]')?.focus(); }
