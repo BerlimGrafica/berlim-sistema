@@ -41,7 +41,7 @@ export default function Page() {
             fornecedor: fornecedores.find(f => f.id === c.fornecedor_id)?.nome || '', fornecedorId: c.fornecedor_id || null,
             recorrente: !!c.recorrente, parcelas: c.recorrente_total_parcelas || null, parcela: c.recorrente_parcela_atual || null,
         })),
-        categorias: Object.fromEntries(CATEGORIAS_CONTA.map(c => [c.value, { label: c.label, icone: c.icone }])),
+        categorias: Object.fromEntries(CATEGORIAS_CONTA.map(c => [c.value, { label: c.label, icone: c.icone, cor: c.cor }])),
         // Para o novo modal de conta: Material, Manutenção e Terceirização pedem
         // um fornecedor do mesmo tipo (a mesma regra do ContaModal de hoje).
         fornecedores: fornecedores.map(f => ({ id: f.id, nome: f.nome || '', tipo: f.tipo || '' })),

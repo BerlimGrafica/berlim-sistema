@@ -5,6 +5,7 @@ import { useSessao } from '@/context/SessaoContext';
 import { useFinanceiro } from '@/context/FinanceiroContext';
 import { useCadastros } from '@/context/CadastrosContext';
 import { mascararCliente, obterDataAtual } from '@/lib/utils/formatters';
+import { CATEGORIAS_CONTA } from '@/lib/utils/constants';
 import { corDoNome } from '@/lib/prototipos/coresDoNome';
 import { podeVerTela, subtelasVisiveis } from '@/lib/acesso/telas';
 import { periodoPadrao } from '@/components/vendas/SeletorPeriodo';
@@ -211,7 +212,8 @@ export default function Page() {
     // O HTML é montado uma vez: trocar de período não recarrega o iframe.
     const html = useMemo(() => {
         if (!modelo || !inicial) return null;
-        const dados = { hoje: obterDataAtual(), abas, ...inicial };
+        // A cor de cada categoria de conta vem da fonte única (CATEGORIAS_CONTA).
+        const dados = { hoje: obterDataAtual(), abas, coresCategoria: Object.fromEntries(CATEGORIAS_CONTA.map(c => [c.value, c.cor])), ...inicial };
         // "<" escapado para um nome nunca fechar o <script> do protótipo.
         return modelo.replace('/*VENDAS*/', `const DADOS = ${JSON.stringify(dados).replace(/</g, '\\u003c')};`);
     }, [modelo, inicial, abas]);
