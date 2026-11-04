@@ -61,6 +61,13 @@ const ficaNaMemoria = (p) => STATUSES_PRODUCAO.includes(p.status)
 // Voltar à aba depois de quanto tempo fora recarrega tudo (ver aoMudarVisibilidade).
 const RECARGA_APOS_ESCONDIDA_MS = 10 * 60 * 1000;
 
+// Espera antes de reassinar um canal que o servidor fechou (ver agendarReassinatura).
+// Dobra a cada queda seguida, porque cada volta recarrega os dados: um canal
+// instável não pode virar recarga em laço. Ficou de pé por CANAL_ESTAVEL_MS, zera.
+const REASSINAR_MIN_MS = 2 * 1000;
+const REASSINAR_MAX_MS = 5 * 60 * 1000;
+const CANAL_ESTAVEL_MS = 60 * 1000;
+
 // ---------------------------------------------------------------------------
 // Tempo real: aplicar o evento, não recarregar o banco.
 //
@@ -463,12 +470,26 @@ export const AppProvider = ({ children }) => {
         // Vira true na primeira inscrição; a partir daí, todo SUBSCRIBED é uma
         // reinscrição depois de o canal ter caído.
         let jaHouveConexao = false;
-        const canalRealTime = supabase
-            .channel('mudancas-banco') .on('postgres_changes', { event: '*', schema: 'public' }, (payload) => {
-                const tratar = tratadores[payload.table];
-                if (tratar) tratar(payload);
-            })
-            .subscribe((status) => {
+        let canalRealTime = null;
+        let encerrado = false;
+        let reassinando = false;
+        let reassinarAoVoltar = false;
+        let timerReassinar = null;
+        let tentativas = 0;
+        let assinouEm = 0;
+        let escondidaDesde = document.visibilityState === 'hidden' ? Date.now() : null;
+
+        const assinar = () => {
+            assinouEm = Date.now();
+            const canal = supabase
+                .channel('mudancas-banco') .on('postgres_changes', { event: '*', schema: 'public' }, (payload) => {
+                    const tratar = tratadores[payload.table];
+                    if (tratar) tratar(payload);
+                });
+            canalRealTime = canal;
+            canal.subscribe((status) => {
+                // Trocar de canal também avisa CLOSED: o antigo não conta mais.
+                if (canal !== canalRealTime) return;
                 if (status === 'SUBSCRIBED') {
                     // Reconexão não recupera o passado: o Postgres não reenvia o
                     // que aconteceu enquanto o socket esteve fora, e a biblioteca
@@ -487,32 +508,51 @@ export const AppProvider = ({ children }) => {
                 if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
                     console.error('Tempo real indisponível (' + status + '). A tela só atualiza ao recarregar.');
                 }
+                // Erro e timeout a biblioteca refaz sozinha; canal fechado, não.
+                // É o que acontece quando o token vence: o supabase-js só renova
+                // o token com a aba visível, então uma aba que passa mais de uma
+                // hora escondida volta com o canal fechado pelo servidor. A
+                // conexão segue aberta e nenhum erro aparece: a tela só parava de
+                // receber, e nada além do F5 trazia o canal de volta.
+                if (status === 'CLOSED') agendarReassinatura();
             });
-
-        // Desliga o radar se o usuário fizer logoff
-        return () => {
-            supabase.removeChannel(canalRealTime);
-            Object.values(timersRealtimeRef.current).forEach(clearTimeout);
-            timersRealtimeRef.current = {};
         };
-    // Pelo id, e não pelo objeto do perfil: qualquer mudança no perfil (foto,
-    // telas, nome) cria um objeto novo, e com ele o efeito refazia a carga
-    // inteira e o canal a cada vez — em todas as abas da pessoa. Nada aqui lê
-    // outro campo do perfil; o tratador de profiles usa usuarioRef.
-    }, [usuario?.id]);
 
-    // Redundância pro Realtime: se a aba ficar em segundo plano por um tempo, o
-    // navegador pode suspender a conexão e perder eventos nesse meio-tempo. Ao
-    // voltar a ficar visível, recarrega tudo de novo pra garantir que não ficou
-    // nada desatualizado (novo produto, pedido, etc.).
-    //
-    // Só depois de RECARGA_APOS_ESCONDIDA_MS fora. Recarregar em toda volta —
-    // ir ao WhatsApp e voltar, desbloquear o celular — repetia a carga inteira
-    // dezenas de vezes por dia por pessoa. Numa saída curta o canal continua de
-    // pé e os eventos chegam; se ele cair, a reinscrição acima já recarrega.
-    useEffect(() => {
-        if (!usuario) return;
-        let escondidaDesde = document.visibilityState === 'hidden' ? Date.now() : null;
+        const reassinar = async () => {
+            if (encerrado || reassinando) return;
+            reassinando = true;
+            clearTimeout(timerReassinar);
+            timerReassinar = null;
+            const antigo = canalRealTime;
+            canalRealTime = null;
+            // O nome do canal é fixo: enquanto o antigo estiver registrado,
+            // channel() devolve ele mesmo em vez de criar outro.
+            if (antigo) await supabase.removeChannel(antigo);
+            // Com o token vencido a entrada seria recusada: garante o renovado.
+            await supabase.auth.getSession().catch(() => null);
+            reassinando = false;
+            if (!encerrado) assinar();
+        };
+
+        const agendarReassinatura = () => {
+            if (encerrado || timerReassinar !== null) return;
+            // Escondida, o token não renova e a tentativa seria recusada.
+            if (document.visibilityState === 'hidden') { reassinarAoVoltar = true; return; }
+            if (Date.now() - assinouEm >= CANAL_ESTAVEL_MS) tentativas = 0;
+            const espera = Math.min(REASSINAR_MAX_MS, REASSINAR_MIN_MS * 2 ** tentativas);
+            tentativas += 1;
+            timerReassinar = setTimeout(reassinar, espera);
+        };
+
+        // Redundância pro Realtime: se a aba ficar em segundo plano por um tempo, o
+        // navegador pode suspender a conexão e perder eventos nesse meio-tempo. Ao
+        // voltar a ficar visível, refaz o canal, e o SUBSCRIBED acima recarrega tudo
+        // pra garantir que não ficou nada desatualizado (novo produto, pedido, etc.).
+        //
+        // Só depois de RECARGA_APOS_ESCONDIDA_MS fora. Recarregar em toda volta —
+        // ir ao WhatsApp e voltar, desbloquear o celular — repetia a carga inteira
+        // dezenas de vezes por dia por pessoa. Numa saída curta o canal continua de
+        // pé e os eventos chegam; se ele cair, a reinscrição acima já recarrega.
         function aoMudarVisibilidade() {
             if (document.visibilityState === 'hidden') {
                 escondidaDesde = Date.now();
@@ -520,10 +560,28 @@ export const AppProvider = ({ children }) => {
             }
             const ficouMuitoTempoFora = escondidaDesde !== null && Date.now() - escondidaDesde >= RECARGA_APOS_ESCONDIDA_MS;
             escondidaDesde = null;
-            if (ficouMuitoTempoFora) { carregarDados(); carregarChat(); }
+            if (ficouMuitoTempoFora || reassinarAoVoltar) {
+                reassinarAoVoltar = false;
+                reassinar();
+            }
         }
+
+        assinar();
         document.addEventListener('visibilitychange', aoMudarVisibilidade);
-        return () => document.removeEventListener('visibilitychange', aoMudarVisibilidade);
+
+        // Desliga o radar se o usuário fizer logoff
+        return () => {
+            encerrado = true;
+            clearTimeout(timerReassinar);
+            document.removeEventListener('visibilitychange', aoMudarVisibilidade);
+            if (canalRealTime) supabase.removeChannel(canalRealTime);
+            Object.values(timersRealtimeRef.current).forEach(clearTimeout);
+            timersRealtimeRef.current = {};
+        };
+    // Pelo id, e não pelo objeto do perfil: qualquer mudança no perfil (foto,
+    // telas, nome) cria um objeto novo, e com ele o efeito refazia a carga
+    // inteira e o canal a cada vez — em todas as abas da pessoa. Nada aqui lê
+    // outro campo do perfil; o tratador de profiles usa usuarioRef.
     }, [usuario?.id]);
 
     // Rede de segurança só do chat.
