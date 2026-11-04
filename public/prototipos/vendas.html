@@ -678,7 +678,7 @@ const avisoProto = txt => { document.querySelector('.aviso-proto')?.remove(); co
 
 // As cores que o sistema já usa: formas de pagamento (o relatório do dia de
 // hoje), categorias de conta (CATEGORIAS_CONTA) e situação das O.S.
-const COR_FORMA = { 'PIX': '#10b981', 'Cartão de Crédito': '#6366f1', 'Cartão de Débito': '#0ea5e9', 'Link de Pagamento': '#8b5cf6', 'Dinheiro': '#f59e0b', 'Boleto': '#64748b', 'Estorno': '#ef4444' };
+const COR_FORMA = { 'PIX': '#10b981', 'Cartão de Crédito': '#6366f1', 'Cartão de Débito': '#0ea5e9', 'Link de Pagamento': '#c525c6', 'Dinheiro': '#f59e0b', 'Depósito Bancário': '#a04a10', 'Boleto': '#64748b', 'Estorno': '#ef4444' };
 const corForma = f => COR_FORMA[f] || '#9ca3af';
 // A cor de cada categoria de conta vem do sistema (CATEGORIAS_CONTA, em
 // lib/utils/constants.js); a de reserva só vale com o arquivo aberto fora dele.
@@ -981,7 +981,7 @@ function blocoFormas() {
     vazioTxt: 'Nenhum pagamento registrado no período.', vazioIco: 'credit-card' });
 }
 function blocoInstituicoes() {
-  return composicao({ cls: 'a-fin', icone: 'landmark', titulo: 'Instituições', sub: 'em que conta caiu o PIX, o boleto e o link',
+  return composicao({ cls: 'a-fin', icone: 'landmark', titulo: 'Instituições', sub: 'em que conta caiu cada pagamento',
     itens: M.ranking_instituicao || [], cor: (c => x => c(x.rotulo))(coresInst((M.ranking_instituicao || []).map(x => x.rotulo))), frase: x => `caiu em <b>${esc(x.rotulo)}</b>`,
     vazioTxt: 'Nenhuma instituição registrada no período.', vazioIco: 'landmark' });
 }

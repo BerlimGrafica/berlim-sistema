@@ -484,15 +484,15 @@ html[data-troca-tema] *, html[data-troca-tema] *::before, html[data-troca-tema] 
 const STATUS_PRODUCAO = ['Aguardando Pagamento', 'Aguardando Retorno', 'Desenvolvimento de Arte', 'Etiqueta Escolar', 'Produzir', 'Produção', 'Avisar Cliente', 'Entrega', 'Retirada'];
 const STATUS_FINAL = ['Abandonado', 'Cancelado', 'Concluído', 'Finalizado'];
 const COR_STATUS = { 'Aguardando Pagamento': '#10b981', 'Aguardando Retorno': '#84cc16', 'Desenvolvimento de Arte': '#06b6d4', 'Etiqueta Escolar': '#2563eb', 'Produzir': '#a855f7', 'Produção': '#6b7280', 'Avisar Cliente': '#ec4899', 'Retirada': '#0ea5e9', 'Entrega': '#14b8a6', 'Abandonado': '#ca8a04', 'Cancelado': '#ef4444', 'Concluído': '#f97316', 'Finalizado': '#6366f1' };
-const FORMAS = ['PIX', 'Boleto', 'Cartão de Crédito', 'Cartão de Débito', 'Dinheiro', 'Link de Pagamento', 'Estorno'];
-const FORMA_CURTA = { 'Cartão de Crédito': 'Crédito', 'Cartão de Débito': 'Débito', 'Link de Pagamento': 'Link' };
-const FORMA_ICO = { 'PIX': 'zap', 'Boleto': 'barcode', 'Cartão de Crédito': 'credit-card', 'Cartão de Débito': 'credit-card', 'Dinheiro': 'banknote', 'Link de Pagamento': 'link', 'Estorno': 'undo-2' };
+const FORMAS = ['PIX', 'Boleto', 'Cartão de Crédito', 'Cartão de Débito', 'Dinheiro', 'Depósito Bancário', 'Link de Pagamento', 'Estorno'];
+const FORMA_CURTA = { 'Cartão de Crédito': 'Crédito', 'Cartão de Débito': 'Débito', 'Depósito Bancário': 'Depósito', 'Link de Pagamento': 'Link' };
+const FORMA_ICO = { 'PIX': 'zap', 'Boleto': 'barcode', 'Cartão de Crédito': 'credit-card', 'Cartão de Débito': 'credit-card', 'Dinheiro': 'banknote', 'Depósito Bancário': 'landmark', 'Link de Pagamento': 'link', 'Estorno': 'undo-2' };
 const INSTITUICOES = ['Itaú', 'Infinite Pay', 'Pag Seguro'];
 const BANDEIRAS = ['Visa', 'MasterCard', 'Elo', 'American Express', 'HiperCard', 'Maestro', 'RedeShop', 'Nubank', 'CREDIT'];
 const COR_LOCAL_FIXA = { 'berlim': '#f97316', 'futura': '#3b82f6', 'alvo print': '#d946ef', 'atualcard': '#0d9488', 'xexe': '#65a30d', 'stampmix': '#f43f5e', 'gráfica chromeset': '#6366f1', 'outros': '#64748b' };
 const PALETA = ['#f43f5e', '#f97316', '#f59e0b', '#10b981', '#14b8a6', '#0ea5e9', '#6366f1', '#d946ef'];
 function corLocal(nome) { const s = (nome || '?').trim().toLowerCase(); if (COR_LOCAL_FIXA[s]) return COR_LOCAL_FIXA[s]; let soma = 0; for (const c of s) soma += c.charCodeAt(0); return PALETA[soma % PALETA.length]; }
-const extrasDaForma = f => ({ inst: f === 'PIX' || f === 'Link de Pagamento', band: f === 'Cartão de Crédito' || f === 'Cartão de Débito', parc: f === 'Cartão de Crédito' || f === 'Link de Pagamento' });
+const extrasDaForma = f => ({ inst: f === 'PIX' || f === 'Link de Pagamento' || f === 'Depósito Bancário', band: f === 'Cartão de Crédito' || f === 'Cartão de Débito', parc: f === 'Cartão de Crédito' || f === 'Link de Pagamento' });
 
 /* Selos de bandeira: os mesmos de components/ui/BandeiraIcon.jsx */
 function bandeiraSvg(nome) {

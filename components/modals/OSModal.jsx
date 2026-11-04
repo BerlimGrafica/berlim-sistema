@@ -126,7 +126,7 @@ export default function OSModal() {
     }
 
     const camposExtrasPagamento = (forma) => {
-        const mostrarInstituicao = forma === 'PIX' || forma === 'Link de Pagamento';
+        const mostrarInstituicao = forma === 'PIX' || forma === 'Link de Pagamento' || forma === 'Depósito Bancário';
         const mostrarBandeira = forma === 'Cartão de Crédito' || forma === 'Cartão de Débito';
         const mostrarParcelas = forma === 'Cartão de Crédito' || forma === 'Link de Pagamento';
         const total = 1 + (mostrarInstituicao ? 1 : 0) + (mostrarBandeira ? 1 : 0) + (mostrarParcelas ? 1 : 0);
@@ -137,7 +137,7 @@ export default function OSModal() {
     // aplicam mais — evita que um valor antigo (ex: "Itaú" de um PIX anterior)
     // fique salvo escondido e apareça como badge errado num cartão depois.
     const camposParaNovaForma = (novaForma, atual) => {
-        const mostrarInstituicao = novaForma === 'PIX' || novaForma === 'Link de Pagamento';
+        const mostrarInstituicao = novaForma === 'PIX' || novaForma === 'Link de Pagamento' || novaForma === 'Depósito Bancário';
         const mostrarBandeira = novaForma === 'Cartão de Crédito' || novaForma === 'Cartão de Débito';
         return {
             instituicao: mostrarInstituicao ? (atual.instituicao || 'Itaú') : '',
@@ -452,7 +452,7 @@ export default function OSModal() {
                         const totalPago = pagamentosPedido.reduce((acc, p) => acc + valorPagamentoComSinal(p), 0);
                         const totalOS = parseValorMoeda(novoPedido.valor_total);
                         const saldo = totalOS - totalPago;
-                        const coresFormaPagamento = { 'PIX': 'bg-teal-500', 'Boleto': 'bg-orange-500', 'Cartão de Crédito': 'bg-purple-500', 'Cartão de Débito': 'bg-blue-500', 'Dinheiro': 'bg-emerald-500', 'Link de Pagamento': 'bg-sky-500', 'Estorno': 'bg-red-500' };
+                        const coresFormaPagamento = { 'PIX': 'bg-teal-500', 'Boleto': 'bg-orange-500', 'Cartão de Crédito': 'bg-purple-500', 'Cartão de Débito': 'bg-blue-500', 'Dinheiro': 'bg-emerald-500', 'Depósito Bancário': 'bg-[#a04a10]', 'Link de Pagamento': 'bg-sky-500', 'Estorno': 'bg-red-500' };
                         return (
                             <div className="rounded-xl border border-emerald-200 dark:border-emerald-500/30 bg-emerald-50/40 dark:bg-emerald-500/5">
                                 <div className="rounded-t-xl px-5 py-3.5 bg-emerald-100/60 dark:bg-emerald-500/10 border-b border-emerald-200 dark:border-emerald-500/20 flex items-center justify-between gap-2 flex-wrap">
@@ -482,6 +482,7 @@ export default function OSModal() {
                                                                     { value: 'Cartão de Crédito', label: 'Cartão de Crédito' },
                                                                     { value: 'Cartão de Débito', label: 'Cartão de Débito' },
                                                                     { value: 'Dinheiro', label: 'Dinheiro' },
+                                                                    { value: 'Depósito Bancário', label: 'Depósito Bancário' },
                                                                     { value: 'Link de Pagamento', label: 'Link de Pagamento' },
                                                                     { value: 'Estorno', label: 'Estorno' },
                                                                 ]}
@@ -592,6 +593,7 @@ export default function OSModal() {
                                                         { value: 'Cartão de Crédito', label: 'Cartão de Crédito' },
                                                         { value: 'Cartão de Débito', label: 'Cartão de Débito' },
                                                         { value: 'Dinheiro', label: 'Dinheiro' },
+                                                        { value: 'Depósito Bancário', label: 'Depósito Bancário' },
                                                         { value: 'Link de Pagamento', label: 'Link de Pagamento' },
                                                         { value: 'Estorno', label: 'Estorno' },
                                                     ]}

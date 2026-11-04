@@ -141,7 +141,7 @@ ranking_forma as (
 ranking_instituicao as (
     select instituicao as rotulo, sum(valor_centavos)::bigint as centavos
     from pag_periodo
-    where forma in ('PIX', 'Link de Pagamento', 'Boleto')
+    where forma in ('PIX', 'Depósito Bancário', 'Link de Pagamento', 'Boleto')
     group by instituicao
 ),
 

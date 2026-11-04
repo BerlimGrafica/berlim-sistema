@@ -35,8 +35,9 @@ const CORES_FORMA = {
     'PIX': 'bg-emerald-500',
     'Cartão de Crédito': 'bg-indigo-500',
     'Cartão de Débito': 'bg-sky-500',
-    'Link de Pagamento': 'bg-violet-500',
+    'Link de Pagamento': 'bg-[#c525c6]',
     'Dinheiro': 'bg-amber-500',
+    'Depósito Bancário': 'bg-[#a04a10]',
     'Boleto': 'bg-slate-500',
     'Estorno': 'bg-red-500',
 };

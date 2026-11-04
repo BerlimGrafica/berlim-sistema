@@ -37,8 +37,9 @@ colors:
   forma-pix: "#10B981"
   forma-credito: "#6366F1"
   forma-debito: "#0EA5E9"
-  forma-link: "#8B5CF6"
+  forma-link: "#C525C6"
   forma-dinheiro: "#F59E0B"
+  forma-deposito: "#A04A10"
   forma-boleto: "#64748B"
   forma-estorno: "#EF4444"
   categoria-despesa: "#10B981"
@@ -185,7 +186,7 @@ Cada área de uma tela tem uma cor que aparece **só** na faixa do cabeçalho (f
 - **Local**: Berlim (#F97316) e Futura (#3B82F6) têm cor fixa; os demais locais tiram a cor do nome (`corPorNome`).
 
 ### Séries — fatias e linhas de gráfico
-Quem já tem cor no sistema usa a dela: etapa, local, pessoa, **forma de pagamento** (PIX #10B981, crédito #6366F1, débito #0EA5E9, link #8B5CF6, dinheiro #F59E0B, boleto #64748B, estorno #EF4444) e **categoria de conta** (despesa #64748B, material #2A78D6, manutenção #EB6834, terceirização #6250D6, impostos #E87BA4 — fonte única em `CATEGORIAS_CONTA`; a paleta evita vermelho, âmbar e verde, que já dizem vencido, amanhã e valor; na lista, uma bolinha da cor ao lado do nome, como a dos locais terceiros). Para o que não tem cor (cliente, produto, instituição), oito cores em ordem fixa, validadas para quem não distingue cores (tokens `serie-1` a `serie-8`, com tom próprio no escuro): azul #2A78D6, laranja #EB6834, verde-água #1BAF7A, amarelo #EDA100, rosa #E87BA4, verde #008300, violeta #6250D6, vermelho #E34948.
+Quem já tem cor no sistema usa a dela: etapa, local, pessoa, **forma de pagamento** (PIX #10B981, crédito #6366F1, débito #0EA5E9, link #C525C6, dinheiro #F59E0B, depósito #A04A10, boleto #64748B, estorno #EF4444) e **categoria de conta** (despesa #64748B, material #2A78D6, manutenção #EB6834, terceirização #6250D6, impostos #E87BA4 — fonte única em `CATEGORIAS_CONTA`; a paleta evita vermelho, âmbar e verde, que já dizem vencido, amanhã e valor; na lista, uma bolinha da cor ao lado do nome, como a dos locais terceiros). Para o que não tem cor (cliente, produto, instituição), oito cores em ordem fixa, validadas para quem não distingue cores (tokens `serie-1` a `serie-8`, com tom próprio no escuro): azul #2A78D6, laranja #EB6834, verde-água #1BAF7A, amarelo #EDA100, rosa #E87BA4, verde #008300, violeta #6250D6, vermelho #E34948.
 - Num ranking dos maiores (5 clientes, 5 produtos), as cores vão nessa ordem.
 - Num gráfico em que se tira e põe item (as linhas de produtos de Vendas), a cor fica com o item enquanto ele estiver lá: tirar um não repinta os outros.
 - No máximo oito de uma vez, sem repetir cor. Passou disso, o resto vira "os demais", em `borda-forte`.
