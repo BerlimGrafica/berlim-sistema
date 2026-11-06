@@ -865,9 +865,10 @@ export const AppProvider = ({ children }) => {
                 query = query.ilike('telefone_digits', `%${digitos}%`);
             } else {
                 const { coluna, termo } = await campoDeBusca(supabase, 'nome', buscaCliente);
+                const empresa = await campoDeBusca(supabase, 'empresa', buscaCliente.trim());
                 // Quem atende ouve o nome da empresa tanto quanto o do contato.
                 query = await empresaNoBanco(supabase)
-                    ? query.or(`${coluna}.ilike.${valorDoFiltro(`%${termo}%`)},empresa.ilike.${valorDoFiltro(`%${buscaCliente.trim()}%`)}`)
+                    ? query.or(`${coluna}.ilike.${valorDoFiltro(`%${termo}%`)},${empresa.coluna}.ilike.${valorDoFiltro(`%${empresa.termo}%`)}`)
                     : query.ilike(coluna, `%${termo}%`);
             }
             const { data } = await query;
@@ -932,7 +933,10 @@ export const AppProvider = ({ children }) => {
                     const nome = await campoDeBusca(supabase, 'nome', buscaCadClientes);
                     const email = await campoDeBusca(supabase, 'email', buscaCadClientes);
                     const filtros = [`${nome.coluna}.ilike.%${nome.termo}%`, `${email.coluna}.ilike.%${email.termo}%`];
-                    if (await empresaNoBanco(supabase)) filtros.push(`empresa.ilike.${valorDoFiltro(`%${buscaCadClientes.trim()}%`)}`);
+                    if (await empresaNoBanco(supabase)) {
+                        const empresa = await campoDeBusca(supabase, 'empresa', buscaCadClientes.trim());
+                        filtros.push(`${empresa.coluna}.ilike.${valorDoFiltro(`%${empresa.termo}%`)}`);
+                    }
                     query = query.or(filtros.join(','));
                 }
             }

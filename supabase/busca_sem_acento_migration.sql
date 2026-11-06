@@ -55,6 +55,12 @@ alter table public.clientes
   add column if not exists email_busca text
   generated always as (public.sem_acento(email)) stored;
 
+-- A busca de cliente também procura pela empresa (clientes_empresa_migration.sql,
+-- que precisa ter rodado antes).
+alter table public.clientes
+  add column if not exists empresa_busca text
+  generated always as (public.sem_acento(empresa)) stored;
+
 -- pedidos.cliente guarda o nome desnormalizado; é por ele que o histórico de
 -- O.S. procura.
 alter table public.pedidos
@@ -80,6 +86,8 @@ begin
              on public.clientes using gin (nome_busca gin_trgm_ops)';
   execute 'create index if not exists idx_clientes_email_busca_trgm
              on public.clientes using gin (email_busca gin_trgm_ops)';
+  execute 'create index if not exists idx_clientes_empresa_busca_trgm
+             on public.clientes using gin (empresa_busca gin_trgm_ops)';
   execute 'create index if not exists idx_pedidos_cliente_busca_trgm
              on public.pedidos using gin (cliente_busca gin_trgm_ops)';
 
