@@ -287,6 +287,22 @@ a.n-cel:hover { background: var(--sutil); }
 .grupo-rot.chegou { animation: chegou 1.1s var(--saida); }
 @keyframes chegou { 0%, 35% { background: var(--realce); } }
 .grupo-rot + li .lin { border-top: 0; }
+/* Grupos que são assuntos diferentes (Contas a receber): cada um é uma área
+   própria, separada pelo vão da mesa, na cor do número dele lá em cima. O
+   cabeçalho gruda abaixo da barra do topo enquanto o grupo passa: são 20 linhas
+   ou mais, e no meio delas a pessoa perderia de vista em que grupo está.
+   `overflow: clip` mantém o canto arredondado sem criar rolagem, que é o que o
+   `hidden` faria, matando o sticky. No escuro o `--c-fundo` é translúcido: a
+   superfície por baixo não deixa a linha aparecer através do cabeçalho. */
+.grupos { display: flex; flex-direction: column; gap: 12px; min-width: 0; scroll-margin-top: 70px; }
+.area-grupo { overflow: clip; }
+.area-grupo .area-cab { position: sticky; top: 51px; z-index: 3; background: linear-gradient(var(--c-fundo), var(--c-fundo)), var(--superficie); }
+.area-grupo .area-cab h2 { font-size: 15px; }
+.area-grupo .area-meta { display: inline-flex; align-items: baseline; gap: 10px; font-size: 15px; font-weight: 700; }
+.area-grupo .area-meta .n { font-size: 12.5px; font-weight: 600; }
+.area-grupo .lista > li:first-child .lin { border-top: 0; }
+.area-grupo.chegou .area-cab { animation: grupoChegou 1.1s var(--saida); }
+@keyframes grupoChegou { 0%, 35% { box-shadow: inset 0 0 0 2px var(--c); } }
 .lin { display: flex; align-items: center; gap: 12px; padding: 9px 16px; border-top: 1px solid var(--borda-fraca); min-width: 0; cursor: pointer; transition: background .1s; }
 .lin:hover { background: var(--sutil); }
 /* Filete de prioridade (DESIGN.md › Selos de prazo): 3px por dentro da linha,
@@ -1418,7 +1434,7 @@ document.addEventListener('click', e => {
     if (est.aba !== 'pagar') MODULOS[est.aba].antesDeRolar?.(rol.dataset.rolar);
     const alvo = document.getElementById(rol.dataset.rolar) || document.getElementById('bloco-lista');
     alvo.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
-    if (alvo.classList.contains('grupo-rot')) { alvo.classList.remove('chegou'); void alvo.offsetWidth; alvo.classList.add('chegou'); }
+    if (alvo.matches('.grupo-rot, .area-grupo')) { alvo.classList.remove('chegou'); void alvo.offsetWidth; alvo.classList.add('chegou'); }
   }
 });
 document.addEventListener('input', e => { if (e.target.id === 'busca') { est.busca = e.target.value; render('#busca'); } });
@@ -1586,11 +1602,11 @@ const notaPeriodo = (txt, alerta, acao) => `<div class="per-nota ${alerta ? 'ale
   // quando vence o boleto ou quando sai da produção.
   const dataRef = o => ({ entregue: o.prazo || o.retirada, pronta: o.retirada || o.prazo, boleto: o.vence }[grupoDe(o)] ?? o.prazo);
   const GRUPOS = [
-    { id: 'entregue', rot: 'Entregues sem pagar', icone: 'alert-triangle', tom: 'atraso', chip: 'Entregues', data: 'Concluída' },
-    { id: 'boleto', rot: 'Em boleto', icone: 'barcode', chip: 'Em boleto', data: 'Boleto vence' },
-    { id: 'pronta', rot: 'Prontas', icone: 'package-check', chip: 'Prontas', data: 'Pronta' },
-    { id: 'producao', rot: 'Na produção', icone: 'printer', chip: 'Na produção', data: 'Entrega' },
-    { id: 'antes', rot: 'Aguardando o cliente', icone: 'hourglass', chip: 'Aguardando', data: 'Prazo' },
+    { id: 'entregue', rot: 'Entregues sem pagar', icone: 'alert-triangle', cor: 'a-perigo', chip: 'Entregues', data: 'Concluída' },
+    { id: 'boleto', rot: 'Em boleto', icone: 'barcode', cor: 'a-obs', chip: 'Em boleto', data: 'Boleto vence' },
+    { id: 'pronta', rot: 'Prontas', icone: 'package-check', cor: 'a-itens', chip: 'Prontas', data: 'Pronta' },
+    { id: 'producao', rot: 'Na produção', icone: 'printer', cor: 'a-dados', chip: 'Na produção', data: 'Entrega' },
+    { id: 'antes', rot: 'Aguardando o cliente', icone: 'hourglass', cor: 'a-dados', chip: 'Aguardando', data: 'Prazo' },
   ];
   const chaveCli = o => o.clienteId ? 'c' + o.clienteId : 'n' + semAcento(o.cliente).trim();
   const nomeCli = o => o.cliente || 'Sem cliente';
@@ -1631,12 +1647,17 @@ const notaPeriodo = (txt, alerta, acao) => `<div class="per-nota ${alerta ? 'ale
       const itens = l.filter(o => grupoDe(o) === g.id).sort((a, b) => (dataRef(a) || '9').localeCompare(dataRef(b) || '9') || falta(b) - falta(a));
       const todos = R.abertos.has(g.id) || itens.length <= MAX_GRUPO + 5;
       const valor = somaPor(itens, o => g.id === 'boleto' ? o.boleto : o.saldo);
-      return { ...g, id: 'g-' + g.id, itensTodos: itens, itens: todos ? itens : itens.slice(0, MAX_GRUPO), tot: `${plural(itens.length, 'O.S.', 'O.S.')} · ${reais(valor)}`,
+      // Boleto vencido pinta o grupo de vermelho, como o número dele no topo.
+      const cor = g.id === 'boleto' && itens.some(vencido) ? 'a-perigo' : g.cor;
+      return { ...g, cor, id: 'g-' + g.id, itensTodos: itens, itens: todos ? itens : itens.slice(0, MAX_GRUPO), meta: `<span class="n">${plural(itens.length, 'O.S.', 'O.S.')}</span>${reais(valor)}`,
         mais: todos ? '' : `<li><button class="grupo-rot pagas" data-mais="${g.id}" style="width:100%">${ico('chevrons-down')}Mostrar mais ${itens.length - MAX_GRUPO}</button></li>` };
     }).filter(g => g.itensTodos.length);
-    const corpo = l.length ? listaEmGrupos(gs, linha) : `<div class="vazio">${ico(est.busca || R.cliente || R.situacao ? 'search' : 'check-circle-2')}${est.busca || R.cliente || R.situacao ? 'Nenhuma O.S. com esse filtro.' : 'Nada a receber. Tudo pago.'}</div>`;
-    return area('a-dados', 'list', 'O.S. a receber', corpo, plural(l.length, 'O.S.', 'O.S.'), 'bloco-receber')
-      + '<div class="dicas"><span><kbd>/</kbd> buscar</span><span>clique na O.S. para ver tudo</span><span>clique num cliente para filtrar</span></div>';
+    const dicas = '<div class="dicas"><span><kbd>/</kbd> buscar</span><span>clique na O.S. para ver tudo</span><span>clique num cliente para filtrar</span></div>';
+    if (!l.length) {
+      const filtro = est.busca || R.cliente || R.situacao;
+      return area('a-dados', 'list', 'O.S. a receber', `<div class="vazio">${ico(filtro ? 'search' : 'check-circle-2')}${filtro ? 'Nenhuma O.S. com esse filtro.' : 'Nada a receber. Tudo pago.'}</div>`, '', 'bloco-receber') + dicas;
+    }
+    return `<div class="grupos" id="bloco-receber">${gs.map(g => area(`${g.cor} area-grupo`, g.icone, g.rot, `<ul class="lista">${g.itens.map(linha).join('')}${g.mais}</ul>`, g.meta, g.id)).join('')}</div>` + dicas;
   }
   function blocoNumeros(l) {
     const por = id => l.filter(o => grupoDe(o) === id);
