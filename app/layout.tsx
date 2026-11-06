@@ -1,5 +1,5 @@
 import React from "react";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Montserrat } from "next/font/google";
 import "./globals.css";
 
@@ -15,6 +15,12 @@ export const metadata: Metadata = {
   description: "ERP Corporativo da Berlim Gráfica",
   // Sem "icons" aqui de propósito: o Next serve automaticamente o app/icon.png
   // (nosso símbolo), e declarar um ícone nesta metadata sobrescreveria o arquivo.
+};
+
+// Cor da barra de status do celular: a mesma da barra do topo no tema claro. O
+// useAuth troca esta cor quando a pessoa está no tema escuro.
+export const viewport: Viewport = {
+  themeColor: "#ffffff",
 };
 
 export default function RootLayout({

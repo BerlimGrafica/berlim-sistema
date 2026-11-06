@@ -65,6 +65,8 @@ export function useAuth() {
     useEffect(() => {
         if (darkMode) { document.documentElement.classList.add('dark'); }
         else { document.documentElement.classList.remove('dark'); }
+        // A barra de status do celular acompanha a barra do topo (--superficie).
+        document.querySelector('meta[name="theme-color"]')?.setAttribute('content', darkMode ? '#161b22' : '#ffffff');
     }, [darkMode]);
     const isAdmin = usuario?.nivel === 'Administrador';
     const isOperador = usuario?.nivel === 'Atendimento' || usuario?.nivel === 'Produção';

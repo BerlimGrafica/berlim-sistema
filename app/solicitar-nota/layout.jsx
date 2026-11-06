@@ -5,6 +5,9 @@
 export const metadata = {
     title: "Berlim Gráfica | Nota Fiscal",
     description: "Formulário para solicitação de nota fiscal.",
+    // O cliente abre este link pelo WhatsApp: sem isto, o celular poderia
+    // oferecer a ele a instalação do sistema interno.
+    manifest: null,
     openGraph: {
         title: "Berlim Gráfica | Nota Fiscal",
         description: "Formulário para solicitação de nota fiscal.",
