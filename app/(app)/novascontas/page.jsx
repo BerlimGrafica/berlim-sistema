@@ -5,7 +5,7 @@ import { useCadastros } from '@/context/CadastrosContext';
 import { useContaDoPrototipo } from '@/hooks/useContaDoPrototipo';
 import { CATEGORIAS_CONTA } from '@/lib/utils/constants';
 import { obterDataAtual } from '@/lib/utils/formatters';
-import BarraDeCor from '@/components/ui/BarraDeCor';
+import LogoCarregando from '@/components/ui/LogoCarregando';
 
 // Protótipo da nova tela de Contas a pagar, no padrão do DESIGN.md.
 //
@@ -30,7 +30,7 @@ export default function Page() {
     }, []);
 
     if (!modelo || !dadosCarregados) {
-        return <div className="min-h-[60vh] grid place-items-center"><BarraDeCor mostrarTexto texto="Carregando protótipo" /></div>;
+        return <div className="min-h-[60vh] grid place-items-center"><LogoCarregando mostrarTexto texto="Carregando protótipo" /></div>;
     }
 
     const dados = {

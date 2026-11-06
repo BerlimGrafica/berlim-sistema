@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { useCadastros } from '@/context/CadastrosContext';
 import { useSessao } from '@/context/SessaoContext';
 import { carregarModeloNovaOS, montarNovaOS } from '@/lib/prototipos/novaos';
-import BarraDeCor from '@/components/ui/BarraDeCor';
+import LogoCarregando from '@/components/ui/LogoCarregando';
 
 // Protótipo do novo modal de O.S. (opção B), aberto para a equipe testar.
 //
@@ -24,7 +24,7 @@ export default function Page() {
     }, []);
 
     if (!modelo || produtos.length === 0) {
-        return <div className="min-h-[60vh] grid place-items-center"><BarraDeCor mostrarTexto texto="Carregando protótipo" /></div>;
+        return <div className="min-h-[60vh] grid place-items-center"><LogoCarregando mostrarTexto texto="Carregando protótipo" /></div>;
     }
 
     const html = montarNovaOS(modelo, { produtos, locais: fornecedoresTerceirizacaoNomes.map(f => f.nome), usuariosSistema });

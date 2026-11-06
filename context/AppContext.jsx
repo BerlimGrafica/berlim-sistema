@@ -14,7 +14,7 @@ import { useAlertas } from '@/hooks/useAlertas';
 import { usePendencias } from '@/hooks/usePendencias';
 import { useChat } from '@/hooks/useChat';
 import TelaEntrada from '@/components/TelaEntrada';
-import BarraDeCor from '@/components/ui/BarraDeCor';
+import LogoCarregando from '@/components/ui/LogoCarregando';
 import { SessaoContext } from '@/context/SessaoContext';
 import { UiContext } from '@/context/UiContext';
 import { ChatContext } from '@/context/ChatContext';
@@ -2651,7 +2651,7 @@ export const AppProvider = ({ children }) => {
             return (
                 <div className="flex flex-col min-h-screen items-center justify-center gap-5 bg-fundo select-none">
                     <span className="text-3xl font-black tracking-[-0.02em]"><span className="text-brand">BERLIM</span> <span className="text-brand-azul">Gráfica</span></span>
-                    <BarraDeCor texto="Abrindo o sistema" />
+                    <LogoCarregando texto="Abrindo o sistema" />
                 </div>
             );
         }

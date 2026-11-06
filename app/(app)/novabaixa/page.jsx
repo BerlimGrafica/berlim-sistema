@@ -8,7 +8,7 @@ import { campoDeBusca, valorDoFiltro } from '@/lib/utils/busca';
 import { corDoNome } from '@/lib/prototipos/coresDoNome';
 import { resumoDoPedido } from '@/lib/utils/servico';
 import { useAbrirOSDoPrototipo } from '@/hooks/useAbrirOSDoPrototipo';
-import BarraDeCor from '@/components/ui/BarraDeCor';
+import LogoCarregando from '@/components/ui/LogoCarregando';
 
 // Protótipo da nova tela de O.S. (o Histórico/Baixa do menu): abas por situação
 // e lista agrupada por mês da venda, a opção escolhida pela equipe.
@@ -169,7 +169,7 @@ export default function Page() {
     }, [iframeRef, paraProto, anotar]);
 
     if (!modelo || !abas) {
-        return <div className="min-h-[60vh] grid place-items-center"><BarraDeCor mostrarTexto texto="Carregando protótipo" /></div>;
+        return <div className="min-h-[60vh] grid place-items-center"><LogoCarregando mostrarTexto texto="Carregando protótipo" /></div>;
     }
 
     const dadosAbas = Object.fromEntries(Object.entries(abas).map(([id, a]) => [id, { total: a.total, pedidos: a.pedidos.map(paraProto) }]));

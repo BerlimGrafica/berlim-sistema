@@ -7,7 +7,7 @@ import { useTecnicosManutencao } from '@/hooks/useTecnicosManutencao';
 import { buscarHistorico } from '@/lib/equipamentos/consultas';
 import { TINTAS, TIPOS_EQUIPAMENTO } from '@/lib/equipamentos/catalogo';
 import { corDoNome } from '@/lib/prototipos/coresDoNome';
-import BarraDeCor from '@/components/ui/BarraDeCor';
+import LogoCarregando from '@/components/ui/LogoCarregando';
 
 // Protótipo da nova tela de Equipamentos, no padrão do DESIGN.md. A lista de
 // máquinas é o quadro de tintas (a opção B escolhida; a lista por tipo saiu).
@@ -72,7 +72,7 @@ export default function Page() {
     }, [paraProto]);
 
     if (!modelo || maquinasApi.carregando || carregando) {
-        return <div className="min-h-[60vh] grid place-items-center"><BarraDeCor mostrarTexto texto="Carregando protótipo" /></div>;
+        return <div className="min-h-[60vh] grid place-items-center"><LogoCarregando mostrarTexto texto="Carregando protótipo" /></div>;
     }
 
     const dados = {

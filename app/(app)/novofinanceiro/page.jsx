@@ -13,7 +13,7 @@ import { buscarNotasConcluidas } from '@/lib/financeiro/notas';
 import { ouvirPedidosMudados } from '@/lib/pedidos/mudancas';
 import { CATEGORIAS_CONTA } from '@/lib/utils/constants';
 import { formatarMoeda, mascararCliente, obterDataAtual } from '@/lib/utils/formatters';
-import BarraDeCor from '@/components/ui/BarraDeCor';
+import LogoCarregando from '@/components/ui/LogoCarregando';
 
 // Protótipo da nova tela do Financeiro, no padrão do DESIGN.md: as cinco partes
 // numa tela só, com abas. Contas a pagar é o protótipo de /novascontas.
@@ -168,7 +168,7 @@ export default function Page() {
     }), [iframeRef]);
 
     if (!modelo || !dadosCarregados) {
-        return <div className="min-h-[60vh] grid place-items-center"><BarraDeCor mostrarTexto texto="Carregando protótipo" /></div>;
+        return <div className="min-h-[60vh] grid place-items-center"><LogoCarregando mostrarTexto texto="Carregando protótipo" /></div>;
     }
 
     const dados = {

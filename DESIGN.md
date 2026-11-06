@@ -51,6 +51,8 @@ colors:
   processo-magenta: "#EC008C"
   processo-amarelo: "#FFF200"
   processo-preto: "#231F20"
+  logo-amarelo: "#F9AE1F"
+  logo-laranja: "#F4701D"
   marca-1: "#0F2A45"
   marca-2: "#0A1C2E"
   marca-3: "#06111D"
@@ -176,6 +178,7 @@ Neutros frios em camadas, um laranja de marca usado com parcimônia e uma pequen
 
 ### Secondary
 - **Azul Berlim** (#006FB5): só na marca ("Gráfica" no logotipo). Não é cor de interface.
+- **Cores do logo** (`logo-amarelo` #F9AE1F, `logo-laranja` #F4701D): as duas do ícone, iguais nos dois temas. Só no próprio logo e na espera. Não são cor de interface.
 
 ### Tertiary — cores de área
 Cada área de uma tela tem uma cor que aparece **só** na faixa do cabeçalho (fundo tingido bem claro + ícone) e no foco dos campos dela; o conteúdo embaixo fica neutro.
@@ -341,7 +344,7 @@ Texto que vai para o cliente aparece no balão do WhatsApp (cores e fonte do pr�
 Ação que encerra pede o segundo clique no próprio botão ("Concluir?", "Clique de novo para excluir"). Ação reversível não pergunta: faz e mostra toast com "Desfazer" por 5s.
 
 ### Espera (carregamento)
-A espera de página inteira — abrir o sistema, a primeira ida a uma tela, um protótipo carregando — é a **barra de cor** (ver **Motivos do ofício**). Quando uma lista precisa buscar no banco (na tela de O.S., a primeira vez que se abre Baixadas, Canceladas ou Abandonadas; Abertas e À dar baixa já estão na memória), o lugar dela mostra **linhas de espera**: as mesmas colunas e a mesma caixa da lista, com barras em `borda` (a do título do grupo em `borda-forte`) que pulsam em onda de cima para baixo (1,4s, 90ms entre linhas). Quando as O.S. chegam, entram no lugar delas subindo 6px uma atrás da outra (22ms, só as dez primeiras), e nada pula porque as colunas já estavam certas. Só aparece se a busca passar de ~150ms e, aparecendo, fica pelo menos ~300ms, para não piscar. Voltar a uma aba já vista é na hora. O leitor de tela ouve "Carregando Baixadas…". Nada de rodinha girando no meio da tela.
+A espera de página inteira — abrir o sistema, a primeira ida a uma tela, um protótipo carregando — é o **logo sendo impresso** (ver **Motivos do ofício**). Quando uma lista precisa buscar no banco (na tela de O.S., a primeira vez que se abre Baixadas, Canceladas ou Abandonadas; Abertas e À dar baixa já estão na memória), o lugar dela mostra **linhas de espera**: as mesmas colunas e a mesma caixa da lista, com barras em `borda` (a do título do grupo em `borda-forte`) que pulsam em onda de cima para baixo (1,4s, 90ms entre linhas). Quando as O.S. chegam, entram no lugar delas subindo 6px uma atrás da outra (22ms, só as dez primeiras), e nada pula porque as colunas já estavam certas. Só aparece se a busca passar de ~150ms e, aparecendo, fica pelo menos ~300ms, para não piscar. Voltar a uma aba já vista é na hora. O leitor de tela ouve "Carregando Baixadas…". Nada de rodinha girando no meio da tela.
 
 ### Troca de tema
 O botão de lua/sol acende o tema a partir dele: o escuro se espalha em círculo saindo do botão até cobrir a tela (.6s, suave nas duas pontas) e, ao voltar ao claro, se recolhe para dentro do botão pelo mesmo caminho, um pouco mais rápido (.45s). O ícone troca junto com as cores. Feito com View Transitions (`lib/utils/trocarTema.js`); navegador sem suporte troca seco, e com movimento reduzido vira um esmaecer de .2s.
@@ -361,8 +364,8 @@ Pendências e conta abrem como popover: raio 9px, borda e `sombra-pop`, descendo
 No celular ficam o ícone da marca, chat, pendências, tema e só a bolinha da conta. Os sites descem para a faixa do seletor de seções, num botão com os três ícones sobrepostos.
 
 ### Motivos do ofício
-É uma gráfica: quando uma tela pede um desenho, ele vem da própria impressão — prova, registro, sangria, barra de cor, carimbo —, nunca de ilustração genérica. **Um motivo por tela**, em 1px e sutil, e ele tem que explicar alguma coisa (está carregando, não há nada, quantas cabem, quando foi aprovado). As cores de processo (`processo-ciano`, `-magenta`, `-amarelo`, `-preto`) só aparecem nos motivos e nas tintas das máquinas. O motivo nunca substitui a palavra.
-- **Barra de cor** (`components/ui/BarraDeCor.jsx`, `.barra-de-cor`): quatro quadrados de 10px em C, M, Y, K acendendo em sequência (1,6s, 140ms entre eles), com "Carregando…" quando cabe. É a espera de página inteira; lista que está chegando continua com as linhas de espera. Com movimento reduzido, só pulsam.
+É uma gráfica: quando uma tela pede um desenho, ele vem da própria impressão — prova, registro, sangria, tinta, carimbo —, nunca de ilustração genérica. **Um motivo por tela**, em 1px e sutil, e ele tem que explicar alguma coisa (está carregando, não há nada, quantas cabem, quando foi aprovado). As cores de processo (`processo-ciano`, `-magenta`, `-amarelo`, `-preto`) só aparecem nos motivos e nas tintas das máquinas. O motivo nunca substitui a palavra.
+- **Logo sendo impresso** (`components/ui/LogoCarregando.jsx`, `.logo-carregando`): o logo em `borda-forte`, com a geometria do ícone (barras e vãos de 6px, 40px de altura), e a tinta nas cores do logo entrando por cima e saindo por baixo, barra a barra (ciclo de 2s, 120ms entre as barras; a barra partida enche um pedaço de cada vez), com "Carregando…" quando cabe. A tinta aparece já nos primeiros 100ms, porque a espera curta só vê o começo; as quatro barras ficam cheias juntas por quase 300ms e nunca fica tudo vazio. Só CSS, porque aparece antes do JavaScript da página. É a espera de página inteira; lista que está chegando continua com as linhas de espera. Com movimento reduzido, o logo cheio só respira.
 - **Folha de prova em branco**: o estado vazio de lista é a folha (76×84) com as marcas de registro em `tinta-fraca`, acima do texto que diz o que não foi achado. Sempre a mesma, em toda lista.
 - **Retícula e marcas de corte** (`components/ui/Reticula.jsx`, `.fundo-marca`, `.marcas-de-corte`): só nas telas de marca, entrada e bloqueio. Fundo de `marca-1` a `marca-3`, pontos de meio-tom a 45° que "imprimem" numa varredura diagonal, e o cartão emoldurado por traços de 1px nos quatro cantos, do lado de fora. Nunca em tela de trabalho.
 - **Montagem na folha** (`components/calculadoras/MontagemNaFolha.jsx`): na calculadora de Adesivos, num painel **ao lado** da caixa da calculadora, que fica como sempre foi. Desenho em escala da folha que o preço usa (SRA3, meio metro ou metro), com sangria em magenta a 10% e a linha de corte tracejada em magenta — o magenta da faca fica só no desenho, nunca em texto —, as cotas, o número por folha e o aviso âmbar quando deitado cabe mais.

@@ -11,7 +11,7 @@ import { podeVerTela, subtelasVisiveis } from '@/lib/acesso/telas';
 import { periodoPadrao } from '@/components/vendas/SeletorPeriodo';
 import { useAbrirOSDoPrototipo } from '@/hooks/useAbrirOSDoPrototipo';
 import { useContaDoPrototipo } from '@/hooks/useContaDoPrototipo';
-import BarraDeCor from '@/components/ui/BarraDeCor';
+import LogoCarregando from '@/components/ui/LogoCarregando';
 
 // Protótipo da nova tela de Vendas: as mesmas informações da tela de hoje
 // (Visão geral, Produtos, Clientes e o relatório do dia), redesenhadas no padrão
@@ -232,7 +232,7 @@ export default function Page() {
         return <div className="p-6 text-corpo text-perigo">Não foi possível somar o período: {erro}</div>;
     }
     if (!html) {
-        return <div className="min-h-[60vh] grid place-items-center"><BarraDeCor mostrarTexto texto="Somando o período no banco" /></div>;
+        return <div className="min-h-[60vh] grid place-items-center"><LogoCarregando mostrarTexto texto="Somando o período no banco" /></div>;
     }
 
     // absolute inset-0 preenche a área da página abaixo da barra; a rolagem fica
