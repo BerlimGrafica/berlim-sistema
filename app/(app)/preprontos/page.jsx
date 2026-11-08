@@ -3,8 +3,9 @@ import { useEffect, useState } from 'react';
 import { useOrcamentos } from '@/context/OrcamentosContext';
 import LogoCarregando from '@/components/ui/LogoCarregando';
 
-// Protótipo da nova tela de orçamentos pré-prontos (opções A a D), aberto para
-// a equipe comparar.
+// Protótipo da nova tela de orçamentos pré-prontos: o balcão (busca, fixados,
+// lista por categoria, copiar com um clique) com a conversa do WhatsApp do lado,
+// onde a resposta para o cliente é montada juntando vários textos.
 //
 // Como em /novaos, o HTML em public/prototipos/preprontos.html é só a casca:
 // os textos entram aqui, lidos do banco pela sessão de quem está logado, no
