@@ -5,19 +5,22 @@ import Icon from '@/components/Icon';
 import { gravidadeDe, piorGravidade, resumirPendencias } from '@/lib/alertas/pendencias';
 import { useIrParaPendencia } from '@/hooks/useIrParaPendencia';
 
-// Faixa logo abaixo da barra, com dois estados:
+// Faixa logo abaixo da barra: SÓ o que é vermelho (atrasado, vencido, Futura
+// no prazo). Divide o trabalho com o sino em vez de repeti-lo:
 //
-//   recolhida  — uma linha, enquanto houver algo com prazo (vencido ou vencendo).
-//                Fica na tela o tempo todo, porque o sino sozinho depende de a
-//                pessoa lembrar de olhar para ele.
-//   aberta     — a lista. Entra assim uma vez por sessão, no primeiro
-//                carregamento, e depois só quando a pessoa clica.
+//   faixa — o urgente, à vista o tempo todo, porque o sino sozinho depende de
+//           a pessoa lembrar de olhar. Some quando não há nada vermelho.
+//   sino  — todas as pendências, inclusive as de hoje e as tarefas.
 //
-// Pendência puramente "a fazer" não segura a faixa aberta: ela aparece no
-// resumo de entrada e vive no sino e no contador do menu. Uma tarja permanente
-// para trabalho de rotina vira parte do cenário e para de ser lida.
+// Antes a faixa aparecia também para o âmbar e abria a mesma lista do sino,
+// com um número diferente do dele ("3 pendências" na faixa, 7 no sino). Rara,
+// ela volta a chamar atenção quando aparece.
+//
+// Dois estados: recolhida (uma linha) e aberta (a lista). Entra aberta uma
+// vez por sessão, no primeiro carregamento, se houver algo vermelho; sem
+// vermelho, quem abre no login é o painel do sino (hooks/usePendencias.js).
 export default function FaixaPendencias() {
-    const { pendencias, pendenciasUrgentes, resumoDeEntrada, fecharResumoDeEntrada } = useUi();
+    const { pendencias, pendenciasUrgentes, resumoDeEntrada, fecharResumoDeEntrada, setModalAlertasAberto } = useUi();
     const irPara = useIrParaPendencia();
     const [abertaPorClique, setAbertaPorClique] = useState(false);
 
@@ -46,7 +49,8 @@ export default function FaixaPendencias() {
 
     const ehResumo = !!resumoDeEntrada?.length;
     const aberta = ehResumo || abertaPorClique;
-    const lista = ehResumo ? resumoDeEntrada : pendencias;
+    const lista = ehResumo ? resumoDeEntrada : pendenciasUrgentes;
+    const outras = pendencias.length - pendenciasUrgentes.length;
 
     if (!ehResumo && pendenciasUrgentes.length === 0) return null;
 
@@ -72,7 +76,7 @@ export default function FaixaPendencias() {
                     aria-expanded={aberta}
                 >
                     <span className={`shrink-0 text-corpo font-bold ${gravidade.texto}`}>
-                        {total} {total === 1 ? 'pendência' : 'pendências'}
+                        {total} {total === 1 ? 'pendência urgente' : 'pendências urgentes'}
                     </span>
                     {!aberta && (
                         <span className="min-w-0 truncate text-corpo text-tinta-suave">
@@ -111,6 +115,20 @@ export default function FaixaPendencias() {
                             </li>
                         );
                     })}
+                    {/* O resto mora no sino: um atalho até ele, em vez de
+                        repetir aqui a lista inteira. */}
+                    {outras > 0 && (
+                        <li>
+                            <button
+                                type="button"
+                                onClick={() => { fechar(); setModalAlertasAberto(true); }}
+                                className="w-full flex items-center gap-2 px-2 py-2 rounded-md text-left text-mini font-semibold text-tinta-suave hover:bg-black/5 dark:hover:bg-white/10 transition"
+                            >
+                                <Icon name="bell" className="shrink-0 w-3.5 h-3.5" />
+                                {outras === 1 ? 'Mais 1 pendência no sino' : `Mais ${outras} pendências no sino`}
+                            </button>
+                        </li>
+                    )}
                 </ul>
             )}
         </div>

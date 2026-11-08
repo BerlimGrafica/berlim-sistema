@@ -263,6 +263,7 @@ export const AppProvider = ({ children }) => {
     const pendencias = usePendencias(
         { usuario, pedidos, contasPagar, notasFiscais, tarefasInternas, requisicoesMaterial, linksPagamento, empresasFaturamento },
         avisar,
+        setModalAlertasAberto,
     );
 
     const [modalRequisicaoAberto, setModalRequisicaoAberto] = useState(false);
