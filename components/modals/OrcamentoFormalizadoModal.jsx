@@ -11,6 +11,9 @@ import { formatarValorFinanceiro, formatarMoeda, centavosParaReais, mascararClie
 import { CustomSelect } from '@/components/ui/Dropdown';
 import { useModal } from '@/components/modals/useModal';
 
+// Os prazos que mais aparecem nos orçamentos; o campo aceita qualquer texto.
+const PRAZOS_COMUNS = ['1 dia útil', '2 dias úteis', '3 dias úteis', '5 dias úteis', '7 dias úteis', '10 dias úteis'];
+
 export default function OrcamentoFormalizadoModal() {
     const { isDemo, isAdmin } = useSessao();
     const { buscaCliente, setBuscaCliente, clienteSelecionadoInfo, setClienteSelecionadoInfo, setClienteDropdownAberto, clienteDropdownAberto, novoPedido, setNovoPedido, itensPedido, buscaProduto, setBuscaProduto, setProdutoDropdownAberto, produtoDropdownAberto, produtosFiltrados, setItemAtual, itemAtual, removerItemDoCarrinho, adicionarItemAoCarrinho, salvarEdicaoItemCarrinho } = useOsModal();
@@ -84,6 +87,25 @@ export default function OrcamentoFormalizadoModal() {
                                     </div>
                                 </div>
                             )}
+                        </div>
+                        {/* Prazo de produção num campo próprio: antes ia escrito nas
+                            observações, que o PDF imprime como prazo. É texto porque o
+                            prazo do orçamento é relativo — só conta depois de aprovado. */}
+                        <div>
+                            <label htmlFor="orcamento-prazo" className="block text-corpo font-medium mb-1.5 text-tinta-corpo">Prazo de produção</label>
+                            <input id="orcamento-prazo" type="text" value={novoPedido.prazo_producao || ''}
+                                onChange={e => setNovoPedido({ ...novoPedido, prazo_producao: e.target.value })}
+                                className="w-full bg-elevado border border-borda-forte rounded px-3 py-2 text-corpo outline-none focus:border-brand transition dark:text-[#EDEDED]"
+                                placeholder="Ex.: 5 dias úteis" autoComplete="off" />
+                            <div className="flex flex-wrap gap-1.5 mt-2">
+                                {PRAZOS_COMUNS.map(p => (
+                                    <button key={p} type="button" onClick={() => setNovoPedido({ ...novoPedido, prazo_producao: p })}
+                                        aria-pressed={novoPedido.prazo_producao === p}
+                                        className={`h-7 px-2.5 rounded-full border text-mini font-semibold transition ${novoPedido.prazo_producao === p ? 'bg-tinta border-tinta text-superficie' : 'bg-superficie border-borda text-tinta-corpo hover:border-borda-forte'}`}>
+                                        {p}
+                                    </button>
+                                ))}
+                            </div>
                         </div>
                     </div>
 
@@ -189,7 +211,7 @@ export default function OrcamentoFormalizadoModal() {
                     <div>
                         <div className="flex items-center gap-2 mb-2">
                             <span className="w-1 h-3.5 bg-brand rounded-full"></span>
-                            <h4 className="text-micro font-bold uppercase tracking-wider text-tinta-suave">Observações Gerais ou Texto Complementar</h4>
+                            <h4 className="text-micro font-bold uppercase tracking-wider text-tinta-suave">Observações</h4>
                         </div>
                         <textarea rows="4" value={novoPedido.servico} onChange={e => setNovoPedido({...novoPedido, servico: e.target.value})} className="w-full bg-elevado border border-borda-forte rounded px-3 py-2 text-corpo outline-none focus:border-brand transition dark:text-[#EDEDED] custom-scrollbar" placeholder="Detalhes adicionais, garantias, etc..."></textarea>
                     </div>

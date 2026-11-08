@@ -201,7 +201,7 @@ Quem já tem cor no sistema usa a dela: etapa, local, pessoa, **forma de pagamen
 - **Sutil** (#F9FAFB) e **Realce** (#F3F4F6): hover de linha, item selecionado, coluna lateral.
 - **Bordas** em três pesos (#F0F1F3 / #E5E7EB / #D1D5DB): divisória entre linhas / contorno de área / linha de base de campo.
 - **Tintas** em quatro pesos (#111827 / #374151 / #6B7280 / #9CA3AF): título e valor / corpo / rótulo e meta / dica e placeholder.
-- **Perigo** (#DC2626) e **Sucesso** (#059669): só estado — saldo devedor, atrasado, excluir; quitado, copiado, concluído.
+- **Perigo** (#DC2626) e **Sucesso** (#059669): só estado — saldo devedor, atrasado, excluir; quitado, copiado, concluído, escolhido (o que está dentro de uma seleção, ver **Listas**).
 
 ### Named Rules
 **A Regra da Cor com Endereço.** Toda cor tem que responder "o que isso marca?". Se a resposta for "deixa mais bonito", sai.
@@ -259,7 +259,7 @@ Cantos suaves e consistentes: selo 5px, controle e popover 7–9px, botão 8px, 
 - **Primário:** laranja com texto Sobre-marca, 38px de altura (32px no tamanho pequeno), um por contexto. Hover escurece.
 - **Secundário:** superfície com borda forte e texto tinta; hover em Sutil.
 - **Texto:** sem fundo, tinta-suave; hover em Realce.
-- **Ícone:** 28–30px, só ícone, aparece no hover da linha (sempre visível no celular).
+- **Ícone:** 28–30px, só ícone, com a ação inteira na dica (`title`). Na linha de lista fica sempre à mostra (ver **Listas**), e só as ações de uso direto ficam nela; as de manutenção (editar, fixar) vão para dentro do registro aberto.
 - **Copiado/feito:** o botão vira verde (fundo Sucesso claro, ícone ✓) por ~1,4s em vez de abrir um aviso modal.
 - **Perigo:** excluir pede segunda confirmação no próprio botão ("Clique de novo para excluir").
 
@@ -280,7 +280,9 @@ Superfície + borda da cor da área + raio 10px. Cabeçalho tingido com ícone e
 - **Selo:** 5px de raio, 11–12px, para estado curto (prazo, "até 14:00", "Rascunho"). Âmbar = atenção (vence amanhã), vermelho = passou, vence hoje ou está devendo.
 
 ### Listas
-Linha com o título (a informação principal: cliente, conta, produto) em `titulo-linha`, 14px e 600 — um ponto acima do corpo, para ser a primeira coisa que o olho acha (o nome do cliente na Produção e nas baixadas fica em 700) — + uma linha de resumo em tinta-suave; meta (prazo, preço) à direita em números tabulares; **ações da linha sempre à mostra** na ponta direita, nunca escondidas até o hover: botões de ícone de 30px em tinta-fraca (hover Realce), o de concluir/pagar em verde, que no primeiro clique vira a pergunta ("Concluir?", "Pagar?") e no segundo confirma — o mesmo da nova Produção; linha já concluída guarda o lugar sem o botão; linha ativa pelo teclado em Realce. Clique abre no lugar (expande) em vez de navegar.
+Linha com o título (a informação principal: cliente, conta, produto) em `titulo-linha`, 14px e 600 — um ponto acima do corpo, para ser a primeira coisa que o olho acha (o nome do cliente na Produção e nas baixadas fica em 700) — + uma linha de resumo em tinta-suave; meta (prazo, preço) à direita em números tabulares; **ações da linha sempre à mostra** na ponta direita, nunca escondidas até o hover: botões de ícone de 30px em tinta-fraca (hover Realce), o de concluir/pagar em verde, que no primeiro clique vira a pergunta ("Concluir?", "Pagar?") e no segundo confirma — o mesmo da nova Produção; linha já concluída guarda o lugar sem o botão; linha ativa pelo teclado em Realce, só o fundo (contorno por dentro é cortado pelos cantos da lista). Clique abre no lugar (expande) em vez de navegar.
+
+**Escolher vários** (juntar textos numa resposta, por exemplo): um círculo de 18px (borda forte) no começo da linha, antes do título; marcado, fica verde (`fin`) com ✓ branco, e a linha ganha o fundo `fin-fundo`. Onde os escolhidos se juntam (o painel da resposta), cada um aparece numa linha no mesmo verde, com o mesmo círculo marcado, na ordem em que vai, e um X sempre à mostra para tirar — verde quer dizer "está dentro", nos dois lugares. `Espaço` marca a linha ativa. No celular o círculo tem alvo de 32px sem mudar o desenho. A ação de marcar nunca vira mais um ícone na ponta da linha, e não há atalho rotulado ("Fechar com:") para o que já se marca na lista.
 
 ### Popover e toast
 Popover em superfície, raio 9px, sombra Popover, entra com 160ms deslizando 4px; itens com hover Realce e ✓ no selecionado. Toast escuro centrado no rodapé, 2,2s, com ícone de ✓ verde.
@@ -370,6 +372,7 @@ No celular ficam o ícone da marca, chat, pendências, tema e só a bolinha da c
 - **Retícula e marcas de corte** (`components/ui/Reticula.jsx`, `.fundo-marca`, `.marcas-de-corte`): só nas telas de marca, entrada e bloqueio. Fundo de `marca-1` a `marca-3`, pontos de meio-tom a 45° que "imprimem" numa varredura diagonal, e o cartão emoldurado por traços de 1px nos quatro cantos, do lado de fora. Nunca em tela de trabalho.
 - **Montagem na folha** (`components/calculadoras/MontagemNaFolha.jsx`): na calculadora de Adesivos, num painel **ao lado** da caixa da calculadora, que fica como sempre foi. Desenho em escala da folha que o preço usa (SRA3, meio metro ou metro), com sangria em magenta a 10% e a linha de corte tracejada em magenta — o magenta da faca fica só no desenho, nunca em texto —, as cotas, o número por folha e o aviso âmbar quando deitado cabe mais.
 - **Contador mecânico** (`components/equipamentos/ContadorMecanico.jsx`): o último contador de páginas da máquina, um dígito por janela, nos tons do card (nunca caixa preta), zeros à esquerda em `tinta-fraca`. Os dígitos que mudam giram até o número novo, o da direita primeiro.
+- **Canhoto do talão**: o nº de um documento na lista (orçamento) fica no canhoto, como num talão picotado. É a primeira coluna da linha, antes da data, de 64px, de ponta a ponta da altura, em `sutil`, separada do resto por um picote: borda direita de 2px pontilhada em `tinta-fraca`, que continua de uma linha à outra. Dentro, centralizados, "Nº" em 10px/800 no laranja da marca (`brand`, não `brand-tinta`: é marca, quem se lê é o número) em cima e o número em 15px/700 tabular embaixo, sem zeros à frente. No cabeçalho da gaveta ele vem na mesma linha de base: "Orçamento" em `tinta-suave` 13px/600, "Nº" em `brand` e o número em 18px/800 `tinta`. No celular o canhoto sai e o nº vai na linha de baixo ("#26 ·").
 - **Linha da prova** (`PrintOrcamento`): no pé do documento impresso, acima da faixa da marca, em 7,5px cinza à direita: "Orçamento nº 22 · gerado em 29/10/2026 às 12:35 · por Murilo". Só no papel.
 - **OK para impressão**: o marcador da arte diz quando e quem — "Cliente aprovou · 29/10 às 12:32 · por Murilo" —; desligado, "Aguardando OK do cliente". O filtro se chama "Aguardando OK".
 - **Carimbo de baixa**: "BAIXADA" com a data, em moldura dupla `tinta-suave` girada -2°, ao lado do cliente da O.S. finalizada. Bate uma vez (.42s) e fica parado; sem cor de estado.

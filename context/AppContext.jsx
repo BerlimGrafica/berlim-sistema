@@ -8,6 +8,7 @@ import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS, STATUSES_JA_RETIRADO_DA_FUTURA
 import { formatarMoeda, parseValorMoeda, valorPagamentoComSinal, valorPagamentoComSinalCentavos, paraCentavos, centavosParaReais, obterDataAtual, adicionarMesData, apenasDigitos, rotuloCliente } from '@/lib/utils/formatters';
 import { itensDoPedido, pagamentosDoPedido, observacoesDoPedido, itensDoOrcamento, observacoesDoOrcamento } from '@/lib/utils/servico';
 import { gravarItensPagamentos, clonarItensParaPedido, gravarItensOrcamento } from '@/lib/pedidos/gravacao';
+import { buscarClientes, acharTelefoneDuplicado } from '@/lib/clientes/busca';
 import { avisarPedidosMudados } from '@/lib/pedidos/mudancas';
 import { useAuth } from '@/hooks/useAuth';
 import { useAlertas } from '@/hooks/useAlertas';
@@ -851,28 +852,11 @@ export const AppProvider = ({ children }) => {
 
     useEffect(() => {
         if (!buscaCliente || buscaCliente.length < 1) return;
+        // A consulta mora em lib/clientes/busca.js: o novo modal de O.S. busca
+        // pelo mesmo caminho. Telefone com hífen ("4457-6742") é busca por
+        // telefone — o teste antigo era !isNaN(), que caía na busca por nome.
         const timeout = setTimeout(async () => {
-            // Só dígitos e pontuação de telefone ("4457-6742", "(11) 99999")
-            // significa busca por telefone. O teste antigo era !isNaN(), que
-            // dava falso para qualquer número com hífen — digitar um telefone
-            // formatado caía na busca por nome e não achava nada.
-            const digitos = apenasDigitos(buscaCliente);
-            const pareceTelefone = digitos.length >= 3 && /^[\d\s().+-]+$/.test(buscaCliente.trim());
-            let query = supabase.from('clientes').select('*').limit(15);
-            if (pareceTelefone) {
-                // Compara dígito com dígito (coluna gerada telefone_digits);
-                // comparar com a coluna formatada falha por causa do hífen.
-                query = query.ilike('telefone_digits', `%${digitos}%`);
-            } else {
-                const { coluna, termo } = await campoDeBusca(supabase, 'nome', buscaCliente);
-                const empresa = await campoDeBusca(supabase, 'empresa', buscaCliente.trim());
-                // Quem atende ouve o nome da empresa tanto quanto o do contato.
-                query = await empresaNoBanco(supabase)
-                    ? query.or(`${coluna}.ilike.${valorDoFiltro(`%${termo}%`)},${empresa.coluna}.ilike.${valorDoFiltro(`%${empresa.termo}%`)}`)
-                    : query.ilike(coluna, `%${termo}%`);
-            }
-            const { data } = await query;
-            if (data) setClientes(data);
+            setClientes(await buscarClientes(buscaCliente));
         }, 300);
         return () => clearTimeout(timeout);
     }, [buscaCliente]);
@@ -1405,124 +1389,152 @@ export const AppProvider = ({ children }) => {
         }
 
         setSalvandoOS(true);
-        const statusFinal = statusForcado || novoPedido.status;
-
-        const valorNumericoFinal = paraCentavos(novoPedido.valor_total);
-
-        // Calcular locais unicos da OS a partir dos itens
-        const locaisOS = [...new Set(itensPedido.map(i => i.local_producao || 'Berlim'))].join(', ');
-
-        const payload = {
-            cliente: novoPedido.cliente,
-            cliente_id: novoPedido.cliente_id || null,
-            // Só as observações, em texto puro: itens e pagamentos são gravados
-            // em pedido_itens/pedido_pagamentos por salvarItensPagamentosDoPedido.
-            servico: novoPedido.servico || '',
-            status: statusFinal,
-            valor_total: valorNumericoFinal,
-            data_pedido: novoPedido.data_pedido || null,
-            prazo: novoPedido.prazo || null,
-            responsavel: novoPedido.responsavel,
-            local_producao: locaisOS,
-            aprovado: novoPedido.aprovado,
-            entrega: novoPedido.entrega
-        };
-
-        if (statusFinal === 'Concluído' && (!pedidoEmEdicao || pedidoEmEdicao.status !== 'Concluído')) {
-            payload.prazo = obterDataAtual();
-        }
-        if (statusFinal === 'Retirada' && (!pedidoEmEdicao || pedidoEmEdicao.status !== 'Retirada')) {
-            payload.data_retirada = obterDataAtual();
-        }
-        if (statusFinal === 'Cancelado' && (!pedidoEmEdicao || pedidoEmEdicao.status !== 'Cancelado')) {
-            payload.cancelado_em = new Date().toISOString();
-        }
-        Object.assign(payload, marcaDeQuemFinalizou(statusFinal, pedidoEmEdicao?.status));
-        // Horário limite: sem data não há hora. Só entra no payload quando há
-        // hora ou quando a O.S. já tem a coluna (para poder apagá-la) — assim
-        // uma O.S. comum continua gravando mesmo antes da migração rodar.
-        const prazoHora = payload.prazo && novoPedido.prazo_hora ? novoPedido.prazo_hora : null;
-        if (prazoHora || (pedidoEmEdicao && 'prazo_hora' in pedidoEmEdicao)) payload.prazo_hora = prazoHora;
-
-        if (pedidoEmEdicao) {
-            const { data, error } = await supabase.from('pedidos').update(payload).eq('id', pedidoEmEdicao.id).select();
-
-            if (error) {
-                avisar('Erro ao atualizar OS: ' + error.message, 'erro');
-            } else if (data && data.length > 0) {
-                const itensPagamentos = await salvarItensPagamentosDoPedido(data[0].id, itensPedido, pagamentosPedido);
-                if (itensPagamentos) {
-                    aplicarNasListasDePedidos(data[0].id, () => ({ ...data[0], ...itensPagamentos }));
-                    fecharModalOS();
-                    if (querImprimir) imprimirOS({ ...data[0], ...itensPagamentos });
-                } else {
-                    // O cabeçalho gravou, os itens não — e, sendo transacional, não
-                    // foram tocados. Reflete só o cabeçalho (o espalhamento preserva
-                    // as linhas filhas em memória) e mantém o modal aberto para nova
-                    // tentativa, em vez de fechar anunciando um sucesso que não houve.
-                    aplicarNasListasDePedidos(data[0].id, p => ({ ...p, ...data[0] }));
-                }
-            } else {
-                // Se a resposta for vazia, puxa as informações limpas e fecha sem travar
-                const itensPagamentos = await salvarItensPagamentosDoPedido(pedidoEmEdicao.id, itensPedido, pagamentosPedido);
-                if (itensPagamentos) {
-                    carregarDados();
-                    fecharModalOS();
-                    if (querImprimir) imprimirOS({ ...pedidoEmEdicao, ...payload });
-                }
-            }
-        } else {
-            const { data: ultimoPedido } = await supabase.from('pedidos').select('id').order('id', { ascending: false }).limit(1);
-            const idBase = ultimoPedido && ultimoPedido.length > 0 ? ultimoPedido[0].id : (pedidos.length > 0 ? Math.max(...pedidos.map(p => p.id)) : 0);
-            let novoId = Math.max(idBase, NUMERO_INICIAL_PEDIDO - 1) + 1;
-            payload.criado_por = usuario?.nome || 'Desconhecido';
-
-            let data, error;
-            for (let tentativa = 0; tentativa < 5; tentativa++) {
-                payload.id = novoId;
-                ({ data, error } = await supabase.from('pedidos').insert([payload]).select());
-                if (!error || error.code !== '23505') break;
-                novoId += 1; // ID já usado por outra O.S. criada nesse meio tempo; tenta o próximo.
-            }
-
-            if (error) {
-                avisar('Erro ao salvar OS: ' + error.message, 'erro');
-            } else if (data && data.length > 0) {
-                const itensPagamentos = await salvarItensPagamentosDoPedido(data[0].id, itensPedido, pagamentosPedido);
-                if (itensPagamentos) {
-                    setPedidos([{ ...data[0], ...itensPagamentos }, ...pedidos]);
-                    if (idOrcamentoOrigem) {
-                        supabase.from('orcamentos_formalizados').delete().eq('id', idOrcamentoOrigem).then(({ error }) => {
-                            if (!error) setOrcamentosFormalizados(prev => prev.filter(o => o.id !== idOrcamentoOrigem));
-                        });
-                    }
-                    fecharModalOS();
-                    if (querImprimir) imprimirOS({ ...data[0], ...itensPagamentos });
-                } else {
-                    // A O.S. já existe no banco, sem itens. Passa a ser uma edição:
-                    // sem isso, "Salvar" de novo criaria uma segunda O.S. em vez de
-                    // completar esta. O orçamento de origem só é apagado quando a
-                    // O.S. estiver completa.
-                    const criada = { ...data[0], pedido_itens: [], pedido_pagamentos: [] };
-                    setPedidos([criada, ...pedidos]);
-                    setPedidoEmEdicao(criada);
-                }
-            } else {
-                // Se a resposta for vazia, puxa as informações limpas e fecha sem travar
-                const itensPagamentos = await salvarItensPagamentosDoPedido(novoId, itensPedido, pagamentosPedido);
-                if (itensPagamentos) {
-                    if (idOrcamentoOrigem) {
-                        supabase.from('orcamentos_formalizados').delete().eq('id', idOrcamentoOrigem).then(({ error }) => {
-                            if (!error) setOrcamentosFormalizados(prev => prev.filter(o => o.id !== idOrcamentoOrigem));
-                        });
-                    }
-                    carregarDados();
-                    fecharModalOS();
-                    if (querImprimir) avisar('Pedido atualizado com sucesso! Para evitar lentidão, inicie a impressão manualmente através do Histórico.', 'sucesso');
-                }
+        const r = await gravarOS({
+            antes: pedidoEmEdicao,
+            campos: { ...novoPedido, status: statusForcado || novoPedido.status, valor_total: paraCentavos(novoPedido.valor_total) },
+            itens: itensPedido,
+            pagamentos: pagamentosPedido,
+            idOrcamentoOrigem,
+        });
+        if (r.semItens) {
+            // A O.S. nova já existe no banco, sem itens. Passa a ser uma edição:
+            // sem isso, "Salvar" de novo criaria uma segunda O.S. em vez de
+            // completar esta. Numa edição o modal só fica aberto para nova
+            // tentativa, em vez de fechar anunciando um sucesso que não houve.
+            if (!pedidoEmEdicao) setPedidoEmEdicao(r.pedido);
+        } else if (r.pedido || r.recarregou) {
+            fecharModalOS();
+            if (querImprimir) {
+                if (r.pedido) imprimirOS(r.pedido);
+                else avisar('Pedido atualizado com sucesso! Para evitar lentidão, inicie a impressão manualmente através do Histórico.', 'sucesso');
             }
         }
         setSalvandoOS(false);
+    }
+
+    // Grava uma O.S. inteira — cabeçalho, itens e pagamentos — com as regras de
+    // sempre: as datas que mudam com o status, quem finalizou, o horário limite,
+    // o nº novo e o orçamento de origem. É o miolo do salvarOS, separado do
+    // estado do modal para o novo modal de O.S. (NovaOSPorCima) gravar pelo
+    // mesmo caminho.
+    //
+    //   antes       a O.S. como está no banco (null numa O.S. nova)
+    //   campos      cliente, cliente_id, servico, status, valor_total (centavos),
+    //               data_pedido, prazo, prazo_hora, responsavel, aprovado, entrega
+    //   itens, pagamentos   no formato do carrinho (lib/pedidos/gravacao.js)
+    //
+    // Devolve { pedido } quando tudo gravou; { pedido, semItens: true } quando o
+    // cabeçalho gravou e os itens não; { pedido?, recarregou: true } quando o
+    // banco gravou sem devolver a linha; {} quando nada gravou. Os erros já
+    // foram avisados na tela.
+    async function gravarOS({ antes, campos, itens, pagamentos, idOrcamentoOrigem: orcamentoDeOrigem = null }) {
+        const statusFinal = campos.status;
+        // Os locais da O.S. saem dos itens.
+        const locaisOS = [...new Set(itens.map(i => i.local_producao || 'Berlim'))].join(', ');
+
+        const payload = {
+            cliente: campos.cliente,
+            cliente_id: campos.cliente_id || null,
+            // Só as observações, em texto puro: itens e pagamentos são gravados
+            // em pedido_itens/pedido_pagamentos por salvarItensPagamentosDoPedido.
+            servico: campos.servico || '',
+            status: statusFinal,
+            valor_total: campos.valor_total,
+            data_pedido: campos.data_pedido || null,
+            prazo: campos.prazo || null,
+            responsavel: campos.responsavel,
+            local_producao: locaisOS,
+            aprovado: campos.aprovado,
+            entrega: campos.entrega
+        };
+
+        if (statusFinal === 'Concluído' && (!antes || antes.status !== 'Concluído')) {
+            payload.prazo = obterDataAtual();
+        }
+        if (statusFinal === 'Retirada' && (!antes || antes.status !== 'Retirada')) {
+            payload.data_retirada = obterDataAtual();
+        }
+        if (statusFinal === 'Cancelado' && (!antes || antes.status !== 'Cancelado')) {
+            payload.cancelado_em = new Date().toISOString();
+        }
+        Object.assign(payload, marcaDeQuemFinalizou(statusFinal, antes?.status));
+        // Horário limite: sem data não há hora. Só entra no payload quando há
+        // hora ou quando a O.S. já tem a coluna (para poder apagá-la) — assim
+        // uma O.S. comum continua gravando mesmo antes da migração rodar.
+        const prazoHora = payload.prazo && campos.prazo_hora ? campos.prazo_hora : null;
+        if (prazoHora || (antes && 'prazo_hora' in antes)) payload.prazo_hora = prazoHora;
+
+        // O orçamento que virou esta O.S. só é apagado quando ela está completa.
+        const apagarOrcamentoDeOrigem = () => {
+            if (!orcamentoDeOrigem) return;
+            supabase.from('orcamentos_formalizados').delete().eq('id', orcamentoDeOrigem).then(({ error }) => {
+                if (!error) setOrcamentosFormalizados(prev => prev.filter(o => o.id !== orcamentoDeOrigem));
+            });
+        };
+
+        if (antes) {
+            const { data, error } = await supabase.from('pedidos').update(payload).eq('id', antes.id).select();
+            if (error) {
+                avisar('Erro ao atualizar OS: ' + error.message, 'erro');
+                return {};
+            }
+            if (data && data.length > 0) {
+                const itensPagamentos = await salvarItensPagamentosDoPedido(data[0].id, itens, pagamentos);
+                if (itensPagamentos) {
+                    const pedido = { ...data[0], ...itensPagamentos };
+                    aplicarNasListasDePedidos(pedido.id, () => pedido);
+                    return { pedido };
+                }
+                // O cabeçalho gravou, os itens não — e, sendo transacional, não
+                // foram tocados. Reflete só o cabeçalho (o espalhamento preserva
+                // as linhas filhas em memória).
+                aplicarNasListasDePedidos(data[0].id, p => ({ ...p, ...data[0] }));
+                return { pedido: data[0], semItens: true };
+            }
+            // Resposta vazia: grava as linhas filhas e puxa as informações limpas.
+            const itensPagamentos = await salvarItensPagamentosDoPedido(antes.id, itens, pagamentos);
+            if (!itensPagamentos) return {};
+            carregarDados();
+            return { pedido: { ...antes, ...payload }, recarregou: true };
+        }
+
+        const { data: ultimoPedido } = await supabase.from('pedidos').select('id').order('id', { ascending: false }).limit(1);
+        const idBase = ultimoPedido && ultimoPedido.length > 0 ? ultimoPedido[0].id : (pedidos.length > 0 ? Math.max(...pedidos.map(p => p.id)) : 0);
+        let novoId = Math.max(idBase, NUMERO_INICIAL_PEDIDO - 1) + 1;
+        payload.criado_por = usuario?.nome || 'Desconhecido';
+
+        let data, error;
+        for (let tentativa = 0; tentativa < 5; tentativa++) {
+            payload.id = novoId;
+            ({ data, error } = await supabase.from('pedidos').insert([payload]).select());
+            if (!error || error.code !== '23505') break;
+            novoId += 1; // ID já usado por outra O.S. criada nesse meio tempo; tenta o próximo.
+        }
+
+        if (error) {
+            avisar('Erro ao salvar OS: ' + error.message, 'erro');
+            return {};
+        }
+        if (data && data.length > 0) {
+            const itensPagamentos = await salvarItensPagamentosDoPedido(data[0].id, itens, pagamentos);
+            if (itensPagamentos) {
+                const pedido = { ...data[0], ...itensPagamentos };
+                setPedidos(prev => [pedido, ...prev]);
+                apagarOrcamentoDeOrigem();
+                return { pedido };
+            }
+            // A O.S. já existe no banco, sem itens: quem chamou passa a tratá-la
+            // como edição.
+            const criada = { ...data[0], pedido_itens: [], pedido_pagamentos: [] };
+            setPedidos(prev => [criada, ...prev]);
+            return { pedido: criada, semItens: true };
+        }
+        // Resposta vazia: grava as linhas filhas e puxa as informações limpas.
+        const itensPagamentos = await salvarItensPagamentosDoPedido(novoId, itens, pagamentos);
+        if (!itensPagamentos) return {};
+        apagarOrcamentoDeOrigem();
+        carregarDados();
+        return { recarregou: true };
     }
 
     // Duplica uma O.S. como um pedido novo e independente: mesmo cliente/serviço/
@@ -1635,8 +1647,24 @@ export const AppProvider = ({ children }) => {
             quantidade: 1,
             valor: valorNumericoFinal,
             observacoes: novoPedido.servico,
+            // Prazo de produção num campo próprio (antes ia nas observações).
+            prazo_producao: (novoPedido.prazo_producao || '').trim() || null,
             criado_por: usuario?.nome || 'Desconhecido'
         };
+
+        // Enquanto supabase/orcamentos_prazo_producao_migration.sql não rodar, a
+        // coluna não existe: grava o resto e avisa, em vez de perder o orçamento.
+        const semColunaPrazo = (error) => !!error && /prazo_producao/.test(error.message || '');
+        async function gravar(consulta) {
+            let r = await consulta(payload);
+            if (semColunaPrazo(r.error)) {
+                const semPrazo = { ...payload };
+                delete semPrazo.prazo_producao;
+                r = await consulta(semPrazo);
+                if (!r.error) avisar('Orçamento salvo, mas sem o prazo: falta rodar supabase/orcamentos_prazo_producao_migration.sql no Supabase.', 'erro');
+            }
+            return r;
+        }
 
         // Mesma correção do salvarItensPagamentosDoPedido, pelo mesmo motivo.
         // Devolve null quando nada foi gravado.
@@ -1651,7 +1679,7 @@ export const AppProvider = ({ children }) => {
         }
 
         if (orcamentoFormalizadoEmEdicao) {
-            const { data, error } = await supabase.from('orcamentos_formalizados').update(payload).eq('id', orcamentoFormalizadoEmEdicao.id).select();
+            const { data, error } = await gravar(p => supabase.from('orcamentos_formalizados').update(p).eq('id', orcamentoFormalizadoEmEdicao.id).select());
             if (error) avisar('Erro: ' + error.message, 'erro');
             else if (data && data.length > 0) {
                 const orcamento_itens = await salvarItensOrcamento(data[0].id);
@@ -1666,7 +1694,7 @@ export const AppProvider = ({ children }) => {
                 }
             }
         } else {
-            const { data, error } = await supabase.from('orcamentos_formalizados').insert([payload]).select();
+            const { data, error } = await gravar(p => supabase.from('orcamentos_formalizados').insert([p]).select());
             if (error) avisar('Erro: ' + error.message, 'erro');
             else if (data && data.length > 0) {
                 const orcamento_itens = await salvarItensOrcamento(data[0].id);
@@ -1714,6 +1742,7 @@ export const AppProvider = ({ children }) => {
             // cliente_id — a edição apagaria justamente o vínculo que se quer manter.
             cliente_id: orcamento.cliente_id || null,
             servico: obs || '',
+            prazo_producao: orcamento.prazo_producao || '',
             valor_total: formatarMoeda(Math.round(orcamento.valor).toString()),
             status: 'Orçamento',
             data_pedido: obterDataAtual(),
@@ -1769,6 +1798,16 @@ export const AppProvider = ({ children }) => {
             else avisar('Falha ao salvar: ' + error.message, 'erro');
         }
         setSalvandoProduto(false);
+    }
+
+    // Produto novo cadastrado de dentro do novo modal de O.S., sem o modal de
+    // produto: grava e já entra no catálogo da memória. preco_base em centavos.
+    // Devolve { produto } ou { erro } com o texto para mostrar.
+    async function criarProduto({ nome, texto_padrao, preco_base }) {
+        const { data, error } = await supabase.from('produtos').insert([{ nome, texto_padrao: texto_padrao || '', preco_base }]).select();
+        if (error || !data?.length) return { erro: 'Não foi possível cadastrar o produto: ' + (error?.message || 'o banco não devolveu o cadastro') };
+        setProdutos(prev => [...prev, data[0]]);
+        return { produto: data[0] };
     }
 
     // Busca o catálogo direto do banco (sem esperar o Realtime), pra usar em
@@ -2028,25 +2067,7 @@ export const AppProvider = ({ children }) => {
         if (empresa || novoCliente.empresaAntes) clienteFormatado.empresa = empresa || null;
 
         if (clienteFormatado.telefone && clienteFormatado.telefone.trim() !== '') {
-            const telNormalizado = apenasDigitos(clienteFormatado.telefone);
-            let duplicado = null;
-            if (telNormalizado.length >= 8) {
-                // Os 8 últimos dígitos são o número sem DDD — pega tanto quem
-                // está gravado com DDD quanto sem. A busca vai na coluna de
-                // dígitos: procurar no texto formatado não achava a duplicata,
-                // porque o hífen fica no meio do trecho procurado.
-                const searchString = `%${telNormalizado.slice(-8)}%`;
-                const { data: dupData } = await supabase.from('clientes').select('id,nome,telefone').ilike('telefone_digits', searchString);
-                if (dupData) {
-                    duplicado = dupData.find(c => {
-                        if (novoCliente.id && c.id === novoCliente.id) return false;
-                        if (!c.telefone) return false;
-                        const cTelNorm = c.telefone.replace(/\D/g, '');
-                        return cTelNorm.endsWith(telNormalizado) || telNormalizado.endsWith(cTelNorm);
-                    });
-                }
-            }
-            
+            const duplicado = await acharTelefoneDuplicado(clienteFormatado.telefone, novoCliente.id);
             if (duplicado) {
                 avisar('Aviso: Este número de WhatsApp/Telefone já está cadastrado no cliente "' + duplicado.nome + '"!');
                 setSalvandoCliente(false);
@@ -2077,6 +2098,24 @@ export const AppProvider = ({ children }) => {
             else avisar('Falha ao salvar: ' + error.message, 'erro');
         }
         setSalvandoCliente(false);
+    }
+
+    // Cliente novo cadastrado de dentro do novo modal de O.S., com as regras do
+    // salvarCliente: WhatsApp repetido não entra, e a empresa só vai quando há
+    // (até a migração rodar, a coluna não existe). Devolve { cliente } ou
+    // { erro } com o texto para mostrar.
+    async function criarCliente({ nome, telefone, email, observacoes, cliente_problema, empresa }) {
+        const dados = { nome: (nome || '').trim(), telefone: telefone || '', email: email || '', observacoes: observacoes || '', cliente_problema: !!cliente_problema };
+        if ((empresa || '').trim()) dados.empresa = empresa.trim();
+        if (!dados.nome) return { erro: 'Falta o nome do cliente.' };
+        if (dados.telefone.trim()) {
+            const duplicado = await acharTelefoneDuplicado(dados.telefone);
+            if (duplicado) return { erro: `Este WhatsApp já está cadastrado no cliente "${duplicado.nome}".` };
+        }
+        const { data, error } = await supabase.from('clientes').insert([dados]).select();
+        if (error || !data?.length) return { erro: 'Não foi possível cadastrar o cliente: ' + (error?.message || 'o banco não devolveu o cadastro') };
+        setTriggerRealtime(prev => prev + 1);
+        return { cliente: data[0] };
     }
 
     async function salvarNotaFiscal(e) {
@@ -2452,7 +2491,7 @@ export const AppProvider = ({ children }) => {
         carregarDados, atualizarCampoInline, atualizarItemConcluido,
         atualizarPagamentoBoleto, concluirBoletoContasReceber, buscarOutrasOSAbertasDoCliente, registrarPagamentoLoteOutrasOS,
         fecharModalOS, abrirEdicao, adicionarItemAoCarrinho, removerItemDoCarrinho, salvarEdicaoItemCarrinho,
-        salvarOS, duplicarOS, imprimirOS,
+        salvarOS, gravarOS, duplicarOS, imprimirOS, criarCliente, criarProduto,
         salvarOrcamentoPre, excluirOrcamentoPre, salvarOrcamentoFormalizado, baixarPDFOrcamento,
         abrirEdicaoOrcamento, transformarEmOS, excluirOrcamentoFormalizado,
         abrirEdicaoCliente, salvarCliente,
@@ -2526,6 +2565,12 @@ export const AppProvider = ({ children }) => {
         setModalAberto, setPedidoEmEdicao, opcoesStatusPermitidas,
         atualizarCampoInline: acoes.atualizarCampoInline, atualizarItemConcluido: acoes.atualizarItemConcluido,
         abrirEdicao: acoes.abrirEdicao, duplicarOS: acoes.duplicarOS, imprimirOS: acoes.imprimirOS,
+        // O novo modal de O.S. (NovaOSPorCima) grava por aqui, sem o estado do
+        // modal de hoje; o pagamento em lote e o cadastro rápido de cliente e
+        // de produto vão junto, para ele não assinar outras fatias por isso.
+        gravarOS: acoes.gravarOS, buscarOutrasOSAbertasDoCliente: acoes.buscarOutrasOSAbertasDoCliente,
+        registrarPagamentoLoteOutrasOS: acoes.registrarPagamentoLoteOutrasOS,
+        criarCliente: acoes.criarCliente, criarProduto: acoes.criarProduto,
     }), [acoes, pedidos, dadosCarregados, historicoCarregado, abaOS, buscaHistoricoText, paginaHistorico, pedidosHistorico, totalPedidosHistorico,
         ordenacaoHistoricoOS, triggerRealtime, dataFiltroInicio, dataFiltroFim, buscaProducaoText,
         pedidosProducaoAtivos, vendasPorProduto, top5Produtos, abaVendas, produtosSelecionadosGrafico,

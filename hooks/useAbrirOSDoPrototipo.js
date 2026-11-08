@@ -1,30 +1,37 @@
 "use client";
 import { createElement, useCallback, useEffect, useRef, useState } from 'react';
 import { useSessao } from '@/context/SessaoContext';
-import NovaOSPorCima from '@/components/prototipos/NovaOSPorCima';
+import NovaOSPorCima, { PEDIR_FECHAR_OS } from '@/components/prototipos/NovaOSPorCima';
 import { entrarNaPilha, souOTopo, voltarDoHistorico, voltaVeioDoCodigo } from '@/lib/ui/pilhaModais';
 
-// Os protótipos (/novabaixa, /novaproducao) rodam num iframe e não gravam nada.
-// "Abrir O.S. completa" — o ⤢ e o Enter da gaveta — pede por mensagem, e a
-// página abre por cima o novo modal de O.S. (NovaOSPorCima) com a O.S. real.
-// Ele ainda só mostra; o "Editar no modal atual" de lá abre o modal de hoje,
-// que relê a O.S. pelo id e grava com as permissões de quem está logado.
+// As telas novas (/novabaixa, /novaproducao...) rodam num iframe. "Abrir O.S.
+// completa" — o ⤢ e o Enter da gaveta — pede por mensagem, e a página abre por
+// cima o novo modal de O.S. (NovaOSPorCima) com a O.S. real, que grava com as
+// permissões de quem está logado. "Nova O.S." pede o mesmo modal vazio
+// ({ tipo: 'nova-os' }).
 //
 // `statusDe(id)` diz a situação da O.S. quando a página a conhece: baixada fica
-// trancada para Atendimento e Produção, como na tela de hoje (BaixaTab).
+// trancada para Atendimento e Produção, como na tela de hoje (BaixaTab). Quando
+// a página não sabe, o próprio modal tranca ao ler a O.S. do banco.
 //
 // Devolve o ref do iframe da tela e o modal a desenhar ao lado dele.
 export function useAbrirOSDoPrototipo(statusDe) {
     const iframeRef = useRef(null);
+    // O id da O.S. aberta, 'nova' para uma O.S. nova, null com o modal fechado.
     const [osAberta, setOsAberta] = useState(null);
     const { isOperador } = useSessao();
     const aberta = osAberta !== null;
     const fechar = useCallback(() => setOsAberta(null), []);
+    // Fechar pelo Esc de fora do iframe ou pelo voltar do navegador é um
+    // pedido ao modal (NovaOSPorCima ouve este evento): ele pergunta antes de
+    // descartar o que foi mexido.
+    const pedirFechar = useCallback(() => window.dispatchEvent(new Event(PEDIR_FECHAR_OS)), []);
 
     useEffect(() => {
         const aoReceber = (e) => {
             // Só o iframe desta página fala com ela.
             if (!iframeRef.current || e.source !== iframeRef.current.contentWindow) return;
+            if (e.data?.tipo === 'nova-os') { setOsAberta('nova'); return; }
             if (e.data?.tipo !== 'abrir-os' || !Number.isInteger(e.data.id)) return;
             if (isOperador && statusDe?.(e.data.id) === 'Finalizado') return;
             setOsAberta(e.data.id);
@@ -50,12 +57,12 @@ export function useAbrirOSDoPrototipo(statusDe) {
         function aoVoltar() {
             if (!souOTopo(marca) || voltaVeioDoCodigo()) return;
             window.history.pushState({ modalBerlimAberto: true }, '');
-            fechar();
+            pedirFechar();
         }
         function aoTeclar(e) {
             if (e.key !== 'Escape' || !souOTopo(marca) || e.defaultPrevented) return;
             e.preventDefault();
-            fechar();
+            pedirFechar();
         }
         document.addEventListener('keydown', aoTeclar);
         window.addEventListener('popstate', aoVoltar);
@@ -65,7 +72,7 @@ export function useAbrirOSDoPrototipo(statusDe) {
             sair();
             if (window.history.state?.modalBerlimAberto) voltarDoHistorico();
         };
-    }, [aberta, fechar]);
+    }, [aberta, pedirFechar]);
 
     const modalOS = aberta ? createElement(NovaOSPorCima, { key: osAberta, id: osAberta, aoFechar: fechar }) : null;
 

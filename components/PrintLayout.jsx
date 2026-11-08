@@ -188,8 +188,13 @@ function PrintOrcamento({ orc }) {
         usuario?.nome ? `por ${usuario.nome}` : null,
     ].filter(Boolean).join(' · ');
     
-    let obsPrazo = (observacoesDoOrcamento(orc) || '').trim();
-    if (!obsPrazo) obsPrazo = "Prazo e condições a combinar.";
+    // O prazo tem campo próprio. Orçamento antigo, de quando o prazo ia escrito
+    // nas observações, continua imprimindo as observações no lugar dele; com o
+    // campo preenchido, as observações saem num bloco delas.
+    const prazoProducao = (orc.prazo_producao || '').trim();
+    const observacoes = (observacoesDoOrcamento(orc) || '').trim();
+    const obsPrazo = prazoProducao || observacoes || "Prazo e condições a combinar.";
+    const obsSeparada = prazoProducao ? observacoes : '';
     
     return (
         <div className="print-only bg-white text-black font-sans flex flex-col w-full h-[286mm] overflow-hidden relative select-none">
@@ -247,6 +252,12 @@ function PrintOrcamento({ orc }) {
                     );
                 })}
             </div>
+
+            {obsSeparada && (
+                <div className="px-16 mb-4">
+                    <p className="text-[13px] text-gray-700 leading-snug whitespace-pre-wrap"><span className="font-bold text-[#00579D]">Observações:</span> {obsSeparada}</p>
+                </div>
+            )}
 
             {/* Rules */}
             <div className="px-16 mb-5">

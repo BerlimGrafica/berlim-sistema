@@ -757,11 +757,15 @@ function toast(msg, desfazer) {
 }
 function acaoSistema(m, p) {
   // Abrir a O.S. completa é de verdade: a página do sistema abre por cima o
-  // novo modal de O.S. com a O.S. real (hooks/useAbrirOSDoPrototipo.js). O
-  // resto ainda só avisa.
+  // novo modal de O.S. com a O.S. real (hooks/useAbrirOSDoPrototipo.js), e
+  // ele grava. O resto da tela ainda só avisa.
   if (m === 'editar' && p && window.parent !== window) return window.parent.postMessage({ tipo: 'abrir-os', id: p.id }, '/');
   const txt = { editar: `No sistema, abre a O.S. #${p.id} completa`, imprimir: `No sistema, imprime a O.S. #${p.id}`, duplicar: `No sistema, cria uma cópia da O.S. #${p.id}` }[m];
   toast(txt + ' (protótipo)');
+}
+function novaOS() {
+  if (window.parent !== window) window.parent.postMessage({ tipo: 'nova-os' }, '/');
+  else toast('No sistema, abre o modal de Nova O.S.');
 }
 function mudarStatus(p, s) {
   if (p.status === s) return;
@@ -787,7 +791,7 @@ function render() {
   tela.innerHTML = renderA();
   vigiaFaixa.disconnect(); const sentinela = tela.querySelector('.sentinela'); if (sentinela) vigiaFaixa.observe(sentinela);
   renderGaveta();
-  document.getElementById('nota').textContent = `${PED.length} O.S. reais em produção · nada aqui grava no sistema`;
+  document.getElementById('nota').textContent = `${PED.length} O.S. reais em produção · a O.S. aberta grava; a lista ainda não`;
   lucide.createIcons();
   if (scAbas != null && document.querySelector('.abas')) document.querySelector('.abas').scrollLeft = scAbas;
   posicionarIndicador();
@@ -889,7 +893,8 @@ document.addEventListener('click', e => {
   if (a === 'limpar') { est.busca = ''; render(); return tela.querySelector('[data-busca]')?.focus(); }
   if (a === 'limpar-tudo') { est.busca = ''; est.filtro = null; return render(); }
   if (a === 'focar-busca') { window.scrollTo({ top: 0, behavior: 'smooth' }); return tela.querySelector('[data-busca]')?.focus(); }
-  if (a === 'nova') { try { window.top.location.href = '/novaos'; } catch { toast('Abre a nova O.S.'); } }
+  // Nova O.S.: a página do sistema abre por cima o novo modal de O.S., vazio.
+  if (a === 'nova') return novaOS();
 });
 document.addEventListener('contextmenu', e => {
   const r = e.target.closest('[data-pid]'); if (!r || !tela.contains(r)) return;
@@ -903,7 +908,7 @@ document.addEventListener('keydown', e => {
   // Com a gaveta aberta, Enter abre a O.S. completa, o mesmo que o ⤢ do topo dela.
   if (est.gaveta && e.key === 'Enter' && !e.target.closest?.('button')) return acaoSistema('editar', porId(est.gaveta));
   if (e.key === '/') { e.preventDefault(); return tela.querySelector('[data-busca]')?.focus(); }
-  if (e.key.toLowerCase() === 'n' && !e.ctrlKey && !e.metaKey) { e.preventDefault(); try { window.top.location.href = '/novaos'; } catch {} return; }
+  if (e.key.toLowerCase() === 'n' && !e.ctrlKey && !e.metaKey) { e.preventDefault(); novaOS(); return; }
 });
 addEventListener('resize', fecharPop);
 addEventListener('scroll', e => {

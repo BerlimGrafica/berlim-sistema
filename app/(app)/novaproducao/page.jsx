@@ -15,8 +15,9 @@ import LogoCarregando from '@/components/ui/LogoCarregando';
 //
 // Como em /novaos e /preprontos, o HTML em public/prototipos/producao.html é só
 // a casca: as O.S. em produção entram aqui, lidas da sessão de quem está
-// logado, no lugar do marcador /*PRODUCAO*/. Tudo o que se mexe lá dentro
-// (status, itens, prazo...) fica só na tela — nada grava no banco. As cores de
+// logado, no lugar do marcador /*PRODUCAO*/. O que se mexe na lista (status,
+// itens, prazo...) ainda fica só na tela. A O.S. aberta — e a Nova O.S. — é o
+// novo modal de O.S. por cima (useAbrirOSDoPrototipo), e esse grava. As cores de
 // pessoa e de local vêm de corPorNome (via corDoNome), a mesma fonte da tela atual.
 export default function Page() {
     const { pedidos, dadosCarregados, opcoesStatusPermitidas } = usePedidos();

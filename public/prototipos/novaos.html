@@ -131,6 +131,17 @@ html[data-troca-tema] *, html[data-troca-tema] *::before, html[data-troca-tema] 
 .pop-catalogo { width: 420px; }
 .pop-catalogo .nome-prod { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
 .pop .alerta { color: var(--perigo); }
+/* calendário no seletor de data (o mesmo da nova Conta a pagar) */
+.pop.pop-cal { width: 296px; max-width: calc(100vw - 16px); max-height: none; padding: 10px; }
+.pop .cal-cab { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+.pop .cal-cab b { font-size: 13px; color: var(--tinta); }
+.pop .cal-cab .cal-nav { width: 30px; height: 30px; padding: 0; justify-content: center; color: var(--tinta-suave); }
+.pop .cal-grade { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; }
+.pop .cal-grade .sem { font-size: 11px; font-weight: 600; color: var(--tinta-suave); padding: 4px 0; }
+.pop .cal-grade button { height: 32px; padding: 0; justify-content: center; border-radius: 7px; font-size: 12.5px; font-weight: 600; color: var(--tinta-corpo); font-variant-numeric: tabular-nums; }
+.pop .cal-grade button.fora { color: var(--tinta-fraca); font-weight: 500; }
+.pop .cal-grade button.hoje { box-shadow: inset 0 0 0 1px var(--brand); }
+.pop .cal-grade button.sel, .pop .cal-grade button.sel:hover { background: var(--brand); color: var(--sobre-brand); }
 
 /* ---------- estrutura ---------- */
 .topo { height: 54px; flex-shrink: 0; display: flex; align-items: center; gap: 10px; padding: 0 16px 0 24px; border-bottom: 1px solid var(--borda); }
@@ -340,6 +351,11 @@ html[data-troca-tema] *, html[data-troca-tema] *::before, html[data-troca-tema] 
 .req { color: var(--perigo); }
 
 .toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); z-index: 95; background: var(--tinta); color: var(--superficie); padding: 10px 16px; border-radius: 8px; font-weight: 600; font-size: 12.5px; box-shadow: var(--sombra-pop); display: flex; gap: 8px; align-items: center; animation: pop .2s ease-out; }
+.toast.erro .ico { color: #f87171; }
+.btn-perigo { background: var(--perigo); color: #fff; }
+.btn-perigo:hover:not(:disabled) { filter: brightness(.94); }
+.btn:disabled { opacity: .55; cursor: default; }
+.selo.trancada { color: var(--perigo); background: var(--perigo-fundo); }
 
 @media (max-width: 760px) {
   .proto { padding: 8px 12px; gap: 8px; }
@@ -512,23 +528,35 @@ function bandeiraSvg(nome) {
   return '';
 }
 
-/* ===== dados fictícios: pessoas não vão para o protótipo ===== */
-// Aberto por cima de uma tela do sistema, com a O.S. real (NovaOSPorCima). Só
-// mostra: o Atualizar fica desligado e "Editar no modal atual" leva ao modal de
-// hoje. Sem OS_REAL é o protótipo de sempre, com a O.S. de exemplo.
+/* ===== a O.S. ===== */
+// Aberto por cima de uma tela do sistema (NovaOSPorCima), com a O.S. real em
+// OS_REAL — id null numa O.S. nova —: grava de verdade, pedindo à página de
+// trás (pedirAoSistema). Sem OS_REAL é o protótipo de sempre, com clientes
+// fictícios e nada gravado.
 const POR_CIMA = typeof OS_REAL !== 'undefined';
+// O que quem está logado pode fazer (as mesmas regras do modal de hoje).
+const PERM = POR_CIMA && typeof PERMISSOES !== 'undefined' && PERMISSOES.status
+  ? PERMISSOES : { status: [...STATUS_PRODUCAO, ...STATUS_FINAL], podeFinalizar: true, trancado: false };
 
-// Datas do jeito do protótipo, a partir das datas reais: "hoje, 27 out",
-// "qua, 29 out" e, nos pagamentos, "27 out". Ano só quando não é o corrente.
+// As datas ficam guardadas como "2026-10-27" e só viram texto na tela: "hoje,
+// 27 out", "qua, 29 out" e, nos pagamentos, "27 out". Ano só quando não é o
+// corrente.
 const MESES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+const MESES_LONGOS = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
 const SEMANA = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
 const dataLocal = iso => { const [a, m, d] = iso.slice(0, 10).split('-').map(Number); return new Date(a, m - 1, d); };
 const isoDe = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+const HOJE = isoDe(new Date());
+const diaMais = n => { const d = new Date(); d.setDate(d.getDate() + n); return isoDe(d); };
 const diasAte = iso => { const h = new Date(); h.setHours(0, 0, 0, 0); return Math.round((dataLocal(iso) - h) / 864e5); };
 const rotuloCurto = iso => { const d = dataLocal(iso); return `${d.getDate()} ${MESES[d.getMonth()]}${d.getFullYear() !== new Date().getFullYear() ? ' ' + d.getFullYear() : ''}`; };
-const rotuloData = iso => { const n = diasAte(iso); return `${n === 0 ? 'hoje' : n === 1 ? 'amanhã' : SEMANA[dataLocal(iso).getDay()]}, ${rotuloCurto(iso)}`; };
+const rotuloData = iso => { const n = diasAte(iso); return `${n === 0 ? 'hoje' : n === 1 ? 'amanhã' : n === -1 ? 'ontem' : SEMANA[dataLocal(iso).getDay()]}, ${rotuloCurto(iso)}`; };
+// Os atalhos do seletor de data: hoje, amanhã, depois de amanhã, +4 e +7 dias.
+const ATALHOS_DIAS = [0, 1, 2, 4, 7];
 
-const CLIENTES = POR_CIMA ? [{ id: 0, nome: OS_REAL.cliente.nome, tel: OS_REAL.cliente.tel, problema: OS_REAL.cliente.problema }] : [
+// Por cima de uma tela, a lista de clientes é o resultado da última busca no
+// banco; no protótipo, clientes fictícios (pessoas reais não vão para ele).
+let CLIENTES = POR_CIMA ? [] : [
   { id: 1, nome: 'Padaria Estrela do Bairro', tel: '(11) 98765-4321' },
   { id: 2, nome: 'Colégio Monte Azul', tel: '(11) 3344-5566' },
   { id: 3, nome: 'Studio Lume Fotografia', tel: '(11) 99812-0045' },
@@ -546,36 +574,35 @@ const EQUIPE = typeof EQUIPE_BANCO !== 'undefined' && EQUIPE_BANCO.length
 // Duas letras na bolinha, como na Produção: Murilo → Mu; Ana Lima → AL.
 const duasLetras = n => { const p = n.trim().split(/\s+/); return p.length > 1 ? (p[0][0] + p.at(-1)[0]).toUpperCase() : p[0].slice(0, 1).toUpperCase() + p[0].slice(1, 2).toLowerCase(); };
 const bolinha = n => `<i style="background:${EQUIPE[n]?.bg || '#64748b'};color:${EQUIPE[n]?.tx || '#fff'}">${esc(duasLetras(n))}</i>`;
-const OUTRAS_OS = POR_CIMA ? [] : [{ id: 18311, data: '02/10', saldo: 80 }];
-const DATAS = POR_CIMA
-  ? [0, 1, 2, 4, 7].map(n => { const d = new Date(); d.setDate(d.getDate() + n); return [rotuloData(isoDe(d)), n]; })
-  : [['hoje, 19 out', 0], ['amanhã, 20 out', 1], ['qua, 21 out', 2], ['sex, 23 out', 4], ['seg, 26 out', 7]];
+// As outras O.S. do cliente com saldo, para o pagamento em lote.
+const OUTRAS_OS = POR_CIMA ? (typeof OUTRAS_OS_BANCO !== 'undefined' ? OUTRAS_OS_BANCO : []) : [{ id: 18311, data: '02/10', saldo: 80 }];
 
 /* ===== estado ===== */
 const prod = id => CATALOGO.find(p => p[0] === id);
 const os = POR_CIMA ? {
-  modo: 'edita', id: OS_REAL.id,
-  cliente: CLIENTES[0],
-  venda: OS_REAL.venda ? rotuloData(OS_REAL.venda) : '—',
-  prazo: OS_REAL.prazo ? rotuloData(OS_REAL.prazo) : '', prazoDias: OS_REAL.prazo ? diasAte(OS_REAL.prazo) : null, prazoHora: OS_REAL.hora,
+  modo: OS_REAL.id ? 'edita' : 'nova', id: OS_REAL.id,
+  cliente: OS_REAL.cliente,          // { id, nome, tel, problema }; id null = balcão
+  venda: OS_REAL.venda || HOJE,
+  prazo: OS_REAL.prazo || '', prazoHora: OS_REAL.hora || '',
   status: OS_REAL.status, resp: OS_REAL.resp, entrega: OS_REAL.entrega,
-  itens: OS_REAL.itens.map(i => ({ prodId: null, ...i })),
-  pags: OS_REAL.pags.map(g => ({ ...g, data: g.data ? rotuloCurto(g.data) : '' })),
+  itens: OS_REAL.itens, pags: OS_REAL.pags,
 } : {
   modo: 'nova',
   cliente: CLIENTES[0],
-  venda: 'hoje, 19 out', prazo: 'sex, 23 out', prazoDias: 4, prazoHora: '',
+  venda: HOJE, prazo: diaMais(4), prazoHora: '',
   status: 'Produzir', resp: Object.keys(EQUIPE).slice(0, 2), entrega: true,
   itens: [
     { prodId: 29, nome: prod(29)?.[1] || 'CARTAO DE VISITA', esp: '1.000 un. | 9x5cm | Couchê 300g | 4x4 cores | Laminação fosca', local: 'Berlim', bruto: 180, desc: 0 },
     { prodId: 42, nome: prod(42)?.[1] || 'BANNER - ILHÓS', esp: '1 Banner | 90x120cm | Lona 440g | Ilhós nos cantos', local: 'Futura', bruto: 150, desc: 10 },
     { prodId: 24, nome: prod(24)?.[1] || 'ADESIVO DE RECORTE', esp: '20 un. | 30x30cm | Vinil branco', local: 'Berlim', bruto: 96, desc: 0 },
   ],
-  pags: [{ forma: 'PIX', valor: 200, data: '19 out', inst: 'Itaú', band: '', parc: 1 }],
+  pags: [{ forma: 'PIX', valor: 200, data: HOJE, inst: 'Itaú', band: '', parc: 1 }],
 };
+const prazoDias = () => os.prazo ? diasAte(os.prazo) : null;
 let edicao = { aberta: os.itens.length === 0, idx: null }; // linha de item aberta (idx null = item novo); abre sozinha só com a O.S. vazia
 let rasc = novoRascunho();
 let pf = null;                                      // formulário de pagamento aberto
+let salvando = false;                               // esperando a página gravar
 
 function novoRascunho(i) {
   return i ? { prodId: i.prodId, nome: i.nome, esp: i.esp, local: i.local, bruto: brl(i.bruto), desc: i.desc ? String(i.desc) : '' }
@@ -620,7 +647,8 @@ function renderCarimbo() {
   const el = document.getElementById('carimbo-baixa');
   if (os.status !== 'Finalizado') { el.innerHTML = ''; carimboBatido = false; return; }
   const bater = !carimboBatido; carimboBatido = true;
-  const quando = os.baixadaHoje ? 'hoje' : [...os.pags].reverse().find(g => g.data)?.data || '';
+  const ultima = [...os.pags].reverse().find(g => g.data)?.data;
+  const quando = os.baixadaHoje ? 'hoje' : ultima ? rotuloCurto(ultima) : '';
   el.innerHTML = `<div class="carimbo-baixa ${bater ? 'batendo' : ''}" role="img" aria-label="Carimbo: O.S. baixada${quando ? `, ${esc(quando)}` : ''}"><b>BAIXADA</b>${quando ? `<span>${esc(quando)}</span>` : ''}</div>`;
 }
 
@@ -663,7 +691,12 @@ function renderItens() {
 function salvarItem() {
   const r = rasc;
   if (!r.esp.trim() || !(lerValor(r.bruto) > 0)) return false;
-  const item = { prodId: r.prodId, nome: r.nome.trim(), esp: r.esp.trim(), local: r.local, bruto: lerValor(r.bruto), desc: Math.min(100, parseInt(r.desc) || 0) };
+  const antigo = edicao.idx === null ? null : os.itens[edicao.idx];
+  // O "concluído" da Produção continua com o item editado.
+  const item = { prodId: r.prodId, nome: r.nome.trim(), esp: r.esp.trim(), local: r.local, bruto: lerValor(r.bruto), desc: Math.min(100, parseInt(r.desc) || 0), concluido: !!antigo?.concluido };
+  // Sem mexer no preço, fica o valor final gravado (refazer a conta podia
+  // mudar um centavo); mudou o bruto ou o desconto, a conta é refeita.
+  if (antigo?.final != null && item.bruto === antigo.bruto && item.desc === (antigo.desc || 0)) item.final = antigo.final;
   if (edicao.idx === null) os.itens.push(item); else os.itens[edicao.idx] = item;
   // Inseriu, fecha: o próximo item só abre se alguém pedir ("Adicionar item" ou N).
   edicao = { aberta: false, idx: null }; rasc = novoRascunho();
@@ -679,10 +712,10 @@ function rascunhoItemSujo() {
 /* ===== dados da O.S. ===== */
 function renderDados() {
   const q = s => document.querySelector(s);
-  q('[data-campo="venda"] .lbl').textContent = os.venda;
+  q('[data-campo="venda"] .lbl').textContent = os.venda ? rotuloData(os.venda) : '—';
   // O selo do horário fica ao lado do rótulo, não dentro dele: dentro da mesma
   // linha de texto ele empurrava a data 1px para baixo ao aparecer.
-  q('[data-campo="prazo"] .lbl').innerHTML = os.prazo ? esc(os.prazo) : '<span class="vazio">Sem prazo</span>';
+  q('[data-campo="prazo"] .lbl').innerHTML = os.prazo ? esc(rotuloData(os.prazo)) : '<span class="vazio">Sem prazo</span>';
   q('[data-campo="prazo"] .hora-slot').innerHTML = os.prazo && os.prazoHora ? `<span class="hora-chip"><i data-lucide="clock" class="ico"></i>até ${esc(os.prazoHora)}</span>` : '';
   q('[data-pop="status"] .lbl').textContent = os.status;
   q('[data-pop="status"] .dot').style.background = COR_STATUS[os.status];
@@ -696,14 +729,14 @@ function renderDados() {
   q('[data-pop="resp"]').title = r.join(', ');
   const e = q('[data-chave="entrega"]'); e.setAttribute('aria-checked', os.entrega); e.querySelector('.lbl').textContent = os.entrega ? 'Sim' : 'Não';
   // O.S. real pode estar com o prazo vencido, e uma encerrada não tem mais prazo a cumprir.
-  const d = os.prazoDias;
+  const d = prazoDias();
   q('#meta-prazo').innerHTML = os.prazo && !STATUS_FINAL.includes(os.status) ? `<i data-lucide="flag" class="ico ico-s"></i>${d < 0 ? `venceu há ${-d} ${d === -1 ? 'dia' : 'dias'}` : d === 0 ? 'vence hoje' : d === 1 ? 'amanhã' : 'em ' + d + ' dias'}` : '';
 }
 
 /* ===== pagamentos ===== */
 function abrirPagamento() {
   const s = saldo();
-  pf = { forma: 'PIX', valor: s > 0 ? brl(s) : '', tocado: false, data: DATAS[0][0], inst: 'Itaú', band: 'Visa', parc: 1, lote: {}, aloc: {} };
+  pf = { forma: 'PIX', valor: s > 0 ? brl(s) : '', tocado: false, data: HOJE, inst: 'Itaú', band: 'Visa', parc: 1, lote: {}, aloc: {} };
 }
 function renderFin() {
   const t = totalOS(), p = pago(), s = saldo();
@@ -711,7 +744,7 @@ function renderFin() {
     <li class="${g.forma === 'Estorno' ? 'estorno' : ''}">
       <span class="forma-ico"><i data-lucide="${FORMA_ICO[g.forma]}" class="ico ico-s"></i></span>
       <div><div class="forma">${g.forma}${g.parc > 1 ? ` (${g.parc}x)` : ''}</div>
-        <div class="meta">${g.data}${g.inst ? ` · ${g.inst}` : ''}${g.band ? ` · ${bandeiraSvg(g.band)}${g.band}` : ''}${g.lote ? '<span class="lote">em lote</span>' : ''}</div></div>
+        <div class="meta">${g.data ? rotuloCurto(g.data) : ''}${g.extra?.vencimento_boleto ? ` · vence ${rotuloCurto(g.extra.vencimento_boleto)}` : ''}${g.inst ? ` · ${g.inst}` : ''}${g.band ? ` · ${bandeiraSvg(g.band)}${g.band}` : ''}${g.lote ? '<span class="lote">em lote</span>' : ''}</div></div>
       <span class="v">${g.forma === 'Estorno' ? '−' : ''}${brl(g.valor)}</span>
       <button class="lixo" data-tira-pag="${k}" aria-label="Remover pagamento"><i data-lucide="trash-2" class="ico ico-s"></i></button>
     </li>`).join('') : '<li class="sem-pag">Nenhum pagamento registrado ainda.</li>';
@@ -727,7 +760,7 @@ function renderFin() {
       const somaC = ids.reduce((a, id) => a + Math.round(lerValor(pf.aloc[id] || '0') * 100), 0), totC = Math.round(lerValor(pf.valor) * 100);
       loteOk = somaC === totC && totC > 0 && outrasMarcadas.every(o => lerValor(pf.aloc[o.id] || '0') > 0);
       divisao = `<div class="divisao num">
-        ${ids.map(id => `<div class="ln"><span>${id === 'esta' ? 'O.S. #18342 (esta)' : 'O.S. #' + id}</span><input class="linha-in dir-in" data-aloc="${id}" value="${esc(pf.aloc[id] || '')}" inputmode="decimal"></div>`).join('')}
+        ${ids.map(id => `<div class="ln"><span>${id === 'esta' ? `O.S. #${os.id || 18342} (esta)` : 'O.S. #' + id}</span><input class="linha-in dir-in" data-aloc="${id}" value="${esc(pf.aloc[id] || '')}" inputmode="decimal"></div>`).join('')}
         <div class="soma ${loteOk ? 'ok' : 'nao'}"><span>${loteOk ? 'A soma confere' : 'A soma precisa bater com o valor'}</span><span>${brl(somaC / 100)} / ${brl(totC / 100)}</span></div>
       </div>`;
     }
@@ -741,7 +774,7 @@ function renderFin() {
       <div class="pf-campos">
         <div class="campo"><span>Forma</span><button class="sel-in" data-pop="forma" title="${pf.forma}"><i data-lucide="${FORMA_ICO[pf.forma]}" class="ico ico-s"></i><span class="lbl">${FORMA_CURTA[pf.forma] || pf.forma}</span><i data-lucide="chevron-down" class="ico ico-s chev"></i></button></div>
         <label class="campo pf-valor"><span>Valor (R$)</span><input class="linha-in dir-in" id="pf-valor" value="${esc(pf.valor)}" placeholder="0,00" inputmode="decimal"></label>
-        <div class="campo"><span>Data</span><button class="sel-in" data-pop="data" data-campo="pf-data"><span class="lbl">${pf.data}</span><i data-lucide="chevron-down" class="ico ico-s chev"></i></button></div>
+        <div class="campo"><span>Data</span><button class="sel-in" data-pop="data" data-campo="pf-data"><span class="lbl">${esc(rotuloData(pf.data))}</span><i data-lucide="chevron-down" class="ico ico-s chev"></i></button></div>
         ${x.inst ? `<div class="campo"><span>Instituição</span><button class="sel-in" data-pop="inst"><span class="lbl">${pf.inst}</span><i data-lucide="chevron-down" class="ico ico-s chev"></i></button></div>` : ''}
         ${x.band ? `<div class="campo"><span>Bandeira</span><button class="sel-in" data-pop="band">${bandeiraSvg(pf.band)}<span class="lbl">${pf.band}</span><i data-lucide="chevron-down" class="ico ico-s chev"></i></button></div>` : ''}
         ${x.parc ? `<div class="campo pf-parc"><span>Parcelas</span><button class="sel-in num" data-pop="parc"><span class="lbl">${pf.parc}x</span>${pf.parc > 1 && lerValor(pf.valor) > 0 ? `<small>de ${brl(lerValor(pf.valor) / pf.parc)}</small>` : ''}<i data-lucide="chevron-down" class="ico ico-s chev"></i></button></div>` : ''}
@@ -772,21 +805,43 @@ function renderFin() {
 function registrarPagamento() {
   const x = extrasDaForma(pf.forma), v = lerValor(pf.valor); if (!(v > 0)) return;
   const outras = OUTRAS_OS.filter(o => pf.lote[o.id]);
-  const base = { forma: pf.forma, data: pf.data.replace(/^.*, /, ''), inst: x.inst ? pf.inst : '', band: x.band ? pf.band : '', parc: x.parc ? pf.parc : 1 };
+  const base = { forma: pf.forma, data: pf.data, inst: x.inst ? pf.inst : '', band: x.band ? pf.band : '', parc: x.parc ? pf.parc : 1 };
+  if (outras.length && POR_CIMA) return pagarEmLote(base, outras);
   if (outras.length) {
     os.pags.push({ ...base, valor: lerValor(pf.aloc.esta || '0'), lote: true });
     toast(`Pagamento registrado em ${1 + outras.length} O.S.`);
   } else os.pags.push({ ...base, valor: v });
   pf = null;
 }
+// Pagamento em lote, como no modal de hoje: a fatia de cada outra O.S. grava
+// na hora (registrarPagamentoLoteOutrasOS); a desta entra na lista com o mesmo
+// lote e a O.S. é salva em seguida — e finalizada, se ficou quitada e quem
+// está logado pode finalizar.
+function pagarEmLote(base, outras) {
+  const nomes = [`#${os.id}`, ...outras.map(o => `#${o.id}`)].join(', ');
+  const centavos = s => Math.round(lerValor(s || '0') * 100);
+  abrirSub('Pagamento em lote', `<p>Confirma o pagamento de R$ ${esc(pf.valor)} dividido entre as O.S. ${nomes}?\n\nIsso grava na hora, em todas elas, e salva esta O.S.</p>`, `Registrar em ${1 + outras.length} O.S.`, async () => {
+    const r = await pedirAoSistema('pagar-lote', {
+      metadados: { forma: base.forma, parcelas: base.parc, instituicao: base.inst, bandeira: base.band, data: base.data },
+      alocacoes: outras.map(o => ({ id: o.id, valor: centavos(pf.aloc[o.id]) })),
+    });
+    if (!r.ok) return false;
+    os.pags.push({ ...base, valor: lerValor(pf.aloc.esta || '0'), lote: true, extra: { lote_id: r.loteId } });
+    pf = null; render();
+    setTimeout(() => enviarOS(false, PERM.podeFinalizar && saldo() <= 0.001 ? 'Finalizado' : null));
+  });
+}
 
 /* ===== render geral ===== */
 function render(foco) {
   renderCliente(); renderItens(); renderDados(); renderFin(); renderCarimbo();
   document.getElementById('tit').textContent = os.modo === 'edita' ? `O.S. #${os.id || 18342}` : 'Nova O.S.';
-  document.getElementById('selo').textContent = POR_CIMA ? 'Só visualização' : os.modo === 'edita' ? 'Editando' : 'Rascunho';
-  document.getElementById('txt-salvar').textContent = os.modo === 'edita' ? 'Atualizar' : 'Salvar O.S.';
-  document.getElementById('finalizar').hidden = POR_CIMA || os.status === 'Finalizado';
+  const selo = document.getElementById('selo');
+  selo.textContent = PERM.trancado ? 'Trancada' : os.modo === 'edita' ? 'Editando' : POR_CIMA ? 'Nova' : 'Rascunho';
+  selo.classList.toggle('trancada', !!PERM.trancado);
+  document.getElementById('txt-salvar').textContent = salvando ? 'Salvando…' : os.modo === 'edita' ? 'Atualizar' : 'Salvar O.S.';
+  document.querySelectorAll('[data-salvar], #finalizar').forEach(b => { b.disabled = salvando; });
+  document.getElementById('finalizar').hidden = !PERM.podeFinalizar || os.status === 'Finalizado';
   lucide.createIcons();
   if (foco) document.querySelector(foco)?.focus();
 }
@@ -814,8 +869,12 @@ function abrirPop(ancora, tipo) {
   if (popAberto?.ancora === ancora) { fecharPop(); return; }
   let html = '', escolher;
   if (tipo === 'status') {
-    html = STATUS_PRODUCAO.map(s => `<button data-v="${s}"><span class="dot" style="background:${COR_STATUS[s]}"></span>${s}${marca(s === os.status)}</button>`).join('')
-      + '<hr><div class="rot">Encerramento</div>' + STATUS_FINAL.map(s => `<button data-v="${s}"><span class="dot" style="background:${COR_STATUS[s]}"></span>${s}${marca(s === os.status)}</button>`).join('');
+    // Só os status que quem está logado pode escolher (Atendimento e Produção
+    // não cancelam nem finalizam), mais o atual, para ele aparecer marcado.
+    const pode = s => PERM.status.includes(s) || s === os.status;
+    const op = s => `<button data-v="${s}"><span class="dot" style="background:${COR_STATUS[s]}"></span>${s}${marca(s === os.status)}</button>`;
+    const fim = STATUS_FINAL.filter(pode);
+    html = STATUS_PRODUCAO.filter(pode).map(op).join('') + (fim.length ? '<hr><div class="rot">Encerramento</div>' + fim.map(op).join('') : '');
     escolher = v => { os.status = v; };
   }
   if (tipo === 'resp') {
@@ -846,19 +905,25 @@ function abrirPop(ancora, tipo) {
   }
   if (tipo === 'data') {
     const campo = ancora.dataset.campo, atual = campo === 'pf-data' ? pf.data : os[campo];
-    html = (campo === 'prazo' ? `<button data-v="">Sem prazo${marca(!os.prazo)}</button><hr>` : '')
-      + DATAS.map(([d, n]) => `<button data-v="${d}" data-dias="${n}">${d.replace(/^./, c => c.toUpperCase())}${marca(d === atual)}</button>`).join('')
+    const atalhos = ATALHOS_DIAS.map(diaMais);
+    // Uma data fora dos atalhos (escolhida no calendário) aparece no topo, marcada.
+    const fora = atual && !atalhos.includes(atual) ? `<button data-v="${atual}">${esc(rotuloData(atual).replace(/^./, c => c.toUpperCase()))}${marca(true)}</button><hr>` : '';
+    html = (campo === 'prazo' ? `<button data-v="">Sem prazo${marca(!os.prazo)}</button><hr>` : '') + fora
+      + atalhos.map(d => `<button data-v="${d}">${esc(rotuloData(d).replace(/^./, c => c.toUpperCase()))}${marca(d === atual)}</button>`).join('')
       + '<hr><button data-v="__cal"><i data-lucide="calendar" class="ico ico-s"></i>Escolher no calendário…</button>'
       // Horário limite (opcional): só faz sentido com data. Atalhos para as
       // horas mais comuns e um campo livre para o resto.
       + (campo === 'prazo' && os.prazo ? '<hr><div class="rot">Horário limite</div><div class="horas">'
           + ['', '09:00', '12:00', '14:00', '17:00'].map(h => `<button data-v="__h:${h}" class="${h === os.prazoHora ? 'ativo' : ''}">${h || 'Sem horário'}</button>`).join('')
           + `</div><label class="hora-livre"><i data-lucide="clock" class="ico ico-s"></i>Outro: <input type="time" data-hora-livre value="${esc(os.prazoHora)}"></label>` : '');
-    escolher = (v, b) => {
-      if (v === '__cal') return;
+    escolher = v => {
+      // O calendário entra no lugar da lista, no mesmo popover; o dia
+      // escolhido nele volta por aqui como qualquer outra data.
+      if (v === '__cal') { mostrarCalendario(pop, (atual || HOJE).slice(0, 7), atual); return 'manter'; }
       if (v.startsWith('__h:')) { os.prazoHora = v.slice(4); return; }
-      if (campo === 'pf-data') pf.data = v;
-      else { os[campo] = v; if (campo === 'prazo') { os.prazoDias = +b.dataset.dias; if (!v) os.prazoHora = ''; } }
+      if (campo === 'pf-data') pf.data = v || HOJE;
+      else if (campo === 'venda') os.venda = v || HOJE;
+      else { os.prazo = v; if (!v) os.prazoHora = ''; }
     };
   }
   const pop = montarPop(ancora, html, tipo === 'data' && ancora.dataset.campo === 'prazo' ? 'pop-prazo' : '');
@@ -871,25 +936,69 @@ function abrirPop(ancora, tipo) {
     os.prazoHora = livre.value; fecharPop(); render();
   });
   pop.addEventListener('click', e => {
+    const nav = e.target.closest('[data-cal-nav]');
+    if (nav) { const c = pop.querySelector('.cal'); mostrarCalendario(pop, somarMes(c.dataset.mes, +nav.dataset.calNav), c.dataset.sel); return; }
     const b = e.target.closest('button[data-v]'); if (!b) return;
     if (escolher(b.dataset.v, b) === 'manter') return;
     fecharPop(); render(); ancora.isConnected ? ancora.focus() : null;
   });
 }
 
-/* busca de cliente: mesma regra do sistema (contém o texto, sem acento) */
+/* calendário do seletor de data: o mês com os dias da semana, hoje com
+   contorno laranja e o dia escolhido cheio (o mesmo da nova Conta a pagar) */
+const somarMes = (mes, n) => { const [a, m] = mes.split('-').map(Number); const d = new Date(a, m - 1 + n, 1); return isoDe(d).slice(0, 7); };
+function mostrarCalendario(pop, mes, sel) {
+  const [a, m] = mes.split('-').map(Number);
+  const ini = new Date(a, m - 1, 1); ini.setDate(1 - ini.getDay());
+  const dias = Array.from({ length: 42 }, (_, i) => { const d = new Date(ini); d.setDate(ini.getDate() + i); return d; });
+  pop.classList.add('pop-cal');
+  pop.innerHTML = `<div class="cal" data-mes="${mes}" data-sel="${sel || ''}">
+    <div class="cal-cab"><button class="cal-nav" data-cal-nav="-1" aria-label="Mês anterior"><i data-lucide="chevron-left" class="ico ico-s"></i></button><b>${MESES_LONGOS[m - 1]} ${a}</b><button class="cal-nav" data-cal-nav="1" aria-label="Próximo mês"><i data-lucide="chevron-right" class="ico ico-s"></i></button></div>
+    <div class="cal-grade">${['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map(x => `<span class="sem">${x}</span>`).join('')}${dias.map(d => { const iso = isoDe(d); return `<button data-v="${iso}" class="${d.getMonth() !== m - 1 ? 'fora' : ''} ${iso === HOJE ? 'hoje' : ''} ${iso === sel ? 'sel' : ''}" aria-label="${d.getDate()} de ${MESES_LONGOS[d.getMonth()].toLowerCase()}">${d.getDate()}</button>`; }).join('')}</div>
+  </div>`;
+  lucide.createIcons();
+  // O popover cresceu: se passou da borda de baixo, sobe até caber.
+  const r = pop.getBoundingClientRect();
+  if (r.bottom > innerHeight - 8) pop.style.top = Math.max(8, innerHeight - r.height - 8) + 'px';
+  if (r.right > innerWidth - 8) pop.style.left = Math.max(8, innerWidth - r.width - 8) + 'px';
+  (pop.querySelector('.cal-grade .sel') || pop.querySelector('.cal-grade .hoje') || pop.querySelector('.cal-nav'))?.focus();
+}
+
+/* busca de cliente: mesma regra do sistema (contém o texto, sem acento). Por
+   cima de uma tela, quem busca é o banco (lib/clientes/busca.js, a mesma do
+   modal de hoje): a lista mostra o último resultado até o novo chegar. */
+let buscaCli = { t: null, n: 0, q: null };
 function popClientes(input) {
+  if (!POR_CIMA) {
+    const q = semAcento(input.value.trim());
+    return desenharClientes(input, CLIENTES.filter(c => !q || semAcento(c.nome).includes(q) || c.tel.replace(/\D/g, '').includes(q.replace(/\D/g, '') || '§')));
+  }
+  const q = input.value.trim();
+  clearTimeout(buscaCli.t);
+  if (!q) { buscaCli.q = ''; CLIENTES = []; return desenharClientes(input, []); }
+  if (q === buscaCli.q) return desenharClientes(input, CLIENTES);
+  desenharClientes(input, buscaCli.q ? CLIENTES : null);
+  buscaCli.t = setTimeout(async () => {
+    const n = ++buscaCli.n;
+    const r = await pedirAoSistema('buscar-clientes', { q });
+    // Só vale a resposta da busca mais recente, com o campo ainda em foco.
+    if (n !== buscaCli.n || document.activeElement !== input || os.cliente) return;
+    CLIENTES = r.lista || []; buscaCli.q = q;
+    desenharClientes(input, CLIENTES);
+  }, 250);
+}
+function desenharClientes(input, achados) {
   const q = semAcento(input.value.trim());
-  const achados = CLIENTES.filter(c => !q || semAcento(c.nome).includes(q) || c.tel.replace(/\D/g, '').includes(q.replace(/\D/g, '') || '§'));
-  const exato = CLIENTES.some(c => semAcento(c.nome) === q);
-  const html = achados.map(c => `<button data-cli="${c.id}" ${c.problema ? 'class="alerta"' : ''}>${c.problema ? '<i data-lucide="triangle-alert" class="ico ico-s"></i>' : ''}${esc(c.nome)}<span class="sub num">${c.tel}</span></button>`).join('')
-    + (achados.length ? '' : '<div class="vazio">Nenhum cliente com esse nome.</div>')
-    + `<hr><button class="criar" data-novo-cliente="${esc(exato ? '' : input.value.trim())}"><i data-lucide="user-plus" class="ico ico-s"></i>${input.value.trim() && !exato ? `Cadastrar “${esc(input.value.trim())}” como cliente novo` : 'Cadastrar cliente novo'}</button>`;
+  const exato = (achados || []).some(c => semAcento(c.nome) === q);
+  const html = (achados === null ? '<div class="vazio">Buscando…</div>'
+      : achados.map(c => `<button data-cli="${c.id}" ${c.problema ? 'class="alerta"' : ''}>${c.problema ? '<i data-lucide="triangle-alert" class="ico ico-s"></i>' : ''}${esc(c.nome)}<span class="sub num">${esc(c.tel)}</span></button>`).join('')
+        + (achados.length || !q ? '' : '<div class="vazio">Nenhum cliente com esse nome.</div>'))
+    + `${achados?.length || achados === null || q ? '<hr>' : ''}<button class="criar" data-novo-cliente="${esc(exato ? '' : input.value.trim())}"><i data-lucide="user-plus" class="ico ico-s"></i>${input.value.trim() && !exato ? `Cadastrar “${esc(input.value.trim())}” como cliente novo` : 'Cadastrar cliente novo'}</button>`;
   const pop = montarPop(input, html);
   pop.style.minWidth = Math.min(Math.max(320, input.offsetWidth), 520) + 'px';
   pop.addEventListener('click', e => {
     const b = e.target.closest('[data-cli]'); if (!b) return;
-    os.cliente = CLIENTES.find(c => c.id === +b.dataset.cli); input.value = os.cliente.nome; fecharPop(); render(); input.blur();
+    os.cliente = CLIENTES.find(c => String(c.id) === b.dataset.cli); input.value = os.cliente.nome; fecharPop(); render(); input.blur();
   });
 }
 
@@ -929,13 +1038,24 @@ function abrirSub(titulo, corpo, rotuloOk, aoSalvar) {
   const fechar = () => sub.remove();
   sub.addEventListener('click', e => { if (e.target === sub || e.target.closest('[data-sub-fecha]')) fechar(); });
   sub.addEventListener('keydown', e => { if (e.key === 'Escape') { e.stopPropagation(); fechar(); } });
-  sub.querySelector('form').addEventListener('submit', e => { e.preventDefault(); if (aoSalvar(sub) !== false) fechar(); });
+  // aoSalvar pode esperar a página gravar (devolve uma promessa): o botão fica
+  // em "Salvando…" e a janela só fecha se deu certo (false = fica aberta).
+  const ok = sub.querySelector('.sub-pe .btn-pri');   // guardado já: o "Descartar" troca a classe para vermelho
+  sub.querySelector('form').addEventListener('submit', e => {
+    e.preventDefault();
+    if (ok.disabled) return;
+    const r = aoSalvar(sub);
+    if (!(r instanceof Promise)) { if (r !== false) fechar(); return; }
+    ok.disabled = true; ok.textContent = 'Salvando…';
+    r.then(res => { if (res !== false) fechar(); else { ok.disabled = false; ok.textContent = rotuloOk; } });
+  });
   sub.querySelector('input, textarea, button.btn-pri')?.focus();
   return sub;
 }
 function cadastrarCliente(nomeInicial = '') {
   abrirSub('Cliente novo', `
-    <label class="campo"><span>Nome <b class="req">*</b></span><input class="linha-in" name="nome" value="${esc(nomeInicial)}" placeholder="Nome ou razão social"></label>
+    <label class="campo"><span>Nome <b class="req">*</b></span><input class="linha-in" name="nome" value="${esc(nomeInicial)}" placeholder="Nome do contato"></label>
+    <label class="campo"><span>Empresa</span><input class="linha-in" name="empresa" placeholder="Quando compra por uma empresa"></label>
     <div class="duas">
       <label class="campo"><span>WhatsApp</span><input class="linha-in num" name="tel" placeholder="(00) 00000-0000" inputmode="tel"></label>
       <label class="campo"><span>E-mail</span><input class="linha-in" name="email" type="email" placeholder="nome@empresa.com"></label>
@@ -943,9 +1063,20 @@ function cadastrarCliente(nomeInicial = '') {
     <label class="campo"><span>Observações</span><textarea class="linha-in" name="obs" rows="2" placeholder="Como prefere ser atendido, CNPJ, contato do financeiro…"></textarea></label>
     <button type="button" class="alternar chave-perigo" role="switch" aria-checked="false" data-alterna-sub><span class="chave"></span><span><b>Cliente problema</b><small>Sinaliza este cliente com destaque de atenção nas listagens.</small></span></button>`,
     'Salvar cliente', sub => {
-      const nome = sub.querySelector('[name=nome]');
+      const nome = sub.querySelector('[name=nome]'), campo = n => sub.querySelector(`[name=${n}]`).value;
       if (!nome.value.trim()) { nome.classList.add('erro'); nome.focus(); return false; }
-      const c = { id: Date.now(), nome: nome.value.trim(), tel: sub.querySelector('[name=tel]').value, problema: sub.querySelector('[data-alterna-sub]').getAttribute('aria-checked') === 'true' };
+      const problema = sub.querySelector('[data-alterna-sub]').getAttribute('aria-checked') === 'true';
+      if (POR_CIMA) {
+        // Grava pelo sistema (criarCliente): WhatsApp repetido volta com erro,
+        // avisado lá, e a janela fica aberta para corrigir.
+        return pedirAoSistema('cadastrar-cliente', { dados: { nome: nome.value.trim(), empresa: campo('empresa'), telefone: campo('tel'), email: campo('email'), observacoes: campo('obs'), cliente_problema: problema } })
+          .then(r => {
+            if (!r.cliente) return false;
+            CLIENTES = [r.cliente]; os.cliente = r.cliente; render(); toast('Cliente cadastrado e vinculado à O.S.');
+          });
+      }
+      const empresa = campo('empresa').trim();
+      const c = { id: Date.now(), nome: nome.value.trim() + (empresa ? ` • ${empresa}` : ''), tel: campo('tel'), problema };
       CLIENTES.push(c); os.cliente = c; render(); toast('Cliente cadastrado e vinculado à O.S.');
     });
   if (nomeInicial) document.querySelector('.janela [name=tel]').focus();
@@ -959,26 +1090,99 @@ function cadastrarProduto() {
       const nome = sub.querySelector('[name=nome]'), preco = sub.querySelector('[name=preco]');
       if (!nome.value.trim()) { nome.classList.add('erro'); nome.focus(); return false; }
       if (!(lerValor(preco.value) > 0)) { preco.classList.add('erro'); preco.focus(); return false; }
-      const p = [Math.max(...CATALOGO.map(c => c[0])) + 1, nome.value.trim().toUpperCase(), Math.round(lerValor(preco.value) * 100), sub.querySelector('[name=texto]').value.trim()];
+      const dados = { nome: nome.value.trim().toUpperCase(), preco_base: Math.round(lerValor(preco.value) * 100), texto_padrao: sub.querySelector('[name=texto]').value.trim() };
+      if (POR_CIMA) {
+        // Grava pelo sistema (criarProduto) e entra no catálogo daqui também.
+        return pedirAoSistema('cadastrar-produto', { dados }).then(r => {
+          if (!r.produto) return false;
+          CATALOGO.push(r.produto); escolherProduto(r.produto); toast('Produto cadastrado no catálogo');
+        });
+      }
+      const p = [Math.max(...CATALOGO.map(c => c[0])) + 1, dados.nome, dados.preco_base, dados.texto_padrao];
       CATALOGO.push(p); escolherProduto(p); toast('Produto cadastrado no catálogo');
     });
 }
 
-/* aviso ao salvar com algo digitado que não entrou na O.S. (salvarComAviso) */
-function salvar() {
-  if (POR_CIMA) { toast('O protótipo ainda não grava. Use "Editar no modal atual".'); return; }
+/* ===== salvar ===== */
+// Por cima de uma tela, a página de trás grava (NovaOSPorCima → gravarOS, o
+// mesmo miolo do modal de hoje). Cada pedido leva um número e a resposta volta
+// com ele.
+let pedidoN = 0;
+const esperando = new Map();
+function pedirAoSistema(tipo, dados = {}) {
+  const n = ++pedidoN;
+  parent.postMessage({ tipo, n, ...dados }, '/');
+  return new Promise(res => esperando.set(n, res));
+}
+addEventListener('message', e => {
+  if (e.source !== parent) return;
+  const d = e.data || {};
+  if (d.n && esperando.has(d.n)) { esperando.get(d.n)(d); esperando.delete(d.n); return; }
+  if (d.tipo === 'pedir-fechar') fecharPorCima();
+});
+
+// Aviso ao salvar com algo digitado que não entrou na O.S. (salvarComAviso do
+// modal de hoje), depois o do cliente sem cadastro, e então grava.
+function salvar(imprimir = false, statusForcado = null) {
+  if (salvando || PERM.trancado) return;
+  // Uma O.S. nova precisa de pelo menos um item: sem ele seria uma O.S. de R$ 0.
+  if (os.modo === 'nova' && !os.itens.length && POR_CIMA) { toast('Inclua pelo menos um item na O.S.', true); return; }
   const pend = [];
   if (rascunhoItemSujo()) pend.push(`• Item do orçamento: falta clicar em "${edicao.idx === null ? 'Inserir item no orçamento' : 'Salvar alterações'}"`);
   if (pf && pf.tocado && lerValor(pf.valor) > 0) pend.push('• Novo pagamento: falta clicar em "Registrar pagamento"');
-  if (!pend.length) { toast(os.modo === 'edita' ? 'O.S. atualizada' : 'O.S. salva'); return; }
-  abrirSub('Ficou algo de fora', `<p>Há informação digitada que ainda não entrou nesta O.S.:\n\n${pend.join('\n')}\n\nSalvar assim mesmo? O que está digitado será descartado.</p>`, 'Salvar assim mesmo', () => { toast('O.S. salva'); });
+  const seguir = () => confirmarBalcao(() => enviarOS(imprimir, statusForcado));
+  if (!pend.length) return seguir();
+  abrirSub('Ficou algo de fora', `<p>Há informação digitada que ainda não entrou nesta O.S.:\n\n${pend.join('\n')}\n\nSalvar assim mesmo? O que está digitado será descartado.</p>`, 'Salvar assim mesmo', () => { setTimeout(seguir); });
+}
+// Nome digitado sem escolher ninguém da lista: ou é venda de balcão (legítimo)
+// ou esqueceram de escolher. Só quem está atendendo sabe — pergunta. Campo
+// vazio não pergunta: aí a venda avulsa é inequívoca (a mesma regra do salvarOS).
+function nomeDoCliente() { return (os.cliente ? os.cliente.nome : document.getElementById('cli').value).trim(); }
+function confirmarBalcao(seguir) {
+  if (!POR_CIMA || !nomeDoCliente() || os.cliente?.id) return seguir();
+  abrirSub('Cliente sem cadastro', `<p>Nenhum cliente do cadastro foi escolhido para esta O.S.\n\nSalvar como venda de balcão? O nome digitado continua na O.S. como referência, mas ela não entra nos pagamentos em lote nem no ranking desse cliente.\n\nPara vincular, volte e escolha o cliente na lista.</p>`, 'Salvar como balcão', () => { setTimeout(seguir); });
+}
+async function enviarOS(imprimir = false, statusForcado = null) {
+  if (!POR_CIMA) { toast(os.modo === 'edita' ? 'O.S. atualizada' : 'O.S. salva'); return; }
+  if (salvando) return;
+  salvando = true; render();
+  const centavos = v => Math.round((Number(v) || 0) * 100);
+  const r = await pedirAoSistema('salvar-os', {
+    imprimir,
+    os: {
+      cliente: { id: os.cliente?.id || null, nome: nomeDoCliente() },
+      venda: os.venda, prazo: os.prazo || null, hora: os.prazo ? os.prazoHora : '',
+      status: statusForcado || os.status, resp: os.resp, entrega: os.entrega,
+      obs: document.getElementById('obs').value,
+      itens: os.itens.map(i => ({ prodId: i.prodId || null, nome: i.nome || '', esp: i.esp, local: i.local || 'Berlim', bruto: centavos(i.bruto), desc: i.desc || 0, final: centavos(valorItem(i)), concluido: !!i.concluido })),
+      pags: os.pags.map(g => ({ forma: g.forma, valor: centavos(g.valor), data: g.data || HOJE, inst: g.inst || '', band: g.band || '', parc: g.parc || 1, extra: g.extra || null })),
+    },
+  });
+  // Deu certo: a página fecha a janela. Não deu: o erro já foi avisado lá, e
+  // aqui tudo continua como estava para tentar de novo. Uma O.S. nova que
+  // gravou só o cabeçalho passa a ser a edição dela.
+  salvando = false;
+  if (r.viraEdicao) { os.modo = 'edita'; os.id = r.viraEdicao; }
+  render();
+}
+
+// Fechar (X, Esc, clique no véu, voltar do navegador): com algo mexido,
+// pergunta antes de descartar.
+let retratoInicial = '';
+const retrato = () => JSON.stringify([os, document.getElementById('obs').value, document.getElementById('cli').value]);
+function fecharPorCima() {
+  if (document.querySelector('.janela')) return;
+  if (PERM.trancado || salvando || retrato() === retratoInicial) return parent.postMessage({ tipo: 'fechar-os' }, '/');
+  abrirSub('Sair sem salvar?', '<p>O que foi mexido nesta O.S. ainda não foi salvo e será descartado.</p>', 'Descartar', () => { parent.postMessage({ tipo: 'fechar-os' }, '/'); });
+  const ok = document.querySelector('.janela .btn-pri'); ok.classList.replace('btn-pri', 'btn-perigo');
+  const voltar = document.querySelector('.janela .sub-pe .btn-txt'); voltar.textContent = 'Continuar editando'; voltar.focus();
 }
 
 let toastT;
-function toast(msg) {
+function toast(msg, erro = false) {
   document.querySelector('.toast')?.remove(); clearTimeout(toastT);
-  const t = document.createElement('div'); t.className = 'toast'; t.innerHTML = `<i data-lucide="check" class="ico ico-s"></i>${esc(msg)}`;
-  document.body.appendChild(t); lucide.createIcons(); toastT = setTimeout(() => t.remove(), 2600);
+  const t = document.createElement('div'); t.className = 'toast' + (erro ? ' erro' : ''); t.innerHTML = `<i data-lucide="${erro ? 'triangle-alert' : 'check'}" class="ico ico-s"></i>${esc(msg)}`;
+  document.body.appendChild(t); lucide.createIcons(); toastT = setTimeout(() => t.remove(), erro ? 4000 : 2600);
 }
 
 // Trocar o tema "acende" a partir do botão: o escuro se espalha em círculo
@@ -1020,7 +1224,6 @@ document.addEventListener('click', e => {
     // Clique no véu fecha a janela — ou só o popover, se houver um aberto.
     if (t.classList.contains('palco')) { if (popAberto) fecharPop(); else fecharPorCima(); return; }
     if (t.closest('.topo .fechar')) { fecharPorCima(); return; }
-    if (t.closest('[data-editar-atual]')) { parent.postMessage({ tipo: 'editar-no-atual' }, '/'); return; }
   }
   const modo = t.closest('[data-modo]');
   if (modo) { os.modo = modo.dataset.modo; document.querySelectorAll('[data-modo]').forEach(b => b.setAttribute('aria-pressed', b === modo)); pf = null; render(); return; }
@@ -1031,7 +1234,9 @@ document.addEventListener('click', e => {
   const nc = t.closest('[data-novo-cliente]'); if (nc) { cadastrarCliente(nc.dataset.novoCliente || ''); return; }
   if (t.closest('[data-novo-produto]')) { cadastrarProduto(); return; }
   const pb = t.closest('[data-pop]'); if (pb) { abrirPop(pb, pb.dataset.pop); return; }
-  if (popAberto && !t.closest('.pop') && t !== popAberto.ancora) fecharPop();
+  // Um botão que o próprio popover trocou ao ser clicado (o calendário entrando
+  // no lugar da lista, a troca de mês) já saiu da página: não é clique fora.
+  if (popAberto && t.isConnected && !t.closest('.pop') && t !== popAberto.ancora) fecharPop();
 
   const ch = t.closest('[data-chave="entrega"]'); if (ch) { os.entrega = !os.entrega; render(); return; }
   const tira = t.closest('[data-tira]');
@@ -1047,10 +1252,13 @@ document.addEventListener('click', e => {
   if (t.closest('[data-abre-pag]')) { abrirPagamento(); render('#pf-valor'); return; }
   if (t.closest('[data-cancela-pag]')) { pf = null; render(); return; }
   if (t.closest('[data-registra]')) { registrarPagamento(); render(); return; }
-  const sv = t.closest('[data-salvar]'); if (sv) { salvar(); return; }
+  const sv = t.closest('[data-salvar]'); if (sv) { salvar(sv.dataset.salvar === 'imprimir'); return; }
   if (t.closest('#finalizar')) {
-    if (saldo() > 0) { toast('Não dá para finalizar: o valor total ainda não foi pago'); return; }
-    abrirSub('Finalizar O.S.', '<p>Tem certeza que deseja finalizar esta O.S.?</p>', 'Finalizar', () => { os.status = 'Finalizado'; os.baixadaHoje = true; render(); toast('O.S. finalizada'); });
+    if (saldo() > 0) { toast('Não dá para finalizar: o valor total ainda não foi pago', true); return; }
+    abrirSub('Finalizar O.S.', '<p>Tem certeza que deseja finalizar esta O.S.?</p>', 'Finalizar', () => {
+      if (POR_CIMA) { setTimeout(() => salvar(false, 'Finalizado')); return; }
+      os.status = 'Finalizado'; os.baixadaHoje = true; render(); toast('O.S. finalizada');
+    });
   }
 });
 
@@ -1116,7 +1324,8 @@ document.addEventListener('keydown', e => {
   }
   if (e.key === 'Enter' && e.target.matches('.edita input')) { e.preventDefault(); if (salvarItem()) render('#mais'); else document.getElementById(rasc.esp.trim() ? 'in-bruto' : 'in-esp').focus(); return; }
   if (e.key === 'Enter' && e.target.id === 'pf-valor') { e.preventDefault(); document.querySelector('[data-registra]:not(:disabled)')?.click(); return; }
-  if (e.key === 's' && e.ctrlKey) { e.preventDefault(); salvar(); return; }
+  if (e.key.toLowerCase() === 's' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); if (!document.querySelector('.janela')) salvar(); return; }
+  if (PERM.trancado) return;
   if (e.key.toLowerCase() === 'n' && !e.target.closest('input, textarea, .janela') && !edicao.aberta) { e.preventDefault(); edicao = { aberta: true, idx: null }; rasc = novoRascunho(); render('#in-cat'); return; }
   // P abre o pagamento, como o N abre um item novo.
   if (e.key.toLowerCase() === 'p' && !e.ctrlKey && !e.metaKey && !e.target.closest('input, textarea, .janela') && !pf && totalOS() > 0) { e.preventDefault(); abrirPagamento(); render('#pf-valor'); }
@@ -1125,22 +1334,24 @@ addEventListener('resize', fecharPop);
 document.getElementById('grade').addEventListener('scroll', () => { if (popAberto && performance.now() - popAberto.desde > 250) fecharPop(); });
 if (location.hash.includes('escuro')) document.getElementById('tema').click();
 if (location.hash.includes('edita')) document.querySelector('[data-modo="edita"]').click();
-// Por cima de uma tela: o tema dela, as observações da O.S., e no rodapé o aviso
-// de que nada é gravado, com o caminho para quem precisa mudar algo de verdade.
-function fecharPorCima() { parent.postMessage({ tipo: 'fechar-os' }, '/'); }
+// Por cima de uma tela: o tema dela e as observações da O.S. Trancada (O.S.
+// baixada, para Atendimento e Produção; e a conta de demonstração) só se vê:
+// nada lá dentro responde, e o rodapé diz por quê.
 if (POR_CIMA) {
   const raiz = document.documentElement;
   raiz.classList.add('por-cima');
   raiz.classList.toggle('dark', TEMA_ESCURO);
   document.getElementById('obs').value = OS_REAL.obs || '';
-  document.querySelector('.rodape > .dicas').innerHTML = '<span class="aviso-proto"><i data-lucide="info" class="ico ico-s"></i>Protótipo: o que mudar aqui não é gravado</span><span><kbd>Esc</kbd> fecha</span>';
-  document.querySelector('[data-salvar="imprimir"]').hidden = true;
-  const atualizar = document.querySelector('[data-salvar="salvar"]');
-  atualizar.disabled = true;
-  atualizar.title = 'O protótipo ainda não grava';
-  atualizar.insertAdjacentHTML('beforebegin', '<button class="btn btn-sec" data-editar-atual><i data-lucide="square-pen" class="ico"></i>Editar no modal atual</button>');
+  if (PERM.trancado) {
+    document.querySelectorAll('.principal, .lateral').forEach(el => { el.inert = true; });
+    document.querySelector('.rodape .acoes').hidden = true;
+    document.querySelector('.rodape > .dicas').innerHTML = '<span class="aviso-proto"><i data-lucide="lock" class="ico ico-s"></i>O.S. baixada: só Administrador ou Financeiro altera</span><span><kbd>Esc</kbd> fecha</span>';
+  }
+  // Numa O.S. nova o cursor já começa no cliente.
+  if (!OS_REAL.id) setTimeout(() => document.getElementById('cli').focus(), 60);
 }
 render();
+retratoInicial = retrato();
 </script>
 </body>
 </html>
