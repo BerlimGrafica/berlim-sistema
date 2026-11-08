@@ -1,0 +1,1376 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calculadoras</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<style>
+/* Padrão do DESIGN.md: o mesmo mundo das outras telas novas */
+:root {
+  --brand: #F69F00; --brand-hover: #d98b00; --brand-tinta: #8A5400; --sobre-brand: #241600;
+  --fundo: #EDEFF0; --superficie: #ffffff; --sutil: #f9fafb; --realce: #f3f4f6;
+  --borda-fraca: #f0f1f3; --borda: #e5e7eb; --borda-forte: #d1d5db;
+  --tinta: #111827; --tinta-corpo: #374151; --tinta-suave: #6b7280; --tinta-fraca: #9ca3af;
+  --perigo: #dc2626; --perigo-fundo: #fef2f2; --perigo-borda: #fecaca;
+  --sucesso: #059669;
+  --sombra: 0 24px 56px -16px rgba(15,23,42,.32), 0 2px 8px rgba(15,23,42,.08);
+  --sombra-pop: 0 12px 28px -8px rgba(15,23,42,.24), 0 1px 3px rgba(15,23,42,.08);
+  --sombra-leve: 0 1px 2px rgba(15,23,42,.06);
+  --veu: rgba(15,23,42,.36);
+  --dados: #475569; --dados-tinta: #334155; --dados-fundo: #f8fafc; --dados-borda: #e2e8f0;
+  --itens: #2563eb; --itens-tinta: #1d4ed8; --itens-fundo: #eff6ff; --itens-borda: #dbeafe;
+  --fin: #059669; --fin-tinta: #047857; --fin-fundo: #ecfdf5; --fin-borda: #c9f2df;
+  --obs: #d97706; --obs-tinta: #b45309; --obs-fundo: #fffbeb; --obs-borda: #fdecc4;
+  /* a conversa do WhatsApp, com as cores do próprio WhatsApp (como nos pré-prontos) */
+  --chat-fundo: #efeae2; --bolha: #d9fdd3; --bolha-tinta: #111b21; --bolha-suave: #667781; --bolha-link: #027eb5; --visto: #53bdeb;
+  /* a faca da montagem na folha: magenta de processo, só no desenho */
+  --faca: #EC008C;
+  --saida: cubic-bezier(.16, 1, .3, 1);
+}
+.dark {
+  --brand-tinta: #FFB938;
+  --fundo: #0d1117; --superficie: #161b22; --sutil: #1b2129; --realce: #21262d;
+  --borda-fraca: #232a33; --borda: #30363d; --borda-forte: #3d444d;
+  --tinta: #EDEDED; --tinta-corpo: #D4D4D8; --tinta-suave: #A1A1AA; --tinta-fraca: #71717a;
+  --perigo: #f87171; --perigo-fundo: rgba(239,68,68,.1); --perigo-borda: rgba(239,68,68,.3);
+  --sucesso: #34d399;
+  --sombra: 0 24px 56px -16px rgba(0,0,0,.7); --sombra-pop: 0 12px 28px -8px rgba(0,0,0,.6); --sombra-leve: 0 1px 2px rgba(0,0,0,.4);
+  --veu: rgba(0,0,0,.6);
+  --dados: #94a3b8; --dados-tinta: #cbd5e1; --dados-fundo: rgba(148,163,184,.08); --dados-borda: rgba(148,163,184,.22);
+  --itens: #60a5fa; --itens-tinta: #93c5fd; --itens-fundo: rgba(59,130,246,.12); --itens-borda: rgba(59,130,246,.3);
+  --fin: #34d399; --fin-tinta: #6ee7b7; --fin-fundo: rgba(16,185,129,.11); --fin-borda: rgba(16,185,129,.28);
+  --obs: #fbbf24; --obs-tinta: #fcd34d; --obs-fundo: rgba(245,158,11,.1); --obs-borda: rgba(245,158,11,.26);
+  --chat-fundo: #0b141a; --bolha: #005c4b; --bolha-tinta: #e9edef; --bolha-suave: #8fa9a2; --bolha-link: #53bdeb;
+  --faca: #ff4fb2;
+}
+* { box-sizing: border-box; margin: 0; }
+html { color-scheme: light; } html.dark { color-scheme: dark; }
+body { font-family: Montserrat, system-ui, sans-serif; font-size: 13px; line-height: 1.5; color: var(--tinta-corpo); background: var(--fundo); -webkit-font-smoothing: antialiased; }
+button, input { font: inherit; color: inherit; }
+button { cursor: pointer; background: none; border: 0; padding: 0; text-align: inherit; }
+button:disabled { cursor: default; }
+input { caret-color: var(--brand); }
+::placeholder { color: var(--tinta-fraca); opacity: 1; font-weight: 500; }
+::selection { background: rgba(246,159,0,.3); }
+:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; border-radius: 4px; }
+* { scrollbar-width: thin; scrollbar-color: var(--borda-forte) transparent; }
+[hidden] { display: none !important; }
+.ico { width: 16px; height: 16px; stroke-width: 2; flex-shrink: 0; }
+.ico-s { width: 14px; height: 14px; }
+.num { font-variant-numeric: tabular-nums; }
+kbd { font: 600 10.5px/1 Montserrat, sans-serif; color: var(--tinta-suave); border: 1px solid var(--borda); border-bottom-width: 2px; border-radius: 5px; padding: 2px 5px; background: var(--superficie); }
+
+/* barra do protótipo */
+.proto { position: sticky; top: 0; z-index: 40; height: 51px; display: flex; align-items: center; gap: 14px; padding: 8px 20px; background: var(--superficie); border-bottom: 1px solid var(--borda); }
+.proto-nome { font-weight: 700; color: var(--tinta); white-space: nowrap; }
+.proto-nota { color: var(--tinta-suave); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.proto-bt { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; color: var(--tinta-corpo); font-weight: 600; font-size: 12.5px; padding: 6px 10px; border-radius: 7px; white-space: nowrap; }
+.proto-bt:hover { background: var(--realce); color: var(--tinta); }
+
+/* botões */
+.btn { height: 38px; padding: 0 16px; border-radius: 8px; font-weight: 600; font-size: 13px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; white-space: nowrap; transition: background .15s, border-color .15s, color .15s, filter .15s, opacity .15s; }
+.btn-pri { background: var(--brand); color: var(--sobre-brand); }
+.btn-pri:hover:not(:disabled) { background: var(--brand-hover); }
+.btn-pri kbd { background: rgba(255,255,255,.35); border-color: rgba(36,22,0,.18); color: var(--sobre-brand); }
+.btn-sec { border: 1px solid var(--borda-forte); color: var(--tinta); background: var(--superficie); }
+.btn-sec:hover:not(:disabled) { background: var(--sutil); border-color: var(--tinta-fraca); }
+.btn-p { height: 34px; padding: 0 13px; font-size: 12.5px; border-radius: 7px; }
+.btn:disabled { opacity: .5; }
+.btn .n { min-width: 18px; height: 18px; padding: 0 5px; border-radius: 99px; display: inline-grid; place-items: center; background: var(--brand); color: var(--sobre-brand); font-size: 11px; font-weight: 700; }
+.ib { width: 30px; height: 30px; display: inline-grid; place-items: center; border-radius: 7px; color: var(--tinta-suave); transition: background .12s, color .12s; flex-shrink: 0; }
+.ib:hover { background: var(--realce); color: var(--tinta); }
+
+/* página, cabeçalho e abas (DESIGN.md › Abas de filtro) */
+.pg { max-width: 1280px; margin: 0 auto; padding: 26px 28px 64px; }
+.cab h1 { font-size: 22px; font-weight: 800; color: var(--tinta); letter-spacing: -.02em; line-height: 1.2; }
+.cab .sub { margin-top: 6px; color: var(--tinta-suave); font-size: 12.5px; }
+.faixa { display: flex; align-items: flex-end; gap: 12px; border-bottom: 1px solid var(--borda); margin: 18px 0 22px; }
+.abas { position: relative; display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; margin-bottom: -1px; min-width: 0; }
+.abas::-webkit-scrollbar { display: none; }
+.aba { display: inline-flex; align-items: center; gap: 7px; height: 42px; padding: 0 10px 2px; font-weight: 600; font-size: 13px; color: var(--tinta-suave); white-space: nowrap; border-radius: 6px 6px 0 0; transition: color .15s; }
+.aba:hover { color: var(--tinta-corpo); }
+.aba[aria-selected="true"] { color: var(--tinta); }
+.aba .ico { width: 15px; height: 15px; }
+.indicador { position: absolute; left: 0; bottom: 0; width: 0; height: 2px; border-radius: 2px 2px 0 0; background: var(--brand); transition: left .34s var(--saida), width .34s var(--saida); pointer-events: none; }
+.abas-fim { margin-left: auto; padding-bottom: 7px; flex-shrink: 0; }
+
+/* a calculadora: perguntas à esquerda, preço e texto à direita */
+.calc { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 20px; align-items: start; }
+.calc.entra-dir { animation: entraDir .3s var(--saida); }
+.calc.entra-esq { animation: entraEsq .3s var(--saida); }
+@keyframes entraDir { from { opacity: 0; transform: translateX(24px); } }
+@keyframes entraEsq { from { opacity: 0; transform: translateX(-24px); } }
+.calc-form { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.calc-res { position: sticky; top: 67px; display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.par { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 16px; align-items: start; }
+
+/* áreas (DESIGN.md › Regra da Cor com Endereço) */
+.a-dados { --c: var(--dados); --c-tinta: var(--dados-tinta); --c-fundo: var(--dados-fundo); --c-borda: var(--dados-borda); }
+.a-itens { --c: var(--itens); --c-tinta: var(--itens-tinta); --c-fundo: var(--itens-fundo); --c-borda: var(--itens-borda); }
+.a-fin { --c: var(--fin); --c-tinta: var(--fin-tinta); --c-fundo: var(--fin-fundo); --c-borda: var(--fin-borda); }
+.area { background: var(--superficie); border: 1px solid var(--c-borda); border-radius: 10px; min-width: 0; }
+.area-cab { display: flex; align-items: center; gap: 10px; min-height: 45px; padding: 8px 14px; background: var(--c-fundo); border-bottom: 1px solid var(--c-borda); border-radius: 9px 9px 0 0; }
+.area-ico { width: 26px; height: 26px; border-radius: 7px; background: var(--superficie); display: grid; place-items: center; color: var(--c); box-shadow: var(--sombra-leve); flex-shrink: 0; }
+.area-cab h2 { font-size: 13.5px; font-weight: 700; color: var(--tinta); }
+.area-meta { margin-left: auto; font-size: 12px; font-weight: 600; color: var(--c-tinta); white-space: nowrap; }
+.area-corpo { padding: 16px 16px 18px; }
+
+/* campos sem caixa: só a linha de base, que acende na cor da área */
+.campos { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 18px 22px; align-items: start; }
+.campo { display: block; min-width: 0; }
+.campo.largo { grid-column: 1 / -1; }
+.rot { display: block; font-size: 11.5px; font-weight: 600; color: var(--tinta-suave); margin-bottom: 4px; }
+.rot em { font-style: normal; font-weight: 500; color: var(--tinta-fraca); }
+.in { position: relative; display: block; }
+.linha-in { width: 100%; border: 0; background: transparent; outline: none; padding: 5px 0; font-size: 15px; font-weight: 600; color: var(--tinta); font-variant-numeric: tabular-nums; box-shadow: inset 0 -1px 0 var(--borda-forte); transition: box-shadow .15s; }
+.linha-in:hover { box-shadow: inset 0 -1px 0 var(--tinta-fraca); }
+.linha-in:focus { box-shadow: inset 0 -2px 0 var(--c, var(--brand)); }
+.in .suf, .in .pre { position: absolute; top: 50%; transform: translateY(-50%); font-style: normal; font-size: 12px; font-weight: 600; color: var(--tinta-suave); pointer-events: none; }
+.in .suf { right: 0; }
+.in .pre { left: 0; }
+.in:has(.suf) .linha-in { padding-right: 30px; }
+.in:has(.pre) .linha-in { padding-left: 24px; }
+.nota { margin-top: 6px; font-size: 12px; color: var(--tinta-suave); }
+
+/* opções lado a lado: um clique escolhe, a escolhida acende na cor da área */
+.opcoes { display: flex; flex-wrap: wrap; gap: 6px; }
+.opcoes button { min-height: 34px; padding: 6px 12px; border-radius: 8px; border: 1px solid var(--borda); background: var(--superficie); font-size: 12.5px; font-weight: 600; color: var(--tinta-corpo); display: inline-flex; align-items: center; gap: 6px; text-align: left; transition: background .12s, border-color .12s, color .12s, box-shadow .12s; }
+.opcoes button:hover { border-color: var(--borda-forte); color: var(--tinta); }
+.opcoes button small { font-size: 11.5px; font-weight: 600; color: var(--tinta-suave); }
+.opcoes button[aria-checked="true"] { background: var(--c-fundo); border-color: var(--c); box-shadow: inset 0 0 0 1px var(--c); color: var(--tinta); }
+.opcoes button[aria-checked="true"] small { color: var(--c-tinta); }
+/* lista longa: um botão que abre as opções */
+.sel { display: flex; align-items: center; gap: 8px; width: 100%; padding: 5px 0; font-size: 14px; font-weight: 600; color: var(--tinta); box-shadow: inset 0 -1px 0 var(--borda-forte); text-align: left; }
+.sel:hover, .sel[aria-expanded="true"] { box-shadow: inset 0 -2px 0 var(--c, var(--brand)); }
+.sel .lbl { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.sel .chev { margin-left: auto; color: var(--tinta-suave); }
+/* chave (sim/não) */
+.chave-bt { display: inline-flex; align-items: center; gap: 9px; height: 34px; font-weight: 600; color: var(--tinta); }
+.chave { position: relative; width: 30px; height: 18px; border-radius: 99px; background: var(--borda-forte); transition: background .18s; flex-shrink: 0; }
+.chave::after { content: ""; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 99px; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.25); transition: transform .2s var(--saida); }
+[aria-checked="true"] .chave { background: var(--c, var(--brand)); }
+[aria-checked="true"] .chave::after { transform: translateX(12px); }
+
+/* ===== prazo de entrega: uma régua vertical curta, uma parada por prazo =====
+   A linha enche de cima até o prazo escolhido, na cor da regra de prazo do
+   sistema: vermelho para hoje, âmbar para amanhã, neutro para o resto. */
+.u-hoje { --u: var(--perigo); }
+.u-amanha { --u: var(--obs); }
+.u-normal { --u: var(--tinta-corpo); }
+.prazos { position: relative; --linha: 50px; border: 1px solid var(--borda); border-radius: 10px; background: var(--superficie); overflow: hidden; margin-top: 2px; }
+.prazos-trilho { position: absolute; left: 22px; top: calc(var(--linha) / 2); bottom: calc(var(--linha) / 2); width: 3px; margin-left: -1px; border-radius: 99px; background: var(--borda); z-index: 1; pointer-events: none; }
+.prazos-trilho i { display: block; width: 100%; border-radius: 99px; background: var(--u); transition: height .35s var(--saida); }
+.pz { position: relative; display: flex; align-items: center; gap: 12px; width: 100%; height: var(--linha); padding: 0 14px 0 13px; text-align: left; border-top: 1px solid var(--borda-fraca); transition: background .15s; }
+.pz:first-of-type { border-top: 0; }
+.pz:hover { background: var(--sutil); }
+.pz[aria-checked="true"] { background: color-mix(in srgb, var(--u) 7%, var(--superficie)); }
+.pz-ponto { position: relative; z-index: 2; width: 18px; height: 18px; border-radius: 99px; background: var(--superficie); border: 2px solid var(--borda-forte); flex-shrink: 0; transition: border-color .2s, background .2s, box-shadow .2s; }
+.pz:hover .pz-ponto { border-color: var(--tinta-fraca); }
+.pz.feita .pz-ponto { border-color: var(--u); }
+.pz[aria-checked="true"] .pz-ponto { background: var(--u); border-color: var(--u); box-shadow: 0 0 0 4px color-mix(in srgb, var(--u) 18%, transparent); }
+.pz-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.3; }
+.pz-txt b { font-size: 13.5px; font-weight: 700; color: var(--tinta-corpo); }
+.pz[aria-checked="true"] .pz-txt b { color: var(--tinta); }
+.pz-txt small { font-size: 11.5px; color: var(--tinta-suave); }
+.pz-v { display: flex; flex-direction: column; align-items: flex-end; line-height: 1.3; }
+.pz-v b { font-size: 13.5px; font-weight: 700; color: var(--fin); }
+.pz-v small { font-size: 11.5px; color: var(--tinta-suave); }
+
+/* o preço */
+.preco-corpo { padding: 14px 16px 16px; }
+.p-rot { font-size: 12px; color: var(--tinta-suave); }
+.p-total { font-size: 34px; font-weight: 800; color: var(--fin); letter-spacing: -.02em; line-height: 1.15; display: flex; align-items: baseline; gap: 4px; }
+.p-total small { font-size: 15px; font-weight: 700; color: var(--fin-tinta); letter-spacing: 0; }
+.p-total.vazio, .p-total.vazio small { color: var(--tinta-fraca); }
+.p-sub { margin-top: 2px; font-size: 12.5px; color: var(--tinta-corpo); }
+.conta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--borda-fraca); font-size: 12.5px; color: var(--tinta-suave); }
+.conta b { color: var(--tinta); font-weight: 700; }
+.conta b.v { color: var(--fin); }
+.conta b.urg { color: var(--obs-tinta); }
+.conta small { font-size: 11.5px; }
+.conta .lucro { flex-basis: 100%; margin-top: 2px; }
+.conta .in { width: 54px; display: inline-block; }
+.conta .in .linha-in { font-size: 13.5px; padding: 2px 14px 2px 0; text-align: right; --c: var(--fin); }
+.aviso { display: flex; gap: 8px; align-items: flex-start; margin-top: 10px; padding: 8px 10px; border-radius: 8px; background: var(--obs-fundo); border: 1px solid var(--obs-borda); color: var(--obs-tinta); font-size: 12.5px; font-weight: 600; }
+.aviso .ico { margin-top: 2px; }
+.aviso.perigo { background: var(--perigo-fundo); border-color: var(--perigo-borda); color: var(--perigo); }
+.preco-corpo > .aviso:first-child { margin: 0 0 12px; }
+.linhas { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 5px 16px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--borda-fraca); font-size: 12.5px; }
+.linhas dt { color: var(--tinta-suave); }
+.linhas dd { text-align: right; font-weight: 600; color: var(--tinta); }
+
+/* cartões (texto, faixas, composição, montagem) */
+.cartao { background: var(--superficie); border: 1px solid var(--borda); border-radius: 10px; padding: 14px 16px 16px; min-width: 0; }
+.cartao-cab { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; min-height: 34px; }
+.cartao-cab h2 { display: flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 700; color: var(--tinta); }
+.cartao-cab h2 .ico { color: var(--tinta-suave); }
+.cartao-cab .btn { margin-left: auto; }
+.cartao-pe { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--borda-fraca); font-size: 12px; color: var(--tinta-suave); display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.vazio-card { padding: 22px 12px; text-align: center; color: var(--tinta-suave); font-size: 12.5px; background: var(--sutil); border: 1px dashed var(--borda); border-radius: 8px; }
+
+/* a conversa do WhatsApp: o que o cliente recebe */
+.chat { background: var(--chat-fundo); border-radius: 10px; padding: 14px 12px 16px; }
+.bolha { margin-left: auto; max-width: 100%; display: flow-root; background: var(--bolha); color: var(--bolha-tinta); padding: 7px 9px 7px 11px; border-radius: 9px 2px 9px 9px; box-shadow: 0 1px .5px rgba(11,20,26,.13); font: 13.5px/1.45 "Segoe UI", system-ui, -apple-system, Helvetica, Arial, sans-serif; overflow-wrap: anywhere; }
+.bolha .zap-b { white-space: pre-wrap; }
+.bolha a { color: var(--bolha-link); text-decoration: none; }
+.bolha .hora { float: right; display: inline-flex; gap: 3px; align-items: center; margin: 8px 0 -5px 12px; font-size: 11px; color: var(--bolha-suave); }
+.bolha .hora .ico { width: 15px; height: 15px; color: var(--visto); }
+.chat-vazio { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 16px 12px 8px; color: var(--bolha-suave); font-size: 12.5px; font-weight: 600; text-align: center; }
+.chat-vazio .ico { width: 22px; height: 22px; }
+
+/* "se levar mais": a mesma configuração em outras quantidades */
+.faixas { display: flex; flex-direction: column; gap: 2px; }
+.faixa-l { display: grid; grid-template-columns: 92px minmax(0,1fr) auto; align-items: baseline; gap: 10px; width: 100%; padding: 7px 10px; border-radius: 7px; font-variant-numeric: tabular-nums; transition: background .12s; }
+.faixa-l:hover { background: var(--realce); }
+.faixa-l.atual { background: var(--realce); box-shadow: inset 2px 0 0 var(--brand); }
+.faixa-l .q { font-weight: 700; color: var(--tinta); white-space: nowrap; }
+.faixa-l .v { font-weight: 700; color: var(--fin); }
+.faixa-l .d { font-size: 12px; color: var(--tinta-suave); text-align: right; white-space: nowrap; }
+
+/* para onde vai o custo: uma barra por parte */
+.barras { display: flex; flex-direction: column; gap: 9px; }
+.bl-top { display: flex; justify-content: space-between; gap: 12px; font-size: 12.5px; }
+.bl-top span { color: var(--tinta-corpo); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bl-top b { color: var(--fin); font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.bl-trilho { height: 6px; border-radius: 99px; background: var(--realce); overflow: hidden; margin-top: 4px; }
+.bl-trilho i { display: block; height: 100%; border-radius: 99px; background: var(--fin); opacity: .8; transition: width .3s var(--saida); }
+.bl-total { display: flex; justify-content: space-between; gap: 12px; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--borda-fraca); font-weight: 700; color: var(--tinta); font-variant-numeric: tabular-nums; }
+.bl-total b { color: var(--fin); }
+.detalhe-bt { display: inline-flex; align-items: center; gap: 6px; margin-top: 10px; font-size: 12px; font-weight: 600; color: var(--tinta-suave); border-radius: 6px; }
+.detalhe-bt:hover { color: var(--tinta); }
+.detalhe-bt .ico { transition: transform .25s var(--saida); }
+.detalhe-bt[aria-expanded="true"] .ico { transform: rotate(180deg); }
+.detalhe { margin-top: 8px; font-size: 12px; color: var(--tinta-corpo); display: flex; flex-direction: column; gap: 3px; font-variant-numeric: tabular-nums; }
+.detalhe .campo { max-width: 180px; margin-top: 8px; --c: var(--itens); }
+
+/* montagem na folha (DESIGN.md › Motivos do ofício) */
+.seg { display: flex; background: var(--realce); border-radius: 8px; padding: 3px; gap: 2px; }
+.seg button { flex: 1; padding: 5px 10px; border-radius: 6px; font-weight: 600; font-size: 12.5px; color: var(--tinta-corpo); text-align: center; }
+.seg button[aria-pressed="true"] { background: var(--superficie); color: var(--tinta); box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+.desenho { display: grid; place-items: center; margin-top: 12px; padding: 12px; background: var(--sutil); border: 1px solid var(--borda-fraca); border-radius: 8px; }
+.desenho svg { max-width: 100%; height: auto; }
+.desenho .papel { fill: var(--superficie); stroke: var(--borda-forte); }
+.desenho .cota { stroke: var(--tinta-suave); fill: none; }
+.desenho text { fill: var(--tinta-suave); font: 600 10px Montserrat, sans-serif; }
+.montagem-n { display: flex; align-items: baseline; gap: 10px; margin-top: 12px; }
+.montagem-n b { font-size: 28px; font-weight: 800; color: var(--tinta); line-height: 1; font-variant-numeric: tabular-nums; }
+.montagem-n span { font-size: 12px; color: var(--tinta-suave); }
+.nota-ok, .nota-aviso { display: flex; gap: 6px; align-items: flex-start; margin-top: 8px; font-size: 12px; }
+.nota-ok { color: var(--tinta-corpo); } .nota-ok .ico { color: var(--sucesso); margin-top: 1px; }
+.nota-aviso { color: var(--obs-tinta); } .nota-aviso .ico { margin-top: 1px; }
+.legenda { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--borda-fraca); font-size: 12px; color: var(--tinta-suave); }
+.legenda span { display: inline-flex; align-items: center; gap: 7px; }
+.legenda i { display: inline-block; width: 16px; height: 10px; border-radius: 2px; }
+
+/* banner: prévia e comparativo de medidas */
+.abas-fim .seg { min-width: 260px; }
+.abas-fim .seg button { padding: 5px 12px; white-space: nowrap; }
+.prev-legenda { display: flex; flex-direction: column; gap: 6px; margin-top: 12px; font-size: 12.5px; color: var(--tinta-corpo); }
+.prev-legenda span { display: flex; align-items: center; gap: 8px; }
+.prev-legenda i { width: 18px; height: 12px; border-radius: 2px; flex-shrink: 0; }
+.prev-nota { margin-top: 10px; font-size: 12.5px; color: var(--tinta-corpo); line-height: 1.5; }
+.prev-nota b { color: var(--tinta); }
+.arquivo { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.arquivo .dica-colar { font-size: 12px; color: var(--tinta-suave); }
+.arquivo .nome { display: inline-flex; align-items: center; gap: 8px; min-width: 0; font-size: 12.5px; font-weight: 600; color: var(--tinta-corpo); }
+.arquivo .nome img { width: 34px; height: 34px; object-fit: cover; border-radius: 6px; box-shadow: inset 0 0 0 1px var(--borda); }
+.arquivo .nome span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 220px; }
+.btn-arquivo input { display: none; }
+.soltar { border-radius: 10px; transition: outline-color .15s; outline: 2px dashed transparent; outline-offset: 4px; }
+.soltar.arrastando { outline-color: var(--itens); }
+
+/* copiar: o botão confirma na hora (aperta, o ícone vira ✓ e o texto vira
+   "Copiado", em verde) e o que foi copiado responde — o balão pulsa como
+   mensagem enviada, o desenho dispara um flash de foto, as linhas acendem */
+.btn.copiou { animation: aperta .38s var(--saida); }
+@keyframes aperta { 35% { transform: scale(.93); } }
+.btn-pri.copiou { background: var(--fin); color: #fff; }
+.dark .btn-pri.copiou { color: #04140d; }
+.btn-sec.copiou { border-color: var(--fin); color: var(--fin-tinta); background: var(--fin-fundo); }
+.btn.copiou kbd { opacity: 0; }
+.btn .ok-copia { animation: estala .45s var(--saida); stroke-width: 3; }
+@keyframes estala { 0% { transform: scale(.2) rotate(-30deg); opacity: 0; } 60% { transform: scale(1.3) rotate(0); opacity: 1; } }
+.bolha.copiada { animation: balao .7s var(--saida); }
+@keyframes balao { 0% { box-shadow: 0 1px .5px rgba(11,20,26,.13), 0 0 0 0 rgba(37,211,102,.55); } 35% { transform: scale(1.018); } 100% { box-shadow: 0 1px .5px rgba(11,20,26,.13), 0 0 0 12px rgba(37,211,102,0); } }
+.desenho { position: relative; overflow: hidden; }
+.desenho.flash::after { content: ""; position: absolute; inset: 0; background: #fff; pointer-events: none; animation: flash .55s ease-out forwards; }
+.desenho.flash svg { animation: foto .55s var(--saida); }
+@keyframes flash { from { opacity: .95; } to { opacity: 0; } }
+@keyframes foto { 25% { transform: scale(.96); } }
+.faixas.copiadas .faixa-l { animation: linhaCopiada .7s var(--saida) both; }
+.faixas.copiadas .faixa-l:nth-child(2) { animation-delay: .09s; }
+.faixas.copiadas .faixa-l:nth-child(3) { animation-delay: .18s; }
+@keyframes linhaCopiada { 30% { background: var(--fin-fundo); box-shadow: inset 2px 0 0 var(--fin); } }
+
+/* listas que abrem por cima */
+.pop { position: fixed; z-index: 90; min-width: 220px; max-height: 340px; overflow-y: auto; padding: 4px; background: var(--superficie); border: 1px solid var(--borda); border-radius: 9px; box-shadow: var(--sombra-pop); animation: pop .16s var(--saida); }
+@keyframes pop { from { opacity: 0; transform: translateY(-4px); } }
+.pop button { display: flex; align-items: center; gap: 9px; width: 100%; text-align: left; padding: 8px 10px; border-radius: 6px; font-size: 13px; color: var(--tinta-corpo); }
+.pop button:hover, .pop button:focus-visible { background: var(--realce); color: var(--tinta); outline: none; }
+.pop .ok { margin-left: auto; color: var(--brand-tinta); }
+
+/* gaveta dos custos e premissas */
+.gv-veu { position: fixed; inset: 51px 0 0 0; background: var(--veu); z-index: 60; animation: veuEntra .4s ease-out; }
+.gaveta { position: fixed; top: 51px; right: 0; bottom: 0; width: min(480px, 100%); background: var(--fundo); border-left: 1px solid var(--borda); box-shadow: var(--sombra); z-index: 61; display: flex; flex-direction: column; animation: gavetaEntra .46s cubic-bezier(.22,1,.36,1); }
+@keyframes gavetaEntra { from { transform: translateX(100%); } }
+@keyframes veuEntra { from { opacity: 0; } }
+.gv-cab { display: flex; align-items: flex-start; gap: 10px; padding: 16px 16px 12px 22px; border-bottom: 1px solid var(--borda); }
+.gv-cab h2 { font-size: 16px; font-weight: 800; color: var(--tinta); letter-spacing: -.01em; }
+.gv-cab p { font-size: 12.5px; color: var(--tinta-suave); margin-top: 2px; }
+.gv-cab .ib { margin-left: auto; }
+.gv-corpo { flex: 1; overflow-y: auto; padding: 14px 16px 20px; display: flex; flex-direction: column; gap: 8px; }
+.gv-pe { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-top: 1px solid var(--borda); background: var(--superficie); font-size: 12px; color: var(--tinta-suave); }
+.gv-pe span { display: inline-flex; gap: 6px; align-items: center; }
+.gv-pe .btn { margin-left: auto; }
+.grupo { background: var(--superficie); border: 1px solid var(--borda); border-radius: 9px; }
+.grupo-cab { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 12px; font-weight: 600; color: var(--tinta); border-radius: 9px; }
+.grupo-cab:hover { background: var(--sutil); }
+.grupo-cab > .ico:first-child { color: var(--tinta-suave); }
+.grupo.aberto .grupo-cab > .ico:first-child { color: var(--brand-tinta); }
+.grupo-cab .n { min-width: 18px; height: 18px; padding: 0 5px; border-radius: 99px; display: inline-grid; place-items: center; background: var(--brand); color: var(--sobre-brand); font-size: 11px; font-weight: 700; }
+.grupo-cab .chev { margin-left: auto; color: var(--tinta-suave); transition: transform .25s var(--saida); }
+.grupo.aberto .chev { transform: rotate(180deg); }
+.grupo-corpo { padding: 4px 14px 14px; border-top: 1px solid var(--borda-fraca); }
+.prem-grade { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 18px; padding-top: 12px; }
+.prem { display: block; min-width: 0; --c: var(--brand); }
+.prem .rot { line-height: 1.3; }
+.prem .linha-in { font-size: 14px; }
+.prem small { display: block; font-size: 11px; color: var(--tinta-fraca); margin-top: 2px; }
+.prem.mudado small { color: var(--brand-tinta); font-weight: 600; }
+.prem.mudado .linha-in { box-shadow: inset 0 -2px 0 var(--brand); }
+.derivado { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--borda-fraca); font-size: 12px; font-weight: 600; color: var(--tinta-corpo); }
+.grupo-corpo .nota { margin-top: 8px; }
+
+/* celular: o preço e o copiar ficam numa barra no pé */
+.barra-mob { display: none; }
+.toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); z-index: 95; background: var(--tinta); color: var(--superficie); padding: 10px 16px; border-radius: 8px; font-weight: 600; font-size: 12.5px; box-shadow: var(--sombra-pop); display: flex; gap: 10px; align-items: center; animation: sobe .22s var(--saida); max-width: calc(100vw - 32px); }
+.toast .ico { color: #34d399; }
+.toast button { color: var(--brand); font-weight: 700; margin-left: 6px; }
+@keyframes sobe { from { opacity: 0; transform: translate(-50%, 8px); } }
+.carregando { min-height: 50vh; display: grid; place-items: center; color: var(--tinta-suave); }
+
+@media (max-width: 1080px) { .par { grid-template-columns: 1fr; } }
+@media (max-width: 900px) {
+  .calc { grid-template-columns: 1fr; }
+  .calc-res { position: static; }
+  .pg { padding-bottom: 110px; }
+  .barra-mob { display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 50; align-items: center; gap: 12px; padding: 10px 14px calc(10px + env(safe-area-inset-bottom)); background: var(--superficie); border-top: 1px solid var(--borda); box-shadow: 0 -6px 18px -10px rgba(15,23,42,.25); }
+  .barra-mob .t { font-size: 20px; font-weight: 800; color: var(--fin); font-variant-numeric: tabular-nums; }
+  .barra-mob .t.vazio { color: var(--tinta-fraca); }
+  .barra-mob .s { font-size: 11.5px; color: var(--tinta-suave); }
+  .barra-mob .btn { margin-left: auto; height: 44px; }
+  .barra-mob kbd { display: none; }
+}
+@media (max-width: 760px) {
+  .proto { padding: 8px 12px; }
+  .proto-nota, .proto-bt span { display: none; }
+  .pg { padding: 18px 12px 110px; }
+  .campos { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 16px; }
+  .abas-fim .btn span.t { display: none; }
+  .prem-grade { grid-template-columns: 1fr; }
+  .gv-veu { inset: 0; }
+  .gaveta { top: auto; height: 90dvh; width: 100%; border-left: 0; border-radius: 12px 12px 0 0; animation-name: folhaEntra; }
+  .cartao-cab kbd { display: none; }
+}
+@keyframes folhaEntra { from { transform: translateY(100%); } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+html[data-troca-tema]::view-transition-old(root), html[data-troca-tema]::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
+html[data-troca-tema].dark::view-transition-new(root), html[data-troca-tema]:not(.dark)::view-transition-old(root) { z-index: 1; }
+html[data-troca-tema] *, html[data-troca-tema] *::before, html[data-troca-tema] *::after { transition: none !important; }
+</style>
+</head>
+<body>
+<div class="proto">
+  <span class="proto-nome">Calculadoras</span>
+  <span class="proto-nota">As contas de verdade, as mesmas da tela de hoje · nada aqui grava</span>
+  <button class="proto-bt" id="tema"><i data-lucide="moon" class="ico ico-s"></i><span>Escuro</span></button>
+</div>
+<main class="pg" id="pg"><div class="carregando">Carregando as calculadoras…</div></main>
+<div id="gaveta-raiz"></div>
+<script>
+/* ===== dados do sistema: os preços dos adesivos no catálogo ===== */
+/*CALCULADORAS*/
+
+// As contas vêm da página (lib/calculadoras/*.js), em iniciarCalculadoras: a
+// regra de preço tem um lugar só. Aberto fora do sistema, não há o que calcular.
+let C = null;
+const PRECOS_ADESIVO = typeof DADOS !== 'undefined' ? DADOS.precosAdesivo : null;
+
+/* ===== utilidades ===== */
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const ico = (n, cls = 'ico') => `<i data-lucide="${n}" class="${cls}"></i>`;
+const brl = v => (Number(v) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const reais = v => `R$ ${brl(v)}`;
+const fmtN = (v, casas = 2) => (Number(v) || 0).toLocaleString('pt-BR', { maximumFractionDigits: casas });
+const limpar = n => Number(Number(n).toPrecision(12));
+// O número como texto, com vírgula: 0,075 × 100 vira "7,5", e não 7.500000000000001.
+const txtNum = v => v === '' || v === null || v === undefined ? '' : String(limpar(v)).replace('.', ',');
+const maiuscula = s => s.replace(/^./, c => c.toUpperCase());
+const ler = k => { try { return localStorage.getItem(k); } catch { return null; } };
+const gravar = (k, v) => { try { if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch { /* sem armazenamento */ } };
+const lerJSON = k => { try { return JSON.parse(localStorage.getItem(k)) || {}; } catch { return {}; } };
+const hora = () => new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+// *negrito*, _itálico_, ~riscado~ e links, como o WhatsApp mostra
+function zap(texto) {
+  return String(texto).split(/(https?:\/\/\S+)/g).map((p, i) => i % 2
+    ? `<a href="${esc(p)}" target="_blank" rel="noopener">${esc(p)}</a>`
+    : esc(p).replace(/\*([^*\n]+)\*/g, '<b>$1</b>').replace(/(^|[\s(])_([^_\n]+)_(?=[\s).,:;!?]|$)/gm, '$1<i>$2</i>').replace(/~([^~\n]+)~/g, '<s>$1</s>')
+  ).join('');
+}
+
+/* ===== estado ===== */
+const ABAS = [
+  { id: 'banner', rotulo: 'Banner', icone: 'image' },
+  { id: 'adesivo', rotulo: 'Adesivo', icone: 'sticker' },
+  { id: 'casamento', rotulo: 'Casamento', icone: 'heart' },
+  { id: 'bloquinho', rotulo: 'Bloquinho', icone: 'notebook-pen' },
+  { id: 'hotmelt', rotulo: 'Livro hot melt', icone: 'book-open' },
+];
+const est = {
+  aba: ABAS.some(a => a.id === ler('calc-nova-aba')) ? ler('calc-nova-aba') : 'banner',
+  entrar: null,          // lado de onde a calculadora entra ao trocar de aba
+  gaveta: false,         // custos e premissas aberta
+  grupo: null,           // grupo aberto dentro da gaveta
+  detalhe: false,        // detalhes da produção à mostra
+  folhaVista: null,      // folha escolhida à mão na montagem: { chave, folha }
+  texto: '', textoMax: '',
+};
+let ent = null;          // o que foi digitado em cada calculadora
+// O texto digitado nos campos de porcentagem enquanto estão em foco: o número
+// guardado é a fração (0,075), e refazer o texto a cada tecla engoliria a vírgula.
+const rasc = {};
+// Os ajustes de custo ficam no navegador, com as chaves da tela de hoje: o que
+// alguém já ajustou lá vale aqui, e vice-versa. Por isso guardam número, não texto.
+const CHAVE = { bloquinho: 'calc_bloquinhos_premissas_v2', hotmelt: 'calc_hotmelt_premissas' };
+const ajustes = { bloquinho: lerJSON(CHAVE.bloquinho), hotmelt: lerJSON(CHAVE.hotmelt) };
+const salvarAjustes = aba => gravar(CHAVE[aba], Object.keys(ajustes[aba]).length ? JSON.stringify(ajustes[aba]) : null);
+const contas = aba => aba === 'bloquinho' ? C.bloquinhos : C.hotmelt;
+
+window.iniciarCalculadoras = c => {
+  C = c;
+  ent = {
+    // modo: 'calculo' ou 'comparar'; cmp* é a medida pedida e img* a da imagem do cliente
+    banner: { ...C.banner.CONFIG_PADRAO, modo: 'calculo', cmpL: '', cmpA: '', imgL: '', imgA: '', imgSrc: null, imgNome: '' },
+    adesivo: { ...C.adesivo.CONFIG_PADRAO },
+    casamento: { ...C.casamento.CONFIG_PADRAO },
+    bloquinho: { ...C.bloquinhos.CONFIG_PADRAO },
+    hotmelt: { ...C.hotmelt.CONFIG_PADRAO },
+  };
+  render();
+};
+
+/* ===== peças do formulário ===== */
+const area = (cls, icone, titulo, corpo, meta = '') =>
+  `<section class="area ${cls}"><div class="area-cab"><span class="area-ico">${ico(icone, 'ico ico-s')}</span><h2>${titulo}</h2>${meta ? `<span class="area-meta">${meta}</span>` : ''}</div><div class="area-corpo"><div class="campos">${corpo}</div></div></section>`;
+
+// Número: o texto fica como foi digitado (as contas aceitam vírgula).
+function campoNum(k, rotulo, { suf, dica, pct, ph, inteiro } = {}) {
+  const v = ent[est.aba][k], chave = `${est.aba}.${k}`;
+  const texto = pct ? (chave in rasc ? rasc[chave] : (v === '' ? '' : txtNum(v * 100))) : (typeof v === 'number' ? txtNum(v) : (v ?? ''));
+  return `<label class="campo"><span class="rot">${rotulo}${dica ? ` <em>${dica}</em>` : ''}</span><span class="in"><input class="linha-in" data-k="${k}" ${pct ? 'data-pct="1"' : ''} value="${esc(texto)}" placeholder="${esc(ph ?? '')}" inputmode="${inteiro ? 'numeric' : 'decimal'}" autocomplete="off">${suf ? `<i class="suf">${suf}</i>` : ''}</span></label>`;
+}
+// Opções lado a lado: um clique escolhe.
+function campoOp(k, rotulo, ops, { dica, nota } = {}) {
+  const v = String(ent[est.aba][k]);
+  return `<div class="campo largo"><span class="rot">${rotulo}${dica ? ` <em>${dica}</em>` : ''}</span><div class="opcoes" role="radiogroup" aria-label="${esc(rotulo)}">${ops.map(o =>
+    `<button type="button" role="radio" aria-checked="${String(o.valor) === v}" data-op="${k}" data-v="${esc(o.valor)}"${o.titulo ? ` title="${esc(o.titulo)}"` : ''}>${esc(o.rotulo)}${o.extra ? `<small>${esc(o.extra)}</small>` : ''}</button>`).join('')}</div>${nota ? `<p class="nota">${nota}</p>` : ''}</div>`;
+}
+// Lista longa: um botão que abre as opções.
+const LISTAS = {};
+function campoLista(k, rotulo, ops) {
+  LISTAS[k] = ops;
+  const atual = ops.find(o => o.valor === ent[est.aba][k]) || ops[0];
+  return `<div class="campo largo"><span class="rot">${rotulo}</span><button type="button" class="sel" data-lista="${k}" aria-haspopup="listbox" aria-expanded="false"><span class="lbl">${esc(atual.rotulo)}</span>${ico('chevron-down', 'ico ico-s chev')}</button></div>`;
+}
+function campoChave(k, rotulo, dica) {
+  const v = !!ent[est.aba][k];
+  return `<div class="campo"><span class="rot">${rotulo}${dica ? ` <em>${dica}</em>` : ''}</span><button type="button" class="chave-bt" role="switch" aria-checked="${v}" data-chave="${k}"><span class="chave"></span>${v ? 'Sim' : 'Não'}</button></div>`;
+}
+
+/* ===== prazo de entrega: uma régua vertical curta =====
+   Uma parada por prazo: o acréscimo ("Padrão", "+30%"…), a data em que o pedido
+   fica pronto e quanto ele custa naquele prazo. A linha enche de cima até o
+   escolhido, na cor da regra de prazo do sistema (hoje vermelho, amanhã âmbar). */
+const SEMANA = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
+const MESES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+const hojeD = () => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; };
+function maisDiasUteis(n) {
+  const d = hojeD();
+  for (let feitos = 0; feitos < n;) { d.setDate(d.getDate() + 1); if (d.getDay() !== 0 && d.getDay() !== 6) feitos++; }
+  return d;
+}
+const diasAte = d => Math.round((d - hojeD()) / 864e5);
+const rotuloDia = d => { const n = diasAte(d); return `${n === 0 ? 'hoje' : n === 1 ? 'amanhã' : SEMANA[d.getDay()]}, ${String(d.getDate()).padStart(2, '0')} ${MESES[d.getMonth()]}`; };
+const urgDe = d => !d ? 'normal' : diasAte(d) <= 0 ? 'hoje' : diasAte(d) === 1 ? 'amanha' : 'normal';
+
+// Banner e adesivo: padrão (sem data marcada), para outro dia (o próximo dia útil) e no mesmo dia.
+function opcoesRapidas(calcular) {
+  return C.banner.PRAZOS.map(p => {
+    const data = p.valor === 'padrao' ? null : p.valor === 'outro_dia' ? maisDiasUteis(1) : hojeD();
+    const r = calcular(p.valor);
+    return { valor: p.valor, rotulo: p.rotulo, acrescimo: p.multiplicador - 1, data, urg: urgDe(data), total: r.total, ok: r.ok };
+  });
+}
+// Livro hot melt: "4 dias úteis", "2–3 dias úteis" (até o 3º), "1 dia útil" e "Mesmo dia".
+function opcoesHotmelt(calcular, prazos) {
+  return C.hotmelt.PRAZOS.map(z => {
+    const dias = /mesmo/i.test(z) ? 0 : Math.max(...(z.match(/\d+/g) || ['0']).map(Number));
+    const data = dias === 0 ? hojeD() : maisDiasUteis(dias);
+    const r = calcular(z);
+    return { valor: z, rotulo: z, acrescimo: prazos[z] - 1, data, ate: /–|-/.test(z), urg: urgDe(data), total: r.total, ok: r.ok };
+  });
+}
+function campoPrazo(k, rotulo, ops) {
+  const v = String(ent[est.aba][k]);
+  const sel = Math.max(0, ops.findIndex(o => String(o.valor) === v)), escolhido = ops[sel], base = ops[0];
+  const titulo = o => o.acrescimo > 0.0001 ? `+${fmtN(o.acrescimo * 100, 1)}%` : 'Padrão';
+  const quando = o => o.data ? maiuscula(`${o.ate ? 'até ' : ''}${rotuloDia(o.data)}`) : 'Prazo normal';
+  const dif = o => o.ok && o.total > base.total + 0.004 ? `+${reais(o.total - base.total)}` : '';
+  const cheio = ops.length > 1 ? sel / (ops.length - 1) * 100 : 0;
+  return `<div class="campo largo"><span class="rot">${rotulo}</span>
+    <div class="prazos u-${escolhido.urg}" role="radiogroup" aria-label="${esc(rotulo)}">
+      <span class="prazos-trilho"><i style="height:${cheio}%"></i></span>
+      ${ops.map((o, i) => `<button type="button" role="radio" aria-checked="${i === sel}" data-op="${k}" data-v="${esc(o.valor)}" class="pz${i < sel ? ' feita' : ''}" title="${esc(o.rotulo)}">
+        <span class="pz-ponto"></span>
+        <span class="pz-txt"><b>${titulo(o)}</b><small>${esc(quando(o))}</small></span>
+        <span class="pz-v"><b class="num">${o.ok ? reais(o.total) : '—'}</b>${dif(o) ? `<small class="num">${dif(o)}</small>` : ''}</span>
+      </button>`).join('')}
+    </div></div>`;
+}
+
+/* ===== peças do resultado ===== */
+function preco({ rotulo = 'Total', total, ok, sub = '', conta = '', avisos = [], erros = [], linhas = [] }) {
+  return `<section class="area a-fin"><div class="area-cab"><span class="area-ico">${ico('wallet', 'ico ico-s')}</span><h2>Preço</h2></div>
+    <div class="preco-corpo">
+      ${erros.map(e => `<p class="aviso perigo">${ico('triangle-alert', 'ico ico-s')}<span>${esc(e)}</span></p>`).join('')}
+      <div class="p-rot">${rotulo}</div>
+      <div class="p-total num${ok ? '' : ' vazio'}"><small>R$</small>${ok ? brl(total) : '0,00'}</div>
+      ${sub ? `<div class="p-sub num">${sub}</div>` : ''}
+      ${conta ? `<div class="conta num">${conta}</div>` : ''}
+      ${avisos.map(a => `<p class="aviso">${ico('triangle-alert', 'ico ico-s')}<span>${a}</span></p>`).join('')}
+      ${linhas.length ? `<dl class="linhas num">${linhas.map(([r, v]) => `<dt>${r}</dt><dd>${v}</dd>`).join('')}</dl>` : ''}
+    </div></section>`;
+}
+function textoCliente(texto, ok, vazio, extra = '') {
+  return `<section class="cartao"><div class="cartao-cab"><h2>${ico('message-circle', 'ico ico-s')}Texto para o cliente</h2>
+      <button class="btn btn-pri btn-p" data-copiar ${ok ? '' : 'disabled'}>${ico('copy', 'ico ico-s')}Copiar<kbd>C</kbd></button></div>
+    <div class="chat">${ok
+      ? `<div class="bolha"><span class="zap-b">${zap(texto)}</span><span class="hora">${hora()} ${ico('check-check', 'ico')}</span></div>`
+      : `<div class="chat-vazio">${ico('message-circle-dashed', 'ico')}${vazio}</div>`}</div>${extra}</section>`;
+}
+function faixasHTML(titulo, faixas, atual, unidade, rodape = '') {
+  return `<section class="cartao"><div class="cartao-cab"><h2>${ico('list-ordered', 'ico ico-s')}${titulo}</h2></div>
+    <div class="faixas">${faixas.map(f => `<button class="faixa-l${f.quantidade === atual ? ' atual' : ''}" data-qtd="${f.quantidade}" title="Usar ${f.quantidade}">
+      <span class="q">${f.rotulo ?? f.quantidade}</span><span class="v">${f.ok ? reais(f.total) : '—'}</span><span class="d">${f.ok ? f.detalhe ?? `${reais(f.unitario)}/${unidade}` : ''}</span></button>`).join('')}</div>
+    ${rodape ? `<div class="cartao-pe">${rodape}</div>` : ''}</section>`;
+}
+function composicaoHTML(titulo, linhas, total, detalhe) {
+  const maior = Math.max(...linhas.map(l => l[1]), 1);
+  return `<section class="cartao"><div class="cartao-cab"><h2>${ico('chart-bar', 'ico ico-s')}${titulo}</h2></div>
+    <div class="barras">${linhas.map(([r, v]) => `<div><div class="bl-top"><span>${r}</span><b>${reais(v)}</b></div><div class="bl-trilho"><i style="width:${Math.max(2, v / maior * 100)}%"></i></div></div>`).join('')}</div>
+    <div class="bl-total"><span>${total[0]}</span><b>${reais(total[1])}</b></div>
+    <button class="detalhe-bt" data-detalhe aria-expanded="${est.detalhe}">${ico('chevron-down', 'ico ico-s')}Detalhes da produção</button>
+    ${est.detalhe ? `<div class="detalhe">${detalhe}</div>` : ''}</section>`;
+}
+const linhaConta = partes => partes.join(' ');
+
+/* ===== banner ===== */
+function telaBanner() {
+  if (ent.banner.modo === 'comparar') return telaComparativo();
+  const B = C.banner, e = ent.banner, r = B.calcularBanner(e);
+  const form = area('a-dados', 'ruler', 'O pedido',
+      campoNum('largura', 'Largura', { suf: 'm', ph: '1,50' })
+      + campoNum('altura', 'Altura', { suf: 'm', ph: '2,00' })
+      + campoNum('quantidade', 'Quantidade', { suf: 'un.', inteiro: true })
+      + campoPrazo('prazo', 'Prazo de entrega', opcoesRapidas(prazo => B.calcularBanner({ ...e, prazo }))))
+    + area('a-itens', 'layers', 'Material e acabamento',
+      campoOp('tipo', 'Lona', B.TIPOS_LONA.map(t => ({ valor: t.valor, rotulo: t.rotulo, extra: `R$ ${t.precoM2}/m²` })))
+      + campoOp('acabamento', 'Acabamento', B.ACABAMENTOS.map(a => ({ valor: a.valor, rotulo: a.rotulo, extra: a.descontoM2 ? `−R$ ${a.descontoM2}/m²` : '' }))));
+  const regra = { minimo: `Até 0,5 m² sai pelo mínimo de ${reais(B.PRECO_MINIMO)}`, metro: 'Até 1 × 1 m cobra 1 m²', 'lado-minimo': 'Lado menor que 1 m conta como 1 m' }[r.regra];
+  const res = preco({
+      total: r.total, ok: r.ok,
+      sub: !r.ok ? 'Preencha largura e altura' : `${reais(r.unitario)} por banner · ${r.regra === 'minimo' ? 'preço mínimo' : `${fmtN(r.areaCobrada)} m² cobrados`}`,
+      avisos: r.valorAlto ? [`Acima de ${reais(B.VALOR_ALTO)}: consulte a disponibilidade com o Murilo ou a Giovana antes de fechar.`] : [],
+      linhas: r.ok ? [['Preço do m²', reais(r.valorM2)], ...(regra ? [['Regra', regra]] : []), ...(r.multiplicador > 1 ? [['Prazo', `+${Math.round((r.multiplicador - 1) * 100)}%`]] : [])] : [],
+    })
+    + textoCliente(r.texto, r.ok, 'Preencha as medidas para o texto aparecer aqui.');
+  return { form, extras: previaBannerHTML(r, e), res, texto: r.ok ? r.texto : '', total: r.total, ok: r.ok, sub: r.ok ? `${r.quantidade} ${r.quantidade > 1 ? 'banners' : 'banner'}` : '' };
+}
+
+/* ===== banner: prévia e comparativo de medidas =====
+   Os dois desenhos saem do mesmo código para a tela (cores do tema) e para a
+   imagem que vai ao cliente (cores fixas, fundo branco): "Copiar imagem" passa
+   o desenho para PNG e põe na área de transferência, pronto para colar no
+   WhatsApp. Sem permissão de copiar, a imagem é baixada. */
+const PAL_TELA = { tinta: 'var(--tinta)', corpo: 'var(--tinta-corpo)', suave: 'var(--tinta-suave)', fraca: 'var(--tinta-fraca)', borda: 'var(--borda-forte)', lona: 'var(--sutil)', brilho: 'var(--realce)', haste: 'var(--tinta-suave)', rosa: 'var(--faca)', fundo: 'var(--superficie)' };
+const PAL_IMG = { tinta: '#111827', corpo: '#374151', suave: '#6b7280', fraca: '#9ca3af', borda: '#cbd5e1', lona: '#f8fafc', brilho: '#e2e8f0', haste: '#64748b', rosa: '#EC008C', fundo: '#ffffff' };
+const FONTE = 'Montserrat, Arial, Helvetica, sans-serif';
+const cm = v => parseFloat(String(v ?? '').replace(',', '.'));
+const n1 = v => fmtN(v, 1);
+// Cotas: traço com as pontas e a medida no meio.
+function cotaH(x1, x2, y, txt, cor) {
+  const m = (x1 + x2) / 2, vao = Math.min(26, Math.max(0, (x2 - x1) / 2 - 6));
+  return `<path d="M${x1} ${y - 5}v10M${x2} ${y - 5}v10M${x1} ${y}H${m - vao}M${m + vao} ${y}H${x2}" stroke="${cor}" fill="none"/><text x="${m}" y="${y + 3.5}" text-anchor="middle" font-size="10.5" font-weight="600" fill="${cor}">${txt}</text>`;
+}
+function cotaV(x, y1, y2, txt, cor) {
+  const m = (y1 + y2) / 2, vao = Math.min(26, Math.max(0, (y2 - y1) / 2 - 6));
+  return `<path d="M${x - 5} ${y1}h10M${x - 5} ${y2}h10M${x} ${y1}V${m - vao}M${x} ${m + vao}V${y2}" stroke="${cor}" fill="none"/><text x="${x}" y="${m + 3.5}" text-anchor="middle" font-size="10.5" font-weight="600" fill="${cor}" transform="rotate(90 ${x} ${m})">${txt}</text>`;
+}
+// O banner em escala, com o acabamento: bastão e corda (as duas hastes e a
+// corda até o gancho), ilhós (argolas nos cantos e a cada 50 cm, no máximo) ou
+// só a lona. A laminada ganha um brilho em diagonal.
+function desenhoBanner({ l, a, acabamento, laminado }, pal, caixa) {
+  const k = Math.min(caixa / l, caixa / a), W = l * k, H = a * k;
+  const bastao = acabamento === 'bastao_corda', ilhos = acabamento === 'ilhos';
+  const X = 14, Y = bastao ? 48 : 12, largura = X + W + 44, altura = Y + H + 34;
+  let s = `<rect x="${X}" y="${Y}" width="${W}" height="${H}" fill="${pal.lona}" stroke="${pal.borda}"/>`;
+  if (laminado) s += `<polygon points="${X + W * .55},${Y} ${X + W * .8},${Y} ${X + W * .35},${Y + H} ${X + W * .1},${Y + H}" fill="${pal.brilho}" opacity=".75"/>`;
+  const fs = Math.max(9, Math.min(15, W / 9));
+  s += `<text x="${X + W / 2}" y="${Y + H / 2 + fs / 3}" text-anchor="middle" font-size="${fs}" font-weight="700" fill="${pal.fraca}">${n1(l)} × ${n1(a)} cm</text>`;
+  if (bastao) {
+    const hx = 7;
+    s += `<polyline points="${X - hx + 3},${Y - 1} ${X + W / 2},${Y - 38} ${X + W + hx - 3},${Y - 1}" fill="none" stroke="${pal.suave}" stroke-width="1.3"/>`
+      + `<circle cx="${X + W / 2}" cy="${Y - 41}" r="3.2" fill="none" stroke="${pal.suave}" stroke-width="1.3"/>`
+      + `<rect x="${X - hx}" y="${Y - 4}" width="${W + 2 * hx}" height="8" rx="4" fill="${pal.haste}"/>`
+      + `<rect x="${X - hx}" y="${Y + H - 4}" width="${W + 2 * hx}" height="8" rx="4" fill="${pal.haste}"/>`;
+  }
+  if (ilhos) {
+    const ins = Math.min(Math.max(6, 3 * k), W / 4, H / 4), nx = Math.max(1, Math.ceil(l / 50)), ny = Math.max(1, Math.ceil(a / 50));
+    const pts = [];
+    for (let i = 0; i <= nx; i++) { const x = X + ins + (W - 2 * ins) * i / nx; pts.push([x, Y + ins], [x, Y + H - ins]); }
+    for (let j = 1; j < ny; j++) { const y = Y + ins + (H - 2 * ins) * j / ny; pts.push([X + ins, y], [X + W - ins, y]); }
+    s += pts.map(([x, y]) => `<circle cx="${x}" cy="${y}" r="3.4" fill="${pal.fundo}" stroke="${pal.haste}" stroke-width="1.7"/>`).join('');
+  }
+  s += cotaH(X, X + W, Y + H + (bastao ? 22 : 18), `${n1(l)} cm`, pal.suave) + cotaV(X + W + 24, Y, Y + H, `${n1(a)} cm`, pal.suave);
+  return { corpo: s, largura, altura };
+}
+// Medida pedida (linha tracejada em volta) × o maior tamanho que a imagem do
+// cliente ocupa dentro dela, mantendo a proporção (em rosa, centrada).
+function desenhoComparativo({ pl, pa, fl, fa, src }, pal, caixa) {
+  const k = Math.min(caixa / pl, caixa / pa), W = pl * k, H = pa * k, X = 14, Y = 26, largura = X + W + 44, altura = Y + H + 14;
+  const fw = fl * k, fh = fa * k, fx = X + (W - fw) / 2, fy = Y + (H - fh) / 2;
+  let s = '';
+  if (src) s += `<image href="${src}" x="${fx}" y="${fy}" width="${fw}" height="${fh}" preserveAspectRatio="none"/>`;
+  else s += `<rect x="${fx}" y="${fy}" width="${fw}" height="${fh}" fill="${pal.rosa}" fill-opacity=".14"/>`;
+  s += `<rect x="${fx}" y="${fy}" width="${fw}" height="${fh}" fill="none" stroke="${pal.rosa}" stroke-width="2"/>`;
+  s += `<rect x="${X}" y="${Y}" width="${W}" height="${H}" fill="none" stroke="${pal.tinta}" stroke-width="1.4" stroke-dasharray="6 4"/>`;
+  // A medida da imagem: no meio da área rosa; com a imagem à mostra, numa
+  // etiqueta perto da borda de baixo, para não cobrir a arte.
+  const rot = `${n1(fl)} × ${n1(fa)} cm`, cx = fx + fw / 2, cy = src ? fy + fh - Math.min(18, fh / 2) : fy + fh / 2;
+  const larguraRot = rot.length * 7.4 + 18;
+  if (src) s += `<rect x="${cx - larguraRot / 2}" y="${cy - 11}" width="${larguraRot}" height="22" rx="11" fill="${pal.fundo}" fill-opacity=".92"/>`;
+  s += `<text x="${cx}" y="${cy + 4}" text-anchor="middle" font-size="12" font-weight="800" fill="${pal.rosa}">${rot}</text>`;
+  // o que sobra, nas faixas vazias
+  const sobraA = (pa - fa) / 2, sobraL = (pl - fl) / 2;
+  if (sobraA >= 0.5 && (H - fh) / 2 >= 16) {
+    s += `<text x="${X + W / 2}" y="${Y + (fy - Y) / 2 + 3.5}" text-anchor="middle" font-size="10" font-weight="600" fill="${pal.suave}">sobra ${n1(sobraA)} cm</text>`
+      + `<text x="${X + W / 2}" y="${fy + fh + (Y + H - fy - fh) / 2 + 3.5}" text-anchor="middle" font-size="10" font-weight="600" fill="${pal.suave}">sobra ${n1(sobraA)} cm</text>`;
+  }
+  if (sobraL >= 0.5 && (W - fw) / 2 >= 16) {
+    const mx1 = X + (fx - X) / 2, mx2 = fx + fw + (X + W - fx - fw) / 2, my = fy + fh / 2;
+    s += `<text x="${mx1}" y="${my + 3.5}" text-anchor="middle" font-size="10" font-weight="600" fill="${pal.suave}" transform="rotate(-90 ${mx1} ${my})">sobra ${n1(sobraL)} cm</text>`
+      + `<text x="${mx2}" y="${my + 3.5}" text-anchor="middle" font-size="10" font-weight="600" fill="${pal.suave}" transform="rotate(90 ${mx2} ${my})">sobra ${n1(sobraL)} cm</text>`;
+  }
+  s += cotaH(X, X + W, Y - 13, `${n1(pl)} cm`, pal.tinta) + cotaV(X + W + 24, Y, Y + H, `${n1(pa)} cm`, pal.tinta);
+  return { corpo: s, largura, altura };
+}
+const svgTela = d => `<svg viewBox="0 0 ${d.largura} ${d.altura}" width="${d.largura}" height="${d.altura}" font-family="${FONTE}" role="img">${d.corpo}</svg>`;
+// A imagem para o cliente: título, o desenho, a legenda, as linhas de texto e
+// a marca da casa no pé, em fundo branco.
+function imagemParaCliente(titulo, d, legendas, linhas, nome) {
+  const pad = 28, w = Math.max(460, Math.ceil(d.largura) + pad * 2), porLinha = Math.floor((w - pad * 2) / 6.6);
+  const quebrar = t => { const out = []; let atual = ''; for (const p of t.split(' ')) { if ((atual + ' ' + p).trim().length > porLinha) { out.push(atual.trim()); atual = p; } else atual += ' ' + p; } if (atual.trim()) out.push(atual.trim()); return out; };
+  let y = pad, s = `<text x="${pad}" y="${y + 14}" font-size="17" font-weight="800" fill="${PAL_IMG.tinta}">${esc(titulo)}</text>`;
+  y += 34;
+  s += `<g transform="translate(${(w - d.largura) / 2} ${y})">${d.corpo}</g>`;
+  y += d.altura + 10;
+  for (const lg of legendas) {
+    s += lg.tipo === 'rosa'
+      ? `<rect x="${pad}" y="${y}" width="20" height="13" rx="2" fill="${PAL_IMG.rosa}" fill-opacity=".14" stroke="${PAL_IMG.rosa}" stroke-width="2"/>`
+      : `<rect x="${pad + 1}" y="${y + 1}" width="18" height="11" fill="none" stroke="${PAL_IMG.tinta}" stroke-width="1.4" stroke-dasharray="4 3"/>`;
+    s += `<text x="${pad + 30}" y="${y + 11}" font-size="13" font-weight="600" fill="${PAL_IMG.corpo}">${esc(lg.texto)}</text>`;
+    y += 22;
+  }
+  if (legendas.length) y += 4;
+  for (const t of linhas) for (const ln of quebrar(t)) { s += `<text x="${pad}" y="${y + 13}" font-size="13" fill="${PAL_IMG.corpo}">${esc(ln)}</text>`; y += 19; }
+  y += 14;
+  s += `<text x="${w - pad}" y="${y + 10}" text-anchor="end" font-size="11.5" font-weight="800" fill="#8A5400">Berlim Gráfica</text>`;
+  const h = Math.ceil(y + 10 + pad);
+  return { svg: `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" font-family="${FONTE}"><rect width="${w}" height="${h}" fill="#ffffff"/>${s}</svg>`, w, h, nome };
+}
+function svgParaPng(svg, w, h, escala = 2) {
+  return new Promise((ok, erro) => {
+    const img = new Image();
+    img.onload = () => {
+      const c = document.createElement('canvas'); c.width = w * escala; c.height = h * escala;
+      const ctx = c.getContext('2d'); ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, c.width, c.height); ctx.drawImage(img, 0, 0, c.width, c.height);
+      c.toBlob(b => b ? ok(b) : erro(new Error('sem imagem')), 'image/png');
+    };
+    img.onerror = () => erro(new Error('desenho inválido'));
+    img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+  });
+}
+async function baixarPng(promessa, nome) {
+  try {
+    const b = await promessa, a = document.createElement('a');
+    a.href = URL.createObjectURL(b); a.download = nome; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 3000);
+    toast('Copiar não está liberado aqui: a imagem foi baixada');
+  } catch { toast('Não foi possível gerar a imagem'); }
+}
+function copiarImagem() {
+  const im = est.imagem; if (!im) return;
+  const png = svgParaPng(im.svg, im.w, im.h);
+  if (navigator.clipboard?.write && window.ClipboardItem) {
+    navigator.clipboard.write([new ClipboardItem({ 'image/png': png })])
+      .then(() => toast('Imagem copiada: é só colar na conversa do cliente'), () => baixarPng(png, im.nome));
+  } else baixarPng(png, im.nome);
+}
+// A imagem do cliente (aberta, colada ou arrastada): o tamanho em pixels entra
+// nos campos e uma cópia reduzida aparece dentro da área rosa. Fica só aqui.
+function carregarImagem(arquivo) {
+  if (!arquivo || !/^image\//.test(arquivo.type)) return toast('Isso não é uma imagem');
+  const leitor = new FileReader();
+  leitor.onload = () => {
+    const img = new Image();
+    img.onload = () => {
+      const e = Math.min(1, 1200 / Math.max(img.naturalWidth, img.naturalHeight));
+      const c = document.createElement('canvas'); c.width = Math.round(img.naturalWidth * e); c.height = Math.round(img.naturalHeight * e);
+      const ctx = c.getContext('2d'); ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, c.width, c.height); ctx.drawImage(img, 0, 0, c.width, c.height);
+      Object.assign(ent.banner, { imgL: String(img.naturalWidth), imgA: String(img.naturalHeight), imgSrc: c.toDataURL('image/jpeg', .85), imgNome: arquivo.name || 'imagem colada' });
+      render();
+      toast(`Imagem de ${img.naturalWidth} × ${img.naturalHeight} px`);
+    };
+    img.onerror = () => toast('Não foi possível abrir essa imagem');
+    img.src = leitor.result;
+  };
+  leitor.readAsDataURL(arquivo);
+}
+function previaBannerHTML(r, e) {
+  const B = C.banner, tit = h => `<div class="cartao-cab"><h2>${ico('image', 'ico ico-s')}Prévia do banner</h2>${h}</div>`;
+  if (!r.ok) { est.imagem = null; return `<section class="cartao">${tit('')}<p class="vazio-card">Preencha largura e altura para ver como o banner fica.</p></section>`; }
+  const l = cm(e.largura) * 100, a = cm(e.altura) * 100;
+  const tipo = B.TIPOS_LONA.find(t => t.valor === e.tipo) || B.TIPOS_LONA[0], acab = B.ACABAMENTOS.find(x => x.valor === e.acabamento) || B.ACABAMENTOS[0];
+  const p = { l, a, acabamento: e.acabamento, laminado: e.tipo === 'laminado' };
+  const legenda = `${r.quantidade} ${r.quantidade > 1 ? 'banners' : 'banner'} de ${n1(l)} × ${n1(a)} cm · ${tipo.rotulo} · ${acab.rotulo}`;
+  est.imagem = imagemParaCliente('Prévia do banner', desenhoBanner(p, PAL_IMG, 400), [], [legenda], `banner-${Math.round(l)}x${Math.round(a)}cm.png`);
+  return `<section class="cartao">${tit(`<button class="btn btn-sec btn-p" data-copiar-img>${ico('image-down', 'ico ico-s')}Copiar imagem</button>`)}
+    <div class="desenho">${svgTela(desenhoBanner(p, PAL_TELA, 300))}</div>
+    <p class="prev-nota">${esc(legenda)}</p></section>`;
+}
+function telaComparativo() {
+  const e = ent.banner, pl = cm(e.cmpL), pa = cm(e.cmpA), il = cm(e.imgL), ia = cm(e.imgA);
+  const ok = pl > 0 && pa > 0 && il > 0 && ia > 0;
+  const arquivo = e.imgSrc
+    ? `<span class="nome"><img src="${e.imgSrc}" alt=""><span>${esc(e.imgNome)}</span></span><button class="btn btn-sec btn-p" data-tirar-img>${ico('x', 'ico ico-s')}Tirar imagem</button>`
+    : `<label class="btn btn-sec btn-p btn-arquivo">${ico('image-up', 'ico ico-s')}Abrir a imagem<input type="file" accept="image/*" data-arquivo></label><span class="dica-colar">ou cole (Ctrl+V) ou arraste a imagem do cliente aqui</span>`;
+  const form = area('a-dados', 'ruler', 'Medida que o cliente pediu',
+      campoNum('cmpL', 'Largura', { suf: 'cm', ph: '90' }) + campoNum('cmpA', 'Altura', { suf: 'cm', ph: '120' }))
+    + `<div class="soltar" data-soltar>${area('a-itens', 'image', 'Imagem do cliente',
+      campoNum('imgL', 'Largura', { dica: e.imgSrc ? 'px' : 'px ou cm', ph: '1080' }) + campoNum('imgA', 'Altura', { dica: e.imgSrc ? 'px' : 'px ou cm', ph: '1080' })
+      + `<div class="campo largo"><div class="arquivo">${arquivo}</div><p class="nota">Só a proporção importa: pode ser o tamanho em pixels do arquivo ou em centímetros.</p></div>`)}</div>`;
+  let res;
+  if (!ok) {
+    est.imagem = null;
+    res = `<section class="cartao"><div class="cartao-cab"><h2>${ico('scan', 'ico ico-s')}Pedido × imagem</h2></div><p class="vazio-card">Preencha a medida pedida e a da imagem, ou abra a imagem do cliente, para comparar.</p></section>`;
+  } else {
+    const s = Math.min(pl / il, pa / ia), fl = il * s, fa = ia * s;
+    const quadrada = Math.abs(il - ia) / Math.max(il, ia) < 0.015;
+    const preenche = Math.abs(fl - pl) < 0.5 && Math.abs(fa - pa) < 0.5;
+    const sobra = pa - fa >= 0.5 ? `Sobram ${n1(pa - fa)} cm na altura.` : pl - fl >= 0.5 ? `Sobram ${n1(pl - fl)} cm na largura.` : '';
+    const texto = preenche
+      ? `A imagem tem a mesma proporção da medida pedida: ela preenche os ${n1(pl)} × ${n1(pa)} cm inteiros.`
+      : `${quadrada ? 'A imagem é quadrada: d' : 'D'}entro de ${n1(pl)} × ${n1(pa)} cm, ela fica com no máximo ${n1(fl)} × ${n1(fa)} cm. ${sobra}`.trim();
+    const d = { pl, pa, fl, fa, src: e.imgSrc };
+    const legendas = [{ tipo: 'rosa', texto: `Imagem do cliente: ${n1(fl)} × ${n1(fa)} cm` }, { tipo: 'tracejado', texto: `Medida pedida: ${n1(pl)} × ${n1(pa)} cm` }];
+    est.imagem = imagemParaCliente('Medida pedida × imagem enviada', desenhoComparativo(d, PAL_IMG, 400), legendas, [texto], `comparativo-${Math.round(pl)}x${Math.round(pa)}cm.png`);
+    res = `<section class="cartao"><div class="cartao-cab"><h2>${ico('scan', 'ico ico-s')}Pedido × imagem</h2><button class="btn btn-pri btn-p" data-copiar-img>${ico('image-down', 'ico ico-s')}Copiar imagem<kbd>C</kbd></button></div>
+      <div class="desenho">${svgTela(desenhoComparativo(d, PAL_TELA, 300))}</div>
+      <div class="prev-legenda"><span><i style="background:color-mix(in srgb, var(--faca) 14%, transparent);box-shadow:inset 0 0 0 2px var(--faca)"></i>${esc(legendas[0].texto)}</span><span><i style="border:1.5px dashed var(--tinta)"></i>${esc(legendas[1].texto)}</span></div>
+      <p class="prev-nota">${esc(texto)}</p></section>`;
+  }
+  return { form, res, texto: '', total: 0, ok, barraMob: `<div><div class="t num" style="color:var(--tinta)">Comparativo</div><div class="s">${ok ? 'Pronto para enviar' : 'Preencha as medidas'}</div></div><button class="btn btn-pri" data-copiar-img ${ok ? '' : 'disabled'}>${ico('image-down', 'ico ico-s')}Copiar imagem</button>` };
+}
+
+/* ===== adesivo ===== */
+const ROT_FOLHA = { sra3: 'Folha SRA3', meio: 'Meio metro', metro: 'Um metro', metros: 'Mais de um metro', area: 'Pela área' };
+function telaAdesivo() {
+  const A = C.adesivo, e = ent.adesivo, P = PRECOS_ADESIVO;
+  const r = A.calcularAdesivo(e, P), max = A.quantidadesMaximas(e, P);
+  est.textoMax = max.map(m => m.texto).join('\n\n');
+  const form = area('a-dados', 'ruler', 'O pedido',
+      campoNum('largura', 'Largura', { suf: 'cm', ph: '5' })
+      + campoNum('altura', 'Altura', { suf: 'cm', ph: '5' })
+      + campoNum('quantidade', 'Quantidade', { suf: 'un.', inteiro: true })
+      + campoPrazo('prazo', 'Prazo de entrega', opcoesRapidas(prazo => A.calcularAdesivo({ ...e, prazo }, P))))
+    + area('a-itens', 'layers', 'Material',
+      campoOp('tipo', 'Vinil', A.TIPOS.map(t => ({ valor: t.valor, rotulo: t.rotulo, titulo: P[t.produtoMetro]?.nome || '' }))));
+  const porFolha = max.length ? faixasHTML('Quantidades máximas por folha', max.map(m => ({
+      quantidade: m.quantidade, rotulo: ROT_FOLHA[m.folha], ok: true, total: m.preco, detalhe: `até ${fmtN(m.quantidade, 0)} un.`,
+    })), r.ok && ['sra3', 'meio', 'metro'].includes(r.folha) ? (max.find(m => m.folha === r.folha)?.quantidade ?? null) : null, '',
+    `<span>Clique numa folha para orçar a quantidade máxima dela.</span><button class="btn btn-sec btn-p" data-copiar-max style="margin-left:auto">${ico('copy', 'ico ico-s')}Copiar as três</button>`) : '';
+  const extras = `<div class="par">${montagemHTML(r.largura, r.altura, r.quantidade)}${porFolha}</div>`;
+  const res = preco({
+      total: r.total, ok: r.ok,
+      sub: !r.temMedidas ? 'Preencha largura e altura' : !r.ok ? 'Falta a quantidade' : `${reais(r.unitario)} por adesivo`,
+      erros: r.abaixoDoMinimo ? [`O tamanho mínimo para adesivo é ${C.adesivo.MINIMO_CM} × ${C.adesivo.MINIMO_CM} cm.`] : [],
+      linhas: r.ok ? [['Folha do preço', ROT_FOLHA[r.folha]], ['Material', `${fmtN(r.metros)} m`], ...(r.multiplicador > 1 ? [['Prazo', `+${Math.round((r.multiplicador - 1) * 100)}%`]] : [])] : [],
+    })
+    + textoCliente(r.texto, r.ok, r.temMedidas ? 'Falta a quantidade para o texto aparecer aqui.' : 'Preencha as medidas e a quantidade para o texto aparecer aqui.');
+  return { form, extras, res, texto: r.ok ? r.texto : '', total: r.total, ok: r.ok, sub: r.ok ? `${fmtN(r.quantidade, 0)} adesivos` : '' };
+}
+// A montagem na folha: como os adesivos cabem, como a imposição de uma gráfica —
+// linha de corte em magenta e sangria. A linha clara é a folha inteira (SRA3
+// 32 x 45, meio metro 50 x 100, metro 100 x 100), com a área útil centrada
+// dentro dela: assim se vê a margem que sobra até a borda. Começa na folha que
+// o preço usa; a escolhida à mão vale até as medidas mudarem.
+function montagemHTML(largura, altura, quantidade) {
+  const A = C.adesivo, tit = `<div class="cartao-cab"><h2>${ico('layout-grid', 'ico ico-s')}Montagem na folha</h2></div>`;
+  if (!(largura > 0 && altura > 0)) return `<section class="cartao">${tit}<p class="vazio-card">Preencha largura e altura para ver como os adesivos ficam montados na folha.</p></section>`;
+  const chave = `${largura}x${altura}x${quantidade}`;
+  est.chaveMontagem = chave;
+  const doPreco = A.folhaDoPreco(largura, altura, quantidade);
+  const folhaId = est.folhaVista?.chave === chave ? est.folhaVista.folha : doPreco;
+  const folha = A.FOLHAS[folhaId], S = A.SANGRIA;
+  const l = largura + S, a = altura + S;
+  const cols = Math.floor(folha.w / l), lins = Math.floor(folha.h / a), n = cols * lins;
+  const deitado = A.cabem(folha, altura + S, largura + S);
+  const metros = folhaId === 'metro' && n > 0 && quantidade > 0 ? quantidade / n : null;
+  const wT = folha.wTotal ?? folha.w, hT = folha.hTotal ?? folha.h;
+  const k = Math.min(300 / wT, 300 / hT);
+  const W = wT * k, H = hT * k, X = 4, Y = 24, largSvg = X + W + 30, altSvg = Y + H + 4;
+  // A área útil, centrada na folha; as peças, centradas na área útil.
+  const ux = X + (wT - folha.w) / 2 * k, uy = Y + (hT - folha.h) / 2 * k;
+  const pw = l * k, ph = a * k, mx = ux + (folha.w * k - cols * pw) / 2, my = uy + (folha.h * k - lins * ph) / 2;
+  const miudo = pw < 9 || ph < 9, s = (S / 2) * k, cx = X + W + 16;
+  // Um padrão de uma peça repetido: o desenho pesa o mesmo com 10 ou 2.000 adesivos.
+  const svg = `<svg viewBox="0 0 ${largSvg} ${altSvg}" width="${largSvg}" height="${altSvg}" role="img" aria-label="${fmtN(n, 0)} adesivos de ${fmtN(largura)} por ${fmtN(altura)} centímetros na ${folha.nome} de ${wT} por ${hT} centímetros, com área útil de ${folha.w} por ${folha.h}">
+    <defs><pattern id="peca" patternUnits="userSpaceOnUse" x="${mx}" y="${my}" width="${pw}" height="${ph}">
+      <rect width="${pw}" height="${ph}" fill="var(--faca)" fill-opacity=".1"/>
+      <rect x="${s}" y="${s}" width="${Math.max(0, pw - 2 * s)}" height="${Math.max(0, ph - 2 * s)}" rx="${miudo ? 0 : 1.5}" fill="var(--superficie)" stroke="var(--faca)" stroke-width="${miudo ? .5 : 1}" ${miudo ? '' : 'stroke-dasharray="3 2"'}/>
+    </pattern></defs>
+    <rect class="papel" x="${X + .5}" y="${Y + .5}" width="${W - 1}" height="${H - 1}" rx="1.5"/>
+    ${n > 0 ? `<rect x="${mx}" y="${my}" width="${cols * pw}" height="${lins * ph}" fill="url(#peca)"/>` : `<text x="${X + W / 2}" y="${Y + H / 2}" text-anchor="middle">Não cabe nesta folha</text>`}
+    <path class="cota" d="M${X + .5} 8v10M${X + W - .5} 8v10M${X + .5} 13H${X + W / 2 - 22}M${X + W / 2 + 22} 13H${X + W - .5}"/>
+    <path class="cota" d="M${cx - 5} ${Y + .5}h10M${cx - 5} ${Y + H - .5}h10M${cx} ${Y + .5}V${Y + H / 2 - 22}M${cx} ${Y + H / 2 + 22}V${Y + H - .5}"/>
+    <text x="${X + W / 2}" y="16.5" text-anchor="middle">${wT} cm</text>
+    <text x="${cx}" y="${Y + H / 2 + 3.5}" text-anchor="middle" transform="rotate(90 ${cx} ${Y + H / 2})">${hT} cm</text>
+  </svg>`;
+  return `<section class="cartao">${tit}
+    <div class="seg" role="group" aria-label="Folha">${Object.entries(A.FOLHAS).map(([id, f]) => `<button data-folha="${id}" aria-pressed="${id === folhaId}">${f.rotulo}</button>`).join('')}</div>
+    <div class="desenho">${svg}</div>
+    <div class="montagem-n"><b>${fmtN(n, 0)}</b><span>por ${folha.nome} de ${wT} × ${hT} cm · área útil ${folha.w} × ${folha.h} cm</span></div>
+    ${folhaId === doPreco && quantidade > 0 ? `<p class="nota-ok">${ico('check', 'ico ico-s')}<span>${metros ? `É a folha do preço: ${fmtN(quantidade, 0)} adesivos ocupam ${fmtN(metros)} m.` : `É a folha que o preço usa para ${fmtN(quantidade, 0)} adesivos.`}</span></p>` : ''}
+    ${deitado > n ? `<p class="nota-aviso">${ico('rotate-ccw', 'ico ico-s')}<span>Deitado cabem ${fmtN(deitado, 0)}. O preço continua contando em pé.</span></p>` : ''}
+    <div class="legenda"><span><i style="background:color-mix(in srgb, var(--faca) 10%, transparent);box-shadow:inset 0 0 0 1px var(--faca)"></i>Sangria de 0,2 cm</span><span><i style="height:2px;background:repeating-linear-gradient(90deg, var(--faca) 0 3px, transparent 3px 5px)"></i>Linha de corte</span></div>
+  </section>`;
+}
+
+/* ===== casamento: manual de padrinhos ===== */
+function telaCasamento() {
+  const K = C.casamento, e = ent.casamento, r = K.calcularManual(e);
+  const qtdManuais = parseInt(e.qtdManuais, 10) || 0;
+  const form = area('a-dados', 'ruler', 'O pedido',
+      campoNum('qtdManuais', 'Manuais', { suf: 'un.', inteiro: true })
+      + campoNum('largura', 'Largura', { suf: 'cm' })
+      + campoNum('altura', 'Altura', { suf: 'cm' })
+      + campoNum('qtdImpressoes', 'Impressões', { dica: 'quadradinhos', inteiro: true })
+      + campoNum('qtdVariaveis', 'Variações de arte', { inteiro: true }))
+    + area('a-itens', 'layers', 'Papel e acabamento',
+      campoOp('papel', 'Papel', Object.entries(K.PAPEIS).map(([nome, p]) => ({ valor: nome, rotulo: nome, extra: reais(p) })))
+      + campoOp('furo', 'Furo', K.FUROS.map(f => ({ valor: f, rotulo: f }))));
+  const ok = r.qtdPorA4 > 0;
+  const res = preco({
+      total: r.valorFinal, ok,
+      sub: !ok ? 'Preencha a medida do quadradinho' : qtdManuais > 0 ? `${reais(r.valorFinal / qtdManuais)} por manual` : '',
+      linhas: ok ? [
+        ['Cabem por A4', fmtN(r.qtdPorA4, 0)],
+        ['Folhas A4', `${fmtN(r.qtdFolhasA4, 0)} <span style="color:var(--tinta-suave);font-weight:500">(${C.casamento.FOLHAS_DE_ACERTO} de acerto)</span>`],
+        ['Impressão', reais(r.custoImpressao)],
+        ['Furo e ilhós', reais(r.custoFuro)],
+        ['Variações de arte', reais(r.custoVariavel)],
+      ] : [],
+    })
+    + textoCliente(r.textoWhatsapp, ok, 'Preencha a medida do quadradinho para o texto aparecer aqui.');
+  return { form, res, texto: ok ? r.textoWhatsapp : '', total: r.valorFinal, ok, sub: ok ? `${qtdManuais} manuais` : '' };
+}
+
+/* ===== bloquinho ===== */
+function telaBloquinho() {
+  const K = C.bloquinhos, e = ent.bloquinho, aj = ajustes.bloquinho;
+  const r = K.calcularBloquinho(e, aj), faixas = K.calcularFaixas(e, aj), p = K.mesclarPremissas(aj);
+  const capaDura = e.capa === 'Capa dura Paraná 1,9mm';
+  const calculado = K.pecasPorA4(e.larguraCm, e.alturaCm);
+  const form = area('a-dados', 'ruler', 'O pedido',
+      campoNum('quantidade', 'Quantidade', { dica: `mín. ${K.QUANTIDADE_MINIMA}`, inteiro: true })
+      + campoNum('larguraCm', 'Largura', { suf: 'cm' })
+      + campoNum('alturaCm', 'Altura', { suf: 'cm' })
+      + campoNum('folhas', 'Folhas por bloquinho', { inteiro: true }))
+    + area('a-itens', 'layers', 'Miolo e capa',
+      campoOp('papelMiolo', 'Papel do miolo', K.PAPEIS_MIOLO.map(x => ({ valor: x.nome, rotulo: x.nome })))
+      + campoOp('impressaoMiolo', 'Impressão do miolo', K.IMPRESSOES_MIOLO.map(x => ({ valor: x.nome, rotulo: x.nome })))
+      + campoLista('capa', 'Capa e contracapa', K.CAPAS.map(x => ({ valor: x.nome, rotulo: x.nome })))
+      + campoOp('encadernacao', 'Encadernação', K.ENCADERNACOES.map(x => ({ valor: x, rotulo: x })), { dica: r.ok && e.encadernacao !== 'Colado' ? `tamanho ${esc(r.encadernacaoSugerida)}` : '' }))
+    + area('a-itens', 'package', 'Acabamento e produção',
+      campoOp('embalagem', 'Embalagem', K.EMBALAGENS.map(x => ({ valor: x, rotulo: x === 'Embalado coletivamente' ? 'Em pacotes' : 'Um a um' })))
+      + campoOp('arte', 'Arte', K.ARTES.map((x, i) => ({ valor: x, rotulo: i === 0 ? 'Cliente envia pronta' : 'Criar a arte', extra: i === 1 ? `+${reais(p.precificacao.valorCriacaoArte)}` : '' })))
+      + campoNum('perda', 'Perda de produção', { pct: true, suf: '%' }));
+  const custos = [
+    ['Papel do miolo', r.custos.papelMiolo], ['Impressão do miolo', r.custos.impressaoMiolo], ['Capas', r.custos.capas],
+    ['Encadernação e cola', r.custos.encadernacao], ['Embalagem', r.custos.embalagem], ['Mão de obra', r.custos.maoDeObra],
+    ['Perdas e custos indiretos', r.custos.perdasEIndiretos], ['Criação de arte', r.custos.arte],
+  ].filter(([, v]) => v > 0);
+  const detalhe = `<p>${esc(r.formato.nome)} · ${r.formato.rendimentoA4} peças por A4${r.formato.rendimentoForcado ? ` (o cálculo daria ${r.formato.rendimentoCalculado})` : ''}</p>
+    <p>${fmtN(r.a4Miolo, 0)} folhas A4 no miolo · ${capaDura ? `${fmtN(r.a4AdesivoCapaDura)} A4 de adesivo` : `${fmtN(r.a4CapaFlexivel, 0)} A4 de capa`}</p>
+    <p>${Math.round(r.minutos)} minutos de produção${e.embalagem === 'Embalado coletivamente' ? ` · ${r.pacotes} pacotes` : ''}</p>
+    ${campoNum('rendimentoA4', 'Peças por A4', { dica: `cálculo: ${calculado}`, ph: String(calculado), inteiro: true })}`;
+  const atual = Math.floor(Number(String(e.quantidade).replace(',', '.')));
+  const extras = `<div class="par">${composicaoHTML('Para onde vai o custo', custos, ['Custo total', r.custoTotal], detalhe)}${faixasHTML('Se levar mais', faixas, atual, 'un')}</div>`;
+  const margem = campoPremInline('precificacao', 'margemSobreCusto', p.precificacao.margemSobreCusto);
+  const res = preco({
+      rotulo: 'Preço sugerido', total: r.precoSugerido, ok: r.ok, erros: r.erros,
+      sub: r.ok ? `${reais(r.precoUnitario)} por bloquinho` : '',
+      conta: linhaConta([`Custo <b>${reais(r.custoTotal)}</b>`, '+ margem', margem, '=', `<b class="v">${reais(r.precoSugerido)}</b>`,
+        `<span class="lucro">lucro <b>${reais(r.lucroBruto)}</b> · ${(r.margemBruta * 100).toFixed(1).replace('.', ',')}% do preço</span>`]),
+    })
+    + textoCliente(K.textoWhatsapp(e, r), r.ok, 'Corrija o pedido para o texto aparecer aqui.');
+  return { form, extras, res, texto: r.ok ? K.textoWhatsapp(e, r) : '', total: r.precoSugerido, ok: r.ok, sub: r.ok ? `${reais(r.precoUnitario)} cada` : '' };
+}
+// A margem mora nas premissas, mas é editada na cara do preço.
+function campoPremInline(grupo, campo, valor) {
+  const chave = `prem:${est.aba}.${grupo}.${campo}`;
+  const texto = chave in rasc ? rasc[chave] : txtNum(valor * 100);
+  return `<span class="in"><input class="linha-in" data-prem="${grupo}.${campo}" data-pct="1" value="${esc(texto)}" inputmode="decimal" aria-label="Margem sobre o custo" autocomplete="off"><i class="suf">%</i></span>`;
+}
+
+/* ===== livro hot melt ===== */
+function telaHotmelt() {
+  const K = C.hotmelt, e = ent.hotmelt, aj = ajustes.hotmelt;
+  const r = K.calcularHotmelt(e, aj), faixas = K.calcularFaixas(e, aj), p = K.mesclarPremissas(aj);
+  const completo = e.modalidade === 'Livro completo';
+  const porFacePadrao = p.formatos[e.formato] ?? 0;
+  const form = area('a-dados', 'ruler', 'O pedido',
+      campoOp('modalidade', 'Modalidade', K.MODALIDADES.map(m => ({ valor: m.valor, rotulo: m.valor })), { nota: esc(K.MODALIDADES.find(m => m.valor === e.modalidade)?.resumo || '') })
+      + campoNum('quantidade', 'Livros', { suf: 'un.', inteiro: true }))
+    + (completo ? area('a-itens', 'book-open', 'O livro',
+      campoOp('papelMiolo', 'Papel do miolo', K.PAPEIS_MIOLO.map(x => ({ valor: x.nome, rotulo: x.nome })), { dica: r.papel.temPB ? '' : 'só colorido' })
+      + campoOp('formato', 'Formato fechado', K.FORMATOS.map(f => ({ valor: f, rotulo: f, extra: `${p.formatos[f]} por face` })))
+      + (r.papel.temPB
+        ? campoNum('paginasPB', 'Páginas P&B', { inteiro: true }) + campoNum('paginasColoridas', 'Páginas coloridas', { inteiro: true })
+        : campoNum('paginasColoridas', 'Páginas do livro', { inteiro: true, dica: `${reais(p.outrosPapeis[e.papelMiolo] || 0)} por face` }))) : '')
+    + area('a-itens', 'sparkles', 'Acabamento e prazo',
+      (completo ? campoOp('laminacao', 'Laminação da capa', K.LAMINACOES.map(x => ({ valor: x, rotulo: x }))) : '')
+      + campoPrazo('prazo', 'Prazo', opcoesHotmelt(prazo => K.calcularHotmelt({ ...e, prazo }, aj), p.prazos))
+      + (completo ? campoChave('provaFisica', 'Prova física', reais(p.parametros.provaFisica)) : '')
+      + campoNum('perda', 'Perda de produção', { pct: true, suf: '%' }));
+  const partes = [
+    ['Impressão do miolo', r.partes.impressaoMiolo], ['Capas coloridas', r.partes.capas], ['Laminação', r.partes.laminacao],
+    ['Encadernação hot melt', r.partes.hotMelt], ['Adicional de urgência', r.partes.adicionalUrgencia], ['Prova física', r.partes.prova],
+  ].filter(([, v]) => v > 0);
+  const detalhe = (completo
+      ? `<p>${r.paginas} páginas · ${r.paginasPorFace} por face A4${r.aproveitamentoForcado ? ` (o formato ${esc(e.formato)} daria ${r.formatoPadrao})` : ''}</p>
+         <p>${r.papel.temPB ? `${fmtN(r.facesPB, 0)} faces P&B a ${reais(r.precoFacePB)}${r.facesColoridas > 0 ? ` · ${fmtN(r.facesColoridas, 0)} coloridas a ${reais(r.precoFaceColor)}` : ''}` : `${fmtN(r.facesTotais, 0)} faces a ${reais(r.precoFaceColor)} (${esc(e.papelMiolo)}, preço único)`} · perda já incluída</p>`
+      : '<p>Miolo e capa fornecidos pelo cliente: só a encadernação é cobrada.</p>')
+    + `<p>Hot melt a ${reais(r.hotMeltPorLivro)} por livro${r.hotMeltNoMinimo ? ', abaixo do mínimo de lote: cobrado o mínimo' : ''}</p>`
+    + (completo ? campoNum('paginasPorFaceA4', 'Páginas por face A4', { dica: `formato ${esc(e.formato)}: ${porFacePadrao}`, ph: String(porFacePadrao), inteiro: true }) : '');
+  const atual = Math.floor(Number(String(e.quantidade).replace(',', '.')));
+  const extras = `<div class="par">${composicaoHTML('Do que é feito o preço', partes, ['Total', r.total], detalhe)}${faixasHTML('Se levar mais', faixas.map(f => ({ ...f, unitario: f.porLivro })), atual, 'livro', esc(r.observacao))}</div>`;
+  const res = preco({
+      rotulo: 'Total do pedido', total: r.total, ok: r.ok, erros: r.erros, avisos: r.avisos.map(esc),
+      sub: r.ok ? `${reais(r.porLivro)} por livro` : '',
+      conta: r.ok ? linhaConta([`Produção <b>${reais(r.subtotal)}</b>`, '×', `<b class="${r.multiplicador > 1 ? 'urg' : ''}">${r.multiplicador.toFixed(2).replace('.', ',')}</b>`, `<small>(${esc(e.prazo)})</small>`,
+        ...(r.prova > 0 ? ['+', `<b>${reais(r.prova)}</b>`, '<small>(prova)</small>'] : []), '=', `<b class="v">${reais(r.total)}</b>`]) : '',
+    })
+    + textoCliente(K.textoWhatsapp(e, r), r.ok, 'Corrija o pedido para o texto aparecer aqui.');
+  return { form, extras, res, texto: r.ok ? K.textoWhatsapp(e, r) : '', total: r.total, ok: r.ok, sub: r.ok ? `${reais(r.porLivro)} por livro` : '' };
+}
+
+const TELAS = { banner: telaBanner, adesivo: telaAdesivo, casamento: telaCasamento, bloquinho: telaBloquinho, hotmelt: telaHotmelt };
+
+/* ===== custos e premissas (bloquinho e hot melt) ===== */
+const PREMISSAS_UI = {
+  bloquinho: {
+    titulo: 'Custos do bloquinho', sub: 'Salário, materiais, tempos, margem e papéis.',
+    grupos: [
+      { id: 'maoDeObra', titulo: 'Mão de obra', icone: 'users', campos: [
+        ['funcionarios', 'Funcionários considerados'], ['salarioMedio', 'Salário médio mensal', 'R$'], ['encargos', 'Encargos sobre salários', '', 'pct'],
+        ['horasMes', 'Horas mensais por pessoa'], ['aproveitamento', 'Aproveitamento produtivo', '', 'pct']],
+        derivado: (p, K) => `Custo da hora produtiva: ${reais(K.custoHoraProdutiva(p))}` },
+      { id: 'materiais', titulo: 'Materiais e consumíveis', icone: 'package', campos: [
+        ['boppPrecoBobina', 'Bobina BOPP 32 cm', 'R$'], ['boppMetrosBobina', 'Metros da bobina'], ['boppConsumoPorA4', 'Consumo por A4 (m)'],
+        ['saquinhoPrecoPacote', 'Saquinhos 12x25 · pacote', 'R$'], ['saquinhoUnidades', 'Saquinhos no pacote'], ['durexPorUnidade', 'Durex por unidade', 'R$'],
+        ['embalagemColetivaMaterial', 'Material do pacote coletivo', 'R$'], ['blocosPorPacote', 'Bloquinhos por pacote'], ['colaPorBlocoColado', 'Cola por bloco colado', 'R$'],
+        ['paranaPorBloco', 'Paraná 1,9 mm · par de placas', 'R$'], ['impressaoCapaDuraPorBloco', 'Impressão externa da capa dura', 'R$']],
+        derivado: (p, K) => `BOPP R$ ${K.custoBoppPorA4(p).toFixed(4).replace('.', ',')} por face A4 · saquinho R$ ${K.custoSaquinho(p).toFixed(4).replace('.', ',')} cada` },
+      { id: 'tempos', titulo: 'Tempos de produção (minutos)', icone: 'clock', campos: [
+        ['preparacaoPedido', 'Preparação do pedido'], ['setupImpressao', 'Setup de impressão'], ['setupCorte', 'Setup de corte'], ['setupColado', 'Setup bloco colado'],
+        ['setupEspiral', 'Setup espiral'], ['setupWireO', 'Setup wire-o'], ['setupCapaFlexivel', 'Setup capa flexível'], ['setupCapaDura', 'Setup capa dura'],
+        ['manuseioPorA4', 'Manuseio por A4'], ['laminacaoPorA4', 'Laminação por A4'], ['corteContagemPorBloco', 'Corte e contagem por bloco'], ['corteContagemPorFolha', 'Corte e contagem por folha'],
+        ['montagemColado', 'Montagem · colado'], ['montagemEspiral', 'Montagem · espiral'], ['montagemWireO', 'Montagem · wire-o'], ['acabamentoCapaDura', 'Acabamento capa dura'],
+        ['acabamentoCapaFlexivel', 'Acabamento capa flexível'], ['embalagemIndividualPorBloco', 'Embalagem individual por bloco'], ['embalagemColetivaPorPacote', 'Embalagem coletiva por pacote']] },
+      { id: 'precificacao', titulo: 'Precificação', icone: 'tag', campos: [
+        ['custosIndiretos', 'Custos indiretos', '', 'pct'], ['margemSobreCusto', 'Margem sobre o custo', '', 'pct'],
+        ['valorCriacaoArte', 'Criação de arte', 'R$'], ['arredondamentoPreco', 'Arredondar o preço a cada', 'R$']],
+        nota: 'A margem é a mesma da linha do preço: mudar num lugar muda no outro. A criação de arte entra depois dela, porque é repasse e não produção.' },
+      { id: 'papeis', titulo: 'Preço dos papéis (pacote)', icone: 'file-text', papeis: true,
+        nota: 'O preço do pacote é o que muda na nota fiscal; o custo por A4 sai dele.' },
+    ],
+  },
+  hotmelt: {
+    titulo: 'Tabelas do livro hot melt', sub: 'Preços fixos, faixas de impressão, hot melt e prazos.',
+    grupos: [
+      { id: 'parametros', titulo: 'Preços fixos', icone: 'dollar-sign', campos: [
+        ['capaColoridaPorLivro', 'Capa colorida por livro', 'R$'], ['laminacaoPorFace', 'Laminação por face', 'R$'], ['minimoLaminacao', 'Mínimo de laminação', 'R$'],
+        ['provaFisica', 'Prova física completa', 'R$'], ['minimoLoteHotMelt', 'Mínimo do lote hot melt', 'R$']],
+        nota: 'O mínimo do lote é o que sustenta um pedido de uma ou duas unidades: abrir a máquina custa o mesmo para um livro e para cinquenta.' },
+      { id: 'formatos', titulo: 'Páginas por face A4', icone: 'file-text', campos: [['A4', 'Formato A4'], ['A5', 'Formato A5'], ['A6', 'Formato A6']],
+        nota: 'Quantas páginas do livro cabem numa face de A4: é o que transforma páginas em folhas impressas.' },
+      { id: 'outrosPapeis', titulo: 'Preço por face · por papel', icone: 'file-text', campos: [['Offset 90g', 'Offset 90g', 'R$'], ['Offset 120g', 'Offset 120g', 'R$'], ['Couchê 115g', 'Couchê 115g', 'R$']],
+        nota: 'Preço único: nestes papéis a impressão custa o mesmo em P&B e em cores, sem desconto por volume. O offset 75g tem as faixas abaixo.' },
+      { id: 'impressaoPB', titulo: 'Offset 75g · P&B por faixa', icone: 'printer', campos: [['1', 'A partir de 1 face', 'R$'], ['501', 'A partir de 501', 'R$'], ['1001', 'A partir de 1.001', 'R$'], ['2501', 'A partir de 2.501', 'R$']] },
+      { id: 'impressaoColor', titulo: 'Offset 75g · colorido por faixa', icone: 'image', campos: [['1', 'A partir de 1 face', 'R$'], ['501', 'A partir de 501', 'R$'], ['1001', 'A partir de 1.001', 'R$'], ['2501', 'A partir de 2.501', 'R$']],
+        nota: 'A faixa é escolhida pelo total de faces do pedido, e P&B e colorido contam separado.' },
+      { id: 'hotMeltPorLivro', titulo: 'Hot melt por livro', icone: 'layers', campos: [
+        ['1', '1 unidade', 'R$'], ['2', '2 unidades', 'R$'], ['3', '3 a 4', 'R$'], ['5', '5 a 9', 'R$'], ['10', '10 a 24', 'R$'], ['25', '25 a 49', 'R$'], ['50', '50 ou mais', 'R$']],
+        nota: 'Esta faixa é escolhida pela quantidade de livros, e o preço é por livro.' },
+      { id: 'prazos', titulo: 'Multiplicador de prazo', icone: 'clock', campos: [
+        ['4 dias úteis', '4 dias úteis', '', 'mult'], ['2–3 dias úteis', '2 a 3 dias úteis', '', 'mult'], ['1 dia útil', '1 dia útil', '', 'mult'], ['Mesmo dia', 'Mesmo dia', '', 'mult']],
+        nota: 'Multiplica o subtotal da produção. A prova física fica de fora: entra depois, em valor cheio.' },
+    ],
+  },
+};
+// Os campos de cada grupo, já com o padrão da planilha.
+function camposDoGrupo(aba, g) {
+  const K = contas(aba);
+  if (g.papeis) return K.PAPEIS.map(papel => ({ campo: papel.nome, rotulo: papel.nome, prefixo: 'R$', padrao: papel.precoPacote }));
+  return g.campos.map(([campo, rotulo, prefixo, tipo]) => ({ campo, rotulo, prefixo, tipo, padrao: K.PREMISSAS_PADRAO[g.id][campo] }));
+}
+const mudado = (aba, grupo, c) => { const b = ajustes[aba]?.[grupo]?.[c.campo]; return b !== undefined && b !== '' && Number(b) !== c.padrao; };
+const mudadosNoGrupo = (aba, g) => camposDoGrupo(aba, g).filter(c => mudado(aba, g.id, c)).length;
+const mudadosNaAba = aba => PREMISSAS_UI[aba] ? PREMISSAS_UI[aba].grupos.reduce((s, g) => s + mudadosNoGrupo(aba, g), 0) : 0;
+
+function campoPrem(aba, grupo, c, p) {
+  const bruto = ajustes[aba]?.[grupo]?.[c.campo];
+  const chave = `prem:${aba}.${grupo}.${c.campo}`;
+  const pct = c.tipo === 'pct', vazio = bruto === undefined || bruto === '';
+  const texto = chave in rasc ? rasc[chave] : (vazio ? '' : txtNum(pct ? bruto * 100 : bruto));
+  const ph = txtNum(pct ? c.padrao * 100 : c.padrao);
+  const efetivo = vazio ? c.padrao : Number(bruto);
+  const dica = c.tipo === 'mult' ? `${efetivo >= 1 ? '+' : ''}${((efetivo - 1) * 100).toFixed(1).replace('.', ',')}% sobre a produção`
+    : mudado(aba, grupo, c) ? `planilha: ${ph}${pct ? '%' : ''}` : 'valor da planilha';
+  const custoA4 = grupo === 'papeis' ? ` · R$ ${contas(aba).custoPapelPorA4(c.campo, p).toFixed(4).replace('.', ',')} por A4` : '';
+  return `<label class="prem${mudado(aba, grupo, c) ? ' mudado' : ''}"><span class="rot">${esc(c.rotulo)}</span><span class="in">${c.prefixo ? `<i class="pre">${c.prefixo}</i>` : ''}<input class="linha-in" data-prem="${esc(grupo)}.${esc(c.campo)}" ${pct ? 'data-pct="1"' : ''} value="${esc(texto)}" placeholder="${esc(ph)}" inputmode="decimal" autocomplete="off">${pct ? '<i class="suf">%</i>' : c.tipo === 'mult' ? '<i class="suf">×</i>' : ''}</span><small>${dica}${custoA4}</small></label>`;
+}
+function gavetaHTML() {
+  const aba = est.aba, ui = PREMISSAS_UI[aba], K = contas(aba), p = K.mesclarPremissas(ajustes[aba]);
+  return `<div class="gv-veu" data-fecha-gaveta></div><aside class="gaveta" role="dialog" aria-label="${ui.titulo}">
+    <div class="gv-cab"><div><h2>${ui.titulo}</h2><p>${ui.sub}</p></div><button class="ib" data-fecha-gaveta aria-label="Fechar" title="Fechar (Esc)">${ico('x')}</button></div>
+    <div class="gv-corpo">${ui.grupos.map(g => {
+      const aberto = est.grupo === g.id, n = mudadosNoGrupo(aba, g);
+      return `<section class="grupo${aberto ? ' aberto' : ''}"><button class="grupo-cab" data-grupo="${g.id}" aria-expanded="${aberto}">${ico(g.icone, 'ico ico-s')}<span>${g.titulo}</span>${n ? `<b class="n" title="${n} alterado${n > 1 ? 's' : ''}">${n}</b>` : ''}${ico('chevron-down', 'ico ico-s chev')}</button>
+        ${aberto ? `<div class="grupo-corpo"><div class="prem-grade">${camposDoGrupo(aba, g).map(c => campoPrem(aba, g.id, c, p)).join('')}</div>${g.derivado ? `<p class="derivado num">${g.derivado(p, K)}</p>` : ''}${g.nota ? `<p class="nota">${g.nota}</p>` : ''}</div>` : ''}</section>`;
+    }).join('')}</div>
+    <div class="gv-pe"><span>${ico('monitor', 'ico ico-s')}Fica salvo neste navegador</span><button class="btn btn-sec btn-p" data-restaurar ${mudadosNaAba(aba) ? '' : 'disabled'}>${ico('rotate-ccw', 'ico ico-s')}Voltar à planilha</button></div>
+  </aside>`;
+}
+
+/* ===== desenho da tela ===== */
+// Redesenhar troca os elementos: o campo em foco volta com o cursor no mesmo lugar.
+function seletorDe(el) {
+  const d = el?.dataset; if (!d) return null;
+  if (d.k) return `[data-k="${d.k}"]`;
+  if (d.prem) return `[data-prem="${CSS.escape(d.prem)}"]`;
+  if (d.op) return `[data-op="${d.op}"][data-v="${CSS.escape(d.v)}"]`;
+  for (const a of ['aba', 'qtd', 'folha', 'chave', 'lista', 'grupo']) if (d[a] !== undefined) return `[data-${a}="${CSS.escape(d[a])}"]`;
+  if (d.detalhe !== undefined) return '[data-detalhe]';
+  return null;
+}
+function redesenhar(raiz, html, focoPedido) {
+  const ativo = document.activeElement;
+  const dentro = ativo && ativo !== document.body && raiz.contains(ativo);
+  const seletor = focoPedido || (dentro ? seletorDe(ativo) : null);
+  const sel = dentro && typeof ativo.selectionStart === 'number' ? [ativo.selectionStart, ativo.selectionEnd] : null;
+  const rolagem = raiz.querySelector('.gv-corpo')?.scrollTop;
+  raiz.innerHTML = html;
+  lucide.createIcons();
+  if (rolagem) raiz.querySelector('.gv-corpo').scrollTop = rolagem;
+  if (!seletor) return;
+  const novo = raiz.querySelector(seletor);
+  if (!novo) return;
+  novo.focus({ preventScroll: true });
+  if (sel && typeof novo.setSelectionRange === 'function') try { novo.setSelectionRange(...sel); } catch { /* campo sem cursor */ }
+}
+
+let indicadorAnt = null;
+function render(foco) {
+  const pg = document.getElementById('pg');
+  if (!C) return;
+  const t = TELAS[est.aba]();
+  est.texto = t.texto;
+  if (est.aba !== 'banner') est.imagem = null;
+  const n = mudadosNaAba(est.aba);
+  const custos = PREMISSAS_UI[est.aba] ? `<button class="btn btn-sec btn-p" data-gaveta aria-haspopup="dialog">${ico('sliders-horizontal', 'ico ico-s')}<span class="t">Custos e premissas</span>${n ? `<span class="n" title="${n} valor${n > 1 ? 'es' : ''} fora da planilha">${n}</span>` : ''}</button>`
+    // No banner: calcular o preço ou comparar a medida pedida com a imagem do cliente.
+    : est.aba === 'banner' ? `<div class="seg" role="group" aria-label="Modo do banner">${[['calculo', 'Calcular'], ['comparar', 'Comparar medidas']].map(([v, r]) => `<button data-modo-banner="${v}" aria-pressed="${ent.banner.modo === v}">${r}</button>`).join('')}</div>` : '';
+  const entrar = est.entrar ? ` entra-${est.entrar}` : '';
+  est.entrar = null;
+  redesenhar(pg, `
+    <div class="cab"><h1>Calculadoras</h1><div class="sub">Orçamento rápido de impressão e acabamento</div></div>
+    <div class="faixa"><div class="abas" role="tablist" aria-label="Calculadoras">${ABAS.map(a => `<button class="aba" role="tab" data-aba="${a.id}" aria-selected="${a.id === est.aba}">${ico(a.icone, 'ico')}${a.rotulo}</button>`).join('')}<span class="indicador"></span></div><div class="abas-fim">${custos}</div></div>
+    <div class="calc${entrar}"><div class="calc-form">${t.form}${t.extras || ''}</div><aside class="calc-res">${t.res}</aside></div>
+    <div class="barra-mob">${t.barraMob || `<div><div class="t num${t.ok ? '' : ' vazio'}">${t.ok ? reais(t.total) : 'R$ 0,00'}</div><div class="s">${t.sub || 'Preencha o pedido'}</div></div><button class="btn btn-pri" data-copiar ${t.ok ? '' : 'disabled'}>${ico('copy', 'ico ico-s')}Copiar texto</button>`}</div>`, foco);
+  // O traço laranja desliza da aba anterior até a escolhida.
+  const abasEl = pg.querySelector('.abas'), ind = abasEl.querySelector('.indicador'), alvo = abasEl.querySelector('.aba[aria-selected="true"]');
+  const por = (l, w) => { ind.style.left = l + 'px'; ind.style.width = w + 'px'; };
+  ind.style.transition = 'none'; por(...(indicadorAnt || [alvo.offsetLeft, alvo.offsetWidth])); ind.offsetWidth; ind.style.transition = '';
+  por(alvo.offsetLeft, alvo.offsetWidth);
+  indicadorAnt = [alvo.offsetLeft, alvo.offsetWidth];
+  // A linha do prazo enche da parada anterior até a nova.
+  pg.querySelectorAll('.prazos').forEach(el => {
+    const fio = el.querySelector('.prazos-trilho i'), novo = fio.style.height, ant = trilhoAnt[est.aba];
+    if (ant !== undefined && ant !== novo) { fio.style.transition = 'none'; fio.style.height = ant; fio.offsetHeight; fio.style.transition = ''; fio.style.height = novo; }
+    trilhoAnt[est.aba] = novo;
+  });
+  renderGaveta();
+}
+const trilhoAnt = {};
+function renderGaveta(foco) {
+  const raiz = document.getElementById('gaveta-raiz');
+  if (!est.gaveta || !PREMISSAS_UI[est.aba]) { if (raiz.innerHTML) raiz.innerHTML = ''; est.gaveta = false; return; }
+  redesenhar(raiz, gavetaHTML(), foco);
+}
+
+/* ===== popover das listas longas ===== */
+let popAberto = null;
+function fecharPop() { if (!popAberto) return; popAberto.el.remove(); popAberto.ancora.setAttribute('aria-expanded', 'false'); popAberto = null; }
+function abrirLista(bt) {
+  if (popAberto?.ancora === bt) return fecharPop();
+  fecharPop();
+  const k = bt.dataset.lista, ops = LISTAS[k], atual = ent[est.aba][k];
+  const pop = document.createElement('div'); pop.className = 'pop'; pop.setAttribute('role', 'listbox');
+  pop.innerHTML = ops.map(o => `<button role="option" data-lv="${esc(o.valor)}" aria-selected="${o.valor === atual}">${esc(o.rotulo)}${o.valor === atual ? ico('check', 'ico ico-s ok') : ''}</button>`).join('');
+  document.body.appendChild(pop); lucide.createIcons();
+  const r = bt.getBoundingClientRect();
+  pop.style.minWidth = Math.max(220, r.width) + 'px';
+  pop.style.left = Math.max(8, Math.min(r.left, innerWidth - pop.offsetWidth - 8)) + 'px';
+  const embaixo = r.bottom + 6 + pop.offsetHeight <= innerHeight;
+  pop.style.top = (embaixo ? r.bottom + 6 : Math.max(8, r.top - pop.offsetHeight - 6)) + 'px';
+  bt.setAttribute('aria-expanded', 'true');
+  popAberto = { el: pop, ancora: bt, k };
+  (pop.querySelector('[aria-selected="true"]') || pop.querySelector('button')).focus();
+  pop.addEventListener('click', e => {
+    const b = e.target.closest('[data-lv]'); if (!b) return;
+    e.stopPropagation();
+    ent[est.aba][k] = b.dataset.lv; fecharPop(); render(`[data-lista="${k}"]`);
+  });
+}
+
+/* ===== ações ===== */
+let toastT;
+function toast(msg, acao) {
+  document.querySelector('.toast')?.remove(); clearTimeout(toastT);
+  const el = document.createElement('div'); el.className = 'toast'; el.setAttribute('role', 'status');
+  el.innerHTML = ico('check-circle-2', 'ico ico-s') + `<span>${esc(msg)}</span>` + (acao ? `<button>${esc(acao.rotulo)}</button>` : '');
+  if (acao) el.querySelector('button').addEventListener('click', () => { el.remove(); acao.fazer(); });
+  document.body.appendChild(el); lucide.createIcons();
+  toastT = setTimeout(() => el.remove(), acao ? 5000 : 2200);
+}
+// O botão já diz "Copiado": o aviso embaixo só aparece quando há algo a mais a
+// dizer (como na imagem, que explica onde colar).
+async function copiar(txt, msg) {
+  if (!txt) return;
+  try { await navigator.clipboard.writeText(txt); }
+  catch { const ta = document.createElement('textarea'); ta.value = txt; ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); }
+  if (msg) toast(msg);
+}
+// A animação do copiar: o botão confirma por 1,5 s e o alvo (o balão, o
+// desenho, as linhas) responde com a classe dele.
+function animarCopia(bt, alvo, classe) {
+  if (bt && !bt.disabled) {
+    clearTimeout(bt._copiaT);
+    if (bt.dataset.original === undefined) { bt.dataset.original = bt.innerHTML; bt.style.minWidth = bt.offsetWidth + 'px'; }
+    bt.classList.remove('copiou'); void bt.offsetWidth; bt.classList.add('copiou');
+    bt.innerHTML = `${ico('check', 'ico ico-s ok-copia')}Copiado`;
+    lucide.createIcons();
+    bt._copiaT = setTimeout(() => {
+      if (!bt.isConnected) return;
+      bt.innerHTML = bt.dataset.original; delete bt.dataset.original; bt.style.minWidth = ''; bt.classList.remove('copiou');
+    }, 1500);
+  }
+  if (alvo && classe) { alvo.classList.remove(classe); void alvo.offsetWidth; alvo.classList.add(classe); setTimeout(() => alvo.classList.remove(classe), 800); }
+}
+// Copiar pelo botão, pela tecla C ou pela barra do celular: todos animam.
+function copiarTextoAnimado(bt) {
+  if (!est.texto) return;
+  animarCopia(bt || document.querySelector('.calc-res [data-copiar]'), document.querySelector('.bolha'), 'copiada');
+  copiar(est.texto);
+}
+function copiarImagemAnimado(bt) {
+  if (!est.imagem) return;
+  const desenho = (bt?.closest('.cartao') || document.querySelector('[data-copiar-img]')?.closest('.cartao'))?.querySelector('.desenho');
+  animarCopia(bt || document.querySelector('.cartao [data-copiar-img]'), desenho, 'flash');
+  copiarImagem();
+}
+// Trocar de papel no hot melt para um sem preço de P&B junta as páginas num
+// campo só: passam a ser cobradas como coloridas — melhor que aconteça à vista.
+function escolher(k, v) {
+  const e = ent[est.aba];
+  if (est.aba === 'hotmelt' && k === 'papelMiolo' && !C.hotmelt.papelPorNome(v).temPB) {
+    const total = Math.floor(Number(String(e.paginasPB).replace(',', '.')) || 0) + Math.floor(Number(String(e.paginasColoridas).replace(',', '.')) || 0);
+    Object.assign(e, { papelMiolo: v, paginasPB: 0, paginasColoridas: total });
+    return;
+  }
+  if (est.aba === 'hotmelt' && k === 'formato') e.paginasPorFaceA4 = '';
+  e[k] = v;
+}
+function trocarAba(id) {
+  if (id === est.aba) return;
+  const de = ABAS.findIndex(a => a.id === est.aba), para = ABAS.findIndex(a => a.id === id);
+  est.entrar = para > de ? 'dir' : 'esq';
+  est.aba = id; est.detalhe = false; est.gaveta = false; est.grupo = null;
+  gravar('calc-nova-aba', id);
+  fecharPop();
+  render(`[data-aba="${id}"]`);
+}
+
+document.addEventListener('click', e => {
+  const t = e.target;
+  if (t.closest('#tema')) { trocarTemaBotao(t.closest('#tema')); return; }
+  if (popAberto && !t.closest('.pop') && t.closest('[data-lista]') !== popAberto.ancora) fecharPop();
+  const aba = t.closest('[data-aba]'); if (aba) return trocarAba(aba.dataset.aba);
+  const op = t.closest('[data-op]'); if (op) { escolher(op.dataset.op, op.dataset.v); return render(seletorDe(op)); }
+  const ch = t.closest('[data-chave]'); if (ch) { ent[est.aba][ch.dataset.chave] = !ent[est.aba][ch.dataset.chave]; return render(seletorDe(ch)); }
+  const li = t.closest('[data-lista]'); if (li) return abrirLista(li);
+  if (t.closest('[data-copiar]')) return copiarTextoAnimado(t.closest('[data-copiar]'));
+  if (t.closest('[data-copiar-img]')) return copiarImagemAnimado(t.closest('[data-copiar-img]'));
+  const mb = t.closest('[data-modo-banner]');
+  if (mb) {
+    const b = ent.banner;
+    // Ao abrir o comparativo, a medida já digitada no cálculo vira a medida pedida.
+    if (mb.dataset.modoBanner === 'comparar' && !b.cmpL && !b.cmpA && cm(b.largura) > 0 && cm(b.altura) > 0) {
+      b.cmpL = txtNum(Math.round(cm(b.largura) * 1000) / 10); b.cmpA = txtNum(Math.round(cm(b.altura) * 1000) / 10);
+    }
+    b.modo = mb.dataset.modoBanner; est.entrar = b.modo === 'comparar' ? 'dir' : 'esq';
+    return render(`[data-modo-banner="${b.modo}"]`);
+  }
+  if (t.closest('[data-tirar-img]')) { Object.assign(ent.banner, { imgSrc: null, imgNome: '' }); return render(); }
+  if (t.closest('[data-copiar-max]')) {
+    const bt = t.closest('[data-copiar-max]');
+    animarCopia(bt, bt.closest('.cartao')?.querySelector('.faixas'), 'copiadas');
+    return copiar(est.textoMax);
+  }
+  const q = t.closest('[data-qtd]'); if (q) { ent[est.aba].quantidade = q.dataset.qtd; return render(seletorDe(q)); }
+  const fo = t.closest('[data-folha]'); if (fo) { est.folhaVista = { chave: est.chaveMontagem, folha: fo.dataset.folha }; return render(seletorDe(fo)); }
+  if (t.closest('[data-detalhe]')) { est.detalhe = !est.detalhe; return render('[data-detalhe]'); }
+  if (t.closest('[data-gaveta]')) { est.gaveta = true; est.grupo = est.grupo || PREMISSAS_UI[est.aba].grupos[0].id; renderGaveta('.gv-cab .ib'); return; }
+  if (t.closest('[data-fecha-gaveta]')) { est.gaveta = false; renderGaveta(); document.querySelector('[data-gaveta]')?.focus(); return; }
+  const gr = t.closest('[data-grupo]'); if (gr) { est.grupo = est.grupo === gr.dataset.grupo ? null : gr.dataset.grupo; return renderGaveta(seletorDe(gr)); }
+  if (t.closest('[data-restaurar]')) {
+    const aba = est.aba, antes = JSON.parse(JSON.stringify(ajustes[aba]));
+    ajustes[aba] = {}; salvarAjustes(aba); render();
+    toast('Custos de volta aos valores da planilha', { rotulo: 'Desfazer', fazer: () => { ajustes[aba] = antes; salvarAjustes(aba); render(); } });
+  }
+});
+
+document.addEventListener('input', e => {
+  const t = e.target;
+  if (t.dataset.k) {
+    const e2 = ent[est.aba], k = t.dataset.k;
+    if (t.dataset.pct) {
+      rasc[`${est.aba}.${k}`] = t.value;
+      const txt = t.value.trim(), n = Number(txt.replace(',', '.'));
+      if (!txt) e2[k] = ''; else if (Number.isFinite(n)) e2[k] = n / 100;
+    } else e2[k] = t.value;
+    // Medida da imagem digitada à mão: a imagem aberta antes não vale mais.
+    if (est.aba === 'banner' && (k === 'imgL' || k === 'imgA') && e2.imgSrc) { e2.imgSrc = null; e2.imgNome = ''; }
+    return render();
+  }
+  if (t.dataset.prem) {
+    const aba = est.aba, i = t.dataset.prem.indexOf('.'), grupo = t.dataset.prem.slice(0, i), campo = t.dataset.prem.slice(i + 1);
+    rasc[`prem:${aba}.${grupo}.${campo}`] = t.value;
+    const txt = t.value.trim(), n = Number(txt.replace(',', '.'));
+    const g = ajustes[aba][grupo] || (ajustes[aba][grupo] = {});
+    if (!txt) delete g[campo];
+    else if (Number.isFinite(n)) g[campo] = t.dataset.pct ? n / 100 : n;
+    else return;   // "7," no meio da digitação: o número de antes continua valendo
+    if (!Object.keys(g).length) delete ajustes[aba][grupo];
+    salvarAjustes(aba);
+    render();
+  }
+});
+// Ao sair do campo, o rascunho vai embora e o número volta à forma canônica.
+document.addEventListener('focusout', e => {
+  const d = e.target.dataset || {};
+  if (d.k && d.pct) delete rasc[`${est.aba}.${d.k}`];
+  if (d.prem) { const i = d.prem.indexOf('.'); delete rasc[`prem:${est.aba}.${d.prem.slice(0, i)}.${d.prem.slice(i + 1)}`]; }
+});
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    if (popAberto) { const a = popAberto.ancora; fecharPop(); a.focus(); return; }
+    if (est.gaveta) { est.gaveta = false; renderGaveta(); document.querySelector('[data-gaveta]')?.focus(); }
+    return;
+  }
+  if (popAberto && ['ArrowDown', 'ArrowUp'].includes(e.key)) {
+    const bs = [...popAberto.el.querySelectorAll('button')], i = bs.indexOf(document.activeElement);
+    e.preventDefault(); bs[(i + (e.key === 'ArrowDown' ? 1 : -1) + bs.length) % bs.length].focus(); return;
+  }
+  // Nas opções (prazo, lona, papel…), as setas andam e já escolhem.
+  const radio = e.target.closest?.('[role="radio"][data-op]');
+  if (radio && ['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+    const grupo = [...radio.closest('[role="radiogroup"]').querySelectorAll('[role="radio"]')];
+    const passo = e.key === 'ArrowDown' || e.key === 'ArrowRight' ? 1 : -1;
+    e.preventDefault(); grupo[(grupo.indexOf(radio) + passo + grupo.length) % grupo.length].click(); return;
+  }
+  const digitando = e.target.matches('input, textarea');
+  if (digitando || e.ctrlKey || e.metaKey || e.altKey) return;
+  if (e.key.toLowerCase() === 'c' && est.texto) { e.preventDefault(); copiarTextoAnimado(); return; }
+  if (e.key.toLowerCase() === 'c' && est.imagem && ent?.banner.modo === 'comparar' && est.aba === 'banner') { e.preventDefault(); copiarImagemAnimado(); }
+});
+// A imagem do cliente entra pelo botão, colada (Ctrl+V) ou arrastada para a área.
+document.addEventListener('change', e => { if (e.target.matches('[data-arquivo]')) carregarImagem(e.target.files?.[0]); });
+document.addEventListener('paste', e => {
+  if (!C || est.aba !== 'banner' || ent.banner.modo !== 'comparar') return;
+  const item = [...(e.clipboardData?.items || [])].find(i => i.type.startsWith('image/'));
+  if (item) { e.preventDefault(); carregarImagem(item.getAsFile()); }
+});
+document.addEventListener('dragover', e => { const z = e.target.closest?.('[data-soltar]'); if (!z) return; e.preventDefault(); z.classList.add('arrastando'); });
+document.addEventListener('dragleave', e => { const z = e.target.closest?.('[data-soltar]'); if (z && !z.contains(e.relatedTarget)) z.classList.remove('arrastando'); });
+document.addEventListener('drop', e => {
+  const z = e.target.closest?.('[data-soltar]'); if (!z) return;
+  e.preventDefault(); z.classList.remove('arrastando');
+  carregarImagem(e.dataTransfer?.files?.[0]);
+});
+addEventListener('resize', fecharPop);
+addEventListener('scroll', e => { if (popAberto && !popAberto.el.contains(e.target)) fecharPop(); }, true);
+
+/* ===== tema: o da tela de trás ao abrir; o botão acende a partir dele ===== */
+const temaBtn = document.getElementById('tema');
+function pintarTemaBtn() { const escuro = document.documentElement.classList.contains('dark'); temaBtn.innerHTML = ico(escuro ? 'sun' : 'moon', 'ico ico-s') + `<span>${escuro ? 'Claro' : 'Escuro'}</span>`; lucide.createIcons(); }
+function trocarTemaBotao(bt) {
+  const raiz = document.documentElement, escuro = !raiz.classList.contains('dark');
+  const trocar = () => { raiz.classList.toggle('dark', escuro); pintarTemaBtn(); };
+  if (!document.startViewTransition) return trocar();
+  const r = bt.getBoundingClientRect(), x = r.left + r.width / 2, y = r.top + r.height / 2;
+  const raio = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+  raiz.dataset.trocaTema = '';
+  const troca = document.startViewTransition(trocar);
+  let anim;
+  troca.ready.then(() => {
+    const circulo = [`circle(0px at ${x}px ${y}px)`, `circle(${raio}px at ${x}px ${y}px)`];
+    anim = raiz.animate({ clipPath: escuro ? circulo : circulo.reverse() }, { duration: escuro ? 600 : 450, easing: escuro ? 'cubic-bezier(.45,0,.2,1)' : 'cubic-bezier(.8,0,.55,1)', fill: 'forwards', pseudoElement: escuro ? '::view-transition-new(root)' : '::view-transition-old(root)' });
+  }).catch(() => {});
+  const fim = () => { anim?.cancel(); delete raiz.dataset.trocaTema; };
+  troca.finished.then(fim, fim);
+}
+try { if (window.parent !== window && parent.document.documentElement.classList.contains('dark')) document.documentElement.classList.add('dark'); } catch { /* aberto fora do sistema */ }
+pintarTemaBtn();
+// Aberto direto, sem o sistema: avisa em vez de ficar carregando para sempre.
+setTimeout(() => { if (!C) document.getElementById('pg').innerHTML = '<div class="carregando">Abra pelo sistema, em /novascalculadoras: as contas vêm de lá.</div>'; }, 4000);
+</script>
+</body>
+</html>
