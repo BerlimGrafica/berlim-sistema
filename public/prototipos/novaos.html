@@ -975,7 +975,9 @@ function popClientes(input) {
   }
   const q = input.value.trim();
   clearTimeout(buscaCli.t);
-  if (!q) { buscaCli.q = ''; CLIENTES = []; return desenharClientes(input, []); }
+  // Campo vazio não abre a lista: ela só teria o "Cadastrar cliente novo",
+  // e cobriria o mesmo link, fixo logo abaixo do campo.
+  if (!q) { buscaCli.q = ''; CLIENTES = []; if (popAberto?.ancora === input) fecharPop(); return; }
   if (q === buscaCli.q) return desenharClientes(input, CLIENTES);
   desenharClientes(input, buscaCli.q ? CLIENTES : null);
   buscaCli.t = setTimeout(async () => {
@@ -987,13 +989,14 @@ function popClientes(input) {
     desenharClientes(input, CLIENTES);
   }, 250);
 }
+// A lista só mostra clientes. Cadastrar um novo é pelo link fixo embaixo do
+// campo: uma segunda opção aqui dentro aparecia por cima dele.
 function desenharClientes(input, achados) {
   const q = semAcento(input.value.trim());
-  const exato = (achados || []).some(c => semAcento(c.nome) === q);
-  const html = (achados === null ? '<div class="vazio">Buscando…</div>'
-      : achados.map(c => `<button data-cli="${c.id}" ${c.problema ? 'class="alerta"' : ''}>${c.problema ? '<i data-lucide="triangle-alert" class="ico ico-s"></i>' : ''}${esc(c.nome)}<span class="sub num">${esc(c.tel)}</span></button>`).join('')
-        + (achados.length || !q ? '' : '<div class="vazio">Nenhum cliente com esse nome.</div>'))
-    + `${achados?.length || achados === null || q ? '<hr>' : ''}<button class="criar" data-novo-cliente="${esc(exato ? '' : input.value.trim())}"><i data-lucide="user-plus" class="ico ico-s"></i>${input.value.trim() && !exato ? `Cadastrar “${esc(input.value.trim())}” como cliente novo` : 'Cadastrar cliente novo'}</button>`;
+  const html = achados === null ? '<div class="vazio">Buscando…</div>'
+    : achados.map(c => `<button data-cli="${c.id}" ${c.problema ? 'class="alerta"' : ''}>${c.problema ? '<i data-lucide="triangle-alert" class="ico ico-s"></i>' : ''}${esc(c.nome)}<span class="sub num">${esc(c.tel)}</span></button>`).join('')
+      + (achados.length || !q ? '' : '<div class="vazio">Nenhum cliente com esse nome.</div>');
+  if (!html) { if (popAberto?.ancora === input) fecharPop(); return; }
   const pop = montarPop(input, html);
   pop.style.minWidth = Math.min(Math.max(320, input.offsetWidth), 520) + 'px';
   pop.addEventListener('click', e => {
@@ -1299,7 +1302,7 @@ document.addEventListener('focusin', e => {
   if (e.target.id === 'in-cat' && popAberto?.ancora !== e.target) popCatalogo(e.target);
 });
 document.addEventListener('focusout', e => {
-  if ((e.target.id === 'cli' || e.target.id === 'in-cat') && popAberto?.ancora === e.target) setTimeout(() => { if (popAberto?.ancora === e.target && document.activeElement !== e.target) fecharPop(); if (e.target.id === 'cli' && !os.cliente && !document.querySelector('.janela')) renderCliente(); }, 150);
+  if ((e.target.id === 'cli' || e.target.id === 'in-cat') && popAberto?.ancora === e.target) setTimeout(() => { if (popAberto?.ancora === e.target && document.activeElement !== e.target) fecharPop(); if (e.target.id === 'cli' && !os.cliente && !document.querySelector('.janela')) { renderCliente(); lucide.createIcons(); } }, 150);
 });
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
