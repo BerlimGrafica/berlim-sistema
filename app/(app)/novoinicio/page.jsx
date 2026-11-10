@@ -11,7 +11,7 @@ import { useCadastros } from '@/context/CadastrosContext';
 import { useAbrirOSDoPrototipo } from '@/hooks/useAbrirOSDoPrototipo';
 import { useContaDoPrototipo } from '@/hooks/useContaDoPrototipo';
 import { CATEGORIAS_CONTA, STATUSES_SEM_ATRASO } from '@/lib/utils/constants';
-import { apenasDigitos, mascararCliente, obterDataAtual, valorPagamentoComSinalCentavos } from '@/lib/utils/formatters';
+import { mascararCliente, obterDataAtual, valorPagamentoComSinalCentavos } from '@/lib/utils/formatters';
 import { buscarBoletosAbertos } from '@/lib/financeiro/boletos';
 import { podeVerSubtela } from '@/lib/acesso/telas';
 import { resumoDoPedido, observacoesDoPedido } from '@/lib/utils/servico';
@@ -31,9 +31,8 @@ import RelatorioDoDiaModal from '@/components/vendas/RelatorioDoDiaModal';
 // chamadas de metricas_vendas, somadas lá dentro — e só com esta tela aberta.
 // Clicar num dia do gráfico de vendas abre o relatório do dia da tela de Vendas,
 // que lê só as O.S. daquele dia, e só quando abre.
-// Duas coisas vêm do banco só quando alguém pede, por mensagem: os boletos em
-// aberto (ao abrir a visão Financeiro) e o telefone de um cliente (ao clicar no
-// WhatsApp de uma O.S.; uma linha, pela chave).
+// Os boletos em aberto vêm do banco só quando alguém abre a visão Financeiro,
+// pedidos por mensagem.
 // Só leitura: nada grava.
 
 const ehData = s => typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s);
@@ -97,24 +96,10 @@ export default function Page() {
                 boletosRef.current = { quando: Date.now(), lista };
                 responder({ tipo: 'boletos', lista });
             }
-            // O WhatsApp do cliente de uma O.S.: o telefone não fica na memória,
-            // vem do cadastro pela chave, só no clique.
-            if (msg.tipo === 'whatsapp' && Number.isInteger(msg.id)) {
-                const falhou = erro => responder({ tipo: 'whatsapp', id: msg.id, erro });
-                if (isDemo) return falhou('No modo demonstração o telefone fica oculto.');
-                const pedido = pedidos.find(p => p.id === msg.id);
-                if (!pedido?.cliente_id) return falhou('Esta O.S. não tem cliente cadastrado.');
-                const { data } = await supabase.from('clientes').select('telefone').eq('id', pedido.cliente_id).maybeSingle();
-                const d = apenasDigitos(data?.telefone);
-                if (d.length < 10) return falhou('O cadastro deste cliente está sem telefone.');
-                // Só o número, com o 55: o protótipo monta o link (WhatsApp Web
-                // no computador, o aplicativo no celular).
-                responder({ tipo: 'whatsapp', id: msg.id, numero: d.length <= 11 ? '55' + d : d });
-            }
         };
         window.addEventListener('message', aoReceber);
         return () => window.removeEventListener('message', aoReceber);
-    }, [iframeRef, pedidos, isDemo, podeBoletos]);
+    }, [iframeRef, isDemo, podeBoletos]);
 
     useEffect(() => {
         let vivo = true;
@@ -202,8 +187,6 @@ export default function Page() {
         pedidos: pedidos.map(p => ({
             id: p.id,
             cliente: mascararCliente(p.cliente, isDemo) || 'Sem cliente',
-            // tem cadastro: dá para chamar no WhatsApp (o telefone vem no clique)
-            cad: !!p.cliente_id,
             problema: isClienteProblema(p.cliente, p.cliente_id),
             status: p.status,
             prazo: p.prazo || '',

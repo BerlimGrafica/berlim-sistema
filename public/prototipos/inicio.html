@@ -168,14 +168,6 @@ a.n-cel:hover { background: var(--sutil); }
 .cab + .grade { margin-top: 20px; }
 .col { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
 .lado.fixo { position: sticky; top: 71px; }
-/* Ação da linha (DESIGN.md › Listas): o botão fica à mostra na ponta direita,
-   fora do link da linha. Sem ação naquela linha, o lugar fica guardado. */
-.lista > li.com-acao { display: flex; align-items: stretch; border-top: 1px solid var(--borda-fraca); }
-.lista > li.com-acao:first-child, .grupo-rot + li.com-acao { border-top: 0; }
-.lista > li.com-acao > .lin { flex: 1; border-top: 0; padding-right: 6px; }
-.lista > li.com-acao > .ib { align-self: center; margin-right: 10px; }
-.ib.zap:hover { color: var(--fin-tinta); background: var(--fin-fundo); }
-.ib.zap[aria-busy="true"] { opacity: .45; pointer-events: none; }
 /* quem está com a O.S. ao lado do prazo, e não empilhado embaixo dele */
 .lin-dir.junto { display: flex; align-items: center; gap: 10px; }
 .lin-dir.junto .resp-mini { margin-top: 0; }
@@ -578,9 +570,6 @@ button.graf-col { cursor: pointer; }
 @media (max-width: 960px) {
   /* na visão Produção a fila vem antes dos avisos */
   .grade.fila-primeiro > .lado { order: 0; }
-}
-@media (max-width: 760px) {
-  .lista > li.com-acao > .ib { width: 40px; height: 40px; margin-right: 6px; }
 }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
 html[data-troca-tema]::view-transition-old(root), html[data-troca-tema]::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
@@ -1081,19 +1070,13 @@ const linhaOutraProducao = p => { const nomes = itensAProduzir(p).map(i => legiv
 
 // Linha enxuta: número e cliente; embaixo o que é; à direita só o que decide.
 // `pri`: o filete de prioridade da linha (pri-alta / pri-media), quando a lista é de prazo.
-// `acao`: o botão da linha, que fica fora do link (ver `zap`).
-const linhaLimpa = (p, dir, pri = '', acao = '', dirCls = '') => `<li${acao ? ' class="com-acao"' : ''}><a class="lin ${pri}" href="#" data-os="${p.id}" title="${esc(p.cliente)} — ${esc(p.resumo)}">
+// `dirCls`: classe extra da coluna da direita ('junto': lado a lado).
+const linhaLimpa = (p, dir, pri = '', dirCls = '') => `<li><a class="lin ${pri}" href="#" data-os="${p.id}" title="${esc(p.cliente)} — ${esc(p.resumo)}">
   <span class="lin-txt"><span class="lin-tit"><span class="oid">#${p.id}</span>${esc(p.cliente)}</span><span class="lin-sub">${esc(legivel(p.resumo))}</span></span>
-  <span class="lin-dir ${dirCls}">${dir}</span></a>${acao}</li>`;
-// O atalho de contato, nas listas em que a ação é falar com o cliente. O.S. sem
-// cliente cadastrado não tem telefone para buscar: o lugar do botão fica vazio,
-// para a coluna da direita não desalinhar.
-const zap = p => p.cad
-  ? `<button class="ib zap" data-zap="${p.id}" title="Chamar ${esc(p.cliente)} no WhatsApp" aria-label="Chamar ${esc(p.cliente)} no WhatsApp">${ico('message-circle', 'ico ico-s')}</button>`
-  : '<span class="ib" aria-hidden="true"></span>';
+  <span class="lin-dir ${dirCls}">${dir}</span></a></li>`;
 // Uma O.S. que vence hoje: o título do card já diz "hoje", então a linha mostra
 // o que muda a decisão — o horário limite, a etapa e com quem está.
-const linhaHoje = p => linhaLimpa(p, `${p.resp.length ? respMini(p) : ''}<span>${p.hora ? `<span class="pz atraso">até ${esc(p.hora)}</span>` : ''}<small>${esc(CURTO[p.status] || p.status)}</small>${p.resp.length ? '' : '<small class="sem">sem responsável</small>'}</span>`, 'pri-alta', '', 'junto');
+const linhaHoje = p => linhaLimpa(p, `${p.resp.length ? respMini(p) : ''}<span>${p.hora ? `<span class="pz atraso">até ${esc(p.hora)}</span>` : ''}<small>${esc(CURTO[p.status] || p.status)}</small>${p.resp.length ? '' : '<small class="sem">sem responsável</small>'}</span>`, 'pri-alta', 'junto');
 
 // Uma lista com rótulos de grupo; grupo vazio não aparece.
 const listaEmGrupos = grupos => `<ul class="lista">${grupos.filter(g => g.itens.length).map(g =>
@@ -1154,45 +1137,13 @@ function blocoBoletos() {
     ver(adiante ? `Abrir os boletos · mais ${adiante} adiante` : 'Abrir os boletos', '/financeiro'));
 }
 
-/* ===== WhatsApp do cliente =====
-   O telefone não vem com a tela: a página busca no cadastro, pela chave, só no
-   clique. O número fica guardado, e o segundo clique abre na hora.
-   No computador vai direto ao WhatsApp Web (sem a página do wa.me no meio); no
-   celular, o wa.me abre o aplicativo. Cada clique abre uma aba: o WhatsApp Web
-   manda Cross-Origin-Opener-Policy: same-origin, que isola a aba dele e apaga
-   o nome dela, então nenhum site consegue reaproveitá-la (testado: com nome
-   fixo, a mesma aba volta para outros sites, mas não para o WhatsApp Web). */
-const zapNumero = new Map();
-const noCelular = matchMedia('(pointer: coarse)').matches;
-const linkWhats = n => noCelular ? `https://wa.me/${n}` : `https://web.whatsapp.com/send?phone=${n}`;
-function abrirWhats(numero, id) {
-  const url = linkWhats(numero);
-  // Sem 'noopener' na chamada: com ele o open devolve null sempre, e não daria
-  // para saber se o navegador segurou a janela. O vínculo é cortado logo depois.
-  const w = window.open(url, '_blank');
-  if (w) { w.opener = null; return; }
-  // O navegador segurou a janela (a resposta chegou depois do clique): o aviso
-  // traz o link, que abre com um clique de verdade.
-  document.querySelector('.aviso-proto')?.remove();
-  const t = document.createElement('div'); t.className = 'aviso-proto';
-  const a = document.createElement('a'); a.href = url; a.target = '_blank'; a.rel = 'noopener'; a.textContent = `Abrir o WhatsApp de ${porIdOS(id)?.cliente || 'cliente'}`; a.style.textDecoration = 'underline';
-  t.appendChild(a); document.body.appendChild(t); setTimeout(() => t.remove(), 8000);
-}
-function chamarWhats(id) {
-  if (window.parent === window) return avisoProto('Fora do sistema o protótipo não busca o telefone.');
-  if (zapNumero.has(id)) return abrirWhats(zapNumero.get(id), id);
-  document.querySelectorAll(`[data-zap="${id}"]`).forEach(b => b.setAttribute('aria-busy', 'true'));
-  window.parent.postMessage({ tipo: 'whatsapp', id }, '/');
-}
 // As respostas da página.
+// (O atalho de WhatsApp nas linhas saiu: o WhatsApp Web isola a aba dele —
+// Cross-Origin-Opener-Policy: same-origin —, então cada clique abria uma aba
+// nova e recarregava todas as conversas. Nenhum site consegue reaproveitá-la.)
 addEventListener('message', e => {
   if (e.source !== window.parent) return;
   const msg = e.data || {};
-  if (msg.tipo === 'whatsapp') {
-    document.querySelectorAll(`[data-zap="${msg.id}"]`).forEach(b => b.removeAttribute('aria-busy'));
-    if (msg.erro || !msg.numero) return avisoProto(msg.erro || 'Não deu para achar o telefone.');
-    zapNumero.set(msg.id, msg.numero); abrirWhats(msg.numero, msg.id);
-  }
   if (msg.tipo === 'boletos') {
     BOLETOS = msg.erro ? { erro: msg.erro } : { lista: msg.lista || [] };
     const b = document.getElementById('bloco-boletos');
@@ -1234,7 +1185,7 @@ function detalheOS(p) {
     <section class="dsec a-fin"><div class="dsec-cab"><span class="area-ico">${ico('wallet', 'ico ico-s')}</span><h3>Pagamento</h3><span class="area-meta">${falta <= 0 ? 'Quitado' : ''}</span></div>
       <dl class="dfin"><div><dt>Total</dt><dd>${reais(p.valor, true)}</dd></div><div><dt>Pago</dt><dd>${reais(p.pago, true)}</dd></div><div class="${falta > 0 ? 'falta' : 'quitado'}"><dt>${falta > 0 ? 'Falta' : 'Saldo'}</dt><dd>${reais(Math.max(0, falta), true)}</dd></div></dl>
     </section>
-    <div class="det-acoes"><button class="btn btn-sec" data-gv="abrir-os">${ico('maximize-2')}Abrir O.S. completa</button>${p.cad ? `<button class="btn btn-txt" data-zap="${p.id}">${ico('message-circle')}WhatsApp</button>` : ''}</div>
+    <div class="det-acoes"><button class="btn btn-sec" data-gv="abrir-os">${ico('maximize-2')}Abrir O.S. completa</button></div>
     <p class="det-nota">Para mudar etapa, itens ou pagamento, abra a O.S. completa.</p>
   </div>`;
 }
@@ -1431,19 +1382,18 @@ const TELAS = {
       ]),
       // Embaixo da fila, duas pilhas: à esquerda o que sai (avisar, buscar na
       // Futura); à direita o que entrega e o que está parado esperando o
-      // cliente, antes da produção ou depois de pronto. Onde a ação é falar
-      // com o cliente, a linha traz o atalho do WhatsApp.
+      // cliente, antes da produção ou depois de pronto.
       principal: [
         blocoProduzir(eu),
         pilhas([
           card('card-avisar', 'a-itens', 'megaphone', 'Avisar cliente', avisar,
-            p => linhaLimpa(p, saldo(p) > 0 ? `<span class="pz amanha">falta ${reais(saldo(p))}</span>` : '<span class="pz">pago</span>', '', zap(p)), '', avisar.length > 0),
+            p => linhaLimpa(p, saldo(p) > 0 ? `<span class="pz amanha">falta ${reais(saldo(p))}</span>` : '<span class="pz">pago</span>'), '', avisar.length > 0),
           card('card-futura', 'a-dados', 'truck', 'Prazos da Futura', futura, p => linhaLimpa(p, prazoTexto(p)), buscar ? `${buscar} para buscar de ${futura.length}` : '', futura.some(p => p.prazo && p.prazo <= HOJE)),
         ], [
           card('card-entregar', 'a-fin', 'package-check', 'Entregar', entregar, p => linhaLimpa(p, prazoTexto(p)), '', entAtr + entHoje > 0),
           card('card-esperando', 'a-dados', 'hourglass', 'Esperando o cliente', esperando,
-            p => linhaLimpa(p, `<span class="pz">${p.venda ? 'aberta ' + haQuanto(p.venda) : ''}</span><small>${esc(CURTO[p.status] || p.status)}</small>`, '', zap(p))),
-          card('card-retirada', 'a-obs', 'package-open', 'Parado na retirada', parada, p => linhaLimpa(p, `<span class="pz">${diasEntre(p.retirada, HOJE)} dias</span>`, '', zap(p)), parada.length ? `${parada.length} há mais de 7 dias` : ''),
+            p => linhaLimpa(p, `<span class="pz">${p.venda ? 'aberta ' + haQuanto(p.venda) : ''}</span><small>${esc(CURTO[p.status] || p.status)}</small>`)),
+          card('card-retirada', 'a-obs', 'package-open', 'Parado na retirada', parada, p => linhaLimpa(p, `<span class="pz">${diasEntre(p.retirada, HOJE)} dias</span>`), parada.length ? `${parada.length} há mais de 7 dias` : ''),
         ]),
       ],
       // O que os cards já mostram não se repete aqui.
@@ -1748,8 +1698,6 @@ document.addEventListener('click', e => {
     if (window.parent === window) return avisoProto('Fora do sistema o protótipo não abre o relatório do dia.');
     return paraPai({ tipo: 'abrir-dia', dia: colDia.dataset.dia });
   }
-  const bz = t.closest('[data-zap]');
-  if (bz) { e.preventDefault(); return chamarWhats(+bz.dataset.zap); }
   const gv = t.closest('[data-gv]');
   if (gv) { e.preventDefault(); return acaoGaveta(gv.dataset.gv); }
   const linOS = t.closest('[data-os]');
