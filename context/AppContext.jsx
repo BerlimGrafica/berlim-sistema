@@ -2,13 +2,13 @@
 import React, { useContext, useState, useEffect, useMemo, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 import { flushSync } from 'react-dom';
-import { semAcento, contem, campoDeBusca, empresaNoBanco, valorDoFiltro } from '@/lib/utils/busca';
+import { semAcento, contem, campoDeBusca } from '@/lib/utils/busca';
 import { supabase } from '@/lib/supabaseClient';
 import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS, STATUSES_JA_RETIRADO_DA_FUTURA } from '@/lib/utils/constants';
-import { formatarMoeda, parseValorMoeda, valorPagamentoComSinal, valorPagamentoComSinalCentavos, paraCentavos, centavosParaReais, obterDataAtual, adicionarMesData, apenasDigitos, rotuloCliente } from '@/lib/utils/formatters';
+import { formatarMoeda, parseValorMoeda, valorPagamentoComSinal, valorPagamentoComSinalCentavos, paraCentavos, centavosParaReais, obterDataAtual, adicionarMesData, rotuloCliente } from '@/lib/utils/formatters';
 import { itensDoPedido, pagamentosDoPedido, observacoesDoPedido, itensDoOrcamento, observacoesDoOrcamento } from '@/lib/utils/servico';
 import { gravarItensPagamentos, clonarItensParaPedido, gravarItensOrcamento } from '@/lib/pedidos/gravacao';
-import { buscarClientes, acharTelefoneDuplicado } from '@/lib/clientes/busca';
+import { buscarClientes, acharTelefoneDuplicado, buscarCadastroClientes } from '@/lib/clientes/busca';
 import { avisarPedidosMudados } from '@/lib/pedidos/mudancas';
 import { useAuth } from '@/hooks/useAuth';
 import { useAlertas } from '@/hooks/useAlertas';
@@ -897,45 +897,15 @@ export const AppProvider = ({ children }) => {
     useEffect(() => {
         if (pathname !== '/cadastros' || abaCadastros !== 'clientes' || !usuario) return;
 
+        // A letra também passa pela coluna normalizada ("Ângela" cai no A), e a
+        // busca segue o critério do modal de O.S. (lib/clientes/busca.js).
         async function fetchClientesCadastrados() {
-            let query = supabase.from('clientes').select('*', { count: 'exact' });
-            
-            if (letraFiltroCliente) {
-                // A letra também passa pela coluna normalizada: sem isso,
-                // "Ângela" e "Érica" não apareciam em A nem em E — ficavam
-                // fora de todas as letras do índice.
-                const { coluna, termo } = await campoDeBusca(supabase, 'nome', letraFiltroCliente);
-                query = query.ilike(coluna, `${termo}%`);
-            }
-            if (buscaCadClientes) {
-                // Mesmo critério da busca do modal: dígitos e pontuação de
-                // telefone caem na coluna de dígitos; o resto busca nome/e-mail.
-                const digitosCad = apenasDigitos(buscaCadClientes);
-                const pareceTelefoneCad = digitosCad.length >= 3 && /^[\d\s().+-]+$/.test(buscaCadClientes.trim());
-                if (pareceTelefoneCad) {
-                    query = query.ilike('telefone_digits', `%${digitosCad}%`);
-                } else {
-                    const nome = await campoDeBusca(supabase, 'nome', buscaCadClientes);
-                    const email = await campoDeBusca(supabase, 'email', buscaCadClientes);
-                    const filtros = [`${nome.coluna}.ilike.%${nome.termo}%`, `${email.coluna}.ilike.%${email.termo}%`];
-                    if (await empresaNoBanco(supabase)) {
-                        const empresa = await campoDeBusca(supabase, 'empresa', buscaCadClientes.trim());
-                        filtros.push(`${empresa.coluna}.ilike.${valorDoFiltro(`%${empresa.termo}%`)}`);
-                    }
-                    query = query.or(filtros.join(','));
-                }
-            }
-            
-            query = query.order('nome', { ascending: true });
-            
-            const from = (paginaClientes - 1) * itensPorPagina;
-            const to = from + itensPorPagina - 1;
-            query = query.range(from, to);
-            
-            const { data, count } = await query;
-            if (data) {
-                setClientesCadastrados(data);
-                if (count !== null) setTotalClientesCad(count);
+            const { lista, total, erro } = await buscarCadastroClientes({
+                busca: buscaCadClientes, letra: letraFiltroCliente, pagina: paginaClientes, porPagina: itensPorPagina,
+            });
+            if (!erro) {
+                setClientesCadastrados(lista);
+                if (total !== null) setTotalClientesCad(total);
             }
             setClientesCadCarregados(true);
         }
@@ -1267,40 +1237,47 @@ export const AppProvider = ({ children }) => {
         setModalUsuarioAberto(true);
     }
 
-    async function salvarUsuario(e) {
-        e.preventDefault();
+    // Grava um usuário pela rota /api/usuarios (que confere no servidor se quem
+    // chama é Administrador) e devolve { ok, registro, erro, aviso }. O modal
+    // de hoje e o do protótipo de Cadastros passam por aqui.
+    async function gravarUsuario(u) {
         const { data: { session } } = await supabase.auth.getSession();
-        if (!session) { avisar('Sessão expirada, faça login novamente.', 'erro'); return; }
+        if (!session) return { ok: false, erro: 'Sessão expirada, faça login novamente.' };
 
-        const metodo = novoUsuario.id ? 'PUT' : 'POST';
-        const payload = novoUsuario.id
-            ? { id: novoUsuario.id, nome: novoUsuario.nome, nivel: novoUsuario.nivel, telas: novoUsuario.telas, novaSenha: novoUsuario.senha || undefined }
-            : { email: novoUsuario.email, senha: novoUsuario.senha, nome: novoUsuario.nome, nivel: novoUsuario.nivel, telas: novoUsuario.telas };
-
-        const resposta = await fetch('/api/usuarios', {
-            method: metodo,
-            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
-            body: JSON.stringify(payload),
-        });
-        const resultado = await resposta.json();
-
-        if (!resposta.ok) {
-            avisar('Falha ao salvar usuário: ' + (resultado.error || 'erro desconhecido'), 'erro');
-            return;
+        const payload = u.id
+            ? { id: u.id, nome: u.nome, nivel: u.nivel, telas: u.telas, novaSenha: u.senha || undefined }
+            : { email: u.email, senha: u.senha, nome: u.nome, nivel: u.nivel, telas: u.telas };
+        let resposta, resultado;
+        try {
+            resposta = await fetch('/api/usuarios', {
+                method: u.id ? 'PUT' : 'POST',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+                body: JSON.stringify(payload),
+            });
+            resultado = await resposta.json();
+        } catch (erro) {
+            return { ok: false, erro: erro?.message || 'Sem resposta do servidor.' };
         }
+        if (!resposta.ok) return { ok: false, erro: resultado?.error || 'erro desconhecido' };
 
-        if (novoUsuario.id) {
-            setUsuariosSistema(usuariosSistema.map(u => u.id === resultado.perfil.id ? resultado.perfil : u));
+        if (u.id) {
+            setUsuariosSistema(prev => prev.map(x => x.id === resultado.perfil.id ? resultado.perfil : x));
             // Editar o próprio perfil (o caso comum: o administrador mexendo nas
             // próprias telas) precisa refletir na sessão sem esperar o evento de
             // tempo real, que não chega para quem fez a mudança em algumas rotas.
             if (resultado.perfil.id === usuario?.id) setUsuario(prev => ({ ...prev, ...resultado.perfil }));
         } else {
-            setUsuariosSistema([...usuariosSistema, resultado.perfil]);
+            setUsuariosSistema(prev => [...prev.filter(x => x.id !== resultado.perfil.id), resultado.perfil]);
         }
         // A rota grava o que dá e devolve o que faltou — hoje, a migração das
         // telas ainda não rodada no Supabase.
-        if (resultado.aviso) avisar(resultado.aviso, 'erro');
+        return { ok: true, registro: resultado.perfil, aviso: resultado.aviso || null };
+    }
+    async function salvarUsuario(e) {
+        e.preventDefault();
+        const r = await gravarUsuario(novoUsuario);
+        if (!r.ok) { avisar('Falha ao salvar usuário: ' + r.erro, 'erro'); return; }
+        if (r.aviso) avisar(r.aviso, 'erro');
         setModalUsuarioAberto(false);
     }
 
@@ -1784,21 +1761,37 @@ export const AppProvider = ({ children }) => {
         else avisar('Erro: ' + error.message, 'erro');
     }
 
+    // Grava um produto do catálogo (novo sem id) e devolve { ok, registro, erro }.
+    // `preco_base` em centavos (número) ou no texto do modal de hoje ("12,50").
+    async function gravarProduto(p) {
+        const preco = typeof p.preco_base === 'string' ? paraCentavos(p.preco_base) : (Number.isFinite(p.preco_base) ? Math.round(p.preco_base) : 0);
+        const campos = { nome: p.nome || '', texto_padrao: p.texto_padrao || '', preco_base: preco };
+        const { data, error } = p.id
+            ? await supabase.from('produtos').update(campos).eq('id', p.id).select()
+            : await supabase.from('produtos').insert([campos]).select();
+        if (error || !data?.[0]) return { ok: false, erro: error?.message || 'O banco não devolveu o produto.' };
+        setProdutos(prev => p.id ? prev.map(x => x.id === p.id ? data[0] : x) : [...prev.filter(x => x.id !== data[0].id), data[0]]);
+        return { ok: true, registro: data[0] };
+    }
     async function salvarProduto(e) {
         e.preventDefault();
         setSalvandoProduto(true);
-        const produtoFormatado = { nome: novoProduto.nome, texto_padrao: novoProduto.texto_padrao, preco_base: paraCentavos(novoProduto.preco_base) };
-
-        if (novoProduto.id) {
-            const { data, error } = await supabase.from('produtos').update(produtoFormatado).eq('id', novoProduto.id).select();
-            if (!error && data) { setProdutos(produtos.map(p => p.id === novoProduto.id ? data[0] : p)); setModalProdutoAberto(false); setNovoProduto({ id: null, nome: '', texto_padrao: '', preco_base: '' }); }
-            else avisar('Falha ao atualizar: ' + error.message, 'erro');
-        } else {
-            const { data, error } = await supabase.from('produtos').insert([produtoFormatado]).select();
-            if (!error && data) { setProdutos([...produtos, data[0]]); setModalProdutoAberto(false); setNovoProduto({ id: null, nome: '', texto_padrao: '', preco_base: '' }); }
-            else avisar('Falha ao salvar: ' + error.message, 'erro');
-        }
+        const r = await gravarProduto(novoProduto);
+        if (r.ok) { setModalProdutoAberto(false); setNovoProduto({ id: null, nome: '', texto_padrao: '', preco_base: '' }); }
+        else avisar((novoProduto.id ? 'Falha ao atualizar: ' : 'Falha ao salvar: ') + r.erro, 'erro');
         setSalvandoProduto(false);
+    }
+
+    // Grava um fornecedor (novo sem id) e devolve { ok, registro, erro }. O
+    // modal de hoje grava direto; o do protótipo de Cadastros passa por aqui.
+    async function gravarFornecedor(f) {
+        const campos = { nome: f.nome || '', contato: f.contato || '', observacoes: f.observacoes || '', tipo: f.tipo || 'Terceirização' };
+        const { data, error } = f.id
+            ? await supabase.from('fornecedores').update(campos).eq('id', f.id).select()
+            : await supabase.from('fornecedores').insert([campos]).select();
+        if (error || !data?.[0]) return { ok: false, erro: error?.message || 'O banco não devolveu o fornecedor.' };
+        setFornecedores(prev => f.id ? prev.map(x => x.id === f.id ? data[0] : x) : [...prev.filter(x => x.id !== data[0].id), data[0]]);
+        return { ok: true, registro: data[0] };
     }
 
     // Produto novo cadastrado de dentro do novo modal de O.S., sem o modal de
@@ -1972,10 +1965,11 @@ export const AppProvider = ({ children }) => {
         if (!error) setEmpresasFaturamento(empresasFaturamento.filter(x => x.id !== id));
     }
 
-    async function excluirProduto(id, e) {
-        e.stopPropagation(); // Evita que o clique no lixo abra a tela de edição
+    // { jaConfirmado }: o protótipo de Cadastros já perguntou no próprio botão.
+    async function excluirProduto(id, e, { jaConfirmado = false } = {}) {
+        e?.stopPropagation(); // Evita que o clique no lixo abra a tela de edição
         
-        if (!(await confirmar("Tem certeza que deseja excluir este produto do catálogo?"))) return;
+        if (!jaConfirmado && !(await confirmar("Tem certeza que deseja excluir este produto do catálogo?"))) return;
 
         const { error } = await supabase.from('produtos').delete().eq('id', id);
 
@@ -2033,14 +2027,22 @@ export const AppProvider = ({ children }) => {
     async function handleDropProduto(e, targetIndex) {
         e.preventDefault();
         if (draggedProdutoIndex === null || draggedProdutoIndex === targetIndex) return;
+        const de = draggedProdutoIndex;
+        setDraggedProdutoIndex(null);
+        await reordenarProduto(de, targetIndex);
+    }
 
+    // Leva o produto da posição `de` para `para` e grava a ordem de todos. É a
+    // ordem em que o catálogo aparece no modal de O.S. Usada pelo arrastar da
+    // tabela de hoje e pelo protótipo de Cadastros.
+    async function reordenarProduto(de, para) {
+        if (de === para || de < 0 || para < 0 || de >= produtos.length || para >= produtos.length) return;
         const novaLista = [...produtos];
-        const [itemArrastado] = novaLista.splice(draggedProdutoIndex, 1);
-        novaLista.splice(targetIndex, 0, itemArrastado);
+        const [itemArrastado] = novaLista.splice(de, 1);
+        novaLista.splice(para, 0, itemArrastado);
 
         const listaComOrdem = novaLista.map((prod, idx) => ({ ...prod, ordem: idx }));
         setProdutos(listaComOrdem);
-        setDraggedProdutoIndex(null);
 
         const payloadSupabase = listaComOrdem.map(p => ({
             id: p.id,
@@ -2057,46 +2059,59 @@ export const AppProvider = ({ children }) => {
         }
     }
 
-    async function salvarCliente(e) {
-        e.preventDefault();
-        setSalvandoCliente(true);
-        const clienteFormatado = { nome: novoCliente.nome, telefone: novoCliente.telefone, email: novoCliente.email, observacoes: novoCliente.observacoes, cliente_problema: novoCliente.cliente_problema || false };
+    // Grava um cliente (novo sem id) e devolve { ok, registro, erro, duplicado }.
+    // O modal de hoje e o do protótipo de Cadastros passam por aqui: WhatsApp
+    // repetido não entra, e mudar nome ou empresa atualiza as O.S. e orçamentos
+    // ligados ao cadastro.
+    // - empresaAntes: com empresa no cadastro, a coluna existe e pode ser limpa.
+    // - rotuloAntes: o "Nome • Empresa" de antes, para saber se ele mudou.
+    async function gravarCliente(c) {
+        const campos = { nome: c.nome, telefone: c.telefone, email: c.email, observacoes: c.observacoes, cliente_problema: c.cliente_problema || false };
         // A empresa só vai quando há o que gravar ou o que limpar: até a
         // migração rodar (clientes_empresa_migration.sql), a coluna não existe e
         // o banco recusaria o cadastro inteiro por causa dela.
-        const empresa = (novoCliente.empresa || '').trim();
-        if (empresa || novoCliente.empresaAntes) clienteFormatado.empresa = empresa || null;
+        const empresa = (c.empresa || '').trim();
+        if (empresa || c.empresaAntes) campos.empresa = empresa || null;
 
-        if (clienteFormatado.telefone && clienteFormatado.telefone.trim() !== '') {
-            const duplicado = await acharTelefoneDuplicado(clienteFormatado.telefone, novoCliente.id);
-            if (duplicado) {
-                avisar('Aviso: Este número de WhatsApp/Telefone já está cadastrado no cliente "' + duplicado.nome + '"!');
-                setSalvandoCliente(false);
-                return;
-            }
+        if (campos.telefone && campos.telefone.trim() !== '') {
+            const duplicado = await acharTelefoneDuplicado(campos.telefone, c.id);
+            if (duplicado) return { ok: false, duplicado, erro: `Este WhatsApp já está no cadastro de "${duplicado.nome}".` };
         }
 
-        if (novoCliente.id) {
-            const { data, error } = await supabase.from('clientes').update(clienteFormatado).eq('id', novoCliente.id).select();
-            if (!error && data) {
-                // A O.S. e o orçamento guardam o nome do cliente como texto. Mudou
-                // o nome ou a empresa, os que estão ligados a este cadastro passam
-                // a mostrar o novo — senão a empresa só apareceria nas O.S. novas.
-                const rotulo = rotuloCliente(data[0]);
-                if (novoCliente.rotuloAntes && rotulo !== novoCliente.rotuloAntes) {
-                    const [os, orc] = await Promise.all([
-                        supabase.from('pedidos').update({ cliente: rotulo }).eq('cliente_id', novoCliente.id),
-                        supabase.from('orcamentos_formalizados').update({ cliente: rotulo }).eq('cliente_id', novoCliente.id),
-                    ]);
-                    if (os.error || orc.error) avisar(`Cliente salvo, mas parte das O.S. e orçamentos ainda mostra "${novoCliente.rotuloAntes}": ${(os.error || orc.error).message}`, 'erro');
-                }
-                setTriggerRealtime(prev => prev + 1); setModalClienteAberto(false); setNovoCliente({ id: null, nome: '', telefone: '', email: '', observacoes: '', cliente_problema: false });
+        const { data, error } = c.id
+            ? await supabase.from('clientes').update(campos).eq('id', c.id).select()
+            : await supabase.from('clientes').insert([campos]).select();
+        if (error || !data?.[0]) return { ok: false, erro: error?.message || 'O banco não devolveu o cliente.' };
+        let aviso = null;
+        // A O.S. e o orçamento guardam o nome do cliente como texto. Mudou o
+        // nome ou a empresa, os que estão ligados a este cadastro passam a
+        // mostrar o novo — senão a empresa só apareceria nas O.S. novas.
+        const rotulo = rotuloCliente(data[0]);
+        if (c.id && c.rotuloAntes && rotulo !== c.rotuloAntes) {
+            const [os, orc] = await Promise.all([
+                supabase.from('pedidos').update({ cliente: rotulo }).eq('cliente_id', c.id),
+                supabase.from('orcamentos_formalizados').update({ cliente: rotulo }).eq('cliente_id', c.id),
+            ]);
+            if (os.error || orc.error) aviso = `Cliente salvo, mas parte das O.S. e orçamentos ainda mostra "${c.rotuloAntes}": ${(os.error || orc.error).message}`;
+        }
+        setTriggerRealtime(prev => prev + 1);
+        return { ok: true, registro: data[0], aviso };
+    }
+    async function salvarCliente(e) {
+        e.preventDefault();
+        setSalvandoCliente(true);
+        const r = await gravarCliente(novoCliente);
+        if (r.duplicado) avisar('Aviso: Este número de WhatsApp/Telefone já está cadastrado no cliente "' + r.duplicado.nome + '"!');
+        else if (!r.ok) avisar((novoCliente.id ? 'Falha ao atualizar: ' : 'Falha ao salvar: ') + r.erro, 'erro');
+        else {
+            if (r.aviso) avisar(r.aviso, 'erro');
+            // Cliente novo criado de dentro do modal de O.S.: já fica escolhido nela.
+            if (!novoCliente.id) {
+                setNovoPedido({ ...novoPedido, cliente: rotuloCliente(r.registro), cliente_id: r.registro.id });
+                setBuscaCliente(rotuloCliente(r.registro));
+                setClienteSelecionadoInfo({ id: r.registro.id, telefone: r.registro.telefone });
             }
-            else avisar('Falha ao atualizar: ' + error.message, 'erro');
-        } else {
-            const { data, error } = await supabase.from('clientes').insert([clienteFormatado]).select();
-            if (!error && data) { setTriggerRealtime(prev => prev + 1); setNovoPedido({...novoPedido, cliente: rotuloCliente(data[0]), cliente_id: data[0].id}); setBuscaCliente(rotuloCliente(data[0])); setClienteSelecionadoInfo({ id: data[0].id, telefone: data[0].telefone }); setModalClienteAberto(false); setNovoCliente({ id: null, nome: '', telefone: '', email: '', observacoes: '', cliente_problema: false }); }
-            else avisar('Falha ao salvar: ' + error.message, 'erro');
+            setModalClienteAberto(false); setNovoCliente({ id: null, nome: '', telefone: '', email: '', observacoes: '', cliente_problema: false });
         }
         setSalvandoCliente(false);
     }
@@ -2215,15 +2230,16 @@ export const AppProvider = ({ children }) => {
         return null;
     }
 
-    async function concluirRequisicao(id) {
-        if (!(await confirmar('Deseja marcar esta requisição como comprada/concluída?'))) return;
+    // { jaConfirmado }: o protótipo de Comunicação já perguntou no próprio botão.
+    async function concluirRequisicao(id, { jaConfirmado = false } = {}) {
+        if (!jaConfirmado && !(await confirmar('Deseja marcar esta requisição como comprada/concluída?'))) return;
         const { data, error } = await supabase.from('requisicoes_material').update({ status: 'Comprado' }).eq('id', id).select();
         if (!error && data) setRequisicoesMaterial(requisicoesMaterial.map(x => x.id === id ? data[0] : x));
     }
 
-    async function concluirTarefa(id) {
+    async function concluirTarefa(id, { jaConfirmado = false } = {}) {
         const tarefa = tarefasInternas.find(t => t.id === id);
-        if (!tarefa?.fixa && !(await confirmar('Deseja marcar esta tarefa como concluída?'))) return;
+        if (!tarefa?.fixa && !jaConfirmado && !(await confirmar('Deseja marcar esta tarefa como concluída?'))) return;
         const payload = tarefa?.fixa ? { status: 'Concluída', ultima_conclusao: obterDataAtual() } : { status: 'Concluída' };
         const { data, error } = await supabase.from('tarefas_internas').update(payload).eq('id', id).select();
         if (!error && data) setTarefasInternas(tarefasInternas.map(x => x.id === id ? data[0] : x));
@@ -2241,8 +2257,8 @@ export const AppProvider = ({ children }) => {
         return lista.map(t => data.find(d => d.id === t.id) || t);
     }
 
-    async function concluirLink(id) {
-        if (!(await confirmar('Deseja marcar este link como pago/concluído?'))) return;
+    async function concluirLink(id, { jaConfirmado = false } = {}) {
+        if (!jaConfirmado && !(await confirmar('Deseja marcar este link como pago/concluído?'))) return;
         const { data, error } = await supabase.from('links_pagamento').update({ status: 'Pago' }).eq('id', id).select();
         if (!error && data) {
             setLinksPagamento(linksPagamento.map(x => x.id === id ? data[0] : x));
@@ -2372,78 +2388,110 @@ export const AppProvider = ({ children }) => {
     const totalPaginasNotasFiscais = Math.ceil(notasFiscaisAbaFiltro.length / itensPorPagina) || 1;
     
     // === COMUNICAÇÃO INTERNA CRUD ===
+    // Grava uma requisição (nova sem id) e devolve { ok, registro, erro }. O
+    // modal de hoje e o do protótipo de Comunicação passam por aqui.
+    async function gravarRequisicao(r) {
+        const campos = { itens: r.itens || '', observacoes: r.observacoes || '', status: r.status || 'Pendente' };
+        // As marcas da tela de Compras (supabase/compras_itens_migration.sql) só
+        // vão quando vêm: o modal de hoje não as manda, e assim continua gravando
+        // mesmo antes da migração.
+        if ('urgente' in r) campos.urgente = !!r.urgente;
+        if ('fornecedor_id' in r) campos.fornecedor_id = r.fornecedor_id || null;
+        const { data, error } = r.id
+            ? await supabase.from('requisicoes_material').update(campos).eq('id', r.id).select()
+            : await supabase.from('requisicoes_material').insert([{ ...campos, criado_por: usuario?.nome || '' }]).select();
+        if (error || !data?.[0]) return { ok: false, erro: error?.message || 'O banco não devolveu a requisição.' };
+        setRequisicoesMaterial(prev => r.id ? prev.map(x => x.id === r.id ? data[0] : x) : [data[0], ...prev.filter(x => x.id !== data[0].id)]);
+        return { ok: true, registro: data[0] };
+    }
+    // "Comprei": fecha os itens da lista de Compras e lança a conta a pagar de
+    // uma vez, para a compra não ser digitada de novo no Financeiro. Devolve
+    // { ok, conta, erro }.
+    // - forma 'agora': pago na hora (PIX, dinheiro) → conta já paga, vencendo hoje;
+    // - 'prazo' (boleto, a prazo) e 'cartao' (vence com a fatura) → a pagar;
+    // - 'depois': o valor vem com a nota → conta a pagar com valor 0, que o
+    //   Financeiro mostra como "valor a definir".
+    // A conta é de Material, com o fornecedor (o mesmo que o modal de conta
+    // exige para essa categoria) e os itens na descrição.
+    async function comprarItens({ ids, fornecedorId, forma, valor, vencimento }) {
+        const itens = requisicoesMaterial.filter(r => ids.includes(r.id) && r.status === 'Pendente');
+        if (!itens.length) return { ok: false, erro: 'Esses itens já saíram da lista.' };
+        const forn = fornecedores.find(f => f.id === fornecedorId);
+        if (!forn) return { ok: false, erro: 'Escolha de onde foi comprado.' };
+        const hoje = obterDataAtual();
+        const nomes = itens.map(r => String(r.itens || '').split(/\r?\n/).map(s => s.trim()).filter(Boolean).join(', ')).join(', ');
+        const conta = {
+            descricao: `${forn.nome} · ${nomes}${forma === 'cartao' ? ' (cartão)' : ''}`.slice(0, 250),
+            valor: forma === 'depois' ? 0 : Math.max(0, Math.round(valor || 0)),
+            vencimento: forma === 'agora' ? hoje : vencimento,
+            status: forma === 'agora' ? 'Pago' : 'Pendente',
+            recorrente: false, recorrente_total_parcelas: null, recorrente_parcela_atual: 1,
+            categoria: 'Material', fornecedor_id: forn.id,
+        };
+        const { data: criada, error: erroConta } = await supabase.from('contas_pagar').insert([conta]).select();
+        if (erroConta || !criada?.[0]) return { ok: false, erro: 'Não deu para lançar a conta: ' + (erroConta?.message || 'o banco não devolveu a conta.') };
+        setContasPagar(prev => [...prev, criada[0]]);
+        const marca = { status: 'Comprado', conta_id: criada[0].id, comprado_em: hoje, comprado_por: usuario?.nome || '', fornecedor_id: forn.id };
+        const { data: feitos, error: erroItens } = await supabase.from('requisicoes_material').update(marca).in('id', itens.map(r => r.id)).select();
+        if (erroItens) return { ok: false, conta: criada[0], erro: 'A conta foi lançada, mas os itens não saíram da lista: ' + erroItens.message };
+        setRequisicoesMaterial(prev => prev.map(r => feitos.find(f => f.id === r.id) || r));
+        return { ok: true, conta: criada[0] };
+    }
     const salvarRequisicao = async () => {
-        let payload = { ...novaRequisicao };
-        if (!payload.id) {
-            delete payload.id;
-            payload.criado_por = usuario?.nome || '';
-            const { data, error } = await supabase.from('requisicoes_material').insert([payload]).select();
-            if (error) console.error("Erro ao salvar requisicao:", error);
-            if (!error && data) setRequisicoesMaterial([data[0], ...requisicoesMaterial]);
-        } else {
-            const { id, ...rest } = payload;
-            const { data, error } = await supabase.from('requisicoes_material').update(rest).eq('id', id).select();
-            if (!error && data) setRequisicoesMaterial(requisicoesMaterial.map(r => r.id === id ? data[0] : r));
-        }
+        const r = await gravarRequisicao(novaRequisicao);
+        if (!r.ok) { console.error("Erro ao salvar requisicao:", r.erro); avisar('Falha ao salvar a requisição: ' + r.erro, 'erro'); return; }
         setModalRequisicaoAberto(false);
     };
-    const excluirRequisicao = async (id) => {
-        if(await confirmar('Tem certeza que deseja excluir esta requisição?')) {
+    // { jaConfirmado }: o protótipo de Comunicação já perguntou no próprio botão.
+    const excluirRequisicao = async (id, { jaConfirmado = false } = {}) => {
+        if(jaConfirmado || await confirmar('Tem certeza que deseja excluir esta requisição?')) {
             const { error } = await supabase.from('requisicoes_material').delete().eq('id', id);
             if (!error) setRequisicoesMaterial(requisicoesMaterial.filter(r => r.id !== id));
         }
     };
+    // Grava uma tarefa (nova sem id) e devolve { ok, registro, erro }.
+    async function gravarTarefa(tarefa) {
+        const campos = {
+            titulo: tarefa.titulo || '', descricao: tarefa.descricao || '', responsavel: tarefa.responsavel || '',
+            prazo: tarefa.prazo || null, status: tarefa.status || 'Pendente', fixa: !!tarefa.fixa,
+        };
+        const { data, error } = tarefa.id
+            ? await supabase.from('tarefas_internas').update(campos).eq('id', tarefa.id).select()
+            : await supabase.from('tarefas_internas').insert([{ ...campos, criado_por: usuario?.nome || '' }]).select();
+        if (error || !data?.[0]) return { ok: false, erro: error?.message || 'O banco não devolveu a tarefa.' };
+        setTarefasInternas(prev => tarefa.id ? prev.map(x => x.id === tarefa.id ? data[0] : x) : [data[0], ...prev.filter(x => x.id !== data[0].id)]);
+        return { ok: true, registro: data[0] };
+    }
     const salvarTarefa = async () => {
-        let payload = { ...novaTarefa };
-        if (!payload.prazo) payload.prazo = null;
-        if (!payload.id) {
-            delete payload.id;
-            payload.criado_por = usuario?.nome || '';
-            const { data, error } = await supabase.from('tarefas_internas').insert([payload]).select();
-            if (error) console.error("Erro ao salvar tarefa:", error);
-            if (!error && data && data.length > 0) {
-                setTarefasInternas(prev => [data[0], ...prev]);
-            }
-        } else {
-            const { id, ...rest } = payload;
-            const { data, error } = await supabase.from('tarefas_internas').update(rest).eq('id', id).select();
-            if (error) console.error("Erro ao atualizar tarefa:", error);
-            if (!error && data && data.length > 0) {
-                setTarefasInternas(prev => prev.map(t => t.id === id ? data[0] : t));
-            }
-        }
+        const r = await gravarTarefa(novaTarefa);
+        if (!r.ok) { console.error("Erro ao salvar tarefa:", r.erro); avisar('Falha ao salvar a tarefa: ' + r.erro, 'erro'); return; }
         setModalTarefaAberto(false);
     };
-    const excluirTarefa = async (id) => {
-        if(await confirmar('Tem certeza que deseja excluir esta tarefa?')) {
+    const excluirTarefa = async (id, { jaConfirmado = false } = {}) => {
+        if(jaConfirmado || await confirmar('Tem certeza que deseja excluir esta tarefa?')) {
             const { error } = await supabase.from('tarefas_internas').delete().eq('id', id);
             if (!error) setTarefasInternas(tarefasInternas.filter(t => t.id !== id));
         }
     };
+    // Grava um link de pagamento (novo sem id) e devolve { ok, registro, erro }.
+    // `valor` em centavos (número); o modal de hoje manda o texto "1.234,56".
+    async function gravarLink(link) {
+        const valor = typeof link.valor === 'string' ? (link.valor ? paraCentavos(link.valor) : null) : (Number.isFinite(link.valor) ? Math.round(link.valor) : null);
+        const campos = { titulo: link.titulo || '', cliente: link.cliente || '', link: link.link || '', valor, status: link.status || 'Ativo' };
+        const { data, error } = link.id
+            ? await supabase.from('links_pagamento').update(campos).eq('id', link.id).select()
+            : await supabase.from('links_pagamento').insert([{ ...campos, criado_por: usuario?.nome || '' }]).select();
+        if (error || !data?.[0]) return { ok: false, erro: error?.message || 'O banco não devolveu o link.' };
+        setLinksPagamento(prev => link.id ? prev.map(x => x.id === link.id ? data[0] : x) : [data[0], ...prev.filter(x => x.id !== data[0].id)]);
+        return { ok: true, registro: data[0] };
+    }
     const salvarLink = async () => {
-        let payload = { ...novoLink };
-        if (payload.valor && typeof payload.valor === 'string') {
-            payload.valor = paraCentavos(payload.valor);
-        }
-        if (!payload.id) {
-            delete payload.id;
-            payload.criado_por = usuario?.nome || '';
-            const { data, error } = await supabase.from('links_pagamento').insert([payload]).select();
-            if (error) console.error("Erro ao salvar link:", error);
-            if (!error && data) {
-                setLinksPagamento([data[0], ...linksPagamento]);
-            }
-        } else {
-            const { id, ...rest } = payload;
-            const { data, error } = await supabase.from('links_pagamento').update(rest).eq('id', id).select();
-            if (!error && data) {
-                setLinksPagamento(linksPagamento.map(l => l.id === id ? data[0] : l));
-            }
-        }
+        const r = await gravarLink(novoLink);
+        if (!r.ok) { console.error("Erro ao salvar link:", r.erro); avisar('Falha ao salvar o link: ' + r.erro, 'erro'); return; }
         setModalLinkAberto(false);
     };
-    const excluirLink = async (id) => {
-        if(await confirmar('Tem certeza que deseja excluir este link?')) {
+    const excluirLink = async (id, { jaConfirmado = false } = {}) => {
+        if(jaConfirmado || await confirmar('Tem certeza que deseja excluir este link?')) {
             const { error } = await supabase.from('links_pagamento').delete().eq('id', id);
             if (!error) setLinksPagamento(linksPagamento.filter(l => l.id !== id));
         }
@@ -2497,7 +2545,7 @@ export const AppProvider = ({ children }) => {
         abrirEdicaoOrcamento, transformarEmOS, excluirOrcamentoFormalizado,
         abrirEdicaoCliente, salvarCliente,
         abrirEdicaoProduto, salvarProduto, atualizarCatalogoProdutos, excluirProduto, duplicarProduto,
-        handleDragStartProduto, handleDropProduto, duplicarFornecedor,
+        handleDragStartProduto, handleDropProduto, reordenarProduto, duplicarFornecedor,
         abrirEdicaoUsuario, salvarUsuario,
         salvarConta, excluirConta, concluirConta, duplicarConta,
         salvarEmpresaFaturamento, excluirEmpresaFaturamento,
@@ -2505,6 +2553,8 @@ export const AppProvider = ({ children }) => {
         salvarRequisicao, excluirRequisicao, concluirRequisicao,
         salvarTarefa, excluirTarefa, concluirTarefa, reabrirTarefaFixa,
         salvarLink, excluirLink, concluirLink,
+        gravarRequisicao, gravarTarefa, gravarLink, gravarCliente, gravarProduto, gravarFornecedor, gravarUsuario,
+        comprarItens,
     };
     const [acoes] = useState(() => {
         const estaveis = {};
@@ -2614,7 +2664,7 @@ export const AppProvider = ({ children }) => {
         buscaCadClientes, setBuscaCadClientes,
         modalClienteAberto, setModalClienteAberto, salvandoCliente, setSalvandoCliente,
         novoCliente, setNovoCliente, isClienteProblema,
-        abrirEdicaoCliente: acoes.abrirEdicaoCliente, salvarCliente: acoes.salvarCliente,
+        abrirEdicaoCliente: acoes.abrirEdicaoCliente, salvarCliente: acoes.salvarCliente, gravarCliente: acoes.gravarCliente,
     }), [acoes, clientes, clientesPaginados, clientesCadCarregados, totalPaginasClientes, paginaClientes, letraFiltroCliente,
         buscaCadClientes, modalClienteAberto, salvandoCliente, novoCliente, isClienteProblema]);
 
@@ -2630,8 +2680,9 @@ export const AppProvider = ({ children }) => {
         abrirEdicaoProduto: acoes.abrirEdicaoProduto, salvarProduto: acoes.salvarProduto,
         atualizarCatalogoProdutos: acoes.atualizarCatalogoProdutos, excluirProduto: acoes.excluirProduto,
         duplicarProduto: acoes.duplicarProduto, handleDragStartProduto: acoes.handleDragStartProduto,
-        handleDropProduto: acoes.handleDropProduto, duplicarFornecedor: acoes.duplicarFornecedor,
+        handleDropProduto: acoes.handleDropProduto, reordenarProduto: acoes.reordenarProduto, duplicarFornecedor: acoes.duplicarFornecedor,
         abrirEdicaoUsuario: acoes.abrirEdicaoUsuario, salvarUsuario: acoes.salvarUsuario,
+        gravarProduto: acoes.gravarProduto, gravarFornecedor: acoes.gravarFornecedor, gravarUsuario: acoes.gravarUsuario,
     }), [acoes, produtos, draggedProdutoIndex, buscaCadProdutos, produtosCatalogoFiltrados,
         modalProdutoAberto, salvandoProduto, novoProduto, fornecedores, fornecedoresTerceirizacaoNomes,
         modalFornecedorAberto, novoFornecedor, abaCadastros, modalUsuarioAberto, novoUsuario]);
@@ -2684,6 +2735,8 @@ export const AppProvider = ({ children }) => {
         salvarTarefa: acoes.salvarTarefa, excluirTarefa: acoes.excluirTarefa,
         concluirTarefa: acoes.concluirTarefa, reabrirTarefaFixa: acoes.reabrirTarefaFixa,
         salvarLink: acoes.salvarLink, excluirLink: acoes.excluirLink, concluirLink: acoes.concluirLink,
+        gravarRequisicao: acoes.gravarRequisicao, gravarTarefa: acoes.gravarTarefa, gravarLink: acoes.gravarLink,
+        comprarItens: acoes.comprarItens,
     }), [acoes, abaComunicacao, requisicoesMaterial, tarefasInternas, linksPagamento,
         modalRequisicaoAberto, novaRequisicao, modalTarefaAberto, novaTarefa, modalLinkAberto, novoLink]);
 
