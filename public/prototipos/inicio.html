@@ -1156,9 +1156,19 @@ function blocoBoletos() {
 
 /* ===== WhatsApp do cliente =====
    O telefone não vem com a tela: a página busca no cadastro, pela chave, só no
-   clique. A resposta fica guardada, e o segundo clique abre na hora. */
-const zapUrl = new Map();
-function abrirWhats(url, id) {
+   clique. O número fica guardado, e o segundo clique abre na hora.
+   No computador vai direto ao WhatsApp Web (sem a página do wa.me no meio); no
+   celular, o wa.me abre o aplicativo. Cada clique abre uma aba: o WhatsApp Web
+   manda Cross-Origin-Opener-Policy: same-origin, que isola a aba dele e apaga
+   o nome dela, então nenhum site consegue reaproveitá-la (testado: com nome
+   fixo, a mesma aba volta para outros sites, mas não para o WhatsApp Web). */
+const zapNumero = new Map();
+const noCelular = matchMedia('(pointer: coarse)').matches;
+const linkWhats = n => noCelular ? `https://wa.me/${n}` : `https://web.whatsapp.com/send?phone=${n}`;
+function abrirWhats(numero, id) {
+  const url = linkWhats(numero);
+  // Sem 'noopener' na chamada: com ele o open devolve null sempre, e não daria
+  // para saber se o navegador segurou a janela. O vínculo é cortado logo depois.
   const w = window.open(url, '_blank');
   if (w) { w.opener = null; return; }
   // O navegador segurou a janela (a resposta chegou depois do clique): o aviso
@@ -1170,7 +1180,7 @@ function abrirWhats(url, id) {
 }
 function chamarWhats(id) {
   if (window.parent === window) return avisoProto('Fora do sistema o protótipo não busca o telefone.');
-  if (zapUrl.has(id)) return abrirWhats(zapUrl.get(id), id);
+  if (zapNumero.has(id)) return abrirWhats(zapNumero.get(id), id);
   document.querySelectorAll(`[data-zap="${id}"]`).forEach(b => b.setAttribute('aria-busy', 'true'));
   window.parent.postMessage({ tipo: 'whatsapp', id }, '/');
 }
@@ -1180,8 +1190,8 @@ addEventListener('message', e => {
   const msg = e.data || {};
   if (msg.tipo === 'whatsapp') {
     document.querySelectorAll(`[data-zap="${msg.id}"]`).forEach(b => b.removeAttribute('aria-busy'));
-    if (msg.erro || !msg.url) return avisoProto(msg.erro || 'Não deu para achar o telefone.');
-    zapUrl.set(msg.id, msg.url); abrirWhats(msg.url, msg.id);
+    if (msg.erro || !msg.numero) return avisoProto(msg.erro || 'Não deu para achar o telefone.');
+    zapNumero.set(msg.id, msg.numero); abrirWhats(msg.numero, msg.id);
   }
   if (msg.tipo === 'boletos') {
     BOLETOS = msg.erro ? { erro: msg.erro } : { lista: msg.lista || [] };

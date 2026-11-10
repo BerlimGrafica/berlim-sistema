@@ -107,7 +107,9 @@ export default function Page() {
                 const { data } = await supabase.from('clientes').select('telefone').eq('id', pedido.cliente_id).maybeSingle();
                 const d = apenasDigitos(data?.telefone);
                 if (d.length < 10) return falhou('O cadastro deste cliente está sem telefone.');
-                responder({ tipo: 'whatsapp', id: msg.id, url: `https://wa.me/${d.length <= 11 ? '55' + d : d}` });
+                // Só o número, com o 55: o protótipo monta o link (WhatsApp Web
+                // no computador, o aplicativo no celular).
+                responder({ tipo: 'whatsapp', id: msg.id, numero: d.length <= 11 ? '55' + d : d });
             }
         };
         window.addEventListener('message', aoReceber);
