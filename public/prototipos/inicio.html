@@ -168,6 +168,21 @@ a.n-cel:hover { background: var(--sutil); }
 .cab + .grade { margin-top: 20px; }
 .col { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
 .lado.fixo { position: sticky; top: 71px; }
+/* Ação da linha (DESIGN.md › Listas): o botão fica à mostra na ponta direita,
+   fora do link da linha. Sem ação naquela linha, o lugar fica guardado. */
+.lista > li.com-acao { display: flex; align-items: stretch; border-top: 1px solid var(--borda-fraca); }
+.lista > li.com-acao:first-child, .grupo-rot + li.com-acao { border-top: 0; }
+.lista > li.com-acao > .lin { flex: 1; border-top: 0; padding-right: 6px; }
+.lista > li.com-acao > .ib { align-self: center; margin-right: 10px; }
+.ib.zap:hover { color: var(--fin-tinta); background: var(--fin-fundo); }
+.ib.zap[aria-busy="true"] { opacity: .45; pointer-events: none; }
+/* quem está com a O.S. ao lado do prazo, e não empilhado embaixo dele */
+.lin-dir.junto { display: flex; align-items: center; gap: 10px; }
+.lin-dir.junto .resp-mini { margin-top: 0; }
+.lin-dir small.sem { color: var(--obs-tinta); }
+/* quadrinho de data sem data: tracejado */
+.diaf.sem { box-shadow: none; border: 1px dashed var(--borda-forte); }
+.diaf.sem b { color: var(--tinta-fraca); }
 .par { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; }
 /* Visão Geral: os quadros andam juntos por módulo (Vendas, Financeiro,
    Produção e, ao lado, Avisos), cada grupo com um rótulo leve em cima. */
@@ -303,14 +318,11 @@ a.lin:hover { background: var(--sutil); }
 /* Hoje e atrasadas num bloco de fundo claro, na cor do estado — o cabeçalho do
    grupo e as linhas juntos —, que se vê de longe; os outros dias ficam no
    branco. Tinta clara, sem faixa saturada nem borda lateral (DESIGN.md). */
-.lista > .grupo-rot.hoje, .lista > li.tom-hoje { background: var(--obs-fundo); }
-.lista > .grupo-rot.atraso, .lista > li.tom-atraso { background: var(--perigo-fundo); }
-.lista > li.tom-hoje .lin { border-top-color: var(--obs-borda); }
-.lista > li.tom-atraso .lin { border-top-color: var(--perigo-borda); }
-.lista > .grupo-rot.hoje { border-top-color: var(--obs-borda); }
-.lista > .grupo-rot.atraso { border-top-color: var(--perigo-borda); }
-.lista > li.tom-hoje .lin:hover, .lista > li.tom-atraso .lin:hover { background: rgba(0, 0, 0, .025); }
-.dark .lista > li.tom-hoje .lin:hover, .dark .lista > li.tom-atraso .lin:hover { background: rgba(255, 255, 255, .03); }
+/* A cor do prazo fica no cabeçalho do grupo e no filete da linha; a linha em si
+   é neutra. Com a lista quase toda de hoje e de amanhã, o fundo tingido em
+   todas as linhas deixava de avisar. */
+.lista > .grupo-rot.hoje { background: var(--obs-fundo); border-top-color: var(--obs-borda); }
+.lista > .grupo-rot.atraso { background: var(--perigo-fundo); border-top-color: var(--perigo-borda); }
 
 /* pendências: ícone e cor dizem a gravidade, a palavra repete no title */
 .g-ico { width: 28px; height: 28px; border-radius: 7px; display: grid; place-items: center; flex-shrink: 0; align-self: flex-start; }
@@ -563,6 +575,13 @@ button.graf-col { cursor: pointer; }
   :is(#bloco-criacao, #bloco-produzir) .area-cab .seg { margin-left: 0; width: 100%; }
   :is(#bloco-criacao, #bloco-produzir) .area-cab .seg button { flex: 1; }
 }
+@media (max-width: 960px) {
+  /* na visão Produção a fila vem antes dos avisos */
+  .grade.fila-primeiro > .lado { order: 0; }
+}
+@media (max-width: 760px) {
+  .lista > li.com-acao > .ib { width: 40px; height: 40px; margin-right: 6px; }
+}
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
 html[data-troca-tema]::view-transition-old(root), html[data-troca-tema]::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
 html[data-troca-tema].dark::view-transition-new(root), html[data-troca-tema]:not(.dark)::view-transition-old(root) { z-index: 1; }
@@ -654,7 +673,7 @@ function seloPrazo(p) {
 }
 const linhaOS = (p, dir) => `<li><a class="lin" href="#" data-os="${p.id}" title="${esc(p.cliente)} — ${esc(p.resumo)}">
   <span class="dot" style="background:${COR[p.status] || '#6b7280'}" title="${esc(p.status)}"></span>
-  <span class="lin-txt"><span class="lin-tit"><span class="oid">#${p.id}</span>${esc(p.cliente)}</span><span class="lin-sub">${esc(p.resumo)}</span></span>
+  <span class="lin-txt"><span class="lin-tit"><span class="oid">#${p.id}</span>${esc(p.cliente)}</span><span class="lin-sub">${esc(legivel(p.resumo))}</span></span>
   <span class="lin-dir">${dir}</span></a></li>`;
 
 /* ===== pessoas ===== */
@@ -730,13 +749,20 @@ function agruparContas(lista, alvo) {
 function blocoPendencias(nome, { tirar = [], so = null, titulo = 'Precisa de você', vazioTxt = 'Nenhuma pendência sua agora.', contasNoCard = null } = {}) {
   let lista = (DADOS.pendencias[nome] || []).filter(p => !tirar.includes(p.tipo) && (!so || so.includes(p.tipo)));
   if (contasNoCard) lista = agruparContas(lista, contasNoCard);
+  // Tarefa com prazo para além de amanhã não pede nada hoje: sai da lista e
+  // vira uma contagem no rodapé (continua inteira no sino e na Comunicação).
+  const depois = lista.filter(p => p.depois).length;
+  lista = lista.filter(p => !p.depois);
   const mostrar = lista.slice(0, 7);
   const corpo = lista.length
     ? `<ul class="lista">${mostrar.map(linhaPendencia).join('')}</ul>`
     : `<div class="tudo-ok"><span class="ok-ico">${ico('check')}</span><div><b>Tudo em dia</b><span>${vazioTxt}</span></div></div>`;
   const criticos = lista.filter(p => p.gravidade === 'critico').length;
-  return area(`a-obs${criticos ? ' elevado' : ''}`, 'bell', criticos ? `${titulo}<small>comece pelos atrasados</small>` : titulo, lista.length ? (criticos ? `${criticos} atrasad${criticos === 1 ? 'a' : 'as'} · ${lista.length}` : String(lista.length)) : '', corpo,
-    lista.length > mostrar.length ? `<span class="ver" style="cursor:default">e mais ${lista.length - mostrar.length} no sino da barra</span>` : '');
+  // "5 atrasados de 13": primeiro o que urge, depois o total, por extenso.
+  const meta = !lista.length ? '' : !criticos ? plural(lista.length, 'aviso', 'avisos') : criticos === lista.length ? plural(criticos, 'atrasado', 'atrasados') : `${plural(criticos, 'atrasado', 'atrasados')} de ${lista.length}`;
+  const pe = [lista.length > mostrar.length ? `e mais ${lista.length - mostrar.length} no sino da barra` : '', depois ? `${plural(depois, 'tarefa', 'tarefas')} para os próximos dias` : ''].filter(Boolean).join(' · ');
+  return area(`a-obs${criticos ? ' elevado' : ''}`, 'bell', criticos ? `${titulo}<small>comece pelos atrasados</small>` : titulo, meta, corpo,
+    pe ? `<span class="ver" style="cursor:default">${pe}</span>` : '');
 }
 
 // A visão Geral separa as pendências em três: as gerais, que cabem a quem
@@ -752,7 +778,7 @@ const haQuanto = iso => { const d = iso ? diasEntre(iso, HOJE) : 0; return d <= 
 // e as pendências pessoais. Os avisos gerais e os fiscais ficam nos cards deles.
 function blocoNoSeuNome(eu) {
   const os = abertas.filter(p => FILA.includes(p.status) && doLado(p, eu)).sort(porPrazo);
-  const avisos = (DADOS.pendencias[eu] || []).filter(p => !AVISOS_GERAIS.includes(p.tipo) && !AVISOS_FISCAIS.includes(p.tipo));
+  const avisos = (DADOS.pendencias[eu] || []).filter(p => !AVISOS_GERAIS.includes(p.tipo) && !AVISOS_FISCAIS.includes(p.tipo) && !p.depois);
   const total = os.length + avisos.length;
   const corpo = total ? listaEmGrupos([
     { icone: 'layers', rotulo: 'Suas O.S. na produção', itens: os, linha: p => linhaLimpa(p, `${prazoTexto(p)}<small>${esc(p.status)}</small>`), max: 5, resto: n => `e mais ${n} com prazo mais à frente` },
@@ -774,20 +800,20 @@ function blocoFiscal() {
         `<ul class="lista">${fat.slice(0, 5).map(e => lin('/financeiro', e.nome, `cadastrada ${haQuanto(e.desde)}`)).join('')}</ul>`, fat.length > 5 ? ver(`Ver as ${fat.length}`, '/financeiro') : ver('Abrir o Financeiro', '/financeiro'), '', 'card-faturamento')
     : area('a-fin compacto', 'badge-check', 'Faturamento a aprovar', 'nada agora', '', '', '', 'card-faturamento');
   const cardNotas = notas.length
-    ? area(`a-dados${emitir.length ? ' elevado' : ''}`, 'file-text', 'Notas fiscais<small>a emitir e a preencher</small>', emitir.length ? `${emitir.length} a emitir · ${notas.length}` : String(notas.length),
+    ? area(`a-dados${emitir.length ? ' elevado' : ''}`, 'file-text', 'Notas fiscais<small>a emitir e a preencher</small>', emitir.length ? (emitir.length < notas.length ? `${emitir.length} a emitir de ${notas.length}` : `${emitir.length} a emitir`) : String(notas.length),
         listaEmGrupos([
           { icone: 'file-check-2', rotulo: 'Prontas para emitir', itens: emitir, linha: n => lin('/financeiro', n.cliente, `pedida ${haQuanto(n.quando)}`, n.tipo), max: 5, resto: k => `e mais ${k} para emitir` },
           { icone: 'file-pen-line', rotulo: 'A preencher · pedidas pelo cliente', itens: preencher, linha: n => lin('/notas-fiscais', n.cliente, `pedida ${haQuanto(n.quando)}`, n.tipo), max: 3, resto: k => `e mais ${k} a preencher` },
         ]), ver('Abrir notas fiscais', '/notas-fiscais'), '', 'card-notas')
     : area('a-dados compacto', 'file-text', 'Notas fiscais', 'nada agora', '', '', '', 'card-notas');
-  return `<div class="par solto">${cardFat}${cardNotas}</div>`;
+  return [cardFat, cardNotas];
 }
 
 // Vazio, encolhe para o cabeçalho, como os cards do Atendimento.
 function blocoHoje(filtro, titulo = 'Prazos de hoje') {
   const hoje = abertas.filter(p => urgeHoje(p) && (!filtro || filtro(p))).sort(porPrazo);
   if (!hoje.length) return area('a-itens compacto', 'calendar-clock', titulo, 'nenhuma O.S. vence hoje', '', '', '', 'card-hoje');
-  return area('a-itens', 'calendar-clock', titulo, String(hoje.length), `<ul class="lista">${hoje.slice(0, 8).map(p => linhaOS(p, seloPrazo(p))).join('')}</ul>`, hoje.length > 8 ? ver(`Ver as ${hoje.length}`, '/producao') : '', '', 'card-hoje');
+  return area('a-itens', 'calendar-clock', titulo, String(hoje.length), `<ul class="lista">${hoje.slice(0, 8).map(linhaHoje).join('')}</ul>`, hoje.length > 8 ? ver(`Ver as ${hoje.length}`, '/producao') : '', '', 'card-hoje');
 }
 
 // A esteira da produção: quantas O.S. em cada etapa, na ordem em que andam.
@@ -917,7 +943,7 @@ function blocoCobrar(lista, titulo, icone = 'hand-coins') {
   const corpo = lista.length
     ? `<ul class="lista">${lista.slice(0, 6).map(p => linhaLimpa(p, `<span class="pz amanha num">falta ${reais(saldo(p))}</span><small>${esc(p.status)}</small>`)).join('')}</ul>`
     : vazio('Nada a cobrar agora.');
-  return area('a-fin', icone, titulo, lista.length ? reais(total) : '', corpo, lista.length > 6 ? ver(`Ver as ${lista.length}`, '/baixa') : '');
+  return area('a-fin', icone, titulo, lista.length ? reais(total) : '', corpo, lista.length > 6 ? ver(`Ver as ${lista.length}`, '/baixa') : '', '', 'card-cobrar');
 }
 
 // A data em bloco: o dia e, embaixo, o mês. Vencida ou vence hoje em vermelho, amanhã em âmbar.
@@ -934,7 +960,7 @@ function blocoContas(destaque) {
   const corpo = contas.length
     ? `<ul class="lista">${contas.slice(0, 7).map(c => `<li><a class="lin ${priConta(c)}" href="#" data-conta="${c.id}">${dataEmBloco(c.vencimento)}<span class="lin-txt"><span class="lin-tit">${esc(c.descricao)}</span><span class="lin-sub">${c.vencimento < HOJE ? `<span class="desce">vencida</span> · ` : ''}<span class="cat-dot" style="--cat:${CATEG[c.categoria || 'Despesa']?.cor || '#9ca3af'}"></span>${esc(c.categoria || 'Sem categoria')}</span></span><span class="lin-dir num">${c.valor ? reais(c.valor) : '<small>valor a definir</small>'}</span></a></li>`).join('')}</ul>`
     : vazio('Nenhuma conta vence nos próximos 7 dias.');
-  return area(`a-fin${destaque && contas.length ? ' elevado' : ''}`, 'receipt', destaque && contas.length ? 'Contas a pagar · 7 dias<small>as vencidas e as da semana</small>' : 'Contas a pagar · 7 dias', contas.length ? `${vencidas.length ? `${vencidas.length} vencida${vencidas.length === 1 ? '' : 's'} · ` : ''}${reais(total)}` : '', corpo, contas.length > 7 ? ver(`Ver as ${contas.length}`, '/financeiro') : '', '', 'card-contas');
+  return area(`a-fin${destaque && contas.length ? ' elevado' : ''}`, 'receipt', destaque && contas.length ? 'Contas a pagar · 7 dias<small>as vencidas e as da semana</small>' : 'Contas a pagar · 7 dias', contas.length ? `${reais(total)}${vencidas.length ? ` · ${plural(vencidas.length, 'vencida', 'vencidas')}` : ''}` : '', corpo, contas.length > 7 ? ver(`Ver as ${contas.length}`, '/financeiro') : '', '', 'card-contas');
 }
 
 // Quem abriu O.S.: quantas cada pessoa abriu no período, a parte dela no total
@@ -1051,13 +1077,23 @@ function gruposDePrazo(lista, linha) {
 const linhaOutraProducao = p => { const nomes = itensAProduzir(p).map(i => legivel(i[1])).join(' + ') || legivel(p.resumo);
   // O mesmo fundo da lista de cima: atrasadas e de hoje vermelho, amanhã âmbar.
   const tom = atrasada(p) || urgeHoje(p) ? 'atraso' : urgeAmanha(p) ? 'hoje' : '';
-  return `<li${tom ? ` class="tom-${tom}"` : ''}><a class="lin" href="#" data-os="${p.id}" title="${esc(nomes)}"><span class="lin-txt"><span class="lin-tit">${esc(nomes)}</span><span class="lin-sub">${esc(p.cliente)} · O.S. ${p.id}</span></span><span class="lin-dir">${prazoTexto(p)}${p.resp.length ? respMini(p) : '<small>sem responsável</small>'}</span></a></li>`; };
+  return `<li${tom ? ` class="tom-${tom}"` : ''}><a class="lin" href="#" data-os="${p.id}" title="${esc(nomes)}"><span class="lin-txt"><span class="lin-tit">${esc(nomes)}</span><span class="lin-sub">${esc(p.cliente)} · O.S. ${p.id}</span></span><span class="lin-dir junto">${p.resp.length ? respMini(p) : ''}<span>${prazoTexto(p)}${p.resp.length ? '' : '<small class="sem">sem responsável</small>'}</span></span></a></li>`; };
 
 // Linha enxuta: número e cliente; embaixo o que é; à direita só o que decide.
 // `pri`: o filete de prioridade da linha (pri-alta / pri-media), quando a lista é de prazo.
-const linhaLimpa = (p, dir, pri = '') => `<li><a class="lin ${pri}" href="#" data-os="${p.id}" title="${esc(p.cliente)} — ${esc(p.resumo)}">
+// `acao`: o botão da linha, que fica fora do link (ver `zap`).
+const linhaLimpa = (p, dir, pri = '', acao = '', dirCls = '') => `<li${acao ? ' class="com-acao"' : ''}><a class="lin ${pri}" href="#" data-os="${p.id}" title="${esc(p.cliente)} — ${esc(p.resumo)}">
   <span class="lin-txt"><span class="lin-tit"><span class="oid">#${p.id}</span>${esc(p.cliente)}</span><span class="lin-sub">${esc(legivel(p.resumo))}</span></span>
-  <span class="lin-dir">${dir}</span></a></li>`;
+  <span class="lin-dir ${dirCls}">${dir}</span></a>${acao}</li>`;
+// O atalho de contato, nas listas em que a ação é falar com o cliente. O.S. sem
+// cliente cadastrado não tem telefone para buscar: o lugar do botão fica vazio,
+// para a coluna da direita não desalinhar.
+const zap = p => p.cad
+  ? `<button class="ib zap" data-zap="${p.id}" title="Chamar ${esc(p.cliente)} no WhatsApp" aria-label="Chamar ${esc(p.cliente)} no WhatsApp">${ico('message-circle', 'ico ico-s')}</button>`
+  : '<span class="ib" aria-hidden="true"></span>';
+// Uma O.S. que vence hoje: o título do card já diz "hoje", então a linha mostra
+// o que muda a decisão — o horário limite, a etapa e com quem está.
+const linhaHoje = p => linhaLimpa(p, `${p.resp.length ? respMini(p) : ''}<span>${p.hora ? `<span class="pz atraso">até ${esc(p.hora)}</span>` : ''}<small>${esc(CURTO[p.status] || p.status)}</small>${p.resp.length ? '' : '<small class="sem">sem responsável</small>'}</span>`, 'pri-alta', '', 'junto');
 
 // Uma lista com rótulos de grupo; grupo vazio não aparece.
 const listaEmGrupos = grupos => `<ul class="lista">${grupos.filter(g => g.itens.length).map(g =>
@@ -1081,6 +1117,78 @@ function blocoProduzir(eu) {
   return `<div id="bloco-produzir">${area(`a-itens${urg ? ' elevado' : ''}`, 'layers', minhas ? 'Sua fila na produção' : 'Fila da produção', lista.length ? String(lista.length) : '', corpo, ver('Abrir a Produção', '/producao'),
     seg('De quem', [['minhas', 'Minhas'], ['todas', 'Todas']], est.escopo, 'data-escopo', 'peq'))}</div>`;
 }
+
+/* ===== boletos a receber (visão Financeiro) =====
+   Vêm do banco, e só quando a visão abre: a tela pede por mensagem, a página
+   busca os boletos em aberto e responde. Enquanto isso, o card avisa. */
+let BOLETOS = null, boletosPedidos = false;
+function blocoBoletos() {
+  const quadro = (cls, meta, corpo, pe) => `<div id="bloco-boletos">${area(`a-fin ${cls}`, 'barcode', 'Boletos a receber', meta, corpo, pe, '', 'card-boletos')}</div>`;
+  const recado = (icone, txt) => `<div class="vazio">${ico(icone)}${txt}</div>`;
+  if (window.parent === window) return quadro('', '', recado('info', 'Os boletos só carregam dentro do sistema.'), '');
+  if (!BOLETOS) {
+    if (!boletosPedidos) { boletosPedidos = true; window.parent.postMessage({ tipo: 'pedir-boletos' }, '/'); }
+    return quadro('', '', recado('loader', 'Carregando os boletos…'), '');
+  }
+  if (BOLETOS.erro) return quadro('', '', recado('alert-triangle', esc(BOLETOS.erro)), '');
+  const L = [...BOLETOS.lista].sort((x, y) => (x.vence || '9999').localeCompare(y.vence || '9999') || x.os - y.os);
+  if (!L.length) return quadro('compacto', 'nada em aberto', '', '');
+  const limite = somarDias(HOJE, 7), amanha = somarDias(HOJE, 1);
+  const incompleto = b => !b.valor || !b.vence;
+  const prontos = L.filter(b => !incompleto(b));
+  const vencidos = prontos.filter(b => b.vence < HOJE), deHoje = prontos.filter(b => b.vence === HOJE);
+  const semana = prontos.filter(b => b.vence > HOJE && b.vence <= limite), adiante = prontos.filter(b => b.vence > limite).length;
+  const banco = b => `${esc(b.banco || 'Boleto')}${b.parcelas > 1 ? ` · ${b.parcelas}x` : ''}`;
+  const sub = b => incompleto(b) ? [!b.valor ? 'falta o valor' : '', !b.vence ? 'falta o vencimento' : ''].filter(Boolean).join(' · ')
+    : b.vence < HOJE ? `<span class="desce">vencido há ${plural(diasEntre(b.vence, HOJE), 'dia', 'dias')}</span> · ${banco(b)}` : banco(b);
+  const pri = b => !b.vence ? '' : b.vence <= HOJE ? 'pri-alta' : b.vence === amanha ? 'pri-media' : '';
+  const linha = b => `<li><a class="lin ${pri(b)}" href="#" data-ir="/financeiro" title="Abrir os boletos no Financeiro">${b.vence ? dataEmBloco(b.vence) : '<span class="diaf sem" title="Sem vencimento"><b>—</b></span>'}<span class="lin-txt"><span class="lin-tit"><span class="oid">#${b.os}</span>${esc(b.cliente)}</span><span class="lin-sub">${sub(b)}</span></span><span class="lin-dir num">${b.valor ? reais(b.valor) : '<small>sem valor</small>'}</span></a></li>`;
+  const grupos = [
+    { icone: 'file-pen-line', rotulo: 'A preencher', itens: L.filter(incompleto), linha, max: 4, resto: n => `e mais ${n} a preencher` },
+    { tom: 'atraso', icone: 'alert-triangle', rotulo: 'Vencidos', itens: vencidos, linha, max: 5, resto: n => `e mais ${n} vencidos` },
+    { tom: 'atraso', icone: 'clock', rotulo: 'Vencem hoje', itens: deHoje, linha, max: 5, resto: n => `e mais ${n} de hoje` },
+    { icone: 'calendar-range', rotulo: 'Próximos 7 dias', itens: semana, linha, max: 5, resto: n => `e mais ${n} na semana` },
+  ];
+  const corpo = grupos.some(g => g.itens.length) ? listaEmGrupos(grupos) : recado('check-circle-2', 'Nenhum boleto vence nos próximos 7 dias.');
+  return quadro(vencidos.length || deHoje.length ? 'elevado' : '', `${reais(L.reduce((s, b) => s + b.valor, 0))} · ${L.length} em aberto`, corpo,
+    ver(adiante ? `Abrir os boletos · mais ${adiante} adiante` : 'Abrir os boletos', '/financeiro'));
+}
+
+/* ===== WhatsApp do cliente =====
+   O telefone não vem com a tela: a página busca no cadastro, pela chave, só no
+   clique. A resposta fica guardada, e o segundo clique abre na hora. */
+const zapUrl = new Map();
+function abrirWhats(url, id) {
+  const w = window.open(url, '_blank');
+  if (w) { w.opener = null; return; }
+  // O navegador segurou a janela (a resposta chegou depois do clique): o aviso
+  // traz o link, que abre com um clique de verdade.
+  document.querySelector('.aviso-proto')?.remove();
+  const t = document.createElement('div'); t.className = 'aviso-proto';
+  const a = document.createElement('a'); a.href = url; a.target = '_blank'; a.rel = 'noopener'; a.textContent = `Abrir o WhatsApp de ${porIdOS(id)?.cliente || 'cliente'}`; a.style.textDecoration = 'underline';
+  t.appendChild(a); document.body.appendChild(t); setTimeout(() => t.remove(), 8000);
+}
+function chamarWhats(id) {
+  if (window.parent === window) return avisoProto('Fora do sistema o protótipo não busca o telefone.');
+  if (zapUrl.has(id)) return abrirWhats(zapUrl.get(id), id);
+  document.querySelectorAll(`[data-zap="${id}"]`).forEach(b => b.setAttribute('aria-busy', 'true'));
+  window.parent.postMessage({ tipo: 'whatsapp', id }, '/');
+}
+// As respostas da página.
+addEventListener('message', e => {
+  if (e.source !== window.parent) return;
+  const msg = e.data || {};
+  if (msg.tipo === 'whatsapp') {
+    document.querySelectorAll(`[data-zap="${msg.id}"]`).forEach(b => b.removeAttribute('aria-busy'));
+    if (msg.erro || !msg.url) return avisoProto(msg.erro || 'Não deu para achar o telefone.');
+    zapUrl.set(msg.id, msg.url); abrirWhats(msg.url, msg.id);
+  }
+  if (msg.tipo === 'boletos') {
+    BOLETOS = msg.erro ? { erro: msg.erro } : { lista: msg.lista || [] };
+    const b = document.getElementById('bloco-boletos');
+    if (b) { b.outerHTML = blocoBoletos(); lucide.createIcons(); ajustarLado(); }
+  }
+});
 
 /* ===== gaveta: O.S. ou conta, a mesma da nova Produção ===== */
 // No Início a O.S. é só para ver: o ⤢ (ou Enter) abre a O.S. completa, que é
@@ -1116,7 +1224,7 @@ function detalheOS(p) {
     <section class="dsec a-fin"><div class="dsec-cab"><span class="area-ico">${ico('wallet', 'ico ico-s')}</span><h3>Pagamento</h3><span class="area-meta">${falta <= 0 ? 'Quitado' : ''}</span></div>
       <dl class="dfin"><div><dt>Total</dt><dd>${reais(p.valor, true)}</dd></div><div><dt>Pago</dt><dd>${reais(p.pago, true)}</dd></div><div class="${falta > 0 ? 'falta' : 'quitado'}"><dt>${falta > 0 ? 'Falta' : 'Saldo'}</dt><dd>${reais(Math.max(0, falta), true)}</dd></div></dl>
     </section>
-    <div class="det-acoes"><button class="btn btn-sec" data-gv="abrir-os">${ico('maximize-2')}Abrir O.S. completa</button></div>
+    <div class="det-acoes"><button class="btn btn-sec" data-gv="abrir-os">${ico('maximize-2')}Abrir O.S. completa</button>${p.cad ? `<button class="btn btn-txt" data-zap="${p.id}">${ico('message-circle')}WhatsApp</button>` : ''}</div>
     <p class="det-nota">Para mudar etapa, itens ou pagamento, abra a O.S. completa.</p>
   </div>`;
 }
@@ -1195,9 +1303,21 @@ function acaoGaveta(a) {
 }
 
 /* ===== uma tela por cargo ===== */
+// Dois quadros lado a lado viram duas pilhas: cada assunto tem lugar fixo na
+// coluna dele, e um quadro vazio (que encolhe) não deixa buraco ao lado de um
+// cheio. No celular as pilhas se empilham, a primeira em cima.
+const pilhas = (a, b) => `<div class="par solto"><div class="col">${a.join('')}</div><div class="col">${b.join('')}</div></div>`;
+// Os quadradinhos só entram quando separam mais de uma cor; de uma cor só,
+// repetem o número que já está escrito em cima.
+const unidSe = (lista, cor, titulo) => lista.length && new Set(lista.map(cor)).size > 1 ? MED.unidades(lista, cor, titulo) : '';
+// A legenda das partes: [cor, texto, quantos, frase]. Com uma parte só, a frase
+// dela ("todas em Produção") diz mais que uma legenda de um item.
+const partesOu = itens => { const com = itens.filter(([, , n]) => n); return com.length === 1 ? com[0][3] : legenda(itens); };
+
 const TELAS = {
-  // O dono: como está a gráfica hoje — dinheiro entrando, o que está na fila,
-  // o que falta cobrar e pagar, e quem está com o quê.
+  // O dono: como está a gráfica hoje. Primeiro o que pede ação no dia — os
+  // prazos, o que vence e o que falta cobrar e emitir —, depois as vendas do
+  // mês. Os rankings de clientes e de produtos ficam na tela de Vendas.
   Administrador(eu) {
     const V = DADOS.vendas.mes, A = DADOS.vendas.anterior;
     const [a, m, dia] = HOJE.split('-').map(Number);
@@ -1213,16 +1333,20 @@ const TELAS = {
     const mediaDia = serie.length ? serie.reduce((s, x) => s + x.centavos, 0) / serie.length : 0;
     const ult7 = serie.slice(-7);
     const fechouAnt = V.serieMes.find(s => s.rotulo === isoDe(new Date(a, m - 2, 1)).slice(0, 7))?.centavos || 0;
+    const [cardFat, cardNotas] = blocoFiscal();
     return {
-      // Os selos levam ao quadro do assunto, que fica no módulo dele.
+      // Os selos levam ao quadro do assunto, que fica no módulo dele. O vendido
+      // hoje não entra: é o primeiro número, logo abaixo.
       resumo: [atr && ['atraso', 'alert-triangle', plural(atr, 'O.S. atrasada', 'O.S. atrasadas'), 'bloco-esteira'], hoje && ['hoje', 'calendar-clock', plural(hoje, 'prazo hoje', 'prazos hoje'), 'card-hoje'],
-        fatN && ['fin', 'badge-check', plural(fatN, 'faturamento para aprovar', 'faturamentos para aprovar'), 'card-faturamento'], emitirN && ['', 'file-text', plural(emitirN, 'nota para emitir', 'notas para emitir'), 'card-notas'],
-        ['fin', 'shopping-bag', `${reais(V.hoje)} vendidos hoje`]],
+        fatN && ['fin', 'badge-check', plural(fatN, 'faturamento para aprovar', 'faturamentos para aprovar'), 'card-faturamento'], emitirN && ['', 'file-text', plural(emitirN, 'nota para emitir', 'notas para emitir'), 'card-notas']],
       numeros: numeros([
-        { rot: 'Vendas hoje', icone: 'shopping-bag', area: 'fin', laranja: true, val: dinheiro(V.hoje), tend: V.hoje ? tendencia(V.hoje, mediaDia, 'a média por dia com venda') : '',
+        // Sem seta de comparação: até o dia fechar, a venda parcial contra a
+        // média de um dia inteiro apareceria sempre como queda. A média fica
+        // escrita embaixo, e a série dos últimos dias ao lado.
+        { rot: 'Vendas hoje', icone: 'shopping-bag', area: 'fin', laranja: true, val: dinheiro(V.hoje),
           mini: ult7.length > 1 ? MED.mini(ult7.map(s => s.centavos), ult7.at(-1).rotulo === HOJE ? ult7.length - 1 : -1) : '',
           // Embaixo, só o essencial; a frase inteira fica na dica.
-          ctx: `média/dia <b>${reais(mediaDia)}</b>`, href: '/vendas', title: `${reais(V.hoje, true)} · média de ${reais(mediaDia)} por dia com venda` },
+          ctx: `média/dia <b>${reais(mediaDia)}</b>`, href: '/vendas', title: `${reais(V.hoje, true)} até agora · média de ${reais(mediaDia)} por dia com venda` },
         { rot: `Vendas em ${mesNome}`, icone: 'trending-up', area: 'fin', val: dinheiro(V.bruto), tend: tendencia(V.bruto, A.bruto, `1 a ${Math.min(dia, new Date(a, m - 1, 0).getDate())} de ${mesAnt}`),
           med: fechouAnt ? MED.partes([{ v: Math.min(V.bruto, fechouAnt) }], fechouAnt) : '',
           ctx: fechouAnt ? `<b>${pctDe(V.bruto, fechouAnt)}%</b> de ${mesAnt} · ${reais(fechouAnt)}` : '',
@@ -1237,25 +1361,13 @@ const TELAS = {
           ctx: plural(aReceber.length, 'O.S.', 'O.S.'), href: '/baixa',
           title: `${reais(totalReceber, true)} a receber em ${plural(aReceber.length, 'O.S. aberta', 'O.S. abertas')}${prontoCobrar ? ` · ${reais(prontoCobrar)} já prontos para cobrar` : ''}` },
       ]),
-      // Um módulo por vez, na ordem do dinheiro ao trabalho: o que se vendeu,
-      // o que entra e sai do caixa (com faturamento e notas, que não podem
-      // passar batido), e a produção. Ao lado, só os avisos.
+      // Do que pede ação hoje ao que é acompanhamento: a produção (os prazos
+      // do dia e a esteira), o caixa (contas, o que cobrar, faturamento e
+      // notas) e, por fim, as vendas do mês. Ao lado, só os avisos.
       principal: [
-        secao('Vendas', 'trending-up', [
-          blocoVendas(),
-          `<div class="par">${composicao({ cls: 'a-dados', icone: 'star', titulo: `Melhores clientes de ${mesNome}`, sub: 'os cinco que mais compraram',
-            itens: V.clientes.slice(0, 5), rotulo: c => c.nome, cor: (c, k) => corSlot(k), extra: c => plural(c.qtd, 'O.S.', 'O.S.'),
-            frase: i => `comprado por <b>${esc(i.rot)}</b>`, todo: V.bruto, demais: 'os demais clientes', pe: ver('Ver tudo', '/vendas') })}
-          ${composicao({ cls: 'a-itens', icone: 'package', titulo: `Mais vendidos de ${mesNome}`, sub: 'os cinco produtos que mais venderam',
-            itens: V.produtos.slice(0, 5), rotulo: p => legivel(p.rotulo), cor: (p, k) => corSlot(k),
-            frase: i => `em <b>${esc(i.rot)}</b>`, todo: V.totalProdutos, demais: 'os demais produtos', pe: ver('Ver tudo', '/vendas') })}</div>`,
-          blocoCriacao(),
-        ]),
-        secao('Financeiro', 'wallet', [
-          blocoFiscal(),
-          `<div class="par">${blocoCobrar(prontasNaoPagas, 'Prontas e não pagas')}${blocoContas()}</div>`,
-        ]),
-        secao('Produção', 'layers', [blocoEsteira(), blocoHoje()]),
+        secao('Produção', 'layers', [blocoHoje(), blocoEsteira()]),
+        secao('Financeiro', 'wallet', [pilhas([blocoContas(), blocoCobrar(prontasNaoPagas, 'Prontas e não pagas')], [cardFat, cardNotas])]),
+        secao('Vendas', 'trending-up', [blocoVendas(), blocoCriacao()]),
       ],
       // A visão Geral é só do Administrador: os avisos da gráfica e o que está
       // no nome da pessoa, juntos na coluna que acompanha a rolagem.
@@ -1267,7 +1379,9 @@ const TELAS = {
   // fazer hoje? Regra para como mostrar: quantidade vira número (que leva ao
   // card), coisa para resolver uma a uma vira lista, e cada linha traz à
   // direita só o dado que decide a ação daquela lista, com cor só se urge.
-  // Cada assunto tem card próprio e lugar fixo; card vazio encolhe.
+  // Cada assunto tem card próprio e lugar fixo; card vazio encolhe. Cada fato
+  // aparece uma vez como número e uma vez como lista: sem selo no topo e sem
+  // repetir no "Precisa de você" o que já tem card.
   Atendimento(eu) {
     const amanha = somarDias(HOJE, 1);
     const minhasFila = abertas.filter(p => FILA.includes(p.status) && doLado(p, eu));
@@ -1280,6 +1394,9 @@ const TELAS = {
     const futura = abertas.filter(p => p.locais.some(l => l.toLowerCase().includes('futura')) && !PRONTAS.includes(p.status)).sort(porPrazo);
     const buscar = futura.filter(p => p.prazo && p.prazo <= amanha).length;
     const parada = abertas.filter(p => p.status === 'Retirada' && p.retirada && diasEntre(p.retirada, HOJE) > 7).sort((x, y) => x.retirada.localeCompare(y.retirada));
+    // Paradas antes de entrar na produção, esperando o cliente pagar ou
+    // responder: acompanhar é do balcão. A mais antiga em cima.
+    const esperando = abertas.filter(p => ['Aguardando Pagamento', 'Aguardando Retorno'].includes(p.status)).sort((x, y) => (x.venda || '9999').localeCompare(y.venda || '9999') || x.id - y.id);
     // "1 atrasada · 2 hoje": só as partes que existem; a primeira pode ir em vermelho
     const partes = (...ps) => ps.filter(([n]) => n).map(([n, txt, cls]) => `<span class="${cls || ''}">${n} ${txt}</span>`).join(' · ');
 
@@ -1289,14 +1406,12 @@ const TELAS = {
       : area(`${cls} compacto`, icone, titulo, 'nada agora', '', '', '', id);
 
     return {
-      resumo: [
-        mAtr && ['atraso', 'alert-triangle', plural(mAtr, 'sua atrasada na produção', 'suas atrasadas na produção')],
-        avisar.length && ['itens', 'megaphone', plural(avisar.length, 'cliente para avisar', 'clientes para avisar')],
-        buscar && ['hoje', 'truck', plural(buscar, 'para buscar na Futura', 'para buscar na Futura')],
-      ],
+      resumo: [],
       numeros: numeros([
-        { rot: 'Cobrar da produção', icone: 'timer', area: mAtr ? 'perigo' : 'obs', laranja: cobrar > 0 && !mAtr, alerta: mAtr > 0, val: cobrar, alvo: 'bloco-produzir',
-          ctx: cobrar ? partes([mAtr, mAtr === 1 ? 'atrasada' : 'atrasadas', 'desce'], [mHoje, 'hoje'], [mAmanha, 'amanhã']) + ', no seu nome' : 'nada seu vencendo até amanhã' },
+        // O número tem o nome do card a que leva; o que vence até amanhã (o
+        // "cobrar a produção") vai escrito embaixo.
+        { rot: 'Sua fila na produção', icone: 'layers', area: mAtr ? 'perigo' : 'obs', laranja: cobrar > 0 && !mAtr, val: minhasFila.length, alvo: 'bloco-produzir',
+          ctx: cobrar ? partes([mAtr, mAtr === 1 ? 'atrasada' : 'atrasadas', 'desce'], [mHoje, 'hoje'], [mAmanha, 'amanhã']) : minhasFila.length ? 'nada vencendo até amanhã' : 'nada no seu nome' },
         { rot: 'Avisar cliente', icone: 'megaphone', area: 'itens', val: avisar.length, alvo: 'card-avisar',
           ctx: avisar.length ? (avisarSaldo ? `${avisarSaldo} com saldo a receber` : 'todas pagas') : 'nada pronto agora' },
         { rot: 'Entregar', icone: 'package-check', area: 'fin', val: entregar.length, alvo: 'card-entregar',
@@ -1304,16 +1419,25 @@ const TELAS = {
         { rot: 'Na Futura', icone: 'truck', area: 'dados', val: futura.length, alvo: 'card-futura',
           ctx: futura.length ? (buscar ? `<span class="${futura.some(p => p.prazo && p.prazo <= HOJE) ? 'desce' : ''}">${buscar} para buscar até amanhã</span>` : 'nenhuma vencendo') : 'nada lá agora' },
       ]),
+      // Embaixo da fila, duas pilhas: à esquerda o que sai (avisar, buscar na
+      // Futura); à direita o que entrega e o que está parado esperando o
+      // cliente, antes da produção ou depois de pronto. Onde a ação é falar
+      // com o cliente, a linha traz o atalho do WhatsApp.
       principal: [
         blocoProduzir(eu),
-        `<div class="par">${card('card-avisar', 'a-itens', 'megaphone', 'Avisar cliente', avisar,
-            p => linhaLimpa(p, saldo(p) > 0 ? `<span class="pz amanha">falta ${reais(saldo(p))}</span>` : '<span class="pz">pago</span>'), '', avisar.length > 0)}
-          ${card('card-entregar', 'a-fin', 'package-check', 'Entregar', entregar, p => linhaLimpa(p, prazoTexto(p)), '', entAtr + entHoje > 0)}</div>`,
-        `<div class="par">${card('card-futura', 'a-dados', 'truck', 'Prazos da Futura', futura, p => linhaLimpa(p, prazoTexto(p)), buscar ? `${buscar} para buscar · ${futura.length}` : '', futura.some(p => p.prazo && p.prazo <= HOJE))}
-          ${card('card-retirada', 'a-obs', 'package-open', 'Parado na retirada', parada, p => linhaLimpa(p, `<span class="pz">${diasEntre(p.retirada, HOJE)} dias</span>`), parada.length ? `${parada.length} há mais de 7 dias` : '')}</div>`,
+        pilhas([
+          card('card-avisar', 'a-itens', 'megaphone', 'Avisar cliente', avisar,
+            p => linhaLimpa(p, saldo(p) > 0 ? `<span class="pz amanha">falta ${reais(saldo(p))}</span>` : '<span class="pz">pago</span>', '', zap(p)), '', avisar.length > 0),
+          card('card-futura', 'a-dados', 'truck', 'Prazos da Futura', futura, p => linhaLimpa(p, prazoTexto(p)), buscar ? `${buscar} para buscar de ${futura.length}` : '', futura.some(p => p.prazo && p.prazo <= HOJE)),
+        ], [
+          card('card-entregar', 'a-fin', 'package-check', 'Entregar', entregar, p => linhaLimpa(p, prazoTexto(p)), '', entAtr + entHoje > 0),
+          card('card-esperando', 'a-dados', 'hourglass', 'Esperando o cliente', esperando,
+            p => linhaLimpa(p, `<span class="pz">${p.venda ? 'aberta ' + haQuanto(p.venda) : ''}</span><small>${esc(CURTO[p.status] || p.status)}</small>`, '', zap(p))),
+          card('card-retirada', 'a-obs', 'package-open', 'Parado na retirada', parada, p => linhaLimpa(p, `<span class="pz">${diasEntre(p.retirada, HOJE)} dias</span>`, '', zap(p)), parada.length ? `${parada.length} há mais de 7 dias` : ''),
+        ]),
       ],
       // O que os cards já mostram não se repete aqui.
-      lado: [blocoPendencias(eu, { tirar: ['retirada', 'futura'] })],
+      lado: [blocoPendencias(eu, { tirar: ['retirada', 'futura', 'avisar'] })],
     };
   },
 
@@ -1326,7 +1450,7 @@ const TELAS = {
     // Para hoje: o que está na fila e o que já ficou pronto e ainda sai
     // (Entrega). Quem espera o cliente, Produzir, Avisar e Retirada ficam de fora.
     const hoje = abertas.filter(p => urgeHoje(p) && daProducao(p) && (FILA_PRODUCAO.includes(p.status) || PRONTAS.includes(p.status))).sort(porPrazo);
-    const hojeNaFila = hoje.filter(p => FILA_PRODUCAO.includes(p.status));
+    const hojeNaFila = hoje.filter(p => FILA_PRODUCAO.includes(p.status)).length, hojeProntas = hoje.length - hojeNaFila;
     const fora = abertas.filter(p => FILA.includes(p.status) && foraDeCasa(p).length).sort(porPrazo);
     // A fila em duas: a da pessoa, que é o trabalho dela, e a do resto da
     // equipe (com as bolinhas de quem está com cada uma; sem ninguém, avisa).
@@ -1336,26 +1460,34 @@ const TELAS = {
     const porLocal = {};
     fora.forEach(p => foraDeCasa(p).forEach(l => { (porLocal[l] ||= []).push(p); }));
     const comHora = hoje.filter(p => p.hora).length;
+    const urgente = p => atrasada(p) || urgeHoje(p);
+    const minhasHoje = minhas.filter(urgente).length, minhasAmanha = minhas.filter(p => p.prazo === somarDias(HOJE, 1)).length;
+    const corUrgencia = p => urgente(p) ? 'var(--perigo)' : urgeAmanha(p) ? 'var(--obs)' : 'var(--itens)';
+    // Quem produz abre a tela pelo que é dela: o número em destaque é "suas
+    // para hoje", e o da equipe vem ao lado. Quem só acompanha a fila (o
+    // administrador nesta visão) continua vendo primeiro o da equipe.
+    const pessoal = EQUIPE[eu]?.nivel === 'Produção';
+    const celMinhas = pessoal
+      ? { rot: 'Suas para hoje', icone: 'calendar-clock', area: minhasHoje ? 'perigo' : 'dados', laranja: true, val: minhasHoje, alvo: 'bloco-suas',
+          ctx: minhas.length ? [minhasAmanha ? `${minhasAmanha} amanhã` : '', `${minhas.length} no seu nome`].filter(Boolean).join(' · ') : 'nada no seu nome' }
+      // Quantas da fila estão no nome da pessoa: as de hoje (e atrasadas) em
+      // vermelho, as de amanhã em âmbar, como na lista. Leva a "Suas próximas".
+      : { rot: 'No seu nome', icone: 'user-check', area: 'itens', val: minhas.length, alvo: 'bloco-suas',
+          med: unidSe(minhas, corUrgencia, tituloOS),
+          ctx: minhas.length ? ([[minhasHoje, 'hoje'], [minhasAmanha, 'amanhã']].filter(([n]) => n).map(([n, t]) => `${n} ${t}`).join(' · ') || 'nenhuma para hoje') : 'nada agora' };
+    const celEquipe = { rot: pessoal ? 'Para hoje na equipe' : 'Para hoje', icone: pessoal ? 'users' : 'calendar-clock', area: pessoal ? 'itens' : hoje.length ? 'perigo' : 'dados', laranja: !pessoal, val: hoje.length, href: '/producao',
+      ctx: hoje.length ? [partesOu([['var(--obs)', `${hojeNaFila} na fila`, hojeNaFila, 'todas na fila'], ['var(--fin)', plural(hojeProntas, 'pronta', 'prontas'), hojeProntas, hojeProntas === 1 ? 'já pronta' : 'todas prontas']]), comHora ? `${comHora} com horário` : ''].filter(Boolean).join(' · ') : 'nenhuma' };
     return {
-      // Sem selo nem card de atrasadas: o que atrasa fora da produção (avisar,
-      // entregar) não é dela, e o que é dela abre a lista no grupo "Atrasadas".
-      // Quantas estão com a pessoa vai no card "No seu nome", não repete aqui.
-      resumo: [['itens', 'layers', plural(fila.length, 'O.S. na fila', 'O.S. na fila')]],
+      // Sem selo no topo: o que ele diria está nos números logo abaixo.
+      resumo: [],
       numeros: numeros([
-        { rot: 'Para hoje', icone: 'calendar-clock', area: hoje.length ? 'perigo' : 'dados', laranja: true, val: hoje.length, href: '/producao',
-          med: hoje.length ? MED.unidades(hoje, p => FILA.includes(p.status) ? 'var(--obs)' : 'var(--fin)', p => `${tituloOS(p)}${p.hora ? ' · até ' + p.hora : ''}`) : '',
-          ctx: hoje.length ? legenda([['var(--obs)', `${hojeNaFila.length} na fila`, hojeNaFila.length], ['var(--fin)', plural(hoje.length - hojeNaFila.length, 'pronta', 'prontas'), hoje.length - hojeNaFila.length]]) + (comHora ? ` · ${comHora} com horário` : '') : 'nenhuma' },
-        // Quantas da fila estão no nome da pessoa: as de hoje (e atrasadas) em
-        // vermelho, as de amanhã em âmbar, como na lista. Leva a "Suas próximas".
-        { rot: 'No seu nome', icone: 'user-check', area: 'itens', val: minhas.length, alvo: 'bloco-suas',
-          med: minhas.length ? MED.unidades(minhas, p => atrasada(p) || urgeHoje(p) ? 'var(--perigo)' : urgeAmanha(p) ? 'var(--obs)' : 'var(--itens)', tituloOS) : '',
-          ctx: minhas.length ? ([[minhas.filter(p => atrasada(p) || urgeHoje(p)).length, 'hoje'], [minhas.filter(p => p.prazo === somarDias(HOJE, 1)).length, 'amanhã']].filter(([n]) => n).map(([n, t]) => `${n} ${t}`).join(' · ') || 'nenhuma para hoje') : 'nada agora' },
+        ...(pessoal ? [celMinhas, celEquipe] : [celEquipe, celMinhas]),
         { rot: 'Na fila', icone: 'layers', area: 'itens', val: fila.length, href: '/producao',
-          med: fila.length ? MED.unidades(fila, p => COR[p.status], tituloOS) : '',
-          ctx: legenda(FILA_PRODUCAO.map(e => [COR[e], `${CURTO[e] || e} ${fila.filter(p => p.status === e).length}`, fila.filter(p => p.status === e).length])) || 'vazia' },
+          med: unidSe(fila, p => COR[p.status], tituloOS),
+          ctx: partesOu(FILA_PRODUCAO.map(e => { const n = fila.filter(p => p.status === e).length; return [COR[e], `${CURTO[e] || e} ${n}`, n, `todas em ${CURTO[e] || e}`]; })) || 'vazia' },
         { rot: 'Em terceirizadas', icone: 'truck', area: 'dados', val: fora.length, href: '/producao',
-          med: fora.length ? MED.unidades(fora, p => corLocal(foraDeCasa(p)[0]), p => `${tituloOS(p)} · ${foraDeCasa(p).join(', ')}`) : '',
-          ctx: legenda(Object.entries(porLocal).map(([l, ps]) => [corLocal(l), `${esc(l)} ${ps.length}`, ps.length])) || 'nenhuma' },
+          med: unidSe(fora, p => corLocal(foraDeCasa(p)[0]), p => `${tituloOS(p)} · ${foraDeCasa(p).join(', ')}`),
+          ctx: partesOu(Object.entries(porLocal).map(([l, ps]) => [corLocal(l), `${esc(l)} ${ps.length}`, ps.length, `só ${esc(l)}`])) || 'nenhuma' },
       ]),
       // No quadro grande, o que está no nome da pessoa; embaixo, o resto da
       // fila, com quem está cada uma. As terceirizadas vão para a coluna ao lado.
@@ -1368,54 +1500,73 @@ const TELAS = {
         blocoEsteira(ETAPAS.filter(e => !FILA_PRODUCAO.includes(e))),
         area('a-obs', 'shopping-cart', 'Material pedido', DADOS.requisicoes.length ? String(DADOS.requisicoes.length) : '', DADOS.requisicoes.length ? `<ul class="lista">${DADOS.requisicoes.slice(0, 6).map(r => `<li><a class="lin" href="#" data-ir="/comunicacao">${r.quando ? dataEmBloco(r.quando, true) : ''}<span class="lin-txt"><span class="lin-tit">${esc(r.itens)}</span><span class="lin-sub">${!r.quando ? 'pedido' : diasEntre(r.quando, HOJE) ? `pedido há ${plural(diasEntre(r.quando, HOJE), 'dia', 'dias')}` : 'pedido hoje'}</span></span></a></li>`).join('')}</ul>` : vazio('Nenhum material pendente.')),
       ],
-      // Contas a pagar não competem a quem produz: saem do "Precisa de você".
-      lado: [blocoPendencias(eu, { tirar: ['conta'] }), terceirizadas],
+      // O caixa e o fiscal não competem a quem produz: saem do "Precisa de você".
+      lado: [blocoPendencias(eu, { tirar: ['conta', 'boleto', 'faturamento', 'nf-emitir', 'nf-preencher', 'link'] }), terceirizadas],
+      // No celular a fila vem antes dos avisos: é o trabalho da pessoa.
+      filaPrimeiro: true,
     };
   },
 
   // Financeiro: o caixa — o que vence, o que falta receber, o que falta baixar.
   Financeiro(eu) {
     const V = DADOS.vendas.mes;
+    const [a, m] = HOJE.split('-').map(Number);
     const limite = somarDias(HOJE, 7);
+    const fimMes = isoDe(new Date(a, m, 0));
     const naoPagas = DADOS.contas.filter(c => c.status !== 'Pago');
     const vencidas = naoPagas.filter(c => c.vencimento && c.vencimento < HOJE);
+    const vencValor = vencidas.reduce((s, c) => s + c.valor, 0), vencSemValor = vencidas.filter(c => !c.valor).length;
     const semana = naoPagas.filter(c => c.vencimento && c.vencimento >= HOJE && c.vencimento <= limite);
     const darBaixa = PEDIDOS.filter(p => p.status === 'Concluído' && saldo(p) <= 0);
     const prontasNaoPagas = PEDIDOS.filter(p => [...PRONTAS, 'Concluído'].includes(p.status) && saldo(p) > 0).sort((x, y) => saldo(y) - saldo(x));
-    const resultado = V.recebido - V.despesas.pago;
-    const mesNome = MESES[Number(HOJE.slice(5, 7)) - 1];
+    // O caixa do mês: o que entrou das vendas menos o que já saiu em despesas.
+    // Não é lucro — o que ainda vence até o fim do mês vai na terceira linha,
+    // tirado das contas em aberto (as vencidas entram: continuam por pagar).
+    const caixa = V.recebido - V.despesas.pago;
+    const aPagarMes = naoPagas.filter(c => c.vencimento && c.vencimento <= fimMes);
+    const aPagarValor = aPagarMes.reduce((s, c) => s + c.valor, 0), aPagarSemValor = aPagarMes.filter(c => !c.valor).length;
+    const sobra = caixa - aPagarValor;
+    const mesNome = MESES[m - 1];
     // A semana dia a dia: quanto vence em cada um dos próximos oito dias.
     const dias = Array.from({ length: 8 }, (_, k) => somarDias(HOJE, k));
     const porDia = dias.map(d => semana.filter(c => c.vencimento === d).reduce((s, c) => s + c.valor, 0));
     const totalFormas = V.formas.reduce((s, f) => s + f.centavos, 0);
+    const linhasCaixa = [['Recebido das vendas', V.recebido, ''], ['Despesas pagas', V.despesas.pago, 'var(--tinta-fraca)'], [`A pagar até ${ddmm(fimMes)}`, aPagarValor, 'var(--obs)']];
+    const maiorCaixa = Math.max(1, ...linhasCaixa.map(x => x[1]));
+    const cardCaixa = area('a-fin', 'scale', `Caixa de ${mesNome}`, '', `<div class="area-corpo">
+        <div class="saldo-grande"><b class="num ${caixa < 0 ? 'desce' : ''}">${reais(caixa)}</b><span>entrou − saiu, até hoje</span></div>
+        <ul class="rank" style="padding:4px 0 0">
+        ${linhasCaixa.map(([r, v, cor], k) => `<li style="padding:7px 0;grid-template-columns:minmax(0,1fr) auto"><span class="nome">${r}</span><span class="v num">${reais(v)}</span><span class="trilho" style="grid-column:1/-1"><i class="cx" style="width:${Math.max(2, v / maiorCaixa * 100)}%;--i:${k};${cor ? `opacity:1;background:${cor}` : ''}"></i></span></li>`).join('')}
+        </ul>
+        <p class="nota">${ico('info')}<span>${aPagarMes.length ? `Pagando tudo o que vence até ${ddmm(fimMes)}, ${sobra >= 0 ? `sobram <b>${reais(sobra)}</b>` : `faltam <b>${reais(-sobra)}</b>`}${aPagarSemValor ? ` · ${plural(aPagarSemValor, 'conta ainda sem valor', 'contas ainda sem valor')}` : ''}` : `Nenhuma conta em aberto até ${ddmm(fimMes)}`}</span></p>
+        ${V.semBaixa.qtd ? `<p class="nota">${ico('info')}<span>${plural(V.semBaixa.qtd, 'O.S. concluída', 'O.S. concluídas')} sem pagamento lançado · <b>${reais(V.semBaixa.centavos)}</b></span></p>` : ''}</div>`, ver('Abrir Vendas', '/vendas'));
+    // Dar baixa é uma ação em lote: basta dizer quantas são e levar até lá.
+    const cardBaixa = darBaixa.length
+      ? area('a-dados', 'check-check', 'Para dar baixa', String(darBaixa.length), `<div class="area-corpo">${plural(darBaixa.length, 'O.S. concluída e quitada', 'O.S. concluídas e quitadas')}, somando <b class="num">${reais(darBaixa.reduce((s, p) => s + p.valor, 0))}</b>. Só falta encerrar.</div>`, ver('Dar baixa', '/baixa'), '', 'card-baixa')
+      : area('a-dados compacto', 'check-check', 'Para dar baixa', 'nada agora', '', '', '', 'card-baixa');
     return {
-      resumo: [vencidas.length && ['atraso', 'alert-triangle', plural(vencidas.length, 'conta vencida', 'contas vencidas')], darBaixa.length && ['fin', 'check-check', plural(darBaixa.length, 'O.S. para dar baixa', 'O.S. para dar baixa')], semana.length && ['hoje', 'receipt', `${reais(semana.reduce((s, c) => s + c.valor, 0))} vencem em 7 dias`]],
+      // Sem selo no topo: o que ele diria está nos números logo abaixo.
+      resumo: [],
       numeros: numeros([
-        { rot: 'A pagar em 7 dias', icone: 'receipt', area: 'fin', laranja: true, val: dinheiro(semana.reduce((s, c) => s + c.valor, 0)), href: '/financeiro',
+        { rot: 'A pagar em 7 dias', icone: 'receipt', area: 'fin', laranja: true, val: dinheiro(semana.reduce((s, c) => s + c.valor, 0)), alvo: 'card-contas',
           mini: semana.length ? MED.mini(porDia, 0) : '',
           ctx: semana.length ? `${plural(semana.length, 'conta', 'contas')} · hoje ${porDia[0] ? reais(porDia[0]) : 'nada'}` : 'nenhuma conta' },
-        { rot: 'Contas vencidas', icone: 'alert-triangle', area: vencidas.length ? 'perigo' : 'dados', val: vencidas.length, alerta: vencidas.length > 0, href: '/financeiro',
-          med: vencidas.length ? MED.unidades(vencidas, () => 'var(--perigo)', c => `${c.descricao} · venceu ${ddmm(c.vencimento)}`) : '',
-          ctx: vencidas.length ? `<b>${reais(vencidas.reduce((s, c) => s + c.valor, 0))}</b> em atraso` : 'nenhuma' },
-        { rot: 'Prontas e não pagas', icone: 'hand-coins', area: 'fin', val: dinheiro(prontasNaoPagas.reduce((s, p) => s + saldo(p), 0)), href: '/baixa',
-          med: prontasNaoPagas.length ? MED.unidades(prontasNaoPagas, null, p => `${tituloOS(p)} · falta ${reais(saldo(p))}`) : '',
+        // O valor em atraso só quando existe: conta vencida "a definir" não
+        // soma, e "R$ 0,00 em atraso" ao lado de 3 vencidas parecia erro.
+        { rot: 'Contas vencidas', icone: 'alert-triangle', area: vencidas.length ? 'perigo' : 'dados', val: vencidas.length, alerta: vencidas.length > 0, alvo: 'card-contas',
+          ctx: vencidas.length ? (vencValor ? `<b>${reais(vencValor)}</b> em atraso${vencSemValor ? ` · ${vencSemValor} sem valor` : ''}` : 'valor a definir') : 'nenhuma' },
+        { rot: 'Prontas e não pagas', icone: 'hand-coins', area: 'fin', val: dinheiro(prontasNaoPagas.reduce((s, p) => s + saldo(p), 0)), alvo: 'card-cobrar',
           ctx: plural(prontasNaoPagas.length, 'O.S. pronta esperando pagamento', 'O.S. prontas esperando pagamento') },
         { rot: 'Para dar baixa', icone: 'check-check', area: 'dados', val: darBaixa.length, href: '/baixa',
-          med: darBaixa.length ? MED.unidades(darBaixa, () => 'var(--fin)', tituloOS) : '',
           ctx: darBaixa.length ? 'concluídas e quitadas' : 'nenhuma' },
       ]),
+      // Duas pilhas: à esquerda o que sai e o que falta cobrar; à direita o
+      // caixa do mês, os boletos a receber e a baixa.
       principal: [
-        `<div class="par">${blocoContas(true)}
-          ${area('a-fin', 'scale', `Resultado de ${mesNome}`, '', `<div class="area-corpo">
-            <div class="saldo-grande"><b class="num ${resultado < 0 ? 'desce' : ''}">${reais(resultado)}</b><span>recebido − despesas pagas</span></div>
-            <ul class="rank" style="padding:4px 0 0">
-            ${[['Recebido das vendas', V.recebido], ['Despesas pagas', V.despesas.pago], ['Despesas vencidas em aberto', V.despesas.pendente]].map(([r, v], k, arr) => `<li style="padding:7px 0;grid-template-columns:minmax(0,1fr) auto"><span class="nome">${r}</span><span class="v num">${reais(v)}</span><span class="trilho" style="grid-column:1/-1"><i class="cx" style="width:${Math.max(2, v / Math.max(1, ...arr.map(x => x[1])) * 100)}%;--i:${k};${k ? `opacity:1;background:${k === 2 ? 'var(--perigo)' : 'var(--tinta-fraca)'}` : ''}"></i></span></li>`).join('')}
-          </ul>${V.semBaixa.qtd ? `<p class="nota">${ico('info')}<span>${plural(V.semBaixa.qtd, 'O.S. concluída', 'O.S. concluídas')} sem pagamento lançado · <b>${reais(V.semBaixa.centavos)}</b></span></p>` : ''}</div>`, ver('Abrir Vendas', '/vendas'))}</div>`,
-        `<div class="par">${blocoCobrar(prontasNaoPagas, 'Prontas e não pagas')}
-          ${area('a-dados', 'check-check', 'Para dar baixa', darBaixa.length ? String(darBaixa.length) : '', darBaixa.length ? `<ul class="lista">${darBaixa.slice(0, 6).map(p => linhaOS(p, `<span class="num">${reais(p.valor)}</span><small>quitada</small>`)).join('')}</ul>` : vazio('Nada esperando baixa.'), darBaixa.length > 6 ? ver(`Ver as ${darBaixa.length}`, '/baixa') : ver('Abrir O.S.', '/baixa'))}</div>`,
+        pilhas([blocoContas(true), blocoCobrar(prontasNaoPagas, 'Prontas e não pagas')], [cardCaixa, blocoBoletos(), cardBaixa]),
       ],
-      // Buscar material na Futura não é assunto do caixa.
-      lado: [blocoPendencias(eu, { tirar: ['futura'], contasNoCard: 'card-contas' }),
+      // Só o que é do caixa: produção, Futura e balcão ficam nas visões deles.
+      lado: [blocoPendencias(eu, { tirar: ['futura', 'atrasada', 'retirada', 'avisar'], contasNoCard: 'card-contas' }),
         composicao({ cls: 'a-fin', icone: 'wallet', titulo: `Como pagaram em ${mesNome}`, itens: V.formas, rotulo: f => f.rotulo, cor: f => corForma(f.rotulo),
           frase: i => `pago em <b>${esc(i.rot)}</b>`, todo: totalFormas, pe: ver('Ver tudo', '/vendas') })],
     };
@@ -1435,9 +1586,14 @@ function moverTrilho(segEl, de) {
   else { tr.style.transition = 'none'; por(alvo); tr.offsetWidth; tr.style.transition = ''; return; }
   por(alvo);
 }
+// A coluna ao lado acompanha a rolagem. Mais alta que a janela, ela sobe até o
+// fim aparecer e para ali: o lado direito não fica vazio numa tela comprida.
 function ajustarLado() {
   const lado = tela.querySelector('.lado');
-  if (lado) lado.classList.toggle('fixo', innerWidth > 960 && lado.offsetHeight < innerHeight - 90);
+  if (!lado) return;
+  const fixo = innerWidth > 960;
+  lado.classList.toggle('fixo', fixo);
+  lado.style.top = fixo ? `${Math.min(71, innerHeight - lado.offsetHeight - 16)}px` : '';
 }
 function render(anterior) {
   const p = EQUIPE[est.eu] || { nome: est.eu, nivel: 'Administrador' };
@@ -1454,7 +1610,7 @@ function render(anterior) {
         : `<span class="selo ${tom}">${ico(ic)}${txt}</span>`).join('')}</p></div>
       ${podeTrocar ? seg('Visão do Início', VISOES, visao, 'data-visao') : ''}</div>
     ${t.numeros}
-    <div class="grade"><div class="col">${t.principal.join('')}</div><div class="col lado">${t.lado.join('')}</div></div>`;
+    <div class="grade ${t.filaPrimeiro ? 'fila-primeiro' : ''}"><div class="col">${t.principal.join('')}</div><div class="col lado">${t.lado.join('')}</div></div>`;
   document.getElementById('vercomo').innerHTML = `${ico('eye', 'ico ico-s')}<span class="rot">Ver como</span>${bolinha(p.nome)}<span>${esc(p.nome)}</span>${ico('chevron-down', 'ico ico-s chev')}`;
   lucide.createIcons();
   const segVisao = tela.querySelector('.cab .seg');
@@ -1582,6 +1738,8 @@ document.addEventListener('click', e => {
     if (window.parent === window) return avisoProto('Fora do sistema o protótipo não abre o relatório do dia.');
     return paraPai({ tipo: 'abrir-dia', dia: colDia.dataset.dia });
   }
+  const bz = t.closest('[data-zap]');
+  if (bz) { e.preventDefault(); return chamarWhats(+bz.dataset.zap); }
   const gv = t.closest('[data-gv]');
   if (gv) { e.preventDefault(); return acaoGaveta(gv.dataset.gv); }
   const linOS = t.closest('[data-os]');

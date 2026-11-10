@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { usePedidos } from '@/context/PedidosContext';
 import { useSessao } from '@/context/SessaoContext';
@@ -11,7 +11,9 @@ import { useCadastros } from '@/context/CadastrosContext';
 import { useAbrirOSDoPrototipo } from '@/hooks/useAbrirOSDoPrototipo';
 import { useContaDoPrototipo } from '@/hooks/useContaDoPrototipo';
 import { CATEGORIAS_CONTA, STATUSES_SEM_ATRASO } from '@/lib/utils/constants';
-import { mascararCliente, obterDataAtual, valorPagamentoComSinalCentavos } from '@/lib/utils/formatters';
+import { apenasDigitos, mascararCliente, obterDataAtual, valorPagamentoComSinalCentavos } from '@/lib/utils/formatters';
+import { buscarBoletosAbertos } from '@/lib/financeiro/boletos';
+import { podeVerSubtela } from '@/lib/acesso/telas';
 import { resumoDoPedido, observacoesDoPedido } from '@/lib/utils/servico';
 import { calcularPendencias } from '@/lib/alertas/pendencias';
 import { corDoNome } from '@/lib/prototipos/coresDoNome';
@@ -29,6 +31,9 @@ import RelatorioDoDiaModal from '@/components/vendas/RelatorioDoDiaModal';
 // chamadas de metricas_vendas, somadas lá dentro — e só com esta tela aberta.
 // Clicar num dia do gráfico de vendas abre o relatório do dia da tela de Vendas,
 // que lê só as O.S. daquele dia, e só quando abre.
+// Duas coisas vêm do banco só quando alguém pede, por mensagem: os boletos em
+// aberto (ao abrir a visão Financeiro) e o telefone de um cliente (ao clicar no
+// WhatsApp de uma O.S.; uma linha, pela chave).
 // Só leitura: nada grava.
 
 const ehData = s => typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s);
@@ -64,19 +69,50 @@ export default function Page() {
     useContaDoPrototipo(iframeRef);
     // O dia aberto no relatório. O protótipo só diz qual dia; o modal busca.
     const [diaAberto, setDiaAberto] = useState(null);
+    // Os boletos em aberto, guardados fora do estado: mudar o estado refaria o
+    // protótipo (e a pessoa voltaria para a visão do cargo). Valem um minuto;
+    // depois disso, quem abrir a visão Financeiro busca de novo.
+    const boletosRef = useRef(null);
+    const podeBoletos = podeVerSubtela(usuario, 'financeiro', 'boletos');
 
     useEffect(() => {
-        const aoReceber = (e) => {
+        const aoReceber = async (e) => {
             // Só o iframe desta página fala com ela.
-            if (!iframeRef.current || e.source !== iframeRef.current.contentWindow) return;
-            if (e.data?.tipo !== 'abrir-dia' || !ehData(e.data.dia)) return;
-            // O foco sai do iframe, senão o Esc e o teclado ficam presos atrás do modal.
-            iframeRef.current.blur();
-            setDiaAberto(e.data.dia);
+            const quadro = iframeRef.current;
+            if (!quadro || e.source !== quadro.contentWindow) return;
+            const msg = e.data || {};
+            const responder = r => quadro.contentWindow?.postMessage(r, '/');
+            if (msg.tipo === 'abrir-dia' && ehData(msg.dia)) {
+                // O foco sai do iframe, senão o Esc e o teclado ficam presos atrás do modal.
+                quadro.blur();
+                setDiaAberto(msg.dia);
+            }
+            if (msg.tipo === 'pedir-boletos') {
+                if (!podeBoletos) return responder({ tipo: 'boletos', erro: 'Sem acesso aos boletos.' });
+                const guardado = boletosRef.current;
+                if (guardado && Date.now() - guardado.quando < 60000) return responder({ tipo: 'boletos', lista: guardado.lista });
+                const r = await buscarBoletosAbertos();
+                if (r.erro) return responder({ tipo: 'boletos', erro: 'Não deu para carregar os boletos.' });
+                const lista = r.lista.map(b => ({ id: b.id, os: b.os, cliente: mascararCliente(b.cliente, isDemo) || 'Sem cliente', valor: b.valor, vence: b.vence, banco: b.banco, parcelas: b.parcelas }));
+                boletosRef.current = { quando: Date.now(), lista };
+                responder({ tipo: 'boletos', lista });
+            }
+            // O WhatsApp do cliente de uma O.S.: o telefone não fica na memória,
+            // vem do cadastro pela chave, só no clique.
+            if (msg.tipo === 'whatsapp' && Number.isInteger(msg.id)) {
+                const falhou = erro => responder({ tipo: 'whatsapp', id: msg.id, erro });
+                if (isDemo) return falhou('No modo demonstração o telefone fica oculto.');
+                const pedido = pedidos.find(p => p.id === msg.id);
+                if (!pedido?.cliente_id) return falhou('Esta O.S. não tem cliente cadastrado.');
+                const { data } = await supabase.from('clientes').select('telefone').eq('id', pedido.cliente_id).maybeSingle();
+                const d = apenasDigitos(data?.telefone);
+                if (d.length < 10) return falhou('O cadastro deste cliente está sem telefone.');
+                responder({ tipo: 'whatsapp', id: msg.id, url: `https://wa.me/${d.length <= 11 ? '55' + d : d}` });
+            }
         };
         window.addEventListener('message', aoReceber);
         return () => window.removeEventListener('message', aoReceber);
-    }, [iframeRef]);
+    }, [iframeRef, pedidos, isDemo, podeBoletos]);
 
     useEffect(() => {
         let vivo = true;
@@ -128,6 +164,7 @@ export default function Page() {
     }
 
     const hoje = obterDataAtual();
+    const amanha = (() => { const d = new Date(`${hoje}T12:00:00`); d.setDate(d.getDate() + 1); return d.toISOString().slice(0, 10); })();
     const equipe = usuariosSistema.filter(u => u.nivel !== 'demo');
     const locais = new Set(pedidos.flatMap(p => (p.local_producao || 'Berlim').split(',').map(s => s.trim()).filter(Boolean)));
     const listas = { pedidos, contasPagar, notasFiscais, tarefasInternas, requisicoesMaterial, linksPagamento, empresasFaturamento, hoje };
@@ -163,6 +200,8 @@ export default function Page() {
         pedidos: pedidos.map(p => ({
             id: p.id,
             cliente: mascararCliente(p.cliente, isDemo) || 'Sem cliente',
+            // tem cadastro: dá para chamar no WhatsApp (o telefone vem no clique)
+            cad: !!p.cliente_id,
             problema: isClienteProblema(p.cliente, p.cliente_id),
             status: p.status,
             prazo: p.prazo || '',
@@ -202,8 +241,12 @@ export default function Page() {
         // As pendências de cada pessoa, pela mesma regra do sino: o "Ver como"
         // mostra exatamente o que aquela pessoa vê hoje. `tipo` é o assunto (o
         // começo do id: conta, futura, tarefa...), para cada visão escolher o
-        // que mostra sem depender do texto do título.
-        pendencias: Object.fromEntries(equipe.map(u => [u.nome, calcularPendencias({ ...listas, usuario: u }).map(p => ({ tipo: String(p.id).split(':')[0], gravidade: p.gravidade, titulo: p.titulo, detalhe: p.detalhe, destino: p.destino || '' }))])),
+        // que mostra sem depender do texto do título. `depois`: tarefa com
+        // prazo para além de amanhã — não pede nada hoje, e o Início só conta.
+        pendencias: Object.fromEntries(equipe.map(u => [u.nome, calcularPendencias({ ...listas, usuario: u }).map(p => {
+            const tipo = String(p.id).split(':')[0];
+            return { tipo, gravidade: p.gravidade, titulo: p.titulo, detalhe: p.detalhe, destino: p.destino || '', depois: tipo === 'tarefa' && p.gravidade === 'tarefa' && ehData(p.quando) && p.quando > amanha };
+        })])),
         vendas: { mes: resumirMetricas(metricas.mes), anterior: resumirMetricas(metricas.anterior) },
         criacao,
     };
