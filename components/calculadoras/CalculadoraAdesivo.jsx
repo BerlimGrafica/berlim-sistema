@@ -6,6 +6,7 @@ import { CustomSelect } from '@/components/ui/Dropdown';
 import { centavosParaReais } from '@/lib/utils/formatters';
 import { useUi } from '@/context/UiContext';
 import { MontagemNaFolha } from '@/components/calculadoras/MontagemNaFolha';
+import { cabem } from '@/lib/calculadoras/adesivo';
 
 export function CalculadoraAdesivo({ produtos }) {
     const { avisar } = useUi();
@@ -47,9 +48,9 @@ export function CalculadoraAdesivo({ produtos }) {
     // Todo preço exibido/copiado já sai com o prazo aplicado.
     const fmtPrazo = (v) => (v * multiplicadorPrazo).toFixed(2).replace('.', ',');
 
-    const calculaCabem = (areaW, areaH, adW, adH) => {
-        return Math.floor(areaW / adW) * Math.floor(areaH / adH);
-    };
+    // Em pé ou deitado, a posição em que cabem mais (a mesma conta da tela
+    // nova): 4x6 e 6x4 dão o mesmo preço.
+    const calculaCabem = (areaW, areaH, adW, adH) => cabem({ w: areaW, h: areaH }, adW, adH);
 
     const lRawNum = parseFloat(String(largura).replace(',', '.'));
     const aRawNum = parseFloat(String(altura).replace(',', '.'));

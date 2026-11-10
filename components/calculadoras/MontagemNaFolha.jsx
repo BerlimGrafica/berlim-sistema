@@ -2,11 +2,13 @@
 import { useState } from 'react';
 import Icon from '@/components/Icon';
 import { SegmentedControl } from '@/components/ui/SegmentedControl';
+import { cabem, encaixe } from '@/lib/calculadoras/adesivo';
 
 // Montagem na folha: o desenho de como os adesivos cabem na folha, como a
 // imposição de uma gráfica — linha de corte, sangria e as medidas da área útil.
-// Usa a mesma conta da calculadora (0,2 cm de sangria somados à peça, peça em
-// pé) e começa na folha que o preço está usando para a quantidade digitada.
+// Usa a mesma conta da calculadora (0,2 cm de sangria somados à peça, em pé ou
+// deitada, a posição em que cabem mais) e começa na folha que o preço está
+// usando para a quantidade digitada.
 //
 // É um painel à parte, ao lado da caixa da calculadora, e não um bloco dentro
 // dela: a caixa segue igual, e o desenho é consulta, não parte da conta.
@@ -20,7 +22,6 @@ export const FOLHAS = {
 };
 const SANGRIA = 0.2;
 const COR_FACA = '#EC008C';
-const cabem = (folha, l, a) => Math.floor(folha.w / l) * Math.floor(folha.h / a);
 const fmt = (n) => n.toLocaleString('pt-BR');
 
 // A mesma escolha do preço: a menor folha em que a quantidade inteira cabe.
@@ -62,9 +63,10 @@ export function MontagemNaFolha({ largura, altura, quantidade }) {
         );
     }
 
-    const l = largura + SANGRIA, a = altura + SANGRIA;
-    const cols = Math.floor(folha.w / l), lins = Math.floor(folha.h / a), n = cols * lins;
-    const deitado = cabem(folha, altura + SANGRIA, largura + SANGRIA);
+    // A peça entra na posição em que cabem mais (a mesma do preço): deitada, a
+    // largura e a altura trocam de lugar no desenho.
+    const { cols, lins, n, deitado } = encaixe(folha, largura + SANGRIA, altura + SANGRIA);
+    const l = deitado ? altura + SANGRIA : largura + SANGRIA, a = deitado ? largura + SANGRIA : altura + SANGRIA;
     const metros = folhaId === 'metro' && n > 0 && quantidade > 0 ? quantidade / n : null;
 
     // Desenho em escala, com espaço em cima e à direita para as cotas.
@@ -129,10 +131,10 @@ export function MontagemNaFolha({ largura, altura, quantidade }) {
                     {metros ? `É a folha do preço: ${fmt(quantidade)} adesivos ocupam ${metros.toLocaleString('pt-BR', { maximumFractionDigits: 2 })} m.` : `É a folha que o preço usa para ${fmt(quantidade)} adesivos.`}
                 </p>
             )}
-            {deitado > n && (
-                <p className="text-mini text-amber-700 dark:text-amber-300 flex items-start gap-1.5">
-                    <Icon name="rotate-ccw" className="w-3.5 h-3.5 mt-0.5 shrink-0" />
-                    Deitado cabem {fmt(deitado)}. O preço continua contando em pé.
+            {deitado && n > 0 && (
+                <p className="text-mini text-tinta-corpo flex items-start gap-1.5">
+                    <Icon name="rotate-ccw" className="w-3.5 h-3.5 mt-0.5 shrink-0 text-tinta-suave" />
+                    Montados deitados: assim cabem mais nesta folha.
                 </p>
             )}
             <div className="flex flex-wrap gap-x-4 gap-y-1.5 pt-3 border-t border-borda-fraca text-mini text-tinta-suave">

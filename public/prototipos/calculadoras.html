@@ -836,9 +836,10 @@ function montagemHTML(largura, altura, quantidade) {
   const doPreco = A.folhaDoPreco(largura, altura, quantidade);
   const folhaId = est.folhaVista?.chave === chave ? est.folhaVista.folha : doPreco;
   const folha = A.FOLHAS[folhaId], S = A.SANGRIA;
-  const l = largura + S, a = altura + S;
-  const cols = Math.floor(folha.w / l), lins = Math.floor(folha.h / a), n = cols * lins;
-  const deitado = A.cabem(folha, altura + S, largura + S);
+  // A peça entra na posição em que cabem mais (a mesma do preço): deitada, a
+  // largura e a altura trocam de lugar no desenho.
+  const { cols, lins, n, deitado } = A.encaixe(folha, largura + S, altura + S);
+  const l = deitado ? altura + S : largura + S, a = deitado ? largura + S : altura + S;
   const metros = folhaId === 'metro' && n > 0 && quantidade > 0 ? quantidade / n : null;
   const wT = folha.wTotal ?? folha.w, hT = folha.hTotal ?? folha.h;
   const k = Math.min(300 / wT, 300 / hT);
@@ -865,7 +866,7 @@ function montagemHTML(largura, altura, quantidade) {
     <div class="desenho">${svg}</div>
     <div class="montagem-n"><b>${fmtN(n, 0)}</b><span>por ${folha.nome} de ${wT} × ${hT} cm · área útil ${folha.w} × ${folha.h} cm</span></div>
     ${folhaId === doPreco && quantidade > 0 ? `<p class="nota-ok">${ico('check', 'ico ico-s')}<span>${metros ? `É a folha do preço: ${fmtN(quantidade, 0)} adesivos ocupam ${fmtN(metros)} m.` : `É a folha que o preço usa para ${fmtN(quantidade, 0)} adesivos.`}</span></p>` : ''}
-    ${deitado > n ? `<p class="nota-aviso">${ico('rotate-ccw', 'ico ico-s')}<span>Deitado cabem ${fmtN(deitado, 0)}. O preço continua contando em pé.</span></p>` : ''}
+    ${deitado && n > 0 ? `<p class="nota-ok">${ico('rotate-ccw', 'ico ico-s')}<span>Montados deitados: assim cabem mais nesta folha.</span></p>` : ''}
     <div class="legenda"><span><i style="background:color-mix(in srgb, var(--faca) 10%, transparent);box-shadow:inset 0 0 0 1px var(--faca)"></i>Sangria de 0,2 cm</span><span><i style="height:2px;background:repeating-linear-gradient(90deg, var(--faca) 0 3px, transparent 3px 5px)"></i>Linha de corte</span></div>
   </section>`;
 }
