@@ -309,6 +309,10 @@ button.q-cel:hover .q-mais { opacity: 1; }
    mesmo caminho, um pouco mais rápida e acelerando para fora. */
 .gaveta-veu { position: fixed; inset: var(--altura-cabecalho) 0 0 0; background: var(--veu); z-index: 60; animation: veuEntra .4s ease-out; }
 .gaveta { position: fixed; top: var(--altura-cabecalho); right: 0; bottom: 0; width: min(480px, 100%); background: var(--fundo); border-left: 1px solid var(--borda); box-shadow: var(--sombra); z-index: 61; overflow-y: auto; animation: gavetaEntra .46s cubic-bezier(.22,1,.36,1); }
+/* Com a gaveta aberta, a página de trás fica parada: a roda do mouse rola só a
+   gaveta, e chegar ao fim dela (ou de uma lista aberta) não leva a página junto. */
+.gaveta, .pop { overscroll-behavior: contain; }
+html:has(.gaveta:not(.sai)) { overflow: hidden; scrollbar-gutter: stable; }
 .gaveta-veu.sai { animation: veuSai .3s ease-in forwards; pointer-events: none; }
 .gaveta.sai { animation: gavetaSai .3s cubic-bezier(.55,0,1,.45) forwards; pointer-events: none; }
 .gaveta .det { padding: 18px 22px 40px; }
