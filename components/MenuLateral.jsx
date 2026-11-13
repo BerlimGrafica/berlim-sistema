@@ -67,7 +67,7 @@ function ContadorPendencias({ n, rotulo, recolhido }) {
 export default function MenuLateral() {
     const { aberto, alternar } = useMenuLateral();
     const recolhido = !aberto;
-    const { usuario } = useSessao();
+    const { usuario, isAdmin } = useSessao();
     const { pendencias, pendenciasPorDestino, calculadoraAtiva, setCalculadoraAtiva } = useUi();
     const { abaOS, setAbaOS, abaVendas, setAbaVendas } = usePedidos();
     const { abaFinanceiro, setAbaFinanceiro } = useFinanceiro();
@@ -236,6 +236,26 @@ export default function MenuLateral() {
             </nav>
 
             <div className={`border-t border-borda-fraca shrink-0 ${recolhido ? 'p-2' : 'p-2.5'}`}>
+                {/* O roteiro das telas novas, para o administrador passar por todas
+                    sem digitar endereço (app/(app)/telas-novas). */}
+                {isAdmin && (
+                    <Link
+                        href="/telas-novas"
+                        onClick={esconderDica}
+                        onMouseEnter={mostrarDica('Telas novas')}
+                        onMouseLeave={esconderDica}
+                        onFocus={mostrarDica('Telas novas')}
+                        onBlur={esconderDica}
+                        aria-current={pathname === '/telas-novas' ? 'page' : undefined}
+                        aria-label={recolhido ? 'Telas novas' : undefined}
+                        className={`flex items-center h-10 mb-0.5 rounded-lg text-corpo font-semibold transition-colors duration-150 whitespace-nowrap ${foco} ${
+                            recolhido ? 'justify-center w-12 mx-auto' : 'w-full gap-3 px-3'
+                        } ${pathname === '/telas-novas' ? 'bg-brand/10 text-tinta' : 'text-tinta-suave hover:bg-realce hover:text-tinta'}`}
+                    >
+                        <Icon name="list" className={`w-4 h-4 shrink-0 ${pathname === '/telas-novas' ? 'text-brand' : ''}`} />
+                        {!recolhido && 'Telas novas'}
+                    </Link>
+                )}
                 <button
                     type="button"
                     onClick={() => { esconderDica(); alternar(); }}

@@ -14,6 +14,7 @@ import ToastContainer from '@/components/ToastContainer';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import ContextMenu from '@/components/ContextMenu';
 import TelaBloqueada from '@/components/TelaBloqueada';
+import RoteiroTelasNovas from '@/components/prototipos/RoteiroTelasNovas';
 import { useSessao } from '@/context/SessaoContext';
 import { inscrever, haModalAberto, haModalAbertoNoServidor } from '@/lib/ui/pilhaModais';
 
@@ -59,6 +60,8 @@ function Sistema({ children }) {
                         <MenuLateral />
                         <div className="flex-1 min-w-0 flex flex-col">
                             <FaixaPendencias />
+                            {/* Só nas telas novas: anterior, próxima e validada. */}
+                            <RoteiroTelasNovas />
                             <div className="flex-1 bg-fundo relative">
                                 <PageTransition><GuardaDeAcesso>{children}</GuardaDeAcesso></PageTransition>
                             </div>
