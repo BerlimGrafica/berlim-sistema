@@ -6,7 +6,7 @@ import { CustomSelect } from '@/components/ui/Dropdown';
 import { centavosParaReais } from '@/lib/utils/formatters';
 import { useUi } from '@/context/UiContext';
 import { MontagemNaFolha } from '@/components/calculadoras/MontagemNaFolha';
-import { cabem } from '@/lib/calculadoras/adesivo';
+import { cabem, areaM2 } from '@/lib/calculadoras/adesivo';
 
 export function CalculadoraAdesivo({ produtos }) {
     const { avisar } = useUi();
@@ -174,13 +174,12 @@ export function CalculadoraAdesivo({ produtos }) {
         } else if (qMetro > 0 && qty <= qMetro) {
             total = basePrice;
         } else {
-            if (qMetro > 0) {
-                const metrosNecessarios = qty / qMetro;
-                total = metrosNecessarios * basePrice;
-            } else {
-                const areaFisica = (l * a) / 10000;
-                total = (areaFisica * qty) * basePrice;
-            }
+            // Acima de um metro cobra-se a área que os adesivos usam (m², com a
+            // sangria), e não as folhas de metro inteiras. Quem passou de uma
+            // folha de metro paga ao menos um metro: sem isso, 331 adesivos
+            // sairiam mais baratos que 330. A mesma conta da tela nova.
+            const m2 = areaM2(lRaw, aRaw, qty);
+            total = (qMetro > 0 ? Math.max(1, m2) : m2) * basePrice;
         }
 
         return (total * multiplicadorPrazo).toFixed(2);
@@ -192,12 +191,8 @@ export function CalculadoraAdesivo({ produtos }) {
         const qty = parseInt(quantidade) || 0;
         if (isNaN(lRaw) || isNaN(aRaw) || lRaw <= 0 || aRaw <= 0 || qty <= 0) return '0,00';
 
-        const l = lRaw + 0.2;
-        const a = aRaw + 0.2;
-        const qMetro = calculaCabem(94, 94, l, a);
-        if (qMetro <= 0) return '0,00';
-
-        return (qty / qMetro).toFixed(2);
+        // O material do pedido: a área dos adesivos com a sangria, em m².
+        return areaM2(lRaw, aRaw, qty).toFixed(2);
     };
 
     const gerarTextoCopia = () => {
@@ -320,8 +315,8 @@ export function CalculadoraAdesivo({ produtos }) {
 
                 <div className="flex flex-col md:flex-row gap-4">
                     <div className="flex-1 bg-sutil p-4 rounded-lg flex items-center justify-between border border-borda-fraca">
-                        <span className="font-semibold text-tinta-suave">Total em Metros</span>
-                        <span className="text-2xl font-black text-tinta">{calcularMetrosTotais().replace('.', ',')} m</span>
+                        <span className="font-semibold text-tinta-suave">Material</span>
+                        <span className="text-2xl font-black text-tinta">{calcularMetrosTotais().replace('.', ',')} m²</span>
                     </div>
                     <div className="flex-1 bg-brand/10 p-4 rounded-lg flex items-center justify-between border border-brand/20">
                         <span className="font-semibold text-brand">Total Estimado</span>

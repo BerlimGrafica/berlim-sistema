@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import Icon from '@/components/Icon';
 import { SegmentedControl } from '@/components/ui/SegmentedControl';
-import { cabem, encaixe } from '@/lib/calculadoras/adesivo';
+import { cabem, encaixe, areaM2 } from '@/lib/calculadoras/adesivo';
 
 // Montagem na folha: o desenho de como os adesivos cabem na folha, como a
 // imposição de uma gráfica — linha de corte, sangria e as medidas da área útil.
@@ -67,7 +67,8 @@ export function MontagemNaFolha({ largura, altura, quantidade }) {
     // largura e a altura trocam de lugar no desenho.
     const { cols, lins, n, deitado } = encaixe(folha, largura + SANGRIA, altura + SANGRIA);
     const l = deitado ? altura + SANGRIA : largura + SANGRIA, a = deitado ? largura + SANGRIA : altura + SANGRIA;
-    const metros = folhaId === 'metro' && n > 0 && quantidade > 0 ? quantidade / n : null;
+    // O material do pedido em m² (a área dos adesivos com a sangria): o mesmo que o preço cobra acima de um metro.
+    const metros = folhaId === 'metro' && n > 0 && quantidade > 0 ? areaM2(largura, altura, quantidade) : null;
 
     // Desenho em escala, com espaço em cima e à direita para as cotas.
     const esc = Math.min(300 / folha.w, 300 / folha.h);
@@ -128,7 +129,7 @@ export function MontagemNaFolha({ largura, altura, quantidade }) {
             {folhaId === doPreco && quantidade > 0 && (
                 <p className="text-mini text-tinta-corpo flex items-start gap-1.5">
                     <Icon name="check" className="w-3.5 h-3.5 mt-0.5 shrink-0 text-sucesso" />
-                    {metros ? `É a folha do preço: ${fmt(quantidade)} adesivos ocupam ${metros.toLocaleString('pt-BR', { maximumFractionDigits: 2 })} m.` : `É a folha que o preço usa para ${fmt(quantidade)} adesivos.`}
+                    {metros ? `É a folha do preço: ${fmt(quantidade)} adesivos somam ${metros.toLocaleString('pt-BR', { maximumFractionDigits: 2 })} m² de material.` : `É a folha que o preço usa para ${fmt(quantidade)} adesivos.`}
                 </p>
             )}
             {deitado && n > 0 && (

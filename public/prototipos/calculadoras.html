@@ -797,7 +797,7 @@ function telaComparativo() {
 }
 
 /* ===== adesivo ===== */
-const ROT_FOLHA = { sra3: 'Folha SRA3', meio: 'Meio metro', metro: 'Um metro', metros: 'Mais de um metro', area: 'Pela área' };
+const ROT_FOLHA = { sra3: 'Folha SRA3', meio: 'Meio metro', metro: 'Um metro', metros: 'Mais de um metro · pelo m²', area: 'Pela área' };
 function telaAdesivo() {
   const A = C.adesivo, e = ent.adesivo, P = PRECOS_ADESIVO;
   const r = A.calcularAdesivo(e, P), max = A.quantidadesMaximas(e, P);
@@ -818,7 +818,7 @@ function telaAdesivo() {
       total: r.total, ok: r.ok,
       sub: !r.temMedidas ? 'Preencha largura e altura' : !r.ok ? 'Falta a quantidade' : `${reais(r.unitario)} por adesivo`,
       erros: r.abaixoDoMinimo ? [`O tamanho mínimo para adesivo é ${C.adesivo.MINIMO_CM} × ${C.adesivo.MINIMO_CM} cm.`] : [],
-      linhas: r.ok ? [['Folha do preço', ROT_FOLHA[r.folha]], ['Material', `${fmtN(r.metros)} m`], ...(r.multiplicador > 1 ? [['Prazo', `+${Math.round((r.multiplicador - 1) * 100)}%`]] : [])] : [],
+      linhas: r.ok ? [['Folha do preço', ROT_FOLHA[r.folha]], ['Material', `${fmtN(r.metros)} m²`], ...(r.multiplicador > 1 ? [['Prazo', `+${Math.round((r.multiplicador - 1) * 100)}%`]] : [])] : [],
     })
     + textoCliente(r.texto, r.ok, r.temMedidas ? 'Falta a quantidade para o texto aparecer aqui.' : 'Preencha as medidas e a quantidade para o texto aparecer aqui.');
   return { form, extras, res, texto: r.ok ? r.texto : '', total: r.total, ok: r.ok, sub: r.ok ? `${fmtN(r.quantidade, 0)} adesivos` : '' };
@@ -840,7 +840,8 @@ function montagemHTML(largura, altura, quantidade) {
   // largura e a altura trocam de lugar no desenho.
   const { cols, lins, n, deitado } = A.encaixe(folha, largura + S, altura + S);
   const l = deitado ? altura + S : largura + S, a = deitado ? largura + S : altura + S;
-  const metros = folhaId === 'metro' && n > 0 && quantidade > 0 ? quantidade / n : null;
+  // O material do pedido em m² (a área dos adesivos com a sangria): o mesmo que o preço cobra acima de um metro.
+  const metros = folhaId === 'metro' && n > 0 && quantidade > 0 ? A.areaM2(largura, altura, quantidade) : null;
   const wT = folha.wTotal ?? folha.w, hT = folha.hTotal ?? folha.h;
   const k = Math.min(300 / wT, 300 / hT);
   const W = wT * k, H = hT * k, X = 4, Y = 24, largSvg = X + W + 30, altSvg = Y + H + 4;
@@ -865,7 +866,7 @@ function montagemHTML(largura, altura, quantidade) {
     <div class="seg" role="group" aria-label="Folha">${Object.entries(A.FOLHAS).map(([id, f]) => `<button data-folha="${id}" aria-pressed="${id === folhaId}">${f.rotulo}</button>`).join('')}</div>
     <div class="desenho">${svg}</div>
     <div class="montagem-n"><b>${fmtN(n, 0)}</b><span>por ${folha.nome} de ${wT} × ${hT} cm · área útil ${folha.w} × ${folha.h} cm</span></div>
-    ${folhaId === doPreco && quantidade > 0 ? `<p class="nota-ok">${ico('check', 'ico ico-s')}<span>${metros ? `É a folha do preço: ${fmtN(quantidade, 0)} adesivos ocupam ${fmtN(metros)} m.` : `É a folha que o preço usa para ${fmtN(quantidade, 0)} adesivos.`}</span></p>` : ''}
+    ${folhaId === doPreco && quantidade > 0 ? `<p class="nota-ok">${ico('check', 'ico ico-s')}<span>${metros ? `É a folha do preço: ${fmtN(quantidade, 0)} adesivos somam ${fmtN(metros)} m² de material.` : `É a folha que o preço usa para ${fmtN(quantidade, 0)} adesivos.`}</span></p>` : ''}
     ${deitado && n > 0 ? `<p class="nota-ok">${ico('rotate-ccw', 'ico ico-s')}<span>Montados deitados: assim cabem mais nesta folha.</span></p>` : ''}
     <div class="legenda"><span><i style="background:color-mix(in srgb, var(--faca) 10%, transparent);box-shadow:inset 0 0 0 1px var(--faca)"></i>Sangria de 0,2 cm</span><span><i style="height:2px;background:repeating-linear-gradient(90deg, var(--faca) 0 3px, transparent 3px 5px)"></i>Linha de corte</span></div>
   </section>`;
