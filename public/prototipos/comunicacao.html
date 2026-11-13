@@ -84,6 +84,22 @@ kbd { font: 600 10.5px/1 Montserrat, sans-serif; color: var(--tinta-suave); bord
 .ib.conf { padding: 0 9px; background: var(--fin); color: #fff; font-size: 12px; font-weight: 700; }
 .dark .ib.conf { color: var(--fundo); }
 .ib.feito { background: var(--fin-fundo); color: var(--fin-tinta); }
+/* Confirmar no segundo clique, sem deixar dúvida: o botão cresce e acende,
+   uma barrinha mostra o tempo para confirmar (4s), e a linha inteira ganha a
+   cor da ação. Depois do segundo clique a linha sai deslizando e o aviso
+   embaixo diz o que aconteceu, com Desfazer. */
+.ib.conf, .btn.conf { position: relative; overflow: hidden; animation: acende .26s var(--saida); }
+.ib.conf::after, .btn.conf::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: rgba(255,255,255,.6); transform-origin: left; animation: esvazia 4s linear forwards; }
+@keyframes acende { 0% { transform: scale(.9); } 60% { transform: scale(1.05); } 100% { transform: scale(1); } }
+@keyframes esvazia { to { transform: scaleX(0); } }
+.btn-ok.conf { box-shadow: 0 0 0 3px var(--fin-borda); }
+.btn-sec.conf { background: var(--fin); border-color: var(--fin); color: #fff; box-shadow: 0 0 0 3px var(--fin-borda); }
+.btn-perigo.conf, .btn-perigo.conf:hover { background: var(--perigo); color: #fff; box-shadow: 0 0 0 3px var(--perigo-borda); }
+.dark .btn-sec.conf, .dark .btn-perigo.conf { color: var(--fundo); }
+.lin.armada { background: var(--fin-fundo); box-shadow: inset 3px 0 0 var(--fin); }
+.lin.armada:hover { background: var(--fin-fundo); }
+.lin.saindo { animation: saiLinha .3s var(--saida) forwards; pointer-events: none; }
+@keyframes saiLinha { to { opacity: 0; transform: translateX(24px); } }
 
 /* página */
 .pg { max-width: 1120px; margin: 0 auto; padding: 24px 28px 72px; }
@@ -261,6 +277,10 @@ button.forn.add:hover { border-style: solid; color: var(--tinta); background: va
 /* gaveta (computador) / folha (celular), a mesma da nova Produção, do Financeiro e dos Orçamentos */
 .gv-veu { position: fixed; inset: 51px 0 0 0; background: var(--veu); z-index: 60; animation: veuEntra .4s ease-out; }
 .gaveta { position: fixed; top: 51px; right: 0; bottom: 0; width: min(460px, 100%); background: var(--fundo); border-left: 1px solid var(--borda); box-shadow: var(--sombra); z-index: 61; overflow-y: auto; animation: gavetaEntra .46s cubic-bezier(.22,1,.36,1); }
+/* Com a gaveta aberta, a página de trás fica parada: a roda do mouse rola só a
+   gaveta, e chegar ao fim dela (ou de uma lista aberta) não leva a página junto. */
+.gaveta, .pop { overscroll-behavior: contain; }
+html:has(.gaveta:not(.sai)) { overflow: hidden; scrollbar-gutter: stable; }
 .gv-veu.sai { animation: veuSai .3s ease-in forwards; pointer-events: none; }
 .gaveta.sai { animation: gavetaSai .3s cubic-bezier(.55,0,1,.45) forwards; pointer-events: none; }
 @keyframes gavetaEntra { from { transform: translateX(100%); } }
@@ -632,6 +652,8 @@ async function copiar(txt, el, msg) {
 
 /* ===== dados ===== */
 let REQ = [], TAR = [], LNK = [];
+// Excluídos esperando o fim do Desfazer: { chave → enviar }.
+const excluindo = new Map();
 // Compras: as colunas novas (fornecedor, urgente, conta) só existem depois de
 // supabase/compras_itens_migration.sql. Antes dela, a lista funciona sem elas.
 let MIGRADO = DADOS.colunasCompras !== false;
@@ -652,9 +674,11 @@ function aplicarDados(d) {
   if (d.fornecedores) DADOS.fornecedores = d.fornecedores;
   if ('podeComprar' in d) PODE_COMPRAR = !!d.podeComprar;
   if ('colunasCompras' in d) MIGRADO = d.colunasCompras !== false;
-  REQ = (d.requisicoes || []).map(prepReq);
-  TAR = (d.tarefas || []).map(t => ({ ...t, busca: semAcento([t.titulo, t.descricao, ...t.responsaveis].join(' ')) }));
-  LNK = (d.links || []).map(l => ({ ...l, host: hostDe(l.link), busca: semAcento([l.titulo, l.cliente, l.link].join(' ')) }));
+  // O que foi excluído e ainda está no prazo do Desfazer não volta com os dados novos.
+  const fora = (tipo, x) => !excluindo.has(`x:${tipo}:${x.id}`);
+  REQ = (d.requisicoes || []).filter(r => fora('requisicao', r)).map(prepReq);
+  TAR = (d.tarefas || []).filter(t => fora('tarefa', t)).map(t => ({ ...t, busca: semAcento([t.titulo, t.descricao, ...t.responsaveis].join(' ')) }));
+  LNK = (d.links || []).filter(l => fora('link', l)).map(l => ({ ...l, host: hostDe(l.link), busca: semAcento([l.titulo, l.cliente, l.link].join(' ')) }));
 }
 aplicarDados(DADOS);
 
@@ -863,7 +887,7 @@ function prazoTxt(iso) {
 // Botão verde que conclui: o primeiro clique vira a pergunta, o segundo confirma.
 function botaoOk(tipo, id, rot, pergunta) {
   const k = `${tipo}:${id}`, conf = est.conf === k;
-  return `<button class="ib ok ${conf ? 'conf' : ''}" data-acao="concluir" data-tipo="${tipo}" data-id="${id}" aria-label="${conf ? pergunta : rot}" title="${conf ? 'Clique de novo para confirmar' : rot}">${conf ? `${ico('check', 'ico ico-s')}${pergunta}` : ico('check-circle-2')}</button>`;
+  return `<button class="ib ok ${conf ? 'conf' : ''}" data-acao="concluir" data-tipo="${tipo}" data-id="${id}" aria-label="${conf ? pergunta + ' Clique de novo para confirmar' : rot}" title="${conf ? 'Clique de novo para confirmar (Esc cancela)' : rot}">${conf ? `${ico('check', 'ico ico-s')}${pergunta}` : ico('check-circle-2')}</button>`;
 }
 
 // Um item da lista de compras: o que é, de onde vem, há quanto tempo falta.
@@ -910,7 +934,7 @@ function linhaTar(t, ts) {
     : feita ? '' : botaoOk('tarefa', t.id, 'Concluir', 'Concluir?');
   const sub = t.descricao.split(/\r?\n/).find(Boolean) || (t.responsaveis.length ? '' : 'sem dono');
   // A rotina feita não fica riscada: ela continua disponível para a próxima vez.
-  return `<div class="lin l-tar ${pri} ${feita && !t.fixa ? 'feita' : ''} ${est.ativo === t.id ? 'ativo' : ''} ${est.gaveta === t.id ? 'aberta' : ''}" data-reg="${t.id}" tabindex="0" role="button" aria-label="Tarefa: ${esc(t.titulo)}">
+  return `<div class="lin l-tar ${pri} ${feita && !t.fixa ? 'feita' : ''} ${est.conf === `tarefa:${t.id}` ? 'armada' : ''} ${est.ativo === t.id ? 'ativo' : ''} ${est.gaveta === t.id ? 'aberta' : ''}" data-reg="${t.id}" tabindex="0" role="button" aria-label="Tarefa: ${esc(t.titulo)}">
     ${quad}
     <div class="lin-txt"><div class="lin-tit"><span class="t">${realce(t.titulo, ts)}</span></div>
       <div class="lin-sub"><span class="mob">${t.responsaveis.length ? esc(t.responsaveis.join(', ')) + (sub ? ' · ' : '') : ''}</span>${realce(sub, ts)}</div></div>
@@ -922,7 +946,7 @@ function linhaTar(t, ts) {
 function linhaLnk(l, ts) {
   const sub = [l.cliente, l.host].filter(Boolean).join(' · ') || 'sem cliente';
   const st = linkPago(l) ? '<span class="selo s-ok">pago</span>' : l.status === 'Inativo' ? '<span class="selo">inativo</span>' : '';
-  return `<div class="lin l-link ${est.ativo === l.id ? 'ativo' : ''} ${est.gaveta === l.id ? 'aberta' : ''}" data-reg="${l.id}" tabindex="0" role="button" aria-label="Link: ${esc(l.titulo)}">
+  return `<div class="lin l-link ${est.conf === `link:${l.id}` ? 'armada' : ''} ${est.ativo === l.id ? 'ativo' : ''} ${est.gaveta === l.id ? 'aberta' : ''}" data-reg="${l.id}" tabindex="0" role="button" aria-label="Link: ${esc(l.titulo)}">
     ${quadrinho(l.criado, '', 'Criado ')}
     <div class="lin-txt"><div class="lin-tit"><span class="t">${realce(l.titulo, ts)}</span>${st}</div>
       <div class="lin-sub"><span class="mob">${l.valor ? reais(l.valor) + ' · ' : ''}</span>${realce(sub, ts)}</div></div>
@@ -1063,11 +1087,11 @@ const gavetaRaiz = document.createElement('div'); document.body.appendChild(gave
 const cabDet = (rotulo, id, editar = true) => `<div class="det-cab"><span class="det-tipo">${rotulo}${id ? ` <span class="num">#${id}</span>` : ''}</span><span class="det-ferr">${editar ? `<button class="ib" data-acao="editar" data-id="${est.gaveta}" aria-label="Editar" title="Editar">${ico('pencil', 'ico ico-s')}</button>` : ''}<button class="ib" data-acao="fechar" aria-label="Fechar" title="Fechar (Esc)">${ico('x', 'ico ico-s')}</button></span></div>`;
 function botaoExcluir(tipo, id) {
   const conf = est.conf === `x:${tipo}:${id}`;
-  return `<button class="btn btn-txt btn-p btn-perigo ${conf ? 'conf' : ''}" data-acao="excluir" data-tipo="${tipo}" data-id="${id}">${ico('trash-2', 'ico ico-s')}${conf ? 'Clique de novo para excluir' : 'Excluir'}</button>`;
+  return `<button class="btn btn-txt btn-p btn-perigo ${conf ? 'conf' : ''}" data-acao="excluir" data-tipo="${tipo}" data-id="${id}" title="${conf ? 'Esc cancela' : 'Excluir'}">${ico(conf ? 'alert-triangle' : 'trash-2', 'ico ico-s')}${conf ? 'Excluir mesmo? Clique de novo' : 'Excluir'}</button>`;
 }
 function botaoOkGrande(tipo, id, rot, pergunta) {
   const conf = est.conf === `${tipo}:${id}`;
-  return `<button class="btn btn-ok btn-p" data-acao="concluir" data-tipo="${tipo}" data-id="${id}">${ico('check-circle-2', 'ico ico-s')}${conf ? pergunta : rot}</button>`;
+  return `<button class="btn btn-ok btn-p ${conf ? 'conf' : ''}" data-acao="concluir" data-tipo="${tipo}" data-id="${id}" title="${conf ? 'Esc cancela' : rot}">${ico(conf ? 'mouse-pointer-click' : 'check-circle-2', 'ico ico-s')}${conf ? pergunta : rot}</button>`;
 }
 function detReq(r) {
   const pend = pendente(r), comprado = r.status === 'Comprado';
@@ -1126,7 +1150,7 @@ function detLnk(l) {
     </section>
     <div class="det-acoes">
       ${l.link ? `<button class="btn btn-pri btn-p" data-acao="copiar" data-id="${l.id}">${ico('copy', 'ico ico-s')}<span>Copiar o link</span></button>` : ''}
-      ${linkAberto(l) ? `<button class="btn btn-sec btn-p" data-acao="concluir" data-tipo="link" data-id="${l.id}">${ico('check-circle-2', 'ico ico-s')}${est.conf === `link:${l.id}` ? 'Clique de novo: foi pago?' : 'Marcar como pago'}</button>` : ''}
+      ${linkAberto(l) ? `<button class="btn btn-sec btn-p ${est.conf === `link:${l.id}` ? 'conf' : ''}" data-acao="concluir" data-tipo="link" data-id="${l.id}">${ico(est.conf === `link:${l.id}` ? 'mouse-pointer-click' : 'check-circle-2', 'ico ico-s')}${est.conf === `link:${l.id}` ? 'Foi pago? Clique de novo' : 'Marcar como pago'}</button>` : ''}
       <span class="esp"></span>${botaoExcluir('link', l.id)}
     </div></div>`;
 }
@@ -1581,12 +1605,28 @@ function concluir(tipo, id) {
   const k = `${tipo}:${id}`;
   if (est.conf !== k) return armar(k);
   est.conf = null; clearTimeout(confTimer);
-  if (tipo === 'requisicao') x.status = 'Comprado';
-  if (tipo === 'tarefa') { x.status = 'Concluída'; x.concluidaEm = HOJE; }
-  if (tipo === 'link') x.status = 'Pago';
+  // Grava na hora; a linha sai deslizando e o aviso diz o que aconteceu, com
+  // Desfazer (que reabre a tarefa ou volta o link para ativo).
   paraPai({ tipo: `concluir-${tipo}`, id });
-  redesenhar();
-  toast({ requisicao: 'Requisição marcada como comprada', tarefa: 'Tarefa concluída', link: 'Link marcado como pago' }[tipo]);
+  const antes = { status: x.status, concluidaEm: x.concluidaEm };
+  sairLinha(id, () => {
+    if (tipo === 'tarefa') { x.status = 'Concluída'; x.concluidaEm = HOJE; }
+    if (tipo === 'link') x.status = 'Pago';
+    redesenhar();
+    const titulo = x.titulo ? `: ${x.titulo}` : '';
+    toast(`${tipo === 'link' ? 'Link marcado como pago' : 'Tarefa concluída'}${titulo}`, () => {
+      Object.assign(x, antes); redesenhar();
+      if (tipo === 'tarefa') salvarAvulso('tarefa', id, { titulo: x.titulo, descricao: x.descricao, responsaveis: x.responsaveis, prazo: x.prazo, fixa: false, status: antes.status || 'Pendente' }, () => { x.status = 'Concluída'; });
+      if (tipo === 'link') salvarAvulso('link', id, { titulo: x.titulo, valor: x.valor || null, cliente: x.cliente, link: x.link, status: antes.status || 'Ativo' }, () => { x.status = 'Pago'; });
+      toast(tipo === 'link' ? 'O link voltou para ativo' : 'A tarefa voltou para a lista');
+    });
+  });
+}
+// A linha some deslizando antes de a lista ser redesenhada sem ela.
+function sairLinha(id, depois) {
+  const el = document.querySelector(`#corpo .lin[data-reg="${id}"]`);
+  if (!el || matchMedia('(prefers-reduced-motion: reduce)').matches) return depois();
+  el.classList.add('saindo'); setTimeout(depois, 280);
 }
 // Desfazer da rotina: tira a última vez de hoje; se sobrar outra, continua feita.
 function reabrir(id) {
@@ -1595,17 +1635,32 @@ function reabrir(id) {
   x.feitaHoje = x.vezesHoje.length > 0; x.status = x.feitaHoje ? 'Concluída' : 'Pendente';
   CONC.chave = null; redesenhar(); paraPai({ tipo: 'reabrir-tarefa', id });
 }
+// Excluir: o segundo clique tira o item da tela na hora e mostra "Excluído ·
+// Desfazer". A exclusão de verdade só vai quando o aviso some (ou quando a
+// tela fecha); Desfazer devolve o item para o mesmo lugar, sem ter apagado nada.
 function excluir(tipo, id) {
   const k = `x:${tipo}:${id}`;
   if (est.conf !== k) return armar(k);
   est.conf = null; clearTimeout(confTimer);
-  paraPai({ tipo: `excluir-${tipo}`, id });
-  if (tipo === 'requisicao') REQ = REQ.filter(x => x.id !== id);
-  if (tipo === 'tarefa') TAR = TAR.filter(x => x.id !== id);
-  if (tipo === 'link') LNK = LNK.filter(x => x.id !== id);
-  fecharGaveta(true); render();
-  toast({ requisicao: 'Requisição excluída', tarefa: 'Tarefa excluída', link: 'Link excluído' }[tipo]);
+  const pega = () => tipo === 'requisicao' ? REQ : tipo === 'tarefa' ? TAR : LNK;
+  const poe = l => { if (tipo === 'requisicao') REQ = l; else if (tipo === 'tarefa') TAR = l; else LNK = l; };
+  const item = pega().find(x => x.id === id); if (!item) return;
+  const pos = pega().indexOf(item);
+  const nome = item.nome || item.titulo || '';
+  const enviar = () => { if (!excluindo.has(k)) return; clearTimeout(excluindo.get(k).timer); excluindo.delete(k); paraPai({ tipo: `excluir-${tipo}`, id }); };
+  excluindo.set(k, { enviar, timer: setTimeout(enviar, 5200) });
+  fecharGaveta(true);
+  sairLinha(id, () => {
+    poe(pega().filter(x => x.id !== id)); render();
+    toast(`${{ requisicao: 'Item excluído', tarefa: 'Tarefa excluída', link: 'Link excluído' }[tipo]}${nome ? `: ${nome}` : ''}`, () => {
+      const p = excluindo.get(k); if (!p) return; clearTimeout(p.timer); excluindo.delete(k);
+      const l = [...pega()]; l.splice(Math.min(pos, l.length), 0, item); poe(l); render();
+      toast('Exclusão desfeita');
+    });
+  });
 }
+// Fechar a tela com uma exclusão no prazo do Desfazer: ela vai assim mesmo.
+addEventListener('pagehide', () => excluindo.forEach(p => p.enviar()));
 function agir(a, el) {
   const id = el?.dataset.id != null ? +el.dataset.id : null, tipo = el?.dataset.tipo || abaAtual().tipo;
   if (a === 'grupo' || a === 'todos') return agirGrupo(a, el);
