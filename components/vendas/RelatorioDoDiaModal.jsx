@@ -6,6 +6,7 @@ import Icon from '@/components/Icon';
 import { useModal } from '@/components/modals/useModal';
 import { useVendasDoDia } from '@/hooks/useVendasDoDia';
 import { formatarValorFinanceiro, centavosParaReais, mascararCliente } from '@/lib/utils/formatters';
+import { asOutrasOS } from '@/lib/pedidos/lotes';
 
 // O que aconteceu num dia: quem comprou, o que levou e como pagou.
 //
@@ -190,6 +191,9 @@ function LinhaPedido({ pedido, isDemo, aberto, aoAlternar }) {
                                         <dt className="text-tinta-suave truncate">
                                             {p.forma}
                                             {detalhe && <span className="text-tinta-fraca"> · {detalhe}</span>}
+                                            {/* Um pagamento só, dividido entre várias O.S.: aqui
+                                                aparece a parte desta e de quanto foi o inteiro. */}
+                                            {p.lote && <span className="text-tinta-fraca"> · parte de R$ {reais(p.lote.total)}, com {asOutrasOS(p.lote.outras)}</span>}
                                         </dt>
                                         <dd className="shrink-0">
                                             <Valor

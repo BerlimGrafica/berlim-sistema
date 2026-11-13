@@ -274,6 +274,10 @@ html { --altura-cabecalho: 51px; --altura-filtros: 42px; }
    mesmo caminho, um pouco mais rápida e acelerando para fora. */
 .gaveta-veu { position: fixed; inset: var(--altura-cabecalho) 0 0 0; background: var(--veu); z-index: 60; animation: veuEntra .4s ease-out; }
 .gaveta { position: fixed; top: var(--altura-cabecalho); right: 0; bottom: 0; width: min(460px, 100%); background: var(--fundo); border-left: 1px solid var(--borda); box-shadow: var(--sombra); z-index: 61; overflow-y: auto; animation: gavetaEntra .46s cubic-bezier(.22,1,.36,1); }
+/* Com a gaveta aberta, a página de trás fica parada: a roda do mouse rola só a
+   gaveta, e chegar ao fim dela (ou de uma lista aberta) não leva a página junto. */
+.gaveta, .pop { overscroll-behavior: contain; }
+html:has(.gaveta:not(.sai)) { overflow: hidden; scrollbar-gutter: stable; }
 .gaveta-veu.sai { animation: veuSai .3s ease-in forwards; pointer-events: none; }
 .gaveta.sai { animation: gavetaSai .3s cubic-bezier(.55,0,1,.45) forwards; pointer-events: none; }
 .gaveta .det { padding: 18px 22px 40px; }
@@ -719,7 +723,7 @@ function detalhe(p) {
       <div class="fin-tot">${brl(p.valor)}</div>
       <div class="fin-barra"><i style="width:${pct}%"></i></div>
       <div class="fin-resumo"><span>Recebido <b>${brl(p.pago)}</b></span>${f > 0 ? `<span>·</span><span class="falta">Falta <b>${brl(f)}</b></span>` : f < 0 ? `<span>·</span><span class="mais">Pago a mais <b>${brl(-f)}</b></span>` : ''}</div>
-      ${p.pags.length ? `<div class="recs"><div class="recs-rot">Recebimentos ${p.pags.length}</div>${p.pags.map(([forma, v, d]) => `<div class="rec"><span><span class="f">${esc(forma)}</span>${ehData(d) ? `<span class="d">${ddmm(d)}</span>` : ''}</span><span class="v ${v < 0 ? 'neg' : ''}">${v < 0 ? '− ' : ''}${brl(Math.abs(v))}</span></div>`).join('')}</div>` : ''}
+      ${p.pags.length ? `<div class="recs"><div class="recs-rot">Recebimentos ${p.pags.length}</div>${p.pags.map(([forma, v, d, lote]) => `<div class="rec"><span><span class="f">${esc(forma)}</span>${ehData(d) ? `<span class="d">${ddmm(d)}</span>` : ''}${lote ? '<span class="d" title="Um pagamento só, dividido com outra O.S. Abra a O.S. para ver.">· em lote</span>' : ''}</span><span class="v ${v < 0 ? 'neg' : ''}">${v < 0 ? '− ' : ''}${brl(Math.abs(v))}</span></div>`).join('')}</div>` : ''}
     </section>
     <div class="det-acoes">
       <button class="btn btn-txt btn-p" data-acao="imprimir" data-id="${p.id}">${ico('printer', 'ico ico-s')}Imprimir</button>
@@ -1124,7 +1128,9 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Enter' && est.sel) { const p = porId(est.sel); if (!p) return; if (travada(p)) return toast('Baixada: só Administrador ou Financeiro abre esta O.S.'); return abrirGaveta(p); }
 });
 addEventListener('resize', () => { fecharPop(); est.ind = null; posicionarIndicador(); });
-addEventListener('scroll', () => { if (est.pop) fecharPop(); }, true);
+// Rolar a tela ou a gaveta fecha a lista aberta (ela ficaria solta no ar); rolar
+// DENTRO da lista, não.
+addEventListener('scroll', e => { if (est.pop && !e.target.closest?.('.pop')) fecharPop(); }, true);
 
 /* ===== moldura do protótipo ===== */
 function moldura() {

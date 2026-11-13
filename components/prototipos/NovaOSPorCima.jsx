@@ -11,6 +11,7 @@ import { mascararCliente, parseValorMoeda, formatarMoeda, obterDataAtual, rotulo
 import { itensDoPedido, pagamentosDoPedido, observacoesDoPedido } from '@/lib/utils/servico';
 import { buscarClientes } from '@/lib/clientes/busca';
 import { carregarModeloNovaOS, montarNovaOS } from '@/lib/prototipos/novaos';
+import { buscarLotes } from '@/lib/pedidos/lotes';
 
 // O novo modal de O.S. (public/prototipos/novaos.html) aberto por cima das
 // telas novas, no lugar do modal antigo: com uma O.S. real (`id`) ou vazio,
@@ -23,7 +24,10 @@ import { carregarModeloNovaOS, montarNovaOS } from '@/lib/prototipos/novaos';
 //   buscar-clientes    → a mesma busca do modal de hoje (lib/clientes/busca.js)
 //   cadastrar-cliente  → criarCliente (WhatsApp repetido não entra)
 //   cadastrar-produto  → criarProduto
-//   pagar-lote         → registrarPagamentoLoteOutrasOS, como no modal de hoje
+//   pagar-lote         → registrarPagamentoLoteOutrasOS: as partes de todas as
+//                        O.S. (esta inclusive) gravam juntas, ou nenhuma
+//   remover-lote       → removerPagamentoLote: tira a parte das outras O.S.
+//   trocar-os          → abre outra O.S. no lugar desta (a outra parte do lote)
 //   fechar-os          → fecha
 // Cada pedido leva um número (`n`) e a resposta volta com ele.
 //
@@ -60,15 +64,15 @@ const dataCurta = iso => iso ? iso.slice(0, 10).split('-').reverse().slice(0, 2)
 
 export const PEDIR_FECHAR_OS = 'berlim:pedir-fechar-os';
 
-export default function NovaOSPorCima({ id, aoFechar }) {
+export default function NovaOSPorCima({ id, aoFechar, aoTrocar }) {
     const nova = id === 'nova';
-    const { gravarOS, imprimirOS, buscarOutrasOSAbertasDoCliente, registrarPagamentoLoteOutrasOS, criarCliente, criarProduto, opcoesStatusPermitidas, dadosCarregados } = usePedidos();
+    const { gravarOS, imprimirOS, buscarOutrasOSAbertasDoCliente, registrarPagamentoLoteOutrasOS, removerPagamentoLote, criarCliente, criarProduto, opcoesStatusPermitidas, dadosCarregados } = usePedidos();
     const { produtos, fornecedoresTerceirizacaoNomes } = useCadastros();
     const { usuario, usuariosSistema, darkMode, isDemo, isOperador } = useSessao();
     const { isClienteProblema } = useClientes();
     const { avisar } = useUi();
     const [modelo, setModelo] = useState(null);
-    // { pedido, telefone, outras } — pedido null numa O.S. nova.
+    // { pedido, telefone, outras, lotes } — pedido null numa O.S. nova.
     const [achado, setAchado] = useState(null);
     // A O.S. como está no banco: muda quando uma O.S. nova grava o cabeçalho e
     // não os itens — o próximo Salvar completa esta, em vez de criar outra.
@@ -86,10 +90,15 @@ export default function NovaOSPorCima({ id, aoFechar }) {
             if (!nova && !resultado) return falhou('Não foi possível carregar esta O.S. Tente novamente.');
             // As outras O.S. do cliente com saldo, para o pagamento em lote.
             const p = resultado?.pedido;
-            const outras = p?.cliente_id ? await buscarOutrasOSAbertasDoCliente(p.id, p.cliente_id) : [];
+            // E os pagamentos em lote que ela já tem: o pagamento inteiro e as
+            // outras O.S. que dividiram com ela. Só busca se há algum.
+            const [outras, lotes] = await Promise.all([
+                p?.cliente_id ? buscarOutrasOSAbertasDoCliente(p.id, p.cliente_id) : [],
+                buscarLotes((p?.pedido_pagamentos || []).map(g => g.lote_id)),
+            ]);
             if (!vivo) return;
             setModelo(tpl);
-            setAchado({ pedido: p || null, telefone: resultado?.telefone || '', outras });
+            setAchado({ pedido: p || null, telefone: resultado?.telefone || '', outras, lotes });
             setAntes(p || null);
         })().catch(() => falhou('Não foi possível abrir a O.S. Tente novamente.'));
         return () => { vivo = false; };
@@ -98,7 +107,7 @@ export default function NovaOSPorCima({ id, aoFechar }) {
     // Monta o HTML uma vez só, quando a O.S. e o catálogo estão à mão (ajustado
     // durante a renderização, como no resto do sistema, em vez de num efeito).
     if (!html && modelo && achado && dadosCarregados) {
-        const { pedido: p, telefone, outras } = achado;
+        const { pedido: p, telefone, outras, lotes } = achado;
         const os = p ? {
             id: p.id,
             cliente: p.cliente ? { id: p.cliente_id || null, nome: mascararCliente(p.cliente, isDemo), tel: isDemo ? '' : telefone, problema: isClienteProblema(p.cliente, p.cliente_id) } : null,
@@ -135,7 +144,13 @@ export default function NovaOSPorCima({ id, aoFechar }) {
             trancado: isDemo || (!!p && p.status === 'Finalizado' && isOperador),
         };
         const outrasOS = outras.map(o => ({ id: o.id, data: dataCurta(o.data_pedido), saldo: Math.round(o.saldo * 100) / 100 }));
-        setHtml(montarNovaOS(modelo, { produtos, locais: fornecedoresTerceirizacaoNomes.map(f => f.nome), usuariosSistema, os, permissoes, outras: outrasOS, escuro: darkMode }));
+        // Os lotes em reais, como o resto do modal. Uma O.S. baixada não abre
+        // para Atendimento e Produção, então para eles o número dela não é link.
+        const lotesOS = Object.fromEntries(Object.entries(lotes || {}).map(([lote, l]) => [lote, {
+            total: l.total / 100, forma: l.forma,
+            partes: l.partes.map(x => ({ id: x.id, valor: x.valor / 100, baixada: x.status === 'Finalizado', abre: !!aoTrocar && !(isOperador && x.status === 'Finalizado') })),
+        }]));
+        setHtml(montarNovaOS(modelo, { produtos, locais: fornecedoresTerceirizacaoNomes.map(f => f.nome), usuariosSistema, os, permissoes, outras: outrasOS, lotes: lotesOS, escuro: darkMode }));
     }
 
     // Quem abriu a janela (Esc fora do iframe, voltar do navegador) pede o
@@ -200,14 +215,26 @@ export default function NovaOSPorCima({ id, aoFechar }) {
             }
         }
 
-        async function pagarLote(n, metadados, alocacoes) {
+        async function pagarLote(n, metadados, alocacoes, valorDesta) {
             const porId = new Map(achado.outras.map(o => [o.id, o]));
             const lista = alocacoes.map(a => ({ pedido: porId.get(a.id), valorAlocado: reaisDeCentavos(a.valor) })).filter(a => a.pedido);
             if (!lista.length) { responder(n, { ok: false }); return; }
             const loteId = `lote_${Date.now()}`;
-            const resultado = await registrarPagamentoLoteOutrasOS(loteId, metadados, lista);
+            // A parte desta O.S. grava junto com as das outras: ou entram todas,
+            // ou nenhuma. O modal a põe na lista e salva a O.S. em seguida.
+            const atual = antes?.id && valorDesta > 0 ? { pedidoId: antes.id, valorAlocado: reaisDeCentavos(valorDesta) } : null;
+            const resultado = await registrarPagamentoLoteOutrasOS(loteId, metadados, lista, atual);
             if (resultado.sucesso) avisar(`Pagamento registrado em ${1 + lista.length} O.S.`, 'sucesso');
             responder(n, resultado.sucesso ? { ok: true, loteId } : { ok: false });
+        }
+
+        // Desfazer um lote inteiro: só os lotes que esta O.S. tem, e só quando
+        // nenhuma das outras O.S. está baixada (o modal nem oferece).
+        async function removerLote(n, loteId) {
+            const lote = achado.lotes?.[loteId];
+            if (!antes?.id || !lote || lote.partes.some(x => x.id !== antes.id && x.status === 'Finalizado')) { responder(n, { ok: false }); return; }
+            const resultado = await removerPagamentoLote(loteId, antes.id);
+            responder(n, { ok: !!resultado.sucesso });
         }
 
         function aoReceber(e) {
@@ -230,11 +257,13 @@ export default function NovaOSPorCima({ id, aoFechar }) {
                     responder(d.n, r.produto ? { produto: [r.produto.id, r.produto.nome, r.produto.preco_base || 0, r.produto.texto_padrao || ''] } : { erro: r.erro });
                 });
             }
-            if (d.tipo === 'pagar-lote' && achado) pagarLote(d.n, d.metadados || {}, d.alocacoes || []);
+            if (d.tipo === 'pagar-lote' && achado) pagarLote(d.n, d.metadados || {}, d.alocacoes || [], Number(d.atual) || 0);
+            if (d.tipo === 'remover-lote' && achado) removerLote(d.n, String(d.loteId || ''));
+            if (d.tipo === 'trocar-os' && Number.isInteger(d.id)) aoTrocar?.(d.id);
         }
         window.addEventListener('message', aoReceber);
         return () => window.removeEventListener('message', aoReceber);
-    }, [antes, achado, aoFechar, avisar, gravarOS, imprimirOS, registrarPagamentoLoteOutrasOS, criarCliente, criarProduto, isDemo]);
+    }, [antes, achado, aoFechar, aoTrocar, avisar, gravarOS, imprimirOS, registrarPagamentoLoteOutrasOS, removerPagamentoLote, criarCliente, criarProduto, isDemo]);
 
     // Enquanto a O.S. chega, o véu já aparece — da mesma cor do véu do
     // modal, que assume no lugar dele quando o iframe termina de carregar.

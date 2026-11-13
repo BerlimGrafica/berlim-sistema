@@ -9,6 +9,7 @@ import { CATEGORIAS_CONTA } from '@/lib/utils/constants';
 import { corDoNome } from '@/lib/prototipos/coresDoNome';
 import { podeVerTela, subtelasVisiveis } from '@/lib/acesso/telas';
 import { periodoPadrao } from '@/components/vendas/SeletorPeriodo';
+import { anexarLotes } from '@/lib/pedidos/lotes';
 import { useAbrirOSDoPrototipo } from '@/hooks/useAbrirOSDoPrototipo';
 import { useContaDoPrototipo } from '@/hooks/useContaDoPrototipo';
 import LogoCarregando from '@/components/ui/LogoCarregando';
@@ -67,7 +68,7 @@ function periodoAnterior(inicio, fim, hoje) {
 const CAMPOS_DIA = `
     id, cliente, servico, valor_total, status, responsavel, local_producao,
     pedido_itens ( nome, descricao, valor_centavos, ordem ),
-    pedido_pagamentos ( forma, valor_centavos, parcelas, instituicao, bandeira )
+    pedido_pagamentos ( forma, valor_centavos, parcelas, instituicao, bandeira, lote_id )
 `;
 
 export default function Page() {
@@ -116,7 +117,9 @@ export default function Page() {
             .not('status', 'in', '("Cancelado","Cancelada")')
             .order('valor_total', { ascending: false });
         if (error) throw error;
-        return (d || []).map(p => {
+        // Pagamento dividido entre várias O.S.: vem com o valor do pagamento
+        // inteiro e as outras O.S. (uma busca a mais, só se o dia tem algum).
+        return (await anexarLotes(d || [])).map(p => {
             situacoes.current.set(p.id, p.status);
             return {
                 id: p.id,
@@ -128,7 +131,7 @@ export default function Page() {
                 local: p.local_producao || '',
                 itens: [...(p.pedido_itens || [])].sort((a, b) => (a.ordem ?? 0) - (b.ordem ?? 0))
                     .map(i => ({ nome: i.nome || '', desc: i.descricao || '', valor: i.valor_centavos || 0 })),
-                pags: (p.pedido_pagamentos || []).map(g => ({ forma: g.forma || 'Indefinido', valor: g.valor_centavos || 0, parc: g.parcelas || 1, inst: g.instituicao || '', band: g.bandeira || '' })),
+                pags: (p.pedido_pagamentos || []).map(g => ({ forma: g.forma || 'Indefinido', valor: g.valor_centavos || 0, parc: g.parcelas || 1, inst: g.instituicao || '', band: g.bandeira || '', lote: g.lote || null })),
             };
         });
     }, [isDemo]);

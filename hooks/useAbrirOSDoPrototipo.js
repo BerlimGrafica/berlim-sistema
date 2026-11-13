@@ -74,7 +74,7 @@ export function useAbrirOSDoPrototipo(statusDe) {
         };
     }, [aberta, pedirFechar]);
 
-    const modalOS = aberta ? createElement(NovaOSPorCima, { key: osAberta, id: osAberta, aoFechar: fechar }) : null;
+    const modalOS = aberta ? createElement(NovaOSPorCima, { key: osAberta, id: osAberta, aoFechar: fechar, aoTrocar: setOsAberta }) : null;
 
     return { iframeRef, modalOS };
 }

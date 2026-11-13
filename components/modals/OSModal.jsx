@@ -736,17 +736,19 @@ export default function OSModal() {
                                                         const loteId = `lote_${Date.now()}`;
                                                         const metadados = { forma: novoPagamento.forma, parcelas: novoPagamento.parcelas, instituicao: novoPagamento.instituicao, bandeira: novoPagamento.bandeira, data: novoPagamento.data || obterDataAtual() };
 
+                                                        // A parte desta O.S. grava junto com as das outras (ou entram
+                                                        // todas, ou nenhuma); o salvarOS logo abaixo a mantém na lista.
                                                         const resultado = await registrarPagamentoLoteOutrasOS(loteId, metadados,
-                                                            outrasMarcadas.map(os => ({ pedido: os, valorAlocado: alocacoesLote[os.id] })));
-                                                        if (!resultado.sucesso) return; // já avisou o erro, OS atual não foi tocada
+                                                            outrasMarcadas.map(os => ({ pedido: os, valorAlocado: alocacoesLote[os.id] })),
+                                                            { pedidoId: pedidoEmEdicao.id, valorAlocado: alocacoesLote[pedidoEmEdicao.id] || '0' });
+                                                        if (!resultado.sucesso) return; // já avisou o erro, nenhuma O.S. foi tocada
 
-                                                        const podeFinalizar = usuario?.nivel === 'Administrador' || usuario?.nivel === 'Financeiro';
-                                                        const quitaAtual = podeFinalizar && (saldo - parseValorMoeda(alocacoesLote[pedidoEmEdicao.id] || '0')) <= 0.001;
                                                         const pagamentoAtual = { ...metadados, valor: alocacoesLote[pedidoEmEdicao.id], lote_id: loteId };
 
                                                         flushSync(() => setPagamentosPedido([...pagamentosPedido, pagamentoAtual]));
                                                         avisar(`Pagamento registrado em ${1 + outrasMarcadas.length} OS's.`, 'sucesso');
-                                                        await salvarOS(null, false, quitaAtual ? 'Finalizado' : null);
+                                                        // Só paga: o status fica como está, a baixa é pelo Finalizar.
+                                                        await salvarOS(null, false, null);
                                                         setOsLoteSelecionadas({});
                                                         setAlocacoesLote({});
                                                     }} className="w-full bg-brand hover:bg-brandHover text-white py-1.5 rounded text-mini font-semibold transition disabled:opacity-40 disabled:cursor-not-allowed">

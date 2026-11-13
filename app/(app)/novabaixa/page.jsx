@@ -95,7 +95,7 @@ export default function Page() {
             resumo: resumoDoPedido(p),
             valor: p.valor_total || 0,
             pago: Math.round((p.pedido_pagamentos || []).reduce((s, pg) => s + valorPagamentoComSinalCentavos(pg), 0) * 100),
-            pags: (p.pedido_pagamentos || []).map(pg => [pg.forma || 'Pagamento', Math.round(valorPagamentoComSinalCentavos(pg) * 100), pg.data || '']),
+            pags: (p.pedido_pagamentos || []).map(pg => [pg.forma || 'Pagamento', Math.round(valorPagamentoComSinalCentavos(pg) * 100), pg.data || '', !!pg.lote_id]),
         };
     }, [isDemo, isClienteProblema]);
 

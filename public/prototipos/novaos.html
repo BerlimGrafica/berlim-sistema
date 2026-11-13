@@ -107,6 +107,8 @@ html[data-troca-tema] *, html[data-troca-tema] *::before, html[data-troca-tema] 
 
 /* popover */
 .pop { position: fixed; z-index: 90; min-width: 200px; max-height: 320px; overflow-y: auto; padding: 4px; background: var(--superficie); border: 1px solid var(--borda); border-radius: 9px; box-shadow: var(--sombra-pop); animation: pop .16s cubic-bezier(.16,1,.3,1); }
+/* Chegar ao fim de uma lista aberta não leva a tela de trás junto. */
+.pop { overscroll-behavior: contain; }
 @keyframes pop { from { opacity: 0; transform: translateY(-4px); } }
 .pop button { display: flex; align-items: center; gap: 9px; width: 100%; text-align: left; padding: 7px 10px; border-radius: 6px; font-size: 13px; color: var(--tinta-corpo); }
 .pop button:hover, .pop button:focus-visible, .pop button.ativo { background: var(--realce); color: var(--tinta); outline: none; }
@@ -294,6 +296,18 @@ html[data-troca-tema] *, html[data-troca-tema] *::before, html[data-troca-tema] 
 .pags .v { margin-left: auto; font-weight: 600; color: var(--fin-tinta); white-space: nowrap; }
 .pags .estorno .v { color: var(--perigo); }
 .pags .lote { font-size: 11px; font-weight: 600; color: var(--tinta-suave); background: var(--realce); border-radius: 4px; padding: 0 5px; }
+/* Um pagamento só dividido entre várias O.S.: a linha mostra a parte desta e,
+   embaixo, de quanto foi o pagamento inteiro e com quais O.S. ele foi dividido. */
+.pags li.tem-nota { flex-wrap: wrap; row-gap: 3px; }
+.pags .lote-nota { flex: 0 0 100%; padding-left: 36px; font-size: 12px; line-height: 1.45; color: var(--tinta-corpo); }
+.pags .lote-nota .ico { display: inline-block; width: 13px; height: 13px; margin-right: 4px; vertical-align: -2px; color: var(--tinta-suave); }
+.pags .lote-nota b { font-weight: 600; color: var(--tinta); }
+.os-link { font-weight: 600; color: var(--fin-tinta); border-radius: 4px; padding: 0 3px; margin: 0 -3px; text-decoration: underline; text-decoration-color: var(--fin-borda); text-underline-offset: 2px; }
+.os-link:hover { background: var(--fin-fundo); text-decoration-color: var(--fin); }
+.sub-corpo .partes { list-style: none; padding: 0; border: 1px solid var(--borda); border-radius: 8px; font-size: 13px; }
+.sub-corpo .partes li { display: flex; justify-content: space-between; gap: 12px; padding: 7px 11px; border-bottom: 1px solid var(--borda-fraca); color: var(--tinta-corpo); }
+.sub-corpo .partes li:last-child { border-bottom: 0; font-weight: 600; color: var(--tinta); }
+.sub-corpo .partes small { color: var(--tinta-suave); font-size: 12px; }
 .sem-pag { color: var(--tinta-suave); font-size: 12.5px; padding: 8px 0; }
 .receber { width: 100%; margin-top: 12px; border-color: var(--fin-borda); color: var(--fin-tinta); }
 .receber:hover:not(:disabled) { background: var(--fin-fundo); border-color: var(--fin); }
@@ -354,6 +368,8 @@ html[data-troca-tema] *, html[data-troca-tema] *::before, html[data-troca-tema] 
 .toast.erro .ico { color: #f87171; }
 .btn-perigo { background: var(--perigo); color: #fff; }
 .btn-perigo:hover:not(:disabled) { filter: brightness(.94); }
+.btn-remove-todas { color: var(--perigo); margin-right: auto; }
+.btn-remove-todas:hover:not(:disabled) { background: var(--perigo-fundo); }
 .btn:disabled { opacity: .55; cursor: default; }
 .selo.trancada { color: var(--perigo); background: var(--perigo-fundo); }
 
@@ -576,6 +592,13 @@ const duasLetras = n => { const p = n.trim().split(/\s+/); return p.length > 1 ?
 const bolinha = n => `<i style="background:${EQUIPE[n]?.bg || '#64748b'};color:${EQUIPE[n]?.tx || '#fff'}">${esc(duasLetras(n))}</i>`;
 // As outras O.S. do cliente com saldo, para o pagamento em lote.
 const OUTRAS_OS = POR_CIMA ? (typeof OUTRAS_OS_BANCO !== 'undefined' ? OUTRAS_OS_BANCO : []) : [{ id: 18311, data: '02/10', saldo: 80 }];
+// Os pagamentos em lote desta O.S.: de quanto foi o pagamento inteiro e as
+// partes de cada O.S. — { [lote_id]: { total, forma, partes: [{ id, valor,
+// baixada, abre }] } }, em reais. `abre` diz se quem está logado pode abrir a
+// outra O.S. (baixada fica fechada para Atendimento e Produção).
+const LOTES = POR_CIMA && typeof LOTES_BANCO !== 'undefined' ? LOTES_BANCO : {};
+const loteDe = g => LOTES[g.extra?.lote_id] || null;
+const outrasDoLote = g => (loteDe(g)?.partes || []).filter(x => x.id !== os.id);
 
 /* ===== estado ===== */
 const prod = id => CATALOGO.find(p => p[0] === id);
@@ -740,14 +763,20 @@ function abrirPagamento() {
 }
 function renderFin() {
   const t = totalOS(), p = pago(), s = saldo();
-  const lista = os.pags.length ? os.pags.map((g, k) => `
-    <li class="${g.forma === 'Estorno' ? 'estorno' : ''}">
+  const lista = os.pags.length ? os.pags.map((g, k) => {
+    // Em lote: a parte desta O.S. e, embaixo, o pagamento inteiro e as outras
+    // O.S. Sem os dados do lote (o protótipo solto), fica só a marca.
+    const lt = loteDe(g), outras = outrasDoLote(g);
+    const nota = lt && outras.length
+      ? `<div class="lote-nota"><i data-lucide="split" class="ico"></i>Parte de um pagamento de <b>R$ ${brl(lt.total)}</b>, com ${outras.length > 1 ? 'as O.S.' : 'a O.S.'} ${outras.map(x => x.abre ? `<button type="button" class="os-link" data-troca-os="${x.id}" title="Abrir a O.S. #${x.id}">#${x.id}</button>` : `<b>#${x.id}</b>`).join(', ')}</div>` : '';
+    return `
+    <li class="${g.forma === 'Estorno' ? 'estorno' : ''} ${nota ? 'tem-nota' : ''}">
       <span class="forma-ico"><i data-lucide="${FORMA_ICO[g.forma]}" class="ico ico-s"></i></span>
       <div><div class="forma">${g.forma}${g.parc > 1 ? ` (${g.parc}x)` : ''}</div>
-        <div class="meta">${g.data ? rotuloCurto(g.data) : ''}${g.extra?.vencimento_boleto ? ` · vence ${rotuloCurto(g.extra.vencimento_boleto)}` : ''}${g.inst ? ` · ${g.inst}` : ''}${g.band ? ` · ${bandeiraSvg(g.band)}${g.band}` : ''}${g.lote ? '<span class="lote">em lote</span>' : ''}</div></div>
+        <div class="meta">${g.data ? rotuloCurto(g.data) : ''}${g.extra?.vencimento_boleto ? ` · vence ${rotuloCurto(g.extra.vencimento_boleto)}` : ''}${g.inst ? ` · ${g.inst}` : ''}${g.band ? ` · ${bandeiraSvg(g.band)}${g.band}` : ''}${g.lote && !nota ? '<span class="lote">em lote</span>' : ''}</div></div>
       <span class="v">${g.forma === 'Estorno' ? '−' : ''}${brl(g.valor)}</span>
-      <button class="lixo" data-tira-pag="${k}" aria-label="Remover pagamento"><i data-lucide="trash-2" class="ico ico-s"></i></button>
-    </li>`).join('') : '<li class="sem-pag">Nenhum pagamento registrado ainda.</li>';
+      <button class="lixo" data-tira-pag="${k}" aria-label="Remover pagamento"><i data-lucide="trash-2" class="ico ico-s"></i></button>${nota}
+    </li>`; }).join('') : '<li class="sem-pag">Nenhum pagamento registrado ainda.</li>';
 
   let form = '';
   if (pf) {
@@ -813,23 +842,75 @@ function registrarPagamento() {
   } else os.pags.push({ ...base, valor: v });
   pf = null;
 }
-// Pagamento em lote, como no modal de hoje: a fatia de cada outra O.S. grava
-// na hora (registrarPagamentoLoteOutrasOS); a desta entra na lista com o mesmo
-// lote e a O.S. é salva em seguida — e finalizada, se ficou quitada e quem
-// está logado pode finalizar.
+// Pagamento em lote: um pagamento só, dividido entre esta O.S. e outras do
+// cliente. As partes gravam na hora e todas juntas (registrarPagamentoLoteOutrasOS:
+// ou entram todas, ou nenhuma); a desta entra na lista com o mesmo lote e a
+// O.S. é salva em seguida. Só paga: o status de cada O.S. fica como está, e a
+// baixa continua sendo pelo Finalizar, como num pagamento comum.
 function pagarEmLote(base, outras) {
   const nomes = [`#${os.id}`, ...outras.map(o => `#${o.id}`)].join(', ');
   const centavos = s => Math.round(lerValor(s || '0') * 100);
-  abrirSub('Pagamento em lote', `<p>Confirma o pagamento de R$ ${esc(pf.valor)} dividido entre as O.S. ${nomes}?\n\nIsso grava na hora, em todas elas, e salva esta O.S.</p>`, `Registrar em ${1 + outras.length} O.S.`, async () => {
+  abrirSub('Pagamento em lote', `<p>Confirma o pagamento de R$ ${esc(pf.valor)} dividido entre as O.S. ${nomes}?\n\nIsso grava na hora, em todas elas, e salva esta O.S. O status de cada uma fica como está.</p>`, `Registrar em ${1 + outras.length} O.S.`, async () => {
     const r = await pedirAoSistema('pagar-lote', {
       metadados: { forma: base.forma, parcelas: base.parc, instituicao: base.inst, bandeira: base.band, data: base.data },
       alocacoes: outras.map(o => ({ id: o.id, valor: centavos(pf.aloc[o.id]) })),
+      atual: centavos(pf.aloc.esta),
     });
     if (!r.ok) return false;
-    os.pags.push({ ...base, valor: lerValor(pf.aloc.esta || '0'), lote: true, extra: { lote_id: r.loteId } });
+    // Sem valor para esta O.S. (o pagamento foi todo para as outras), ela não ganha parte.
+    if (lerValor(pf.aloc.esta || '0') > 0) os.pags.push({ ...base, valor: lerValor(pf.aloc.esta || '0'), lote: true, extra: { lote_id: r.loteId } });
+    LOTES[r.loteId] = { total: lerValor(pf.valor), forma: base.forma, partes: [{ id: os.id, valor: lerValor(pf.aloc.esta || '0') }, ...outras.map(o => ({ id: o.id, valor: lerValor(pf.aloc[o.id] || '0'), abre: true }))] };
     pf = null; render();
-    setTimeout(() => enviarOS(false, PERM.podeFinalizar && saldo() <= 0.001 ? 'Finalizado' : null));
+    setTimeout(() => enviarOS(false));
   });
+}
+
+// Remover um pagamento. Se ele é parte de um lote, a pessoa escolhe: tirar só
+// a parte desta O.S. (vale ao salvar, como qualquer outro pagamento removido)
+// ou desfazer o pagamento inteiro — as partes das outras O.S. saem na hora e
+// esta é salva em seguida. Com outra O.S. do lote já baixada, o inteiro não é
+// oferecido: uma O.S. finalizada que voltasse a dever não aparece em Contas a
+// receber, então essa se corrige abrindo a própria O.S.
+function tirarPagamento(k) {
+  const g = os.pags[k]; if (!g) return;
+  const lt = loteDe(g), outras = outrasDoLote(g);
+  if (!lt || !outras.length) { os.pags.splice(k, 1); render(); return; }
+  const tirar = () => { os.pags.splice(os.pags.indexOf(g), 1); render(); };
+  const baixadas = outras.filter(x => x.baixada), nomes = l => l.map(x => `#${x.id}`).join(', ');
+  const sub = abrirSub('Pagamento dividido entre O.S.', `
+    <p>Este pagamento de R$ ${brl(lt.total)} em ${esc(g.forma)} foi dividido assim:</p>
+    <ul class="partes num">
+      <li><span>O.S. #${os.id} <small>(esta)</small></span><span>R$ ${brl(g.valor)}</span></li>
+      ${outras.map(x => `<li><span>O.S. #${x.id}${x.baixada ? ' <small>(baixada)</small>' : ''}</span><span>R$ ${brl(x.valor)}</span></li>`).join('')}
+      <li><span>Pagamento inteiro</span><span>R$ ${brl(lt.total)}</span></li>
+    </ul>
+    <p>${baixadas.length
+      ? `A O.S. ${nomes(baixadas)} já foi baixada, então a parte dela não sai por aqui. Para corrigir o pagamento inteiro, abra também a O.S. ${nomes(baixadas)}.`
+      : `"Remover de todas" grava na hora: tira a parte da O.S. ${nomes(outras)} e salva esta. "Só desta" tira a parte daqui e vale quando você salvar.`}</p>`,
+    'Remover só desta O.S.', tirar);
+  if (baixadas.length) return;
+  const todas = document.createElement('button');
+  todas.type = 'button'; todas.className = 'btn btn-txt btn-remove-todas'; todas.textContent = 'Remover de todas';
+  sub.querySelector('.sub-pe').prepend(todas);
+  todas.addEventListener('click', async () => {
+    if (todas.disabled) return;
+    todas.disabled = true; todas.textContent = 'Removendo…';
+    const r = await pedirAoSistema('remover-lote', { loteId: g.extra.lote_id });
+    if (!r.ok) { todas.disabled = false; todas.textContent = 'Remover de todas'; return; }
+    delete LOTES[g.extra.lote_id];
+    sub.remove(); tirar();
+    setTimeout(() => enviarOS(false));
+  });
+}
+// Abrir outra O.S. a partir desta (a outra parte de um pagamento em lote): com
+// algo mexido, pergunta antes de descartar, como ao fechar.
+function trocarOS(id) {
+  const ir = () => { parent.postMessage({ tipo: 'trocar-os', id }, '/'); };
+  if (document.querySelector('.janela')) return;
+  if (PERM.trancado || salvando || retrato() === retratoInicial) return ir();
+  abrirSub('Sair sem salvar?', `<p>O que foi mexido nesta O.S. ainda não foi salvo e será descartado ao abrir a O.S. #${id}.</p>`, `Descartar e abrir a #${id}`, ir);
+  const ok = document.querySelector('.janela .btn-pri'); ok.classList.replace('btn-pri', 'btn-perigo');
+  const voltar = document.querySelector('.janela .sub-pe .btn-txt'); voltar.textContent = 'Continuar editando'; voltar.focus();
 }
 
 /* ===== render geral ===== */
@@ -1251,7 +1332,8 @@ document.addEventListener('click', e => {
   if (t.closest('[data-limpa-cat]')) { rasc.prodId = null; rasc.nome = ''; render('#in-cat'); return; }
   if (t.closest('#mais')) { edicao = { aberta: true, idx: null }; rasc = novoRascunho(); render('#in-cat'); return; }
 
-  const tp = t.closest('[data-tira-pag]'); if (tp) { os.pags.splice(+tp.dataset.tiraPag, 1); render(); return; }
+  const tp = t.closest('[data-tira-pag]'); if (tp) { tirarPagamento(+tp.dataset.tiraPag); return; }
+  const to = t.closest('[data-troca-os]'); if (to) { trocarOS(+to.dataset.trocaOs); return; }
   if (t.closest('[data-abre-pag]')) { abrirPagamento(); render('#pf-valor'); return; }
   if (t.closest('[data-cancela-pag]')) { pf = null; render(); return; }
   if (t.closest('[data-registra]')) { registrarPagamento(); render(); return; }

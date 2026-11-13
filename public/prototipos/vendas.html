@@ -424,6 +424,10 @@ button.tab-lin:hover { background: var(--sutil); }
 .gv-veu { position: fixed; inset: 51px 0 0 0; background: rgba(15,23,42,.36); z-index: 60; animation: veuEntra .4s ease-out; }
 .dark .gv-veu { background: rgba(0,0,0,.6); }
 .gaveta { position: fixed; top: 51px; right: 0; bottom: 0; width: min(500px, 100%); background: var(--fundo); border-left: 1px solid var(--borda); box-shadow: 0 24px 56px -16px rgba(15,23,42,.32), 0 2px 8px rgba(15,23,42,.08); z-index: 61; overflow-y: auto; animation: gavetaEntra .46s cubic-bezier(.22,1,.36,1); outline: none; }
+/* Com a gaveta aberta, a página de trás fica parada: a roda do mouse rola só a
+   gaveta, e chegar ao fim dela (ou de uma lista aberta) não leva a página junto. */
+.gaveta, .pop { overscroll-behavior: contain; }
+html:has(.gaveta:not(.sai)) { overflow: hidden; scrollbar-gutter: stable; }
 .dark .gaveta { box-shadow: 0 24px 56px -16px rgba(0,0,0,.7); }
 .gv-veu.sai { animation: veuSai .3s ease-in forwards; pointer-events: none; }
 .gaveta.sai { animation: gavetaSai .3s cubic-bezier(.55,0,1,.45) forwards; pointer-events: none; }
@@ -1224,7 +1228,7 @@ function conteudoDia() {
         <dl>${p.itens.length ? p.itens.map(i => `<div><dt>${esc(legivel(i.nome))}${i.desc ? ` <span>— ${esc(i.desc)}</span>` : ''}</dt><dd>${reais(i.valor)}</dd></div>`).join('') : `<div><dt>${esc(p.servico || 'Sem itens lançados.')}</dt><dd></dd></div>`}</dl>
         ${p.itens.length && somaItens !== p.valor ? `<div class="det-sub">Itens somam ${reais(somaItens)}; a O.S. fechou em ${reais(p.valor)}.</div>` : ''}
         <div class="grupo">Pagamentos</div>
-        ${p.pags.length ? `<dl>${p.pags.map(g => { const det = [g.band, g.inst, g.parc > 1 ? `${g.parc}x` : ''].filter(Boolean).join(' · '); return `<div><dt>${esc(g.forma)}${det ? ` <span>· ${esc(det)}</span>` : ''}</dt><dd class="${g.forma === 'Estorno' ? 'neg' : ''}">${reais(valorPag(g))}</dd></div>`; }).join('')}</dl>` : '<div class="nada">Nenhum pagamento lançado.</div>'}
+        ${p.pags.length ? `<dl>${p.pags.map(g => { const det = [g.band, g.inst, g.parc > 1 ? `${g.parc}x` : ''].filter(Boolean).join(' · '); return `<div><dt>${esc(g.forma)}${det ? ` <span>· ${esc(det)}</span>` : ''}${g.lote ? ` <span>· parte de ${reais(g.lote.total)}, com ${g.lote.outras.length > 1 ? 'as O.S.' : 'a O.S.'} ${g.lote.outras.map(n => '#' + n).join(', ')}</span>` : ''}</dt><dd class="${g.forma === 'Estorno' ? 'neg' : ''}">${reais(valorPag(g))}</dd></div>`; }).join('')}</dl>` : '<div class="nada">Nenhum pagamento lançado.</div>'}
       </div>` : ''}</li>`; }).join('');
   return `<div class="det">${cab}
     <div class="det-valor"><small>R$</small>${brl(total, true)}</div>

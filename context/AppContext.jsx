@@ -8,6 +8,7 @@ import { STATUSES_PRODUCAO, STATUSES_FINALIZADOS, STATUSES_JA_RETIRADO_DA_FUTURA
 import { formatarMoeda, parseValorMoeda, valorPagamentoComSinal, valorPagamentoComSinalCentavos, paraCentavos, centavosParaReais, obterDataAtual, adicionarMesData, rotuloCliente } from '@/lib/utils/formatters';
 import { itensDoPedido, pagamentosDoPedido, observacoesDoPedido, itensDoOrcamento, observacoesDoOrcamento } from '@/lib/utils/servico';
 import { gravarItensPagamentos, clonarItensParaPedido, gravarItensOrcamento } from '@/lib/pedidos/gravacao';
+import { gravarPagamentoLote, removerPartesDoLote } from '@/lib/pedidos/lotes';
 import { buscarClientes, acharTelefoneDuplicado, buscarCadastroClientes } from '@/lib/clientes/busca';
 import { avisarPedidosMudados } from '@/lib/pedidos/mudancas';
 import { useAuth } from '@/hooks/useAuth';
@@ -1082,23 +1083,55 @@ export const AppProvider = ({ children }) => {
             .filter(p => p.saldo > 0.001);
     }
 
-    // Grava, em cada uma das "outras" OS's, a fatia que lhe cabe de um pagamento
-    // físico único (nunca chamado para a OS atualmente aberta no modal — essa
-    // vai por salvarOS(), ver OSModal.jsx). Cada fatia carrega um lote_id comum,
-    // pra dar pra rastrear depois que era uma única transação no caixa.
-    // Grava uma OS de cada vez (o Supabase client não expõe transação
-    // multi-linha sem uma function no Postgres) — se alguma falhar no meio, para
-    // e avisa quais já foram gravadas, pra conferência manual.
-    async function registrarPagamentoLoteOutrasOS(loteId, metadados, alocacoes) {
-        const podeFinalizar = usuario?.nivel === 'Administrador' || usuario?.nivel === 'Financeiro';
+    // Pagamento em lote: um pagamento só (um Pix de R$ 75,00) dividido entre
+    // várias O.S. Cada O.S. ganha a sua parte em pedido_pagamentos, todas com o
+    // mesmo lote_id — é ele que deixa as telas mostrarem que as partes são um
+    // pagamento só (lib/pedidos/lotes.js).
+    //
+    // `alocacoes` são as OUTRAS O.S. ([{ pedido, valorAlocado }]); `atual` é a
+    // parte da O.S. aberta no modal ({ pedidoId, valorAlocado }).
+    //
+    // TUDO DE UMA VEZ
+    // As partes entram juntas, pela função do banco (registrar_pagamento_lote,
+    // em supabase/pagamento_lote_migration.sql): ou o pagamento inteiro grava,
+    // ou nada muda. A parte da O.S. aberta vai junto; o modal a põe na lista
+    // com o mesmo lote e salva a O.S. em seguida, e como salvar troca os
+    // pagamentos da O.S. pelos da lista, ela não entra duas vezes.
+    //
+    // O LOTE SÓ PAGA, NÃO DÁ BAIXA
+    // O status de cada O.S. fica como estava: quitar não é o mesmo que baixar.
+    // Uma O.S. concluída e paga continua em "À dar baixa", e quem baixa é o
+    // Financeiro, pelo Finalizar — igual a um pagamento comum, que também não
+    // mexe no status. (Antes o lote finalizava sozinho a O.S. que ficava quitada.)
+    //
+    // Sem a função no banco (a migração ainda não rodou), cai no caminho de
+    // antes: uma O.S. por vez, e a parte da aberta só ao salvar.
+    async function registrarPagamentoLoteOutrasOS(loteId, metadados, alocacoes, atual = null) {
+        const partes = alocacoes.map(a => ({ pedido_id: a.pedido.id, valor_centavos: paraCentavos(a.valorAlocado) }));
+        if (atual?.pedidoId && paraCentavos(atual.valorAlocado) > 0) partes.push({ pedido_id: atual.pedidoId, valor_centavos: paraCentavos(atual.valorAlocado) });
+
+        const r = await gravarPagamentoLote(loteId, metadados, partes);
+        if (r.semFuncao) return registrarLoteUmaPorVez(loteId, metadados, alocacoes);
+        if (r.erro) {
+            avisar(`O pagamento em lote não foi gravado em nenhuma O.S.: ${r.erro.message || 'erro desconhecido'}.`, 'erro');
+            return { sucesso: false };
+        }
+
+        for (const { pedido } of alocacoes) {
+            const novas = r.linhas.filter(l => l.pedido_id === pedido.id);
+            // O que a lista já tem da O.S. (os itens, por exemplo) fica como está.
+            aplicarNasListasDePedidos(pedido.id, p => ({ ...p, pedido_pagamentos: [...(p.pedido_pagamentos || pedido.pedido_pagamentos || []), ...novas] }));
+        }
+        setTriggerRealtime(prev => prev + 1);
+        return { sucesso: true };
+    }
+
+    // O caminho de antes da função do banco: uma O.S. por vez. Se alguma falhar
+    // no meio, para e avisa quais já foram gravadas, para conferência manual.
+    async function registrarLoteUmaPorVez(loteId, metadados, alocacoes) {
         const concluidos = [];
         for (const { pedido, valorAlocado } of alocacoes) {
             const pagamentosDb = pedido.pedido_pagamentos || [];
-            const totalPagoCentavos = pagamentosDb.reduce((acc, p) => acc + (p.forma === 'Estorno' ? -1 : 1) * p.valor_centavos, 0) + paraCentavos(valorAlocado);
-            const saldoRestante = centavosParaReais(pedido.valor_total) - centavosParaReais(totalPagoCentavos);
-            // A OS só precisa ser tocada quando o pagamento a quita: o pagamento
-            // em si mora em pedido_pagamentos.
-            const viraFinalizado = podeFinalizar && saldoRestante <= 0.001 && pedido.status !== 'Finalizado';
 
             const linhaPagamento = {
                 pedido_id: pedido.id, ordem: pagamentosDb.length, forma: metadados.forma || 'Indefinido',
@@ -1108,25 +1141,39 @@ export const AppProvider = ({ children }) => {
                 boleto_concluido: metadados.boleto_concluido ?? null, lote_id: loteId,
             };
 
-            const [{ data, error }, { data: pagamentoInserido, error: errorPagamento }] = await Promise.all([
-                viraFinalizado
-                    ? supabase.from('pedidos').update({ status: 'Finalizado', ...marcaDeQuemFinalizou('Finalizado', pedido.status) }).eq('id', pedido.id).select()
-                    : Promise.resolve({ data: [pedido], error: null }),
-                supabase.from('pedido_pagamentos').insert([linhaPagamento]).select(),
-            ]);
-            if (error || !data || data.length === 0 || errorPagamento) {
+            const { data: pagamentoInserido, error: errorPagamento } = await supabase.from('pedido_pagamentos').insert([linhaPagamento]).select();
+            if (errorPagamento) {
                 const jaGravadas = concluidos.length > 0 ? ` Já gravado em: ${concluidos.map(c => '#' + c.id).join(', ')}.` : '';
-                avisar(`Pagamento em lote interrompido na OS #${pedido.id}: ${(error || errorPagamento)?.message || 'erro desconhecido'}.${jaGravadas}`, 'erro');
+                avisar(`Pagamento em lote interrompido na OS #${pedido.id}: ${errorPagamento.message || 'erro desconhecido'}.${jaGravadas}`, 'erro');
                 carregarDados();
                 return { sucesso: false };
             }
-            concluidos.push({ ...data[0], pedido_pagamentos: [...pagamentosDb, ...(pagamentoInserido || [])] });
+            concluidos.push({ ...pedido, pedido_pagamentos: [...pagamentosDb, ...(pagamentoInserido || [])] });
         }
         if (concluidos.length > 0) {
             concluidos.forEach(c => aplicarNasListasDePedidos(c.id, () => c));
             setTriggerRealtime(prev => prev + 1);
         }
         return { sucesso: true };
+    }
+
+    // Desfaz um pagamento em lote nas OUTRAS O.S. (a parte da O.S. aberta sai
+    // pelo próprio modal, ao salvar). Só é oferecido quando nenhuma das outras
+    // está baixada: uma O.S. finalizada que voltasse a dever não aparece em
+    // Contas a receber — essa se corrige abrindo a própria O.S.
+    async function removerPagamentoLote(loteId, pedidoAtualId) {
+        const r = await removerPartesDoLote(loteId, pedidoAtualId);
+        if (r.erro) {
+            avisar(`Não foi possível remover o pagamento das outras O.S.: ${r.erro.message || 'erro desconhecido'}.`, 'erro');
+            return { sucesso: false };
+        }
+        const porPedido = new Map();
+        r.removidas.forEach(l => porPedido.set(l.pedido_id, [...(porPedido.get(l.pedido_id) || []), l.id]));
+        porPedido.forEach((ids, pedidoId) => aplicarNasListasDePedidos(pedidoId, p => ({
+            ...p, pedido_pagamentos: (p.pedido_pagamentos || []).filter(pg => !ids.includes(pg.id)),
+        })));
+        setTriggerRealtime(prev => prev + 1);
+        return { sucesso: true, pedidos: [...porPedido.keys()] };
     }
 
     function fecharModalOS() {
@@ -2572,7 +2619,7 @@ export const AppProvider = ({ children }) => {
         removerToast, avisar, confirmar, resolverConfirm, abrirContextMenu, fecharContextMenu,
         abrirChat, nomeDoUsuarioChat, enviarMensagemChat, excluirMensagemChat,
         carregarDados, atualizarCampoInline, atualizarItemConcluido,
-        atualizarPagamentoBoleto, concluirBoletoContasReceber, buscarOutrasOSAbertasDoCliente, registrarPagamentoLoteOutrasOS,
+        atualizarPagamentoBoleto, concluirBoletoContasReceber, buscarOutrasOSAbertasDoCliente, registrarPagamentoLoteOutrasOS, removerPagamentoLote,
         fecharModalOS, abrirEdicao, adicionarItemAoCarrinho, removerItemDoCarrinho, salvarEdicaoItemCarrinho,
         salvarOS, gravarOS, duplicarOS, imprimirOS, criarCliente, criarProduto,
         salvarOrcamentoPre, excluirOrcamentoPre, salvarOrcamentoFormalizado, baixarPDFOrcamento,
@@ -2655,6 +2702,7 @@ export const AppProvider = ({ children }) => {
         // de produto vão junto, para ele não assinar outras fatias por isso.
         gravarOS: acoes.gravarOS, buscarOutrasOSAbertasDoCliente: acoes.buscarOutrasOSAbertasDoCliente,
         registrarPagamentoLoteOutrasOS: acoes.registrarPagamentoLoteOutrasOS,
+        removerPagamentoLote: acoes.removerPagamentoLote,
         criarCliente: acoes.criarCliente, criarProduto: acoes.criarProduto,
     }), [acoes, pedidos, dadosCarregados, historicoCarregado, abaOS, buscaHistoricoText, paginaHistorico, pedidosHistorico, totalPedidosHistorico,
         ordenacaoHistoricoOS, triggerRealtime, dataFiltroInicio, dataFiltroFim, buscaProducaoText,

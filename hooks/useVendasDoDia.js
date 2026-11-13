@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
+import { anexarLotes } from '@/lib/pedidos/lotes';
 
 // Detalha um dia da série "Por dia" do painel de Vendas.
 //
@@ -27,7 +28,7 @@ const CANCELADOS = '("Cancelado","Cancelada")';
 const CAMPOS = `
     id, cliente, cliente_id, servico, valor_total, status, responsavel, local_producao,
     pedido_itens ( nome, descricao, valor_centavos, ordem ),
-    pedido_pagamentos ( forma, valor_centavos, parcelas, instituicao, bandeira )
+    pedido_pagamentos ( forma, valor_centavos, parcelas, instituicao, bandeira, lote_id )
 `;
 
 export function useVendasDoDia(dia) {
@@ -46,13 +47,12 @@ export function useVendasDoDia(dia) {
             .eq('data_pedido', dia)
             .not('status', 'in', CANCELADOS)
             .order('valor_total', { ascending: false })
-            .then(({ data, error }) => {
+            .then(async ({ data, error }) => {
+                // Um pagamento dividido entre várias O.S. vem com o valor do
+                // pagamento inteiro e as outras O.S. (lib/pedidos/lotes.js).
+                const pedidos = error ? null : await anexarLotes(data ?? []);
                 if (!ativo) return;
-                setResultado({
-                    dia,
-                    pedidos: error ? null : (data ?? []),
-                    erro: error ? error.message : null,
-                });
+                setResultado({ dia, pedidos, erro: error ? error.message : null });
             });
 
         return () => { ativo = false; };
