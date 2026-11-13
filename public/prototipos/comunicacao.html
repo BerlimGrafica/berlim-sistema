@@ -481,6 +481,28 @@ html[data-troca-tema] *, html[data-troca-tema] *::before, html[data-troca-tema] 
 .mc-pop .pcal .pd:hover b { background: var(--realce); color: var(--tinta); }
 .pd.hoje b { font-weight: 700; color: var(--brand-tinta); box-shadow: inset 0 0 0 1px var(--borda-forte); }
 .pd.esc b, .mc-pop .pcal .pd.esc:hover b { background: var(--brand); color: var(--sobre-brand); font-weight: 700; box-shadow: none; }
+/* filtro de período (o mesmo do Financeiro): o botão e a faixa entre o início e o fim */
+.per { display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 11px; border-radius: 99px; border: 1px solid var(--borda); background: var(--superficie); font-weight: 600; font-size: 12.5px; color: var(--tinta-corpo); white-space: nowrap; transition: border-color .12s, color .12s; }
+.per:hover { border-color: var(--borda-forte); color: var(--tinta); }
+.per .chev { color: var(--tinta-fraca); }
+.per.ativo { color: var(--tinta); border-color: var(--borda-forte); }
+.per.ativo .ico:first-child { color: var(--brand-tinta); }
+.chips .per { margin-left: auto; }
+.per-pop { --faixa: color-mix(in srgb, var(--brand) 15%, transparent); --faixa-previa: color-mix(in srgb, var(--brand) 8%, transparent); }
+.pd::before { position: absolute; top: 1px; bottom: 1px; left: 0; right: 0; background: var(--faixa); }
+.pd.meio::before, .pd.com-fim::before, .pd.fim::before { content: ""; }
+.pd.com-fim::before { left: 50%; }
+.pd.fim::before { right: 50%; }
+.pd.ini.fim::before { content: none; }
+.pcal-dias > :nth-child(7n+1).meio::before { left: 2px; border-radius: 8px 0 0 8px; }
+.pcal-dias > :nth-child(7n).meio::before { right: 2px; border-radius: 0 8px 8px 0; }
+.pcal-dias > :nth-child(7n).com-fim::before, .pcal-dias > :nth-child(7n+1).fim::before { content: none; }
+.pcal-dias.previa .pd::before { background: var(--faixa-previa); }
+.pd.meio b { color: var(--brand-tinta); }
+.mc-pop .pcal .pd.meio:hover b { background: var(--faixa); }
+.pd.ini b, .pd.fim b, .mc-pop .pcal .pd.ini:hover b, .mc-pop .pcal .pd.fim:hover b { background: var(--brand); color: var(--sobre-brand); font-weight: 700; box-shadow: none; }
+.diaf.concluida { background: var(--fin-fundo); box-shadow: inset 0 0 0 1px var(--fin-borda); }
+.diaf.concluida b, .diaf.concluida span { color: var(--fin-tinta); }
 .pcal-grade { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; padding: 6px 0 4px; }
 .mc-pop .pcal .pcal-op { height: 40px; font-weight: 600; text-transform: capitalize; }
 .mc-pop .pcal .pcal-op.on, .mc-pop .pcal .pcal-op.on:hover { background: var(--brand); color: var(--sobre-brand); }
@@ -728,7 +750,25 @@ function gruposTar() {
   const ts = termos();
   const doFiltro = t => est.tar === 'concluidas' ? (!t.fixa && t.status === 'Concluída') : aberta(t) && (est.tar !== 'minhas' || t.responsaveis.includes(DADOS.eu));
   const l = TAR.filter(t => doFiltro(t) && casa(t, ts));
-  if (est.tar === 'concluidas') return [{ id: 'conc', rot: 'Concluídas', icone: 'check-circle-2', itens: l.sort((a, b) => (b.prazo || b.criado || '').localeCompare(a.prazo || a.criado || '')) }];
+  // Concluídas: pelo dia da conclusão, as mais recentes em cima, um grupo por
+  // mês. O período filtra por esse dia. As concluídas antes de o dia ser
+  // gravado ficam num grupo próprio, só com "Todo o período".
+  if (est.tar === 'concluidas') {
+    const p = est.perConc, noPeriodo = t => (!p.de || t.concluidaEm >= p.de) && (!p.ate || t.concluidaEm <= p.ate);
+    // Junto das tarefas, cada vez em que uma rotina foi feita no período (vem
+    // do banco, pedida ao abrir Concluídas ou trocar o período).
+    const vezes = (CONC.lista || []).map(c => { const tar = TAR.find(x => x.id === c.tarefa);
+      return { conclusao: true, cid: c.id, id: c.tarefa, titulo: tar?.titulo || 'Rotina excluída', concluidaEm: c.dia, hora: c.hora, por: c.por, busca: semAcento([tar?.titulo, c.por].join(' ')) }; })
+      .filter(v => casa(v, ts) && (est.tar !== 'minhas' || v.por === DADOS.eu));
+    const comData = [...l.filter(t => t.concluidaEm && noPeriodo(t)), ...vezes]
+      .sort((a, b) => b.concluidaEm.localeCompare(a.concluidaEm) || (b.hora || '').localeCompare(a.hora || '') || b.id - a.id);
+    const meses = new Map();
+    comData.forEach(t => { const k = t.concluidaEm.slice(0, 7); if (!meses.has(k)) meses.set(k, []); meses.get(k).push(t); });
+    const nomeMes = k => { const [a, m] = k.split('-').map(Number); const n = MESES[m - 1]; return n[0].toUpperCase() + n.slice(1) + (a !== +HOJE.slice(0, 4) ? ` de ${a}` : ''); };
+    const gs = [...meses.entries()].map(([k, itens]) => ({ id: 'c' + k, rot: nomeMes(k), icone: 'calendar-check', itens }));
+    if (!comPeriodo(p)) gs.push({ id: 'semdata', rot: 'Sem o dia da conclusão', icone: 'history', dica: 'Concluídas antes de o sistema guardar o dia', itens: l.filter(t => !t.concluidaEm).sort((a, b) => (b.criado || '').localeCompare(a.criado || '') || b.id - a.id) });
+    return gs;
+  }
   const porPrazo = (a, b) => (a.prazo || '9').localeCompare(b.prazo || '9') || a.id - b.id;
   const comuns = l.filter(t => !t.fixa).sort(porPrazo);
   const amanha = somarDias(HOJE, 1);
@@ -852,20 +892,25 @@ function linhaTar(t, ts) {
   const feita = t.fixa ? t.feitaHoje : t.status === 'Concluída';
   const tom = t.fixa || feita ? '' : tomPrazo(t.prazo);
   const pri = tom === 'vermelho' ? 'pri-alta' : tom === 'ambar' ? 'pri-media' : '';
+  // Concluída: o quadrinho e o texto passam a ser o dia da conclusão.
   const quad = t.fixa
     ? `<span class="diaf rotina ${feita ? 'feita' : ''}" title="${feita ? 'Feita hoje' : 'Todo dia'}">${ico(feita ? 'check' : 'repeat', 'ico')}</span>`
+    : feita ? (t.concluidaEm ? quadrinho(t.concluidaEm, 'concluida', 'Concluída em ') : `<span class="diaf rotina feita" title="Concluída (sem o dia)">${ico('check', 'ico')}</span>`)
     : !t.prazo ? `<span class="diaf rotina" title="Quando sobrar tempo">${ico('coffee', 'ico')}</span>`
     : quadrinho(t.prazo, tom, 'Prazo: ');
-  const selo = t.fixa ? (feita ? '<span class="selo s-ok">feita hoje</span>' : '<span class="selo">todo dia</span>')
+  // Rotina: as vezes de hoje ("2x · 10:15", a mais recente), com quem fez na dica.
+  const vezes = t.vezesHoje || [];
+  const selo = t.fixa ? (vezes.length ? `<span class="selo s-ok" title="${esc(vezes.map(v => `${v.hora}${v.por ? ' · ' + v.por : ''}`).join('\n'))}">${vezes.length > 1 ? `${vezes.length}x · ` : 'feita '}${vezes[0].hora}</span>` : feita ? '<span class="selo s-ok">feita hoje</span>' : '<span class="selo">todo dia</span>')
     : t.status === 'Em Andamento' ? '<span class="selo s-itens">em andamento</span>'
-    : feita ? '<span class="selo s-ok">concluída</span>'
+    : feita ? (t.concluidaEm ? `<span class="lin-quando" title="Concluída ${esc(dataLonga(t.concluidaEm))}">concluída ${haDias(t.concluidaEm)}</span>` : '<span class="selo s-ok">concluída</span>')
     : t.prazo ? `<span class="lin-quando ${tom}">${prazoTxt(t.prazo)}</span>` : '<span class="lin-quando">—</span>';
+  // A rotina fica sempre disponível: cada clique registra mais uma vez.
   const acao = t.fixa
-    ? (feita ? `<button class="ib" data-acao="reabrir" data-tipo="tarefa" data-id="${t.id}" aria-label="Desfazer a de hoje" title="Desfazer a de hoje">${ico('rotate-ccw')}</button>`
-             : `<button class="ib ok" data-acao="concluir" data-tipo="tarefa" data-id="${t.id}" aria-label="Feita hoje" title="Feita hoje">${ico('check-circle-2')}</button>`)
+    ? `${feita ? `<button class="ib" data-acao="reabrir" data-tipo="tarefa" data-id="${t.id}" aria-label="Desfazer a última" title="Desfazer a última">${ico('rotate-ccw')}</button>` : ''}<button class="ib ok" data-acao="concluir" data-tipo="tarefa" data-id="${t.id}" aria-label="${feita ? 'Fiz de novo' : 'Fiz'}" title="${feita ? 'Fiz de novo' : 'Fiz'}">${ico('check-circle-2')}</button>`
     : feita ? '' : botaoOk('tarefa', t.id, 'Concluir', 'Concluir?');
   const sub = t.descricao.split(/\r?\n/).find(Boolean) || (t.responsaveis.length ? '' : 'sem dono');
-  return `<div class="lin l-tar ${pri} ${feita ? 'feita' : ''} ${est.ativo === t.id ? 'ativo' : ''} ${est.gaveta === t.id ? 'aberta' : ''}" data-reg="${t.id}" tabindex="0" role="button" aria-label="Tarefa: ${esc(t.titulo)}">
+  // A rotina feita não fica riscada: ela continua disponível para a próxima vez.
+  return `<div class="lin l-tar ${pri} ${feita && !t.fixa ? 'feita' : ''} ${est.ativo === t.id ? 'ativo' : ''} ${est.gaveta === t.id ? 'aberta' : ''}" data-reg="${t.id}" tabindex="0" role="button" aria-label="Tarefa: ${esc(t.titulo)}">
     ${quad}
     <div class="lin-txt"><div class="lin-tit"><span class="t">${realce(t.titulo, ts)}</span></div>
       <div class="lin-sub"><span class="mob">${t.responsaveis.length ? esc(t.responsaveis.join(', ')) + (sub ? ' · ' : '') : ''}</span>${realce(sub, ts)}</div></div>
@@ -886,7 +931,27 @@ function linhaLnk(l, ts) {
     <div class="lin-acts">${l.link ? `<button class="ib" data-acao="copiar" data-id="${l.id}" aria-label="Copiar o link" title="Copiar o link">${ico('copy')}</button>` : ''}${linkAberto(l) ? botaoOk('link', l.id, 'Marcar como pago', 'Pago?') : ''}</div>
   </div>`;
 }
-const linhaDa = (x, ts) => est.aba === 'requisicoes' ? linhaReq(x, ts) : est.aba === 'tarefas' ? linhaTar(x, ts) : linhaLnk(x, ts);
+// Uma vez em que a rotina foi feita: o dia no quadrinho, quem fez e a hora.
+function linhaVez(v, ts) {
+  return `<div class="lin l-tar feita ${est.ativo === v.id ? 'ativo' : ''}" data-reg="${v.id}" tabindex="0" role="button" aria-label="Rotina ${esc(v.titulo)}, feita ${esc(dataLonga(v.concluidaEm))} às ${esc(v.hora)}">
+    ${quadrinho(v.concluidaEm, 'concluida', 'Feita em ')}
+    <div class="lin-txt"><div class="lin-tit"><span class="t">${realce(v.titulo, ts)}</span><span class="selo">${ico('repeat', 'ico')}rotina</span></div>
+      <div class="lin-sub"><span class="mob">${v.por ? esc(v.por) + ' · ' : ''}</span>feita às ${esc(v.hora)}</div></div>
+    ${pessoas(v.por ? [v.por] : [], '—')}
+    <span class="col-selo" style="text-align:right"><span class="lin-quando" title="${esc(dataLonga(v.concluidaEm))}">${haDias(v.concluidaEm)}, ${esc(v.hora)}</span></span>
+    <div class="lin-acts"></div>
+  </div>`;
+}
+const linhaDa = (x, ts) => est.aba === 'requisicoes' ? linhaReq(x, ts) : est.aba === 'tarefas' ? (x.conclusao ? linhaVez(x, ts) : linhaTar(x, ts)) : linhaLnk(x, ts);
+// As vezes em que as rotinas foram feitas, do período de Concluídas. `chave` é
+// o período pedido: trocar o período (ou fazer uma rotina) pede de novo.
+const CONC = { chave: null, lista: null, pedido: 0 };
+function pedirConclusoes() {
+  const p = est.perConc, chave = `${p.de}|${p.ate}`;
+  if (CONC.chave === chave) return;
+  CONC.chave = chave; CONC.pedido++;
+  paraPai({ tipo: 'pedir-conclusoes', pedido: CONC.pedido, de: p.de, ate: p.ate });
+}
 
 function chipsDa() {
   const ch = (k, chave, rot, n, ic) => `<button class="chip" data-chip="${chave}" data-v="${k}" aria-pressed="${est[chave] === k}">${ic ? ico(ic, 'ico ico-s') : ''}${rot}${n != null ? ` <span class="n">${n}</span>` : ''}</button>`;
@@ -895,8 +960,8 @@ function chipsDa() {
     + (est.req === 'falta' ? vista('vista-req', est.vistaReq, [['item', 'Por item', 'list'], ['fornecedor', 'Por fornecedor', 'store']]) : '');
   if (est.aba === 'tarefas') {
     const abertas = TAR.filter(t => aberta(t)), minhas = abertas.filter(t => t.responsaveis.includes(DADOS.eu));
-    return ch('abertas', 'tar', 'Abertas', abertas.filter(t => !t.feitaHoje).length) + (DADOS.eu ? ch('minhas', 'tar', 'Minhas', minhas.filter(t => !t.feitaHoje).length) : '') + '<span class="sep"></span>' + ch('concluidas', 'tar', 'Concluídas', TAR.filter(t => !t.fixa && t.status === 'Concluída').length)
-      + (est.tar !== 'concluidas' ? vista('vista-tar', est.vistaTar, [['lista', 'Lista', 'list'], ['equipe', 'Equipe', 'layout-grid']]) : '');
+    return ch('abertas', 'tar', 'Abertas', abertas.filter(t => !t.feitaHoje).length) + (DADOS.eu ? ch('minhas', 'tar', 'Minhas', minhas.filter(t => !t.feitaHoje).length) : '') + '<span class="sep"></span>' + ch('concluidas', 'tar', 'Concluídas', TAR.filter(t => !t.fixa && t.status === 'Concluída').length + (CONC.chave === `${est.perConc.de}|${est.perConc.ate}` ? (CONC.lista || []).length : 0))
+      + (est.tar !== 'concluidas' ? vista('vista-tar', est.vistaTar, [['lista', 'Lista', 'list'], ['equipe', 'Equipe', 'layout-grid']]) : botaoPeriodo(est.perConc, 'Filtrar pelo dia em que a tarefa foi concluída'));
   }
   return ch('ativos', 'lnk', 'Ativos', LNK.filter(linkAberto).length) + ch('pagos', 'lnk', 'Pagos', LNK.filter(linkPago).length) + ch('inativos', 'lnk', 'Inativos', LNK.filter(l => l.status === 'Inativo').length);
 }
@@ -904,7 +969,7 @@ function vazioDa() {
   const a = abaAtual();
   if (est.busca) return `<div class="vazio">${FOLHA}<b>Nada com “${esc(est.busca)}”</b></div>`;
   const txt = est.aba === 'requisicoes' ? { falta: 'Nada faltando', comprados: 'Nada comprado ainda' }[est.req]
-    : est.aba === 'tarefas' ? { abertas: 'Nenhuma tarefa aberta', minhas: 'Nenhuma tarefa com você', concluidas: 'Nenhuma tarefa concluída' }[est.tar]
+    : est.aba === 'tarefas' ? { abertas: 'Nenhuma tarefa aberta', minhas: 'Nenhuma tarefa com você', concluidas: comPeriodo(est.perConc) ? `Nenhuma tarefa concluída em ${rotuloPeriodo(est.perConc).toLowerCase()}` : 'Nenhuma tarefa concluída' }[est.tar]
     : { ativos: 'Nenhum link esperando pagamento', pagos: 'Nenhum link pago', inativos: 'Nenhum link inativo' }[est.lnk];
   const primeiroFiltro = { requisicoes: false, tarefas: est.tar !== 'concluidas', links: est.lnk === 'ativos' }[est.aba];
   return `<div class="vazio">${FOLHA}<b>${txt}</b>${primeiroFiltro ? `<button class="btn btn-sec btn-p" data-acao="novo">${ico('plus', 'ico ico-s')}${a.novo}</button>` : ''}</div>`;
@@ -924,6 +989,7 @@ function render() {
   const foco = document.activeElement; const naBusca = foco?.id === 'busca' || foco?.id === 'anotar'; const idFoco = naBusca ? foco.id : null; const pos = naBusca ? foco.selectionStart : null;
   const a = abaAtual();
   if (!a) { tela.innerHTML = `<div class="vazio">${FOLHA}<b>Nenhuma parte da Comunicação liberada para você</b></div>`; return; }
+  if (est.aba === 'tarefas' && est.tar === 'concluidas') pedirConclusoes();
   const ts = termos(), gs = gruposDa();
   const ph = { requisicoes: 'Buscar item ou fornecedor', tarefas: 'Buscar tarefa ou pessoa', links: 'Buscar título, cliente ou link' }[est.aba];
   // Em Compras › Falta, o campo de cima anota o que falta (Enter); a busca fica
@@ -1034,10 +1100,12 @@ function detTar(t) {
       <dt>${ico('circle-dot', 'ico ico-s')}Situação</dt><dd>${st}</dd>
       <dt>${ico(t.fixa ? 'repeat' : t.prazo ? 'calendar-clock' : 'coffee', 'ico ico-s')}${t.fixa ? 'Repete' : 'Quando'}</dt><dd>${t.fixa ? 'todo dia' : t.prazo ? `<span style="${tom ? `color:var(${tom === 'vermelho' ? '--perigo' : '--obs-tinta'})` : ''}">${esc(dataLonga(t.prazo))}</span> <span class="mudo">${prazoTxt(t.prazo)}</span>` : 'quando sobrar tempo'}</dd>
       <dt>${ico('users', 'ico ico-s')}Para quem</dt><dd>${pessoas(t.responsaveis, 'Sem dono')}</dd>
+      ${t.fixa ? `<dt>${ico('check-check', 'ico ico-s')}Hoje</dt><dd>${(t.vezesHoje || []).length ? t.vezesHoje.map(v => `<span class="selo s-ok">${esc(v.hora)}${v.por ? ` · ${esc(v.por.split(' ')[0])}` : ''}</span>`).join(' ') : feita ? 'feita' : '<span class="mudo">ainda não</span>'}</dd>` : ''}
+      ${!t.fixa && feita ? `<dt>${ico('check-circle-2', 'ico ico-s')}Concluída</dt><dd>${t.concluidaEm ? `${esc(dataLonga(t.concluidaEm))} <span class="mudo">${haDias(t.concluidaEm)}</span>` : '<span class="mudo">sem o dia (antes de ser gravado)</span>'}</dd>` : ''}
     </dl>
     ${t.descricao ? `<section class="area a-dados"><div class="area-cab"><span class="area-ico">${ico('align-left', 'ico ico-s')}</span><h3>Descrição</h3></div><div class="txt-area">${esc(t.descricao)}</div></section>` : ''}
     <div class="det-acoes">
-      ${t.fixa ? (feita ? `<button class="btn btn-sec btn-p" data-acao="reabrir" data-tipo="tarefa" data-id="${t.id}">${ico('rotate-ccw', 'ico ico-s')}Desfazer a de hoje</button>` : `<button class="btn btn-ok btn-p" data-acao="concluir" data-tipo="tarefa" data-id="${t.id}">${ico('check-circle-2', 'ico ico-s')}Feita hoje</button>`)
+      ${t.fixa ? `<button class="btn btn-ok btn-p" data-acao="concluir" data-tipo="tarefa" data-id="${t.id}">${ico('check-circle-2', 'ico ico-s')}${feita ? 'Fiz de novo' : 'Fiz'}</button>${feita ? `<button class="btn btn-sec btn-p" data-acao="reabrir" data-tipo="tarefa" data-id="${t.id}">${ico('rotate-ccw', 'ico ico-s')}Desfazer a última</button>` : ''}`
         : feita ? '' : botaoOkGrande('tarefa', t.id, 'Concluir', 'Clique de novo para concluir')}
       <span class="esp"></span>${botaoExcluir('tarefa', t.id)}
     </div></div>`;
@@ -1504,21 +1572,29 @@ function concluir(tipo, id) {
   const x = porId(id); if (!x) return;
   if (tipo === 'tarefa' && x.fixa) {
     // A rotina de todo dia é desfeita com um clique: não pergunta, mostra Desfazer.
-    x.feitaHoje = true; x.status = 'Concluída'; redesenhar();
+    const agora = new Date(), hora = `${String(agora.getHours()).padStart(2, '0')}:${String(agora.getMinutes()).padStart(2, '0')}`;
+    x.feitaHoje = true; x.status = 'Concluída'; x.vezesHoje = [{ hora, por: DADOS.eu }, ...(x.vezesHoje || [])];
+    CONC.chave = null; redesenhar();
     paraPai({ tipo: 'concluir-tarefa', id });
-    return toast('Feita hoje', () => reabrir(id));
+    return toast(`Feita às ${hora}`, () => reabrir(id));
   }
   const k = `${tipo}:${id}`;
   if (est.conf !== k) return armar(k);
   est.conf = null; clearTimeout(confTimer);
   if (tipo === 'requisicao') x.status = 'Comprado';
-  if (tipo === 'tarefa') x.status = 'Concluída';
+  if (tipo === 'tarefa') { x.status = 'Concluída'; x.concluidaEm = HOJE; }
   if (tipo === 'link') x.status = 'Pago';
   paraPai({ tipo: `concluir-${tipo}`, id });
   redesenhar();
   toast({ requisicao: 'Requisição marcada como comprada', tarefa: 'Tarefa concluída', link: 'Link marcado como pago' }[tipo]);
 }
-function reabrir(id) { const x = TAR.find(t => t.id === id); if (!x) return; x.feitaHoje = false; x.status = 'Pendente'; redesenhar(); paraPai({ tipo: 'reabrir-tarefa', id }); }
+// Desfazer da rotina: tira a última vez de hoje; se sobrar outra, continua feita.
+function reabrir(id) {
+  const x = TAR.find(t => t.id === id); if (!x) return;
+  x.vezesHoje = (x.vezesHoje || []).slice(1);
+  x.feitaHoje = x.vezesHoje.length > 0; x.status = x.feitaHoje ? 'Concluída' : 'Pendente';
+  CONC.chave = null; redesenhar(); paraPai({ tipo: 'reabrir-tarefa', id });
+}
 function excluir(tipo, id) {
   const k = `x:${tipo}:${id}`;
   if (est.conf !== k) return armar(k);
@@ -1538,6 +1614,7 @@ function agir(a, el) {
   if (a === 'novo') { const i = document.getElementById('anotar'); if (i) { i.focus(); return i.scrollIntoView({ block: 'nearest' }); } return abrirJanela(abaAtual().tipo, null); }
   if (a === 'comprar') { const ids = String(el.dataset.ids || '').split(',').map(Number).filter(n => n > 0); return ids.length && abrirJanela('compra', { ids }); }
   if (a === 'urgente') return alternarUrgente(id);
+  if (a === 'periodo') return abrirPeriodo(el, est.perConc, p => { est.perConc = p; est.ativo = null; render(); });
   if (a === 'urg-novo') { est.urgente = !est.urgente; el.setAttribute('aria-pressed', String(est.urgente)); return document.getElementById('anotar')?.focus(); }
   if (a === 'denovo') { const c = deNovo()[+el.dataset.i]; return c && anotarItem(c.nome, { fornecedor: c.forn, limpar: false }); }
   if (a === 'vista-req' || a === 'vista-tar') {
@@ -1551,7 +1628,7 @@ function agir(a, el) {
   }
   if (a === 'editar') { const x = porId(id); return x && abrirJanela(abaAtual().tipo, x); }
   if (a === 'concluir') return concluir(tipo, id);
-  if (a === 'reabrir') { reabrir(id); return toast('Desfeita a de hoje'); }
+  if (a === 'reabrir') { reabrir(id); return toast('Desfeita a última'); }
   if (a === 'excluir') return excluir(tipo, id);
   if (a === 'copiar') { const l = LNK.find(x => x.id === id); return l?.link && copiar(l.link, el); }
   if (a === 'copiar-itens') { const r = REQ.find(x => x.id === id); return r && copiar(r.lista.join('\n'), el); }
@@ -1560,6 +1637,8 @@ function agir(a, el) {
 document.addEventListener('click', e => {
   const t = e.target;
   if (t.closest('#tema')) return;
+  // O período aberto fecha com o clique de fora; no próprio botão, só fecha.
+  if (perPop) { const no = perPop.ancora.contains(t); fecharPeriodo(); if (no) return; }
   const acao = t.closest('[data-acao]');
   if (acao) {
     if (acao.tagName === 'A') return;
@@ -1583,6 +1662,7 @@ document.addEventListener('keydown', e => {
   if (alvo.id === 'anotar' && e.key === 'Enter') { e.preventDefault(); return anotarItem(est.anotar); }
   if (alvo.id === 'anotar' && e.key === 'Escape' && est.anotar) { est.anotar = ''; alvo.value = ''; return; }
   if (e.key === 'Escape') {
+    if (perPop) { const a = perPop.ancora; fecharPeriodo(); return a.focus(); }
     if (est.conf) { est.conf = null; return redesenhar(); }
     if (est.gaveta != null) { e.preventDefault(); return fecharGaveta(); }
     if (est.busca) { est.busca = ''; return render(); }
@@ -1618,11 +1698,103 @@ window.addEventListener('message', e => {
     if (avulsos.has(e.data.n)) { const voltar = avulsos.get(e.data.n); avulsos.delete(e.data.n); if (!e.data.ok) { voltar?.(); redesenhar(); toast(e.data.erro || 'Não deu para salvar'); } return; }
     return aoSalvarJanela(e.data);
   }
+  if (e.data?.tipo === 'conclusoes') {
+    if (e.data.pedido !== CONC.pedido) return;
+    CONC.lista = e.data.erro ? [] : (e.data.lista || []);
+    if (e.data.cortado) toast('Mostrando as 5.000 vezes mais recentes: escolha um período menor');
+    return redesenhar();
+  }
   if (e.data?.tipo !== 'dados') return;
+  // Concluídas aberta: as tarefas mudaram (alguém fez uma rotina), então as vezes do período são pedidas de novo.
+  if (est.aba === 'tarefas' && est.tar === 'concluidas') CONC.chave = null;
   aplicarDados(e.data.dados);
   render();
   if (est.gaveta != null) { if (porId(est.gaveta)) renderGaveta(true); else fecharGaveta(true); }
 });
+
+/* ===== período: o mesmo seletor do Financeiro (atalhos à esquerda, intervalo à direita) ===== */
+const ultimoDiaMes = iso => { const [a, m] = iso.split('-').map(Number); return isoDe(new Date(a, m, 0)); };
+const mesMais = (ym, n) => { const [a, m] = ym.split('-').map(Number); const d = new Date(a, m - 1 + n, 1); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`; };
+// Só datas que já passaram: aqui não entra "Próximo mês".
+const PERIODOS = [
+  { id: '', nome: 'Todo o período' },
+  { id: 'mes', nome: 'Este mês', de: () => HOJE.slice(0, 8) + '01', ate: () => ultimoDiaMes(HOJE) },
+  { id: 'mespassado', nome: 'Mês passado', de: () => mesMais(HOJE.slice(0, 7), -1) + '-01', ate: () => ultimoDiaMes(mesMais(HOJE.slice(0, 7), -1) + '-01') },
+  { id: '30', nome: 'Últimos 30 dias', de: () => somarDias(HOJE, -29), ate: () => HOJE },
+  { id: 'ano', nome: 'Este ano', de: () => HOJE.slice(0, 4) + '-01-01', ate: () => HOJE.slice(0, 4) + '-12-31' },
+];
+const periodoDe = id => { const x = PERIODOS.find(p => p.id === id); return x?.id ? { id, de: x.de(), ate: x.ate() } : { id: '', de: '', ate: '' }; };
+const comPeriodo = p => !!(p.de || p.ate);
+const dataCurta = iso => !iso ? '…' : iso.slice(0, 4) === HOJE.slice(0, 4) ? `${iso.slice(8)}/${iso.slice(5, 7)}` : `${iso.slice(8)}/${iso.slice(5, 7)}/${iso.slice(2, 4)}`;
+const rotuloPeriodo = p => { if (!comPeriodo(p)) return 'Todo o período'; const pre = PERIODOS.find(x => x.id && x.id === p.id); return pre ? pre.nome : `${dataCurta(p.de)} – ${dataCurta(p.ate)}`; };
+const botaoPeriodo = (p, dica) => `<button class="per ${comPeriodo(p) ? 'ativo' : ''}" data-acao="periodo" aria-haspopup="dialog" title="${esc(dica)}">${ico('calendar', 'ico ico-s')}<span>${esc(rotuloPeriodo(p))}</span>${ico('chevron-down', 'ico ico-s chev')}</button>`;
+est.perConc = periodoDe('');
+let perPop = null;
+function fecharPeriodo() { perPop?.el.remove(); perPop?.ancora.setAttribute('aria-expanded', 'false'); perPop = null; }
+function calPeriodo(c, p) {
+  const y = c.base.getFullYear(), m = c.base.getMonth();
+  const cab = (passo, titulo, vista) => `<div class="pcal-cab"><button type="button" class="pcal-nav" data-nav="${-passo}" aria-label="Anterior">${SETA_E_MC}</button>${vista ? `<button type="button" class="pcal-tit" data-vista="${vista}">${titulo}</button>` : `<span class="pcal-tit">${titulo}</span>`}<button type="button" class="pcal-nav" data-nav="${passo}" aria-label="Próximo">${SETA_D_MC}</button></div>`;
+  if (c.vista === 'meses') return cab(12, y, 'anos') + `<div class="pcal-grade">${MESES_MC.map((n, i) => `<button type="button" class="pcal-op ${i === m ? 'on' : ''}" data-pmes="${i}">${n.slice(0, 3)}</button>`).join('')}</div>`;
+  if (c.vista === 'anos') { const anos = Array.from({ length: 12 }, (_, i) => y - 5 + i);
+    return cab(144, `${anos[0]} – ${anos[11]}`) + `<div class="pcal-grade">${anos.map(a => `<button type="button" class="pcal-op ${a === y ? 'on' : ''}" data-pano="${a}">${a}</button>`).join('')}</div>`; }
+  // Com o início escolhido e o fim ainda não, a faixa acompanha o mouse (prévia).
+  const fim = p.ate || (p.de && c.hover && c.hover > p.de ? c.hover : '');
+  let cel = '';
+  for (let i = new Date(y, m, 1).getDay(); i > 0; i--) cel += '<span></span>';
+  for (let d = 1, n = new Date(y, m + 1, 0).getDate(); d <= n; d++) {
+    const iso = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    const cls = [iso === HOJE && 'hoje', iso === p.de && 'ini', iso === p.de && fim && fim !== p.de && 'com-fim', fim && iso === fim && 'fim', p.de && fim && iso > p.de && iso < fim && 'meio'].filter(Boolean).join(' ');
+    cel += `<button type="button" class="pd ${cls}" data-pdia="${iso}" aria-label="${d} de ${MESES_MC[m]}"><b>${d}</b></button>`;
+  }
+  const dica = !p.de ? 'Escolha a data inicial' : !p.ate ? `De <b>${dataCurta(p.de)}</b> até…` : `<b>${dataCurta(p.de)}</b> – <b>${dataCurta(p.ate)}</b>`;
+  return cab(1, `${MESES_MC[m][0].toUpperCase() + MESES_MC[m].slice(1)} de ${y}`, 'meses')
+    + `<div class="pcal-sem">${SEMANA_MC.map(s => `<span>${s}</span>`).join('')}</div>`
+    + `<div class="pcal-dias ${p.de && !p.ate && fim ? 'previa' : ''}">${cel}</div>`
+    + `<div class="pcal-pe"><span>${dica}</span>${p.de ? '<button type="button" class="pcal-limpar" data-plimpar>Limpar</button>' : ''}</div>`;
+}
+// `aoEscolher` só recebe um período pronto (atalho, intervalo completo ou limpar).
+function abrirPeriodo(anc, atual, aoEscolher) {
+  fecharPeriodo();
+  let sel = { ...atual };
+  const ref = sel.de && sel.ate && sel.de <= HOJE && HOJE <= sel.ate ? HOJE : sel.ate || sel.de || HOJE;
+  const c = { vista: 'dias', base: new Date(ref.slice(0, 7) + '-01T12:00:00'), hover: null };
+  const atalhos = () => PERIODOS.map(x => { const on = x.id ? sel.id === x.id : !comPeriodo(sel); return `<button type="button" class="${on ? 'on' : ''}" data-p="${x.id}">${x.nome}${on ? OK_MC : ''}</button>`; }).join('');
+  const el = document.createElement('div'); el.className = 'mc-pop'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', 'Escolher o período');
+  el.innerHTML = `<div class="per-pop"><div class="atalhos">${atalhos()}</div><div class="pcal">${calPeriodo(c, sel)}</div></div>`;
+  document.body.appendChild(el);
+  const r = anc.getBoundingClientRect();
+  el.style.left = Math.max(8, Math.min(r.right - el.offsetWidth, innerWidth - el.offsetWidth - 8)) + 'px';
+  const topo = r.bottom + el.offsetHeight + 6 > innerHeight && r.top > el.offsetHeight + 6 ? r.top - el.offsetHeight - 6 : r.bottom + 6;
+  el.style.top = Math.max(8, Math.min(topo, innerHeight - el.offsetHeight - 8)) + 'px';
+  perPop = { el, ancora: anc }; anc.setAttribute('aria-expanded', 'true');
+  const desenhar = () => { el.querySelector('.pcal').innerHTML = calPeriodo(c, sel); };
+  const escolher = p => { fecharPeriodo(); aoEscolher(p); };
+  el.addEventListener('mousedown', e => e.preventDefault());
+  el.addEventListener('click', e => {
+    // O clique redesenha o calendário e o alvo sai do documento: sem parar aqui,
+    // o clique "de fora" fecharia o popover.
+    e.stopPropagation();
+    const at = e.target.closest('[data-p]'); if (at) return escolher(periodoDe(at.dataset.p));
+    const nav = e.target.closest('[data-nav]'); if (nav) { c.base.setMonth(c.base.getMonth() + +nav.dataset.nav); return desenhar(); }
+    const vista = e.target.closest('[data-vista]'); if (vista) { c.vista = vista.dataset.vista; return desenhar(); }
+    const mes = e.target.closest('[data-pmes]'); if (mes) { c.base.setMonth(+mes.dataset.pmes); c.vista = 'dias'; return desenhar(); }
+    const ano = e.target.closest('[data-pano]'); if (ano) { c.base.setFullYear(+ano.dataset.pano); c.vista = 'meses'; return desenhar(); }
+    if (e.target.closest('[data-plimpar]')) return escolher(periodoDe(''));
+    const dia = e.target.closest('[data-pdia]'); if (!dia) return;
+    const iso = dia.dataset.pdia;
+    // Primeiro clique marca o início; o segundo, o fim (antes do início recomeça).
+    if (!sel.de || sel.ate || iso < sel.de) { sel = { id: 'livre', de: iso, ate: '' }; c.hover = null; el.querySelector('.atalhos').innerHTML = atalhos(); return desenhar(); }
+    escolher({ id: 'livre', de: sel.de, ate: iso });
+  });
+  el.addEventListener('mouseover', e => {
+    const d = e.target.closest('[data-pdia]')?.dataset.pdia || null;
+    if (d === c.hover || (!d && e.target.closest('.pcal-dias'))) return; c.hover = d;
+    if (sel.de && !sel.ate) desenhar();
+  });
+  (el.querySelector('.atalhos .on') || el.querySelector('.atalhos button'))?.focus();
+}
+addEventListener('resize', () => fecharPeriodo());
+addEventListener('scroll', e => { if (perPop && !perPop.el.contains(e.target)) fecharPeriodo(); }, true);
 
 /* ===== arrastar tarefa entre pessoas (vista Equipe) ===== */
 let arrasto = null;

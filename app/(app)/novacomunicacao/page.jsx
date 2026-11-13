@@ -6,6 +6,7 @@ import { useCadastros } from '@/context/CadastrosContext';
 import { subtelasVisiveis } from '@/lib/acesso/telas';
 import { mascararCliente, obterDataAtual } from '@/lib/utils/formatters';
 import { corDoNome } from '@/lib/prototipos/coresDoNome';
+import { buscarConclusoes } from '@/lib/tarefas/conclusoes';
 import LogoCarregando from '@/components/ui/LogoCarregando';
 
 // Protótipo da nova tela de Comunicação, no padrão do DESIGN.md: compras (a
@@ -30,6 +31,11 @@ import LogoCarregando from '@/components/ui/LogoCarregando';
 //   gravarTarefa ou gravarLink — o miolo do salvar* do modal de hoje.
 // - concluir e excluir já foram confirmados no segundo clique do próprio botão
 //   e chegam com { jaConfirmado: true }.
+//
+// Rotinas: cada vez feita fica em tarefas_conclusoes. A lista lê só as de hoje
+// (quantas vezes, a que horas, quem), relidas quando as tarefas mudam (o
+// clique de qualquer pessoa toca a tarefa, e o tempo real avisa). Concluídas
+// pede as do período escolhido, por mensagem, só quando abre.
 const iso = ts => {
     if (!ts) return '';
     const d = new Date(ts);
@@ -61,6 +67,16 @@ export default function Page() {
     } = useComunicacao();
     const [modelo, setModelo] = useState(null);
     const iframeRef = useRef(null);
+    // As vezes em que as rotinas foram feitas hoje: [{ tarefa, hora, por }].
+    const [feitasHoje, setFeitasHoje] = useState([]);
+    const temRotina = tarefasInternas.some(t => t.fixa);
+    useEffect(() => {
+        if (!temRotina) return;
+        let vivo = true;
+        const hoje = obterDataAtual();
+        buscarConclusoes({ de: hoje, ate: hoje }).then(r => { if (vivo && !r.erro) setFeitasHoje(r.lista); });
+        return () => { vivo = false; };
+    }, [tarefasInternas, temRotina]);
 
     useEffect(() => {
         let vivo = true;
@@ -103,6 +119,11 @@ export default function Page() {
                 prazo: (t.prazo || '').slice(0, 10), status: t.status || 'Pendente', fixa: !!t.fixa,
                 // A fixa volta a pendente todo dia; "feita hoje" é a conclusão de hoje.
                 feitaHoje: !!t.fixa && t.status === 'Concluída' && t.ultima_conclusao === hoje,
+                // Cada vez de hoje, da mais recente para a mais antiga: { hora, por }.
+                vezesHoje: t.fixa ? feitasHoje.filter(c => c.tarefa === t.id).map(c => ({ hora: c.hora, por: c.por })) : [],
+                // O dia em que a tarefa foi concluída (as de antes de ele ser
+                // gravado ficam sem data).
+                concluidaEm: !t.fixa && t.status === 'Concluída' ? (t.ultima_conclusao || '').slice(0, 10) : '',
                 por: t.criado_por || '', criado: iso(t.created_at),
             })),
             links: linksPagamento.map(l => ({
@@ -110,7 +131,7 @@ export default function Page() {
                 valor: Math.round(l.valor || 0), status: l.status || 'Ativo', por: l.criado_por || '', criado: iso(l.created_at),
             })),
         };
-    }, [usuario, usuariosSistema, requisicoesMaterial, tarefasInternas, linksPagamento, isDemo, fornecedores, podeComprar]);
+    }, [usuario, usuariosSistema, requisicoesMaterial, tarefasInternas, linksPagamento, isDemo, fornecedores, podeComprar, feitasHoje]);
 
     // A casca é montada uma vez, com os dados daquele instante. Depois, cada
     // mudança vai por mensagem: recarregar o iframe fecharia a gaveta e jogaria
@@ -136,6 +157,12 @@ export default function Page() {
             const msg = e.data || {};
             // O protótipo terminou de abrir: o que mudou enquanto ele carregava vai agora.
             if (msg.tipo === 'pronto') return quadro.contentWindow?.postMessage({ tipo: 'dados', dados: dadosRef.current }, '/');
+            // Concluídas: as vezes em que as rotinas foram feitas no período.
+            if (msg.tipo === 'pedir-conclusoes') {
+                const de = ehData(msg.de) ? msg.de : '', ate = ehData(msg.ate) ? msg.ate : '';
+                const r = await buscarConclusoes({ de, ate });
+                return quadro.contentWindow?.postMessage({ tipo: 'conclusoes', pedido: msg.pedido, erro: !!r.erro, cortado: !!r.cortado, lista: r.lista }, '/');
+            }
             // "Comprei": só o Administrador. Fecha os itens e lança a conta.
             if (msg.tipo === 'comprar-itens') {
                 const responder = r => quadro.contentWindow?.postMessage({ tipo: 'salvo', n: msg.n, ok: !!r.ok, erro: r.erro || null, aviso: r.aviso || null, campo: r.campo || null, erroCampo: r.erroCampo || null }, '/');

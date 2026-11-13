@@ -2240,13 +2240,39 @@ export const AppProvider = ({ children }) => {
     async function concluirTarefa(id, { jaConfirmado = false } = {}) {
         const tarefa = tarefasInternas.find(t => t.id === id);
         if (!tarefa?.fixa && !jaConfirmado && !(await confirmar('Deseja marcar esta tarefa como concluída?'))) return;
-        const payload = tarefa?.fixa ? { status: 'Concluída', ultima_conclusao: obterDataAtual() } : { status: 'Concluída' };
+        // O dia da conclusão fica gravado em toda tarefa: na rotina ele diz se a
+        // de hoje já foi feita; nas outras, é a data que a lista de concluídas
+        // mostra e filtra.
+        //
+        // A rotina pode ser feita mais de uma vez no dia: cada vez vira uma
+        // linha em tarefas_conclusoes (dia, hora, quem), e ela continua
+        // disponível para o próximo clique.
+        if (tarefa?.fixa) {
+            const { error: erroHist } = await supabase.from('tarefas_conclusoes').insert([{ tarefa_id: id, concluida_por: usuario?.nome || '' }]);
+            if (erroHist && !semTabelaConclusoes(erroHist)) { avisar('Não deu para registrar a rotina: ' + erroHist.message, 'erro'); return; }
+        }
+        const payload = { status: 'Concluída', ultima_conclusao: obterDataAtual() };
         const { data, error } = await supabase.from('tarefas_internas').update(payload).eq('id', id).select();
-        if (!error && data) setTarefasInternas(tarefasInternas.map(x => x.id === id ? data[0] : x));
+        if (!error && data) setTarefasInternas(prev => prev.map(x => x.id === id ? data[0] : x));
     }
+    // Antes de rodar supabase/tarefas_conclusoes_migration.sql a tabela não
+    // existe: a rotina segue como sempre (só "feita hoje"), sem o histórico.
+    const semTabelaConclusoes = e => !!e && (e.code === '42P01' || e.code === 'PGRST205' || /tarefas_conclusoes/.test(e.message || ''));
+    // "Desfazer" da rotina: tira a última vez de hoje. Se ainda sobrar outra
+    // vez hoje, ela continua feita; senão, volta a pendente.
     async function reabrirTarefaFixa(id) {
-        const { data, error } = await supabase.from('tarefas_internas').update({ status: 'Pendente', ultima_conclusao: null }).eq('id', id).select();
-        if (!error && data) setTarefasInternas(tarefasInternas.map(x => x.id === id ? data[0] : x));
+        const hoje = obterDataAtual(), desdeHoje = `${hoje}T00:00:00-03:00`;
+        let restam = 0;
+        const { data: ultima, error: erroHist } = await supabase.from('tarefas_conclusoes').select('id')
+            .eq('tarefa_id', id).gte('concluida_em', desdeHoje).order('concluida_em', { ascending: false }).limit(1);
+        if (!erroHist && ultima?.[0]) {
+            await supabase.from('tarefas_conclusoes').delete().eq('id', ultima[0].id);
+            const { count } = await supabase.from('tarefas_conclusoes').select('id', { count: 'exact', head: true }).eq('tarefa_id', id).gte('concluida_em', desdeHoje);
+            restam = count || 0;
+        }
+        const payload = restam ? { status: 'Concluída', ultima_conclusao: hoje } : { status: 'Pendente', ultima_conclusao: null };
+        const { data, error } = await supabase.from('tarefas_internas').update(payload).eq('id', id).select();
+        if (!error && data) setTarefasInternas(prev => prev.map(x => x.id === id ? data[0] : x));
     }
     async function resetarTarefasFixasDoDia(lista) {
         const hoje = obterDataAtual();
@@ -2455,6 +2481,14 @@ export const AppProvider = ({ children }) => {
             titulo: tarefa.titulo || '', descricao: tarefa.descricao || '', responsavel: tarefa.responsavel || '',
             prazo: tarefa.prazo || null, status: tarefa.status || 'Pendente', fixa: !!tarefa.fixa,
         };
+        // Concluir (ou reabrir) pela edição também marca (ou apaga) o dia da
+        // conclusão, como o botão de concluir. A rotina cuida do dela à parte.
+        if (!campos.fixa) {
+            const antes = tarefa.id ? tarefasInternas.find(t => t.id === tarefa.id) : null;
+            const estava = antes?.status === 'Concluída' && !antes?.fixa;
+            if (campos.status === 'Concluída' && !estava) campos.ultima_conclusao = obterDataAtual();
+            if (campos.status !== 'Concluída' && estava) campos.ultima_conclusao = null;
+        }
         const { data, error } = tarefa.id
             ? await supabase.from('tarefas_internas').update(campos).eq('id', tarefa.id).select()
             : await supabase.from('tarefas_internas').insert([{ ...campos, criado_por: usuario?.nome || '' }]).select();
