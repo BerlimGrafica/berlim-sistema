@@ -204,6 +204,9 @@ html { --altura-cabecalho: 51px; --altura-filtros: 42px; }
 .fl.concluir:hover { background: var(--fin-fundo); }
 .fl.concluir.conf { width: auto; padding: 0 9px; background: var(--fin); color: #fff; font-size: 12px; font-weight: 700; }
 .dark .fl.concluir.conf { color: #04140d; }
+/* Armado, o "Concluir?" é mais largo que o ícone e passava da borda do quadro:
+   nesses segundos de confirmar, o OK da arte e a entrega saem e ele ocupa o lugar. */
+.fls.armada .fl:not(.concluir), .fls.armada .sep { display: none; }
 .fls .sep { width: 1px; height: 18px; background: var(--borda); margin: 0 3px; }
 .locs { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 3px; }
 .loc { display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; font-weight: 600; color: var(--tinta-suave); white-space: nowrap; }
@@ -540,7 +543,7 @@ function itensChips(p) {
 const quando = d => `${d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })} às ${d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`;
 function flags(p, cls = '') {
   const conf = est.conf === p.id;
-  return `<div class="fls ${cls}">
+  return `<div class="fls ${cls} ${conf ? 'armada' : ''}">
     <button class="fl arte ${p.arte ? 'on' : ''}" data-acao="arte" data-id="${p.id}" title="${p.arte ? `OK para impressão${p.arteEm ? ` · ${quando(p.arteEm)}` : ''}` : 'Aguardando OK do cliente'}" aria-pressed="${p.arte}">${ico('thumbs-up', 'ico')}</button>
     <button class="fl entrega ${p.entrega ? 'on' : ''}" data-acao="entrega" data-id="${p.id}" title="${p.entrega ? 'Pronta para entrega' : 'Ainda não está pronta'}" aria-pressed="${p.entrega}">${ico('package', 'ico')}</button>
     <span class="sep"></span>
