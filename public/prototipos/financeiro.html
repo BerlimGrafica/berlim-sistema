@@ -542,6 +542,21 @@ html:has(.gaveta:not(.sai)) { overflow: hidden; scrollbar-gutter: stable; }
 /* listas suspensas do modal: sugestões, fornecedores, vencimento */
 /* listas e calendário flutuam por cima da janela, fora do corpo que rola */
 .mc-flutua { position: fixed; z-index: 75; }
+/* Modal de nota fiscal: a mesma janela do modal de conta, um pouco mais alta.
+   Em cima, o que o cliente mandou (para conferir e copiar); embaixo, o que a
+   gráfica preenche. */
+.mc.mn { height: min(700px, calc(100dvh - 32px)); }
+.mn-sec { display: flex; align-items: center; gap: 7px; font-size: 11.5px; font-weight: 700; color: var(--tinta-suave); }
+.mn-sec .ico { width: 14px; height: 14px; }
+.mn-sec-int { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--borda-fraca); }
+.mc .dprops.mn-cli { margin-top: 4px; border-top: 0; padding-top: 0; }
+.mn-in { width: 100%; border: 0; background: transparent; outline: none; padding: 5px 0 7px; font: inherit; font-size: 14px; font-weight: 600; color: var(--tinta); box-shadow: inset 0 -1px 0 var(--borda); transition: box-shadow .12s; }
+.mn-in:hover { box-shadow: inset 0 -1px 0 var(--borda-forte); }
+.mn-in:focus { box-shadow: inset 0 -2px 0 var(--brand); }
+.mn-in::placeholder { color: var(--tinta-fraca); font-weight: 500; }
+.mn-obs { resize: vertical; min-height: 46px; line-height: 1.45; }
+.mn-duas { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 560px) { .mn-duas { grid-template-columns: 1fr; } }
 .mc-lista { max-height: 260px; overflow-y: auto; padding: 4px; background: var(--superficie); border: 1px solid var(--borda); border-radius: 9px; box-shadow: var(--sombra-pop); }
 .mc-lista button { display: flex; align-items: center; gap: 9px; width: 100%; padding: 7px 10px; border-radius: 7px; text-align: left; font-size: 13px; color: var(--tinta-corpo); }
 .mc-lista button:hover, .mc-lista button.ativo { background: var(--realce); color: var(--tinta); }
@@ -1241,7 +1256,7 @@ function renderModalConta(primeira) {
       })() : ''}</p>
     </div>
     <div class="mc-pe">
-      <span class="mc-proto">${ico('info', 'ico ico-s')}<span class="txt">Protótipo: não grava ·</span><button class="mc-link" data-mc="atual">Abrir no modal atual</button></span>
+      ${NO_SIS ? '' : `<span class="mc-proto">${ico('info', 'ico ico-s')}<span class="txt">Protótipo: não grava ·</span><button class="mc-link" data-mc="atual">Abrir no modal atual</button></span>`}
       <span class="esp"></span>
       <button class="btn btn-txt btn-p" data-mc="fechar">Cancelar</button>
       <button class="btn btn-pri btn-p" data-mc="salvar">${ico('check')}Salvar<kbd>Ctrl ↵</kbd></button>
@@ -1486,9 +1501,122 @@ document.addEventListener('click', e => {
     if (alvo.matches('.grupo-rot, .area-grupo')) { alvo.classList.remove('chegou'); void alvo.offsetWidth; alvo.classList.add('chegou'); }
   }
 });
+/* ===== modal de nota fiscal (novo) ===== */
+// No lugar do modal de hoje, no mesmo jeito do modal de conta. Em cima, o que o
+// cliente mandou pelo formulário — razão social, documento, endereço, contato,
+// observação — para conferir e copiar; isso não se edita aqui. Embaixo, o
+// preenchimento da gráfica: identificação interna, tipo, serviço, valor e, na
+// DANFE, pagamento e transporte. Salvar grava pelo mesmo miolo do modal de hoje
+// (gravarNotaFiscal); uma recusa deixa o modal aberto com o que foi digitado.
+let mn = null;
+const docRot = d => (String(d || '').replace(/\D/g, '').length === 11 ? 'CPF' : 'CNPJ');
+function abrirModalNota(n) {
+  if (!n) return;
+  fecharPop();
+  mn = { id: n.id, n, cliente: n.cliente || '', tipo: n.tipo || '', servico: n.servico || '', valor: n.valor || 0,
+    pagamento: n.pagamento || '', transporte: n.transporte || '', obs: n.obs || '', salvando: false };
+  renderModalNota(true);
+}
+function fecharModalNota() { mn = null; modalRaiz.innerHTML = ''; }
+function renderModalNota(primeira) {
+  if (!mn) return;
+  const n = mn.n, danfe = mn.tipo === 'DANFE';
+  // `extra` aparece junto do valor, mas não vai na cópia (o canal do contato, por exemplo).
+  const copiavel = (rot, icone, v, extra = '') => `<dt>${ico(icone, 'ico ico-s')}${esc(rot)}</dt><dd class="copiavel">${v
+    ? `<span>${esc(v)}${extra ? ` <small class="mudo">· ${esc(extra)}</small>` : ''}</span><button type="button" class="ib" data-mn-copiar="${esc(v)}" data-rot="${esc(rot)}" aria-label="Copiar ${esc(rot)}" title="Copiar">${ico('copy', 'ico ico-s')}</button>`
+    : '<span class="mudo">não informado</span>'}</dd>`;
+  const miolo = `
+    <div class="mc-cab"><h2 id="mn-tit">Nota fiscal</h2><span class="selo ${n.concluida ? 'ok' : ''}">${n.concluida ? 'Concluída' : 'Pendente'}</span><button class="ib" data-mn="fechar" aria-label="Fechar" title="Fechar (Esc)">${ico('x')}</button></div>
+    <div class="mc-corpo">
+      <div class="mn-sec">${ico('send', 'ico ico-s')}Enviado pelo cliente</div>
+      <dl class="dprops mn-cli">
+        ${copiavel('Razão social', 'building-2', n.razao)}
+        ${copiavel(docRot(n.cnpj), 'hash', n.cnpj)}
+        ${copiavel('Endereço', 'map-pin', n.endereco)}
+        ${copiavel('Contato', n.envio === 'E-mail' ? 'mail' : 'phone', n.contato, n.envio === 'Whatsapp' ? 'WhatsApp' : n.envio)}
+        ${n.obsCliente ? copiavel('Observação', 'message-square', n.obsCliente) : ''}
+      </dl>
+      <div class="mn-sec mn-sec-int">${ico('pencil', 'ico ico-s')}Preenchimento interno</div>
+      <label class="mc-rot" for="mn-cli">Cliente (identificação interna)</label>
+      <div class="mc-campo"><input id="mn-cli" class="mc-grande" data-mn-in="cliente" value="${esc(mn.cliente)}" placeholder="Nome fantasia ou cliente" autocomplete="off"></div>
+      <dl class="dprops">
+        <dt>${ico('file-text', 'ico ico-s')}Tipo de nota</dt><dd><span class="seg-mini" role="radiogroup" aria-label="Tipo de nota">${['Serviço', 'DANFE'].map(t => `<button type="button" role="radio" data-mn-tipo="${t}" aria-checked="${mn.tipo === t}">${t}</button>`).join('')}</span></dd>
+      </dl>
+      <label class="mc-rot" for="mn-serv">Serviço feito</label>
+      <input id="mn-serv" class="mn-in" data-mn-in="servico" value="${esc(mn.servico)}" placeholder="Qual foi o serviço?" autocomplete="off">
+      <label class="mc-rot" for="mn-valor">Valor pago</label>
+      <div class="mc-valor"><small>R$</small><input id="mn-valor" data-mn-in="valor" value="${valorTexto(mn.valor)}" placeholder="0,00" inputmode="decimal" autocomplete="off"></div>
+      ${danfe ? `<div class="mn-duas">
+        <div><label class="mc-rot" for="mn-pag">Forma de pagamento</label><input id="mn-pag" class="mn-in" data-mn-in="pagamento" value="${esc(mn.pagamento)}" placeholder="PIX, boleto, cartão…" autocomplete="off"></div>
+        <div><label class="mc-rot" for="mn-transp">Forma de transporte</label><input id="mn-transp" class="mn-in" data-mn-in="transporte" value="${esc(mn.transporte)}" placeholder="CIF, FOB, retirada…" autocomplete="off"></div>
+      </div>` : ''}
+      <label class="mc-rot" for="mn-obs">Observações</label>
+      <textarea id="mn-obs" class="mn-in mn-obs" data-mn-in="obs" rows="2" placeholder="Anotações internas">${esc(mn.obs)}</textarea>
+    </div>
+    <div class="mc-pe">
+      ${NO_SIS ? '' : `<span class="mc-proto">${ico('info', 'ico ico-s')}<span class="txt">Protótipo: não grava</span></span>`}
+      <span class="esp"></span>
+      <button class="btn btn-txt btn-p" data-mn="fechar">Cancelar</button>
+      <button class="btn btn-pri btn-p" data-mn="salvar" ${mn.salvando ? 'disabled' : ''}>${ico('check')}${mn.salvando ? 'Salvando…' : 'Salvar'}<kbd>Ctrl ↵</kbd></button>
+    </div>`;
+  // Como no modal de conta: a janela nasce uma vez; depois só o miolo troca.
+  const janela = modalRaiz.querySelector('.mc.mn');
+  if (primeira || !janela) {
+    modalRaiz.innerHTML = `<div class="mc-veu" data-mn="fechar"></div><div class="mc mn" role="dialog" aria-modal="true" aria-labelledby="mn-tit">${miolo}</div>`;
+  } else {
+    const rolagem = janela.querySelector('.mc-corpo')?.scrollTop || 0;
+    janela.innerHTML = miolo;
+    janela.querySelector('.mc-corpo').scrollTop = rolagem;
+  }
+  lucide.createIcons();
+  if (primeira) document.getElementById('mn-cli')?.focus();
+}
+function salvarModalNota() {
+  if (!mn || mn.salvando) return;
+  const danfe = mn.tipo === 'DANFE';
+  const campos = {
+    cliente: mn.cliente.trim(), tipo_nota: mn.tipo || null, servico_feito: mn.servico.trim(), valor_pago: mn.valor || null, observacoes: mn.obs,
+    forma_pagamento: danfe ? (mn.pagamento.trim() || null) : null, forma_transporte: danfe ? (mn.transporte.trim() || null) : null,
+  };
+  const aplicar = () => {
+    Object.assign(mn.n, { cliente: campos.cliente, tipo: campos.tipo_nota || '', servico: campos.servico_feito, valor: campos.valor_pago || 0,
+      obs: campos.observacoes, pagamento: campos.forma_pagamento || '', transporte: campos.forma_transporte || '' });
+    fecharModalNota(); render(); renderGaveta();
+  };
+  if (!NO_SIS) { aplicar(); return avisoProto('Nota salva (protótipo: não grava)'); }
+  mn.salvando = true; renderModalNota();
+  pedirAoSistema('salvar-nota', { id: mn.id, campos }).then(res => {
+    if (!mn) return;
+    mn.salvando = false;
+    if (!res.ok) { renderModalNota(); return avisoProto(res.erro || 'Não foi possível salvar a nota.'); }
+    aplicar(); avisoProto('Nota salva');
+  });
+}
+modalRaiz.addEventListener('click', e => {
+  if (!mn) return;
+  const t = e.target;
+  const b = t.closest('[data-mn]');
+  if (b) { e.preventDefault(); return b.dataset.mn === 'salvar' ? salvarModalNota() : fecharModalNota(); }
+  // O tipo é um ou outro; clicar no escolhido desmarca (a nota fica sem tipo, como no modal de hoje).
+  const tp = t.closest('[data-mn-tipo]');
+  if (tp) { const v = tp.dataset.mnTipo; mn.tipo = mn.tipo === v ? '' : v; renderModalNota(); return document.querySelector(`[data-mn-tipo="${v}"]`)?.focus(); }
+  const cp = t.closest('[data-mn-copiar]'); if (cp) return copiar(cp.dataset.mnCopiar, `${cp.dataset.rot} copiado`);
+});
+// Digitar não redesenha a janela (perderia o cursor): só guarda o valor.
+modalRaiz.addEventListener('input', e => {
+  if (!mn) return;
+  const k = e.target.dataset.mnIn; if (!k) return;
+  if (k === 'valor') { mn.valor = lerCentavos(e.target.value); e.target.value = valorTexto(mn.valor); }
+  else mn[k] = e.target.value;
+});
+document.addEventListener('keydown', e => {
+  if (!mn) return;
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); e.stopImmediatePropagation(); return salvarModalNota(); }
+  if (e.key === 'Escape') { e.preventDefault(); e.stopImmediatePropagation(); return fecharModalNota(); }
+});
 document.addEventListener('input', e => { if (e.target.id === 'busca') { est.busca = e.target.value; render('#busca'); } });
 document.addEventListener('keydown', e => {
-  if (mc) return;   // com o modal aberto, o teclado é dele
+  if (mc || mn) return;   // com um modal aberto, o teclado é dele
   if (popAberto && e.key === 'Escape') { e.preventDefault(); const a = popAberto.ancora; fecharPop(); return a?.focus(); }
   if (est.gaveta != null && e.key === 'Escape') { e.preventDefault(); return fecharGaveta(); }
   if (e.target.id === 'busca' && e.key === 'Escape') { est.busca = ''; render(); return; }
@@ -2286,7 +2414,7 @@ const notaPeriodo = (txt, alerta, acao) => `<div class="per-nota ${alerta ? 'ale
       <div class="det-acoes">
         ${n.concluida ? '' : `<button class="btn btn-ok btn-p ${conf ? 'conf' : ''}" data-gv="concluir">${ico('check-circle-2')}${conf ? 'Clique de novo para confirmar' : 'Concluir nota'}</button>`}
         ${n.concluida && DADOS.podeNotas ? `<button class="btn btn-sec btn-p ${N.gerar === n.id ? 'conf' : ''}" data-gv="gerar">${ico('file-plus')}${N.gerar === n.id ? 'Clique de novo para gerar' : 'Gerar nova nota'}</button>` : ''}
-        <button class="btn btn-sec btn-p" data-gv="editar">${ico('pencil')}Editar no modal atual</button>
+        <button class="btn btn-sec btn-p" data-gv="editar">${ico('pencil')}Editar nota</button>
       </div>
     </div>`;
   }
@@ -2299,7 +2427,7 @@ const notaPeriodo = (txt, alerta, acao) => `<div class="per-nota ${alerta ? 'ale
     const linhaTexto = [n.criado ? ddmm(n.criado) : '', nome(n), n.razao, n.cnpj, n.valor ? reais(n.valor) : '', n.concluida ? 'Concluída' : 'Pendente'].join('\t');
     return [
       { rot: 'Abrir nota', icone: 'panel-right-open', fazer: () => abrirGaveta(n.id) },
-      { rot: 'Editar no modal atual', icone: 'pencil', fazer: () => paraPai({ tipo: 'editar-nota', id: n.id }) },
+      { rot: 'Editar nota', icone: 'pencil', fazer: () => abrirModalNota(n) },
       { rot: 'Duplicar nota', icone: 'copy-plus', fazer: () => { paraPai({ tipo: 'duplicar-nota', id: n.id }); avisoProto(`Duplicando a nota de ${nome(n)}…`); } },
       'sep',
       n.cnpj ? { rot: 'Copiar CNPJ/CPF', icone: 'hash', fazer: () => copiar(n.cnpj, 'CNPJ copiado') } : null,
@@ -2322,6 +2450,12 @@ const notaPeriodo = (txt, alerta, acao) => `<div class="per-nota ${alerta ? 'ale
     aoReceber(msg) {
       // As pendentes vêm da memória do sistema; as concluídas, do banco, pelo período.
       if (msg.tipo === 'dados' && Array.isArray(msg.notas)) { N.pend = msg.notas; return; }
+      // A página pede o modal numa nota que acabou de nascer ("Gerar nova nota").
+      if (msg.tipo === 'abrir-nota' && msg.nota) {
+        if (!N.pend.some(x => x.id === msg.nota.id)) N.pend.unshift({ ...msg.nota });
+        if (est.aba === 'notas') { render(); renderGaveta(); }
+        return abrirModalNota(N.pend.find(x => x.id === msg.nota.id));
+      }
       if (msg.pedido !== N.pedido || !['notas', 'notas-erro'].includes(msg.tipo)) return;
       N.carregando = false;
       if (msg.tipo === 'notas') { N.conc = msg.lista || []; N.total = msg.total ?? N.conc.length; } else N.erro = msg.erro;
@@ -2364,7 +2498,7 @@ const notaPeriodo = (txt, alerta, acao) => `<div class="per-nota ${alerta ? 'ale
       if (t.closest('[data-link-nota]')) return copiar(link, 'Link do formulário copiado');
     },
     acao(a, n, el) {
-      if (a === 'editar') return paraPai({ tipo: 'editar-nota', id: n.id });
+      if (a === 'editar') return abrirModalNota(n);
       if (a === 'copiar-campo') return copiar(el.dataset.v, `${el.dataset.rot} copiado`);
       if (a === 'gerar') {
         if (!DADOS.podeNotas || !n.concluida) return;

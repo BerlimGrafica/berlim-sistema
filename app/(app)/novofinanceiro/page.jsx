@@ -70,7 +70,7 @@ export default function Page() {
         gravarConta, pagarConta, mudarSituacaoEmpresa } = useFinanceiro();
     const { atualizarCampoInline } = usePedidos();
     const { fornecedores } = useCadastros();
-    const { notasFiscais, setNotaFiscalEmEdicao, setModalNotaFiscalAberto, reabrirNotaFiscal, marcarNotaConcluida, duplicarNotaFiscal, excluirNotaFiscal } = useNotasFiscais();
+    const { notasFiscais, setNotaFiscalEmEdicao, setModalNotaFiscalAberto, reabrirNotaFiscal, marcarNotaConcluida, duplicarNotaFiscal, excluirNotaFiscal, gravarNotaFiscal } = useNotasFiscais();
     const [modelo, setModelo] = useState(null);
     const { iframeRef, modalOS } = useAbrirOSDoPrototipo();
     useContaDoPrototipo(iframeRef);
@@ -167,9 +167,8 @@ export default function Page() {
                 if (!n?.concluido) return;
                 const nova = await reabrirNotaFiscal(n, { jaConfirmado: true });
                 if (!nova) return;
-                quadro.blur();
-                setNotaFiscalEmEdicao({ ...nova, valor_pago: '' });
-                setModalNotaFiscalAberto(true);
+                // A nota nova abre no modal novo, lá dentro, para preencher o resto.
+                return responder({ tipo: 'abrir-nota', nota: notaParaProto(nova, isDemo) });
             }
             if (msg.tipo === 'editar-empresa' && Number.isInteger(msg.id)) {
                 const emp = empresasFaturamento.find(x => x.id === msg.id);
@@ -229,6 +228,20 @@ export default function Page() {
                 if (!empresasFaturamento.some(x => x.id === msg.id) || !SITUACOES_EMPRESA.has(msg.status)) return devolver({ erro: 'Empresa ou situação inválida.' });
                 return devolver(await mudarSituacaoEmpresa(msg.id, msg.status));
             }
+            // O modal novo de nota: o preenchimento interno, pelo mesmo miolo do modal de hoje.
+            if (msg.tipo === 'salvar-nota') {
+                if (isDemo) return devolver({ erro: 'A conta de demonstração não altera notas.' });
+                if (!notasFiscais.some(x => x.id === msg.id)) return devolver({ erro: 'Nota não encontrada.' });
+                const c = msg.campos || {};
+                const texto = (v, max) => (typeof v === 'string' ? v.slice(0, max) : '');
+                const tipo = c.tipo_nota === 'DANFE' || c.tipo_nota === 'Serviço' ? c.tipo_nota : null;
+                return devolver(await gravarNotaFiscal(msg.id, {
+                    cliente: texto(c.cliente, 200).trim(), tipo_nota: tipo, servico_feito: texto(c.servico_feito, 500).trim(),
+                    valor_pago: Number.isInteger(c.valor_pago) && c.valor_pago > 0 ? c.valor_pago : null,
+                    observacoes: texto(c.observacoes, 2000),
+                    forma_pagamento: texto(c.forma_pagamento, 100).trim() || null, forma_transporte: texto(c.forma_transporte, 100).trim() || null,
+                }));
+            }
             if (msg.tipo === 'concluir-nota') {
                 if (!podeNotas || isDemo) return devolver({ erro: 'Só Administrador e Financeiro concluem notas.' });
                 if (!notasFiscais.some(x => x.id === msg.id)) return devolver({ erro: 'Nota não encontrada.' });
@@ -237,7 +250,7 @@ export default function Page() {
         }
         window.addEventListener('message', aoReceber);
         return () => window.removeEventListener('message', aoReceber);
-    }, [iframeRef, enviarDados, contasPagar, fornecedores, gravarConta, pagarConta, mudarSituacaoEmpresa, marcarNotaConcluida, duplicarNotaFiscal, excluirNotaFiscal, isDemo, podeNotas, reabrirNotaFiscal, notasFiscais, empresasFaturamento, setNotaFiscalEmEdicao, setModalNotaFiscalAberto, setNovaEmpresaFaturamento, setModalEmpresaFaturamentoAberto, atualizarPagamentoBoleto, concluirBoletoContasReceber, atualizarCampoInline]);
+    }, [iframeRef, enviarDados, contasPagar, fornecedores, gravarConta, pagarConta, mudarSituacaoEmpresa, marcarNotaConcluida, duplicarNotaFiscal, excluirNotaFiscal, gravarNotaFiscal, isDemo, podeNotas, reabrirNotaFiscal, notasFiscais, empresasFaturamento, setNotaFiscalEmEdicao, setModalNotaFiscalAberto, setNovaEmpresaFaturamento, setModalEmpresaFaturamentoAberto, atualizarPagamentoBoleto, concluirBoletoContasReceber, atualizarCampoInline]);
 
     // O tempo real diz quais O.S. mudaram; o protótipo relê só essas nas abas
     // que vieram do banco. É isto que dispensa um botão de atualizar.

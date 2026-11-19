@@ -2220,27 +2220,38 @@ export const AppProvider = ({ children }) => {
     async function salvarNotaFiscal(e) {
         e.preventDefault();
         setSalvandoNotaFiscal(true);
-
-        const valorNumerico = notaFiscalEmEdicao.valor_pago ? paraCentavos(notaFiscalEmEdicao.valor_pago) : null;
-
-        const ehDanfe = notaFiscalEmEdicao.tipo_nota === 'DANFE';
-        const payload = {
+        const r = await gravarNotaFiscal(notaFiscalEmEdicao.id, {
             servico_feito: notaFiscalEmEdicao.servico_feito,
-            valor_pago: valorNumerico,
+            valor_pago: notaFiscalEmEdicao.valor_pago ? paraCentavos(notaFiscalEmEdicao.valor_pago) : null,
             observacoes: notaFiscalEmEdicao.observacoes,
             cliente: notaFiscalEmEdicao.cliente,
             tipo_nota: notaFiscalEmEdicao.tipo_nota,
-            forma_pagamento: ehDanfe ? (notaFiscalEmEdicao.forma_pagamento || null) : null,
-            forma_transporte: ehDanfe ? (notaFiscalEmEdicao.forma_transporte || null) : null
-        };
-        const { data, error } = await supabase.from('notas_fiscais').update(payload).eq('id', notaFiscalEmEdicao.id).select();
-        if (!error && data) {
-            setNotasFiscais(notasFiscais.map(n => n.id === notaFiscalEmEdicao.id ? data[0] : n));
-            setModalNotaFiscalAberto(false);
-        } else {
-            avisar('Falha ao atualizar nota: ' + error.message, 'erro');
-        }
+            forma_pagamento: notaFiscalEmEdicao.forma_pagamento,
+            forma_transporte: notaFiscalEmEdicao.forma_transporte,
+        });
+        if (r.erro) avisar(r.erro, 'erro');
+        else setModalNotaFiscalAberto(false);
         setSalvandoNotaFiscal(false);
+    }
+
+    // O miolo de salvar o preenchimento interno de uma nota, sem o modal: usado
+    // pelo modal de hoje e pelo modal novo do Financeiro. O valor já vem em
+    // centavos. Pagamento e transporte só valem na DANFE. Devolve { nota } ou { erro }.
+    async function gravarNotaFiscal(id, campos) {
+        const ehDanfe = campos.tipo_nota === 'DANFE';
+        const payload = {
+            servico_feito: campos.servico_feito,
+            valor_pago: campos.valor_pago ?? null,
+            observacoes: campos.observacoes,
+            cliente: campos.cliente,
+            tipo_nota: campos.tipo_nota || null,
+            forma_pagamento: ehDanfe ? (campos.forma_pagamento || null) : null,
+            forma_transporte: ehDanfe ? (campos.forma_transporte || null) : null,
+        };
+        const { data, error } = await supabase.from('notas_fiscais').update(payload).eq('id', id).select();
+        if (error || !data?.length) return { erro: 'Falha ao atualizar nota: ' + (error?.message || 'sem permissão para alterar esta nota') };
+        setNotasFiscais(prev => prev.map(n => n.id === id ? data[0] : n));
+        return { nota: data[0] };
     }
 
     async function duplicarNotaFiscal(nota) {
@@ -2671,7 +2682,7 @@ export const AppProvider = ({ children }) => {
         abrirEdicaoUsuario, salvarUsuario,
         salvarConta, excluirConta, concluirConta, duplicarConta, gravarConta, pagarConta, mudarSituacaoEmpresa,
         salvarEmpresaFaturamento, excluirEmpresaFaturamento,
-        salvarNotaFiscal, concluirNotaFiscal, marcarNotaConcluida, duplicarNotaFiscal, reabrirNotaFiscal, excluirNotaFiscal,
+        salvarNotaFiscal, gravarNotaFiscal, concluirNotaFiscal, marcarNotaConcluida, duplicarNotaFiscal, reabrirNotaFiscal, excluirNotaFiscal,
         salvarRequisicao, excluirRequisicao, concluirRequisicao,
         salvarTarefa, excluirTarefa, concluirTarefa, reabrirTarefaFixa,
         salvarLink, excluirLink, concluirLink,
@@ -2818,7 +2829,7 @@ export const AppProvider = ({ children }) => {
         salvandoNotaFiscal, setSalvandoNotaFiscal,
         notasFiscaisAbaFiltro, notasFiscaisPaginadas, totalPaginasNotasFiscais,
         salvarNotaFiscal: acoes.salvarNotaFiscal, concluirNotaFiscal: acoes.concluirNotaFiscal,
-        marcarNotaConcluida: acoes.marcarNotaConcluida,
+        marcarNotaConcluida: acoes.marcarNotaConcluida, gravarNotaFiscal: acoes.gravarNotaFiscal,
         duplicarNotaFiscal: acoes.duplicarNotaFiscal, reabrirNotaFiscal: acoes.reabrirNotaFiscal,
         excluirNotaFiscal: acoes.excluirNotaFiscal,
     }), [acoes, notasFiscais, dadosCarregados, filtroNotas, buscaNotaFiscal, paginaNotasFiscais, modalNotaFiscalAberto,
