@@ -6,6 +6,7 @@ import { useContaDoPrototipo } from '@/hooks/useContaDoPrototipo';
 import { CATEGORIAS_CONTA } from '@/lib/utils/constants';
 import { obterDataAtual } from '@/lib/utils/formatters';
 import LogoCarregando from '@/components/ui/LogoCarregando';
+import { prepararNoSistema } from '@/lib/prototipos/noSistema';
 
 // Protótipo da nova tela de Contas a pagar, no padrão do DESIGN.md.
 //
@@ -48,7 +49,7 @@ export default function Page() {
     };
     // "<" escapado para uma descrição nunca fechar o <script> do protótipo.
     const json = JSON.stringify(dados).replace(/</g, '\\u003c');
-    const html = modelo.replace('/*CONTAS*/', `const DADOS = ${json};`);
+    const html = prepararNoSistema(modelo.replace('/*CONTAS*/', `const DADOS = ${json};`));
 
     // absolute inset-0 preenche a área da página abaixo da barra e da faixa de
     // pendências; a rolagem fica toda dentro do protótipo.

@@ -10,6 +10,7 @@ import { resumoDoPedido } from '@/lib/utils/servico';
 import { useAbrirOSDoPrototipo } from '@/hooks/useAbrirOSDoPrototipo';
 import { usePedidos } from '@/context/PedidosContext';
 import LogoCarregando from '@/components/ui/LogoCarregando';
+import { prepararNoSistema } from '@/lib/prototipos/noSistema';
 
 // Protótipo da nova tela de O.S. (o Histórico/Baixa do menu): abas por situação
 // e lista agrupada por mês da venda, a opção escolhida pela equipe.
@@ -234,7 +235,7 @@ export default function Page() {
     };
     // "<" escapado para um nome nunca fechar o <script> do protótipo.
     const json = JSON.stringify(dados).replace(/</g, '\\u003c');
-    const html = modelo.replace('/*BAIXA*/', `const DADOS = ${json};`);
+    const html = prepararNoSistema(modelo.replace('/*BAIXA*/', `const DADOS = ${json};`));
 
     // absolute inset-0 preenche a área da página abaixo da barra e da faixa de
     // pendências; a rolagem fica toda dentro do protótipo.

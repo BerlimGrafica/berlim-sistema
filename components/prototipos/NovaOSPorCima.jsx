@@ -11,6 +11,7 @@ import { mascararCliente, parseValorMoeda, formatarMoeda, obterDataAtual, rotulo
 import { itensDoPedido, pagamentosDoPedido, observacoesDoPedido } from '@/lib/utils/servico';
 import { buscarClientes } from '@/lib/clientes/busca';
 import { carregarModeloNovaOS, montarNovaOS } from '@/lib/prototipos/novaos';
+import { prepararNoSistema } from '@/lib/prototipos/noSistema';
 import { buscarLotes } from '@/lib/pedidos/lotes';
 
 // O novo modal de O.S. (public/prototipos/novaos.html) aberto por cima das
@@ -150,7 +151,7 @@ export default function NovaOSPorCima({ id, aoFechar, aoTrocar }) {
             total: l.total / 100, forma: l.forma,
             partes: l.partes.map(x => ({ id: x.id, valor: x.valor / 100, baixada: x.status === 'Finalizado', abre: !!aoTrocar && !(isOperador && x.status === 'Finalizado') })),
         }]));
-        setHtml(montarNovaOS(modelo, { produtos, locais: fornecedoresTerceirizacaoNomes.map(f => f.nome), usuariosSistema, os, permissoes, outras: outrasOS, lotes: lotesOS, escuro: darkMode }));
+        setHtml(prepararNoSistema(montarNovaOS(modelo, { produtos, locais: fornecedoresTerceirizacaoNomes.map(f => f.nome), usuariosSistema, os, permissoes, outras: outrasOS, lotes: lotesOS, escuro: darkMode })));
     }
 
     // Quem abriu a janela (Esc fora do iframe, voltar do navegador) pede o

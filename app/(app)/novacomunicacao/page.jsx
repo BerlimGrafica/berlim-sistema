@@ -8,6 +8,7 @@ import { mascararCliente, obterDataAtual } from '@/lib/utils/formatters';
 import { corDoNome } from '@/lib/prototipos/coresDoNome';
 import { buscarConclusoes } from '@/lib/tarefas/conclusoes';
 import LogoCarregando from '@/components/ui/LogoCarregando';
+import { prepararNoSistema } from '@/lib/prototipos/noSistema';
 
 // Protótipo da nova tela de Comunicação, no padrão do DESIGN.md: compras (a
 // lista do que falta), tarefas e links de pagamento numa tela só, com abas (só
@@ -142,7 +143,7 @@ export default function Page() {
         if (!modelo) return null;
         // "<" escapado para um texto nunca fechar o <script> do protótipo.
         const json = JSON.stringify({ ...dados, escuro: !!darkMode }).replace(/</g, '\\u003c');
-        return modelo.replace('/*COMUNICACAO*/', `const DADOS = ${json};`);
+        return prepararNoSistema(modelo.replace('/*COMUNICACAO*/', `const DADOS = ${json};`));
     }, [modelo]); // eslint-disable-line react-hooks/exhaustive-deps
     const dadosRef = useRef(dados);
     useEffect(() => {

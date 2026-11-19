@@ -13,6 +13,7 @@ import { anexarLotes } from '@/lib/pedidos/lotes';
 import { useAbrirOSDoPrototipo } from '@/hooks/useAbrirOSDoPrototipo';
 import { useContaDoPrototipo } from '@/hooks/useContaDoPrototipo';
 import LogoCarregando from '@/components/ui/LogoCarregando';
+import { prepararNoSistema } from '@/lib/prototipos/noSistema';
 
 // Protótipo da nova tela de Vendas: as mesmas informações da tela de hoje
 // (Visão geral, Produtos, Clientes e o relatório do dia), redesenhadas no padrão
@@ -225,7 +226,7 @@ export default function Page() {
         // A cor de cada categoria de conta vem da fonte única (CATEGORIAS_CONTA).
         const dados = { hoje: obterDataAtual(), abas, coresCategoria: Object.fromEntries(CATEGORIAS_CONTA.map(c => [c.value, c.cor])), ...inicial };
         // "<" escapado para um nome nunca fechar o <script> do protótipo.
-        return modelo.replace('/*VENDAS*/', `const DADOS = ${JSON.stringify(dados).replace(/</g, '\\u003c')};`);
+        return prepararNoSistema(modelo.replace('/*VENDAS*/', `const DADOS = ${JSON.stringify(dados).replace(/</g, '\\u003c')};`));
     }, [modelo, inicial, abas]);
 
     if (usuario && !pode) {

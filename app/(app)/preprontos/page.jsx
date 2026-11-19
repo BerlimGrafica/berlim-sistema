@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useOrcamentos } from '@/context/OrcamentosContext';
 import LogoCarregando from '@/components/ui/LogoCarregando';
+import { prepararNoSistema } from '@/lib/prototipos/noSistema';
 
 // Protótipo da nova tela de orçamentos pré-prontos: o balcão (busca, fixados,
 // lista por categoria, copiar com um clique) com a conversa do WhatsApp do lado,
@@ -39,7 +40,7 @@ export default function Page() {
         if (!pronto) return null;
         // "<" escapado para um texto nunca fechar o <script> do protótipo.
         const json = JSON.stringify(textos).replace(/</g, '\\u003c');
-        return modelo.replace('/*PREPRONTOS*/', `const TEXTOS_BANCO = ${json};`);
+        return prepararNoSistema(modelo.replace('/*PREPRONTOS*/', `const TEXTOS_BANCO = ${json};`));
     }, [pronto]); // eslint-disable-line react-hooks/exhaustive-deps
     const textosRef = useRef(textos);
     useEffect(() => {

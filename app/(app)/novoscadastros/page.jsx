@@ -10,6 +10,7 @@ import { CATEGORIAS_CONTA } from '@/lib/utils/constants';
 import { mascararCliente, rotuloCliente } from '@/lib/utils/formatters';
 import { corDoNome } from '@/lib/prototipos/coresDoNome';
 import LogoCarregando from '@/components/ui/LogoCarregando';
+import { prepararNoSistema } from '@/lib/prototipos/noSistema';
 
 // Protótipo da nova tela de Cadastros, no padrão do DESIGN.md: clientes,
 // catálogo, fornecedores e usuários numa tela só, com abas (só as que a pessoa
@@ -93,7 +94,7 @@ export default function Page() {
         if (!modelo) return null;
         // "<" escapado para um texto nunca fechar o <script> do protótipo.
         const json = JSON.stringify({ ...dados, escuro: !!darkMode, todasTelas: TELAS.map(t => t.rotulo), catalogo: CATALOGO, cargos: CARGOS_PROTO }).replace(/</g, '\\u003c');
-        return modelo.replace('/*CADASTROS*/', `const DADOS = ${json};`);
+        return prepararNoSistema(modelo.replace('/*CADASTROS*/', `const DADOS = ${json};`));
     }, [modelo]); // eslint-disable-line react-hooks/exhaustive-deps
     const dadosRef = useRef(dados);
     useEffect(() => {

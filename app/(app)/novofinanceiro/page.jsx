@@ -14,6 +14,7 @@ import { ouvirPedidosMudados } from '@/lib/pedidos/mudancas';
 import { CATEGORIAS_CONTA } from '@/lib/utils/constants';
 import { formatarMoeda, mascararCliente, obterDataAtual } from '@/lib/utils/formatters';
 import LogoCarregando from '@/components/ui/LogoCarregando';
+import { prepararNoSistema } from '@/lib/prototipos/noSistema';
 
 // Protótipo da nova tela do Financeiro, no padrão do DESIGN.md: as cinco partes
 // numa tela só, com abas. Contas a pagar é o protótipo de /novascontas.
@@ -91,7 +92,7 @@ export default function Page() {
         if (!modelo || !dadosCarregados) return null;
         // "<" escapado para um nome nunca fechar o <script> do protótipo.
         const json = JSON.stringify(dados).replace(/</g, '\\u003c');
-        return modelo.replace('/*FINANCEIRO*/', `const DADOS = ${json};`);
+        return prepararNoSistema(modelo.replace('/*FINANCEIRO*/', `const DADOS = ${json};`));
     }, [modelo, dadosCarregados]); // eslint-disable-line react-hooks/exhaustive-deps
     const dadosRef = useRef(dados);
     const enviarDados = useMemo(() => () => {

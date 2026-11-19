@@ -20,6 +20,7 @@ import { calcularPendencias } from '@/lib/alertas/pendencias';
 import { corDoNome } from '@/lib/prototipos/coresDoNome';
 import LogoCarregando from '@/components/ui/LogoCarregando';
 import RelatorioDoDiaModal from '@/components/vendas/RelatorioDoDiaModal';
+import { prepararNoSistema } from '@/lib/prototipos/noSistema';
 
 // Protótipo do novo Início: uma tela por cargo, com o que importa para cada um
 // (dono, atendimento, produção, financeiro), e um "Ver como" para trocar de
@@ -246,7 +247,7 @@ export default function Page() {
     };
     // "<" escapado para um nome nunca fechar o <script> do protótipo.
     const json = JSON.stringify(dados).replace(/</g, '\\u003c');
-    const html = modelo.replace('/*INICIO*/', `const DADOS = ${json};`);
+    const html = prepararNoSistema(modelo.replace('/*INICIO*/', `const DADOS = ${json};`));
 
     // absolute inset-0 preenche a área da página abaixo da barra e da faixa de
     // pendências; a rolagem fica toda dentro do protótipo.

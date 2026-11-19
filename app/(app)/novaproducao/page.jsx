@@ -9,6 +9,7 @@ import { corDoNome } from '@/lib/prototipos/coresDoNome';
 import { resumoDoPedido } from '@/lib/utils/servico';
 import { useAbrirOSDoPrototipo } from '@/hooks/useAbrirOSDoPrototipo';
 import LogoCarregando from '@/components/ui/LogoCarregando';
+import { prepararNoSistema } from '@/lib/prototipos/noSistema';
 
 // Protótipo da nova tela de Produção (opções A a D), aberto para a equipe
 // comparar.
@@ -91,7 +92,7 @@ export default function Page() {
         if (!modelo || !dadosCarregados) return null;
         // "<" escapado para um nome nunca fechar o <script> do protótipo.
         const json = JSON.stringify(dados).replace(/</g, '\\u003c');
-        return modelo.replace('/*PRODUCAO*/', `const DADOS = ${json};`);
+        return prepararNoSistema(modelo.replace('/*PRODUCAO*/', `const DADOS = ${json};`));
     }, [modelo, dadosCarregados]); // eslint-disable-line react-hooks/exhaustive-deps
     const dadosRef = useRef(dados);
     useEffect(() => {

@@ -8,6 +8,7 @@ import { itensDoOrcamento, observacoesDoOrcamento } from '@/lib/utils/servico';
 import { mascararCliente, obterDataAtual } from '@/lib/utils/formatters';
 import { corDoNome } from '@/lib/prototipos/coresDoNome';
 import LogoCarregando from '@/components/ui/LogoCarregando';
+import { prepararNoSistema } from '@/lib/prototipos/noSistema';
 
 // Protótipo da nova tela de orçamentos (os comuns, "formalizados"), no padrão
 // do DESIGN.md. As mesmas funções da tela de hoje (components/OrcamentosTab.jsx):
@@ -96,7 +97,7 @@ export default function Page() {
     };
     // "<" escapado para um texto nunca fechar o <script> do protótipo.
     const json = JSON.stringify(dados).replace(/</g, '\\u003c');
-    const html = modelo.replace('/*ORCAMENTOS*/', `const DADOS = ${json};`);
+    const html = prepararNoSistema(modelo.replace('/*ORCAMENTOS*/', `const DADOS = ${json};`));
 
     return (
         <iframe

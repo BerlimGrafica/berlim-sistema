@@ -421,9 +421,9 @@ button.tab-lin:hover { background: var(--sutil); }
 .mais { display: flex; justify-content: center; padding: 8px; border-top: 1px solid var(--borda-fraca); }
 
 /* gaveta do dia (computador) / folha (celular), a mesma do Início e da Produção */
-.gv-veu { position: fixed; inset: 51px 0 0 0; background: rgba(15,23,42,.36); z-index: 60; animation: veuEntra .4s ease-out; }
+.gv-veu { position: fixed; inset: var(--altura-cabecalho, 51px) 0 0 0; background: rgba(15,23,42,.36); z-index: 60; animation: veuEntra .4s ease-out; }
 .dark .gv-veu { background: rgba(0,0,0,.6); }
-.gaveta { position: fixed; top: 51px; right: 0; bottom: 0; width: min(500px, 100%); background: var(--fundo); border-left: 1px solid var(--borda); box-shadow: 0 24px 56px -16px rgba(15,23,42,.32), 0 2px 8px rgba(15,23,42,.08); z-index: 61; overflow-y: auto; animation: gavetaEntra .46s cubic-bezier(.22,1,.36,1); outline: none; }
+.gaveta { position: fixed; top: var(--altura-cabecalho, 51px); right: 0; bottom: 0; width: min(500px, 100%); background: var(--fundo); border-left: 1px solid var(--borda); box-shadow: 0 24px 56px -16px rgba(15,23,42,.32), 0 2px 8px rgba(15,23,42,.08); z-index: 61; overflow-y: auto; animation: gavetaEntra .46s cubic-bezier(.22,1,.36,1); outline: none; }
 /* Com a gaveta aberta, a página de trás fica parada: a roda do mouse rola só a
    gaveta, e chegar ao fim dela (ou de uma lista aberta) não leva a página junto. */
 .gaveta, .pop { overscroll-behavior: contain; }

@@ -8,6 +8,7 @@ import { buscarHistorico } from '@/lib/equipamentos/consultas';
 import { TINTAS, TIPOS_EQUIPAMENTO } from '@/lib/equipamentos/catalogo';
 import { corDoNome } from '@/lib/prototipos/coresDoNome';
 import LogoCarregando from '@/components/ui/LogoCarregando';
+import { prepararNoSistema } from '@/lib/prototipos/noSistema';
 
 // Protótipo da nova tela de Equipamentos, no padrão do DESIGN.md. A lista de
 // máquinas é o quadro de tintas (a opção B escolhida; a lista por tipo saiu).
@@ -83,7 +84,7 @@ export default function Page() {
         if (!pronto) return null;
         // "<" escapado para um nome nunca fechar o <script> do protótipo.
         const json = JSON.stringify(dados).replace(/</g, '\\u003c');
-        return modelo.replace('/*EQUIPAMENTOS*/', `const DADOS = ${json};`);
+        return prepararNoSistema(modelo.replace('/*EQUIPAMENTOS*/', `const DADOS = ${json};`));
     }, [pronto]); // eslint-disable-line react-hooks/exhaustive-deps
     const dadosRef = useRef(dados);
     const enviarDados = useCallback(() => {

@@ -7,6 +7,7 @@ import * as casamento from '@/lib/calculadoras/casamento';
 import * as bloquinhos from '@/lib/calculadoras/bloquinhos';
 import * as hotmelt from '@/lib/calculadoras/hotmelt';
 import LogoCarregando from '@/components/ui/LogoCarregando';
+import { prepararNoSistema } from '@/lib/prototipos/noSistema';
 
 // Protótipo da nova tela de Calculadoras: as cinco (banner, adesivo, casamento,
 // bloquinho e livro hot melt) numa tela só, com o desenho do DESIGN.md.
@@ -41,7 +42,7 @@ export default function Page() {
     const dados = { precosAdesivo: adesivo.precosDoCatalogo(produtos) };
     // "<" escapado para um nome de produto nunca fechar o <script> do protótipo.
     const json = JSON.stringify(dados).replace(/</g, '\\u003c');
-    const html = modelo.replace('/*CALCULADORAS*/', `const DADOS = ${json};`);
+    const html = prepararNoSistema(modelo.replace('/*CALCULADORAS*/', `const DADOS = ${json};`));
 
     // absolute inset-0 preenche a área da página abaixo da barra e da faixa de
     // pendências; a rolagem fica toda dentro do protótipo. clipboard-write
