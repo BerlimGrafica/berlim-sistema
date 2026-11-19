@@ -8,6 +8,7 @@ import { campoDeBusca, valorDoFiltro } from '@/lib/utils/busca';
 import { corDoNome } from '@/lib/prototipos/coresDoNome';
 import { resumoDoPedido } from '@/lib/utils/servico';
 import { useAbrirOSDoPrototipo } from '@/hooks/useAbrirOSDoPrototipo';
+import { usePedidos } from '@/context/PedidosContext';
 import LogoCarregando from '@/components/ui/LogoCarregando';
 
 // Protótipo da nova tela de O.S. (o Histórico/Baixa do menu): abas por situação
@@ -24,6 +25,8 @@ import LogoCarregando from '@/components/ui/LogoCarregando';
 // filtro rodava no navegador, só sobre as 80 primeiras de cada aba — com mais de
 // mil baixadas, escolher agosto dava "nenhuma O.S. neste período".
 const POR_ABA = 80;
+// "Carregar mais": o pedaço seguinte de cada aba.
+const MAIS = 50;
 const ABAS = {
     abertas: q => q.not('status', 'in', '("Concluído","Finalizado","Cancelado","Abandonado")'),
     concluidas: q => q.eq('status', 'Concluído'),
@@ -63,19 +66,38 @@ function filtrar(q, { de, ate }, busca) {
     return q;
 }
 
+// As O.S. de uma aba com o filtro e a ordem do protótipo, a partir de `desde`.
+// O.S. sem cliente ou sem valor vão para o fim nos dois sentidos; empate vai
+// pelo nº, mais nova primeiro.
+async function buscarAba(msg, filtro, busca, desde, quantas) {
+    const coluna = COLUNA_ORDEM[msg.campo] || 'id';
+    let q = filtrar(ABAS[msg.aba](supabase.from('pedidos').select(CAMPOS)), filtro, busca)
+        .order(coluna, { ascending: msg.ordem === 'asc', nullsFirst: false });
+    if (coluna !== 'id') q = q.order('id', { ascending: false });
+    const { data, error } = await q.range(desde, desde + quantas - 1);
+    if (error) throw error;
+    return data || [];
+}
+
 export default function Page() {
     const { usuario, isDemo } = useSessao();
     const { isClienteProblema } = useClientes();
+    // Dar baixa, imprimir e duplicar: as mesmas funções da tela de hoje.
+    const { atualizarCampoInline, imprimirOS, duplicarOS } = usePedidos();
+    // Quem pode dar baixa: Administrador e Financeiro, como o "Finalizar OS" de hoje.
+    const podeBaixar = usuario?.nivel === 'Administrador' || usuario?.nivel === 'Financeiro';
     const [modelo, setModelo] = useState(null);
     const [abas, setAbas] = useState(null);
     // A situação de cada O.S. que o protótipo já mostrou (as da carga inicial e
     // as que vieram de um filtro): baixada fica trancada para Atendimento e Produção.
     const situacoes = useRef(new Map());
+    // As O.S. completas que o protótipo já mostrou: imprimir e duplicar usam a linha inteira.
+    const linhas = useRef(new Map());
     const statusDe = useCallback(id => situacoes.current.get(id), []);
     const { iframeRef, modalOS } = useAbrirOSDoPrototipo(statusDe);
 
     // Guarda a situação das O.S. que chegam do banco (fora da renderização).
-    const anotar = useCallback(lista => lista.forEach(p => situacoes.current.set(p.id, p.status)), []);
+    const anotar = useCallback(lista => lista.forEach(p => { situacoes.current.set(p.id, p.status); linhas.current.set(p.id, p); }), []);
 
     const paraProto = useCallback(p => {
         return {
@@ -129,10 +151,49 @@ export default function Page() {
             const quadro = iframeRef.current;
             if (!quadro || e.source !== quadro.contentWindow) return;
             const msg = e.data || {};
-            if (msg.tipo !== 'pedir-filtro' || !ABAS[msg.aba] || !ehData(msg.de || '') || !ehData(msg.ate || '')) return;
             const responder = r => quadro.contentWindow?.postMessage(r, '/');
+            const linha = Number.isInteger(msg.id) ? linhas.current.get(msg.id) : null;
+            if (msg.tipo === 'imprimir-os' && linha) return imprimirOS(linha);
+            if (msg.tipo === 'duplicar-os' && linha) return duplicarOS(linha);
+            // Dar baixa: só O.S. concluída que o protótipo mostrou, e só para quem
+            // pode finalizar. O sistema marca quem deu a baixa como responsável.
+            if (msg.tipo === 'baixar-os' && Array.isArray(msg.ids)) {
+                if (!podeBaixar) return;
+                msg.ids.filter(id => Number.isInteger(id) && situacoes.current.get(id) === 'Concluído').slice(0, 100).forEach(id => {
+                    situacoes.current.set(id, 'Finalizado');
+                    atualizarCampoInline(id, 'status', 'Finalizado');
+                });
+                return;
+            }
+            // Desfazer a baixa: volta para Concluído com o responsável de antes.
+            if (msg.tipo === 'desfazer-baixa' && Array.isArray(msg.itens)) {
+                if (!podeBaixar) return;
+                msg.itens.filter(i => Number.isInteger(i?.id) && situacoes.current.get(i.id) === 'Finalizado').slice(0, 100).forEach(i => {
+                    situacoes.current.set(i.id, 'Concluído');
+                    atualizarCampoInline(i.id, 'status', 'Concluído');
+                    if (typeof i.resp === 'string' && i.resp.length <= 300) atualizarCampoInline(i.id, 'responsavel', i.resp);
+                    // Voltar para Concluído marca o prazo como hoje; o de antes volta junto.
+                    if (i.prazo === null || (i.prazo !== '' && ehData(i.prazo))) atualizarCampoInline(i.id, 'prazo', i.prazo);
+                });
+                return;
+            }
+            if ((msg.tipo !== 'pedir-filtro' && msg.tipo !== 'pedir-mais') || !ABAS[msg.aba] || !ehData(msg.de || '') || !ehData(msg.ate || '')) return;
             const filtro = { de: msg.de || '', ate: msg.ate || '', busca: String(msg.busca || '').slice(0, 80) };
-            const coluna = COLUNA_ORDEM[msg.campo] || 'id';
+            // "Carregar mais 50": o pedaço seguinte, com o mesmo filtro e a mesma ordem.
+            if (msg.tipo === 'pedir-mais') {
+                const desde = Number.isInteger(msg.desde) && msg.desde >= 0 ? msg.desde : 0;
+                try {
+                    const busca = await prepararBusca(filtro.busca);
+                    const lista = await buscarAba(msg, filtro, busca, desde, MAIS);
+                    anotar(lista);
+                    const pedidos = lista.map(paraProto);
+                    const nomes = new Set(pedidos.flatMap(p => [p.criado, ...p.resp, ...p.locais]).filter(Boolean));
+                    responder({ tipo: 'mais', pedido: msg.pedido, aba: msg.aba, pedidos, cores: Object.fromEntries([...nomes].map(n => [n, corDoNome(n)])) });
+                } catch (err) {
+                    responder({ tipo: 'mais-erro', pedido: msg.pedido, erro: err.message || 'Não deu para carregar mais O.S.' });
+                }
+                return;
+            }
             try {
                 const busca = await prepararBusca(filtro.busca);
                 const [totais, linhas] = await Promise.all([
@@ -141,16 +202,7 @@ export default function Page() {
                         if (error) throw error;
                         return [id, count ?? 0];
                     })),
-                    (async () => {
-                        // O.S. sem cliente ou sem valor vão para o fim nos dois
-                        // sentidos; empate vai pelo nº, mais nova primeiro.
-                        let q = filtrar(ABAS[msg.aba](supabase.from('pedidos').select(CAMPOS)), filtro, busca)
-                            .order(coluna, { ascending: msg.ordem === 'asc', nullsFirst: false });
-                        if (coluna !== 'id') q = q.order('id', { ascending: false });
-                        const { data, error } = await q.range(0, POR_ABA - 1);
-                        if (error) throw error;
-                        return data || [];
-                    })(),
+                    buscarAba(msg, filtro, busca, 0, POR_ABA),
                 ]);
                 anotar(linhas);
                 const pedidos = linhas.map(paraProto);
@@ -166,7 +218,7 @@ export default function Page() {
         }
         window.addEventListener('message', aoReceber);
         return () => window.removeEventListener('message', aoReceber);
-    }, [iframeRef, paraProto, anotar]);
+    }, [iframeRef, paraProto, anotar, podeBaixar, atualizarCampoInline, imprimirOS, duplicarOS]);
 
     if (!modelo || !abas) {
         return <div className="min-h-[60vh] grid place-items-center"><LogoCarregando mostrarTexto texto="Carregando protótipo" /></div>;

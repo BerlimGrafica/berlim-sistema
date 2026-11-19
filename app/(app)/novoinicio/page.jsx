@@ -8,6 +8,7 @@ import { useFinanceiro } from '@/context/FinanceiroContext';
 import { useComunicacao } from '@/context/ComunicacaoContext';
 import { useNotasFiscais } from '@/context/NotasFiscaisContext';
 import { useCadastros } from '@/context/CadastrosContext';
+import { useUi } from '@/context/UiContext';
 import { useAbrirOSDoPrototipo } from '@/hooks/useAbrirOSDoPrototipo';
 import { useContaDoPrototipo } from '@/hooks/useContaDoPrototipo';
 import { CATEGORIAS_CONTA, STATUSES_SEM_ATRASO } from '@/lib/utils/constants';
@@ -54,7 +55,8 @@ export default function Page() {
     const { pedidos, dadosCarregados } = usePedidos();
     const { usuario, usuariosSistema, isDemo } = useSessao();
     const { isClienteProblema } = useClientes();
-    const { contasPagar, empresasFaturamento } = useFinanceiro();
+    const { contasPagar, empresasFaturamento, pagarConta } = useFinanceiro();
+    const { avisar } = useUi();
     const { tarefasInternas, requisicoesMaterial, linksPagamento } = useComunicacao();
     const { notasFiscais } = useNotasFiscais();
     const [modelo, setModelo] = useState(null);
@@ -96,10 +98,17 @@ export default function Page() {
                 boletosRef.current = { quando: Date.now(), lista };
                 responder({ tipo: 'boletos', lista });
             }
+            // Marcar a conta como paga, da gaveta: grava pelo mesmo miolo do
+            // Financeiro (o protótipo já confirmou no segundo clique). A tela se
+            // refaz com a conta paga quando a memória muda.
+            if (msg.tipo === 'pagar-conta' && Number.isInteger(msg.id)) {
+                const r = await pagarConta(msg.id);
+                if (r.erro) avisar(r.erro, 'erro');
+            }
         };
         window.addEventListener('message', aoReceber);
         return () => window.removeEventListener('message', aoReceber);
-    }, [iframeRef, isDemo, podeBoletos]);
+    }, [iframeRef, isDemo, podeBoletos, pagarConta, avisar]);
 
     useEffect(() => {
         let vivo = true;

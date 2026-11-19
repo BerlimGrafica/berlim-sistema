@@ -409,6 +409,31 @@ function preparar(t) {
 let TEXTOS = (typeof TEXTOS_BANCO !== 'undefined' ? TEXTOS_BANCO : []).map(([id, titulo, empresa, texto]) =>
   preparar({ id, titulo: titulo || 'Sem título', empresa: empresa === 'Futura' ? 'Futura' : 'Berlim', texto: texto || '' }));
 const porId = id => TEXTOS.find(t => String(t.id) === String(id));
+// No sistema, salvar e excluir gravam de verdade: o pedido vai à página com um
+// número (`n`), ela grava pelo mesmo caminho do modal de hoje e responde com o
+// mesmo número. Os textos novos chegam pela mensagem 'dados'. Fora do sistema,
+// tudo fica só na tela, como antes.
+const NO_SIS = window.parent !== window;
+let pedidoN = 0;
+const esperando = new Map();
+function pedirAoSistema(tipo, dados = {}) {
+  const n = ++pedidoN;
+  window.parent.postMessage({ tipo, n, ...dados }, '/');
+  return new Promise(res => esperando.set(n, res));
+}
+addEventListener('message', e => {
+  if (!NO_SIS || e.source !== window.parent) return;
+  const d = e.data || {};
+  if (d.n && esperando.has(d.n)) { esperando.get(d.n)(d); esperando.delete(d.n); return; }
+  if (d.tipo !== 'dados' || !Array.isArray(d.textos)) return;
+  TEXTOS = d.textos.map(([id, titulo, empresa, texto]) =>
+    preparar({ id, titulo: titulo || 'Sem título', empresa: empresa === 'Futura' ? 'Futura' : 'Berlim', texto: texto || '' }));
+  // O que sumiu (outra pessoa excluiu) sai também da resposta e dos recentes.
+  est.resposta = est.resposta.filter(id => porId(id)); est.recentes = est.recentes.filter(id => porId(id));
+  if (est.editando == null) render();
+});
+// O id que veio do banco no formato do original (número quando é número).
+const idDoBanco = id => (/^\d+$/.test(String(id)) ? Number(id) : id);
 const coll = new Intl.Collator('pt-BR', { numeric: true, sensitivity: 'base' });
 
 /* Textos repetidos: mesmo conteúdo com títulos diferentes. */
@@ -420,10 +445,13 @@ function repetidos() {
 
 /* ===== estado ===== */
 const fixadosExemplo = ['cartao de visita sem acabamento', 'banner 90x120', 'texto de duvida', '100 folhetos 10x14cm - couche 115g'];
+// Os fixados não têm coluna no banco: ficam neste navegador, de quem fixou.
+// Sem nada guardado ainda, começam com os do exemplo.
+const fixadosGuardados = ler('pp-fixados', null);
 const est = {
   busca: '', cat: null, soRep: false,
   ativo: null, aberto: null, editando: null, excluir: null,
-  fixados: new Set(TEXTOS.filter(t => fixadosExemplo.some(f => t.k.startsWith(f))).map(t => t.id)),
+  fixados: new Set(Array.isArray(fixadosGuardados) ? fixadosGuardados : TEXTOS.filter(t => fixadosExemplo.some(f => t.k.startsWith(f))).map(t => t.id)),
   recentes: [], flash: null,
   // a resposta montada no painel da conversa (ids na ordem) e, no celular, se ele está aberto
   resposta: [], verResp: false,
@@ -495,17 +523,48 @@ function salvar(ed) {
   if (!tit.value.trim() || !txt.value.trim()) { (tit.value.trim() ? txt : tit).focus(); return; }
   const empresa = ed.querySelector('.ed-emp [aria-pressed="true"]')?.textContent.trim() || 'Berlim';
   const id = ed.dataset.editor;
+  const dados = { titulo: tit.value.trim(), empresa, texto: txt.value };
+  // No sistema espera o banco: o texto novo precisa do número dele, e quem não
+  // é administrador recebe a recusa sem perder o que digitou.
+  if (NO_SIS) {
+    if (ed.dataset.salvando) return;
+    ed.dataset.salvando = '1';
+    const btn = ed.querySelector('[data-acao="salvar"]'); if (btn) btn.disabled = true;
+    pedirAoSistema('salvar-texto', { id: id === 'novo' ? null : idDoBanco(id), ...dados }).then(res => {
+      delete ed.dataset.salvando; if (btn) btn.disabled = false;
+      if (!res.ok) return toast(res.erro || 'Não foi possível salvar o texto.');
+      aplicarSalvo(id, dados, res.id);
+    });
+    return;
+  }
+  aplicarSalvo(id, dados, null);
+}
+function aplicarSalvo(id, dados, idBanco) {
   let t;
-  if (id === 'novo') { t = preparar({ id: Math.max(0, ...TEXTOS.map(x => +x.id || 0)) + 1, titulo: tit.value.trim(), empresa, texto: txt.value }); TEXTOS.push(t); }
-  else { t = porId(id); Object.assign(t, { titulo: tit.value.trim(), empresa, texto: txt.value }); preparar(t); }
+  if (id === 'novo') {
+    t = porId(idBanco) || preparar({ id: idBanco ?? Math.max(0, ...TEXTOS.map(x => +x.id || 0)) + 1, ...dados });
+    if (!TEXTOS.includes(t)) TEXTOS.push(t);
+  } else { t = porId(id); if (!t) return render(); Object.assign(t, dados); preparar(t); }
   est.editando = null; est.excluir = null; est.aberto = t.id; est.ativo = t.id;
-  render(); toast('Salvo (protótipo)');
+  render(); toast(NO_SIS ? 'Texto salvo' : 'Salvo (protótipo)');
 }
 function excluir(id) {
   if (est.excluir !== id) { est.excluir = id; render(); return; }
-  TEXTOS = TEXTOS.filter(t => t.id !== id); est.fixados.delete(id); est.recentes = est.recentes.filter(x => x !== id);
+  if (NO_SIS) {
+    est.excluir = null; render();
+    pedirAoSistema('excluir-texto', { id: idDoBanco(id) }).then(res => {
+      if (!res.ok) return toast(res.erro || 'Não foi possível excluir o texto.');
+      tirarTexto(id); toast('Texto excluído');
+    });
+    return;
+  }
+  tirarTexto(id); toast('Excluído (protótipo)');
+}
+function tirarTexto(id) {
+  TEXTOS = TEXTOS.filter(t => String(t.id) !== String(id)); est.fixados.delete(id); guardar('pp-fixados', [...est.fixados]);
+  est.recentes = est.recentes.filter(x => x !== id);
   est.excluir = null; est.editando = null; est.aberto = null; est.resposta = est.resposta.filter(x => x !== id);
-  render(); toast('Excluído (protótipo)');
+  render();
 }
 function avisoRepetidos() {
   const rep = repetidos(); if (!rep.length && !est.soRep) return '';
@@ -673,7 +732,7 @@ function render() {
   // O painel da resposta rola por dentro: redesenhar não pode jogá-lo para o topo.
   const rolagemResp = document.querySelector('.resp-corpo')?.scrollTop;
   tela.innerHTML = renderA();
-  document.getElementById('nota').textContent = 'Dados reais · nada grava no sistema';
+  document.getElementById('nota').textContent = NO_SIS ? 'Dados reais · salvar e excluir gravam de verdade; os fixados ficam neste navegador' : 'Fora do sistema · nada grava';
   lucide.createIcons();
   if (naBusca) { const i = tela.querySelector('[data-busca]'); i?.focus(); i?.setSelectionRange(pos, pos); }
   if (rolagemResp != null) { const rc = document.querySelector('.resp-corpo'); if (rc) rc.scrollTop = rolagemResp; }
@@ -691,7 +750,7 @@ tela.addEventListener('click', e => {
   if (a === 'abrir') { est.aberto = est.aberto === id ? null : id; est.ativo = id; if (est.editando && est.editando !== id) est.editando = null; render(); return; }
   if (a === 'bolha') { if (!e.target.closest('a') && est.editBolha !== el.dataset.k) abrirBolha(el.dataset.k); return; }
   if (a === 'desfazer-bolha') { delete est.rascunho[el.dataset.k]; est.editBolha = null; render(); toast('Ajuste desfeito'); return; }
-  if (a === 'fixar') { e.stopPropagation(); est.fixados.has(id) ? est.fixados.delete(id) : est.fixados.add(id); render(); toast(est.fixados.has(id) ? 'Fixado no topo' : 'Desafixado'); return; }
+  if (a === 'fixar') { e.stopPropagation(); est.fixados.has(id) ? est.fixados.delete(id) : est.fixados.add(id); guardar('pp-fixados', [...est.fixados]); render(); toast(est.fixados.has(id) ? 'Fixado no topo' : 'Desafixado'); return; }
   if (a === 'editar') { e.stopPropagation(); est.editando = id; est.aberto = id; render(); tela.querySelector('.ed-txt')?.focus(); return; }
   if (a === 'novo') { est.editando = 'novo'; render(); tela.querySelector('.ed-tit')?.focus(); tela.querySelector('[data-editor]')?.scrollIntoView({ block: 'nearest' }); return; }
   if (a === 'cancelar') { est.editando = null; render(); return; }
@@ -802,6 +861,7 @@ function trocarTema(escuro, origem, aplicar) {
 temaBtn.addEventListener('click', () => { const escuro = !document.documentElement.classList.contains('dark'); trocarTema(escuro, temaBtn, () => aplicarTema(escuro)); });
 aplicarTema(ler('pp-tema', false));
 render();
+if (NO_SIS) window.parent.postMessage({ tipo: 'pronto' }, '/');
 </script>
 </body>
 </html>

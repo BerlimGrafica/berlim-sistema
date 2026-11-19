@@ -623,7 +623,7 @@ html[data-troca-tema] *, html[data-troca-tema] *::before, html[data-troca-tema] 
 <body>
 <div class="proto">
   <span class="proto-nome">Financeiro · protótipo</span>
-  <span class="proto-nota">Dados reais · os dados e o “pago” do boleto gravam de verdade, como na tela de hoje; o resto não grava (“Abrir O.S.” e “Abrir no modal atual” levam para as telas de hoje)</span>
+  <span class="proto-nota">Dados reais · grava de verdade, pelas mesmas funções da tela de hoje</span>
   <button class="proto-bt" id="tema"><i data-lucide="moon" class="ico ico-s"></i><span class="txt">Escuro</span></button>
 </div>
 <main class="pg"><div id="abas"></div><div id="tela"></div></main>
@@ -660,6 +660,18 @@ const somarMes = (m, n) => { const [a, mm] = m.split('-').map(Number); const d =
 const paraPai = msg => { if (window.parent !== window) { document.activeElement?.blur(); window.parent.postMessage(msg, '/'); } };
 const avisoProto = txt => { document.querySelector('.aviso-proto')?.remove(); const t = document.createElement('div'); t.className = 'aviso-proto'; t.textContent = txt; document.body.appendChild(t); setTimeout(() => t.remove(), 2600); };
 const CONTAS = DADOS.contas;
+// No sistema, pagar conta, salvar conta, mudar a situação da empresa e
+// concluir nota gravam de verdade: o pedido vai à página com um número (`n`),
+// ela grava pelos mesmos miolos do modal de hoje e responde com o mesmo
+// número. Contas, empresas e notas novas chegam pela mensagem 'dados'.
+const NO_SIS = window.parent !== window;
+let pedidoGravar = 0;
+const esperandoGravar = new Map();
+function pedirAoSistema(tipo, dados = {}) {
+  const n = ++pedidoGravar;
+  window.parent.postMessage({ tipo, n, ...dados }, '/');
+  return new Promise(res => esperandoGravar.set(n, res));
+}
 
 /* ===== estado ===== */
 // A aba fica guardada na sessão: gravar uma conta lá fora redesenha o protótipo
@@ -1078,8 +1090,15 @@ function fecharGaveta(quieto) {
 }
 function pagar(c, naGaveta) {
   if (est.conf !== c.id) { est.conf = c.id; naGaveta ? renderGaveta() : render(); return; }
+  const antes = c.status;
   c.status = 'Pago'; est.conf = null; render(); renderGaveta();
-  avisoProto(`“${c.descricao}” marcada como paga (protótipo: não grava)`);
+  if (!NO_SIS) return avisoProto(`“${c.descricao}” marcada como paga (protótipo: não grava)`);
+  avisoProto(`“${c.descricao}” marcada como paga`);
+  pedirAoSistema('pagar-conta', { id: c.id }).then(res => {
+    if (res.ok) return;
+    c.status = antes; render(); renderGaveta();
+    avisoProto(res.erro || 'Não foi possível marcar como paga.');
+  });
 }
 
 /* ===== modal de conta (novo) ===== */
@@ -1289,10 +1308,26 @@ function salvarModalConta() {
   mc.erros = { titulo: pedeForn ? !mc.fornId : !mc.desc.trim(), valor: !mc.valor };
   if (mc.erros.titulo || mc.erros.valor) { mc.pop = null; renderModalConta(); document.querySelector(mc.erros.titulo ? '#mc-tit-in' : '#mc-valor')?.focus(); return; }
   const r = rascunhoParaSistema();
+  // No sistema espera o banco: a conta nova precisa do número dela, e uma
+  // recusa deixa o modal aberto com o que foi digitado.
+  if (NO_SIS && !salvarModalConta.depois) {
+    if (mc.salvando) return;
+    mc.salvando = true;
+    const real = mc.id && mc.id < 1e9;
+    pedirAoSistema('salvar-conta', { id: real ? mc.id : null, conta: r }).then(res => {
+      if (!mc) return;
+      mc.salvando = false;
+      if (!res.ok) return avisoProto(res.erro || 'Não foi possível salvar a conta.');
+      salvarModalConta.depois = res.id;
+      salvarModalConta();
+    });
+    return;
+  }
+  const idDoBanco = salvarModalConta.depois; salvarModalConta.depois = null;
   const dados = { descricao: r.descricao, valor: r.valor, vencimento: r.vencimento, status: r.status, categoria: r.categoria, fornecedorId: r.fornecedor_id, fornecedor: pedeForn ? r.descricao : '', recorrente: r.recorrente, parcelas: r.recorrente_total_parcelas, parcela: mc.parcelaAtual || 1 };
-  let conta = mc.id ? porId(mc.id) : null;
+  let conta = mc.id ? porId(mc.id) : (idDoBanco ? porId(idDoBanco) : null);
   if (conta) Object.assign(conta, dados);
-  else { conta = { id: Math.max(1e9, ...CONTAS.map(c => c.id)) + 1, ...dados }; CONTAS.push(conta); }
+  else { conta = { id: idDoBanco || Math.max(1e9, ...CONTAS.map(c => c.id)) + 1, ...dados }; CONTAS.push(conta); }
   const novo = !mc.id;
   fecharModalConta();
   // Salva fora do período, a tela vai para o mês dela, para a conta não sumir.
@@ -1302,7 +1337,7 @@ function salvarModalConta() {
   render(); renderGaveta();
   const lin = document.querySelector(`.lin[data-conta="${conta.id}"]`);
   if (lin) { lin.scrollIntoView({ block: 'center', behavior: 'smooth' }); lin.classList.add('chegou'); }
-  avisoProto(`${novo ? 'Conta lançada' : 'Conta atualizada'} (protótipo: não grava)`);
+  avisoProto(`${novo ? 'Conta lançada' : 'Conta atualizada'}${NO_SIS ? '' : ' (protótipo: não grava)'}`);
 }
 function acaoModal(a, el) {
   if (a === 'fechar') return fecharModalConta();
@@ -1465,7 +1500,14 @@ document.addEventListener('keydown', e => {
 addEventListener('message', e => {
   if (e.source !== window.parent) return;
   const msg = e.data || {};
+  if (msg.n && esperandoGravar.has(msg.n)) { esperandoGravar.get(msg.n)(msg); esperandoGravar.delete(msg.n); return; }
   Object.values(MODULOS).forEach(m => m.aoReceber?.(msg));
+  // O que mudou na memória do sistema (daqui, do modal de hoje ou de outra
+  // pessoa): as listas trocam sem recarregar a tela.
+  if (msg.tipo === 'dados' && Array.isArray(msg.contas)) {
+    CONTAS.splice(0, CONTAS.length, ...msg.contas);
+    render(); renderGaveta();
+  }
 });
 
 /* ===== peças comuns às abas novas ===== */
@@ -2094,7 +2136,7 @@ const notaPeriodo = (txt, alerta, acao) => `<div class="per-nota ${alerta ? 'ale
       <div class="det-acoes">
         <button class="btn btn-sec btn-p" data-gv="editar">${ico('pencil')}Editar no modal atual</button>
       </div>
-      <p class="det-nota">Trocar a situação aqui só muda a tela (protótipo).</p>
+      ${NO_SIS ? '' : '<p class="det-nota">Trocar a situação aqui só muda a tela (protótipo).</p>'}
     </div>`;
   }
   MODULOS.faturamento = {
@@ -2122,8 +2164,19 @@ const notaPeriodo = (txt, alerta, acao) => `<div class="per-nota ${alerta ? 'ale
     acao(a, e, el) {
       if (a === 'editar') return paraPai({ tipo: 'editar-empresa', id: e.id });
       if (a === 'copiar') return copiar(e.cnpj, 'CNPJ copiado');
-      if (a === 'sit') { e.status = el.dataset.v; render(); renderGaveta(); return avisoProto(`${e.nome}: ${SIT[e.status].rot.replace(/s$/, '').toLowerCase()} (protótipo: não grava)`); }
+      if (a === 'sit') {
+        const antes = e.status; if (antes === el.dataset.v) return;
+        e.status = el.dataset.v; render(); renderGaveta();
+        const rot = `${e.nome}: ${SIT[e.status].rot.replace(/s$/, '').toLowerCase()}`;
+        if (!NO_SIS) return avisoProto(`${rot} (protótipo: não grava)`);
+        avisoProto(rot);
+        pedirAoSistema('situacao-empresa', { id: e.id, status: e.status }).then(res => {
+          if (res.ok) return;
+          e.status = antes; render(); renderGaveta(); avisoProto(res.erro || 'Não foi possível mudar a situação.');
+        });
+      }
     },
+    aoReceber(msg) { if (msg.tipo === 'dados' && Array.isArray(msg.empresas)) F.lista = msg.empresas; },
     tecla(e) { if (e.key.toLowerCase() === 'n' && !e.ctrlKey && !e.metaKey) { e.preventDefault(); paraPai({ tipo: 'nova-empresa' }); } },
     antesDeRolar() { if (F.filtro) { F.filtro = ''; render(); } },
   };
@@ -2214,6 +2267,8 @@ const notaPeriodo = (txt, alerta, acao) => `<div class="per-nota ${alerta ? 'ale
       if (est.aba === 'notas') render();
     },
     aoReceber(msg) {
+      // As pendentes vêm da memória do sistema; as concluídas, do banco, pelo período.
+      if (msg.tipo === 'dados' && Array.isArray(msg.notas)) { N.pend = msg.notas; return; }
       if (msg.pedido !== N.pedido || !['notas', 'notas-erro'].includes(msg.tipo)) return;
       N.carregando = false;
       if (msg.tipo === 'notas') { N.conc = msg.lista || []; N.total = msg.total ?? N.conc.length; } else N.erro = msg.erro;
@@ -2269,10 +2324,17 @@ const notaPeriodo = (txt, alerta, acao) => `<div class="per-nota ${alerta ? 'ale
       if (a === 'concluir') {
         if (N.conf !== n.id) { N.conf = n.id; render(); return renderGaveta(); }
         n.concluida = true; N.conf = null;
+        const pendAntes = N.pend;
         N.pend = N.pend.filter(x => x !== n); if (N.conc) { N.conc.unshift(n); N.total++; }
         if (!N.conc) N.pend.push(n);   // sem a lista de concluídas lida, ela fica achável pela gaveta
         render(); renderGaveta();
-        return avisoProto('Nota concluída (protótipo: não grava)');
+        if (!NO_SIS) return avisoProto('Nota concluída (protótipo: não grava)');
+        avisoProto('Nota concluída');
+        return pedirAoSistema('concluir-nota', { id: n.id }).then(res => {
+          if (res.ok) return;
+          n.concluida = false; N.pend = pendAntes; if (N.conc) { N.conc = N.conc.filter(x => x !== n); N.total--; }
+          render(); renderGaveta(); avisoProto(res.erro || 'Não foi possível concluir a nota.');
+        });
       }
     },
     antesDeRolar() { if (N.ver !== 'pendentes') { N.ver = 'pendentes'; render(); } },
@@ -2281,6 +2343,7 @@ const notaPeriodo = (txt, alerta, acao) => `<div class="per-nota ${alerta ? 'ale
 
 render();
 if (est.aba !== 'pagar') MODULOS[est.aba].carregar?.();
+if (NO_SIS) window.parent.postMessage({ tipo: 'pronto' }, '/');
 </script>
 </body>
 </html>

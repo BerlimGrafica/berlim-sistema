@@ -406,7 +406,7 @@ html[data-troca-tema] *, html[data-troca-tema] *::before, html[data-troca-tema] 
 <body>
 <div class="proto">
   <span class="proto-nome">Nova tela de O.S. · protótipo</span>
-  <span class="proto-nota">Dados reais, só leitura</span>
+  <span class="proto-nota">Dados reais · grava de verdade, pelas mesmas funções da tela de hoje</span>
   <div class="proto-dir">
     <button class="proto-bt" id="cargo" title="Simular a tela de outro cargo"></button>
     <button class="proto-bt" id="tema"></button>
@@ -541,9 +541,31 @@ function pedirFiltro() {
     window.parent.postMessage({ tipo: 'pedir-filtro', pedido: alvo.pedido, aba: est.aba, de: est.periodo.de, ate: est.periodo.ate, busca: buscaBanco(), campo: est.campo, ordem: est.ordem, contar: filtrando() }, '/');
   }, est.busca.trim() ? 300 : 0);
 }
+// "Carregar mais 50": o pedaço seguinte da aba aberta. Com filtro, entra na
+// lista que veio do banco; sem filtro, junto das O.S. da carga inicial.
+let pedidosMais = 0, esperaMais = null;
+function carregarMais() {
+  if (esperaMais) return;
+  const naTela = est.remoto ? est.remoto.pedidos.length : daAba(PED, est.aba).length;
+  esperaMais = { pedido: ++pedidosMais, chave: est.remoto?.chave || null, aba: est.aba };
+  window.parent.postMessage({ tipo: 'pedir-mais', pedido: esperaMais.pedido, aba: est.aba, de: est.periodo.de, ate: est.periodo.ate, busca: buscaBanco(), campo: est.campo, ordem: est.ordem, desde: naTela }, '/');
+  toast('Carregando mais 50…');
+}
 addEventListener('message', e => {
   if (!noSistema || e.source !== window.parent) return;
   const m = e.data || {};
+  if ((m.tipo === 'mais' || m.tipo === 'mais-erro') && esperaMais && m.pedido === esperaMais.pedido) {
+    const alvo = esperaMais; esperaMais = null;
+    if (m.tipo === 'mais-erro') return toast(m.erro || 'Não deu para carregar mais O.S.');
+    // O filtro mudou enquanto carregava: o pedaço não vale mais.
+    if ((est.remoto?.chave || null) !== alvo.chave || est.aba !== alvo.aba) return;
+    Object.assign(D.cores, m.cores || {});
+    const lista = est.remoto ? est.remoto.pedidos : PED;
+    const ja = new Set(lista.map(p => p.id));
+    (m.pedidos || []).forEach(p => { if (!ja.has(p.id)) lista.push({ ...p }); });
+    document.querySelector('.toast')?.remove();
+    return render();
+  }
   // Resposta atrasada (de um filtro que já mudou) não vale.
   if ((m.tipo !== 'filtro' && m.tipo !== 'filtro-erro') || !est.remoto || m.pedido !== est.remoto.pedido) return;
   if (m.tipo === 'filtro-erro') est.remoto = { ...est.remoto, carregando: false, pedidos: [], erro: m.erro || 'Não deu para filtrar as O.S.' };
@@ -851,10 +873,15 @@ function toast(msg, desfazer) {
   toastTimer = setTimeout(() => el.remove(), desfazer ? 5000 : 2400);
 }
 function acaoSistema(m, p) {
-  // Abrir a O.S. completa é de verdade: a página do sistema abre por cima o
-  // novo modal de O.S. com a O.S. real (hooks/useAbrirOSDoPrototipo.js). O
-  // resto ainda só avisa.
-  if (m === 'editar' && p && window.parent !== window) return window.parent.postMessage({ tipo: 'abrir-os', id: p.id }, '/');
+  // No sistema é tudo de verdade: abrir (e receber) abre por cima o novo modal
+  // de O.S. com a O.S. real (hooks/useAbrirOSDoPrototipo.js); imprimir e
+  // duplicar usam as funções da tela de hoje; "carregar mais" pede ao banco o
+  // pedaço seguinte da aba, com o mesmo filtro e a mesma ordem.
+  if (noSistema) {
+    if ((m === 'editar' || m === 'receber') && p) return window.parent.postMessage({ tipo: 'abrir-os', id: p.id }, '/');
+    if ((m === 'imprimir' || m === 'duplicar') && p) { window.parent.postMessage({ tipo: m + '-os', id: p.id }, '/'); return m === 'duplicar' ? toast(`Criando a cópia da O.S. #${p.id}`) : undefined; }
+    if (m === 'carregar') return carregarMais();
+  }
   const txt = { editar: `No sistema, abre a O.S. #${p?.id} completa`, imprimir: `No sistema, imprime a O.S. #${p?.id}`, duplicar: `No sistema, cria uma cópia da O.S. #${p?.id}`, receber: `No sistema, abre a O.S. #${p?.id} direto no pagamento`, carregar: 'No sistema, traz as próximas 50 O.S.' }[m];
   toast(txt + ' (protótipo)');
 }
@@ -873,8 +900,12 @@ function darBaixa(ids) {
   TOT.concluidas -= ps.length; TOT.finalizadas += ps.length;
   if (ps.some(p => p.id === est.gaveta)) est.gaveta = null;
   est.conf = null; est.animar = true; render();
+  // No sistema a baixa grava na hora; desfazer volta para Concluído com o
+  // responsável e o prazo de antes.
+  if (noSistema) window.parent.postMessage({ tipo: 'baixar-os', ids: ps.map(p => p.id) }, '/');
   toast(ps.length === 1 ? `Baixa da O.S. #${ps[0].id} feita` : `${ps.length} O.S. baixadas`, () => {
     antes.forEach(([p, r]) => { p.status = 'Concluído'; p.resp = r; });
+    if (noSistema) window.parent.postMessage({ tipo: 'desfazer-baixa', itens: antes.map(([p, r]) => ({ id: p.id, resp: r.join(', '), prazo: p.prazo || null })) }, '/');
     TOT.concluidas += ps.length; TOT.finalizadas -= ps.length; est.animar = true; render();
   });
 }

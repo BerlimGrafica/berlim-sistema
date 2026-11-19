@@ -458,6 +458,32 @@ let MAQ = D.maquinas.map(m => ({ ...m, cores: [...m.cores] }));
 let REG = D.registros.map(r => ({ ...r, cores: [...r.cores] }));
 let TOTAL = D.totalRegistros ?? REG.length;
 let proxId = -1; // registros e máquinas criados aqui têm id negativo: não existem no banco
+// No sistema, registrar, apagar, cadastrar, arquivar, restaurar e reordenar
+// gravam de verdade: o pedido vai à página com um número (`n`), ela grava pelos
+// mesmos hooks da tela atual e responde com o mesmo número. A tela muda na hora
+// e volta atrás se o banco recusar. Máquinas e registros novos chegam pela
+// mensagem 'dados'. Fora do sistema, tudo fica só na tela, como antes.
+const NO_SIS = window.parent !== window;
+let pedidoN = 0;
+const esperando = new Map();
+function pedirAoSistema(tipo, dados = {}) {
+  const n = ++pedidoN;
+  window.parent.postMessage({ tipo, n, ...dados }, '/');
+  return new Promise(res => esperando.set(n, res));
+}
+addEventListener('message', e => {
+  if (!NO_SIS || e.source !== window.parent) return;
+  const d = e.data || {};
+  if (d.n && esperando.has(d.n)) { esperando.get(d.n)(d); esperando.delete(d.n); return; }
+  if (d.tipo !== 'dados' || !Array.isArray(d.maquinas)) return;
+  MAQ = d.maquinas.map(m => ({ ...m, cores: [...m.cores] }));
+  REG = (d.registros || []).map(r => ({ ...r, cores: [...r.cores] }));
+  TOTAL = d.totalRegistros ?? REG.length;
+  if (est.gaveta?.tipo === 'maquina' && !maq(est.gaveta.id)) est.gaveta = null;
+  render();
+});
+// O histórico da aba é uma página que veio do banco: depois de gravar, é pedido de novo.
+const refazerHistorico = () => { if (est.hist) { est.hist = null; render(); } };
 const maq = id => MAQ.find(m => m.id === +id);
 const emUso = () => MAQ.filter(m => !m.arquivada);
 const arquivadas = () => MAQ.filter(m => m.arquivada);
@@ -889,11 +915,26 @@ function salvarForm() {
   REG.push(r); TOTAL++; est.form = null;
   if (ucAntes != null && ucAntes !== r.contador) est.rolar[m.id] = ucAntes;
   render();
+  if (NO_SIS) {
+    pedirAoSistema('registrar', { entrada: { equipamento: m.id, tipo: r.tipo, data: r.data, contador: r.contador, cores: r.cores, descricao: r.desc, tecnico: r.tecnico || null, valor_centavos: r.valor } }).then(res => {
+      if (!res.ok) {
+        // Recusado: o registro sai e o formulário volta com o que foi digitado.
+        REG = REG.filter(x => x !== r); TOTAL--;
+        if (est.gaveta?.tipo === 'maquina' && est.gaveta.id === m.id) est.form = f;
+        render(); return toast(res.erro || 'Não foi possível registrar.');
+      }
+      r.id = res.registro.id; refazerHistorico();
+    });
+  }
   // O momento em que anotar o contador se paga: a carga que saiu ganha rendimento.
   const rs = r.cores.map(t => ({ t, p: rendimento(r, t) })).filter(x => x.p != null);
   const msg = r.tipo === 'Manutenção' ? `Manutenção registrada na ${m.nome}`
     : rs.length ? `Carga registrada. ${rs.map(x => `${tinta(x.t).rotulo}: a anterior rendeu ${fmt(x.p)} páginas`).join('; ')}` : `Carga registrada na ${m.nome}`;
-  toast(msg, () => { REG = REG.filter(x => x.id !== r.id); TOTAL--; render(); });
+  // No sistema, desfazer apaga o registro que acabou de gravar.
+  toast(msg, () => {
+    REG = REG.filter(x => x !== r); TOTAL--; render();
+    if (NO_SIS && r.id > 0) pedirAoSistema('apagar-registro', { id: r.id }).then(res => { if (!res.ok) toast(res.erro || 'Não foi possível desfazer.'); refazerHistorico(); });
+  });
 }
 function apagarReg(r) {
   if (est.conf !== 'r' + r.id) { est.conf = 'r' + r.id; render(); clearTimeout(apagarReg.t); apagarReg.t = setTimeout(() => { if (est.conf === 'r' + r.id) { est.conf = null; render(); } }, 3500); return; }
@@ -902,26 +943,57 @@ function apagarReg(r) {
   est.conf = null;
   const i = REG.findIndex(x => x.id === r.id), doResumo = i >= 0 ? REG.splice(i, 1)[0] : null;
   est.removidos.add(r.id); TOTAL--; render();
-  toast(`Registro de ${r.tipo === 'Reabastecimento' ? 'carga' : 'manutenção'} apagado`, () => {
-    if (doResumo) REG.splice(i, 0, doResumo);
-    est.removidos.delete(r.id); TOTAL++; render();
-  });
+  const volta = () => { if (doResumo) REG.splice(Math.min(i, REG.length), 0, doResumo); est.removidos.delete(r.id); TOTAL++; render(); };
+  // No sistema, apagar é de verdade e não tem desfazer: o aviso só confirma.
+  if (NO_SIS) {
+    pedirAoSistema('apagar-registro', { id: r.id }).then(res => {
+      if (!res.ok) { volta(); return toast(res.erro || 'Não foi possível apagar.'); }
+      refazerHistorico();
+    });
+    return toast(`Registro de ${r.tipo === 'Reabastecimento' ? 'carga' : 'manutenção'} apagado`);
+  }
+  toast(`Registro de ${r.tipo === 'Reabastecimento' ? 'carga' : 'manutenção'} apagado`, volta);
 }
 function arquivar(m) {
   if (est.conf !== 'arq' + m.id) { est.conf = 'arq' + m.id; renderGaveta(); return; }
   est.conf = null; m.arquivada = true; est.gaveta = null; render();
-  toast(`${m.nome} arquivada. O histórico continua guardado.`, () => { m.arquivada = false; render(); });
+  if (NO_SIS) pedirAoSistema('arquivar-maquina', { id: m.id }).then(res => { if (!res.ok) { m.arquivada = false; render(); toast(res.erro || 'Não foi possível arquivar.'); } });
+  toast(`${m.nome} arquivada. O histórico continua guardado.`, () => {
+    m.arquivada = false; render();
+    if (NO_SIS) pedirAoSistema('restaurar-maquina', { id: m.id }).then(res => { if (!res.ok) toast(res.erro || 'Não foi possível desfazer.'); });
+  });
 }
 function abrirCadastro(m) {
   est.gaveta = { tipo: m ? 'editar' : 'nova', cad: m ? { id: m.id, nome: m.nome, modelo: m.modelo, tipo: m.tipo, cromia: m.cromia, cores: [...m.cores] } : { id: null, nome: '', modelo: '', tipo: TIPOS[0]?.id, cromia: 'cor', cores: ['preto', 'ciano', 'magenta', 'amarelo'] } };
   est.form = null; renderGaveta();
   requestAnimationFrame(() => gavetaRaiz.querySelector('[data-cad="nome"]')?.focus({ preventScroll: true }));
 }
+let salvandoCad = false;
 function salvarCadastro() {
   const c = est.gaveta.cad; if (faltaCad()) return;
   const dados = { nome: c.nome.trim(), modelo: c.modelo.trim(), tipo: c.tipo, cromia: c.cromia, cores: c.cromia === 'mono' ? ['preto'] : ORDEM_TINTAS.filter(t => c.cores.includes(t)) };
-  if (c.id) { const m = maq(c.id); const mudouGrupo = m.tipo !== dados.tipo; Object.assign(m, dados); if (mudouGrupo) m.ordem = Math.max(0, ...emUso().filter(x => x.tipo === m.tipo && x.id !== m.id).map(x => x.ordem)) + 1; est.gaveta = { tipo: 'maquina', id: m.id }; render(); toast(`${m.nome} atualizada`); }
-  else { const m = { id: proxId--, ...dados, ordem: Math.max(0, ...emUso().filter(x => x.tipo === dados.tipo).map(x => x.ordem)) + 1, arquivada: false }; MAQ.push(m); est.gaveta = null; est.aba = 'maquinas'; render(); toast(`${m.nome} cadastrada`); }
+  // No sistema espera o banco: a máquina nova precisa do número dela, e um nome
+  // repetido é recusado lá — a gaveta fica aberta com o aviso.
+  if (NO_SIS) {
+    if (salvandoCad) return; salvandoCad = true;
+    pedirAoSistema('salvar-maquina', { id: c.id || null, dados }).then(res => {
+      salvandoCad = false;
+      if (!res.ok) return toast(res.erro || 'Não foi possível salvar a máquina.');
+      aplicarCadastro(c, dados, res.maquina);
+    });
+    return;
+  }
+  aplicarCadastro(c, dados, null);
+}
+function aplicarCadastro(c, dados, doBanco) {
+  if (c.id) { const m = maq(c.id); if (!m) return render(); const mudouGrupo = m.tipo !== dados.tipo; Object.assign(m, dados); if (doBanco) m.ordem = doBanco.ordem; else if (mudouGrupo) m.ordem = Math.max(0, ...emUso().filter(x => x.tipo === m.tipo && x.id !== m.id).map(x => x.ordem)) + 1; est.gaveta = { tipo: 'maquina', id: m.id }; render(); toast(`${m.nome} atualizada`); }
+  else { const m = doBanco ? { ...doBanco, cores: [...doBanco.cores] } : { id: proxId--, ...dados, ordem: Math.max(0, ...emUso().filter(x => x.tipo === dados.tipo).map(x => x.ordem)) + 1, arquivada: false }; if (!maq(m.id)) MAQ.push(m); est.gaveta = null; est.aba = 'maquinas'; render(); toast(`${m.nome} cadastrada`); }
+}
+// A ordem de um grupo vai para o banco do jeito que ficou na tela.
+function gravarOrdem(tipo) {
+  if (!NO_SIS) return;
+  const ids = emUso().filter(x => x.tipo === tipo).sort(porOrdem).map(x => x.id);
+  pedirAoSistema('reordenar', { ids }).then(res => { if (!res.ok) toast(res.erro || 'Não foi possível salvar a nova ordem.'); });
 }
 // Mudar a ordem dentro do grupo: arrastando pela alça ou com Alt e as setas.
 function moverNaOrdem(m, para) {
@@ -938,7 +1010,7 @@ function iniciarArrasto(e, m) {
     const l = emUso().filter(x => x.tipo === m.tipo).sort(porOrdem);
     if (moverNaOrdem(m, l.indexOf(o))) { est.animar = true; render(); }
   };
-  const soltar = () => { removeEventListener('pointermove', mover); removeEventListener('pointerup', soltar); est.arrasto = null; render(); toast('Ordem guardada'); };
+  const soltar = () => { removeEventListener('pointermove', mover); removeEventListener('pointerup', soltar); est.arrasto = null; render(); gravarOrdem(m.tipo); toast('Ordem guardada'); };
   addEventListener('pointermove', mover); addEventListener('pointerup', soltar);
 }
 
@@ -954,7 +1026,7 @@ function render() {
   tela.innerHTML = `<div class="pg">${topo()}<div class="conteudo">${corpo}</div>
     <div class="dicas">${podeRegistrar ? '<span><kbd>R</kbd> registrar</span>' : ''}${D.admin ? '<span><kbd>N</kbd> nova máquina</span>' : ''}<span><kbd>↑</kbd><kbd>↓</kbd> escolher a máquina</span><span><kbd>Enter</kbd> abrir</span>${D.organizar ? '<span><kbd>Alt</kbd> + setas muda a ordem</span>' : ''}</div></div>${barraMob()}`;
   vigiaFaixa.disconnect(); const s = tela.querySelector('.sentinela'); if (s) vigiaFaixa.observe(s);
-  document.getElementById('nota').textContent = `${emUso().length} máquinas e ${D.registros.length} registros reais · nada aqui grava no sistema`;
+  document.getElementById('nota').textContent = `${emUso().length} máquinas e ${REG.length} registros reais · ${NO_SIS ? 'grava de verdade, pelas mesmas funções da tela de hoje' : 'fora do sistema, nada grava'}`;
   renderGaveta();
   lucide.createIcons(); posicionarIndicador(); rolarContadores(); est.rolar = {};
   if (antesPos) {
@@ -1020,7 +1092,7 @@ document.addEventListener('click', e => {
   if (a === 'nova-maquina') return abrirCadastro(null);
   if (a === 'editar-maquina') return abrirCadastro(maq(id));
   if (a === 'arquivar') return arquivar(maq(id));
-  if (a === 'restaurar') { const m = maq(id); m.arquivada = false; m.ordem = Math.max(0, ...emUso().filter(x => x.tipo === m.tipo && x !== m).map(x => x.ordem)) + 1; if (!arquivadas().length) est.aba = 'maquinas'; render(); return toast(`${m.nome} voltou para a lista`); }
+  if (a === 'restaurar') { const m = maq(id); m.arquivada = false; if (NO_SIS) pedirAoSistema('restaurar-maquina', { id: m.id }).then(res => { if (!res.ok) { m.arquivada = true; render(); toast(res.erro || 'Não foi possível restaurar.'); } }); m.ordem = Math.max(0, ...emUso().filter(x => x.tipo === m.tipo && x !== m).map(x => x.ordem)) + 1; if (!arquivadas().length) est.aba = 'maquinas'; render(); return toast(`${m.nome} voltou para a lista`); }
   if (a === 'apagar') { const r = REG.find(x => x.id === +id) || est.hist?.itens.find(x => x.id === +id); return r && apagarReg(r); }
   if (a === 'hist-mais') { if (!est.hist?.mais) { pedirHistorico(true); render(); } return; }
   // "Ver o histórico" de uma máquina: só ela, sem os outros filtros.
@@ -1063,7 +1135,7 @@ document.addEventListener('keydown', e => {
   // ↑ ↓ escolhem a máquina; Alt + setas mudam a ordem no grupo; Enter abre.
   if (est.aba === 'maquinas' && !est.gaveta && ['ArrowUp', 'ArrowDown'].includes(e.key)) {
     const ids = grupos().flatMap(g => g.maquinas.map(m => m.id)); if (!ids.length) return; e.preventDefault();
-    if (e.altKey && D.organizar && est.sel) { const m = maq(est.sel); const l = emUso().filter(x => x.tipo === m.tipo).sort(porOrdem); if (moverNaOrdem(m, l.indexOf(m) + (e.key === 'ArrowUp' ? -1 : 1))) { est.animar = true; render(); } return; }
+    if (e.altKey && D.organizar && est.sel) { const m = maq(est.sel); const l = emUso().filter(x => x.tipo === m.tipo).sort(porOrdem); if (moverNaOrdem(m, l.indexOf(m) + (e.key === 'ArrowUp' ? -1 : 1))) { est.animar = true; render(); gravarOrdem(m.tipo); } return; }
     const i = ids.indexOf(est.sel); est.sel = ids[Math.max(0, Math.min(ids.length - 1, i < 0 ? 0 : i + (e.key === 'ArrowUp' ? -1 : 1)))];
     tela.querySelectorAll('.q-lin.sel').forEach(x => x.classList.remove('sel'));
     const lin = tela.querySelector(`[data-mid="${est.sel}"]`); lin?.classList.add('sel'); lin?.scrollIntoView({ block: 'nearest' }); return;
@@ -1091,6 +1163,7 @@ function trocarTema(escuro, origem, aplicar) {
 temaBtn.addEventListener('click', () => { const escuro = !document.documentElement.classList.contains('dark'); trocarTema(escuro, temaBtn, () => aplicarTema(escuro)); });
 aplicarTema(ler('prod-tema', false));
 render();
+if (NO_SIS) window.parent.postMessage({ tipo: 'pronto' }, '/');
 document.fonts?.ready.then(() => { est.ind = null; posicionarIndicador(); });
 </script>
 </body>

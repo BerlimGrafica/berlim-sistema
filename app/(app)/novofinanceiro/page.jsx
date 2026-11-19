@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSessao } from '@/context/SessaoContext';
 import { useFinanceiro } from '@/context/FinanceiroContext';
 import { useCadastros } from '@/context/CadastrosContext';
@@ -40,6 +40,8 @@ const dataLocalDe = ts => {
 };
 
 const ehData = s => typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s);
+const CATEGORIAS_VALIDAS = new Set(CATEGORIAS_CONTA.map(c => c.value));
+const SITUACOES_EMPRESA = new Set(['Em Análise', 'Aprovado', 'Reprovado']);
 
 // Os campos do boleto que moram na O.S. e o tipo de valor que cada um aceita.
 // Só estes passam: a mensagem vem do iframe e não escolhe coluna à vontade.
@@ -63,10 +65,11 @@ export default function Page() {
     const { isDemo, usuario } = useSessao();
     // Quem conclui nota e gera uma nova a partir de outra: as mesmas pessoas da tela de hoje.
     const podeNotas = usuario?.nivel === 'Administrador' || usuario?.nivel === 'Financeiro';
-    const { contasPagar, empresasFaturamento, dadosCarregados, setNovaEmpresaFaturamento, setModalEmpresaFaturamentoAberto, atualizarPagamentoBoleto, concluirBoletoContasReceber } = useFinanceiro();
+    const { contasPagar, empresasFaturamento, dadosCarregados, setNovaEmpresaFaturamento, setModalEmpresaFaturamentoAberto, atualizarPagamentoBoleto, concluirBoletoContasReceber,
+        gravarConta, pagarConta, mudarSituacaoEmpresa } = useFinanceiro();
     const { atualizarCampoInline } = usePedidos();
     const { fornecedores } = useCadastros();
-    const { notasFiscais, setNotaFiscalEmEdicao, setModalNotaFiscalAberto, reabrirNotaFiscal } = useNotasFiscais();
+    const { notasFiscais, setNotaFiscalEmEdicao, setModalNotaFiscalAberto, reabrirNotaFiscal, marcarNotaConcluida } = useNotasFiscais();
     const [modelo, setModelo] = useState(null);
     const { iframeRef, modalOS } = useAbrirOSDoPrototipo();
     useContaDoPrototipo(iframeRef);
@@ -76,6 +79,29 @@ export default function Page() {
         fetch('/prototipos/financeiro.html').then(r => r.text()).then(t => { if (vivo) setModelo(t); });
         return () => { vivo = false; };
     }, []);
+
+    const dados = useMemo(
+        () => montarDados({ contasPagar, fornecedores, empresasFaturamento, notasFiscais, isDemo, podeNotas }),
+        [contasPagar, fornecedores, empresasFaturamento, notasFiscais, isDemo, podeNotas],
+    );
+    // A casca é montada uma vez, quando o modelo e a memória estão prontos.
+    // Depois, contas, empresas e notas novas vão por mensagem ('dados'):
+    // recarregar o iframe a cada conta salva fecharia a gaveta e a aba aberta.
+    const html = useMemo(() => {
+        if (!modelo || !dadosCarregados) return null;
+        // "<" escapado para um nome nunca fechar o <script> do protótipo.
+        const json = JSON.stringify(dados).replace(/</g, '\\u003c');
+        return modelo.replace('/*FINANCEIRO*/', `const DADOS = ${json};`);
+    }, [modelo, dadosCarregados]); // eslint-disable-line react-hooks/exhaustive-deps
+    const dadosRef = useRef(dados);
+    const enviarDados = useMemo(() => () => {
+        const d = dadosRef.current;
+        iframeRef.current?.contentWindow?.postMessage({ tipo: 'dados', contas: d.contas, empresas: d.empresas, notas: d.notas }, '/');
+    }, [iframeRef]);
+    useEffect(() => {
+        dadosRef.current = dados;
+        if (html) enviarDados();
+    }, [html, dados, enviarDados]);
 
     // O protótipo pede contas a receber e boletos quando a aba abre; a página lê
     // e responde. E pede os modais de hoje para editar uma nota ou uma empresa.
@@ -156,10 +182,47 @@ export default function Page() {
                 setNovaEmpresaFaturamento({ id: null, nome: '', cnpj: '', status: 'Aprovado' });
                 setModalEmpresaFaturamentoAberto(true);
             }
+            if (msg.tipo === 'pronto') return enviarDados();
+
+            // O que se grava daqui: o pedido vem com um número (`n`) e a resposta
+            // volta com ele. Mesmos miolos do modal de hoje, mesmas permissões.
+            if (!Number.isInteger(msg.n)) return;
+            const devolver = r => responder({ n: msg.n, ok: !r.erro, erro: r.erro || null, id: r.conta?.id ?? null });
+            if (msg.tipo === 'pagar-conta') {
+                if (!contasPagar.some(c => c.id === msg.id)) return devolver({ erro: 'Conta não encontrada.' });
+                return devolver(await pagarConta(msg.id));
+            }
+            if (msg.tipo === 'salvar-conta') {
+                const c = msg.conta || {};
+                const existente = Number.isInteger(msg.id) ? contasPagar.find(x => x.id === msg.id) : null;
+                if (msg.id != null && !existente) return devolver({ erro: 'Conta não encontrada.' });
+                const categoria = CATEGORIAS_VALIDAS.has(c.categoria) ? c.categoria : 'Despesa';
+                const fornecedorId = categoria !== 'Despesa' && Number.isInteger(c.fornecedor_id) && fornecedores.some(f => f.id === c.fornecedor_id) ? c.fornecedor_id : null;
+                const descricao = typeof c.descricao === 'string' ? c.descricao.trim().slice(0, 200) : '';
+                if (!descricao || !Number.isInteger(c.valor) || c.valor <= 0 || !ehData(c.vencimento)) return devolver({ erro: 'Preencha descrição, valor e vencimento.' });
+                const parcelas = c.recorrente && Number.isInteger(c.recorrente_total_parcelas) && c.recorrente_total_parcelas >= 2 ? Math.min(c.recorrente_total_parcelas, 120) : null;
+                const contaFormatada = {
+                    descricao, valor: c.valor, vencimento: c.vencimento, status: c.status === 'Pago' ? 'Pago' : 'Pendente',
+                    recorrente: !!c.recorrente, recorrente_total_parcelas: c.recorrente ? parcelas : null,
+                    categoria, fornecedor_id: fornecedorId,
+                    // A parcela de uma conta que já existe fica como está; a nova começa na 1.
+                    ...(existente ? {} : { recorrente_parcela_atual: 1 }),
+                };
+                return devolver(await gravarConta(existente?.id ?? null, contaFormatada));
+            }
+            if (msg.tipo === 'situacao-empresa') {
+                if (!empresasFaturamento.some(x => x.id === msg.id) || !SITUACOES_EMPRESA.has(msg.status)) return devolver({ erro: 'Empresa ou situação inválida.' });
+                return devolver(await mudarSituacaoEmpresa(msg.id, msg.status));
+            }
+            if (msg.tipo === 'concluir-nota') {
+                if (!podeNotas || isDemo) return devolver({ erro: 'Só Administrador e Financeiro concluem notas.' });
+                if (!notasFiscais.some(x => x.id === msg.id)) return devolver({ erro: 'Nota não encontrada.' });
+                return devolver(await marcarNotaConcluida(msg.id));
+            }
         }
         window.addEventListener('message', aoReceber);
         return () => window.removeEventListener('message', aoReceber);
-    }, [iframeRef, isDemo, podeNotas, reabrirNotaFiscal, notasFiscais, empresasFaturamento, setNotaFiscalEmEdicao, setModalNotaFiscalAberto, setNovaEmpresaFaturamento, setModalEmpresaFaturamentoAberto, atualizarPagamentoBoleto, concluirBoletoContasReceber, atualizarCampoInline]);
+    }, [iframeRef, enviarDados, contasPagar, fornecedores, gravarConta, pagarConta, mudarSituacaoEmpresa, marcarNotaConcluida, isDemo, podeNotas, reabrirNotaFiscal, notasFiscais, empresasFaturamento, setNotaFiscalEmEdicao, setModalNotaFiscalAberto, setNovaEmpresaFaturamento, setModalEmpresaFaturamentoAberto, atualizarPagamentoBoleto, concluirBoletoContasReceber, atualizarCampoInline]);
 
     // O tempo real diz quais O.S. mudaram; o protótipo relê só essas nas abas
     // que vieram do banco. É isto que dispensa um botão de atualizar.
@@ -167,11 +230,27 @@ export default function Page() {
         iframeRef.current?.contentWindow?.postMessage({ tipo: 'pedidos-mudaram', ids, tudo }, '/');
     }), [iframeRef]);
 
-    if (!modelo || !dadosCarregados) {
+    if (!html) {
         return <div className="min-h-[60vh] grid place-items-center"><LogoCarregando mostrarTexto texto="Carregando protótipo" /></div>;
     }
 
-    const dados = {
+    return (
+        <>
+            <iframe
+                ref={iframeRef}
+                title="Protótipo da nova tela do Financeiro"
+                srcDoc={html}
+                className="absolute inset-0 w-full h-full border-0"
+            />
+            {modalOS}
+        </>
+    );
+}
+
+// O que vai para o protótipo: contas, empresas e notas pendentes (já estão na
+// memória) e os cadastros que o modal de conta usa.
+function montarDados({ contasPagar, fornecedores, empresasFaturamento, notasFiscais, isDemo, podeNotas }) {
+    return {
         hoje: obterDataAtual(),
         contas: contasPagar.map(c => ({
             id: c.id, descricao: c.descricao || 'Conta', valor: c.valor || 0, vencimento: c.vencimento || '', status: c.status,
@@ -190,19 +269,4 @@ export default function Page() {
         notas: notasFiscais.filter(n => !n.concluido).map(n => notaParaProto(n, isDemo)),
         podeNotas: podeNotas && !isDemo,
     };
-    // "<" escapado para um nome nunca fechar o <script> do protótipo.
-    const json = JSON.stringify(dados).replace(/</g, '\\u003c');
-    const html = modelo.replace('/*FINANCEIRO*/', `const DADOS = ${json};`);
-
-    return (
-        <>
-            <iframe
-                ref={iframeRef}
-                title="Protótipo da nova tela do Financeiro"
-                srcDoc={html}
-                className="absolute inset-0 w-full h-full border-0"
-            />
-            {modalOS}
-        </>
-    );
 }

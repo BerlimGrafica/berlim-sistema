@@ -1619,27 +1619,42 @@ export const AppProvider = ({ children }) => {
     // resposta vem vazia. Antes esse "nada" ia para o lugar do texto na lista
     // e a tela quebrava ao redesenhar. Agora gravação sem linha é recusa.
     const SO_ADMIN_PRE = 'Só administrador pode alterar os textos pré-prontos.';
-    async function salvarOrcamentoPre(e) {
-        e.preventDefault();
-        const payload = { titulo: novoOrcamentoPre.titulo, texto: novoOrcamentoPre.texto, empresa: novoOrcamentoPre.empresa || 'Berlim' };
-        const { data, error } = novoOrcamentoPre.id
-            ? await supabase.from('orcamentos_pre_prontos').update(payload).eq('id', novoOrcamentoPre.id).select()
+    // O miolo de salvar um texto pré-pronto, sem o modal: usado pelo modal de
+    // hoje e pela tela nova (app/(app)/preprontos). Devolve { texto } ou { erro }.
+    async function gravarOrcamentoPre({ id, titulo, texto, empresa }) {
+        const payload = { titulo, texto, empresa: empresa || 'Berlim' };
+        const { data, error } = id
+            ? await supabase.from('orcamentos_pre_prontos').update(payload).eq('id', id).select()
             : await supabase.from('orcamentos_pre_prontos').insert([payload]).select();
         // 42501: o insert barrado pela RLS, esse sim volta como erro.
-        if (error) { avisar(error.code === '42501' ? SO_ADMIN_PRE : 'Erro ao salvar o texto: ' + error.message, 'erro'); return; }
-        if (!data?.length) { avisar(SO_ADMIN_PRE, 'erro'); return; }
+        if (error) return { erro: error.code === '42501' ? SO_ADMIN_PRE : 'Erro ao salvar o texto: ' + error.message };
+        if (!data?.length) return { erro: SO_ADMIN_PRE };
         // Pela função: o tempo real pode ter mexido na lista enquanto gravava.
-        if (novoOrcamentoPre.id) setOrcamentosPreProntos(lista => lista.map(o => o.id === novoOrcamentoPre.id ? data[0] : o));
+        if (id) setOrcamentosPreProntos(lista => lista.map(o => o.id === id ? data[0] : o));
         else setOrcamentosPreProntos(lista => lista.some(o => o.id === data[0].id) ? lista : [data[0], ...lista]);
+        return { texto: data[0] };
+    }
+
+    async function salvarOrcamentoPre(e) {
+        e.preventDefault();
+        const r = await gravarOrcamentoPre(novoOrcamentoPre);
+        if (r.erro) { avisar(r.erro, 'erro'); return; }
         setModalOrcamentoPreAberto(false);
+    }
+
+    // O miolo de excluir, sem a pergunta (a tela nova confirma do jeito dela).
+    async function apagarOrcamentoPre(id) {
+        const { data, error } = await supabase.from('orcamentos_pre_prontos').delete().eq('id', id).select('id');
+        if (error) return { erro: 'Erro: ' + error.message };
+        if (!data?.length) return { erro: SO_ADMIN_PRE };
+        setOrcamentosPreProntos(lista => lista.filter(o => o.id !== id));
+        return {};
     }
 
     async function excluirOrcamentoPre(id) {
         if (!(await confirmar('Excluir este modelo pré-pronto?'))) return;
-        const { data, error } = await supabase.from('orcamentos_pre_prontos').delete().eq('id', id).select('id');
-        if (error) avisar('Erro: ' + error.message, 'erro');
-        else if (!data?.length) avisar(SO_ADMIN_PRE, 'erro');
-        else setOrcamentosPreProntos(lista => lista.filter(o => o.id !== id));
+        const r = await apagarOrcamentoPre(id);
+        if (r.erro) avisar(r.erro, 'erro');
     }
 
     // === FUNÇÕES ORÇAMENTOS FORMALIZADOS ===
@@ -1915,16 +1930,21 @@ export const AppProvider = ({ children }) => {
         const contaAnterior = contasPagar.find(c => c.id === id);
         if (!contaAnterior || contaAnterior.status === 'Pago') return;
         if (!(await confirmar(`Deseja marcar a conta "${contaAnterior.descricao}" como paga?`))) return;
+        const r = await pagarConta(id);
+        if (r.erro) avisar(r.erro, 'erro');
+    }
 
+    // O miolo de marcar uma conta como paga, sem a pergunta (a tela nova
+    // confirma no próprio botão). Recorrente paga gera o mês seguinte.
+    async function pagarConta(id) {
+        const contaAnterior = contasPagar.find(c => c.id === id);
+        if (!contaAnterior) return { erro: 'Conta não encontrada.' };
+        if (contaAnterior.status === 'Pago') return {};
         const { data, error } = await supabase.from('contas_pagar').update({ status: 'Pago' }).eq('id', id).select();
-        if (!error && data) {
-            setContasPagar(prev => prev.map(c => c.id === id ? data[0] : c));
-            if (contaAnterior.recorrente) {
-                await criarCopiaRecorrente(data[0]);
-            }
-        } else {
-            avisar('Falha ao concluir: ' + (error?.message || 'Erro desconhecido'), 'erro');
-        }
+        if (error || !data?.length) return { erro: 'Falha ao concluir: ' + (error?.message || 'sem permissão para alterar esta conta') };
+        setContasPagar(prev => prev.map(c => c.id === id ? data[0] : c));
+        if (contaAnterior.recorrente) await criarCopiaRecorrente(data[0]);
+        return { conta: data[0] };
     }
 
     const [salvandoConta, setSalvandoConta] = useState(false);
@@ -1942,9 +1962,18 @@ export const AppProvider = ({ children }) => {
             categoria: novaConta.categoria || 'Despesa',
             fornecedor_id: novaConta.categoria && novaConta.categoria !== 'Despesa' ? (novaConta.fornecedor_id || null) : null
         };
+        const r = await gravarConta(novaConta.id || null, contaFormatada);
+        if (r.erro) avisar(r.erro, 'erro');
+        else setModalContaAberto(false);
+        setSalvandoConta(false);
+    }
 
-        if (novaConta.id) {
-            const contaAnterior = contasPagar.find(c => c.id === novaConta.id);
+    // O miolo de salvar uma conta, sem o modal: usado pelo modal de hoje e pelo
+    // modal novo do Financeiro. `contaFormatada` já vem com o valor em centavos.
+    // Devolve { conta } ou { erro }.
+    async function gravarConta(id, contaFormatada) {
+        if (id) {
+            const contaAnterior = contasPagar.find(c => c.id === id);
             const tornouPaga = contaAnterior && contaAnterior.status !== 'Pago' && contaFormatada.status === 'Pago';
             // A outra porta de entrada: a conta JÁ estava paga e só agora foi
             // marcada como recorrente. Esperando apenas "tornou paga", esse caso
@@ -1961,33 +1990,34 @@ export const AppProvider = ({ children }) => {
             const tornouRecorrente = contaAnterior && !contaAnterior.recorrente && contaFormatada.recorrente;
             const jaPaga = contaFormatada.status === 'Pago';
 
-            const { data, error } = await supabase.from('contas_pagar').update(contaFormatada).eq('id', novaConta.id).select();
-            if (!error && data) {
-                setContasPagar(prev => prev.map(c => c.id === novaConta.id ? data[0] : c));
-                if (contaFormatada.recorrente && (tornouPaga || (tornouRecorrente && jaPaga))) {
-                    await criarCopiaRecorrente(data[0]);
-                }
-                setModalContaAberto(false);
-            } else {
-                avisar('Falha ao atualizar (Tabela contas_pagar existe no Supabase?): ' + (error?.message || 'Erro desconhecido'), 'erro');
+            const { data, error } = await supabase.from('contas_pagar').update(contaFormatada).eq('id', id).select();
+            if (error || !data?.length) return { erro: 'Falha ao atualizar (Tabela contas_pagar existe no Supabase?): ' + (error?.message || 'sem permissão para alterar esta conta') };
+            setContasPagar(prev => prev.map(c => c.id === id ? data[0] : c));
+            if (contaFormatada.recorrente && (tornouPaga || (tornouRecorrente && jaPaga))) {
+                await criarCopiaRecorrente(data[0]);
             }
-        } else {
-            const { data, error } = await supabase.from('contas_pagar').insert([contaFormatada]).select();
-            if (!error && data) {
-                setContasPagar(prev => [...prev, data[0]]);
-                // Lançar uma conta que já nasce paga e recorrente — a de agosto
-                // registrada em setembro, por exemplo — é pagar uma recorrente.
-                // Sem isto, o cadastro novo nunca passava por criarCopiaRecorrente
-                // e o mês seguinte não aparecia.
-                if (contaFormatada.recorrente && contaFormatada.status === 'Pago') {
-                    await criarCopiaRecorrente(data[0]);
-                }
-                setModalContaAberto(false);
-            } else {
-                avisar('Falha ao salvar (Tabela contas_pagar existe no Supabase?): ' + (error?.message || 'Erro desconhecido'), 'erro');
-            }
+            return { conta: data[0] };
         }
-        setSalvandoConta(false);
+        const { data, error } = await supabase.from('contas_pagar').insert([contaFormatada]).select();
+        if (error || !data?.length) return { erro: 'Falha ao salvar (Tabela contas_pagar existe no Supabase?): ' + (error?.message || 'Erro desconhecido') };
+        setContasPagar(prev => [...prev, data[0]]);
+        // Lançar uma conta que já nasce paga e recorrente — a de agosto
+        // registrada em setembro, por exemplo — é pagar uma recorrente.
+        // Sem isto, o cadastro novo nunca passava por criarCopiaRecorrente
+        // e o mês seguinte não aparecia.
+        if (contaFormatada.recorrente && contaFormatada.status === 'Pago') {
+            await criarCopiaRecorrente(data[0]);
+        }
+        return { conta: data[0] };
+    }
+
+    // Trocar a situação de uma empresa de faturamento (Em Análise, Aprovado,
+    // Reprovado) direto da gaveta da tela nova, sem abrir o modal.
+    async function mudarSituacaoEmpresa(id, status) {
+        const { data, error } = await supabase.from('empresas_faturamento').update({ status }).eq('id', id).select();
+        if (error || !data?.length) return { erro: 'Falha ao atualizar a empresa: ' + (error?.message || 'sem permissão para alterar') };
+        setEmpresasFaturamento(prev => prev.map(x => x.id === id ? data[0] : x));
+        return { empresa: data[0] };
     }
 
     const [salvandoEmpresa, setSalvandoEmpresa] = useState(false);
@@ -2237,12 +2267,17 @@ export const AppProvider = ({ children }) => {
 
     async function concluirNotaFiscal(id) {
         if (!(await confirmar('Deseja realmente marcar esta nota como concluída? Ela não aparecerá mais nesta lista.'))) return;
+        const r = await marcarNotaConcluida(id);
+        if (r.erro) avisar(r.erro, 'erro');
+    }
+
+    // O miolo de concluir uma nota, sem a pergunta (a tela nova confirma no
+    // próprio botão).
+    async function marcarNotaConcluida(id) {
         const { data, error } = await supabase.from('notas_fiscais').update({ concluido: true }).eq('id', id).select();
-        if (!error && data) {
-            setNotasFiscais(notasFiscais.map(n => n.id === id ? data[0] : n));
-        } else {
-            avisar('Falha ao concluir: ' + error.message, 'erro');
-        }
+        if (error || !data?.length) return { erro: 'Falha ao concluir: ' + (error?.message || 'sem permissão para alterar esta nota') };
+        setNotasFiscais(prev => prev.map(n => n.id === id ? data[0] : n));
+        return { nota: data[0] };
     }
 
     async function excluirNotaFiscal(id) {
@@ -2628,15 +2663,15 @@ export const AppProvider = ({ children }) => {
         atualizarPagamentoBoleto, concluirBoletoContasReceber, buscarOutrasOSAbertasDoCliente, registrarPagamentoLoteOutrasOS, removerPagamentoLote,
         fecharModalOS, abrirEdicao, adicionarItemAoCarrinho, removerItemDoCarrinho, salvarEdicaoItemCarrinho,
         salvarOS, gravarOS, duplicarOS, imprimirOS, criarCliente, criarProduto,
-        salvarOrcamentoPre, excluirOrcamentoPre, salvarOrcamentoFormalizado, baixarPDFOrcamento,
+        salvarOrcamentoPre, excluirOrcamentoPre, gravarOrcamentoPre, apagarOrcamentoPre, salvarOrcamentoFormalizado, baixarPDFOrcamento,
         abrirEdicaoOrcamento, transformarEmOS, excluirOrcamentoFormalizado,
         abrirEdicaoCliente, salvarCliente,
         abrirEdicaoProduto, salvarProduto, atualizarCatalogoProdutos, excluirProduto, duplicarProduto,
         handleDragStartProduto, handleDropProduto, reordenarProduto, duplicarFornecedor,
         abrirEdicaoUsuario, salvarUsuario,
-        salvarConta, excluirConta, concluirConta, duplicarConta,
+        salvarConta, excluirConta, concluirConta, duplicarConta, gravarConta, pagarConta, mudarSituacaoEmpresa,
         salvarEmpresaFaturamento, excluirEmpresaFaturamento,
-        salvarNotaFiscal, concluirNotaFiscal, duplicarNotaFiscal, reabrirNotaFiscal, excluirNotaFiscal,
+        salvarNotaFiscal, concluirNotaFiscal, marcarNotaConcluida, duplicarNotaFiscal, reabrirNotaFiscal, excluirNotaFiscal,
         salvarRequisicao, excluirRequisicao, concluirRequisicao,
         salvarTarefa, excluirTarefa, concluirTarefa, reabrirTarefaFixa,
         salvarLink, excluirLink, concluirLink,
@@ -2740,6 +2775,7 @@ export const AppProvider = ({ children }) => {
         modalOrcamentoFormalizadoAberto, setModalOrcamentoFormalizadoAberto,
         orcamentoFormalizadoEmEdicao, setOrcamentoFormalizadoEmEdicao,
         salvarOrcamentoPre: acoes.salvarOrcamentoPre, excluirOrcamentoPre: acoes.excluirOrcamentoPre,
+        gravarOrcamentoPre: acoes.gravarOrcamentoPre, apagarOrcamentoPre: acoes.apagarOrcamentoPre,
         salvarOrcamentoFormalizado: acoes.salvarOrcamentoFormalizado, baixarPDFOrcamento: acoes.baixarPDFOrcamento,
         abrirEdicaoOrcamento: acoes.abrirEdicaoOrcamento, transformarEmOS: acoes.transformarEmOS,
         excluirOrcamentoFormalizado: acoes.excluirOrcamentoFormalizado,
@@ -2782,6 +2818,7 @@ export const AppProvider = ({ children }) => {
         salvandoNotaFiscal, setSalvandoNotaFiscal,
         notasFiscaisAbaFiltro, notasFiscaisPaginadas, totalPaginasNotasFiscais,
         salvarNotaFiscal: acoes.salvarNotaFiscal, concluirNotaFiscal: acoes.concluirNotaFiscal,
+        marcarNotaConcluida: acoes.marcarNotaConcluida,
         duplicarNotaFiscal: acoes.duplicarNotaFiscal, reabrirNotaFiscal: acoes.reabrirNotaFiscal,
         excluirNotaFiscal: acoes.excluirNotaFiscal,
     }), [acoes, notasFiscais, dadosCarregados, filtroNotas, buscaNotaFiscal, paginaNotasFiscais, modalNotaFiscalAberto,
@@ -2800,6 +2837,7 @@ export const AppProvider = ({ children }) => {
         pedidosSaldoDevedor, pedidosBoleto,
         dadosCarregados, carregandoContasReceber, carregandoBoletos,
         salvarConta: acoes.salvarConta, excluirConta: acoes.excluirConta, concluirConta: acoes.concluirConta,
+        gravarConta: acoes.gravarConta, pagarConta: acoes.pagarConta, mudarSituacaoEmpresa: acoes.mudarSituacaoEmpresa,
         duplicarConta: acoes.duplicarConta, salvarEmpresaFaturamento: acoes.salvarEmpresaFaturamento,
         excluirEmpresaFaturamento: acoes.excluirEmpresaFaturamento,
         atualizarPagamentoBoleto: acoes.atualizarPagamentoBoleto,

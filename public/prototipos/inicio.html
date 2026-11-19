@@ -1158,7 +1158,7 @@ addEventListener('message', e => {
 /* ===== gaveta: O.S. ou conta, a mesma da nova Produção ===== */
 // No Início a O.S. é só para ver: o ⤢ (ou Enter) abre a O.S. completa, que é
 // onde se muda alguma coisa. A conta tem as ações de hoje — marcar como paga
-// (aqui só na tela, é protótipo) e editar, que abre o modal atual, que grava.
+// (grava pelo mesmo miolo do Financeiro) e editar, que abre o modal atual.
 const gaveta = { tipo: null, id: null };
 const porIdOS = id => PEDIDOS.find(p => p.id === id);
 const porIdConta = id => DADOS.contas.find(c => c.id === id);
@@ -1263,6 +1263,9 @@ function acaoGaveta(a) {
   if (a === 'pagar') {
     if (gaveta.conf !== c.id) { gaveta.conf = c.id; return renderGaveta(); }
     c.status = 'Pago'; gaveta.conf = null; renderGaveta(); render();
+    // No sistema grava de verdade (o mesmo miolo do Financeiro); a tela se refaz
+    // com a conta paga quando a memória do sistema muda.
+    if (window.parent !== window) { paraPai({ tipo: 'pagar-conta', id: c.id }); return avisoProto('Marcada como paga'); }
     return avisoProto('Marcada como paga (protótipo: não grava)');
   }
 }

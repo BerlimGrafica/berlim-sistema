@@ -426,6 +426,13 @@ const ler = (k, d) => { try { const v = localStorage.getItem(k); return v == nul
 
 const D = typeof DADOS !== 'undefined' ? DADOS : { pedidos: [], equipe: [], status: [], permitidos: [], eu: '' };
 let PED = D.pedidos.map(p => ({ ...p, itens: p.itens.map(i => [...i]) }));
+// No sistema, o que se mexe aqui grava de verdade: a página recebe o pedido por
+// mensagem e grava pelas mesmas funções da tela atual (atualizarCampoInline,
+// atualizarItemConcluido, duplicarOS, imprimirOS). A tela muda na hora e as
+// O.S. novas voltam pela mensagem 'dados', sem recarregar nada.
+const NO_SISTEMA = window.parent !== window;
+const paraPai = m => { if (!NO_SISTEMA) return false; window.parent.postMessage(m, '/'); return true; };
+const gravar = (id, campo, valor) => paraPai({ tipo: 'mudar-campo', id, campo, valor });
 const STATUS = D.status;
 const PERMITIDOS = D.permitidos.length ? D.permitidos : STATUS;
 const COR = { 'Aguardando Pagamento': '#10b981', 'Aguardando Retorno': '#84cc16', 'Desenvolvimento de Arte': '#06b6d4', 'Etiqueta Escolar': '#2563eb', 'Produzir': '#a855f7', 'Produção': '#6b7280', 'Avisar Cliente': '#ec4899', 'Retirada': '#0ea5e9', 'Entrega': '#14b8a6', 'Concluído': '#f97316' };
@@ -705,6 +712,7 @@ function popResp(anc, p) {
   pop.addEventListener('click', e => {
     const b = e.target.closest('button[data-v]'); if (!b) return;
     const n = b.dataset.v; p.resp = p.resp.includes(n) ? p.resp.filter(x => x !== n) : [...p.resp, n];
+    gravar(p.id, 'responsavel', p.resp.join(', '));
     pop.innerHTML = desenhar(); lucide.createIcons(); render();
   });
 }
@@ -718,10 +726,11 @@ function popPrazo(anc, p) {
       + `</div><label class="livre">${ico('clock', 'ico ico-s')}Outro: <input type="time" data-hora value="${esc(p.hora)}"></label>` : ''));
   pop.addEventListener('click', e => {
     const b = e.target.closest('button[data-v], button[data-h]'); if (!b) return;
-    if (b.dataset.h != null) p.hora = b.dataset.h; else { p.prazo = b.dataset.v; if (!p.prazo) p.hora = ''; }
+    if (b.dataset.h != null) { p.hora = b.dataset.h; gravar(p.id, 'prazo_hora', p.hora || null); }
+    else { p.prazo = b.dataset.v; gravar(p.id, 'prazo', p.prazo || null); if (!p.prazo && p.hora) { p.hora = ''; gravar(p.id, 'prazo_hora', null); } }
     fecharPop(); est.animar = true; render(); toast(`Prazo da #${p.id}: ${estadoPrazo(p).txt}${p.hora ? ' até ' + p.hora : ''}`);
   });
-  const aplicar = (campo, v) => { if (!v) return; p[campo] = v; fecharPop(); est.animar = true; render(); };
+  const aplicar = (campo, v) => { if (!v) return; p[campo] = v; gravar(p.id, campo === 'hora' ? 'prazo_hora' : 'prazo', v); fecharPop(); est.animar = true; render(); };
   pop.querySelector('[data-data]')?.addEventListener('change', e => aplicar('prazo', e.target.value));
   const h = pop.querySelector('[data-hora]');
   h?.addEventListener('keydown', e => { if (e.key === 'Enter') aplicar('hora', h.value); });
@@ -760,10 +769,11 @@ function toast(msg, desfazer) {
   toastTimer = setTimeout(() => el.remove(), desfazer ? 5000 : 2400);
 }
 function acaoSistema(m, p) {
-  // Abrir a O.S. completa é de verdade: a página do sistema abre por cima o
-  // novo modal de O.S. com a O.S. real (hooks/useAbrirOSDoPrototipo.js), e
-  // ele grava. O resto da tela ainda só avisa.
-  if (m === 'editar' && p && window.parent !== window) return window.parent.postMessage({ tipo: 'abrir-os', id: p.id }, '/');
+  // Abrir a O.S. completa abre por cima o novo modal de O.S. com a O.S. real
+  // (hooks/useAbrirOSDoPrototipo.js); imprimir e duplicar usam as mesmas
+  // funções da tela atual.
+  if (m === 'editar' && p && paraPai({ tipo: 'abrir-os', id: p.id })) return;
+  if ((m === 'imprimir' || m === 'duplicar') && p && paraPai({ tipo: m + '-os', id: p.id })) return;
   const txt = { editar: `No sistema, abre a O.S. #${p.id} completa`, imprimir: `No sistema, imprime a O.S. #${p.id}`, duplicar: `No sistema, cria uma cópia da O.S. #${p.id}` }[m];
   toast(txt + ' (protótipo)');
 }
@@ -774,15 +784,35 @@ function novaOS() {
 function mudarStatus(p, s) {
   if (p.status === s) return;
   const antes = p.status; p.status = s; est.animar = true; render();
-  toast(`#${p.id} → ${s}`, () => { p.status = antes; est.animar = true; render(); });
+  gravar(p.id, 'status', s);
+  toast(`#${p.id} → ${s}`, () => { p.status = antes; gravar(p.id, 'status', antes); est.animar = true; render(); });
 }
 function concluir(p, direto) {
   if (!direto && est.conf !== p.id) { est.conf = p.id; render(); clearTimeout(concluir.t); concluir.t = setTimeout(() => { if (est.conf === p.id) { est.conf = null; render(); } }, 3500); return; }
   est.conf = null; const i = PED.indexOf(p); PED.splice(i, 1);
   if (est.gaveta === p.id) est.gaveta = null;
   est.animar = true; render();
-  toast(`O.S. #${p.id} concluída`, () => { PED.splice(i, 0, p); est.animar = true; render(); });
+  // Concluir grava o status (e o sistema marca o prazo como hoje, como na tela
+  // atual); desfazer devolve os dois como estavam.
+  const antes = { status: p.status, prazo: p.prazo };
+  gravar(p.id, 'status', 'Concluído');
+  toast(`O.S. #${p.id} concluída`, () => {
+    PED.splice(Math.min(i, PED.length), 0, p); gravar(p.id, 'status', antes.status); gravar(p.id, 'prazo', antes.prazo || null);
+    est.animar = true; render();
+  });
 }
+// O que mudou no sistema (alguém salvou uma O.S., a gravação daqui voltou)
+// chega por mensagem: a lista troca sem recarregar a tela, e a gaveta aberta
+// continua aberta.
+addEventListener('message', e => {
+  if (e.source !== window.parent) return;
+  const d = e.data || {};
+  if (d.tipo !== 'dados' || !Array.isArray(d.pedidos)) return;
+  PED = d.pedidos.map(p => ({ ...p, itens: p.itens.map(i => [...i]) }));
+  if (d.cores) D.cores = d.cores;
+  if (est.gaveta && !porId(est.gaveta)) est.gaveta = null;
+  render();
+});
 
 /* ===== render ===== */
 const tela = document.getElementById('tela');
@@ -795,7 +825,7 @@ function render() {
   tela.innerHTML = renderA();
   vigiaFaixa.disconnect(); const sentinela = tela.querySelector('.sentinela'); if (sentinela) vigiaFaixa.observe(sentinela);
   renderGaveta();
-  document.getElementById('nota').textContent = `${PED.length} O.S. reais em produção · a O.S. aberta grava; a lista ainda não`;
+  document.getElementById('nota').textContent = `${PED.length} O.S. reais em produção · ${NO_SISTEMA ? "grava de verdade, pelas mesmas funções da tela de hoje" : "fora do sistema, nada grava"}`;
   lucide.createIcons();
   if (scAbas != null && document.querySelector('.abas')) document.querySelector('.abas').scrollLeft = scAbas;
   posicionarIndicador();
@@ -860,15 +890,15 @@ document.addEventListener('click', e => {
     return abrirGaveta(p);
   }
   if (a === 'fechar-gaveta') { est.gaveta = null; return desarmou ? render() : renderGaveta(); }
-  if (a === 'item') { const it = p.itens.find(i => String(i[0]) === el.dataset.item); it[2] = !it[2]; render(); const todos = p.itens.every(i => i[2]); if (todos && it[2]) toast(`Todos os itens da #${p.id} feitos`); return; }
+  if (a === 'item') { const it = p.itens.find(i => String(i[0]) === el.dataset.item); it[2] = !it[2]; paraPai({ tipo: 'item-os', id: p.id, item: it[0], concluido: it[2] }); render(); const todos = p.itens.every(i => i[2]); if (todos && it[2]) toast(`Todos os itens da #${p.id} feitos`); return; }
   if (a === 'arte') {
-    // No sistema, quando e quem registrou o OK vão para duas colunas novas da O.S.;
-    // aqui só a tela guarda (as O.S. que já vêm aprovadas do banco não têm hora).
+    // O OK do cliente grava em "aprovado", como na tela atual. Quando e quem
+    // registrou ficam só nesta tela (o banco ainda não tem onde guardar).
     const antes = { arte: p.arte, arteEm: p.arteEm };
-    p.arte = !p.arte; p.arteEm = p.arte ? new Date() : null; render();
-    return toast(p.arte ? `OK do cliente registrado na #${p.id}` : `A arte da #${p.id} voltou a aguardar o OK`, () => { Object.assign(p, antes); render(); });
+    p.arte = !p.arte; p.arteEm = p.arte ? new Date() : null; gravar(p.id, 'aprovado', p.arte); render();
+    return toast(p.arte ? `OK do cliente registrado na #${p.id}` : `A arte da #${p.id} voltou a aguardar o OK`, () => { Object.assign(p, antes); gravar(p.id, 'aprovado', p.arte); render(); });
   }
-  if (a === 'entrega') { p.entrega = !p.entrega; render(); return toast(p.entrega ? `#${p.id} pronta para entrega` : `#${p.id} ainda não está pronta`); }
+  if (a === 'entrega') { p.entrega = !p.entrega; gravar(p.id, 'entrega', p.entrega); render(); return toast(p.entrega ? `#${p.id} pronta para entrega` : `#${p.id} ainda não está pronta`); }
   if (a === 'concluir') return concluir(p, false);
   if (['editar', 'imprimir', 'duplicar'].includes(a)) return acaoSistema(a, p);
   // Abrir/fechar a etapa mexe só nas classes, sem redesenhar a tela: assim a
@@ -954,6 +984,7 @@ function trocarTema(escuro, origem, aplicar) {
 temaBtn.addEventListener('click', () => { const escuro = !document.documentElement.classList.contains('dark'); trocarTema(escuro, temaBtn, () => aplicarTema(escuro)); });
 aplicarTema(ler('prod-tema', false));
 render();
+paraPai({ tipo: 'pronto' });
 // A largura das abas só é certa depois que a Montserrat carrega.
 document.fonts?.ready.then(() => { est.ind = null; posicionarIndicador(); });
 addEventListener('resize', () => { est.ind = null; posicionarIndicador(); });

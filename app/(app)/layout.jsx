@@ -15,6 +15,8 @@ import ConfirmDialog from '@/components/ConfirmDialog';
 import ContextMenu from '@/components/ContextMenu';
 import TelaBloqueada from '@/components/TelaBloqueada';
 import RoteiroTelasNovas from '@/components/prototipos/RoteiroTelasNovas';
+import NovaOSGlobal from '@/components/prototipos/NovaOSGlobal';
+import { usaTelasNovas } from '@/lib/acesso/telasNovas';
 import { useSessao } from '@/context/SessaoContext';
 import { inscrever, haModalAberto, haModalAbertoNoServidor } from '@/lib/ui/pilhaModais';
 
@@ -30,7 +32,7 @@ export default function AppLayout({ children }) {
 // AppProvider (e ele só renderiza isto com alguém logado).
 function Sistema({ children }) {
     const modalAberto = useSyncExternalStore(inscrever, haModalAberto, haModalAbertoNoServidor);
-    const { telaBloqueada } = useSessao();
+    const { telaBloqueada, usuario } = useSessao();
 
     return (
         <>
@@ -69,6 +71,8 @@ function Sistema({ children }) {
                     </div>
                 </div>
                 <Modals />
+                {/* Quem usa as telas novas abre as O.S. das pendências no modal novo. */}
+                {usaTelasNovas(usuario) && <NovaOSGlobal />}
                 {/* Fora do wrapper inerte junto com os modais, e não mais dentro
                     da Navbar: a gaveta do chat entra na mesma pilha de modais, e
                     de dentro dali ela se tornava inerte ao abrir — o campo de

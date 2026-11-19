@@ -76,5 +76,7 @@ export function useAbrirOSDoPrototipo(statusDe) {
 
     const modalOS = aberta ? createElement(NovaOSPorCima, { key: osAberta, id: osAberta, aoFechar: fechar, aoTrocar: setOsAberta }) : null;
 
-    return { iframeRef, modalOS };
+    // `abrir` abre uma O.S. sem vir do iframe (o modal global das pendências,
+    // components/prototipos/NovaOSGlobal.jsx).
+    return { iframeRef, modalOS, abrir: setOsAberta };
 }
