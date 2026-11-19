@@ -70,7 +70,7 @@ export default function Page() {
         gravarConta, pagarConta, mudarSituacaoEmpresa } = useFinanceiro();
     const { atualizarCampoInline } = usePedidos();
     const { fornecedores } = useCadastros();
-    const { notasFiscais, setNotaFiscalEmEdicao, setModalNotaFiscalAberto, reabrirNotaFiscal, marcarNotaConcluida } = useNotasFiscais();
+    const { notasFiscais, setNotaFiscalEmEdicao, setModalNotaFiscalAberto, reabrirNotaFiscal, marcarNotaConcluida, duplicarNotaFiscal, excluirNotaFiscal } = useNotasFiscais();
     const [modelo, setModelo] = useState(null);
     const { iframeRef, modalOS } = useAbrirOSDoPrototipo();
     useContaDoPrototipo(iframeRef);
@@ -184,6 +184,20 @@ export default function Page() {
                 setModalEmpresaFaturamentoAberto(true);
             }
             if (msg.tipo === 'pronto') return enviarDados();
+            // Do menu do botão direito numa nota: duplicar e excluir pelas funções
+            // da tela de hoje. Excluir pergunta antes, com a confirmação do sistema;
+            // o foco sai do iframe para o teclado chegar nela.
+            if (msg.tipo === 'duplicar-nota' && Number.isInteger(msg.id) && !isDemo) {
+                const n = notasFiscais.find(x => x.id === msg.id);
+                if (n) duplicarNotaFiscal(n);
+                return;
+            }
+            if (msg.tipo === 'excluir-nota' && Number.isInteger(msg.id) && podeNotas && !isDemo) {
+                if (!notasFiscais.some(x => x.id === msg.id)) return;
+                quadro.blur();
+                excluirNotaFiscal(msg.id);
+                return;
+            }
 
             // O que se grava daqui: o pedido vem com um número (`n`) e a resposta
             // volta com ele. Mesmos miolos do modal de hoje, mesmas permissões.
@@ -223,7 +237,7 @@ export default function Page() {
         }
         window.addEventListener('message', aoReceber);
         return () => window.removeEventListener('message', aoReceber);
-    }, [iframeRef, enviarDados, contasPagar, fornecedores, gravarConta, pagarConta, mudarSituacaoEmpresa, marcarNotaConcluida, isDemo, podeNotas, reabrirNotaFiscal, notasFiscais, empresasFaturamento, setNotaFiscalEmEdicao, setModalNotaFiscalAberto, setNovaEmpresaFaturamento, setModalEmpresaFaturamentoAberto, atualizarPagamentoBoleto, concluirBoletoContasReceber, atualizarCampoInline]);
+    }, [iframeRef, enviarDados, contasPagar, fornecedores, gravarConta, pagarConta, mudarSituacaoEmpresa, marcarNotaConcluida, duplicarNotaFiscal, excluirNotaFiscal, isDemo, podeNotas, reabrirNotaFiscal, notasFiscais, empresasFaturamento, setNotaFiscalEmEdicao, setModalNotaFiscalAberto, setNovaEmpresaFaturamento, setModalEmpresaFaturamentoAberto, atualizarPagamentoBoleto, concluirBoletoContasReceber, atualizarCampoInline]);
 
     // O tempo real diz quais O.S. mudaram; o protótipo relê só essas nas abas
     // que vieram do banco. É isto que dispensa um botão de atualizar.

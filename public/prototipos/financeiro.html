@@ -70,6 +70,11 @@ kbd { font: 600 10.5px/1 Montserrat, sans-serif; color: var(--tinta-suave); bord
 
 /* abas do Financeiro: o traço laranja corre até a aba escolhida (DESIGN.md › Abas de filtro) */
 .faixa { display: flex; align-items: flex-end; border-bottom: 1px solid var(--borda); margin: 0 0 22px; }
+/* Abaixo do título, como na Comunicação: um respiro em cima, e o conteúdo logo depois. */
+#tela > #abas .faixa { margin: 12px 0 0; }
+.pop hr { border: 0; border-top: 1px solid var(--borda-fraca); margin: 4px 0; }
+.pop .perigo { color: var(--perigo); }
+.pop .perigo:hover { background: var(--perigo-fundo); color: var(--perigo); }
 .abas { position: relative; display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; margin-bottom: -1px; }
 .abas::-webkit-scrollbar { display: none; }
 .aba { display: inline-flex; align-items: center; gap: 7px; height: 42px; padding: 0 10px 2px; font-weight: 600; font-size: 13px; color: var(--tinta-suave); white-space: nowrap; border-radius: 6px 6px 0 0; transition: color .15s; }
@@ -930,9 +935,14 @@ function trocarAba(id) {
   MODULOS[id]?.carregar?.();
 }
 function render(foco) {
-  renderAbas();
   if (est.aba === 'pagar') renderPagar(foco);
   else MODULOS[est.aba].render(foco);
+  // As abas vêm logo abaixo do título da parte aberta, como nas outras telas
+  // novas (Comunicação, Cadastros): título, abas, conteúdo. Cada parte redesenha
+  // a tela inteira, então as abas voltam para o lugar a cada desenho.
+  const cab = tela.querySelector('.cab');
+  if (cab) cab.after(abasEl); else tela.prepend(abasEl);
+  renderAbas();
   lucide.createIcons();
   if (foco) { const el = document.querySelector(foco); el?.focus(); if (el?.setSelectionRange) el.setSelectionRange(el.value.length, el.value.length); }
 }
@@ -1569,6 +1579,28 @@ function abrirPop(ancora, html, classe = '') {
 }
 addEventListener('scroll', e => { if (popAberto && !popAberto.el.contains(e.target)) fecharPop(); }, true);
 addEventListener('resize', () => fecharPop());
+
+// Botão direito numa linha: as ações dela num menu, como na Produção. Cada
+// parte diz o que oferece (MODULOS[aba].menu(alvo) devolve a lista); sem
+// lista, fica o menu do navegador. Item: { rot, icone, fazer, perigo } ou 'sep'.
+function abrirMenu(x, y, itens) {
+  const ponto = { getBoundingClientRect: () => ({ left: x, right: x, top: y, bottom: y }), hasAttribute: () => false, contains: () => false, focus() {} };
+  const lista = itens.filter(Boolean).filter((it, i, l) => it !== 'sep' || (i > 0 && i < l.length - 1 && l[i - 1] !== 'sep'));
+  const pop = abrirPop(ponto, lista.map((it, i) => it === 'sep' ? '<hr>'
+    : `<button type="button" data-menu="${i}" class="${it.perigo ? 'perigo' : ''}">${ico(it.icone, 'ico ico-s')}${esc(it.rot)}</button>`).join(''), 'menu-ctx');
+  pop.addEventListener('click', e => {
+    const b = e.target.closest('[data-menu]'); if (!b) return;
+    const it = lista[+b.dataset.menu]; fecharPop(); it?.fazer();
+  });
+  pop.querySelector('button')?.focus({ preventScroll: true });
+}
+document.addEventListener('contextmenu', e => {
+  if (e.target.closest('input, textarea, .pop')) return;
+  const itens = MODULOS[est.aba]?.menu?.(e.target);
+  if (!itens?.length) return;
+  e.preventDefault();
+  abrirMenu(e.clientX, e.clientY, itens);
+});
 // Setas desenhadas aqui: o calendário se redesenha a cada dia sob o mouse, e
 // chamar o lucide toda vez varreria a página inteira.
 const seta = d => `<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="${d}"/></svg>`;
@@ -2258,7 +2290,28 @@ const notaPeriodo = (txt, alerta, acao) => `<div class="per-nota ${alerta ? 'ale
       </div>
     </div>`;
   }
+  // O menu do botão direito numa nota: abrir, editar, duplicar, copiar,
+  // concluir (ou gerar outra, se já concluída) e excluir. Duplicar e excluir
+  // gravam pelas funções da tela de hoje; excluir pergunta antes, lá no sistema.
+  function menuDaNota(alvo) {
+    const lin = alvo.closest('[data-nota]'); if (!lin) return null;
+    const n = todas().find(x => x.id === +lin.dataset.nota); if (!n) return null;
+    const linhaTexto = [n.criado ? ddmm(n.criado) : '', nome(n), n.razao, n.cnpj, n.valor ? reais(n.valor) : '', n.concluida ? 'Concluída' : 'Pendente'].join('\t');
+    return [
+      { rot: 'Abrir nota', icone: 'panel-right-open', fazer: () => abrirGaveta(n.id) },
+      { rot: 'Editar no modal atual', icone: 'pencil', fazer: () => paraPai({ tipo: 'editar-nota', id: n.id }) },
+      { rot: 'Duplicar nota', icone: 'copy-plus', fazer: () => { paraPai({ tipo: 'duplicar-nota', id: n.id }); avisoProto(`Duplicando a nota de ${nome(n)}…`); } },
+      'sep',
+      n.cnpj ? { rot: 'Copiar CNPJ/CPF', icone: 'hash', fazer: () => copiar(n.cnpj, 'CNPJ copiado') } : null,
+      { rot: 'Copiar linha', icone: 'copy', fazer: () => copiar(linhaTexto, 'Linha copiada') },
+      'sep',
+      !n.concluida && DADOS.podeNotas ? { rot: 'Concluir nota', icone: 'check-circle-2', fazer: () => { N.conf = n.id; MODULOS.notas.acao('concluir', n); } } : null,
+      n.concluida && DADOS.podeNotas ? { rot: 'Gerar nova nota', icone: 'file-plus', fazer: () => { N.gerar = n.id; MODULOS.notas.acao('gerar', n); } } : null,
+      DADOS.podeNotas ? { rot: 'Excluir nota', icone: 'trash-2', perigo: true, fazer: () => paraPai({ tipo: 'excluir-nota', id: n.id }) } : null,
+    ];
+  }
   MODULOS.notas = {
+    menu: menuDaNota,
     gaveta: { porId: id => todas().find(n => n.id === id), detalhe, rotulo: 'Nota fiscal', attr: 'nota' },
     numero() { const p = N.pend.filter(n => !n.concluida); return p.length ? [p.length, p.some(n => n.criado && diasEntre(n.criado, HOJE) > 7), plural(p.length, 'nota pendente', 'notas pendentes')] : null; },
     carregar(forcar) {
