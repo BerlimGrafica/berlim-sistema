@@ -9,6 +9,7 @@ import { formatarMoeda, parseValorMoeda, valorPagamentoComSinal, valorPagamentoC
 import { itensDoPedido, pagamentosDoPedido, observacoesDoPedido, itensDoOrcamento, observacoesDoOrcamento } from '@/lib/utils/servico';
 import { gravarItensPagamentos, clonarItensParaPedido, gravarItensOrcamento } from '@/lib/pedidos/gravacao';
 import { gravarPagamentoLote, removerPartesDoLote } from '@/lib/pedidos/lotes';
+import { usaTelasNovas } from '@/lib/acesso/telasNovas';
 import { buscarClientes, acharTelefoneDuplicado, buscarCadastroClientes } from '@/lib/clientes/busca';
 import { avisarPedidosMudados } from '@/lib/pedidos/mudancas';
 import { useAuth } from '@/hooks/useAuth';
@@ -772,8 +773,13 @@ export const AppProvider = ({ children }) => {
     // Só com a tela O.S. aberta. A busca reage ao tempo real (triggerRealtime) e
     // rodava em todo computador conectado a cada O.S. salva por qualquer pessoa,
     // mesmo em quem estava na Produção: 50 O.S. completas por vez.
+    // Quem usa as telas novas (lib/acesso/telasNovas.js) vê nestes endereços a
+    // versão nova, que busca o próprio dado: as buscas da tela atual abaixo
+    // ficam paradas para essa pessoa, em vez de baixar o que ninguém vê.
+    const telasNovas = usaTelasNovas(usuario);
+
     useEffect(() => {
-        if (!usuario || pathname !== '/baixa') return;
+        if (!usuario || telasNovas || pathname !== '/baixa') return;
 
         async function fetchHistorico() {
             // Traz itens e pagamentos COMPLETOS. A tabela em si só precisaria do
@@ -833,7 +839,7 @@ export const AppProvider = ({ children }) => {
         // A espera é para a digitação na busca; ao entrar na tela, busca já.
         const timeout = setTimeout(fetchHistorico, buscaHistoricoText ? 300 : 0);
         return () => clearTimeout(timeout);
-    }, [usuario, pathname, abaOS, paginaHistorico, buscaHistoricoText, dataFiltroInicio, dataFiltroFim, triggerRealtime, ordenacaoHistoricoOS]);
+    }, [usuario, telasNovas, pathname, abaOS, paginaHistorico, buscaHistoricoText, dataFiltroInicio, dataFiltroFim, triggerRealtime, ordenacaoHistoricoOS]);
 
     useEffect(() => {
         if (!usuario) return;
@@ -880,23 +886,23 @@ export const AppProvider = ({ children }) => {
     // A rota entra junto: a aba escolhida continua guardada depois que a
     // pessoa sai do Financeiro, e a busca seguia refeita a cada O.S. salva.
     useEffect(() => {
-        const buscando = pathname === '/financeiro' && abaFinanceiro === 'contas_receber';
+        const buscando = !telasNovas && pathname === '/financeiro' && abaFinanceiro === 'contas_receber';
         if (buscando) setCarregandoContasReceber(true);
         const promise = buscando ? buscarPedidosComSaldoDevedor() : Promise.resolve([]);
         promise.then((lista) => { setPedidosSaldoDevedor(lista); setCarregandoContasReceber(false); });
-    }, [pathname, abaFinanceiro, triggerRealtime]);
+    }, [telasNovas, pathname, abaFinanceiro, triggerRealtime]);
 
     // Mesmo raciocínio de buscarPedidosComSaldoDevedor: só dispara quando a
     // aba Boletos está aberta.
     useEffect(() => {
-        const buscando = pathname === '/financeiro' && abaFinanceiro === 'boletos';
+        const buscando = !telasNovas && pathname === '/financeiro' && abaFinanceiro === 'boletos';
         if (buscando) setCarregandoBoletos(true);
         const promise = buscando ? buscarPedidosComBoleto() : Promise.resolve([]);
         promise.then((lista) => { setPedidosBoleto(lista); setCarregandoBoletos(false); });
-    }, [pathname, abaFinanceiro, triggerRealtime]);
+    }, [telasNovas, pathname, abaFinanceiro, triggerRealtime]);
 
     useEffect(() => {
-        if (pathname !== '/cadastros' || abaCadastros !== 'clientes' || !usuario) return;
+        if (pathname !== '/cadastros' || abaCadastros !== 'clientes' || !usuario || telasNovas) return;
 
         // A letra também passa pela coluna normalizada ("Ângela" cai no A), e a
         // busca segue o critério do modal de O.S. (lib/clientes/busca.js).
@@ -913,7 +919,7 @@ export const AppProvider = ({ children }) => {
         
         const timeout = setTimeout(fetchClientesCadastrados, 300);
         return () => clearTimeout(timeout);
-    }, [usuario, pathname, abaCadastros, paginaClientes, buscaCadClientes, letraFiltroCliente, triggerRealtime]);
+    }, [usuario, telasNovas, pathname, abaCadastros, paginaClientes, buscaCadClientes, letraFiltroCliente, triggerRealtime]);
 
 
     // Quem dá baixa assume a O.S.: ao passar para Finalizado, o responsável vira

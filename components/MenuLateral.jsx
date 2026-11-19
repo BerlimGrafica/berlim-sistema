@@ -15,6 +15,7 @@ import { useNotasFiscais } from '@/context/NotasFiscaisContext';
 import { useMenuLateral } from '@/hooks/useMenuLateral';
 import { telasVisiveis, subtelasVisiveis } from '@/lib/acesso/telas';
 import { sinaisDasSubAbas } from '@/lib/acesso/sinais';
+import { usaTelasNovas, TELAS_COM_VERSAO_NOVA } from '@/lib/acesso/telasNovas';
 
 // O menu principal no computador, à esquerda da tela.
 //
@@ -102,7 +103,13 @@ export default function MenuLateral() {
     };
     const sinais = sinaisDasSubAbas({ notasFiscais });
 
-    const destinos = telasVisiveis(usuario).map(t => ({ ...t, subs: subAbaDe[t.id] ? subtelasVisiveis(usuario, t.id) : [] }));
+    // Quem usa as telas novas não vê as sub-abas das telas que já têm versão
+    // nova: elas têm as próprias abas lá dentro (lib/acesso/telasNovas.js).
+    const telasNovas = usaTelasNovas(usuario);
+    const destinos = telasVisiveis(usuario).map(t => ({
+        ...t,
+        subs: subAbaDe[t.id] && !(telasNovas && TELAS_COM_VERSAO_NOVA.has(t.id)) ? subtelasVisiveis(usuario, t.id) : [],
+    }));
     const telaAtual = destinos.find(t => t.href === pathname);
     const padraoAberta = telaAtual?.subs.length ? telaAtual.id : null;
 
