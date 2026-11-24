@@ -147,7 +147,7 @@ kbd { font: 600 10.5px/1 Montserrat, sans-serif; color: var(--tinta-suave); bord
 /* Material e acabamento: uma linha por escolha, o rótulo à esquerda e um
    seletor segmentado discreto (o mesmo jeito do Calcular / Comparar medidas).
    O preço vai em cinza miúdo dentro da opção. */
-.linha-op { display: grid; grid-template-columns: 92px minmax(0, 1fr); align-items: center; gap: 12px; }
+.linha-op { display: grid; grid-template-columns: 136px minmax(0, 1fr); align-items: center; gap: 12px; }
 .linha-op .rot { margin: 0; }
 .seg-op { display: flex; flex-wrap: wrap; gap: 2px; padding: 3px; background: var(--realce); border-radius: 9px; }
 .seg-op button { flex: 1 1 0; min-width: max-content; min-height: 32px; padding: 5px 12px; border-radius: 7px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; font-size: 12.5px; font-weight: 600; color: var(--tinta-suave); white-space: nowrap; transition: background .15s, color .15s, box-shadow .15s; }
@@ -155,6 +155,12 @@ kbd { font: 600 10.5px/1 Montserrat, sans-serif; color: var(--tinta-suave); bord
 .seg-op button small { font-size: 11px; font-weight: 600; color: var(--tinta-fraca); }
 .seg-op button[aria-checked="true"] { background: var(--superficie); color: var(--tinta); box-shadow: var(--sombra-leve); }
 .seg-op button[aria-checked="true"] small { color: var(--c-tinta); }
+.seg-op button:disabled { color: var(--tinta-fraca); opacity: .6; cursor: not-allowed; }
+.seg-op button:disabled small { color: var(--tinta-fraca); }
+/* A explicação curta logo abaixo das opções (o bastão trocou de lado, é o grosso…). */
+.linha-op .nota-op { grid-column: 2; margin-top: -6px; font-size: 11.5px; color: var(--tinta-suave); }
+.linha-op .nota-op.alerta { color: var(--obs-tinta); }
+@media (max-width: 560px) { .linha-op .nota-op { grid-column: 1; margin-top: 0; } }
 @media (max-width: 560px) { .linha-op { grid-template-columns: 1fr; gap: 6px; } }
 /* lista longa: um botão que abre as opções */
 .sel { display: flex; align-items: center; gap: 8px; width: 100%; padding: 5px 0; font-size: 14px; font-weight: 600; color: var(--tinta); box-shadow: inset 0 -1px 0 var(--borda-forte); text-align: left; }
@@ -268,7 +274,10 @@ kbd { font: 600 10.5px/1 Montserrat, sans-serif; color: var(--tinta-suave); bord
 .desenho svg { max-width: 100%; height: auto; }
 .desenho .papel { fill: var(--superficie); stroke: var(--borda-forte); }
 .desenho .cota { stroke: var(--tinta-suave); fill: none; }
-.desenho text { fill: var(--tinta-suave); font: 600 10px Montserrat, sans-serif; }
+/* Só para o texto sem cor e tamanho próprios: as cotas e as medidas de dentro
+   do desenho trazem os delas (o azul das cotas, por exemplo). */
+.desenho text:not([fill]) { fill: var(--tinta-suave); }
+.desenho text:not([font-size]) { font: 600 10px Montserrat, sans-serif; }
 .montagem-n { display: flex; align-items: baseline; gap: 10px; margin-top: 12px; }
 .montagem-n b { font-size: 28px; font-weight: 800; color: var(--tinta); line-height: 1; font-variant-numeric: tabular-nums; }
 .montagem-n span { font-size: 12px; color: var(--tinta-suave); }
@@ -490,22 +499,23 @@ function campoNum(k, rotulo, { suf, dica, pct, ph, inteiro } = {}) {
   const texto = pct ? (chave in rasc ? rasc[chave] : (v === '' ? '' : txtNum(v * 100))) : (typeof v === 'number' ? txtNum(v) : (v ?? ''));
   return `<label class="campo"><span class="rot">${rotulo}${dica ? ` <em>${dica}</em>` : ''}</span><span class="in"><input class="linha-in" data-k="${k}" ${pct ? 'data-pct="1"' : ''} value="${esc(texto)}" placeholder="${esc(ph ?? '')}" inputmode="${inteiro ? 'numeric' : 'decimal'}" autocomplete="off">${suf ? `<i class="suf">${suf}</i>` : ''}</span></label>`;
 }
-// Opções lado a lado: um clique escolhe.
+// Opções lado a lado: um clique escolhe. Todas as calculadoras usam o mesmo
+// desenho da do banner — uma linha por escolha, o rótulo à esquerda e um
+// seletor segmentado discreto (campoSeg). `nota` aqui já vem em HTML.
 function campoOp(k, rotulo, ops, { dica, nota } = {}) {
-  const v = String(ent[est.aba][k]);
-  return `<div class="campo largo"><span class="rot">${rotulo}${dica ? ` <em>${dica}</em>` : ''}</span><div class="opcoes" role="radiogroup" aria-label="${esc(rotulo)}">${ops.map(o =>
-    `<button type="button" role="radio" aria-checked="${String(o.valor) === v}" data-op="${k}" data-v="${esc(o.valor)}"${o.titulo ? ` title="${esc(o.titulo)}"` : ''}>${esc(o.rotulo)}${o.extra ? `<small>${esc(o.extra)}</small>` : ''}</button>`).join('')}</div>${nota ? `<p class="nota">${nota}</p>` : ''}</div>`;
+  return campoSeg(k, rotulo, ops, { dica, notaHtml: nota });
 }
-// Lista longa: um botão que abre as opções.
+// Lista longa: um botão que abre as opções — na mesma linha das outras escolhas.
 const LISTAS = {};
 function campoLista(k, rotulo, ops) {
   LISTAS[k] = ops;
   const atual = ops.find(o => o.valor === ent[est.aba][k]) || ops[0];
-  return `<div class="campo largo"><span class="rot">${rotulo}</span><button type="button" class="sel" data-lista="${k}" aria-haspopup="listbox" aria-expanded="false"><span class="lbl">${esc(atual.rotulo)}</span>${ico('chevron-down', 'ico ico-s chev')}</button></div>`;
+  return `<div class="campo largo linha-op"><span class="rot">${rotulo}</span><button type="button" class="sel" data-lista="${k}" aria-haspopup="listbox" aria-expanded="false"><span class="lbl">${esc(atual.rotulo)}</span>${ico('chevron-down', 'ico ico-s chev')}</button></div>`;
 }
+// Sim ou não: também em linha, com o rótulo à esquerda.
 function campoChave(k, rotulo, dica) {
   const v = !!ent[est.aba][k];
-  return `<div class="campo"><span class="rot">${rotulo}${dica ? ` <em>${dica}</em>` : ''}</span><button type="button" class="chave-bt" role="switch" aria-checked="${v}" data-chave="${k}"><span class="chave"></span>${v ? 'Sim' : 'Não'}</button></div>`;
+  return `<div class="campo largo linha-op"><span class="rot">${rotulo}${dica ? ` <em>${dica}</em>` : ''}</span><span><button type="button" class="chave-bt" role="switch" aria-checked="${v}" data-chave="${k}"><span class="chave"></span>${v ? 'Sim' : 'Não'}</button></span></div>`;
 }
 
 /* ===== prazo de entrega: uma régua vertical curta =====
@@ -598,16 +608,32 @@ const linhaConta = partes => partes.join(' ');
 /* ===== banner: escolhas em linha ===== */
 // Rótulo à esquerda e as opções num seletor segmentado. Cada opção é um botão
 // de rádio (data-op/data-v, como em campoOp): o clique e as setas são os mesmos.
-function campoSeg(k, rotulo, ops) {
-  const v = String(ent[est.aba][k]);
-  return `<div class="campo largo linha-op"><span class="rot">${rotulo}</span><div class="seg-op" role="radiogroup" aria-label="${esc(rotulo)}">${ops.map(o =>
-    `<button type="button" role="radio" aria-checked="${String(o.valor) === v}" data-op="${k}" data-v="${esc(o.valor)}">${esc(o.rotulo)}${o.extra ? `<small>${esc(o.extra)}</small>` : ''}</button>`).join('')}</div></div>`;
+// `marcado` troca qual aparece escolhido (o bastão que vale, quando o escolhido
+// não cabe); `desativado` e `motivo` fecham uma opção dizendo por quê; `nota`
+// é uma linha curta embaixo.
+// `dica` sai miúda junto do rótulo; `notaHtml` é uma nota já em HTML.
+function campoSeg(k, rotulo, ops, { marcado, nota, notaHtml, alerta, dica } = {}) {
+  const v = String(marcado ?? ent[est.aba][k]);
+  const notaFinal = nota ? esc(nota) : notaHtml || '';
+  return `<div class="campo largo linha-op"><span class="rot">${rotulo}${dica ? ` <em>${dica}</em>` : ''}</span><div class="seg-op" role="radiogroup" aria-label="${esc(rotulo)}">${ops.map(o => {
+    const titulo = o.motivo || o.titulo;
+    return `<button type="button" role="radio" aria-checked="${String(o.valor) === v}" data-op="${k}" data-v="${esc(o.valor)}"${o.desativado ? ' disabled' : ''}${titulo ? ` title="${esc(titulo)}"` : ''}>${esc(o.rotulo)}${o.extra ? `<small>${esc(o.extra)}</small>` : ''}</button>`;
+  }).join('')}</div>`
+    + (notaFinal ? `<p class="nota-op ${alerta ? 'alerta' : ''}">${notaFinal}</p>` : '') + '</div>';
 }
 
 /* ===== banner ===== */
 function telaBanner() {
   if (ent.banner.modo === 'comparar') return telaComparativo();
   const B = C.banner, e = ent.banner, r = B.calcularBanner(e);
+  // O bastão: o comprimento em cada posição, qual cabe (até 150 cm) e qual vale.
+  const lcm = cm(e.largura), acm = cm(e.altura);
+  const bst = lcm > 0 && acm > 0 ? B.bastaoPara(lcm, acm, e.bastoes) : null;
+  const ondeBastao = p => (p === 'lados' ? 'nas laterais' : 'em cima e embaixo');
+  const notaBastao = !bst ? ''
+    : !bst.posicao ? `Os dois lados passam de ${B.BASTAO_LIMITE} cm: não dá bastão. Só ilhós ou sem acabamento.`
+    : [bst.trocou ? `Com ${n1(bst.comprimento[e.bastoes])} cm, não cabe ${ondeBastao(e.bastoes)} (máx. ${B.BASTAO_LIMITE} cm): vai ${ondeBastao(bst.posicao)}.` : '',
+       bst.grosso ? `Bastão de ${n1(bst.comprimento[bst.posicao])} cm: o grosso, +R$ ${B.BASTAO_GROSSO_M2}/m².` : ''].filter(Boolean).join(' ');
   const form = area('a-dados', 'ruler', 'O pedido',
       campoNum('largura', 'Largura', { suf: 'cm', ph: '150' })
       + campoNum('altura', 'Altura', { suf: 'cm', ph: '200' })
@@ -615,17 +641,35 @@ function telaBanner() {
       + campoPrazo('prazo', 'Prazo de entrega', opcoesRapidas(prazo => B.calcularBanner({ ...e, prazo }))))
     + area('a-itens', 'layers', 'Material e acabamento',
       campoSeg('tipo', 'Lona', B.TIPOS_LONA.map(t => ({ valor: t.valor, rotulo: t.rotulo, extra: `R$ ${t.precoM2}/m²` })))
-      + campoSeg('acabamento', 'Acabamento', B.ACABAMENTOS.map(a => ({ valor: a.valor, rotulo: a.rotulo, extra: a.descontoM2 ? `−R$ ${a.descontoM2}/m²` : '' })))
-      // Só no bastão e corda: onde os bastões vão (a prévia desenha do mesmo jeito).
-      + (e.acabamento === 'bastao_corda' ? campoSeg('bastoes', 'Bastões', B.BASTOES) : ''));
+      + campoSeg('acabamento', 'Acabamento', B.ACABAMENTOS.map(a => {
+          const bastao = a.valor === 'bastao_corda', semBastao = bastao && bst && !bst.posicao;
+          return {
+            valor: a.valor, rotulo: a.rotulo,
+            // Quatro opções: o acréscimo vai curto ("+R$ 40") para caberem numa linha; o "por m²" fica na dica.
+            extra: a.descontoM2 ? `−R$ ${a.descontoM2}` : a.acrescimoM2 ? `+R$ ${a.acrescimoM2}` : bastao && bst?.grosso ? `+R$ ${B.BASTAO_GROSSO_M2}` : '',
+            titulo: a.descontoM2 ? `R$ ${a.descontoM2} a menos por m²` : a.acrescimoM2 ? `R$ ${a.acrescimoM2} a mais por m²` : bastao && bst?.grosso ? `Bastão grosso: R$ ${B.BASTAO_GROSSO_M2} a mais por m²` : '',
+            // Sem lado que caiba o bastão, ele fecha (a não ser que já esteja escolhido: aí o aviso explica).
+            desativado: semBastao && e.acabamento !== 'bastao_corda',
+            motivo: semBastao ? `Os dois lados passam de ${B.BASTAO_LIMITE} cm` : '',
+          };
+        }), e.acabamento === 'bastao_corda' && bst && !bst.posicao ? { nota: notaBastao, alerta: true } : {})
+      // Só no bastão e corda: onde os bastões vão, com o comprimento de cada
+      // posição. A que passa de 150 cm fecha; a que vale fica marcada.
+      + (e.acabamento === 'bastao_corda' && (!bst || bst.posicao) ? campoSeg('bastoes', 'Bastões', B.BASTOES.map(b => ({
+          ...b,
+          extra: bst ? `${n1(bst.comprimento[b.valor])} cm` : '',
+          desativado: !!bst && !bst.cabe[b.valor],
+          motivo: bst && !bst.cabe[b.valor] ? `${n1(bst.comprimento[b.valor])} cm passa do máximo de ${B.BASTAO_LIMITE} cm para bastão` : '',
+        })), { marcado: bst?.posicao, nota: notaBastao, alerta: !!bst?.trocou }) : ''));
   const regra = { minimo: `Até 0,5 m² sai pelo mínimo de ${reais(B.PRECO_MINIMO)}`, metro: 'Até 100 × 100 cm cobra 1 m²', 'lado-minimo': 'Lado menor que 100 cm conta como 1 m' }[r.regra];
   const res = preco({
       total: r.total, ok: r.ok,
-      sub: !r.ok ? 'Preencha largura e altura' : `${reais(r.unitario)} por banner · ${r.regra === 'minimo' ? 'preço mínimo' : `${fmtN(r.areaCobrada)} m² cobrados`}`,
+      sub: !r.ok ? (r.motivo ? 'Sem preço com bastão nessa medida' : 'Preencha largura e altura') : `${reais(r.unitario)} por banner · ${r.regra === 'minimo' ? 'preço mínimo' : `${fmtN(r.areaCobrada)} m² cobrados`}`,
+      erros: r.motivo ? [r.motivo] : [],
       avisos: r.valorAlto ? [`Acima de ${reais(B.VALOR_ALTO)}: consulte a disponibilidade com o Murilo ou a Giovana antes de fechar.`] : [],
-      linhas: r.ok ? [['Preço do m²', reais(r.valorM2)], ...(regra ? [['Regra', regra]] : []), ...(r.multiplicador > 1 ? [['Prazo', `+${Math.round((r.multiplicador - 1) * 100)}%`]] : [])] : [],
+      linhas: r.ok ? [['Preço do m²', reais(r.valorM2)], ...(r.bastao?.grosso ? [['Bastão grosso', `+${reais(B.BASTAO_GROSSO_M2)}/m²`]] : []), ...((acrescimo => acrescimo ? [[B.ACABAMENTOS.find(a => a.valor === e.acabamento).rotulo, `+${reais(acrescimo)}/m²`]] : [])(B.ACABAMENTOS.find(a => a.valor === e.acabamento)?.acrescimoM2)), ...(regra ? [['Regra', regra]] : []), ...(r.multiplicador > 1 ? [['Prazo', `+${Math.round((r.multiplicador - 1) * 100)}%`]] : [])] : [],
     })
-    + textoCliente(r.texto, r.ok, 'Preencha as medidas para o texto aparecer aqui.');
+    + textoCliente(r.texto, r.ok, r.motivo ? 'Escolha ilhós ou sem acabamento para o texto aparecer aqui.' : 'Preencha as medidas para o texto aparecer aqui.');
   return { form, extras: previaBannerHTML(r, e), res, texto: r.ok ? r.texto : '', total: r.total, ok: r.ok, sub: r.ok ? `${r.quantidade} ${r.quantidade > 1 ? 'banners' : 'banner'}` : '' };
 }
 
@@ -667,9 +711,9 @@ function cotaV(x, y1, y2, txt, cor) {
 // corda até o gancho; as hastes em cima e embaixo ou nas laterais), ilhós
 // (argolas nos cantos e a cada 50 cm, no máximo) ou só a lona. A laminada
 // ganha um brilho em diagonal.
-function desenhoBanner({ l, a, acabamento, laminado, bastoes }, pal, caixa) {
+function desenhoBanner({ l, a, acabamento, laminado, bastoes, grosso }, pal, caixa) {
   const k = Math.min(caixa / l, caixa / a), W = l * k, H = a * k;
-  const bastao = acabamento === 'bastao_corda', ilhos = acabamento === 'ilhos', lados = bastao && bastoes === 'lados';
+  const bastao = acabamento === 'bastao_corda', ilhos = acabamento === 'ilhos' || acabamento === 'ilhos_aluminio', lados = bastao && bastoes === 'lados';
   const txtL = `${n1(l)} cm`, txtA = `${n1(a)} cm`;
   // Espaço para a corda: em cima no bastão de cima e embaixo; dos dois lados
   // nos bastões nas laterais (e a medida da altura vai depois da corda da
@@ -687,15 +731,17 @@ function desenhoBanner({ l, a, acabamento, laminado, bastoes }, pal, caixa) {
     // de cada bastão até um gancho do lado de fora.
     const hy = 7, corda = (xb, dir) => `<polyline points="${xb},${Y - hy + 3} ${xb + dir * 37},${Y + H / 2} ${xb},${Y + H + hy - 3}" fill="none" stroke="${pal.suave}" stroke-width="1.3"/>`
       + `<circle cx="${xb + dir * 40}" cy="${Y + H / 2}" r="3.2" fill="none" stroke="${pal.suave}" stroke-width="1.3"/>`;
+    // O bastão grosso aparece mais grosso.
+    const g = grosso ? 12 : 8;
     s += corda(X - 1, -1) + corda(X + W + 1, 1)
-      + `<rect x="${X - 4}" y="${Y - hy}" width="8" height="${H + 2 * hy}" rx="4" fill="${pal.haste}"/>`
-      + `<rect x="${X + W - 4}" y="${Y - hy}" width="8" height="${H + 2 * hy}" rx="4" fill="${pal.haste}"/>`;
+      + `<rect x="${X - g / 2}" y="${Y - hy}" width="${g}" height="${H + 2 * hy}" rx="${g / 2}" fill="${pal.haste}"/>`
+      + `<rect x="${X + W - g / 2}" y="${Y - hy}" width="${g}" height="${H + 2 * hy}" rx="${g / 2}" fill="${pal.haste}"/>`;
   } else if (bastao) {
-    const hx = 7;
+    const hx = 7, g = grosso ? 12 : 8;
     s += `<polyline points="${X - hx + 3},${Y - 1} ${X + W / 2},${Y - 38} ${X + W + hx - 3},${Y - 1}" fill="none" stroke="${pal.suave}" stroke-width="1.3"/>`
       + `<circle cx="${X + W / 2}" cy="${Y - 41}" r="3.2" fill="none" stroke="${pal.suave}" stroke-width="1.3"/>`
-      + `<rect x="${X - hx}" y="${Y - 4}" width="${W + 2 * hx}" height="8" rx="4" fill="${pal.haste}"/>`
-      + `<rect x="${X - hx}" y="${Y + H - 4}" width="${W + 2 * hx}" height="8" rx="4" fill="${pal.haste}"/>`;
+      + `<rect x="${X - hx}" y="${Y - g / 2}" width="${W + 2 * hx}" height="${g}" rx="${g / 2}" fill="${pal.haste}"/>`
+      + `<rect x="${X - hx}" y="${Y + H - g / 2}" width="${W + 2 * hx}" height="${g}" rx="${g / 2}" fill="${pal.haste}"/>`;
   }
   if (ilhos) {
     const ins = Math.min(Math.max(6, 3 * k), W / 4, H / 4), nx = Math.max(1, Math.ceil(l / 50)), ny = Math.max(1, Math.ceil(a / 50));
@@ -817,11 +863,13 @@ function carregarImagem(arquivo) {
 }
 function previaBannerHTML(r, e) {
   const B = C.banner, tit = h => `<div class="cartao-cab"><h2>${ico('image', 'ico ico-s')}Prévia do banner</h2>${h}</div>`;
-  if (!r.ok) { est.imagem = null; return `<section class="cartao">${tit('')}<p class="vazio-card">Preencha largura e altura para ver como o banner fica.</p></section>`; }
+  if (!r.ok) { est.imagem = null; return `<section class="cartao">${tit('')}<p class="vazio-card">${esc(r.motivo || 'Preencha largura e altura para ver como o banner fica.')}</p></section>`; }
   const l = cm(e.largura), a = cm(e.altura);
   const tipo = B.TIPOS_LONA.find(t => t.valor === e.tipo) || B.TIPOS_LONA[0], acab = B.ACABAMENTOS.find(x => x.valor === e.acabamento) || B.ACABAMENTOS[0];
-  const p = { l, a, acabamento: e.acabamento, laminado: e.tipo === 'laminado', bastoes: e.bastoes };
-  const rotAcab = e.acabamento === 'bastao_corda' && e.bastoes === 'lados' ? `${acab.rotulo} nas laterais` : acab.rotulo;
+  // O bastão de verdade: a posição que vale e se é o grosso.
+  const bv = r.bastao;
+  const p = { l, a, acabamento: e.acabamento, laminado: e.tipo === 'laminado', bastoes: bv?.posicao || e.bastoes, grosso: !!bv?.grosso };
+  const rotAcab = bv ? `Bastão${bv.grosso ? ' grosso' : ''} e corda${bv.posicao === 'lados' ? ' nas laterais' : ''}` : acab.rotulo;
   const legenda = `${r.quantidade} ${r.quantidade > 1 ? 'banners' : 'banner'} de ${n1(l)} × ${n1(a)} cm · ${tipo.rotulo} · ${rotAcab}`;
   est.imagem = imagemParaCliente('Prévia do banner', desenhoBanner(p, PAL_IMG, 400), [], [legenda], `banner-${Math.round(l)}x${Math.round(a)}cm.png`);
   return `<section class="cartao">${tit(`<button class="btn btn-sec btn-p" data-copiar-img>${ico('image-down', 'ico ico-s')}Copiar imagem</button>`)}
@@ -923,10 +971,8 @@ function montagemHTML(largura, altura, quantidade) {
     </pattern></defs>
     <rect class="papel" x="${X + .5}" y="${Y + .5}" width="${W - 1}" height="${H - 1}" rx="1.5"/>
     ${n > 0 ? `<rect x="${mx}" y="${my}" width="${cols * pw}" height="${lins * ph}" fill="url(#peca)"/>` : `<text x="${X + W / 2}" y="${Y + H / 2}" text-anchor="middle">Não cabe nesta folha</text>`}
-    <path class="cota" d="M${X + .5} 8v10M${X + W - .5} 8v10M${X + .5} 13H${X + W / 2 - 22}M${X + W / 2 + 22} 13H${X + W - .5}"/>
-    <path class="cota" d="M${cx - 5} ${Y + .5}h10M${cx - 5} ${Y + H - .5}h10M${cx} ${Y + .5}V${Y + H / 2 - 22}M${cx} ${Y + H / 2 + 22}V${Y + H - .5}"/>
-    <text x="${X + W / 2}" y="16.5" text-anchor="middle">${wT} cm</text>
-    <text x="${cx}" y="${Y + H / 2 + 3.5}" text-anchor="middle" transform="rotate(90 ${cx} ${Y + H / 2})">${hT} cm</text>
+    ${cotaH(X + .5, X + W - .5, 13, `${wT} cm`, 'var(--itens)')}
+    ${cotaV(cx, Y + .5, Y + H - .5, `${hT} cm`, 'var(--itens)')}
   </svg>`;
   return `<section class="cartao">${tit}
     <div class="seg" role="group" aria-label="Folha">${Object.entries(A.FOLHAS).map(([id, f]) => `<button data-folha="${id}" aria-pressed="${id === folhaId}">${f.rotulo}</button>`).join('')}</div>
@@ -942,28 +988,59 @@ function montagemHTML(largura, altura, quantidade) {
 function telaCasamento() {
   const K = C.casamento, e = ent.casamento, r = K.calcularManual(e);
   const qtdManuais = parseInt(e.qtdManuais, 10) || 0;
+  // Sete papéis não cabem numa linha: vão numa lista, com o preço da folha no nome.
+  const papeis = Object.entries(K.PAPEIS).map(([nome, p]) => ({ valor: nome, rotulo: `${nome} · ${reais(p)}` }));
+  // Corte especial e laminação: só com 10 folhas ou mais. Abaixo disso as opções
+  // fecham; se já estavam escolhidas, ficam e o aviso explica por que não há preço.
+  const medido = r.qtdPorA4 > 0 && (parseInt(e.qtdImpressoes, 10) || 0) > 0;
+  const fechado = medido && !r.acabamentoLiberado;
+  const motivoMin = `Só a partir de ${K.FOLHAS_MINIMAS_ACABAMENTO} folhas (este pedido usa ${r.qtdFolhasA4})`;
+  const notaMin = (escolhido) => (fechado && escolhido ? { nota: `${motivoMin}.`, alerta: true } : {});
   const form = area('a-dados', 'ruler', 'O pedido',
       campoNum('qtdManuais', 'Manuais', { suf: 'un.', inteiro: true })
       + campoNum('largura', 'Largura', { suf: 'cm' })
       + campoNum('altura', 'Altura', { suf: 'cm' })
       + campoNum('qtdImpressoes', 'Impressões', { dica: 'quadradinhos', inteiro: true })
       + campoNum('qtdVariaveis', 'Variações de arte', { inteiro: true }))
-    + area('a-itens', 'layers', 'Papel e acabamento',
-      campoOp('papel', 'Papel', Object.entries(K.PAPEIS).map(([nome, p]) => ({ valor: nome, rotulo: nome, extra: reais(p) })))
-      + campoOp('furo', 'Furo', K.FUROS.map(f => ({ valor: f, rotulo: f }))));
-  const ok = r.qtdPorA4 > 0;
+    + area('a-itens', 'layers', 'Papel',
+      campoSeg('capa', 'Capa', K.CAPAS, r.capaSeparada && medido ? { nota: `Uma capa por manual: ${fmtN(r.qtdCapas, 0)} capas e ${fmtN(r.qtdMiolo, 0)} impressões no miolo.` } : {})
+      + campoLista('papel', r.capaSeparada ? 'Papel do miolo' : 'Papel', papeis)
+      + (r.capaSeparada ? campoLista('papelCapa', 'Papel da capa', papeis) : ''))
+    + area('a-itens', 'scissors', 'Acabamento',
+      campoOp('furo', 'Furo', K.FUROS.map(f => ({ valor: f, rotulo: f })))
+      + campoSeg('corteEspecial', 'Corte especial', [
+          { valor: 'false', rotulo: 'Não' },
+          { valor: 'true', rotulo: 'Sim', extra: `+${reais(K.CORTE_ESPECIAL_POR_FOLHA)}/folha`, titulo: `${reais(K.CORTE_ESPECIAL_POR_FOLHA)} por folha`, desativado: fechado && !r.corteEspecial, motivo: fechado ? motivoMin : '' },
+        ], { marcado: String(r.corteEspecial), ...notaMin(r.corteEspecial) })
+      + campoSeg('laminacao', 'Laminação', K.LAMINACOES.map((l, i) => ({
+          valor: l, rotulo: i === 0 ? 'Sem' : l.replace('Laminação ', '').replace(/^./, c => c.toUpperCase()),
+          extra: i ? `+${reais(K.LAMINACAO_POR_FOLHA)}/folha` : '', titulo: i ? `${reais(K.LAMINACAO_POR_FOLHA)} por folha` : '',
+          desativado: i > 0 && fechado && r.laminacao !== l, motivo: i > 0 && fechado ? motivoMin : '',
+        })), { marcado: r.laminacao, ...notaMin(r.laminado) }));
+  const ok = r.ok;
+  const cinza = t => ` <span style="color:var(--tinta-suave);font-weight:500">${t}</span>`;
   const res = preco({
       total: r.valorFinal, ok,
-      sub: !ok ? 'Preencha a medida do quadradinho' : qtdManuais > 0 ? `${reais(r.valorFinal / qtdManuais)} por manual` : '',
+      sub: !medido ? 'Preencha a medida do quadradinho' : r.motivo ? 'Sem preço com esse acabamento' : qtdManuais > 0 ? `${reais(r.valorFinal / qtdManuais)} por manual` : '',
+      erros: r.motivo ? [r.motivo] : [],
       linhas: ok ? [
         ['Cabem por A4', fmtN(r.qtdPorA4, 0)],
-        ['Folhas A4', `${fmtN(r.qtdFolhasA4, 0)} <span style="color:var(--tinta-suave);font-weight:500">(${C.casamento.FOLHAS_DE_ACERTO} de acerto)</span>`],
-        ['Impressão', reais(r.custoImpressao)],
-        ['Furo e ilhós', reais(r.custoFuro)],
+        ...(r.capaSeparada ? [
+          ['Folhas do miolo', `${fmtN(r.folhasMiolo, 0)}${cinza(`(${K.FOLHAS_DE_ACERTO} de acerto)`)}`],
+          ['Folhas da capa', `${fmtN(r.folhasCapa, 0)}${cinza(`(${K.FOLHAS_DE_ACERTO} de acerto)`)}`],
+          ['Impressão do miolo', reais(r.custoMiolo)],
+          ['Impressão da capa', reais(r.custoCapa)],
+        ] : [
+          ['Folhas A4', `${fmtN(r.qtdFolhasA4, 0)}${cinza(`(${K.FOLHAS_DE_ACERTO} de acerto)`)}`],
+          ['Impressão', reais(r.custoImpressao)],
+        ]),
+        ...(r.custoFuro ? [['Furo e ilhós', reais(r.custoFuro)]] : []),
+        ...(r.custoCorteEspecial ? [['Corte especial', reais(r.custoCorteEspecial)]] : []),
+        ...(r.custoLaminacao ? [[r.laminacao, reais(r.custoLaminacao)]] : []),
         ['Variações de arte', reais(r.custoVariavel)],
       ] : [],
     })
-    + textoCliente(r.textoWhatsapp, ok, 'Preencha a medida do quadradinho para o texto aparecer aqui.');
+    + textoCliente(r.textoWhatsapp, ok, r.motivo ? esc(r.motivo) : 'Preencha a medida do quadradinho para o texto aparecer aqui.');
   return { form, res, texto: ok ? r.textoWhatsapp : '', total: r.valorFinal, ok, sub: ok ? `${qtdManuais} manuais` : '' };
 }
 
