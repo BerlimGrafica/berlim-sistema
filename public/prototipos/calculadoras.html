@@ -143,6 +143,19 @@ kbd { font: 600 10.5px/1 Montserrat, sans-serif; color: var(--tinta-suave); bord
 .opcoes button small { font-size: 11.5px; font-weight: 600; color: var(--tinta-suave); }
 .opcoes button[aria-checked="true"] { background: var(--c-fundo); border-color: var(--c); box-shadow: inset 0 0 0 1px var(--c); color: var(--tinta); }
 .opcoes button[aria-checked="true"] small { color: var(--c-tinta); }
+
+/* Material e acabamento: uma linha por escolha, o rótulo à esquerda e um
+   seletor segmentado discreto (o mesmo jeito do Calcular / Comparar medidas).
+   O preço vai em cinza miúdo dentro da opção. */
+.linha-op { display: grid; grid-template-columns: 92px minmax(0, 1fr); align-items: center; gap: 12px; }
+.linha-op .rot { margin: 0; }
+.seg-op { display: flex; flex-wrap: wrap; gap: 2px; padding: 3px; background: var(--realce); border-radius: 9px; }
+.seg-op button { flex: 1 1 0; min-width: max-content; min-height: 32px; padding: 5px 12px; border-radius: 7px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; font-size: 12.5px; font-weight: 600; color: var(--tinta-suave); white-space: nowrap; transition: background .15s, color .15s, box-shadow .15s; }
+.seg-op button:hover { color: var(--tinta); }
+.seg-op button small { font-size: 11px; font-weight: 600; color: var(--tinta-fraca); }
+.seg-op button[aria-checked="true"] { background: var(--superficie); color: var(--tinta); box-shadow: var(--sombra-leve); }
+.seg-op button[aria-checked="true"] small { color: var(--c-tinta); }
+@media (max-width: 560px) { .linha-op { grid-template-columns: 1fr; gap: 6px; } }
 /* lista longa: um botão que abre as opções */
 .sel { display: flex; align-items: center; gap: 8px; width: 100%; padding: 5px 0; font-size: 14px; font-weight: 600; color: var(--tinta); box-shadow: inset 0 -1px 0 var(--borda-forte); text-align: left; }
 .sel:hover, .sel[aria-expanded="true"] { box-shadow: inset 0 -2px 0 var(--c, var(--brand)); }
@@ -582,19 +595,30 @@ function composicaoHTML(titulo, linhas, total, detalhe) {
 }
 const linhaConta = partes => partes.join(' ');
 
+/* ===== banner: escolhas em linha ===== */
+// Rótulo à esquerda e as opções num seletor segmentado. Cada opção é um botão
+// de rádio (data-op/data-v, como em campoOp): o clique e as setas são os mesmos.
+function campoSeg(k, rotulo, ops) {
+  const v = String(ent[est.aba][k]);
+  return `<div class="campo largo linha-op"><span class="rot">${rotulo}</span><div class="seg-op" role="radiogroup" aria-label="${esc(rotulo)}">${ops.map(o =>
+    `<button type="button" role="radio" aria-checked="${String(o.valor) === v}" data-op="${k}" data-v="${esc(o.valor)}">${esc(o.rotulo)}${o.extra ? `<small>${esc(o.extra)}</small>` : ''}</button>`).join('')}</div></div>`;
+}
+
 /* ===== banner ===== */
 function telaBanner() {
   if (ent.banner.modo === 'comparar') return telaComparativo();
   const B = C.banner, e = ent.banner, r = B.calcularBanner(e);
   const form = area('a-dados', 'ruler', 'O pedido',
-      campoNum('largura', 'Largura', { suf: 'm', ph: '1,50' })
-      + campoNum('altura', 'Altura', { suf: 'm', ph: '2,00' })
+      campoNum('largura', 'Largura', { suf: 'cm', ph: '150' })
+      + campoNum('altura', 'Altura', { suf: 'cm', ph: '200' })
       + campoNum('quantidade', 'Quantidade', { suf: 'un.', inteiro: true })
       + campoPrazo('prazo', 'Prazo de entrega', opcoesRapidas(prazo => B.calcularBanner({ ...e, prazo }))))
     + area('a-itens', 'layers', 'Material e acabamento',
-      campoOp('tipo', 'Lona', B.TIPOS_LONA.map(t => ({ valor: t.valor, rotulo: t.rotulo, extra: `R$ ${t.precoM2}/m²` })))
-      + campoOp('acabamento', 'Acabamento', B.ACABAMENTOS.map(a => ({ valor: a.valor, rotulo: a.rotulo, extra: a.descontoM2 ? `−R$ ${a.descontoM2}/m²` : '' }))));
-  const regra = { minimo: `Até 0,5 m² sai pelo mínimo de ${reais(B.PRECO_MINIMO)}`, metro: 'Até 1 × 1 m cobra 1 m²', 'lado-minimo': 'Lado menor que 1 m conta como 1 m' }[r.regra];
+      campoSeg('tipo', 'Lona', B.TIPOS_LONA.map(t => ({ valor: t.valor, rotulo: t.rotulo, extra: `R$ ${t.precoM2}/m²` })))
+      + campoSeg('acabamento', 'Acabamento', B.ACABAMENTOS.map(a => ({ valor: a.valor, rotulo: a.rotulo, extra: a.descontoM2 ? `−R$ ${a.descontoM2}/m²` : '' })))
+      // Só no bastão e corda: onde os bastões vão (a prévia desenha do mesmo jeito).
+      + (e.acabamento === 'bastao_corda' ? campoSeg('bastoes', 'Bastões', B.BASTOES) : ''));
+  const regra = { minimo: `Até 0,5 m² sai pelo mínimo de ${reais(B.PRECO_MINIMO)}`, metro: 'Até 100 × 100 cm cobra 1 m²', 'lado-minimo': 'Lado menor que 100 cm conta como 1 m' }[r.regra];
   const res = preco({
       total: r.total, ok: r.ok,
       sub: !r.ok ? 'Preencha largura e altura' : `${reais(r.unitario)} por banner · ${r.regra === 'minimo' ? 'preço mínimo' : `${fmtN(r.areaCobrada)} m² cobrados`}`,
@@ -610,32 +634,63 @@ function telaBanner() {
    imagem que vai ao cliente (cores fixas, fundo branco): "Copiar imagem" passa
    o desenho para PNG e põe na área de transferência, pronto para colar no
    WhatsApp. Sem permissão de copiar, a imagem é baixada. */
-const PAL_TELA = { tinta: 'var(--tinta)', corpo: 'var(--tinta-corpo)', suave: 'var(--tinta-suave)', fraca: 'var(--tinta-fraca)', borda: 'var(--borda-forte)', lona: 'var(--sutil)', brilho: 'var(--realce)', haste: 'var(--tinta-suave)', rosa: 'var(--faca)', fundo: 'var(--superficie)' };
-const PAL_IMG = { tinta: '#111827', corpo: '#374151', suave: '#6b7280', fraca: '#9ca3af', borda: '#cbd5e1', lona: '#f8fafc', brilho: '#e2e8f0', haste: '#64748b', rosa: '#EC008C', fundo: '#ffffff' };
+// `cota`: as linhas de medida e os números, em azul de desenho técnico — dá
+// para achar a medida de relance, separada do desenho do banner.
+const PAL_TELA = { tinta: 'var(--tinta)', corpo: 'var(--tinta-corpo)', suave: 'var(--tinta-suave)', fraca: 'var(--tinta-fraca)', borda: 'var(--borda-forte)', lona: 'var(--sutil)', brilho: 'var(--realce)', haste: 'var(--tinta-suave)', rosa: 'var(--faca)', fundo: 'var(--superficie)', cota: 'var(--itens)' };
+const PAL_IMG = { tinta: '#111827', corpo: '#374151', suave: '#6b7280', fraca: '#9ca3af', borda: '#cbd5e1', lona: '#f8fafc', brilho: '#e2e8f0', haste: '#64748b', rosa: '#EC008C', fundo: '#ffffff', cota: '#2563eb' };
 const FONTE = 'Montserrat, Arial, Helvetica, sans-serif';
 const cm = v => parseFloat(String(v ?? '').replace(',', '.'));
 const n1 = v => fmtN(v, 1);
-// Cotas: traço com as pontas e a medida no meio.
-function cotaH(x1, x2, y, txt, cor) {
-  const m = (x1 + x2) / 2, vao = Math.min(26, Math.max(0, (x2 - x1) / 2 - 6));
-  return `<path d="M${x1} ${y - 5}v10M${x2} ${y - 5}v10M${x1} ${y}H${m - vao}M${m + vao} ${y}H${x2}" stroke="${cor}" fill="none"/><text x="${m}" y="${y + 3.5}" text-anchor="middle" font-size="10.5" font-weight="600" fill="${cor}">${txt}</text>`;
+// Cotas: traço com as pontas e a medida no meio da linha. Num lado curto (um
+// banner de 500 × 50 cm, por exemplo) o número não cabe deitado na linha: ele
+// sai de dentro dela e fica legível ao lado (na vertical) ou embaixo (na
+// horizontal), e a linha segue inteira.
+const larguraTexto = txt => txt.length * 6.3 + 6;
+const cabeNaLinha = (comprimento, txt) => comprimento >= larguraTexto(txt) + 14;
+function cotaH(x1, x2, y, txt, cor, emCima = false) {
+  const m = (x1 + x2) / 2, pontas = `M${x1} ${y - 5}v10M${x2} ${y - 5}v10`;
+  if (!cabeNaLinha(x2 - x1, txt)) {
+    return `<path d="${pontas}M${x1} ${y}H${x2}" stroke="${cor}" fill="none"/><text x="${m}" y="${emCima ? y - 9 : y + 16}" text-anchor="middle" font-size="11" font-weight="700" fill="${cor}">${txt}</text>`;
+  }
+  const vao = larguraTexto(txt) / 2;
+  return `<path d="${pontas}M${x1} ${y}H${m - vao}M${m + vao} ${y}H${x2}" stroke="${cor}" fill="none"/><text x="${m}" y="${y + 3.8}" text-anchor="middle" font-size="11" font-weight="700" fill="${cor}">${txt}</text>`;
 }
 function cotaV(x, y1, y2, txt, cor) {
-  const m = (y1 + y2) / 2, vao = Math.min(26, Math.max(0, (y2 - y1) / 2 - 6));
-  return `<path d="M${x - 5} ${y1}h10M${x - 5} ${y2}h10M${x} ${y1}V${m - vao}M${x} ${m + vao}V${y2}" stroke="${cor}" fill="none"/><text x="${x}" y="${m + 3.5}" text-anchor="middle" font-size="10.5" font-weight="600" fill="${cor}" transform="rotate(90 ${x} ${m})">${txt}</text>`;
+  const m = (y1 + y2) / 2, pontas = `M${x - 5} ${y1}h10M${x - 5} ${y2}h10`;
+  if (!cabeNaLinha(y2 - y1, txt)) {
+    return `<path d="${pontas}M${x} ${y1}V${y2}" stroke="${cor}" fill="none"/><text x="${x + 9}" y="${m + 4}" font-size="11" font-weight="700" fill="${cor}">${txt}</text>`;
+  }
+  const vao = larguraTexto(txt) / 2;
+  return `<path d="${pontas}M${x} ${y1}V${m - vao}M${x} ${m + vao}V${y2}" stroke="${cor}" fill="none"/><text x="${x}" y="${m + 3.8}" text-anchor="middle" font-size="11" font-weight="700" fill="${cor}" transform="rotate(90 ${x} ${m})">${txt}</text>`;
 }
 // O banner em escala, com o acabamento: bastão e corda (as duas hastes e a
-// corda até o gancho), ilhós (argolas nos cantos e a cada 50 cm, no máximo) ou
-// só a lona. A laminada ganha um brilho em diagonal.
-function desenhoBanner({ l, a, acabamento, laminado }, pal, caixa) {
+// corda até o gancho; as hastes em cima e embaixo ou nas laterais), ilhós
+// (argolas nos cantos e a cada 50 cm, no máximo) ou só a lona. A laminada
+// ganha um brilho em diagonal.
+function desenhoBanner({ l, a, acabamento, laminado, bastoes }, pal, caixa) {
   const k = Math.min(caixa / l, caixa / a), W = l * k, H = a * k;
-  const bastao = acabamento === 'bastao_corda', ilhos = acabamento === 'ilhos';
-  const X = 14, Y = bastao ? 48 : 12, largura = X + W + 44, altura = Y + H + 34;
+  const bastao = acabamento === 'bastao_corda', ilhos = acabamento === 'ilhos', lados = bastao && bastoes === 'lados';
+  const txtL = `${n1(l)} cm`, txtA = `${n1(a)} cm`;
+  // Espaço para a corda: em cima no bastão de cima e embaixo; dos dois lados
+  // nos bastões nas laterais (e a medida da altura vai depois da corda da
+  // direita). E para a medida que sai da linha num lado curto.
+  const X = lados ? 50 : 14, Y = bastao && !lados ? 48 : 12, xCotaA = X + W + (lados ? 62 : 24);
+  const largura = xCotaA + 20 + (cabeNaLinha(H, txtA) ? 0 : 44), altura = Y + H + 34 + (cabeNaLinha(W, txtL) ? 0 : 14);
   let s = `<rect x="${X}" y="${Y}" width="${W}" height="${H}" fill="${pal.lona}" stroke="${pal.borda}"/>`;
   if (laminado) s += `<polygon points="${X + W * .55},${Y} ${X + W * .8},${Y} ${X + W * .35},${Y + H} ${X + W * .1},${Y + H}" fill="${pal.brilho}" opacity=".75"/>`;
-  const fs = Math.max(9, Math.min(15, W / 9));
-  s += `<text x="${X + W / 2}" y="${Y + H / 2 + fs / 3}" text-anchor="middle" font-size="${fs}" font-weight="700" fill="${pal.fraca}">${n1(l)} × ${n1(a)} cm</text>`;
-  if (bastao) {
+  // A medida no meio da lona só quando cabe nela; senão, ficam só as cotas.
+  const fs = Math.max(9, Math.min(15, W / 9)), rotMeio = `${n1(l)} × ${n1(a)} cm`;
+  if (rotMeio.length * fs * .6 <= W - 10 && fs + 8 <= H) s += `<text x="${X + W / 2}" y="${Y + H / 2 + fs / 3}" text-anchor="middle" font-size="${fs}" font-weight="700" fill="${pal.fraca}">${rotMeio}</text>`;
+  if (lados) {
+    // Bastões nas laterais: as hastes descem pelos lados, passando um pouco das
+    // pontas, e a corda fica junto delas, nos dois lados: sai das duas pontas
+    // de cada bastão até um gancho do lado de fora.
+    const hy = 7, corda = (xb, dir) => `<polyline points="${xb},${Y - hy + 3} ${xb + dir * 37},${Y + H / 2} ${xb},${Y + H + hy - 3}" fill="none" stroke="${pal.suave}" stroke-width="1.3"/>`
+      + `<circle cx="${xb + dir * 40}" cy="${Y + H / 2}" r="3.2" fill="none" stroke="${pal.suave}" stroke-width="1.3"/>`;
+    s += corda(X - 1, -1) + corda(X + W + 1, 1)
+      + `<rect x="${X - 4}" y="${Y - hy}" width="8" height="${H + 2 * hy}" rx="4" fill="${pal.haste}"/>`
+      + `<rect x="${X + W - 4}" y="${Y - hy}" width="8" height="${H + 2 * hy}" rx="4" fill="${pal.haste}"/>`;
+  } else if (bastao) {
     const hx = 7;
     s += `<polyline points="${X - hx + 3},${Y - 1} ${X + W / 2},${Y - 38} ${X + W + hx - 3},${Y - 1}" fill="none" stroke="${pal.suave}" stroke-width="1.3"/>`
       + `<circle cx="${X + W / 2}" cy="${Y - 41}" r="3.2" fill="none" stroke="${pal.suave}" stroke-width="1.3"/>`
@@ -649,13 +704,14 @@ function desenhoBanner({ l, a, acabamento, laminado }, pal, caixa) {
     for (let j = 1; j < ny; j++) { const y = Y + ins + (H - 2 * ins) * j / ny; pts.push([X + ins, y], [X + W - ins, y]); }
     s += pts.map(([x, y]) => `<circle cx="${x}" cy="${y}" r="3.4" fill="${pal.fundo}" stroke="${pal.haste}" stroke-width="1.7"/>`).join('');
   }
-  s += cotaH(X, X + W, Y + H + (bastao ? 22 : 18), `${n1(l)} cm`, pal.suave) + cotaV(X + W + 24, Y, Y + H, `${n1(a)} cm`, pal.suave);
+  s += cotaH(X, X + W, Y + H + (bastao ? 22 : 18), txtL, pal.cota) + cotaV(xCotaA, Y, Y + H, txtA, pal.cota);
   return { corpo: s, largura, altura };
 }
 // Medida pedida (linha tracejada em volta) × o maior tamanho que a imagem do
 // cliente ocupa dentro dela, mantendo a proporção (em rosa, centrada).
 function desenhoComparativo({ pl, pa, fl, fa, src }, pal, caixa) {
-  const k = Math.min(caixa / pl, caixa / pa), W = pl * k, H = pa * k, X = 14, Y = 26, largura = X + W + 44, altura = Y + H + 14;
+  const k = Math.min(caixa / pl, caixa / pa), W = pl * k, H = pa * k, txtL = `${n1(pl)} cm`, txtA = `${n1(pa)} cm`;
+  const X = 14, Y = cabeNaLinha(W, txtL) ? 26 : 40, largura = X + W + 44 + (cabeNaLinha(H, txtA) ? 0 : 44), altura = Y + H + 14;
   const fw = fl * k, fh = fa * k, fx = X + (W - fw) / 2, fy = Y + (H - fh) / 2;
   let s = '';
   if (src) s += `<image href="${src}" x="${fx}" y="${fy}" width="${fw}" height="${fh}" preserveAspectRatio="none"/>`;
@@ -674,12 +730,17 @@ function desenhoComparativo({ pl, pa, fl, fa, src }, pal, caixa) {
     s += `<text x="${X + W / 2}" y="${Y + (fy - Y) / 2 + 3.5}" text-anchor="middle" font-size="10" font-weight="600" fill="${pal.suave}">sobra ${n1(sobraA)} cm</text>`
       + `<text x="${X + W / 2}" y="${fy + fh + (Y + H - fy - fh) / 2 + 3.5}" text-anchor="middle" font-size="10" font-weight="600" fill="${pal.suave}">sobra ${n1(sobraA)} cm</text>`;
   }
-  if (sobraL >= 0.5 && (W - fw) / 2 >= 16) {
+  // A sobra dos lados: deitada na faixa quando ela é larga o bastante; em pé
+  // quando a faixa é estreita mas alta; e de fora quando não cabe de jeito
+  // nenhum (um banner de 500 × 50 cm deixa faixas baixas demais para o texto em pé).
+  const txtSobraL = `sobra ${n1(sobraL)} cm`, faixaL = (W - fw) / 2;
+  if (sobraL >= 0.5 && faixaL >= 16) {
     const mx1 = X + (fx - X) / 2, mx2 = fx + fw + (X + W - fx - fw) / 2, my = fy + fh / 2;
-    s += `<text x="${mx1}" y="${my + 3.5}" text-anchor="middle" font-size="10" font-weight="600" fill="${pal.suave}" transform="rotate(-90 ${mx1} ${my})">sobra ${n1(sobraL)} cm</text>`
-      + `<text x="${mx2}" y="${my + 3.5}" text-anchor="middle" font-size="10" font-weight="600" fill="${pal.suave}" transform="rotate(90 ${mx2} ${my})">sobra ${n1(sobraL)} cm</text>`;
+    const tx = (x, giro) => `<text x="${x}" y="${my + 3.5}" text-anchor="middle" font-size="10" font-weight="600" fill="${pal.suave}"${giro ? ` transform="rotate(${giro} ${x} ${my})"` : ''}>${txtSobraL}</text>`;
+    if (faixaL >= larguraTexto(txtSobraL) + 8) s += tx(mx1, 0) + tx(mx2, 0);
+    else if (H >= larguraTexto(txtSobraL) + 8) s += tx(mx1, -90) + tx(mx2, 90);
   }
-  s += cotaH(X, X + W, Y - 13, `${n1(pl)} cm`, pal.tinta) + cotaV(X + W + 24, Y, Y + H, `${n1(pa)} cm`, pal.tinta);
+  s += cotaH(X, X + W, Y - 13, txtL, pal.cota, true) + cotaV(X + W + 24, Y, Y + H, txtA, pal.cota);
   return { corpo: s, largura, altura };
 }
 const svgTela = d => `<svg viewBox="0 0 ${d.largura} ${d.altura}" width="${d.largura}" height="${d.altura}" font-family="${FONTE}" role="img">${d.corpo}</svg>`;
@@ -757,10 +818,11 @@ function carregarImagem(arquivo) {
 function previaBannerHTML(r, e) {
   const B = C.banner, tit = h => `<div class="cartao-cab"><h2>${ico('image', 'ico ico-s')}Prévia do banner</h2>${h}</div>`;
   if (!r.ok) { est.imagem = null; return `<section class="cartao">${tit('')}<p class="vazio-card">Preencha largura e altura para ver como o banner fica.</p></section>`; }
-  const l = cm(e.largura) * 100, a = cm(e.altura) * 100;
+  const l = cm(e.largura), a = cm(e.altura);
   const tipo = B.TIPOS_LONA.find(t => t.valor === e.tipo) || B.TIPOS_LONA[0], acab = B.ACABAMENTOS.find(x => x.valor === e.acabamento) || B.ACABAMENTOS[0];
-  const p = { l, a, acabamento: e.acabamento, laminado: e.tipo === 'laminado' };
-  const legenda = `${r.quantidade} ${r.quantidade > 1 ? 'banners' : 'banner'} de ${n1(l)} × ${n1(a)} cm · ${tipo.rotulo} · ${acab.rotulo}`;
+  const p = { l, a, acabamento: e.acabamento, laminado: e.tipo === 'laminado', bastoes: e.bastoes };
+  const rotAcab = e.acabamento === 'bastao_corda' && e.bastoes === 'lados' ? `${acab.rotulo} nas laterais` : acab.rotulo;
+  const legenda = `${r.quantidade} ${r.quantidade > 1 ? 'banners' : 'banner'} de ${n1(l)} × ${n1(a)} cm · ${tipo.rotulo} · ${rotAcab}`;
   est.imagem = imagemParaCliente('Prévia do banner', desenhoBanner(p, PAL_IMG, 400), [], [legenda], `banner-${Math.round(l)}x${Math.round(a)}cm.png`);
   return `<section class="cartao">${tit(`<button class="btn btn-sec btn-p" data-copiar-img>${ico('image-down', 'ico ico-s')}Copiar imagem</button>`)}
     <div class="desenho">${svgTela(desenhoBanner(p, PAL_TELA, 300))}</div>
@@ -1258,7 +1320,7 @@ document.addEventListener('click', e => {
     const b = ent.banner;
     // Ao abrir o comparativo, a medida já digitada no cálculo vira a medida pedida.
     if (mb.dataset.modoBanner === 'comparar' && !b.cmpL && !b.cmpA && cm(b.largura) > 0 && cm(b.altura) > 0) {
-      b.cmpL = txtNum(Math.round(cm(b.largura) * 1000) / 10); b.cmpA = txtNum(Math.round(cm(b.altura) * 1000) / 10);
+      b.cmpL = txtNum(Math.round(cm(b.largura) * 10) / 10); b.cmpA = txtNum(Math.round(cm(b.altura) * 10) / 10);
     }
     b.modo = mb.dataset.modoBanner; est.entrar = b.modo === 'comparar' ? 'dir' : 'esq';
     return render(`[data-modo-banner="${b.modo}"]`);
