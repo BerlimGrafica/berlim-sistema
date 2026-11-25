@@ -333,6 +333,47 @@ html:has(.gaveta:not(.sai)) { overflow: hidden; scrollbar-gutter: stable; }
 .pop .livre { display: flex; align-items: center; gap: 9px; padding: 5px 10px 7px; color: var(--tinta-suave); font-size: 12.5px; }
 .pop .livre input { border: 0; background: transparent; outline: none; color: var(--tinta); font-weight: 600; box-shadow: inset 0 -1px 0 var(--borda-forte); padding: 3px 0; font-variant-numeric: tabular-nums; }
 .pop .livre input:focus { box-shadow: inset 0 -2px 0 var(--brand); }
+/* prazo: o seletor padrão (o do filtro de período do Financeiro, com um dia só):
+   atalhos à esquerda, calendário à direita; o horário limite embaixo. */
+.pop.pop-prazo { padding: 4px; }
+.pop-prazo .per-pop { display: flex; gap: 4px; }
+.pop-prazo .atalhos { display: flex; flex-direction: column; gap: 1px; min-width: 176px; padding-right: 4px; border-right: 1px solid var(--borda-fraca); }
+.pop-prazo .atalhos small { margin-left: auto; font-size: 11.5px; font-weight: 600; color: var(--tinta-fraca); font-variant-numeric: tabular-nums; }
+.pop-prazo .atalhos .ok { margin-left: 8px; }
+.pop-prazo .pcal { width: 268px; padding: 4px 6px 2px 8px; }
+.pop-prazo .pcal button { width: auto; padding: 0; gap: 0; justify-content: center; border-radius: 6px; font-size: 12.5px; color: var(--tinta-corpo); }
+.pop-prazo .pcal button:hover { background: var(--realce); color: var(--tinta); }
+.pop-prazo .pcal-cab { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px; }
+.pop-prazo .pcal .pcal-nav { width: 30px; height: 30px; display: grid; place-items: center; color: var(--tinta-suave); }
+.pop-prazo .pcal .pcal-tit { height: 30px; padding: 0 10px; font-weight: 700; font-size: 13px; color: var(--tinta); }
+.pop-prazo .pcal-sem, .pop-prazo .pcal-dias { display: grid; grid-template-columns: repeat(7, 1fr); }
+.pop-prazo .pcal-sem span { height: 26px; display: grid; place-items: center; font-size: 11px; font-weight: 600; color: var(--tinta-fraca); }
+.pop-prazo .pcal-dias { row-gap: 2px; }
+.pop-prazo .pcal .pd { position: relative; height: 34px; display: grid; place-items: center; border-radius: 0; }
+.pop-prazo .pcal .pd:hover { background: none; }
+.pop-prazo .pd b { width: 32px; height: 32px; display: grid; place-items: center; border-radius: 8px; font-weight: 500; font-variant-numeric: tabular-nums; transition: background .1s, color .1s; }
+.pop-prazo .pcal .pd:hover b { background: var(--realce); color: var(--tinta); }
+.pop-prazo .pd.hoje b { font-weight: 700; color: var(--brand-tinta); box-shadow: inset 0 0 0 1px var(--borda-forte); }
+.pop-prazo .pd.esc b, .pop-prazo .pcal .pd.esc:hover b { background: var(--brand); color: var(--sobre-brand); font-weight: 700; box-shadow: none; }
+.pop-prazo .pcal-grade { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; padding: 6px 0 4px; }
+.pop-prazo .pcal .pcal-op { height: 40px; font-weight: 600; text-transform: capitalize; }
+.pop-prazo .pcal .pcal-op.on, .pop-prazo .pcal .pcal-op.on:hover { background: var(--brand); color: var(--sobre-brand); }
+.pop-prazo .pcal-pe { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 36px; margin-top: 6px; padding: 6px 2px 0; border-top: 1px solid var(--borda-fraca); font-size: 12px; color: var(--tinta-suave); font-variant-numeric: tabular-nums; }
+.pop-prazo .pcal-pe b { color: var(--tinta); font-weight: 700; }
+.pop-prazo .pcal .pcal-limpar { padding: 4px 8px; font-weight: 600; color: var(--tinta-suave); }
+.pop-prazo .pz-hora { width: 0; min-width: 100%; box-sizing: border-box; display: flex; align-items: center; flex-wrap: wrap; gap: 4px 6px; margin-top: 4px; padding: 8px 6px 4px; border-top: 1px solid var(--borda-fraca); }
+.pop-prazo .pz-hora .rot { padding: 0 4px; margin-right: 2px; }
+.pop-prazo .pz-hora .horas { padding: 0; }
+.pop-prazo .pz-hora .livre { padding: 0 4px 0 8px; }
+.pop-prazo .pz-hora .livre input { width: 52px; text-align: center; }
+@media (max-width: 560px) {
+  .pop-prazo .per-pop { flex-direction: column; }
+  .pop-prazo .atalhos { flex-direction: row; flex-wrap: wrap; gap: 4px; min-width: 0; padding: 4px 4px 8px; border-right: 0; border-bottom: 1px solid var(--borda-fraca); }
+  .pop-prazo .atalhos button { width: auto; padding: 5px 10px; border: 1px solid var(--borda); border-radius: 99px; font-size: 12px; }
+  .pop-prazo .atalhos .ok, .pop-prazo .atalhos small { display: none; }
+  .pop-prazo .atalhos button.on { background: var(--tinta); border-color: var(--tinta); color: var(--superficie); }
+  .pop-prazo .pcal { width: 100%; padding: 6px 4px 2px; }
+}
 .pop .av { width: 22px; height: 22px; border-radius: 99px; display: grid; place-items: center; font: 700 10px/1 Montserrat; letter-spacing: -.02em; color: #fff; font-style: normal; flex-shrink: 0; }
 .toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); z-index: 95; background: var(--tinta); color: var(--superficie); padding: 8px 8px 8px 14px; border-radius: 9px; font-weight: 600; font-size: 12.5px; box-shadow: var(--sombra-pop); display: flex; gap: 10px; align-items: center; animation: sobe .22s cubic-bezier(.16,1,.3,1); max-width: calc(100vw - 32px); }
 .toast .ico { color: #34d399; }
@@ -719,25 +760,78 @@ function popResp(anc, p) {
     pop.innerHTML = desenhar(); lucide.createIcons(); render();
   });
 }
+// Prazo: o seletor de data padrão das telas novas (o do filtro de período do
+// Financeiro, escolhendo um dia só) — atalhos à esquerda com ✓ no escolhido,
+// calendário à direita (o título leva aos meses e anos), "Limpar" no rodapé.
+// Com prazo, o horário limite fica embaixo: atalhos e um campo "hh:mm".
+const MESES_PZ = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+const dataLongaPz = iso => { const d = new Date(iso + 'T12:00:00'); return `${SEM[d.getDay()]}, ${d.getDate()} de ${MESES_PZ[d.getMonth()]}${d.getFullYear() !== new Date().getFullYear() ? ' de ' + d.getFullYear() : ''}`; };
+function atalhosPz() {
+  let sexta = somaDias(HOJE, 1); while (new Date(sexta + 'T12:00:00').getDay() !== 5) sexta = somaDias(sexta, 1);
+  return [['Hoje', HOJE], ['Amanhã', somaDias(HOJE, 1)], ['Depois de amanhã', somaDias(HOJE, 2)], ['Sexta', sexta], ['Em 7 dias', somaDias(HOJE, 7)], ['Sem prazo', '']];
+}
+function calPz(c, sel) {
+  const y = c.base.getFullYear(), m = c.base.getMonth();
+  const cab = (passo, titulo, vista) => `<div class="pcal-cab"><button type="button" class="pcal-nav" data-nav="${-passo}" aria-label="Anterior">${ico('chevron-left', 'ico ico-s')}</button>${vista ? `<button type="button" class="pcal-tit" data-vista="${vista}">${titulo}</button>` : `<span class="pcal-tit">${titulo}</span>`}<button type="button" class="pcal-nav" data-nav="${passo}" aria-label="Próximo">${ico('chevron-right', 'ico ico-s')}</button></div>`;
+  if (c.vista === 'meses') return cab(12, y, 'anos') + `<div class="pcal-grade">${MESES_PZ.map((n, i) => `<button type="button" class="pcal-op ${i === m ? 'on' : ''}" data-pmes="${i}">${n.slice(0, 3)}</button>`).join('')}</div>`;
+  if (c.vista === 'anos') { const anos = Array.from({ length: 12 }, (_, i) => y - 5 + i);
+    return cab(144, `${anos[0]} – ${anos[11]}`) + `<div class="pcal-grade">${anos.map(a => `<button type="button" class="pcal-op ${a === y ? 'on' : ''}" data-pano="${a}">${a}</button>`).join('')}</div>`; }
+  let cel = '';
+  for (let i = new Date(y, m, 1).getDay(); i > 0; i--) cel += '<span></span>';
+  for (let d = 1, n = new Date(y, m + 1, 0).getDate(); d <= n; d++) {
+    const iso = dataISO(new Date(y, m, d));
+    cel += `<button type="button" class="pd ${iso === HOJE ? 'hoje' : ''} ${iso === sel ? 'esc' : ''}" data-pdia="${iso}" aria-label="${dataLongaPz(iso)}" aria-pressed="${iso === sel}"><b>${d}</b></button>`;
+  }
+  return cab(1, `${MESES_PZ[m][0].toUpperCase() + MESES_PZ[m].slice(1)} de ${y}`, 'meses')
+    + `<div class="pcal-sem">${SEM.map(s => `<span>${s}</span>`).join('')}</div><div class="pcal-dias">${cel}</div>`
+    + `<div class="pcal-pe"><span>${sel ? `<b>${dataLongaPz(sel)}</b>` : 'Escolha o dia'}</span>${sel ? '<button type="button" class="pcal-limpar" data-pdia="">Limpar</button>' : ''}</div>`;
+}
+// "1630" → "16:30", "9" → "09:00"; o que não for hora válida volta vazio.
+function horaPz(txt) {
+  const d = String(txt).replace(/\D/g, '');
+  if (!d) return '';
+  const h = d.length <= 2 ? d : d.length === 3 ? d.slice(0, 1) : d.slice(0, 2);
+  const m = d.length <= 2 ? '00' : d.slice(-2);
+  const hh = +h, mm = +m;
+  return hh <= 23 && mm <= 59 ? `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}` : '';
+}
+const HORAS_PZ = ['09:00', '12:00', '14:00', '17:00'];
 function popPrazo(anc, p) {
-  const atalhos = [['Hoje', HOJE], ['Amanhã', somaDias(HOJE, 1)]];
-  for (let i = 2, n = 0; n < 4; i++) { const d = somaDias(HOJE, i); const w = new Date(d + 'T12:00:00').getDay(); if (w === 0) continue; atalhos.push([`${diaSem(d)}, ${ddmm(d)}`, d]); n++; }
-  const pop = abrirPop(anc, `<button data-v="">Sem prazo${marca(!p.prazo)}</button><hr>`
-    + atalhos.map(([t, d]) => `<button data-v="${d}">${t.replace(/^./, c => c.toUpperCase())}${d !== HOJE && d !== somaDias(HOJE, 1) ? '' : `<span class="sub">${ddmm(d)}</span>`}${marca(p.prazo === d)}</button>`).join('')
-    + `<label class="livre">${ico('calendar', 'ico ico-s')}Outra data: <input type="date" data-data value="${esc(p.prazo)}"></label>`
-    + (p.prazo ? '<hr><div class="rot">Horário limite</div><div class="horas">' + ['', '09:00', '12:00', '14:00', '17:00'].map(h => `<button data-h="${h}" class="${h === p.hora ? 'ativo' : ''}">${h || 'Sem horário'}</button>`).join('')
-      + `</div><label class="livre">${ico('clock', 'ico ico-s')}Outro: <input type="time" data-hora value="${esc(p.hora)}"></label>` : ''));
+  const c = { vista: 'dias', base: new Date((p.prazo || HOJE).slice(0, 7) + '-01T12:00:00') };
+  const atalhos = atalhosPz().map(([r, iso]) => { const on = iso === (p.prazo || ''); return `<button type="button" class="${on ? 'on' : ''}" data-pdia="${iso}">${r}${iso ? `<small>${ddmm(iso)}</small>` : ''}${marca(on)}</button>`; }).join('');
+  const hora = !p.prazo ? '' : `<div class="pz-hora"><span class="rot">Horário limite</span><div class="horas">`
+    + ['', ...HORAS_PZ].map(h => `<button type="button" data-h="${h}" class="${h === p.hora ? 'ativo' : ''}">${h || 'Sem horário'}</button>`).join('')
+    + `</div><label class="livre">${ico('clock', 'ico ico-s')}Outro <input type="text" data-hora inputmode="numeric" maxlength="5" placeholder="hh:mm" autocomplete="off" aria-label="Outro horário" value="${esc(p.hora && !HORAS_PZ.includes(p.hora) ? p.hora : '')}"></label></div>`;
+  const pop = abrirPop(anc, `<div class="per-pop"><div class="atalhos">${atalhos}</div><div class="pcal">${calPz(c, p.prazo || '')}</div></div>${hora}`);
+  pop.classList.add('pop-prazo'); pop.setAttribute('role', 'dialog'); pop.setAttribute('aria-label', `Prazo da O.S. #${p.id}`);
+  // Cresceu depois de posicionado: se passou da borda, volta para dentro.
+  const r = pop.getBoundingClientRect();
+  if (r.right > innerWidth - 8) pop.style.left = Math.max(8, innerWidth - r.width - 8) + 'px';
+  if (r.bottom > innerHeight - 8) pop.style.top = Math.max(8, innerHeight - r.height - 8) + 'px';
+  (pop.querySelector('.atalhos .on') || pop.querySelector('.atalhos button'))?.focus();
+  const pronto = () => { fecharPop(); est.animar = true; render(); toast(`Prazo da #${p.id}: ${estadoPrazo(p).txt}${p.hora ? ' até ' + p.hora : ''}`); };
+  const desenhar = () => { pop.querySelector('.pcal').innerHTML = calPz(c, p.prazo || ''); lucide.createIcons(); };
   pop.addEventListener('click', e => {
-    const b = e.target.closest('button[data-v], button[data-h]'); if (!b) return;
-    if (b.dataset.h != null) { p.hora = b.dataset.h; gravar(p.id, 'prazo_hora', p.hora || null); }
-    else { p.prazo = b.dataset.v; gravar(p.id, 'prazo', p.prazo || null); if (!p.prazo && p.hora) { p.hora = ''; gravar(p.id, 'prazo_hora', null); } }
-    fecharPop(); est.animar = true; render(); toast(`Prazo da #${p.id}: ${estadoPrazo(p).txt}${p.hora ? ' até ' + p.hora : ''}`);
+    // O clique redesenha o calendário e o alvo sai do documento: sem parar aqui,
+    // o clique "de fora" fecharia o popover.
+    e.stopPropagation();
+    const nav = e.target.closest('[data-nav]'); if (nav) { c.base.setMonth(c.base.getMonth() + +nav.dataset.nav); return desenhar(); }
+    const vista = e.target.closest('[data-vista]'); if (vista) { c.vista = vista.dataset.vista; return desenhar(); }
+    const mes = e.target.closest('[data-pmes]'); if (mes) { c.base.setMonth(+mes.dataset.pmes); c.vista = 'dias'; return desenhar(); }
+    const ano = e.target.closest('[data-pano]'); if (ano) { c.base.setFullYear(+ano.dataset.pano); c.vista = 'meses'; return desenhar(); }
+    const hb = e.target.closest('button[data-h]');
+    if (hb) { p.hora = hb.dataset.h; gravar(p.id, 'prazo_hora', p.hora || null); return pronto(); }
+    const dia = e.target.closest('[data-pdia]'); if (!dia) return;
+    p.prazo = dia.dataset.pdia; gravar(p.id, 'prazo', p.prazo || null);
+    if (!p.prazo && p.hora) { p.hora = ''; gravar(p.id, 'prazo_hora', null); }
+    pronto();
   });
-  const aplicar = (campo, v) => { if (!v) return; p[campo] = v; gravar(p.id, campo === 'hora' ? 'prazo_hora' : 'prazo', v); fecharPop(); est.animar = true; render(); };
-  pop.querySelector('[data-data]')?.addEventListener('change', e => aplicar('prazo', e.target.value));
+  // O horário digitado: os dois pontos entram sozinhos; vale com Enter ou ao sair.
   const h = pop.querySelector('[data-hora]');
-  h?.addEventListener('keydown', e => { if (e.key === 'Enter') aplicar('hora', h.value); });
-  h?.addEventListener('blur', () => { if (h.isConnected && h.value && h.value !== p.hora) aplicar('hora', h.value); });
+  const aplicarHora = () => { const v = horaPz(h.value); if (!v || v === p.hora) return; p.hora = v; gravar(p.id, 'prazo_hora', v); pronto(); };
+  h?.addEventListener('input', () => { const d = h.value.replace(/\D/g, '').slice(0, 4); h.value = d.length > 2 ? `${d.slice(0, 2)}:${d.slice(2)}` : d; });
+  h?.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); aplicarHora(); } });
+  h?.addEventListener('blur', () => { if (h.isConnected) aplicarHora(); });
 }
 function popMenu(x, y, p) {
   fecharPop();

@@ -562,34 +562,6 @@ html:has(.gaveta:not(.sai)) { overflow: hidden; scrollbar-gutter: stable; }
 .mc-lista button:hover, .mc-lista button.ativo { background: var(--realce); color: var(--tinta); }
 .mc-lista .sub { margin-left: auto; font-size: 12px; color: var(--tinta-suave); white-space: nowrap; padding-left: 12px; }
 .mc-lista .rot-l { font-size: 11px; font-weight: 600; color: var(--tinta-suave); padding: 6px 10px 2px; }
-.cal { width: 300px; max-width: calc(100vw - 16px); padding: 10px; background: var(--superficie); border: 1px solid var(--borda); border-radius: 9px; box-shadow: var(--sombra-pop); }
-.cal-atalhos { display: flex; flex-wrap: wrap; gap: 4px; padding-bottom: 10px; margin-bottom: 8px; border-bottom: 1px solid var(--borda-fraca); }
-.cal-atalhos button { padding: 4px 9px; border-radius: 7px; border: 1px solid var(--borda); font-size: 12px; font-weight: 600; color: var(--tinta-corpo); }
-.cal-atalhos button:hover { border-color: var(--borda-forte); color: var(--tinta); }
-.cal-cab { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
-.cal-cab b { font-size: 13px; color: var(--tinta); }
-.cal-grade { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; }
-.cal-grade .sem { font-size: 11px; font-weight: 600; color: var(--tinta-suave); padding: 4px 0; }
-.cal-grade button { height: 32px; border-radius: 7px; font-size: 12.5px; font-weight: 600; color: var(--tinta-corpo); font-variant-numeric: tabular-nums; }
-.cal-grade button:hover { background: var(--realce); color: var(--tinta); }
-.cal-grade button.fora { color: var(--tinta-fraca); font-weight: 500; }
-.cal-grade button.hoje { box-shadow: inset 0 0 0 1px var(--brand); }
-.cal-grade button.sel { background: var(--brand); color: var(--sobre-brand); }
-/* O mesmo calendário num popover (datas do boleto): sem moldura dupla e sem o
-   jeito de lista que o .pop dá aos botões. */
-.pop.pop-cal { padding: 0; overflow: visible; max-height: none; }
-.pop-cal .cal { border: 0; box-shadow: none; background: none; }
-.pop-cal .cal button { width: auto; gap: 0; padding: 0; justify-content: center; }
-.pop-cal .cal button:focus-visible { outline: 2px solid var(--brand); outline-offset: 1px; }
-.pop-cal .cal-atalhos { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 6px; }
-.pop-cal .cal-atalhos button { flex-direction: column; gap: 1px; padding: 5px 4px; line-height: 1.2; }
-.pop-cal .cal-cab .ib { width: 30px; height: 30px; display: grid; place-items: center; color: var(--tinta-suave); }
-.pop-cal .cal-grade button { width: 100%; }
-.pop-cal .cal-grade button.sel:hover { background: var(--brand); color: var(--sobre-brand); }
-.cal-atalhos small { font-size: 11.5px; font-weight: 500; color: var(--tinta-suave); }
-.cal-atalhos button.sel { border-color: var(--brand); color: var(--tinta); }
-.cal-pe { display: flex; align-items: center; gap: 8px; min-height: 26px; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--borda-fraca); font-size: 12px; color: var(--tinta-suave); }
-.pop-cal .cal-pe button { margin-left: auto; padding: 4px 8px; font-size: 12px; font-weight: 600; color: var(--tinta-suave); }
 .lin.chegou { animation: linChegou 1.6s var(--saida); }
 @keyframes linChegou { 0%, 40% { background: var(--fin-fundo); } }
 @media (max-width: 760px) {
@@ -638,6 +610,59 @@ html:has(.gaveta:not(.sai)) { overflow: hidden; scrollbar-gutter: stable; }
 html[data-troca-tema]::view-transition-old(root), html[data-troca-tema]::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
 html[data-troca-tema].dark::view-transition-new(root), html[data-troca-tema]:not(.dark)::view-transition-old(root) { z-index: 1; }
 html[data-troca-tema] *, html[data-troca-tema] *::before, html[data-troca-tema] *::after { transition: none !important; }
+/* seletor de dia: o padrão das telas novas — o mesmo desenho do filtro de
+   período do Financeiro, escolhendo um dia só: atalhos à esquerda, calendário
+   à direita. Tudo dentro de .sd, para não herdar os botões das listas. */
+.sd-pop { max-width: calc(100vw - 16px); padding: 4px; background: var(--superficie); border: 1px solid var(--borda); border-radius: 9px; box-shadow: var(--sombra-pop); }
+.sd .sd-per { display: flex; gap: 4px; }
+.sd .sd-atalhos { display: flex; flex-direction: column; gap: 1px; min-width: 176px; padding-right: 4px; border-right: 1px solid var(--borda-fraca); }
+.sd .sd-atalhos button { display: flex; align-items: center; gap: 9px; width: 100%; height: auto; text-align: left; padding: 7px 10px; border: 0; border-radius: 6px; background: none; box-shadow: none; font-size: 13px; font-weight: 500; color: var(--tinta-corpo); white-space: nowrap; }
+.sd .sd-atalhos button:hover, .sd .sd-atalhos button:focus-visible { background: var(--realce); color: var(--tinta); outline: none; }
+.sd .sd-atalhos small { margin-left: auto; font-size: 11.5px; font-weight: 600; color: var(--tinta-fraca); font-variant-numeric: tabular-nums; }
+.sd .sd-ok { width: 16px; height: 16px; margin-left: 8px; color: var(--brand-tinta); flex-shrink: 0; }
+.sd .sd-cal { width: 268px; padding: 4px 6px 2px 8px; }
+.sd .sd-cal button { display: grid; place-items: center; width: auto; height: auto; padding: 0; border: 0; border-radius: 6px; background: none; box-shadow: none; font-size: 12.5px; font-weight: 500; color: var(--tinta-corpo); }
+.sd .sd-cal button:hover { background: var(--realce); color: var(--tinta); }
+.sd .sd-cal button:focus-visible { outline: 2px solid var(--brand); outline-offset: -2px; }
+.sd .sd-cab { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px; }
+.sd .sd-cal .sd-nav { width: 30px; height: 30px; color: var(--tinta-suave); }
+.sd .sd-nav svg { width: 16px; height: 16px; }
+.sd .sd-cal .sd-tit { height: 30px; padding: 0 10px; font-weight: 700; font-size: 13px; color: var(--tinta); }
+.sd span.sd-tit { display: grid; place-items: center; }
+.sd .sd-sem, .sd .sd-dias { display: grid; grid-template-columns: repeat(7, 1fr); }
+.sd .sd-sem span { height: 26px; display: grid; place-items: center; font-size: 11px; font-weight: 600; color: var(--tinta-fraca); }
+.sd .sd-dias { row-gap: 2px; }
+.sd .sd-cal .sd-d { height: 34px; border-radius: 0; }
+.sd .sd-cal .sd-d:hover { background: none; }
+.sd .sd-d b { width: 32px; height: 32px; display: grid; place-items: center; border-radius: 8px; font-weight: 500; font-variant-numeric: tabular-nums; transition: background .1s, color .1s; }
+.sd .sd-cal .sd-d:hover b { background: var(--realce); color: var(--tinta); }
+.sd .sd-d.hoje b { font-weight: 700; color: var(--brand-tinta); box-shadow: inset 0 0 0 1px var(--borda-forte); }
+.sd .sd-d.esc b, .sd .sd-cal .sd-d.esc:hover b { background: var(--brand); color: var(--sobre-brand); font-weight: 700; box-shadow: none; }
+.sd .sd-cal .sd-d:disabled { cursor: default; }
+.sd .sd-cal .sd-d:disabled b, .sd .sd-cal .sd-d:disabled:hover b { background: none; color: var(--tinta-fraca); opacity: .45; }
+.sd .sd-grade { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; padding: 6px 0 4px; }
+.sd .sd-cal .sd-op { height: 40px; font-weight: 600; text-transform: capitalize; }
+.sd .sd-cal .sd-op.on, .sd .sd-cal .sd-op.on:hover { background: var(--brand); color: var(--sobre-brand); }
+.sd .sd-pe { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 36px; margin-top: 6px; padding: 6px 2px 0; border-top: 1px solid var(--borda-fraca); font-size: 12px; color: var(--tinta-suave); font-variant-numeric: tabular-nums; }
+.sd .sd-pe b { color: var(--tinta); font-weight: 700; }
+.sd .sd-cal .sd-limpar { padding: 4px 8px; font-weight: 600; color: var(--tinta-suave); }
+/* horário limite (só no prazo da O.S.), embaixo dos dois */
+.sd .sd-hora { width: 0; min-width: 100%; box-sizing: border-box; display: flex; align-items: center; flex-wrap: wrap; gap: 4px 6px; margin-top: 4px; padding: 8px 6px 4px; border-top: 1px solid var(--borda-fraca); }
+.sd .sd-hora .sd-rot { font-size: 11px; font-weight: 600; color: var(--tinta-suave); padding: 0 4px; margin-right: 2px; }
+.sd .sd-hora button { width: auto; padding: 5px 9px; border: 1px solid var(--borda); border-radius: 6px; background: none; font-size: 13px; font-weight: 600; color: var(--tinta-corpo); font-variant-numeric: tabular-nums; }
+.sd .sd-hora button:hover { background: var(--realce); color: var(--tinta); }
+.sd .sd-hora button.ativo { background: var(--obs-fundo); border-color: var(--obs-borda); color: var(--obs-tinta); }
+.sd .sd-hora label { display: flex; align-items: center; gap: 6px; padding: 0 4px 0 8px; color: var(--tinta-suave); font-size: 12.5px; }
+.sd .sd-hora input { width: 52px; text-align: center; border: 0; background: transparent; outline: none; color: var(--tinta); font: inherit; font-weight: 600; box-shadow: inset 0 -1px 0 var(--borda-forte); padding: 3px 0; font-variant-numeric: tabular-nums; }
+.sd .sd-hora input:focus { box-shadow: inset 0 -2px 0 var(--brand); }
+@media (max-width: 560px) {
+  .sd .sd-per { flex-direction: column; }
+  .sd .sd-atalhos { flex-direction: row; flex-wrap: wrap; gap: 4px; min-width: 0; padding: 4px 4px 8px; border-right: 0; border-bottom: 1px solid var(--borda-fraca); }
+  .sd .sd-atalhos button { width: auto; padding: 5px 10px; border: 1px solid var(--borda); border-radius: 99px; font-size: 12px; }
+  .sd .sd-ok, .sd .sd-atalhos small { display: none; }
+  .sd .sd-atalhos button.on { background: var(--tinta); border-color: var(--tinta); color: var(--superficie); }
+  .sd .sd-cal { width: 100%; padding: 6px 4px 2px; }
+}
 </style>
 </head>
 <body>
@@ -1164,7 +1189,7 @@ function abrirModalConta(conta) {
     valor: conta.valor || 0, venc: conta.vencimento || '', paga: conta.status === 'Pago',
     rep: conta.recorrente ? (conta.parcelas ? 'parc' : 'mes') : 'nao', parcelas: conta.parcelas || 10, parcelaAtual: conta.parcela || 1,
   } : { id: null, cat: 'Despesa', desc: '', fornId: null, valor: 0, venc: '', paga: false, rep: 'nao', parcelas: 10, parcelaAtual: 1 };
-  mc.erros = {}; mc.pop = null; mc.calMes = (mc.venc || HOJE).slice(0, 7);
+  mc.erros = {}; mc.pop = null; mc.sd = null;
   renderModalConta(true);
 }
 function fecharModalConta() { mc = null; modalRaiz.innerHTML = ''; document.querySelector('[data-nova]')?.focus({ preventScroll: true }); }
@@ -1175,18 +1200,86 @@ function textoVenc() {
   const rel = mc.paga ? '' : n < 0 ? `<span class="atraso">venceu há ${plural(-n, 'dia', 'dias')}</span>` : n === 0 ? '<span class="mudo">hoje</span>' : n === 1 ? '<span class="mudo">amanhã</span>' : `<span class="mudo">em ${n} dias</span>`;
   return `${SEMANA[d.getDay()].slice(0, 3)}, ${d.getDate()} de ${MESES[d.getMonth()]}${d.getFullYear() !== +HOJE.slice(0, 4) ? ' de ' + d.getFullYear() : ''} ${rel}`;
 }
+/* ===== seletor de dia: o padrão das telas novas =====
+   O mesmo desenho do filtro de período do Financeiro, escolhendo um dia só:
+   atalhos à esquerda (a data ao lado, ✓ no escolhido), calendário à direita
+   (o título leva aos meses e aos anos) e, no rodapé, o dia por extenso e
+   "Limpar". O mesmo bloco está em cada tela nova que escolhe uma data.
+   st = { sel, atalhos: [[rótulo, iso]], limpar, max, nota } — o calendário
+   guarda no próprio st o mês que está mostrando. */
+const SD_MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+const SD_SEM = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
+const sdIso = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+const sdHoje = () => sdIso(new Date());
+const sdSoma = (iso, n) => { const d = new Date(iso + 'T12:00:00'); d.setDate(d.getDate() + n); return sdIso(d); };
+const sdDdmm = iso => `${iso.slice(8)}/${iso.slice(5, 7)}`;
+const sdLonga = iso => { const d = new Date(iso + 'T12:00:00'); return `${SD_SEM[d.getDay()]}, ${d.getDate()} de ${SD_MESES[d.getMonth()]}${d.getFullYear() !== new Date().getFullYear() ? ' de ' + d.getFullYear() : ''}`; };
+const sdSvg = (d, cls = '') => `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${d}"/></svg>`;
+const SD_OK = sdSvg('M20 6 9 17l-5-5', 'sd-ok');
+function sdSexta() { let d = sdSoma(sdHoje(), 1); while (new Date(d + 'T12:00:00').getDay() !== 5) d = sdSoma(d, 1); return d; }
+// Para prazos (para a frente) e para o que já aconteceu (para trás).
+const sdAtalhosPrazo = () => { const h = sdHoje(); return [['Hoje', h], ['Amanhã', sdSoma(h, 1)], ['Depois de amanhã', sdSoma(h, 2)], ['Sexta', sdSexta()], ['Em 7 dias', sdSoma(h, 7)]]; };
+const sdAtalhosPassado = () => { const h = sdHoje(); return [['Hoje', h], ['Ontem', sdSoma(h, -1)], ['Anteontem', sdSoma(h, -2)], ['Há 7 dias', sdSoma(h, -7)]]; };
+function sdHTML(st) {
+  if (!st.base) st.base = new Date((st.sel || sdHoje()).slice(0, 7) + '-01T12:00:00');
+  st.vista = st.vista || 'dias';
+  const ats = st.atalhos.filter(([, iso]) => !st.max || !iso || iso <= st.max).map(([r, iso]) => {
+    const on = iso === (st.sel || '');
+    return `<button type="button" class="${on ? 'on' : ''}" data-sdia="${iso}"${iso ? ` title="${sdLonga(iso)}"` : ''}>${r}${iso ? `<small>${sdDdmm(iso)}</small>` : ''}${on ? SD_OK : ''}</button>`;
+  }).join('');
+  return `<div class="sd-per"><div class="sd-atalhos">${ats}</div><div class="sd-cal">${sdCal(st)}</div></div>`;
+}
+function sdCal(st) {
+  const y = st.base.getFullYear(), m = st.base.getMonth();
+  const cab = (passo, titulo, vista) => `<div class="sd-cab"><button type="button" class="sd-nav" data-sdnav="${-passo}" aria-label="Anterior">${sdSvg('m15 18-6-6 6-6')}</button>${vista ? `<button type="button" class="sd-tit" data-sdvista="${vista}">${titulo}</button>` : `<span class="sd-tit">${titulo}</span>`}<button type="button" class="sd-nav" data-sdnav="${passo}" aria-label="Próximo">${sdSvg('m9 18 6-6-6-6')}</button></div>`;
+  if (st.vista === 'meses') return cab(12, y, 'anos') + `<div class="sd-grade">${SD_MESES.map((n, i) => `<button type="button" class="sd-op ${i === m ? 'on' : ''}" data-sdmes="${i}">${n.slice(0, 3)}</button>`).join('')}</div>`;
+  if (st.vista === 'anos') {
+    const anos = Array.from({ length: 12 }, (_, i) => y - 5 + i);
+    return cab(144, `${anos[0]} – ${anos[11]}`) + `<div class="sd-grade">${anos.map(a => `<button type="button" class="sd-op ${a === y ? 'on' : ''}" data-sdano="${a}">${a}</button>`).join('')}</div>`;
+  }
+  const hoje = sdHoje();
+  let cel = '';
+  for (let i = new Date(y, m, 1).getDay(); i > 0; i--) cel += '<span></span>';
+  for (let d = 1, n = new Date(y, m + 1, 0).getDate(); d <= n; d++) {
+    const iso = sdIso(new Date(y, m, d)), fora = st.max && iso > st.max;
+    cel += `<button type="button" class="sd-d ${iso === hoje ? 'hoje' : ''} ${iso === st.sel ? 'esc' : ''}" data-sdia="${iso}" aria-label="${sdLonga(iso)}" aria-pressed="${iso === st.sel}"${fora ? ' disabled' : ''}><b>${d}</b></button>`;
+  }
+  const pe = st.nota ? `<span>${st.nota}</span>` : `<span>${st.sel ? `<b>${sdLonga(st.sel)}</b>` : 'Escolha o dia'}</span>`;
+  return cab(1, `${SD_MESES[m][0].toUpperCase() + SD_MESES[m].slice(1)} de ${y}`, 'meses')
+    + `<div class="sd-sem">${SD_SEM.map(s => `<span>${s}</span>`).join('')}</div><div class="sd-dias">${cel}</div>`
+    + `<div class="sd-pe">${pe}${st.limpar && st.sel ? '<button type="button" class="sd-limpar" data-sdia="">Limpar</button>' : ''}</div>`;
+}
+// O clique dentro do seletor: anda pelos meses e anos (redesenhar) ou escolhe o
+// dia (escolher). Devolve true quando o clique era dele. O clique redesenha e o
+// alvo sai do documento: parar aqui evita que o "clique fora" feche o popover.
+function sdClique(e, st, redesenhar, escolher) {
+  const t = e.target.closest?.('[data-sdnav], [data-sdvista], [data-sdmes], [data-sdano], [data-sdia]');
+  if (!t || t.disabled) return false;
+  e.stopPropagation();
+  if (t.dataset.sdnav) { st.base.setMonth(st.base.getMonth() + +t.dataset.sdnav); redesenhar(); return true; }
+  if (t.dataset.sdvista) { st.vista = t.dataset.sdvista; redesenhar(); return true; }
+  if (t.dataset.sdmes) { st.base.setMonth(+t.dataset.sdmes); st.vista = 'dias'; redesenhar(); return true; }
+  if (t.dataset.sdano) { st.base.setFullYear(+t.dataset.sdano); st.vista = 'meses'; redesenhar(); return true; }
+  escolher(t.dataset.sdia);
+  return true;
+}
+// Horário digitado: "1630" → "16:30", "9" → "09:00"; o que não for hora volta vazio.
+function sdHora(txt) {
+  const d = String(txt).replace(/\D/g, '');
+  if (!d) return '';
+  const h = d.length <= 2 ? d : d.length === 3 ? d.slice(0, 1) : d.slice(0, 2), m = d.length <= 2 ? '00' : d.slice(-2);
+  return +h <= 23 && +m <= 59 ? `${h.padStart(2, '0')}:${m}` : '';
+}
+// Enquanto digita, os dois pontos entram sozinhos.
+const sdMascaraHora = el => { const d = el.value.replace(/\D/g, '').slice(0, 4); el.value = d.length > 2 ? `${d.slice(0, 2)}:${d.slice(2)}` : d; };
+
+// Vencimento: o seletor de dia padrão. Atalhos: hoje, amanhã e os próximos
+// dias de vencimento mais comuns (5, 10, 15 e 20).
 function calendario() {
-  const [a, m] = mc.calMes.split('-').map(Number);
-  const primeiro = new Date(a, m - 1, 1), inicio = new Date(a, m - 1, 1 - primeiro.getDay());
-  const dias = Array.from({ length: 42 }, (_, i) => { const d = new Date(inicio); d.setDate(inicio.getDate() + i); return d; });
-  // atalhos: hoje, amanhã e os próximos dias de vencimento mais comuns
   const proximoDia = dia => { const h = dataLocal(HOJE); const d = new Date(h.getFullYear(), h.getMonth(), dia); if (d <= h) d.setMonth(d.getMonth() + 1); return isoDe(d); };
-  const atalhos = [['Hoje', HOJE], ['Amanhã', somarDias(HOJE, 1)], ...[5, 10, 15, 20].map(n => { const iso = proximoDia(n); return [`dia ${n} (${MESES_CURTOS[+iso.slice(5, 7) - 1]})`, iso]; })];
-  return `<div class="cal" role="dialog" aria-label="Vencimento">
-    <div class="cal-atalhos">${atalhos.map(([r, iso]) => `<button data-mc-dia="${iso}">${r}</button>`).join('')}</div>
-    <div class="cal-cab"><button class="ib" data-mc-cal="-1" aria-label="Mês anterior">${ico('chevron-left', 'ico ico-s')}</button><b>${MESES[m - 1].replace(/^./, x => x.toUpperCase())} de ${a}</b><button class="ib" data-mc-cal="1" aria-label="Próximo mês">${ico('chevron-right', 'ico ico-s')}</button></div>
-    <div class="cal-grade">${['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map(x => `<span class="sem">${x}</span>`).join('')}${dias.map(d => { const iso = isoDe(d); return `<button data-mc-dia="${iso}" class="${d.getMonth() !== m - 1 ? 'fora' : ''} ${iso === HOJE ? 'hoje' : ''} ${iso === mc.venc ? 'sel' : ''}" aria-label="${d.getDate()} de ${MESES[d.getMonth()]}">${d.getDate()}</button>`; }).join('')}</div>
-  </div>`;
+  if (!mc.sd) mc.sd = {};
+  Object.assign(mc.sd, { sel: mc.venc || '', atalhos: [['Hoje', HOJE], ['Amanhã', somarDias(HOJE, 1)], ...[5, 10, 15, 20].map(n => [`Dia ${n}`, proximoDia(n)])] });
+  return `<div class="sd sd-pop" role="dialog" aria-label="Vencimento">${sdHTML(mc.sd)}</div>`;
 }
 function listaTitulo() {
   if (mc.pop !== 'lista') return '';
@@ -1367,7 +1460,7 @@ function salvarModalConta() {
 function acaoModal(a, el) {
   if (a === 'fechar') return fecharModalConta();
   if (a === 'salvar') return salvarModalConta();
-  if (a === 'cal') { mc.pop = mc.pop === 'cal' ? null : 'cal'; mc.calMes = (mc.venc || HOJE).slice(0, 7); return renderModalConta(); }
+  if (a === 'cal') { mc.pop = mc.pop === 'cal' ? null : 'cal'; mc.sd = null; return renderModalConta(); }
   if (a === 'paga') { mc.paga = !mc.paga; return renderModalConta(); }
   if (a === 'menos') { mc.parcelas = Math.max(2, mc.parcelas - 1); return renderModalConta(); }
   if (a === 'mais') { mc.parcelas = Math.min(120, mc.parcelas + 1); return renderModalConta(); }
@@ -1386,13 +1479,14 @@ modalRaiz.addEventListener('click', e => {
   const c = t.closest('[data-mc-cat]');
   if (c) { if (mc.cat !== c.dataset.mcCat) { mc.cat = c.dataset.mcCat; mc.fornId = null; mc.buscaForn = undefined; if (PEDE_FORN.includes(mc.cat)) mc.desc = ''; mc.pop = null; mc.erros.titulo = false; renderModalConta(); focoSemAbrir(); } return; }
   const rp = t.closest('[data-mc-rep]'); if (rp) { mc.rep = rp.dataset.mcRep; return renderModalConta(); }
-  const d = t.closest('[data-mc-dia]'); if (d) { mc.venc = d.dataset.mcDia; mc.pop = null; renderModalConta(); return document.querySelector('[data-mc="cal"]')?.focus(); }
-  const cm = t.closest('[data-mc-cal]'); if (cm) { mc.calMes = somarMes(mc.calMes, +cm.dataset.mcCal); return renderModalConta(); }
+  // O vencimento: andar pelos meses redesenha só o calendário; escolher o dia fecha.
+  if (mc?.pop === 'cal' && sdClique(e, mc.sd, () => { const c = modalRaiz.querySelector('.mc-flutua .sd-cal'); if (c) c.innerHTML = sdCal(mc.sd); posicionarFlutua(); },
+    v => { mc.venc = v; mc.pop = null; renderModalConta(); document.querySelector('[data-mc="cal"]')?.focus(); })) return;
   const sg = t.closest('[data-mc-sug]'); if (sg) return usarSugestao(porId(+sg.dataset.mcSug));
   const fo = t.closest('[data-mc-forn]');
   if (fo) { mc.fornId = +fo.dataset.mcForn; mc.buscaForn = undefined; mc.pop = null; mc.erros.titulo = false; renderModalConta(); return document.getElementById('mc-valor')?.focus(); }
   // clique fora de uma lista aberta fecha a lista
-  if (mc?.pop && !t.closest('.mc-lista, .cal, [data-mc-in]')) { mc.pop = null; mc.buscaForn = undefined; renderModalConta(); }
+  if (mc?.pop && !t.closest('.mc-lista, .sd, [data-mc-in]')) { mc.pop = null; mc.buscaForn = undefined; renderModalConta(); }
 });
 modalRaiz.addEventListener('input', e => { if (e.target.dataset.mcIn) aoDigitar(e.target); });
 modalRaiz.addEventListener('focusin', e => {
@@ -2143,60 +2237,30 @@ const notaPeriodo = (txt, alerta, acao) => `<div class="per-nota ${alerta ? 'ale
     return `${dataLonga(iso)} ${n < 0 ? `<span class="atraso">venceu há ${plural(-n, 'dia', 'dias')}</span>` : n === 0 ? '<span class="atraso">hoje</span>' : n === 1 ? '<span class="hoje">amanhã</span>' : `<span class="mudo">em ${plural(n, 'dia', 'dias')}</span>`}`;
   }
   const botaoData = (b, campo) => `<button class="prop" data-gv="data" data-campo="${campo}" aria-haspopup="dialog" aria-expanded="false">${textoData(b, campo)}</button>`;
-  function calData(c) {
-    const [a, m] = c.mes.split('-').map(Number);
-    const recuo = new Date(a, m - 1, 1).getDay();
-    const dias = Array.from({ length: 42 }, (_, i) => new Date(a, m - 1, 1 - recuo + i));
-    const atual = c.b[PROP[c.campo]] || '';
-    // O vencimento costuma ser contado da emissão; sem ela, de hoje.
-    const base = c.campo === 'prazo_pagamento' ? c.b.emissao || HOJE : '';
-    const atalhos = base ? [7, 15, 30].map(n => [`${n} dias`, somarDias(base, n)]) : [['Hoje', HOJE], ['Ontem', somarDias(HOJE, -1)]];
-    const nota = base && c.b.emissao ? `Dias contados da emissão (${ddmm(c.b.emissao)})` : '';
-    return `<div class="cal" role="dialog" aria-label="${ROT_DATA[c.campo]}">
-      <div class="cal-atalhos">${atalhos.map(([r, iso]) => `<button data-bdia="${iso}" class="${iso === atual ? 'sel' : ''}" title="${dataLonga(iso)}">${r}<small>${ddmm(iso)}</small></button>`).join('')}</div>
-      <div class="cal-cab"><button class="ib" data-bmes="-1" aria-label="Mês anterior">${SETA_E}</button><b>${MESES[m - 1].replace(/^./, x => x.toUpperCase())} de ${a}</b><button class="ib" data-bmes="1" aria-label="Próximo mês">${SETA_D}</button></div>
-      <div class="cal-grade">${['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map(x => `<span class="sem">${x}</span>`).join('')}${dias.map(d => { const iso = isoDe(d); return `<button data-bdia="${iso}" class="${d.getMonth() !== m - 1 ? 'fora' : ''} ${iso === HOJE ? 'hoje' : ''} ${iso === atual ? 'sel' : ''}" tabindex="${iso === c.foco ? 0 : -1}" aria-pressed="${iso === atual}" aria-label="${dataLonga(iso)}">${d.getDate()}</button>`; }).join('')}</div>
-      ${nota || atual ? `<div class="cal-pe"><span>${nota}</span>${atual ? '<button data-bdia="">Limpar</button>' : ''}</div>` : ''}
-    </div>`;
-  }
-  // O mesmo dia do mês no mês ao lado (31 vira o último dia de um mês menor).
-  const outroMes = (iso, n) => { const mes = somarMes(iso.slice(0, 7), n); return `${mes}-${String(Math.min(+iso.slice(8), +ultimoDia(mes + '-01').slice(8))).padStart(2, '0')}`; };
+  // O seletor de dia padrão. Atalhos: na emissão, hoje e os dias de antes; no
+  // vencimento, 7, 15 e 30 dias, contados da emissão (sem ela, de hoje).
   function abrirData(b, campo, ancora) {
     if (!ROT_DATA[campo]) return;
     const atual = b[PROP[campo]] || '';
-    const c = { b, campo, mes: (atual || HOJE).slice(0, 7), foco: atual || HOJE };
-    const pop = abrirPop(ancora, calData(c), 'pop-cal');
+    const base = campo === 'prazo_pagamento' ? b.emissao || HOJE : '';
+    const st = {
+      sel: atual, limpar: true,
+      atalhos: base ? [7, 15, 30].map(n => [`Em ${n} dias`, somarDias(base, n)]) : sdAtalhosPassado(),
+      nota: base && b.emissao ? `Dias contados da emissão (${ddmm(b.emissao)})` : '',
+    };
+    const pop = abrirPop(ancora, sdHTML(st), 'sd');
+    pop.setAttribute('role', 'dialog'); pop.setAttribute('aria-label', ROT_DATA[campo]);
     ancora.setAttribute('aria-expanded', 'true');
-    const desenhar = foco => { c.mes = c.foco.slice(0, 7); pop.innerHTML = calData(c); pop.querySelector(foco)?.focus({ preventScroll: true }); };
-    pop.addEventListener('click', e => {
-      // O clique redesenha o calendário e o alvo sai do documento: sem parar
-      // aqui, o clique "de fora" fecharia o popover.
-      e.stopPropagation();
-      const nav = e.target.closest('[data-bmes]');
-      if (nav) { c.foco = outroMes(c.foco, +nav.dataset.bmes); return desenhar(`[data-bmes="${nav.dataset.bmes}"]`); }
-      const dia = e.target.closest('[data-bdia]'); if (!dia) return;
+    pop.addEventListener('click', e => sdClique(e, st, () => { pop.querySelector('.sd-cal').innerHTML = sdCal(st); }, v => {
       fecharPop();
       // Se a gaveta redesenhou com o calendário aberto, o botão é outro.
       const alvo = ancora.isConnected ? ancora : gavetaRaiz.querySelector(`[data-campo="${campo}"]`);
       if (!alvo) return;
-      gravar(b, campo, dia.dataset.bdia, alvo);
+      gravar(b, campo, v, alvo);
       alvo.innerHTML = textoData(b, campo);
       alvo.focus({ preventScroll: true });
-    });
-    pop.addEventListener('keydown', e => {
-      const passo = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -7, ArrowDown: 7 }[e.key];
-      if (passo && e.target.closest('.cal-grade')) c.foco = somarDias(c.foco, passo);
-      else if (e.key === 'PageUp' || e.key === 'PageDown') c.foco = outroMes(c.foco, e.key === 'PageUp' ? -1 : 1);
-      else if (e.key === 'Tab') {
-        // O foco dá a volta dentro do calendário em vez de cair no fim da página.
-        const f = [...pop.querySelectorAll('button:not([tabindex="-1"])')], i = f.indexOf(document.activeElement);
-        if (e.shiftKey ? i <= 0 : i === f.length - 1) { e.preventDefault(); f[e.shiftKey ? f.length - 1 : 0].focus(); }
-        return;
-      } else return;
-      e.preventDefault(); e.stopPropagation();
-      desenhar('.cal-grade [tabindex="0"]');
-    });
-    pop.querySelector('.cal-grade [tabindex="0"]')?.focus({ preventScroll: true });
+    }));
+    (pop.querySelector('.sd-atalhos .on') || pop.querySelector('.sd-atalhos button'))?.focus({ preventScroll: true });
   }
   MODULOS.boletos = {
     gaveta: { porId: id => B.lista?.find(b => b.id === id), detalhe, rotulo: 'Boleto', attr: 'bol' },

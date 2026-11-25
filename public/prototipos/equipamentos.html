@@ -395,6 +395,59 @@ html[data-troca-tema] *, html[data-troca-tema] *::before, html[data-troca-tema] 
 @keyframes folhaEntra { from { transform: translateY(100%); } }
 @keyframes folhaSai { to { transform: translateY(100%); } }
 .c-meta { display: none !important; }
+/* seletor de dia: o padrão das telas novas — o mesmo desenho do filtro de
+   período do Financeiro, escolhendo um dia só: atalhos à esquerda, calendário
+   à direita. Tudo dentro de .sd, para não herdar os botões das listas. */
+.sd-pop { max-width: calc(100vw - 16px); padding: 4px; background: var(--superficie); border: 1px solid var(--borda); border-radius: 9px; box-shadow: var(--sombra-pop); }
+.sd .sd-per { display: flex; gap: 4px; }
+.sd .sd-atalhos { display: flex; flex-direction: column; gap: 1px; min-width: 176px; padding-right: 4px; border-right: 1px solid var(--borda-fraca); }
+.sd .sd-atalhos button { display: flex; align-items: center; gap: 9px; width: 100%; height: auto; text-align: left; padding: 7px 10px; border: 0; border-radius: 6px; background: none; box-shadow: none; font-size: 13px; font-weight: 500; color: var(--tinta-corpo); white-space: nowrap; }
+.sd .sd-atalhos button:hover, .sd .sd-atalhos button:focus-visible { background: var(--realce); color: var(--tinta); outline: none; }
+.sd .sd-atalhos small { margin-left: auto; font-size: 11.5px; font-weight: 600; color: var(--tinta-fraca); font-variant-numeric: tabular-nums; }
+.sd .sd-ok { width: 16px; height: 16px; margin-left: 8px; color: var(--brand-tinta); flex-shrink: 0; }
+.sd .sd-cal { width: 268px; padding: 4px 6px 2px 8px; }
+.sd .sd-cal button { display: grid; place-items: center; width: auto; height: auto; padding: 0; border: 0; border-radius: 6px; background: none; box-shadow: none; font-size: 12.5px; font-weight: 500; color: var(--tinta-corpo); }
+.sd .sd-cal button:hover { background: var(--realce); color: var(--tinta); }
+.sd .sd-cal button:focus-visible { outline: 2px solid var(--brand); outline-offset: -2px; }
+.sd .sd-cab { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px; }
+.sd .sd-cal .sd-nav { width: 30px; height: 30px; color: var(--tinta-suave); }
+.sd .sd-nav svg { width: 16px; height: 16px; }
+.sd .sd-cal .sd-tit { height: 30px; padding: 0 10px; font-weight: 700; font-size: 13px; color: var(--tinta); }
+.sd span.sd-tit { display: grid; place-items: center; }
+.sd .sd-sem, .sd .sd-dias { display: grid; grid-template-columns: repeat(7, 1fr); }
+.sd .sd-sem span { height: 26px; display: grid; place-items: center; font-size: 11px; font-weight: 600; color: var(--tinta-fraca); }
+.sd .sd-dias { row-gap: 2px; }
+.sd .sd-cal .sd-d { height: 34px; border-radius: 0; }
+.sd .sd-cal .sd-d:hover { background: none; }
+.sd .sd-d b { width: 32px; height: 32px; display: grid; place-items: center; border-radius: 8px; font-weight: 500; font-variant-numeric: tabular-nums; transition: background .1s, color .1s; }
+.sd .sd-cal .sd-d:hover b { background: var(--realce); color: var(--tinta); }
+.sd .sd-d.hoje b { font-weight: 700; color: var(--brand-tinta); box-shadow: inset 0 0 0 1px var(--borda-forte); }
+.sd .sd-d.esc b, .sd .sd-cal .sd-d.esc:hover b { background: var(--brand); color: var(--sobre-brand); font-weight: 700; box-shadow: none; }
+.sd .sd-cal .sd-d:disabled { cursor: default; }
+.sd .sd-cal .sd-d:disabled b, .sd .sd-cal .sd-d:disabled:hover b { background: none; color: var(--tinta-fraca); opacity: .45; }
+.sd .sd-grade { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; padding: 6px 0 4px; }
+.sd .sd-cal .sd-op { height: 40px; font-weight: 600; text-transform: capitalize; }
+.sd .sd-cal .sd-op.on, .sd .sd-cal .sd-op.on:hover { background: var(--brand); color: var(--sobre-brand); }
+.sd .sd-pe { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 36px; margin-top: 6px; padding: 6px 2px 0; border-top: 1px solid var(--borda-fraca); font-size: 12px; color: var(--tinta-suave); font-variant-numeric: tabular-nums; }
+.sd .sd-pe b { color: var(--tinta); font-weight: 700; }
+.sd .sd-cal .sd-limpar { padding: 4px 8px; font-weight: 600; color: var(--tinta-suave); }
+/* horário limite (só no prazo da O.S.), embaixo dos dois */
+.sd .sd-hora { width: 0; min-width: 100%; box-sizing: border-box; display: flex; align-items: center; flex-wrap: wrap; gap: 4px 6px; margin-top: 4px; padding: 8px 6px 4px; border-top: 1px solid var(--borda-fraca); }
+.sd .sd-hora .sd-rot { font-size: 11px; font-weight: 600; color: var(--tinta-suave); padding: 0 4px; margin-right: 2px; }
+.sd .sd-hora button { width: auto; padding: 5px 9px; border: 1px solid var(--borda); border-radius: 6px; background: none; font-size: 13px; font-weight: 600; color: var(--tinta-corpo); font-variant-numeric: tabular-nums; }
+.sd .sd-hora button:hover { background: var(--realce); color: var(--tinta); }
+.sd .sd-hora button.ativo { background: var(--obs-fundo); border-color: var(--obs-borda); color: var(--obs-tinta); }
+.sd .sd-hora label { display: flex; align-items: center; gap: 6px; padding: 0 4px 0 8px; color: var(--tinta-suave); font-size: 12.5px; }
+.sd .sd-hora input { width: 52px; text-align: center; border: 0; background: transparent; outline: none; color: var(--tinta); font: inherit; font-weight: 600; box-shadow: inset 0 -1px 0 var(--borda-forte); padding: 3px 0; font-variant-numeric: tabular-nums; }
+.sd .sd-hora input:focus { box-shadow: inset 0 -2px 0 var(--brand); }
+@media (max-width: 560px) {
+  .sd .sd-per { flex-direction: column; }
+  .sd .sd-atalhos { flex-direction: row; flex-wrap: wrap; gap: 4px; min-width: 0; padding: 4px 4px 8px; border-right: 0; border-bottom: 1px solid var(--borda-fraca); }
+  .sd .sd-atalhos button { width: auto; padding: 5px 10px; border: 1px solid var(--borda); border-radius: 99px; font-size: 12px; }
+  .sd .sd-ok, .sd .sd-atalhos small { display: none; }
+  .sd .sd-atalhos button.on { background: var(--tinta); border-color: var(--tinta); color: var(--superficie); }
+  .sd .sd-cal { width: 100%; padding: 6px 4px 2px; }
+}
 </style>
 </head>
 <body>
@@ -872,12 +925,89 @@ function popFiltroH(anc, chave) {
     if (est.pop) est.pop.ancora = tela.querySelector(`[data-pop="f-${chave}"]`);
   });
 }
+/* ===== seletor de dia: o padrão das telas novas =====
+   O mesmo desenho do filtro de período do Financeiro, escolhendo um dia só:
+   atalhos à esquerda (a data ao lado, ✓ no escolhido), calendário à direita
+   (o título leva aos meses e aos anos) e, no rodapé, o dia por extenso e
+   "Limpar". O mesmo bloco está em cada tela nova que escolhe uma data.
+   st = { sel, atalhos: [[rótulo, iso]], limpar, max, nota } — o calendário
+   guarda no próprio st o mês que está mostrando. */
+const SD_MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+const SD_SEM = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
+const sdIso = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+const sdHoje = () => sdIso(new Date());
+const sdSoma = (iso, n) => { const d = new Date(iso + 'T12:00:00'); d.setDate(d.getDate() + n); return sdIso(d); };
+const sdDdmm = iso => `${iso.slice(8)}/${iso.slice(5, 7)}`;
+const sdLonga = iso => { const d = new Date(iso + 'T12:00:00'); return `${SD_SEM[d.getDay()]}, ${d.getDate()} de ${SD_MESES[d.getMonth()]}${d.getFullYear() !== new Date().getFullYear() ? ' de ' + d.getFullYear() : ''}`; };
+const sdSvg = (d, cls = '') => `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${d}"/></svg>`;
+const SD_OK = sdSvg('M20 6 9 17l-5-5', 'sd-ok');
+function sdSexta() { let d = sdSoma(sdHoje(), 1); while (new Date(d + 'T12:00:00').getDay() !== 5) d = sdSoma(d, 1); return d; }
+// Para prazos (para a frente) e para o que já aconteceu (para trás).
+const sdAtalhosPrazo = () => { const h = sdHoje(); return [['Hoje', h], ['Amanhã', sdSoma(h, 1)], ['Depois de amanhã', sdSoma(h, 2)], ['Sexta', sdSexta()], ['Em 7 dias', sdSoma(h, 7)]]; };
+const sdAtalhosPassado = () => { const h = sdHoje(); return [['Hoje', h], ['Ontem', sdSoma(h, -1)], ['Anteontem', sdSoma(h, -2)], ['Há 7 dias', sdSoma(h, -7)]]; };
+function sdHTML(st) {
+  if (!st.base) st.base = new Date((st.sel || sdHoje()).slice(0, 7) + '-01T12:00:00');
+  st.vista = st.vista || 'dias';
+  const ats = st.atalhos.filter(([, iso]) => !st.max || !iso || iso <= st.max).map(([r, iso]) => {
+    const on = iso === (st.sel || '');
+    return `<button type="button" class="${on ? 'on' : ''}" data-sdia="${iso}"${iso ? ` title="${sdLonga(iso)}"` : ''}>${r}${iso ? `<small>${sdDdmm(iso)}</small>` : ''}${on ? SD_OK : ''}</button>`;
+  }).join('');
+  return `<div class="sd-per"><div class="sd-atalhos">${ats}</div><div class="sd-cal">${sdCal(st)}</div></div>`;
+}
+function sdCal(st) {
+  const y = st.base.getFullYear(), m = st.base.getMonth();
+  const cab = (passo, titulo, vista) => `<div class="sd-cab"><button type="button" class="sd-nav" data-sdnav="${-passo}" aria-label="Anterior">${sdSvg('m15 18-6-6 6-6')}</button>${vista ? `<button type="button" class="sd-tit" data-sdvista="${vista}">${titulo}</button>` : `<span class="sd-tit">${titulo}</span>`}<button type="button" class="sd-nav" data-sdnav="${passo}" aria-label="Próximo">${sdSvg('m9 18 6-6-6-6')}</button></div>`;
+  if (st.vista === 'meses') return cab(12, y, 'anos') + `<div class="sd-grade">${SD_MESES.map((n, i) => `<button type="button" class="sd-op ${i === m ? 'on' : ''}" data-sdmes="${i}">${n.slice(0, 3)}</button>`).join('')}</div>`;
+  if (st.vista === 'anos') {
+    const anos = Array.from({ length: 12 }, (_, i) => y - 5 + i);
+    return cab(144, `${anos[0]} – ${anos[11]}`) + `<div class="sd-grade">${anos.map(a => `<button type="button" class="sd-op ${a === y ? 'on' : ''}" data-sdano="${a}">${a}</button>`).join('')}</div>`;
+  }
+  const hoje = sdHoje();
+  let cel = '';
+  for (let i = new Date(y, m, 1).getDay(); i > 0; i--) cel += '<span></span>';
+  for (let d = 1, n = new Date(y, m + 1, 0).getDate(); d <= n; d++) {
+    const iso = sdIso(new Date(y, m, d)), fora = st.max && iso > st.max;
+    cel += `<button type="button" class="sd-d ${iso === hoje ? 'hoje' : ''} ${iso === st.sel ? 'esc' : ''}" data-sdia="${iso}" aria-label="${sdLonga(iso)}" aria-pressed="${iso === st.sel}"${fora ? ' disabled' : ''}><b>${d}</b></button>`;
+  }
+  const pe = st.nota ? `<span>${st.nota}</span>` : `<span>${st.sel ? `<b>${sdLonga(st.sel)}</b>` : 'Escolha o dia'}</span>`;
+  return cab(1, `${SD_MESES[m][0].toUpperCase() + SD_MESES[m].slice(1)} de ${y}`, 'meses')
+    + `<div class="sd-sem">${SD_SEM.map(s => `<span>${s}</span>`).join('')}</div><div class="sd-dias">${cel}</div>`
+    + `<div class="sd-pe">${pe}${st.limpar && st.sel ? '<button type="button" class="sd-limpar" data-sdia="">Limpar</button>' : ''}</div>`;
+}
+// O clique dentro do seletor: anda pelos meses e anos (redesenhar) ou escolhe o
+// dia (escolher). Devolve true quando o clique era dele. O clique redesenha e o
+// alvo sai do documento: parar aqui evita que o "clique fora" feche o popover.
+function sdClique(e, st, redesenhar, escolher) {
+  const t = e.target.closest?.('[data-sdnav], [data-sdvista], [data-sdmes], [data-sdano], [data-sdia]');
+  if (!t || t.disabled) return false;
+  e.stopPropagation();
+  if (t.dataset.sdnav) { st.base.setMonth(st.base.getMonth() + +t.dataset.sdnav); redesenhar(); return true; }
+  if (t.dataset.sdvista) { st.vista = t.dataset.sdvista; redesenhar(); return true; }
+  if (t.dataset.sdmes) { st.base.setMonth(+t.dataset.sdmes); st.vista = 'dias'; redesenhar(); return true; }
+  if (t.dataset.sdano) { st.base.setFullYear(+t.dataset.sdano); st.vista = 'meses'; redesenhar(); return true; }
+  escolher(t.dataset.sdia);
+  return true;
+}
+// Horário digitado: "1630" → "16:30", "9" → "09:00"; o que não for hora volta vazio.
+function sdHora(txt) {
+  const d = String(txt).replace(/\D/g, '');
+  if (!d) return '';
+  const h = d.length <= 2 ? d : d.length === 3 ? d.slice(0, 1) : d.slice(0, 2), m = d.length <= 2 ? '00' : d.slice(-2);
+  return +h <= 23 && +m <= 59 ? `${h.padStart(2, '0')}:${m}` : '';
+}
+// Enquanto digita, os dois pontos entram sozinhos.
+const sdMascaraHora = el => { const d = el.value.replace(/\D/g, '').slice(0, 4); el.value = d.length > 2 ? `${d.slice(0, 2)}:${d.slice(2)}` : d; };
+
 function popData(anc) {
-  const f = est.form; const ops = [[HOJE, 'Hoje'], [somaDias(HOJE, -1), 'Ontem'], [somaDias(HOJE, -2), 'Anteontem']];
-  const pop = abrirPop(anc, ops.map(([d, t]) => `<button data-v="${d}">${t}<span class="sub">${ddmm(d)}</span>${marca(f.data === d)}</button>`).join('')
-    + `<hr><label class="livre">${ico('calendar', 'ico ico-s')}Outra data: <input type="date" data-data value="${esc(f.data)}" max="${HOJE}"></label>`);
-  pop.addEventListener('click', e => { const b = e.target.closest('button[data-v]'); if (!b) return; f.data = b.dataset.v; fecharPop(); renderGaveta(); });
-  pop.querySelector('[data-data]').addEventListener('change', e => { if (!e.target.value) return; f.data = e.target.value > HOJE ? HOJE : e.target.value; fecharPop(); renderGaveta(); });
+  // O seletor de dia padrão; o que já aconteceu não passa de hoje.
+  const f = est.form, st = { sel: f.data, atalhos: sdAtalhosPassado(), max: HOJE };
+  const pop = abrirPop(anc, sdHTML(st));
+  pop.classList.add('sd'); pop.setAttribute('role', 'dialog'); pop.setAttribute('aria-label', 'Escolher a data');
+  const r = pop.getBoundingClientRect();
+  if (r.right > innerWidth - 8) pop.style.left = Math.max(8, innerWidth - r.width - 8) + 'px';
+  if (r.bottom > innerHeight - 8) pop.style.top = Math.max(8, innerHeight - r.height - 8) + 'px';
+  (pop.querySelector('.sd-atalhos .on') || pop.querySelector('.sd-atalhos button'))?.focus();
+  pop.addEventListener('click', e => sdClique(e, st, () => { pop.querySelector('.sd-cal').innerHTML = sdCal(st); }, v => { f.data = v || HOJE; fecharPop(); renderGaveta(); }));
 }
 function popTipo(anc) {
   const c = est.gaveta.cad;
