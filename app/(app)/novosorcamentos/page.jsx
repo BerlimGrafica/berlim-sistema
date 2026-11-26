@@ -1,7 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from 'react';
 import { useSessao } from '@/context/SessaoContext';
-import { useOsModal } from '@/context/OsModalContext';
 import { useOrcamentos } from '@/context/OrcamentosContext';
 import { useClientes } from '@/context/ClientesContext';
 import { itensDoOrcamento, observacoesDoOrcamento } from '@/lib/utils/servico';
@@ -9,6 +8,7 @@ import { mascararCliente, obterDataAtual } from '@/lib/utils/formatters';
 import { corDoNome } from '@/lib/prototipos/coresDoNome';
 import LogoCarregando from '@/components/ui/LogoCarregando';
 import { prepararNoSistema } from '@/lib/prototipos/noSistema';
+import { useOrcamentoPorCima } from '@/components/prototipos/OrcamentoPorCima';
 
 // Protótipo da nova tela de orçamentos (os comuns, "formalizados"), no padrão
 // do DESIGN.md. As mesmas funções da tela de hoje (components/OrcamentosTab.jsx):
@@ -18,9 +18,10 @@ import { prepararNoSistema } from '@/lib/prototipos/noSistema';
 // os orçamentos já estão na memória do sistema (OrcamentosContext carrega a
 // tabela com os itens) e entram aqui, no lugar do marcador /*ORCAMENTOS*/, sem
 // consulta nova. O protótipo não grava nada: cada ação pede por mensagem e a
-// página chama a MESMA função da tela de hoje — o modal de orçamento (novo e
-// editar), o modal de O.S. (aprovar), a impressão e a exclusão, que pede
-// confirmação como hoje.
+// página chama a MESMA função da tela de hoje — o modal de O.S. (aprovar), a
+// impressão e a exclusão, que pede confirmação como hoje. Novo e editar abrem
+// por cima o modal novo de orçamento (components/prototipos/OrcamentoPorCima),
+// que grava pelo mesmo caminho do modal de hoje.
 const iso = ts => {
     if (!ts) return '';
     const d = new Date(ts);
@@ -29,11 +30,8 @@ const iso = ts => {
 
 export default function Page() {
     const { usuario, isAdmin, isDemo } = useSessao();
-    const { setBuscaCliente, setItensPedido, setNovoPedido } = useOsModal();
-    const {
-        orcamentosFormalizados, setOrcamentoFormalizadoEmEdicao, setModalOrcamentoFormalizadoAberto,
-        abrirEdicaoOrcamento, transformarEmOS, baixarPDFOrcamento, excluirOrcamentoFormalizado,
-    } = useOrcamentos();
+    const { orcamentosFormalizados, transformarEmOS, baixarPDFOrcamento, excluirOrcamentoFormalizado } = useOrcamentos();
+    const { abrir: abrirOrcamento, modal: modalOrcamento } = useOrcamentoPorCima();
     const { isClienteProblema } = useClientes();
     const [modelo, setModelo] = useState(null);
     const iframeRef = useRef(null);
@@ -53,24 +51,16 @@ export default function Page() {
             if (!quadro || e.source !== quadro.contentWindow) return;
             const msg = e.data || {};
             const orc = Number.isInteger(msg.id) ? orcamentosFormalizados.find(o => o.id === msg.id) : null;
-            if (msg.tipo === 'novo-orcamento') {
-                quadro.blur();
-                setOrcamentoFormalizadoEmEdicao(null);
-                setBuscaCliente('');
-                setItensPedido([]);
-                setNovoPedido({ cliente: '', cliente_id: null, servico: '', valor_total: '', status: 'Orçamento', data_pedido: obterDataAtual(), prazo: '', responsavel: '', entrega: false });
-                setModalOrcamentoFormalizadoAberto(true);
-                return;
-            }
+            if (msg.tipo === 'novo-orcamento') { quadro.blur(); abrirOrcamento(null); return; }
             if (!orc) return;
-            if (msg.tipo === 'editar-orcamento') { quadro.blur(); abrirEdicaoOrcamento(orc); }
+            if (msg.tipo === 'editar-orcamento') { quadro.blur(); abrirOrcamento(orc); }
             if (msg.tipo === 'aprovar-orcamento') { quadro.blur(); transformarEmOS(orc); }
             if (msg.tipo === 'imprimir-orcamento') baixarPDFOrcamento(orc);
             if (msg.tipo === 'excluir-orcamento' && isAdmin) { quadro.blur(); excluirOrcamentoFormalizado(orc.id); }
         }
         window.addEventListener('message', aoReceber);
         return () => window.removeEventListener('message', aoReceber);
-    }, [orcamentosFormalizados, isAdmin, setOrcamentoFormalizadoEmEdicao, setBuscaCliente, setItensPedido, setNovoPedido, setModalOrcamentoFormalizadoAberto, abrirEdicaoOrcamento, transformarEmOS, baixarPDFOrcamento, excluirOrcamentoFormalizado]);
+    }, [orcamentosFormalizados, isAdmin, abrirOrcamento, transformarEmOS, baixarPDFOrcamento, excluirOrcamentoFormalizado]);
 
     if (!modelo) {
         return <div className="min-h-[60vh] grid place-items-center"><LogoCarregando mostrarTexto texto="Carregando protótipo" /></div>;
@@ -100,11 +90,14 @@ export default function Page() {
     const html = prepararNoSistema(modelo.replace('/*ORCAMENTOS*/', `const DADOS = ${json};`));
 
     return (
-        <iframe
-            ref={iframeRef}
-            title="Protótipo da nova tela de orçamentos"
-            srcDoc={html}
-            className="absolute inset-0 w-full h-full border-0"
-        />
+        <>
+            <iframe
+                ref={iframeRef}
+                title="Protótipo da nova tela de orçamentos"
+                srcDoc={html}
+                className="absolute inset-0 w-full h-full border-0"
+            />
+            {modalOrcamento}
+        </>
     );
 }

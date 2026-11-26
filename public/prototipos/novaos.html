@@ -303,6 +303,13 @@ html[data-troca-tema] *, html[data-troca-tema] *::before, html[data-troca-tema] 
 .pf-campos .sel-in .ico:not(.chev) { color: var(--fin); }
 .pf.estorno .pf-campos .sel-in .ico:not(.chev) { color: var(--perigo); }
 .pf-valor .linha-in { font-size: 15px; font-weight: 700; }
+/* orçamento: o prazo de produção, com os prazos mais pedidos */
+.prazo-prod { padding-top: 10px; --foco: var(--dados); }
+.prazo-prod .linha-in { font-weight: 600; }
+.prazo-chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 10px; }
+.prazo-chips button { padding: 4px 9px; border: 1px solid var(--borda); border-radius: 99px; background: var(--superficie); font-size: 11.5px; font-weight: 600; color: var(--tinta-corpo); white-space: nowrap; transition: background .12s, border-color .12s, color .12s; }
+.prazo-chips button:hover { border-color: var(--borda-forte); color: var(--tinta); }
+.prazo-chips button[aria-pressed="true"] { background: var(--tinta); border-color: var(--tinta); color: var(--superficie); }
 /* atalhos do valor: 50% e o que falta, um clique troca o valor */
 /* uma linha inteira da grade, alinhada à direita: fica logo embaixo do Valor */
 .pf-atalhos { grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: 4px; margin-top: -6px; }
@@ -595,6 +602,14 @@ const POR_CIMA = typeof OS_REAL !== 'undefined';
 // O que quem está logado pode fazer (as mesmas regras do modal de hoje).
 const PERM = POR_CIMA && typeof PERMISSOES !== 'undefined' && PERMISSOES.status
   ? PERMISSOES : { status: [...STATUS_PRODUCAO, ...STATUS_FINAL], podeFinalizar: true, trancado: false };
+// Orçamento formalizado (OS_REAL.orcamento, ou #orcamento no protótipo solto):
+// o mesmo modal, sem o que é só da O.S. — status, responsável, prazo com data,
+// entrega e pagamentos —, com o prazo de produção em texto (ele só conta depois
+// de aprovado) e o total. Grava pedindo 'salvar-orcamento'.
+const ORC = POR_CIMA ? !!OS_REAL.orcamento : location.hash.includes('orcamento');
+const PRAZOS_PRODUCAO = ['1 dia útil', '2 dias úteis', '3 dias úteis', '5 dias úteis', '7 dias úteis', '10 dias úteis'];
+// Como os avisos se referem ao que está aberto.
+const DOC = ORC ? { neste: 'neste orçamento', no: 'no orçamento' } : { neste: 'nesta O.S.', no: 'na O.S.' };
 
 // As datas ficam guardadas como "2026-10-27" e só viram texto na tela: "hoje,
 // 27 out", "qua, 29 out" e, nos pagamentos, "27 out". Ano só quando não é o
@@ -649,7 +664,7 @@ const os = POR_CIMA ? {
   venda: OS_REAL.venda || HOJE,
   prazo: OS_REAL.prazo || '', prazoHora: OS_REAL.hora || '',
   status: OS_REAL.status, resp: OS_REAL.resp, entrega: OS_REAL.entrega,
-  itens: OS_REAL.itens, pags: OS_REAL.pags,
+  itens: OS_REAL.itens, pags: OS_REAL.pags, prazoProd: OS_REAL.prazoProducao || '',
 } : {
   modo: 'nova',
   cliente: CLIENTES[0],
@@ -660,7 +675,7 @@ const os = POR_CIMA ? {
     { prodId: 42, nome: prod(42)?.[1] || 'BANNER - ILHÓS', esp: '1 Banner | 90x120cm | Lona 440g | Ilhós nos cantos', local: 'Futura', bruto: 150, desc: 10 },
     { prodId: 24, nome: prod(24)?.[1] || 'ADESIVO DE RECORTE', esp: '20 un. | 30x30cm | Vinil branco', local: 'Berlim', bruto: 96, desc: 0 },
   ],
-  pags: [{ forma: 'PIX', valor: 200, data: HOJE, inst: 'Itaú', band: '', parc: 1 }],
+  pags: ORC ? [] : [{ forma: 'PIX', valor: 200, data: HOJE, inst: 'Itaú', band: '', parc: 1 }], prazoProd: '',
 };
 const prazoDias = () => os.prazo ? diasAte(os.prazo) : null;
 let edicao = { aberta: os.itens.length === 0, idx: null }; // linha de item aberta (idx null = item novo); abre sozinha só com a O.S. vazia
@@ -798,6 +813,17 @@ function renderDados() {
 }
 
 /* ===== pagamentos ===== */
+// Orçamento: o prazo de produção (o campo e os prazos mais pedidos) e, no lugar
+// dos pagamentos, só o total.
+function renderPrazoProd() {
+  const inp = document.getElementById('prazo-prod');
+  if (inp && document.activeElement !== inp) inp.value = os.prazoProd;
+  document.querySelectorAll('[data-prazo-prod]').forEach(b => b.setAttribute('aria-pressed', b.dataset.prazoProd === os.prazoProd.trim()));
+}
+function renderTotalOrc() {
+  document.getElementById('fin').innerHTML = `<div class="total-rot">Total do orçamento</div><div class="total num"><small>R$</small>${brl(totalOS())}</div>`;
+  document.getElementById('meta-fin').innerHTML = '';
+}
 function abrirPagamento() {
   const s = saldo();
   pf = { forma: 'PIX', valor: s > 0 ? brl(s) : '', tocado: false, data: HOJE, inst: 'Itaú', band: 'Visa', parc: 1, lote: {}, aloc: {} };
@@ -813,6 +839,7 @@ function atalhosValor(estorno) {
   return `<div class="pf-atalhos">${ops.map(([r, v]) => `<button type="button" data-pf-valor="${v}" aria-pressed="${Math.round(v * 100) === atual}">${r}</button>`).join('')}</div>`;
 }
 function renderFin() {
+  if (ORC) return renderTotalOrc();
   const t = totalOS(), p = pago(), s = saldo();
   const lista = os.pags.length ? os.pags.map((g, k) => {
     // Em lote: a parte desta O.S. e, embaixo, o pagamento inteiro e as outras
@@ -966,14 +993,15 @@ function trocarOS(id) {
 
 /* ===== render geral ===== */
 function render(foco) {
-  renderCliente(); renderItens(); renderDados(); renderFin(); renderCarimbo();
-  document.getElementById('tit').textContent = os.modo === 'edita' ? `O.S. #${os.id || 18342}` : 'Nova O.S.';
+  renderCliente(); renderItens(); if (ORC) renderPrazoProd(); else renderDados(); renderFin(); renderCarimbo();
+  document.getElementById('tit').textContent = ORC ? (os.modo === 'edita' ? `Orçamento #${os.id || 9241}` : 'Novo orçamento')
+    : os.modo === 'edita' ? `O.S. #${os.id || 18342}` : 'Nova O.S.';
   const selo = document.getElementById('selo');
   selo.textContent = PERM.trancado ? 'Trancada' : os.modo === 'edita' ? 'Editando' : POR_CIMA ? 'Nova' : 'Rascunho';
   selo.classList.toggle('trancada', !!PERM.trancado);
-  document.getElementById('txt-salvar').textContent = salvando ? 'Salvando…' : os.modo === 'edita' ? 'Atualizar' : 'Salvar O.S.';
+  document.getElementById('txt-salvar').textContent = salvando ? 'Salvando…' : os.modo === 'edita' ? 'Atualizar' : ORC ? 'Salvar orçamento' : 'Salvar O.S.';
   document.querySelectorAll('[data-salvar], #finalizar').forEach(b => { b.disabled = salvando; });
-  document.getElementById('finalizar').hidden = !PERM.podeFinalizar || os.status === 'Finalizado';
+  document.getElementById('finalizar').hidden = ORC || !PERM.podeFinalizar || os.status === 'Finalizado';
   lucide.createIcons();
   if (foco) document.querySelector(foco)?.focus();
 }
@@ -1316,13 +1344,13 @@ addEventListener('message', e => {
 function salvar(imprimir = false, statusForcado = null) {
   if (salvando || PERM.trancado) return;
   // Uma O.S. nova precisa de pelo menos um item: sem ele seria uma O.S. de R$ 0.
-  if (os.modo === 'nova' && !os.itens.length && POR_CIMA) { toast('Inclua pelo menos um item na O.S.', true); return; }
+  if (os.modo === 'nova' && !os.itens.length && POR_CIMA) { toast(`Inclua pelo menos um item ${DOC.no}.`, true); return; }
   const pend = [];
   if (rascunhoItemSujo()) pend.push(`• Item do orçamento: falta clicar em "${edicao.idx === null ? 'Inserir item no orçamento' : 'Salvar alterações'}"`);
   if (pf && pf.tocado && lerValor(pf.valor) > 0) pend.push('• Novo pagamento: falta clicar em "Registrar pagamento"');
   const seguir = () => confirmarBalcao(() => enviarOS(imprimir, statusForcado));
   if (!pend.length) return seguir();
-  abrirSub('Ficou algo de fora', `<p>Há informação digitada que ainda não entrou nesta O.S.:\n\n${pend.join('\n')}\n\nSalvar assim mesmo? O que está digitado será descartado.</p>`, 'Salvar assim mesmo', () => { setTimeout(seguir); });
+  abrirSub('Ficou algo de fora', `<p>Há informação digitada que ainda não entrou ${DOC.neste}:\n\n${pend.join('\n')}\n\nSalvar assim mesmo? O que está digitado será descartado.</p>`, 'Salvar assim mesmo', () => { setTimeout(seguir); });
 }
 // Nome digitado sem escolher ninguém da lista: ou é venda de balcão (legítimo)
 // ou esqueceram de escolher. Só quem está atendendo sabe — pergunta. Campo
@@ -1330,10 +1358,12 @@ function salvar(imprimir = false, statusForcado = null) {
 function nomeDoCliente() { return (os.cliente ? os.cliente.nome : document.getElementById('cli').value).trim(); }
 function confirmarBalcao(seguir) {
   if (!POR_CIMA || !nomeDoCliente() || os.cliente?.id) return seguir();
+  if (ORC) return abrirSub('Cliente sem cadastro', '<p>Nenhum cliente do cadastro foi escolhido para este orçamento.\n\nSalvar assim mesmo? O nome digitado continua no orçamento, mas ele não fica vinculado ao cadastro — sem telefone no PDF e sem aviso de cliente problemático.\n\nPara vincular, volte e escolha o cliente na lista.</p>', 'Salvar assim mesmo', () => { setTimeout(seguir); });
   abrirSub('Cliente sem cadastro', `<p>Nenhum cliente do cadastro foi escolhido para esta O.S.\n\nSalvar como venda de balcão? O nome digitado continua na O.S. como referência, mas ela não entra nos pagamentos em lote nem no ranking desse cliente.\n\nPara vincular, volte e escolha o cliente na lista.</p>`, 'Salvar como balcão', () => { setTimeout(seguir); });
 }
 async function enviarOS(imprimir = false, statusForcado = null) {
-  if (!POR_CIMA) { toast(os.modo === 'edita' ? 'O.S. atualizada' : 'O.S. salva'); return; }
+  if (!POR_CIMA) { toast(ORC ? 'Orçamento salvo' : os.modo === 'edita' ? 'O.S. atualizada' : 'O.S. salva'); return; }
+  if (ORC) return enviarOrcamento(imprimir);
   if (salvando) return;
   salvando = true; render();
   const centavos = v => Math.round((Number(v) || 0) * 100);
@@ -1356,6 +1386,26 @@ async function enviarOS(imprimir = false, statusForcado = null) {
   render();
 }
 
+// O orçamento vai inteiro para a página, que grava pelo mesmo caminho do modal
+// de hoje (gravarOrcamento). Um orçamento novo que gravou só o cabeçalho passa
+// a ser a edição dele, como na O.S.
+async function enviarOrcamento(imprimir) {
+  if (salvando) return;
+  salvando = true; render();
+  const centavos = v => Math.round((Number(v) || 0) * 100);
+  const r = await pedirAoSistema('salvar-orcamento', {
+    imprimir,
+    orc: {
+      cliente: { id: os.cliente?.id || null, nome: nomeDoCliente(), tel: os.cliente?.tel || '' },
+      prazoProd: os.prazoProd.trim(), obs: document.getElementById('obs').value,
+      itens: os.itens.map(i => ({ prodId: i.prodId || null, nome: i.nome || '', esp: i.esp, local: i.local || 'Berlim', bruto: centavos(i.bruto), desc: i.desc || 0, final: centavos(valorItem(i)) })),
+    },
+  });
+  salvando = false;
+  if (r.viraEdicao) { os.modo = 'edita'; os.id = r.viraEdicao; }
+  render();
+}
+
 // Fechar (X, Esc, clique no véu, voltar do navegador): com algo mexido,
 // pergunta antes de descartar.
 let retratoInicial = '';
@@ -1363,7 +1413,7 @@ const retrato = () => JSON.stringify([os, document.getElementById('obs').value, 
 function fecharPorCima() {
   if (document.querySelector('.janela')) return;
   if (PERM.trancado || salvando || retrato() === retratoInicial) return parent.postMessage({ tipo: 'fechar-os' }, '/');
-  abrirSub('Sair sem salvar?', '<p>O que foi mexido nesta O.S. ainda não foi salvo e será descartado.</p>', 'Descartar', () => { parent.postMessage({ tipo: 'fechar-os' }, '/'); });
+  abrirSub('Sair sem salvar?', `<p>O que foi mexido ${DOC.neste} ainda não foi salvo e será descartado.</p>`, 'Descartar', () => { parent.postMessage({ tipo: 'fechar-os' }, '/'); });
   const ok = document.querySelector('.janela .btn-pri'); ok.classList.replace('btn-pri', 'btn-perigo');
   const voltar = document.querySelector('.janela .sub-pe .btn-txt'); voltar.textContent = 'Continuar editando'; voltar.focus();
 }
@@ -1442,6 +1492,7 @@ document.addEventListener('click', e => {
   const to = t.closest('[data-troca-os]'); if (to) { trocarOS(+to.dataset.trocaOs); return; }
   if (t.closest('[data-abre-pag]')) { abrirPagamento(); render('#pf-valor'); return; }
   if (t.closest('[data-cancela-pag]')) { pf = null; render(); return; }
+  const pzp = t.closest('[data-prazo-prod]'); if (pzp) { os.prazoProd = pzp.dataset.prazoProd; renderPrazoProd(); return; }
   const atv = t.closest('[data-pf-valor]'); if (atv && pf) { pf.valor = brl(+atv.dataset.pfValor); pf.tocado = true; render('#pf-valor'); return; }
   if (t.closest('[data-registra]')) { registrarPagamento(); render(); return; }
   const sv = t.closest('[data-salvar]'); if (sv) { salvar(sv.dataset.salvar === 'imprimir'); return; }
@@ -1474,6 +1525,7 @@ document.addEventListener('input', e => {
   if (t.id === 'in-cat') { rasc.nome = t.value; rasc.prodId = null; popCatalogo(t); return; }
   if (t.id === 'in-esp') { rasc.esp = t.value; atualizaBotaoItem(); return; }
   if (t.id === 'in-bruto') { t.value = mascaraMoeda(t.value); rasc.bruto = t.value; atualizaBotaoItem(); return; }
+  if (t.id === 'prazo-prod') { os.prazoProd = t.value; renderPrazoProd(); return; }
   if (t.id === 'in-desc') { let v = t.value.replace(/\D/g, ''); if (+v > 100) v = '100'; t.value = v; rasc.desc = v; atualizaBotaoItem(); return; }
   if (t.id === 'pf-valor') {
     t.value = mascaraMoeda(t.value); pf.valor = t.value; pf.tocado = true;
@@ -1528,7 +1580,7 @@ document.addEventListener('keydown', e => {
   if (PERM.trancado) return;
   if (e.key.toLowerCase() === 'n' && !e.target.closest('input, textarea, .janela') && !edicao.aberta) { e.preventDefault(); edicao = { aberta: true, idx: null }; rasc = novoRascunho(); render('#in-cat'); return; }
   // P abre o pagamento, como o N abre um item novo.
-  if (e.key.toLowerCase() === 'p' && !e.ctrlKey && !e.metaKey && !e.target.closest('input, textarea, .janela') && !pf && totalOS() > 0) { e.preventDefault(); abrirPagamento(); render('#pf-valor'); }
+  if (!ORC && e.key.toLowerCase() === 'p' && !e.ctrlKey && !e.metaKey && !e.target.closest('input, textarea, .janela') && !pf && totalOS() > 0) { e.preventDefault(); abrirPagamento(); render('#pf-valor'); }
 });
 addEventListener('resize', fecharPop);
 document.getElementById('grade').addEventListener('scroll', () => { if (popAberto && performance.now() - popAberto.desde > 250) fecharPop(); });
@@ -1537,6 +1589,15 @@ if (location.hash.includes('edita')) document.querySelector('[data-modo="edita"]
 // Por cima de uma tela: o tema dela e as observações da O.S. Trancada (O.S.
 // baixada, para Atendimento e Produção; e a conta de demonstração) só se vê:
 // nada lá dentro responde, e o rodapé diz por quê.
+if (ORC) {
+  document.querySelector('.area.dados').innerHTML = `<div class="area-cab"><span class="area-ico"><i data-lucide="clock" class="ico"></i></span><h3 id="t-dados"><label for="prazo-prod">Prazo de produção</label></h3></div>
+    <div class="area-corpo prazo-prod"><input id="prazo-prod" class="linha-in" placeholder="Ex.: 5 dias úteis" autocomplete="off" maxlength="60">
+    <div class="prazo-chips">${PRAZOS_PRODUCAO.map(p => `<button type="button" data-prazo-prod="${p}" aria-pressed="false">${p}</button>`).join('')}</div></div>`;
+  document.getElementById('t-fin').textContent = 'Total';
+  document.getElementById('obs').placeholder = 'Detalhes adicionais, garantias, condições…';
+  document.querySelector('.rodape > .dicas').innerHTML = '<span><kbd>N</kbd> item</span><span><kbd>Ctrl</kbd><kbd>S</kbd> salva</span><span><kbd>Esc</kbd> fecha</span>';
+  document.querySelector('[data-salvar="imprimir"]').title = 'Salvar e imprimir o orçamento';
+}
 if (POR_CIMA) {
   const raiz = document.documentElement;
   raiz.classList.add('por-cima');

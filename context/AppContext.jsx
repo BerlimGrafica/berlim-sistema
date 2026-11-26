@@ -1674,27 +1674,53 @@ export const AppProvider = ({ children }) => {
             if (!querSalvarAvulso) return;
         }
 
-        const valorNumericoFinal = paraCentavos(novoPedido.valor_total);
+        const r = await gravarOrcamento({
+            antes: orcamentoFormalizadoEmEdicao,
+            campos: {
+                cliente: novoPedido.cliente,
+                cliente_id: novoPedido.cliente_id || null,
+                // Cliente clicado agora; senão o vínculo gravado; senão o telefone que já
+                // estava no orçamento (reedição sem mexer no cliente). Nunca busca por
+                // nome: com homônimo (13 "Silvana" no cadastro) isso gravava o telefone
+                // de outra pessoa no orçamento e no PDF impresso.
+                telefone: clienteSelecionadoInfo?.telefone
+                    ?? (novoPedido.cliente_id ? clientes.find(c => c.id === novoPedido.cliente_id)?.telefone : undefined)
+                    ?? orcamentoFormalizadoEmEdicao?.telefone ?? '',
+                observacoes: novoPedido.servico,
+                prazo_producao: novoPedido.prazo_producao,
+                valor: paraCentavos(novoPedido.valor_total),
+            },
+            itens: itensPedido,
+        });
+        if (!r.orcamento) return;
+        // Cabeçalho gravou e os itens não: o modal fica aberto para tentar de
+        // novo; um orçamento novo vira a edição dele, para não criar um segundo.
+        if (r.semItens) { if (!orcamentoFormalizadoEmEdicao) setOrcamentoFormalizadoEmEdicao(r.orcamento); return; }
+        setModalOrcamentoFormalizadoAberto(false);
+        if (querImprimir) baixarPDFOrcamento(r.orcamento);
+    }
 
+    // O miolo de salvar um orçamento formalizado, sem a pergunta do cliente
+    // avulso e sem o modal: o de hoje (salvarOrcamentoFormalizado) e o novo
+    // (components/prototipos/OrcamentoPorCima.jsx) gravam por aqui. `antes` é o
+    // orçamento gravado (null num novo); `itens` vêm no formato do carrinho.
+    // Devolve { orcamento } quando tudo gravou; { orcamento, semItens: true }
+    // quando o cabeçalho gravou e os itens não (salvar de novo completa este);
+    // {} quando nada gravou. Os erros já saem avisados.
+    async function gravarOrcamento({ antes, campos, itens }) {
         const payload = {
-            cliente: novoPedido.cliente,
-            cliente_id: novoPedido.cliente_id || null,
-            // Cliente clicado agora; senão o vínculo gravado; senão o telefone que já
-            // estava no orçamento (reedição sem mexer no cliente). Nunca busca por
-            // nome: com homônimo (13 "Silvana" no cadastro) isso gravava o telefone
-            // de outra pessoa no orçamento e no PDF impresso.
-            telefone: clienteSelecionadoInfo?.telefone
-                ?? (novoPedido.cliente_id ? clientes.find(c => c.id === novoPedido.cliente_id)?.telefone : undefined)
-                ?? orcamentoFormalizadoEmEdicao?.telefone ?? '',
-            produto: itensPedido.map(i => i.nome).join(', ') || 'Serviços Diversos',
+            cliente: campos.cliente,
+            cliente_id: campos.cliente_id || null,
+            telefone: campos.telefone ?? '',
+            produto: itens.map(i => i.nome).join(', ') || 'Serviços Diversos',
             // Coluna legada, mantida preenchida com o mesmo texto de observacoes
             // (não mais com o bloco serializado). Os itens vivem em orcamento_itens.
-            descricao: novoPedido.servico || '',
+            descricao: campos.observacoes || '',
             quantidade: 1,
-            valor: valorNumericoFinal,
-            observacoes: novoPedido.servico,
+            valor: campos.valor,
+            observacoes: campos.observacoes,
             // Prazo de produção num campo próprio (antes ia nas observações).
-            prazo_producao: (novoPedido.prazo_producao || '').trim() || null,
+            prazo_producao: (campos.prazo_producao || '').trim() || null,
             criado_por: usuario?.nome || 'Desconhecido'
         };
 
@@ -1712,51 +1738,30 @@ export const AppProvider = ({ children }) => {
             return r;
         }
 
-        // Mesma correção do salvarItensPagamentosDoPedido, pelo mesmo motivo.
-        // Devolve null quando nada foi gravado.
-        async function salvarItensOrcamento(orcamentoId) {
-            const { orcamento_itens, erro } = await gravarItensOrcamento(orcamentoId, itensPedido);
-            if (erro) {
-                console.error('Erro ao gravar itens do orçamento:', erro);
-                avisar('Não foi possível gravar os itens do orçamento: ' + erro.message + '\n\nNada foi alterado — os itens anteriores continuam salvos. Tente novamente.', 'erro');
-                return null;
-            }
-            return orcamento_itens;
-        }
+        const { data, error } = await gravar(antes
+            ? p => supabase.from('orcamentos_formalizados').update(p).eq('id', antes.id).select()
+            : p => supabase.from('orcamentos_formalizados').insert([p]).select());
+        if (error) { avisar('Erro: ' + error.message, 'erro'); return {}; }
+        if (!data?.length) return {};
+        const cab = data[0];
 
-        if (orcamentoFormalizadoEmEdicao) {
-            const { data, error } = await gravar(p => supabase.from('orcamentos_formalizados').update(p).eq('id', orcamentoFormalizadoEmEdicao.id).select());
-            if (error) avisar('Erro: ' + error.message, 'erro');
-            else if (data && data.length > 0) {
-                const orcamento_itens = await salvarItensOrcamento(data[0].id);
-                if (orcamento_itens) {
-                    setOrcamentosFormalizados(orcamentosFormalizados.map(o => o.id === data[0].id ? { ...data[0], orcamento_itens } : o));
-                    setModalOrcamentoFormalizadoAberto(false);
-                    if (querImprimir) baixarPDFOrcamento({ ...data[0], orcamento_itens });
-                } else {
-                    // Cabeçalho gravou, itens não foram tocados: reflete só o
-                    // cabeçalho e deixa o modal aberto para nova tentativa.
-                    setOrcamentosFormalizados(orcamentosFormalizados.map(o => (o.id === data[0].id ? { ...o, ...data[0] } : o)));
-                }
+        // Mesma correção do salvarItensPagamentosDoPedido, pelo mesmo motivo.
+        const { orcamento_itens, erro } = await gravarItensOrcamento(cab.id, itens);
+        if (erro) {
+            console.error('Erro ao gravar itens do orçamento:', erro);
+            avisar('Não foi possível gravar os itens do orçamento: ' + erro.message + '\n\nNada foi alterado — os itens anteriores continuam salvos. Tente novamente.', 'erro');
+            // Cabeçalho gravou, itens não foram tocados: reflete só o cabeçalho.
+            if (antes) {
+                setOrcamentosFormalizados(prev => prev.map(o => (o.id === cab.id ? { ...o, ...cab } : o)));
+                return { orcamento: { ...antes, ...cab }, semItens: true };
             }
-        } else {
-            const { data, error } = await gravar(p => supabase.from('orcamentos_formalizados').insert([p]).select());
-            if (error) avisar('Erro: ' + error.message, 'erro');
-            else if (data && data.length > 0) {
-                const orcamento_itens = await salvarItensOrcamento(data[0].id);
-                if (orcamento_itens) {
-                    setOrcamentosFormalizados([{ ...data[0], orcamento_itens }, ...orcamentosFormalizados]);
-                    setModalOrcamentoFormalizadoAberto(false);
-                    if (querImprimir) baixarPDFOrcamento({ ...data[0], orcamento_itens });
-                } else {
-                    // O orçamento já existe no banco, sem itens. Vira edição para
-                    // que "Salvar" de novo o complete em vez de criar um segundo.
-                    const criado = { ...data[0], orcamento_itens: [] };
-                    setOrcamentosFormalizados([criado, ...orcamentosFormalizados]);
-                    setOrcamentoFormalizadoEmEdicao(criado);
-                }
-            }
+            const criado = { ...cab, orcamento_itens: [] };
+            setOrcamentosFormalizados(prev => [criado, ...prev]);
+            return { orcamento: criado, semItens: true };
         }
+        const orcamento = { ...cab, orcamento_itens };
+        setOrcamentosFormalizados(prev => antes ? prev.map(o => (o.id === cab.id ? orcamento : o)) : [orcamento, ...prev]);
+        return { orcamento };
     }
 
     async function baixarPDFOrcamento(orc) {
@@ -2674,7 +2679,7 @@ export const AppProvider = ({ children }) => {
         atualizarPagamentoBoleto, concluirBoletoContasReceber, buscarOutrasOSAbertasDoCliente, registrarPagamentoLoteOutrasOS, removerPagamentoLote,
         fecharModalOS, abrirEdicao, adicionarItemAoCarrinho, removerItemDoCarrinho, salvarEdicaoItemCarrinho,
         salvarOS, gravarOS, duplicarOS, imprimirOS, criarCliente, criarProduto,
-        salvarOrcamentoPre, excluirOrcamentoPre, gravarOrcamentoPre, apagarOrcamentoPre, salvarOrcamentoFormalizado, baixarPDFOrcamento,
+        salvarOrcamentoPre, excluirOrcamentoPre, gravarOrcamentoPre, apagarOrcamentoPre, salvarOrcamentoFormalizado, gravarOrcamento, baixarPDFOrcamento,
         abrirEdicaoOrcamento, transformarEmOS, excluirOrcamentoFormalizado,
         abrirEdicaoCliente, salvarCliente,
         abrirEdicaoProduto, salvarProduto, atualizarCatalogoProdutos, excluirProduto, duplicarProduto,
@@ -2787,7 +2792,7 @@ export const AppProvider = ({ children }) => {
         orcamentoFormalizadoEmEdicao, setOrcamentoFormalizadoEmEdicao,
         salvarOrcamentoPre: acoes.salvarOrcamentoPre, excluirOrcamentoPre: acoes.excluirOrcamentoPre,
         gravarOrcamentoPre: acoes.gravarOrcamentoPre, apagarOrcamentoPre: acoes.apagarOrcamentoPre,
-        salvarOrcamentoFormalizado: acoes.salvarOrcamentoFormalizado, baixarPDFOrcamento: acoes.baixarPDFOrcamento,
+        salvarOrcamentoFormalizado: acoes.salvarOrcamentoFormalizado, gravarOrcamento: acoes.gravarOrcamento, baixarPDFOrcamento: acoes.baixarPDFOrcamento,
         abrirEdicaoOrcamento: acoes.abrirEdicaoOrcamento, transformarEmOS: acoes.transformarEmOS,
         excluirOrcamentoFormalizado: acoes.excluirOrcamentoFormalizado,
     }), [acoes, abaOrcamentos, orcamentosFormalizados, orcamentosPreProntos, modalOrcamentoPreAberto,
