@@ -62,7 +62,9 @@ const notaParaProto = (n, isDemo) => ({
     transporte: n.forma_transporte || '', endereco: isDemo ? '' : (n.endereco || ''), criado: dataLocalDe(n.created_at), concluida: !!n.concluido,
 });
 
-export default function Page() {
+// somente="notas": a tela solta de Notas fiscais (/notas-fiscais) usa esta mesma
+// tela só com a aba de notas, sem mandar contas, fornecedores e empresas.
+export default function Page({ somente } = {}) {
     const { isDemo, usuario } = useSessao();
     // Quem conclui nota e gera uma nova a partir de outra: as mesmas pessoas da tela de hoje.
     const podeNotas = usuario?.nivel === 'Administrador' || usuario?.nivel === 'Financeiro';
@@ -82,8 +84,8 @@ export default function Page() {
     }, []);
 
     const dados = useMemo(
-        () => montarDados({ contasPagar, fornecedores, empresasFaturamento, notasFiscais, isDemo, podeNotas }),
-        [contasPagar, fornecedores, empresasFaturamento, notasFiscais, isDemo, podeNotas],
+        () => montarDados({ contasPagar, fornecedores, empresasFaturamento, notasFiscais, isDemo, podeNotas, somente }),
+        [contasPagar, fornecedores, empresasFaturamento, notasFiscais, isDemo, podeNotas, somente],
     );
     // A casca é montada uma vez, quando o modelo e a memória estão prontos.
     // Depois, contas, empresas e notas novas vão por mensagem ('dados'):
@@ -277,9 +279,12 @@ export default function Page() {
 
 // O que vai para o protótipo: contas, empresas e notas pendentes (já estão na
 // memória) e os cadastros que o modal de conta usa.
-function montarDados({ contasPagar, fornecedores, empresasFaturamento, notasFiscais, isDemo, podeNotas }) {
+function montarDados({ contasPagar, fornecedores, empresasFaturamento, notasFiscais, isDemo, podeNotas, somente }) {
+    // Só as notas: o resto nem entra no protótipo.
+    if (somente === 'notas') { contasPagar = []; fornecedores = []; empresasFaturamento = []; }
     return {
         hoje: obterDataAtual(),
+        somente: somente || null,
         contas: contasPagar.map(c => ({
             id: c.id, descricao: c.descricao || 'Conta', valor: c.valor || 0, vencimento: c.vencimento || '', status: c.status,
             categoria: c.categoria || 'Despesa',

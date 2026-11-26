@@ -726,7 +726,8 @@ const gravarSessao = (k, v) => { try { sessionStorage.setItem(k, v); } catch { /
 // O período de Contas a pagar nasce em "Este mês", logo depois dos PERIODOS.
 // vista: Contas a pagar em lista ou em calendário (lembrada na sessão, como a
 // aba); diaCal: o dia do calendário com as contas abertas embaixo.
-const est = { aba: lerSessao('fin-aba', 'receber'), periodo: null, busca: '', categoria: '', verPagas: false, gaveta: null, conf: null,
+// Na tela solta de Notas fiscais (DADOS.somente), só aquela aba existe.
+const est = { aba: DADOS.somente || lerSessao('fin-aba', 'receber'), periodo: null, busca: '', categoria: '', verPagas: false, gaveta: null, conf: null,
   vista: lerSessao('fin-pagar-vista', 'lista') === 'cal' ? 'cal' : 'lista', diaCal: null };
 
 /* ===== situação de uma conta ===== */
@@ -948,7 +949,7 @@ const ABAS = [
   ['boletos', 'Boletos', 'barcode'],
   ['faturamento', 'Faturamento', 'building-2'],
   ['notas', 'Notas fiscais', 'file-text'],
-];
+].filter(([id]) => !DADOS.somente || id === DADOS.somente);
 const MODULOS = {};
 function numeroDaAba(id) {
   if (id === 'pagar') { const v = CONTAS.filter(vencida).length; return v ? [v, true, plural(v, 'conta vencida', 'contas vencidas')] : null; }
@@ -956,6 +957,8 @@ function numeroDaAba(id) {
 }
 let indicadorAnt = null;
 function renderAbas() {
+  // Uma aba só (a tela solta de Notas fiscais): sem a faixa de abas.
+  if (ABAS.length < 2) { abasEl.innerHTML = ''; return; }
   abasEl.innerHTML = `<div class="faixa"><div class="abas" role="tablist" aria-label="Partes do Financeiro">${ABAS.map(([id, rot, ic]) => {
     const n = numeroDaAba(id);
     return `<button class="aba" role="tab" data-aba="${id}" aria-selected="${est.aba === id}">${ico(ic, 'ico ico-s')}${rot}${n ? `<span class="n num ${n[1] ? 'alerta' : ''}" title="${esc(n[2] || '')}">${n[0]}</span>` : ''}</button>`;
@@ -970,7 +973,7 @@ function renderAbas() {
 function trocarAba(id) {
   if (id === est.aba || !ABAS.some(a => a[0] === id)) return;
   fecharGaveta(true);
-  est.aba = id; est.busca = ''; gravarSessao('fin-aba', id);
+  est.aba = id; est.busca = ''; if (!DADOS.somente) gravarSessao('fin-aba', id);
   render(); scrollTo({ top: 0 });
   MODULOS[id]?.carregar?.();
 }
