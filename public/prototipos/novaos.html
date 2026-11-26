@@ -155,7 +155,7 @@ html[data-troca-tema] *, html[data-troca-tema] *::before, html[data-troca-tema] 
 
 /* campos sem caixa: só a linha de base, que acende na cor da área */
 .campo { display: block; }
-.campo > span { display: block; font-size: 11.5px; font-weight: 600; color: var(--tinta-suave); margin-bottom: 1px; }
+.campo > span, .campo > label { display: block; font-size: 11.5px; font-weight: 600; color: var(--tinta-suave); margin-bottom: 1px; }
 .linha-in { width: 100%; border: 0; background: transparent; outline: none; padding: 5px 0; color: var(--tinta); box-shadow: inset 0 -1px 0 var(--borda-forte); transition: box-shadow .15s; resize: none; }
 .linha-in:hover { box-shadow: inset 0 -1px 0 var(--tinta-fraca); }
 .linha-in:focus { box-shadow: inset 0 -2px 0 var(--foco, var(--brand)); }
@@ -303,6 +303,12 @@ html[data-troca-tema] *, html[data-troca-tema] *::before, html[data-troca-tema] 
 .pf-campos .sel-in .ico:not(.chev) { color: var(--fin); }
 .pf.estorno .pf-campos .sel-in .ico:not(.chev) { color: var(--perigo); }
 .pf-valor .linha-in { font-size: 15px; font-weight: 700; }
+/* atalhos do valor: 50% e o que falta, um clique troca o valor */
+/* uma linha inteira da grade, alinhada à direita: fica logo embaixo do Valor */
+.pf-atalhos { grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: 4px; margin-top: -6px; }
+.pf-atalhos button { display: inline-flex; align-items: baseline; gap: 5px; padding: 3px 8px; border: 1px solid var(--fin-borda); border-radius: 99px; background: var(--superficie); font-size: 11.5px; font-weight: 700; color: var(--fin-tinta); white-space: nowrap; transition: background .12s, border-color .12s; }
+.pf-atalhos button:hover { border-color: var(--fin); }
+.pf-atalhos button[aria-pressed="true"] { background: var(--fin); border-color: var(--fin); color: #fff; }
 .pf-parc small { color: var(--tinta-suave); font-weight: 500; white-space: nowrap; }
 .lote-box { border-top: 1px dashed var(--fin-borda); padding-top: 10px; display: flex; flex-direction: column; gap: 6px; }
 .lote-box p { font-size: 12px; color: var(--tinta-corpo); }
@@ -796,6 +802,16 @@ function abrirPagamento() {
   const s = saldo();
   pf = { forma: 'PIX', valor: s > 0 ? brl(s) : '', tocado: false, data: HOJE, inst: 'Itaú', band: 'Visa', parc: 1, lote: {}, aloc: {} };
 }
+// Atalhos do valor, embaixo do campo: 50% e 100% do que falta (sem nada pago,
+// 50% é o sinal do total; 100% é o valor que já vem preenchido).
+// Um clique troca o valor, sem apagar e digitar; nunca passa do que falta.
+function atalhosValor(estorno) {
+  const s = saldo(); if (estorno || s <= 0) return '';
+  const metade = Math.round(s * 50) / 100, atual = Math.round(lerValor(pf.valor) * 100);
+  if (!(metade > 0)) return '';
+  const ops = [['50%', metade], ['100%', s]];
+  return `<div class="pf-atalhos">${ops.map(([r, v]) => `<button type="button" data-pf-valor="${v}" aria-pressed="${Math.round(v * 100) === atual}">${r}</button>`).join('')}</div>`;
+}
 function renderFin() {
   const t = totalOS(), p = pago(), s = saldo();
   const lista = os.pags.length ? os.pags.map((g, k) => {
@@ -837,7 +853,7 @@ function renderFin() {
     form = `<div class="pf ${estorno ? 'estorno' : ''}">
       <div class="pf-campos">
         <div class="campo"><span>Forma</span><button class="sel-in" data-pop="forma" title="${pf.forma}"><i data-lucide="${FORMA_ICO[pf.forma]}" class="ico ico-s"></i><span class="lbl">${FORMA_CURTA[pf.forma] || pf.forma}</span><i data-lucide="chevron-down" class="ico ico-s chev"></i></button></div>
-        <label class="campo pf-valor"><span>Valor (R$)</span><input class="linha-in dir-in" id="pf-valor" value="${esc(pf.valor)}" placeholder="0,00" inputmode="decimal"></label>
+        <div class="campo pf-valor"><label for="pf-valor">Valor (R$)</label><input class="linha-in dir-in" id="pf-valor" value="${esc(pf.valor)}" placeholder="0,00" inputmode="decimal"></div>${atalhosValor(estorno)}
         <div class="campo"><span>Data</span><button class="sel-in" data-pop="data" data-campo="pf-data"><span class="lbl">${esc(rotuloData(pf.data))}</span><i data-lucide="chevron-down" class="ico ico-s chev"></i></button></div>
         ${x.inst ? `<div class="campo"><span>Instituição</span><button class="sel-in" data-pop="inst"><span class="lbl">${pf.inst}</span><i data-lucide="chevron-down" class="ico ico-s chev"></i></button></div>` : ''}
         ${x.band ? `<div class="campo"><span>Bandeira</span><button class="sel-in" data-pop="band">${bandeiraSvg(pf.band)}<span class="lbl">${pf.band}</span><i data-lucide="chevron-down" class="ico ico-s chev"></i></button></div>` : ''}
@@ -1426,6 +1442,7 @@ document.addEventListener('click', e => {
   const to = t.closest('[data-troca-os]'); if (to) { trocarOS(+to.dataset.trocaOs); return; }
   if (t.closest('[data-abre-pag]')) { abrirPagamento(); render('#pf-valor'); return; }
   if (t.closest('[data-cancela-pag]')) { pf = null; render(); return; }
+  const atv = t.closest('[data-pf-valor]'); if (atv && pf) { pf.valor = brl(+atv.dataset.pfValor); pf.tocado = true; render('#pf-valor'); return; }
   if (t.closest('[data-registra]')) { registrarPagamento(); render(); return; }
   const sv = t.closest('[data-salvar]'); if (sv) { salvar(sv.dataset.salvar === 'imprimir'); return; }
   if (t.closest('#finalizar')) {
@@ -1458,7 +1475,14 @@ document.addEventListener('input', e => {
   if (t.id === 'in-esp') { rasc.esp = t.value; atualizaBotaoItem(); return; }
   if (t.id === 'in-bruto') { t.value = mascaraMoeda(t.value); rasc.bruto = t.value; atualizaBotaoItem(); return; }
   if (t.id === 'in-desc') { let v = t.value.replace(/\D/g, ''); if (+v > 100) v = '100'; t.value = v; rasc.desc = v; atualizaBotaoItem(); return; }
-  if (t.id === 'pf-valor') { t.value = mascaraMoeda(t.value); pf.valor = t.value; pf.tocado = true; const b = document.querySelector('[data-registra]'); if (b) b.disabled = !(lerValor(pf.valor) > 0); return; }
+  if (t.id === 'pf-valor') {
+    t.value = mascaraMoeda(t.value); pf.valor = t.value; pf.tocado = true;
+    const b = document.querySelector('[data-registra]'); if (b) b.disabled = !(lerValor(pf.valor) > 0);
+    // O atalho que bate com o valor digitado fica marcado.
+    const c = Math.round(lerValor(pf.valor) * 100);
+    document.querySelectorAll('[data-pf-valor]').forEach(x => x.setAttribute('aria-pressed', Math.round(+x.dataset.pfValor * 100) === c));
+    return;
+  }
   if (t.dataset.aloc) { t.value = mascaraMoeda(t.value); pf.aloc[t.dataset.aloc] = t.value; return; }
   if (t.matches('[data-moeda]')) { t.value = mascaraMoeda(t.value); return; }
   if (t.matches('.janela [name=tel]')) { const d = t.value.replace(/\D/g, '').slice(0, 11); t.value = d.length > 10 ? `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}` : d.length > 6 ? `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}` : d.length > 2 ? `(${d.slice(0, 2)}) ${d.slice(2)}` : d; }
