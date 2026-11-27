@@ -125,6 +125,11 @@ export default function OSModal() {
         await salvarOS(null, querImprimir, statusForcado);
     }
 
+    // As instituições de cada forma: o link de pagamento não sai pelo Itaú.
+    const instituicoesDa = (forma) => ['Itaú', 'Infinite Pay', 'Pag Seguro']
+        .filter(i => !(forma === 'Link de Pagamento' && i === 'Itaú'))
+        .map(i => ({ value: i, label: i }));
+
     const camposExtrasPagamento = (forma) => {
         const mostrarInstituicao = forma === 'PIX' || forma === 'Link de Pagamento' || forma === 'Depósito Bancário';
         const mostrarBandeira = forma === 'Cartão de Crédito' || forma === 'Cartão de Débito';
@@ -140,7 +145,7 @@ export default function OSModal() {
         const mostrarInstituicao = novaForma === 'PIX' || novaForma === 'Link de Pagamento' || novaForma === 'Depósito Bancário';
         const mostrarBandeira = novaForma === 'Cartão de Crédito' || novaForma === 'Cartão de Débito';
         return {
-            instituicao: mostrarInstituicao ? (atual.instituicao || 'Itaú') : '',
+            instituicao: mostrarInstituicao ? (instituicoesDa(novaForma).some(o => o.value === atual.instituicao) ? atual.instituicao : instituicoesDa(novaForma)[0].value) : '',
             bandeira: mostrarBandeira ? (atual.bandeira || 'Visa') : '',
         };
     };
@@ -478,12 +483,12 @@ export default function OSModal() {
                                                                 className="bg-superficie border border-borda-forte rounded px-2 py-1.5 text-mini outline-none"
                                                                 options={[
                                                                     { value: 'PIX', label: 'PIX' },
+                                                                    { value: 'Link de Pagamento', label: 'Link de Pagamento' },
                                                                     { value: 'Boleto', label: 'Boleto' },
                                                                     { value: 'Cartão de Crédito', label: 'Cartão de Crédito' },
                                                                     { value: 'Cartão de Débito', label: 'Cartão de Débito' },
                                                                     { value: 'Dinheiro', label: 'Dinheiro' },
                                                                     { value: 'Depósito Bancário', label: 'Depósito Bancário' },
-                                                                    { value: 'Link de Pagamento', label: 'Link de Pagamento' },
                                                                     { value: 'Estorno', label: 'Estorno' },
                                                                 ]}
                                                             />
@@ -507,11 +512,7 @@ export default function OSModal() {
                                                                             value={pagamentoEditando.instituicao}
                                                                             onChange={(val) => setPagamentoEditando({...pagamentoEditando, instituicao: val})}
                                                                             className="w-full bg-superficie border border-borda-forte rounded px-2 py-1.5 text-mini outline-none"
-                                                                            options={[
-                                                                                { value: 'Itaú', label: 'Itaú' },
-                                                                                { value: 'Infinite Pay', label: 'Infinite Pay' },
-                                                                                { value: 'Pag Seguro', label: 'Pag Seguro' },
-                                                                            ]}
+                                                                            options={instituicoesDa(pagamentoEditando.forma)}
                                                                         />
                                                                     )}
                                                                     {mostrarBandeira && (
@@ -589,12 +590,12 @@ export default function OSModal() {
                                                     className="bg-superficie border border-borda-forte rounded px-2 py-1.5 text-mini outline-none"
                                                     options={[
                                                         { value: 'PIX', label: 'PIX' },
+                                                        { value: 'Link de Pagamento', label: 'Link de Pagamento' },
                                                         { value: 'Boleto', label: 'Boleto' },
                                                         { value: 'Cartão de Crédito', label: 'Cartão de Crédito' },
                                                         { value: 'Cartão de Débito', label: 'Cartão de Débito' },
                                                         { value: 'Dinheiro', label: 'Dinheiro' },
                                                         { value: 'Depósito Bancário', label: 'Depósito Bancário' },
-                                                        { value: 'Link de Pagamento', label: 'Link de Pagamento' },
                                                         { value: 'Estorno', label: 'Estorno' },
                                                     ]}
                                                 />
@@ -618,11 +619,7 @@ export default function OSModal() {
                                                                 value={novoPagamento.instituicao}
                                                                 onChange={(val) => editarNovoPagamento({ instituicao: val})}
                                                                 className="w-full bg-superficie border border-borda-forte rounded px-2 py-1.5 text-mini outline-none"
-                                                                options={[
-                                                                    { value: 'Itaú', label: 'Itaú' },
-                                                                    { value: 'Infinite Pay', label: 'Infinite Pay' },
-                                                                    { value: 'Pag Seguro', label: 'Pag Seguro' },
-                                                                ]}
+                                                                options={instituicoesDa(novoPagamento.forma)}
                                                             />
                                                         )}
                                                         {mostrarBandeira && (
